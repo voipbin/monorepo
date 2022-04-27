@@ -785,19 +785,19 @@ func (mr *MockRequestHandlerMockRecorder) CAV1OutplanGet(ctx, id interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanGet", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanGet), ctx, id)
 }
 
-// CAV1OutplanGets mocks base method.
-func (m *MockRequestHandler) CAV1OutplanGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]outplan.Outplan, error) {
+// CAV1OutplanGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) CAV1OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]outplan.Outplan, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CAV1OutplanGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "CAV1OutplanGetsByCustomerID", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]outplan.Outplan)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CAV1OutplanGets indicates an expected call of CAV1OutplanGets.
-func (mr *MockRequestHandlerMockRecorder) CAV1OutplanGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+// CAV1OutplanGetsByCustomerID indicates an expected call of CAV1OutplanGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) CAV1OutplanGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanGets", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanGetsByCustomerID), ctx, customerID, pageToken, pageSize)
 }
 
 // CAV1OutplanUpdateBasicInfo mocks base method.

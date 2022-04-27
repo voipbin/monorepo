@@ -68,10 +68,10 @@ func (r *requestHandler) CAV1OutplanCreate(
 	return &res, nil
 }
 
-// CAV1OutplanGets sends a request to campaign-manager
-// to getting a list of outplans.
+// CAV1OutplanGetsByCustomerID sends a request to campaign-manager
+// to getting a list of outplans of the given customer id.
 // it returns detail list of outplans if it succeed.
-func (r *requestHandler) CAV1OutplanGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error) {
+func (r *requestHandler) CAV1OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCAOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
