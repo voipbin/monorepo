@@ -680,19 +680,19 @@ func (mr *MockRequestHandlerMockRecorder) CAV1CampaignGet(ctx, id interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignGet", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignGet), ctx, id)
 }
 
-// CAV1CampaignGets mocks base method.
-func (m *MockRequestHandler) CAV1CampaignGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]campaign.Campaign, error) {
+// CAV1CampaignGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) CAV1CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CAV1CampaignGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "CAV1CampaignGetsByCustomerID", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CAV1CampaignGets indicates an expected call of CAV1CampaignGets.
-func (mr *MockRequestHandlerMockRecorder) CAV1CampaignGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+// CAV1CampaignGetsByCustomerID indicates an expected call of CAV1CampaignGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignGets", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignGetsByCustomerID), ctx, customerID, pageToken, pageSize)
 }
 
 // CAV1CampaignUpdateActions mocks base method.
@@ -708,6 +708,21 @@ func (m *MockRequestHandler) CAV1CampaignUpdateActions(ctx context.Context, id u
 func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateActions(ctx, id, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateActions", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateActions), ctx, id, actions)
+}
+
+// CAV1CampaignUpdateBasicInfo mocks base method.
+func (m *MockRequestHandler) CAV1CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignUpdateBasicInfo", ctx, id, name, detail)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignUpdateBasicInfo indicates an expected call of CAV1CampaignUpdateBasicInfo.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateBasicInfo", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateBasicInfo), ctx, id, name, detail)
 }
 
 // CAV1CampaignUpdateServiceLevel mocks base method.
