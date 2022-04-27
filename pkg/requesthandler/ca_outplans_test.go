@@ -113,7 +113,7 @@ func Test_CAV1OutplanCreate(t *testing.T) {
 	}
 }
 
-func Test_CAV1OutplanGets(t *testing.T) {
+func Test_CAV1OutplanGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -168,7 +168,7 @@ func Test_CAV1OutplanGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1OutplanGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CAV1OutplanGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

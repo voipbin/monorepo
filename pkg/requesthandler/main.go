@@ -301,7 +301,7 @@ type RequestHandler interface {
 		maxTryCount3 int,
 		maxTryCount4 int,
 	) (*caoutplan.Outplan, error)
-	CAV1OutplanGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error)
+	CAV1OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error)
 	CAV1OutplanGet(ctx context.Context, id uuid.UUID) (*caoutplan.Outplan, error)
 	CAV1OutplanDelete(ctx context.Context, outplanID uuid.UUID) (*caoutplan.Outplan, error)
 	CAV1OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*caoutplan.Outplan, error)
