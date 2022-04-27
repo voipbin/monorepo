@@ -20,6 +20,7 @@ import (
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -284,6 +285,38 @@ type RequestHandler interface {
 	CAV1CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status cacampaign.Status) (*cacampaign.Campaign, error)
 	CAV1CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*cacampaign.Campaign, error)
 	CAV1CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*cacampaign.Campaign, error)
+
+	// campaign-manager outplans
+	CAV1OutplanCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		source *cmaddress.Address,
+		dialTimeout int,
+		tryInterval int,
+		maxTryCount0 int,
+		maxTryCount1 int,
+		maxTryCount2 int,
+		maxTryCount3 int,
+		maxTryCount4 int,
+	) (*caoutplan.Outplan, error)
+	CAV1OutplanGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error)
+	CAV1OutplanGet(ctx context.Context, id uuid.UUID) (*caoutplan.Outplan, error)
+	CAV1OutplanDelete(ctx context.Context, outplanID uuid.UUID) (*caoutplan.Outplan, error)
+	CAV1OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*caoutplan.Outplan, error)
+	CAV1OutplanUpdateDialInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		source *cmaddress.Address,
+		dialTimeout int,
+		tryInterval int,
+		maxTryCount0 int,
+		maxTryCount1 int,
+		maxTryCount2 int,
+		maxTryCount3 int,
+		maxTryCount4 int,
+	) (*caoutplan.Outplan, error)
 
 	// call-manager call
 	CMV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error

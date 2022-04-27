@@ -22,6 +22,7 @@ import (
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	response "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -737,6 +738,96 @@ func (m *MockRequestHandler) CAV1CampaignUpdateStatus(ctx context.Context, id uu
 func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateStatus(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateStatus", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateStatus), ctx, id, status)
+}
+
+// CAV1OutplanCreate mocks base method.
+func (m *MockRequestHandler) CAV1OutplanCreate(ctx context.Context, customerID uuid.UUID, name, detail string, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1OutplanCreate", ctx, customerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	ret0, _ := ret[0].(*outplan.Outplan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1OutplanCreate indicates an expected call of CAV1OutplanCreate.
+func (mr *MockRequestHandlerMockRecorder) CAV1OutplanCreate(ctx, customerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanCreate", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanCreate), ctx, customerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+}
+
+// CAV1OutplanDelete mocks base method.
+func (m *MockRequestHandler) CAV1OutplanDelete(ctx context.Context, outplanID uuid.UUID) (*outplan.Outplan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1OutplanDelete", ctx, outplanID)
+	ret0, _ := ret[0].(*outplan.Outplan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1OutplanDelete indicates an expected call of CAV1OutplanDelete.
+func (mr *MockRequestHandlerMockRecorder) CAV1OutplanDelete(ctx, outplanID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanDelete", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanDelete), ctx, outplanID)
+}
+
+// CAV1OutplanGet mocks base method.
+func (m *MockRequestHandler) CAV1OutplanGet(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1OutplanGet", ctx, id)
+	ret0, _ := ret[0].(*outplan.Outplan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1OutplanGet indicates an expected call of CAV1OutplanGet.
+func (mr *MockRequestHandlerMockRecorder) CAV1OutplanGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanGet", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanGet), ctx, id)
+}
+
+// CAV1OutplanGets mocks base method.
+func (m *MockRequestHandler) CAV1OutplanGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]outplan.Outplan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1OutplanGets", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]outplan.Outplan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1OutplanGets indicates an expected call of CAV1OutplanGets.
+func (mr *MockRequestHandlerMockRecorder) CAV1OutplanGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanGets", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanGets), ctx, customerID, pageToken, pageSize)
+}
+
+// CAV1OutplanUpdateBasicInfo mocks base method.
+func (m *MockRequestHandler) CAV1OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*outplan.Outplan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1OutplanUpdateBasicInfo", ctx, id, name, detail)
+	ret0, _ := ret[0].(*outplan.Outplan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1OutplanUpdateBasicInfo indicates an expected call of CAV1OutplanUpdateBasicInfo.
+func (mr *MockRequestHandlerMockRecorder) CAV1OutplanUpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanUpdateBasicInfo", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanUpdateBasicInfo), ctx, id, name, detail)
+}
+
+// CAV1OutplanUpdateDialInfo mocks base method.
+func (m *MockRequestHandler) CAV1OutplanUpdateDialInfo(ctx context.Context, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1OutplanUpdateDialInfo", ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	ret0, _ := ret[0].(*outplan.Outplan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1OutplanUpdateDialInfo indicates an expected call of CAV1OutplanUpdateDialInfo.
+func (mr *MockRequestHandlerMockRecorder) CAV1OutplanUpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1OutplanUpdateDialInfo", reflect.TypeOf((*MockRequestHandler)(nil).CAV1OutplanUpdateDialInfo), ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 }
 
 // CFV1ConferenceCreate mocks base method.
