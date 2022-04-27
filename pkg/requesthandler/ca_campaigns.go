@@ -70,10 +70,10 @@ func (r *requestHandler) CAV1CampaignCreate(
 	return &res, nil
 }
 
-// CAV1CampaignGets sends a request to campaign-manager
+// CAV1CampaignGetsByCustomerID sends a request to campaign-manager
 // to getting a list of campaigns.
 // it returns detail list of campaigns if it succeed.
-func (r *requestHandler) CAV1CampaignGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaign.Campaign, error) {
+func (r *requestHandler) CAV1CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaign.Campaign, error) {
 	uri := fmt.Sprintf("/v1/campaigns?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCACampaigns, requestTimeoutDefault, 0, ContentTypeJSON, nil)

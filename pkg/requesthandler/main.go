@@ -278,10 +278,11 @@ type RequestHandler interface {
 		queueID uuid.UUID,
 		nextCampaignID uuid.UUID,
 	) (*cacampaign.Campaign, error)
-	CAV1CampaignGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaign.Campaign, error)
+	CAV1CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaign.Campaign, error)
 	CAV1CampaignGet(ctx context.Context, id uuid.UUID) (*cacampaign.Campaign, error)
 	CAV1CampaignDelete(ctx context.Context, campaignID uuid.UUID) (*cacampaign.Campaign, error)
 	CAV1CampaignExecute(ctx context.Context, id uuid.UUID, delay int) error
+	CAV1CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*cacampaign.Campaign, error)
 	CAV1CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status cacampaign.Status) (*cacampaign.Campaign, error)
 	CAV1CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*cacampaign.Campaign, error)
 	CAV1CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*cacampaign.Campaign, error)

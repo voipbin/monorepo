@@ -113,7 +113,7 @@ func Test_CAV1CampaignCreate(t *testing.T) {
 	}
 }
 
-func Test_CAV1CampaignGets(t *testing.T) {
+func Test_CAV1CampaignGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -168,7 +168,7 @@ func Test_CAV1CampaignGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1CampaignGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CAV1CampaignGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
