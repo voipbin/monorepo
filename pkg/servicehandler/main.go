@@ -12,6 +12,8 @@ import (
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -69,6 +71,28 @@ type ServiceHandler interface {
 	CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallGets(u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(u *cscustomer.Customer, callID uuid.UUID) error
+
+	// campaign handlers
+	CampaignCreate(
+		u *cscustomer.Customer,
+		name string,
+		detail string,
+		campaignType cacampaign.Type,
+		serviceLevel int,
+		endHandle cacampaign.EndHandle,
+		actions []fmaction.Action,
+		outplanID uuid.UUID,
+		outdialID uuid.UUID,
+		queueID uuid.UUID,
+		nextCampaignID uuid.UUID,
+	) (*cacampaign.WebhookMessage, error)
+	CampaignGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*cacampaign.WebhookMessage, error)
+	CampaignGet(u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error)
+	CampaignDelete(u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateStatus(u *cscustomer.Customer, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateServiceLevel(u *cscustomer.Customer, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateActions(u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error)
 
 	// conference handlers
 	ConferenceCreate(u *cscustomer.Customer, confType cfconference.Type, name, detail string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
@@ -143,7 +167,38 @@ type ServiceHandler interface {
 		destination3 *cmaddress.Address,
 		destination4 *cmaddress.Address,
 	) (*omoutdialtarget.WebhookMessage, error)
+	OutdialtargetGet(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
 	OutdialtargetDelete(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
+
+	OutplanCreate(
+		u *cscustomer.Customer,
+		name string,
+		detail string,
+		source *cmaddress.Address,
+		dialTimeout int,
+		tryInterval int,
+		maxTryCount0 int,
+		maxTryCount1 int,
+		maxTryCount2 int,
+		maxTryCount3 int,
+		maxTryCount4 int,
+	) (*caoutplan.WebhookMessage, error)
+	OutplanDelete(u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error)
+	OutplanGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*caoutplan.WebhookMessage, error)
+	OutplanGet(u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error)
+	OutplanUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error)
+	OutplanUpdateDialInfo(
+		u *cscustomer.Customer,
+		id uuid.UUID,
+		source *cmaddress.Address,
+		dialTimeout int,
+		tryInterval int,
+		maxTryCount0 int,
+		maxTryCount1 int,
+		maxTryCount2 int,
+		maxTryCount3 int,
+		maxTryCount4 int,
+	) (*caoutplan.WebhookMessage, error)
 
 	// queue handler
 	QueueGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
