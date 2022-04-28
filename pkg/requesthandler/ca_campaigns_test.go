@@ -637,3 +637,135 @@ func Test_CAV1CampaignUpdateActions(t *testing.T) {
 		})
 	}
 }
+
+func Test_CAV1CampaignUpdateResourceInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		campaignID uuid.UUID
+		outplanID  uuid.UUID
+		outdialID  uuid.UUID
+		queueID    uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectResult  *cacampaign.Campaign
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("e559c128-c6b3-11ec-8f7c-67e43d0d08d8"),
+			uuid.FromStringOrNil("e5907394-c6b3-11ec-9dfa-17e8177ec4c1"),
+			uuid.FromStringOrNil("e5bcde16-c6b3-11ec-b955-b75320ec1cc2"),
+			uuid.FromStringOrNil("e5e5f206-c6b3-11ec-bc99-17af712a37b1"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e559c128-c6b3-11ec-8f7c-67e43d0d08d8"}`),
+			},
+
+			"bin-manager.campaign-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/campaigns/e559c128-c6b3-11ec-8f7c-67e43d0d08d8/resource_info",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"outplan_id":"e5907394-c6b3-11ec-9dfa-17e8177ec4c1","outdial_id":"e5bcde16-c6b3-11ec-b955-b75320ec1cc2","queue_id":"e5e5f206-c6b3-11ec-bc99-17af712a37b1"}`),
+			},
+			&cacampaign.Campaign{
+				ID: uuid.FromStringOrNil("e559c128-c6b3-11ec-8f7c-67e43d0d08d8"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CAV1CampaignUpdateResourceInfo(ctx, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectResult, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			}
+		})
+	}
+}
+
+func Test_CAV1CampaignUpdateNextCampaignID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		campaignID     uuid.UUID
+		nextCampaignID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectResult  *cacampaign.Campaign
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("42a6943c-c6b4-11ec-a70b-cb75b0197d55"),
+			uuid.FromStringOrNil("2bed4c36-c6b4-11ec-92e6-1b01011d10cf"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"42a6943c-c6b4-11ec-a70b-cb75b0197d55"}`),
+			},
+
+			"bin-manager.campaign-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/campaigns/42a6943c-c6b4-11ec-a70b-cb75b0197d55/next_campaign_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"next_campaign_id":"2bed4c36-c6b4-11ec-92e6-1b01011d10cf"}`),
+			},
+			&cacampaign.Campaign{
+				ID: uuid.FromStringOrNil("42a6943c-c6b4-11ec-a70b-cb75b0197d55"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CAV1CampaignUpdateNextCampaignID(ctx, tt.campaignID, tt.nextCampaignID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectResult, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			}
+		})
+	}
+}

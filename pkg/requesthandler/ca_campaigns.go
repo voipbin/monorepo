@@ -266,14 +266,84 @@ func (r *requestHandler) CAV1CampaignUpdateServiceLevel(ctx context.Context, id 
 	return &res, nil
 }
 
-// CAV1CampaignUpdateServiceLevel sends a request to campaign-manager
-// to update the service_level.
+// CAV1CampaignUpdateActions sends a request to campaign-manager
+// to update the actions.
 // it returns updated campaign if it succeed.
 func (r *requestHandler) CAV1CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*cacampaign.Campaign, error) {
 	uri := fmt.Sprintf("/v1/campaigns/%s/actions", id)
 
 	data := &carequest.V1DataCampaignsIDActionsPut{
 		Actions: actions,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCACampaigns, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cacampaign.Campaign
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CAV1CampaignUpdateResourceInfo sends a request to campaign-manager
+// to update the resource_info.
+// it returns updated campaign if it succeed.
+func (r *requestHandler) CAV1CampaignUpdateResourceInfo(ctx context.Context, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.Campaign, error) {
+	uri := fmt.Sprintf("/v1/campaigns/%s/resource_info", id)
+
+	data := &carequest.V1DataCampaignsIDResourceInfoPut{
+		OutplanID: outplanID,
+		OutdialID: outdialID,
+		QueueID:   queueID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCACampaigns, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cacampaign.Campaign
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CAV1CampaignUpdateNextCampaignID sends a request to campaign-manager
+// to update the next_campaign_id.
+// it returns updated campaign if it succeed.
+func (r *requestHandler) CAV1CampaignUpdateNextCampaignID(ctx context.Context, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.Campaign, error) {
+	uri := fmt.Sprintf("/v1/campaigns/%s/next_campaign_id", id)
+
+	data := &carequest.V1DataCampaignsIDNextCampaignIDPut{
+		NextCampaignID: nextCampaignID,
 	}
 
 	m, err := json.Marshal(data)
