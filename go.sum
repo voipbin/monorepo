@@ -208,6 +208,8 @@ gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220414221219-afe912d651
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220414221219-afe912d6515b/go.mod h1:h461a95k3KLJaNIRJUldqtxcHyif5+6FObq+R7r9EIk=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220426042351-0c81598fef15 h1:lo2YW7kUiIOArnFY7LdX8vgFKAIb/x/Il63W8h3cFG4=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220426042351-0c81598fef15/go.mod h1:XZe18vVHvEEKWg6EzXlbeG2zQgBUfv3MEiVrjAF733Q=
+gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220428052128-677e5d58dc47 h1:/X/mbSJIkH2NgnQ2ImMVIW29Kgk1JemSgRX/BwxykyE=
+gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220428052128-677e5d58dc47/go.mod h1:75KIrQVAt+g4WlDT6bsaDD6DzS2hU57hWEy2lsGRikY=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3 h1:LSlrWeWE8ECuOISOb/a3T4WkjVJCvpzFJVKqwRFbTZQ=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3/go.mod h1:nKjcs4JbVMdYWpX/HLcx2P/xPdH0/amdxfv4ih9lRcY=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220413021200-204155e694ef h1:lFQCPpK428WcdFF/LnH+wbZ5hgPPEgVDbqGkl4UmxZ8=

@@ -725,6 +725,36 @@ func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateBasicInfo(ctx, id, n
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateBasicInfo", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateBasicInfo), ctx, id, name, detail)
 }
 
+// CAV1CampaignUpdateNextCampaignID mocks base method.
+func (m *MockRequestHandler) CAV1CampaignUpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignUpdateNextCampaignID", ctx, id, nextCampaignID)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignUpdateNextCampaignID indicates an expected call of CAV1CampaignUpdateNextCampaignID.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateNextCampaignID(ctx, id, nextCampaignID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateNextCampaignID", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateNextCampaignID), ctx, id, nextCampaignID)
+}
+
+// CAV1CampaignUpdateResourceInfo mocks base method.
+func (m *MockRequestHandler) CAV1CampaignUpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) (*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaignUpdateResourceInfo", ctx, id, outplanID, outdialID, queueID)
+	ret0, _ := ret[0].(*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaignUpdateResourceInfo indicates an expected call of CAV1CampaignUpdateResourceInfo.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateResourceInfo", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateResourceInfo), ctx, id, outplanID, outdialID, queueID)
+}
+
 // CAV1CampaignUpdateServiceLevel mocks base method.
 func (m *MockRequestHandler) CAV1CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
