@@ -683,3 +683,133 @@ func Test_v1CampaignsIDActionsPut(t *testing.T) {
 		})
 	}
 }
+
+func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		campaignID uuid.UUID
+		outplanID  uuid.UUID
+		outdialID  uuid.UUID
+		queueID    uuid.UUID
+
+		responseCampaign *campaign.Campaign
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"stopping",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/campaigns/e74223b2-c6af-11ec-9f40-1f88a3e01636/resource_info",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"outplan_id":"010e228c-c6b0-11ec-87b5-7bb69124c874","outdial_id":"013945a2-c6b0-11ec-ba93-2300004f60a7","queue_id":"0169cb32-c6b0-11ec-b616-4fe9ae9e95da"}`),
+			},
+
+			uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
+			uuid.FromStringOrNil("010e228c-c6b0-11ec-87b5-7bb69124c874"),
+			uuid.FromStringOrNil("013945a2-c6b0-11ec-ba93-2300004f60a7"),
+			uuid.FromStringOrNil("0169cb32-c6b0-11ec-b616-4fe9ae9e95da"),
+
+			&campaign.Campaign{
+				ID: uuid.FromStringOrNil("e74223b2-c6af-11ec-9f40-1f88a3e01636"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e74223b2-c6af-11ec-9f40-1f88a3e01636","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				campaignHandler: mockCampaign,
+			}
+
+			mockCampaign.EXPECT().UpdateResourceInfo(gomock.Any(), tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID).Return(tt.responseCampaign, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1CampaignsIDNextCampaignIDPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		campaignID     uuid.UUID
+		nextCampaignID uuid.UUID
+
+		responseCampaign *campaign.Campaign
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"stopping",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/campaigns/e1f5109e-c6b0-11ec-a87d-1f8fe2380e97/next_campaign_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"next_campaign_id":"e98f6ab6-c6b0-11ec-b69c-df65d271a9d5"}`),
+			},
+
+			uuid.FromStringOrNil("e1f5109e-c6b0-11ec-a87d-1f8fe2380e97"),
+			uuid.FromStringOrNil("e98f6ab6-c6b0-11ec-b69c-df65d271a9d5"),
+
+			&campaign.Campaign{
+				ID: uuid.FromStringOrNil("e1f5109e-c6b0-11ec-a87d-1f8fe2380e97"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e1f5109e-c6b0-11ec-a87d-1f8fe2380e97","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				campaignHandler: mockCampaign,
+			}
+
+			mockCampaign.EXPECT().UpdateNextCampaignID(gomock.Any(), tt.campaignID, tt.nextCampaignID).Return(tt.responseCampaign, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

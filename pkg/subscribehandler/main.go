@@ -131,7 +131,6 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 			"message": m,
 		},
 	)
-	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
 
 	ctx := context.Background()
 

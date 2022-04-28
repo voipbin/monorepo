@@ -387,7 +387,95 @@ func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *rabbitmq
 	// update
 	tmp, err := h.campaignHandler.UpdateActions(ctx, id, req.Actions)
 	if err != nil {
-		log.Errorf("Could not update the campaign service_level. err: %v", err)
+		log.Errorf("Could not update the campaign actions. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1CampaignsIDResourceInfoPut handles /v1/campaigns/{id}/resource_info PUT request
+func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "v1CampaignsIDResourceInfoPut",
+			"campaign_id": id,
+		})
+	log.Debug("Executing v1CampaignsIDResourceInfoPut.")
+
+	var req request.V1DataCampaignsIDResourceInfoPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	// update
+	tmp, err := h.campaignHandler.UpdateResourceInfo(ctx, id, req.OutplanID, req.OutdialID, req.QueueID)
+	if err != nil {
+		log.Errorf("Could not update the campaign resource_info. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1CampaignsIDNextCampaignIDPut handles /v1/campaigns/{id}/next_campaign_id PUT request
+func (h *listenHandler) v1CampaignsIDNextCampaignIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "v1CampaignsIDNextCampaignIDPut",
+			"campaign_id": id,
+		})
+	log.Debug("Executing v1CampaignsIDNextCampaignIDPut.")
+
+	var req request.V1DataCampaignsIDNextCampaignIDPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	// update
+	tmp, err := h.campaignHandler.UpdateNextCampaignID(ctx, id, req.NextCampaignID)
+	if err != nil {
+		log.Errorf("Could not update the campaign next_campaign_id. err: %v", err)
 		return nil, err
 	}
 

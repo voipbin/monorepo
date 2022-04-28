@@ -19,6 +19,7 @@ func (h *subscribeHandler) processEventFMActiveflowDeleted(ctx context.Context, 
 			"event": m,
 		},
 	)
+	log.WithField("event", m).Debug("Executing processEventFMActiveflowDeleted.")
 
 	c := fmactiveflow.Activeflow{}
 	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {

@@ -61,3 +61,19 @@ type V1DataCampaignsIDServiceLevelPut struct {
 type V1DataCampaignsIDActionsPut struct {
 	Actions []fmaction.Action `json:"actions"`
 }
+
+// V1DataCampaignsIDResourceInfoPut is
+// v1 data type request struct for
+// /v1/campaigns/<campaign-id>/resource_info PUT
+type V1DataCampaignsIDResourceInfoPut struct {
+	OutplanID uuid.UUID `json:"outplan_id"`
+	OutdialID uuid.UUID `json:"outdial_id"`
+	QueueID   uuid.UUID `json:"queue_id"`
+}
+
+// V1DataCampaignsIDNextCampaignIDPut is
+// v1 data type request struct for
+// /v1/campaigns/<campaign-id>/next_campaign_id PUT
+type V1DataCampaignsIDNextCampaignIDPut struct {
+	NextCampaignID uuid.UUID `json:"next_campaign_id"`
+}
