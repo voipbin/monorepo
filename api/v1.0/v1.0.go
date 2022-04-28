@@ -6,6 +6,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/agents"
 	availablenumbers "gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/available_numbers"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/calls"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/campaigns"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/conferences"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/customers"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/domains"
@@ -14,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/messages"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/numbers"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/outdials"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/outplans"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/queues"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/recordingfiles"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/recordings"
@@ -30,6 +32,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	agents.ApplyRoutes(v1)
 	availablenumbers.ApplyRoutes(v1)
 	calls.ApplyRoutes(v1)
+	campaigns.ApplyRoutes(v1)
 	conferences.ApplyRoutes(v1)
 	customers.ApplyRoutes(v1)
 	domains.ApplyRoutes(v1)
@@ -38,6 +41,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	messages.ApplyRoutes(v1)
 	numbers.ApplyRoutes(v1)
 	outdials.ApplyRoutes(v1)
+	outplans.ApplyRoutes(v1)
 	queues.ApplyRoutes(v1)
 	recordings.ApplyRoutes(v1)
 	recordingfiles.ApplyRoutes(v1)

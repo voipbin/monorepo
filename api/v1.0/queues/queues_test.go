@@ -26,7 +26,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestQueuesGet(t *testing.T) {
+func Test_queuesGet(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -37,7 +37,7 @@ func TestQueuesGet(t *testing.T) {
 	type test struct {
 		name      string
 		customer  cscustomer.Customer
-		req       request.ParamCallsGET
+		req       request.ParamQueuesGET
 		resCalls  []*qmqueue.WebhookMessage
 		expectRes string
 	}
@@ -48,7 +48,7 @@ func TestQueuesGet(t *testing.T) {
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
-			request.ParamCallsGET{
+			request.ParamQueuesGET{
 				Pagination: request.Pagination{
 					PageSize:  10,
 					PageToken: "2020-09-20T03:23:20.995000",
@@ -72,7 +72,7 @@ func TestQueuesGet(t *testing.T) {
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
-			request.ParamCallsGET{
+			request.ParamQueuesGET{
 				Pagination: request.Pagination{
 					PageSize:  10,
 					PageToken: "2020-09-20T03:23:20.995000",
@@ -140,7 +140,7 @@ func TestQueuesGet(t *testing.T) {
 	}
 }
 
-func TestQueuesPost(t *testing.T) {
+func Test_queuesPost(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -224,7 +224,7 @@ func TestQueuesPost(t *testing.T) {
 	}
 }
 
-func TestQueuesIDGet(t *testing.T) {
+func Test_queuesIDGet(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -302,7 +302,7 @@ func TestQueuesIDGet(t *testing.T) {
 	}
 }
 
-func TestQueuesIDDelete(t *testing.T) {
+func Test_queuesIDDelete(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -350,7 +350,7 @@ func TestQueuesIDDelete(t *testing.T) {
 	}
 }
 
-func TestQueuesIDPut(t *testing.T) {
+func Test_queuesIDPut(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -408,7 +408,7 @@ func TestQueuesIDPut(t *testing.T) {
 	}
 }
 
-func TestQueuesIDTagIDsPut(t *testing.T) {
+func Test_queuesIDTagIDsPut(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -466,7 +466,7 @@ func TestQueuesIDTagIDsPut(t *testing.T) {
 	}
 }
 
-func TestQueuesIDRoutingMethodPut(t *testing.T) {
+func Test_queuesIDRoutingMethodPut(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -522,7 +522,7 @@ func TestQueuesIDRoutingMethodPut(t *testing.T) {
 	}
 }
 
-func TestQueuesIDActionsPut(t *testing.T) {
+func Test_queuesIDActionsPut(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
