@@ -42,7 +42,7 @@ func (r *requestHandler) CAV1CampaignCreate(
 		ServiceLevel:   serviceLevel,
 		EndHandle:      endHandle,
 		Actions:        actions,
-		OutplanID:      outdialID,
+		OutplanID:      outplanID,
 		OutdialID:      outdialID,
 		QueueID:        queueID,
 		NextCampaignID: nextCampaignID,

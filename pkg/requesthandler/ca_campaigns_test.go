@@ -66,7 +66,7 @@ func Test_CAV1CampaignCreate(t *testing.T) {
 				URI:      "/v1/campaigns",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"1d8334ff-afa2-4687-9b9a-038df4f27cf9","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"call","name":"test name","detail":"test detail","service_level":100,"end_handle":"stop","actions":[],"outplan_id":"b07a3fb5-59df-450f-a3bf-779faea8baaf","outdial_id":"b07a3fb5-59df-450f-a3bf-779faea8baaf","queue_id":"6d23319a-74f9-4251-bdbf-650926b7ceb6","next_campaign_id":"01f7ce4d-69bc-4d6a-aafa-6b4cdf43a4d1"}`),
+				Data:     []byte(`{"id":"1d8334ff-afa2-4687-9b9a-038df4f27cf9","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"call","name":"test name","detail":"test detail","service_level":100,"end_handle":"stop","actions":[],"outplan_id":"7db3f543-e9f4-4e87-aec9-b66713d2b4da","outdial_id":"b07a3fb5-59df-450f-a3bf-779faea8baaf","queue_id":"6d23319a-74f9-4251-bdbf-650926b7ceb6","next_campaign_id":"01f7ce4d-69bc-4d6a-aafa-6b4cdf43a4d1"}`),
 			},
 			&cacampaign.Campaign{
 				ID: uuid.FromStringOrNil("1d8334ff-afa2-4687-9b9a-038df4f27cf9"),
