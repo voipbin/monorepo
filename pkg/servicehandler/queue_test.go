@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestQueueGets(t *testing.T) {
+func Test_QueueGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -80,7 +80,7 @@ func TestQueueGets(t *testing.T) {
 	}
 }
 
-func TestQueueGet(t *testing.T) {
+func Test_QueueGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -136,7 +136,7 @@ func TestQueueGet(t *testing.T) {
 	}
 }
 
-func TestQueueCreate(t *testing.T) {
+func Test_QueueCreate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -231,7 +231,7 @@ func TestQueueCreate(t *testing.T) {
 	}
 }
 
-func TestQueueDelete(t *testing.T) {
+func Test_QueueDelete(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -291,7 +291,7 @@ func TestQueueDelete(t *testing.T) {
 	}
 }
 
-func TestQueueUpdate(t *testing.T) {
+func Test_QueueUpdate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -354,7 +354,7 @@ func TestQueueUpdate(t *testing.T) {
 	}
 }
 
-func TestQueueUpdateTagIDs(t *testing.T) {
+func Test_QueueUpdateTagIDs(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -438,7 +438,7 @@ func TestQueueUpdateTagIDs(t *testing.T) {
 	}
 }
 
-func TestQueueUpdateRoutingMethod(t *testing.T) {
+func Test_QueueUpdateRoutingMethod(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -516,7 +516,7 @@ func TestQueueUpdateRoutingMethod(t *testing.T) {
 	}
 }
 
-func TestQueueUpdateActions(t *testing.T) {
+func Test_QueueUpdateActions(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

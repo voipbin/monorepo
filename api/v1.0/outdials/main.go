@@ -19,5 +19,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	outdials.PUT("/:id/campaign_id", outdialsIDCampaignIDPUT)
 
 	outdials.POST("/:id/targets", outdialsIDTargetsPOST)
+	outdials.GET("/:id/targets/:target_id", outdialsIDTargetsIDGET)
 	outdials.DELETE("/:id/targets/:target_id", outdialsIDTargetsIDDELETE)
 }

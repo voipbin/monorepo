@@ -1,11 +1,11 @@
 package outdials
 
 import (
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
@@ -451,6 +451,59 @@ func outdialsIDTargetsPOST(c *gin.Context) {
 	res, err := serviceHandler.OutdialtargetCreate(&u, id, req.Name, req.Detail, req.Data, req.Destination0, req.Destination1, req.Destination2, req.Destination3, req.Destination4)
 	if err != nil {
 		log.Errorf("Could not update the outdial. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// outdialsIDTargetsIDGET handles GET /outdials/{id}/targets/{target_id} request.
+// It gets a exist outdialtarget info.
+// @Summary Get a existing outdialtarget.
+// @Description Get a existing outdialtarget.
+// @Produce json
+// @Param id query string true "The outdial's id"
+// @Param target_id query string true "The outdialtarget's id"
+// @Success 200
+// @Router /v1.0/outdials/{id}/targets/{target_id} [get]
+func outdialsIDTargetsIDGET(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "outdialsIDTargetsIDGET",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	targetID := uuid.FromStringOrNil(c.Params.ByName("target_id"))
+	log = log.WithFields(logrus.Fields{
+		"outdial_id":       id,
+		"outdialtarget_id": targetID,
+	})
+	log.Debug("Executing outdialsIDTargetsIDGET.")
+
+	// get an outdial target
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.OutdialtargetGet(&u, id, targetID)
+	if err != nil {
+		log.Errorf("Could not get the outdial target. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

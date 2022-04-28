@@ -8,15 +8,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
-	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
@@ -28,7 +28,101 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func Test_OutdialsPOST(t *testing.T) {
+func Test_outdialsGET(t *testing.T) {
+
+	// create mock
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	type test struct {
+		name        string
+		customer    cscustomer.Customer
+		req         request.ParamOutdialsGET
+		resOutdials []*omoutdial.WebhookMessage
+		expectRes   string
+	}
+
+	tests := []test{
+		{
+			"1 item",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			request.ParamOutdialsGET{
+				Pagination: request.Pagination{
+					PageSize:  10,
+					PageToken: "2020-09-20T03:23:20.995000",
+				},
+			},
+			[]*omoutdial.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("438f0ccc-c64a-11ec-9ac6-b729ca9f28bf"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+			},
+			`{"result":[{"id":"438f0ccc-c64a-11ec-9ac6-b729ca9f28bf","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+		},
+		{
+			"more than 2 items",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			request.ParamOutdialsGET{
+				Pagination: request.Pagination{
+					PageSize:  10,
+					PageToken: "2020-09-20T03:23:20.995000",
+				},
+			},
+			[]*omoutdial.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("ad4ec08a-c64a-11ec-ad4d-2b9c85718834"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("b088244e-c64a-11ec-afb8-2f6ebf108ed8"),
+					TMCreate: "2020-09-20T03:23:22.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("c3e247e0-c64a-11ec-b415-c786d3fa957c"),
+					TMCreate: "2020-09-20T03:23:23.995000",
+				},
+			},
+			`{"result":[{"id":"ad4ec08a-c64a-11ec-ad4d-2b9c85718834","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"b088244e-c64a-11ec-afb8-2f6ebf108ed8","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"c3e247e0-c64a-11ec-b415-c786d3fa957c","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			reqQuery := fmt.Sprintf("/v1.0/outdials?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
+			req, _ := http.NewRequest("GET", reqQuery, nil)
+
+			mockSvc.EXPECT().OutdialGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutdials, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_outdialsPOST(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -93,7 +187,7 @@ func Test_OutdialsPOST(t *testing.T) {
 	}
 }
 
-func Test_OutdialsIDGET(t *testing.T) {
+func Test_outdialsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -143,7 +237,7 @@ func Test_OutdialsIDGET(t *testing.T) {
 	}
 }
 
-func Test_OutdialsIDDELETE(t *testing.T) {
+func Test_outdialsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -192,7 +286,7 @@ func Test_OutdialsIDDELETE(t *testing.T) {
 	}
 }
 
-func Test_OutdialsIDPUT(t *testing.T) {
+func Test_outdialsIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -255,7 +349,7 @@ func Test_OutdialsIDPUT(t *testing.T) {
 	}
 }
 
-func Test_OutdialsIDCampaignIDPUT(t *testing.T) {
+func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -317,7 +411,7 @@ func Test_OutdialsIDCampaignIDPUT(t *testing.T) {
 	}
 }
 
-func Test_OutdialsIDDataPUT(t *testing.T) {
+func Test_outdialsIDDataPUT(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -379,7 +473,7 @@ func Test_OutdialsIDDataPUT(t *testing.T) {
 	}
 }
 
-func Test_OutdialsIDTargetsPOST(t *testing.T) {
+func Test_outdialsIDTargetsPOST(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -466,7 +560,63 @@ func Test_OutdialsIDTargetsPOST(t *testing.T) {
 	}
 }
 
-func Test_OutdialsIDTargetsIDDELETE(t *testing.T) {
+func Test_outdialsIDTargetsIDGET(t *testing.T) {
+
+	tests := []struct {
+		name            string
+		customer        cscustomer.Customer
+		outdialID       uuid.UUID
+		outdialtargetID uuid.UUID
+
+		response *omoutdialtarget.WebhookMessage
+	}{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+			uuid.FromStringOrNil("112950f8-e3d3-4585-b858-125a59f8f51f"),
+			uuid.FromStringOrNil("86a52dde-c523-11ec-a8b0-53d9628a5d7f"),
+
+			&omoutdialtarget.WebhookMessage{
+				ID: uuid.FromStringOrNil("86a52dde-c523-11ec-a8b0-53d9628a5d7f"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			mockSvc.EXPECT().OutdialtargetGet(&tt.customer, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
+			req, _ := http.NewRequest("GET", "/v1.0/outdials/"+tt.outdialID.String()+"/targets/"+tt.outdialtargetID.String(), nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name            string
