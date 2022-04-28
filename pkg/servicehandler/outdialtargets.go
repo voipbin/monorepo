@@ -71,6 +71,48 @@ func (h *serviceHandler) OutdialtargetCreate(
 	return res, nil
 }
 
+// OutdialtargetGet gets an outdialtarget.
+// It returns outdialtarget if it succeed.
+func (h *serviceHandler) OutdialtargetGet(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
+	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "OutdialtargetGet",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"outdial_id":  outdialID,
+	})
+	log.Debug("Executing OutdialtargetGet.")
+
+	// get outdial
+	od, err := h.reqHandler.OMV1OutdialGet(ctx, outdialID)
+	if err != nil {
+		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
+	}
+
+	// check the ownership
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != od.CustomerID {
+		log.Info("The customer has no permission.")
+		return nil, fmt.Errorf("customer has no permission")
+	}
+
+	// get outdialtarget
+	tmp, err := h.reqHandler.OMV1OutdialtargetGet(ctx, outdialtargetID)
+	if err != nil {
+		log.Errorf("Could not get outdialtarget info from the outdial-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find outdialtarget info. err: %v", err)
+	}
+
+	// check the outdial_id
+	if tmp.OutdialID != outdialID {
+		log.Errorf("The outdial_id is wrong. outdial_id: %s", tmp.OutdialID)
+		return nil, fmt.Errorf("wrong outdial_id. outdial_id: %s", tmp.OutdialID)
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // OutdialtargetDelete deletes an outdialtarget.
 // It returns deleted outdialtarget if it succeed.
 func (h *serviceHandler) OutdialtargetDelete(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
@@ -81,7 +123,7 @@ func (h *serviceHandler) OutdialtargetDelete(u *cscustomer.Customer, outdialID u
 		"username":    u.Username,
 		"outdial_id":  outdialID,
 	})
-	log.Debug("Executing OutdialUpdateData.")
+	log.Debug("Executing OutdialtargetDelete.")
 
 	// get outdial
 	od, err := h.reqHandler.OMV1OutdialGet(ctx, outdialID)

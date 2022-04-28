@@ -15,6 +15,8 @@ import (
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -274,6 +276,126 @@ func (m *MockServiceHandler) CallGets(u *customer.Customer, size uint64, token s
 func (mr *MockServiceHandlerMockRecorder) CallGets(u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockServiceHandler)(nil).CallGets), u, size, token)
+}
+
+// CampaignCreate mocks base method.
+func (m *MockServiceHandler) CampaignCreate(u *customer.Customer, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignCreate", u, name, detail, campaignType, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignCreate indicates an expected call of CampaignCreate.
+func (mr *MockServiceHandlerMockRecorder) CampaignCreate(u, name, detail, campaignType, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignCreate", reflect.TypeOf((*MockServiceHandler)(nil).CampaignCreate), u, name, detail, campaignType, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
+}
+
+// CampaignDelete mocks base method.
+func (m *MockServiceHandler) CampaignDelete(u *customer.Customer, id uuid.UUID) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignDelete", u, id)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignDelete indicates an expected call of CampaignDelete.
+func (mr *MockServiceHandlerMockRecorder) CampaignDelete(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignDelete", reflect.TypeOf((*MockServiceHandler)(nil).CampaignDelete), u, id)
+}
+
+// CampaignGet mocks base method.
+func (m *MockServiceHandler) CampaignGet(u *customer.Customer, id uuid.UUID) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignGet", u, id)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignGet indicates an expected call of CampaignGet.
+func (mr *MockServiceHandlerMockRecorder) CampaignGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGet", reflect.TypeOf((*MockServiceHandler)(nil).CampaignGet), u, id)
+}
+
+// CampaignGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) CampaignGetsByCustomerID(u *customer.Customer, size uint64, token string) ([]*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignGetsByCustomerID", u, size, token)
+	ret0, _ := ret[0].([]*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignGetsByCustomerID indicates an expected call of CampaignGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) CampaignGetsByCustomerID(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).CampaignGetsByCustomerID), u, size, token)
+}
+
+// CampaignUpdateActions mocks base method.
+func (m *MockServiceHandler) CampaignUpdateActions(u *customer.Customer, id uuid.UUID, actions []action.Action) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateActions", u, id, actions)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignUpdateActions indicates an expected call of CampaignUpdateActions.
+func (mr *MockServiceHandlerMockRecorder) CampaignUpdateActions(u, id, actions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateActions", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateActions), u, id, actions)
+}
+
+// CampaignUpdateBasicInfo mocks base method.
+func (m *MockServiceHandler) CampaignUpdateBasicInfo(u *customer.Customer, id uuid.UUID, name, detail string) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateBasicInfo", u, id, name, detail)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignUpdateBasicInfo indicates an expected call of CampaignUpdateBasicInfo.
+func (mr *MockServiceHandlerMockRecorder) CampaignUpdateBasicInfo(u, id, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateBasicInfo", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateBasicInfo), u, id, name, detail)
+}
+
+// CampaignUpdateServiceLevel mocks base method.
+func (m *MockServiceHandler) CampaignUpdateServiceLevel(u *customer.Customer, id uuid.UUID, serviceLevel int) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateServiceLevel", u, id, serviceLevel)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignUpdateServiceLevel indicates an expected call of CampaignUpdateServiceLevel.
+func (mr *MockServiceHandlerMockRecorder) CampaignUpdateServiceLevel(u, id, serviceLevel interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateServiceLevel", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateServiceLevel), u, id, serviceLevel)
+}
+
+// CampaignUpdateStatus mocks base method.
+func (m *MockServiceHandler) CampaignUpdateStatus(u *customer.Customer, id uuid.UUID, status campaign.Status) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateStatus", u, id, status)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignUpdateStatus indicates an expected call of CampaignUpdateStatus.
+func (mr *MockServiceHandlerMockRecorder) CampaignUpdateStatus(u, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateStatus", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateStatus), u, id, status)
 }
 
 // ConferenceCreate mocks base method.
@@ -962,6 +1084,111 @@ func (m *MockServiceHandler) OutdialtargetDelete(u *customer.Customer, outdialID
 func (mr *MockServiceHandlerMockRecorder) OutdialtargetDelete(u, outdialID, outdialtargetID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialtargetDelete", reflect.TypeOf((*MockServiceHandler)(nil).OutdialtargetDelete), u, outdialID, outdialtargetID)
+}
+
+// OutdialtargetGet mocks base method.
+func (m *MockServiceHandler) OutdialtargetGet(u *customer.Customer, outdialID, outdialtargetID uuid.UUID) (*outdialtarget.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutdialtargetGet", u, outdialID, outdialtargetID)
+	ret0, _ := ret[0].(*outdialtarget.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutdialtargetGet indicates an expected call of OutdialtargetGet.
+func (mr *MockServiceHandlerMockRecorder) OutdialtargetGet(u, outdialID, outdialtargetID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialtargetGet", reflect.TypeOf((*MockServiceHandler)(nil).OutdialtargetGet), u, outdialID, outdialtargetID)
+}
+
+// OutplanCreate mocks base method.
+func (m *MockServiceHandler) OutplanCreate(u *customer.Customer, name, detail string, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutplanCreate", u, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	ret0, _ := ret[0].(*outplan.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutplanCreate indicates an expected call of OutplanCreate.
+func (mr *MockServiceHandlerMockRecorder) OutplanCreate(u, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanCreate", reflect.TypeOf((*MockServiceHandler)(nil).OutplanCreate), u, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+}
+
+// OutplanDelete mocks base method.
+func (m *MockServiceHandler) OutplanDelete(u *customer.Customer, id uuid.UUID) (*outplan.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutplanDelete", u, id)
+	ret0, _ := ret[0].(*outplan.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutplanDelete indicates an expected call of OutplanDelete.
+func (mr *MockServiceHandlerMockRecorder) OutplanDelete(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanDelete", reflect.TypeOf((*MockServiceHandler)(nil).OutplanDelete), u, id)
+}
+
+// OutplanGet mocks base method.
+func (m *MockServiceHandler) OutplanGet(u *customer.Customer, id uuid.UUID) (*outplan.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutplanGet", u, id)
+	ret0, _ := ret[0].(*outplan.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutplanGet indicates an expected call of OutplanGet.
+func (mr *MockServiceHandlerMockRecorder) OutplanGet(u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGet", reflect.TypeOf((*MockServiceHandler)(nil).OutplanGet), u, id)
+}
+
+// OutplanGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) OutplanGetsByCustomerID(u *customer.Customer, size uint64, token string) ([]*outplan.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutplanGetsByCustomerID", u, size, token)
+	ret0, _ := ret[0].([]*outplan.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutplanGetsByCustomerID indicates an expected call of OutplanGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) OutplanGetsByCustomerID(u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).OutplanGetsByCustomerID), u, size, token)
+}
+
+// OutplanUpdateBasicInfo mocks base method.
+func (m *MockServiceHandler) OutplanUpdateBasicInfo(u *customer.Customer, id uuid.UUID, name, detail string) (*outplan.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutplanUpdateBasicInfo", u, id, name, detail)
+	ret0, _ := ret[0].(*outplan.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutplanUpdateBasicInfo indicates an expected call of OutplanUpdateBasicInfo.
+func (mr *MockServiceHandlerMockRecorder) OutplanUpdateBasicInfo(u, id, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanUpdateBasicInfo", reflect.TypeOf((*MockServiceHandler)(nil).OutplanUpdateBasicInfo), u, id, name, detail)
+}
+
+// OutplanUpdateDialInfo mocks base method.
+func (m *MockServiceHandler) OutplanUpdateDialInfo(u *customer.Customer, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutplanUpdateDialInfo", u, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	ret0, _ := ret[0].(*outplan.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutplanUpdateDialInfo indicates an expected call of OutplanUpdateDialInfo.
+func (mr *MockServiceHandlerMockRecorder) OutplanUpdateDialInfo(u, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanUpdateDialInfo", reflect.TypeOf((*MockServiceHandler)(nil).OutplanUpdateDialInfo), u, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 }
 
 // QueueCreate mocks base method.

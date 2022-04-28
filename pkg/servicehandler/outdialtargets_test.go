@@ -6,12 +6,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
 func Test_OutdialtargetCreate(t *testing.T) {
@@ -134,6 +135,69 @@ func Test_OutdialtargetCreate(t *testing.T) {
 
 			if reflect.DeepEqual(*res, *tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_OutdialtargetGet(t *testing.T) {
+
+	tests := []struct {
+		name            string
+		customer        *cscustomer.Customer
+		outdialID       uuid.UUID
+		outdialtargetID uuid.UUID
+
+		responseOutdial *omoutdial.Outdial
+		response        *omoutdialtarget.OutdialTarget
+		expectRes       *omoutdialtarget.WebhookMessage
+	}{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+
+			uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
+			uuid.FromStringOrNil("27092132-c523-11ec-8626-bb2b11494c8d"),
+
+			&omoutdial.Outdial{
+				ID:         uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			&omoutdialtarget.OutdialTarget{
+				ID:        uuid.FromStringOrNil("27092132-c523-11ec-8626-bb2b11494c8d"),
+				OutdialID: uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
+			},
+			&omoutdialtarget.WebhookMessage{
+				ID:        uuid.FromStringOrNil("27092132-c523-11ec-8626-bb2b11494c8d"),
+				OutdialID: uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			mockReq.EXPECT().OMV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OMV1OutdialtargetGet(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
+			res, err := h.OutdialtargetGet(tt.customer, tt.outdialID, tt.outdialtargetID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}
