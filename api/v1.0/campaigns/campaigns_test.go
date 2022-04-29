@@ -558,3 +558,129 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 		})
 	}
 }
+
+func Test_campaignsIDResourceInfoPUT(t *testing.T) {
+
+	tests := []struct {
+		name        string
+		customer    cscustomer.Customer
+		campaignID  uuid.UUID
+		requestBody request.BodyCampaignsIDResourceInfoPUT
+		response    *cacampaign.WebhookMessage
+	}{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+			uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
+			request.BodyCampaignsIDResourceInfoPUT{
+				OutplanID: uuid.FromStringOrNil("60fbac4e-c6b7-11ec-869d-3bb7acd5d21a"),
+				OutdialID: uuid.FromStringOrNil("61276366-c6b7-11ec-9a5f-07c38e459ee5"),
+				QueueID:   uuid.FromStringOrNil("614def2c-c6b7-11ec-be49-f350c18391d0"),
+			},
+			&cacampaign.WebhookMessage{
+				ID: uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+
+			mockSvc.EXPECT().CampaignUpdateResourceInfo(&tt.customer, tt.campaignID, tt.requestBody.OutplanID, tt.requestBody.OutdialID, tt.requestBody.QueueID).Return(tt.response, nil)
+			req, _ := http.NewRequest("PUT", "/v1.0/campaigns/"+tt.campaignID.String()+"/resource_info", bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
+
+	tests := []struct {
+		name        string
+		customer    cscustomer.Customer
+		campaignID  uuid.UUID
+		requestBody request.BodyCampaignsIDNextCampaignIDPUT
+		response    *cacampaign.WebhookMessage
+	}{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+			uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
+			request.BodyCampaignsIDNextCampaignIDPUT{
+				NextCampaignID: uuid.FromStringOrNil("b045bff6-c6b7-11ec-8d03-2f6187fcf80f"),
+			},
+			&cacampaign.WebhookMessage{
+				ID: uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+
+			mockSvc.EXPECT().CampaignUpdateNextCampaignID(&tt.customer, tt.campaignID, tt.requestBody.NextCampaignID).Return(tt.response, nil)
+			req, _ := http.NewRequest("PUT", "/v1.0/campaigns/"+tt.campaignID.String()+"/next_campaign_id", bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
