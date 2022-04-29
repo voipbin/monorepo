@@ -296,7 +296,7 @@ func campaignsIDPUT(c *gin.Context) {
 // @Param id query string true "The campaign's id"
 // @Param update_info body request.BodyCampaignsIDStatusPUT true "The update info"
 // @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id} [put]
+// @Router /v1.0/campaigns/{id}/status [put]
 func campaignsIDStatusPUT(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -353,7 +353,7 @@ func campaignsIDStatusPUT(c *gin.Context) {
 // @Param id query string true "The campaign's id"
 // @Param update_info body request.BodyCampaignsIDStatusPUT true "The update info"
 // @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id} [put]
+// @Router /v1.0/campaigns/{id}/service_level [put]
 func campaignsIDServiceLevelPUT(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -410,7 +410,7 @@ func campaignsIDServiceLevelPUT(c *gin.Context) {
 // @Param id query string true "The campaign's id"
 // @Param update_info body request.BodyCampaignsIDStatusPUT true "The update info"
 // @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id} [put]
+// @Router /v1.0/campaigns/{id}/actions [put]
 func campaignsIDActionsPUT(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -449,6 +449,120 @@ func campaignsIDActionsPUT(c *gin.Context) {
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CampaignUpdateActions(&u, id, req.Actions)
+	if err != nil {
+		log.Errorf("Could not update the campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// campaignsIDResourceInfoPUT handles PUT /campaigns/{id}/resource_info request.
+// It updates a exist campaign info with the given campaign info.
+// And returns updated campaign info if it succeed.
+// @Summary Update a campaign and reuturns updated campaign info.
+// @Description Update a campaign and returns detail updated campaign info.
+// @Produce json
+// @Param id query string true "The campaign's id"
+// @Param update_info body request.BodyCampaignsIDResourceInfoPUT true "The update info"
+// @Success 200 {object} campaign.Campaign
+// @Router /v1.0/campaigns/{id}/resource_info [put]
+func campaignsIDResourceInfoPUT(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "campaignsIDActionsPUT",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("campaign_id", id)
+
+	var req request.BodyCampaignsIDResourceInfoPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing campaignsIDResourceInfoPUT.")
+
+	// update a campaign
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.CampaignUpdateResourceInfo(&u, id, req.OutplanID, req.OutdialID, req.QueueID)
+	if err != nil {
+		log.Errorf("Could not update the campaign. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// campaignsIDResourceInfoPUT handles PUT /campaigns/{id}/resource_info request.
+// It updates a exist campaign info with the given campaign info.
+// And returns updated campaign info if it succeed.
+// @Summary Update a campaign and reuturns updated campaign info.
+// @Description Update a campaign and returns detail updated campaign info.
+// @Produce json
+// @Param id query string true "The campaign's id"
+// @Param update_info body request.BodyCampaignsIDResourceInfoPUT true "The update info"
+// @Success 200 {object} campaign.Campaign
+// @Router /v1.0/campaigns/{id}/next_campaign_id [put]
+func campaignsIDNextCampaignIDPUT(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "campaignsIDNextCampaignIDPUT",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("campaign_id", id)
+
+	var req request.BodyCampaignsIDNextCampaignIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing campaignsIDNextCampaignIDPUT.")
+
+	// update a campaign
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.CampaignUpdateNextCampaignID(&u, id, req.NextCampaignID)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
