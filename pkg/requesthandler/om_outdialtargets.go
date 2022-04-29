@@ -73,18 +73,16 @@ func (r *requestHandler) OMV1OutdialtargetGetsAvailable(
 	tryCount2 int,
 	tryCount3 int,
 	tryCount4 int,
-	interval int,
 	limit int,
 ) ([]omoutdialtarget.OutdialTarget, error) {
 
-	uri := fmt.Sprintf("/v1/outdials/%s/available?try_count_0=%d&try_count_1=%d&try_count_2=%d&try_count_3=%d&try_count_4=%d&interval=%d&limit=%d",
+	uri := fmt.Sprintf("/v1/outdials/%s/available?try_count_0=%d&try_count_1=%d&try_count_2=%d&try_count_3=%d&try_count_4=%d&limit=%d",
 		outdialID,
 		tryCount0,
 		tryCount1,
 		tryCount2,
 		tryCount3,
 		tryCount4,
-		interval,
 		limit,
 	)
 

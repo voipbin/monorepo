@@ -452,7 +452,6 @@ type RequestHandler interface {
 		tryCount2 int,
 		tryCount3 int,
 		tryCount4 int,
-		interval int,
 		limit int,
 	) ([]omoutdialtarget.OutdialTarget, error)
 	OMV1OutdialtargetUpdateStatusProgressing(ctx context.Context, outdialtargetID uuid.UUID, destinationIndex int) (*omoutdialtarget.OutdialTarget, error)

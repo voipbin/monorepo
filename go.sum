@@ -206,10 +206,8 @@ gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220413020856-9bff29d04
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220413020856-9bff29d04032/go.mod h1:2uSrMM2oS9AOZDwyBd0UphUEXoMkpvdbVdd10d6i97o=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220414221219-afe912d6515b h1:kUnyba6VWaeT+OlNJkQKe55slvuQ5OB7h3QikSKC4y0=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220414221219-afe912d6515b/go.mod h1:h461a95k3KLJaNIRJUldqtxcHyif5+6FObq+R7r9EIk=
-gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220426042351-0c81598fef15 h1:lo2YW7kUiIOArnFY7LdX8vgFKAIb/x/Il63W8h3cFG4=
-gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220426042351-0c81598fef15/go.mod h1:XZe18vVHvEEKWg6EzXlbeG2zQgBUfv3MEiVrjAF733Q=
-gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220428052128-677e5d58dc47 h1:/X/mbSJIkH2NgnQ2ImMVIW29Kgk1JemSgRX/BwxykyE=
-gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220428052128-677e5d58dc47/go.mod h1:75KIrQVAt+g4WlDT6bsaDD6DzS2hU57hWEy2lsGRikY=
+gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220429070540-546f2f3efd80 h1:064RZoLMvk8TMWIIyEumVq6041iyoTdfpaEsp90p/Vo=
+gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220429070540-546f2f3efd80/go.mod h1:75KIrQVAt+g4WlDT6bsaDD6DzS2hU57hWEy2lsGRikY=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3 h1:LSlrWeWE8ECuOISOb/a3T4WkjVJCvpzFJVKqwRFbTZQ=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3/go.mod h1:nKjcs4JbVMdYWpX/HLcx2P/xPdH0/amdxfv4ih9lRcY=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220413021200-204155e694ef h1:lFQCPpK428WcdFF/LnH+wbZ5hgPPEgVDbqGkl4UmxZ8=
@@ -222,8 +220,8 @@ gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220413021508-2a83dea
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220413021508-2a83dea8ea6c/go.mod h1:wN7Uyl9c16BjK4lSGDDlVgQkjgq4q3RM6x+xe7YYF9E=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220413022009-130ed4292bdf h1:B6dXslNbdT6BZYz4Semm3RmyNQYqBurpA4cQIGnUCdg=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220413022009-130ed4292bdf/go.mod h1:lXYBQ2GC1mPFAuEE4YdGtCtqEWVRkPDKN42BBglf48g=
-gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220426045258-191ea1ab94ed h1:/AavSw+6SKWACT3/Dr0U9ZKIvh8gslW/nIpDCNHlHZ4=
-gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220426045258-191ea1ab94ed/go.mod h1:xuI7WqK7mF1JuOJxgzkODS+wpiDyY/AkI9HwhESMhmE=
+gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220429070608-15c06af27519 h1:Oe7omMsY8AkFLzlb/7Xu/DmwUBzhaiBGbe4varceoNo=
+gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220429070608-15c06af27519/go.mod h1:xuI7WqK7mF1JuOJxgzkODS+wpiDyY/AkI9HwhESMhmE=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220413023153-1b9012469574 h1:foyC8N+KP/diY9x8YrMwxGucQo/t9wsKAZI1Q0zX7io=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220413023153-1b9012469574/go.mod h1:q6LoRa62hEZOvZqOFZdRqzGdQLRnnRJgR/aBMc+qPxM=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220424171422-5a3b77610aae h1:w23HIb0fvxbCKuPz3gHdfu11nh7q93ugai/Zkvauijg=
@@ -279,7 +277,6 @@ golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee/go.mod h1:QqPTAvyqsEbceGzB
 golang.org/x/mod v0.1.1-0.20191107180719-034126e5016b/go.mod h1:QqPTAvyqsEbceGzBzNggFXnrqF1CaUcvgkdR5Ot7KZg=
 golang.org/x/mod v0.2.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/mod v0.3.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
-golang.org/x/mod v0.4.2 h1:Gz96sIWK3OalVv/I/qNygP42zyoKp3xptRVCWRFEBvo=
 golang.org/x/mod v0.4.2/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180826012351-8a410e7b638d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
@@ -426,7 +423,6 @@ golang.org/x/tools v0.0.0-20200729194436-6467de6f59a7/go.mod h1:njjCfa9FT2d7l9Bc
 golang.org/x/tools v0.0.0-20200804011535-6c149bb5ef0d/go.mod h1:njjCfa9FT2d7l9Bc6FUM5FLjQPp3cFF28FI3qnDFljA=
 golang.org/x/tools v0.0.0-20200825202427-b303f430e36d/go.mod h1:njjCfa9FT2d7l9Bc6FUM5FLjQPp3cFF28FI3qnDFljA=
 golang.org/x/tools v0.1.1/go.mod h1:o0xws9oXOQQZyjljx8fwUC0k7L1pTE6eaCbjGeHmOkk=
-golang.org/x/tools v0.1.10 h1:QjFRCZxdOhBJ/UNgnBZLbNV13DlbnK0quyivTnXJM20=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=

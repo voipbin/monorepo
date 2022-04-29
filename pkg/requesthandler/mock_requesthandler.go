@@ -1926,18 +1926,18 @@ func (mr *MockRequestHandlerMockRecorder) OMV1OutdialtargetGet(ctx, outdialtarge
 }
 
 // OMV1OutdialtargetGetsAvailable mocks base method.
-func (m *MockRequestHandler) OMV1OutdialtargetGetsAvailable(ctx context.Context, outdialID uuid.UUID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, interval, limit int) ([]outdialtarget.OutdialTarget, error) {
+func (m *MockRequestHandler) OMV1OutdialtargetGetsAvailable(ctx context.Context, outdialID uuid.UUID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit int) ([]outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OMV1OutdialtargetGetsAvailable", ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, interval, limit)
+	ret := m.ctrl.Call(m, "OMV1OutdialtargetGetsAvailable", ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 	ret0, _ := ret[0].([]outdialtarget.OutdialTarget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // OMV1OutdialtargetGetsAvailable indicates an expected call of OMV1OutdialtargetGetsAvailable.
-func (mr *MockRequestHandlerMockRecorder) OMV1OutdialtargetGetsAvailable(ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, interval, limit interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) OMV1OutdialtargetGetsAvailable(ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OMV1OutdialtargetGetsAvailable", reflect.TypeOf((*MockRequestHandler)(nil).OMV1OutdialtargetGetsAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, interval, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OMV1OutdialtargetGetsAvailable", reflect.TypeOf((*MockRequestHandler)(nil).OMV1OutdialtargetGetsAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 }
 
 // OMV1OutdialtargetUpdateStatus mocks base method.
