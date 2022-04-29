@@ -93,6 +93,8 @@ type ServiceHandler interface {
 	CampaignUpdateStatus(u *cscustomer.Customer, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateServiceLevel(u *cscustomer.Customer, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateActions(u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateResourceInfo(u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateNextCampaignID(u *cscustomer.Customer, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.WebhookMessage, error)
 
 	// conference handlers
 	ConferenceCreate(u *cscustomer.Customer, confType cfconference.Type, name, detail string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)

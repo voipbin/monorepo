@@ -498,3 +498,121 @@ func Test_CampaignUpdateActions(t *testing.T) {
 		})
 	}
 }
+
+func Test_CampaignUpdateResourceInfo(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		customer   *cscustomer.Customer
+		campaignID uuid.UUID
+		outplanID  uuid.UUID
+		outdialID  uuid.UUID
+		queueID    uuid.UUID
+
+		response  *cacampaign.Campaign
+		expectRes *cacampaign.WebhookMessage
+	}{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+
+			uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
+			uuid.FromStringOrNil("65c34a94-c6b6-11ec-b153-6be43b327a5e"),
+			uuid.FromStringOrNil("65ef10ca-c6b6-11ec-93a6-af4ca7079371"),
+			uuid.FromStringOrNil("661dcbc2-c6b6-11ec-934c-c3c128f1d3b9"),
+
+			&cacampaign.Campaign{
+				ID:         uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			&cacampaign.WebhookMessage{
+				ID: uuid.FromStringOrNil("6589627a-c6b6-11ec-80ec-eb94b8bc76e7"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			mockReq.EXPECT().CAV1CampaignGet(gomock.Any(), tt.campaignID).Return(tt.response, nil)
+			mockReq.EXPECT().CAV1CampaignUpdateResourceInfo(gomock.Any(), tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID).Return(tt.response, nil)
+			res, err := h.CampaignUpdateResourceInfo(tt.customer, tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CampaignUpdateNextCampaignID(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		customer       *cscustomer.Customer
+		campaignID     uuid.UUID
+		nextCampaignID uuid.UUID
+
+		response  *cacampaign.Campaign
+		expectRes *cacampaign.WebhookMessage
+	}{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+
+			uuid.FromStringOrNil("916c14be-c6b6-11ec-83a5-8f67784590f9"),
+			uuid.FromStringOrNil("919d20e0-c6b6-11ec-bdc6-9f571a70547e"),
+
+			&cacampaign.Campaign{
+				ID:         uuid.FromStringOrNil("916c14be-c6b6-11ec-83a5-8f67784590f9"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			&cacampaign.WebhookMessage{
+				ID: uuid.FromStringOrNil("916c14be-c6b6-11ec-83a5-8f67784590f9"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			mockReq.EXPECT().CAV1CampaignGet(gomock.Any(), tt.campaignID).Return(tt.response, nil)
+			mockReq.EXPECT().CAV1CampaignUpdateNextCampaignID(gomock.Any(), tt.campaignID, tt.nextCampaignID).Return(tt.response, nil)
+			res, err := h.CampaignUpdateNextCampaignID(tt.customer, tt.campaignID, tt.nextCampaignID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
