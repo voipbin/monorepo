@@ -53,8 +53,7 @@ type CampaignHandler interface {
 	UpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*campaign.Campaign, error)
 	UpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*campaign.Campaign, error)
 
-	UpdateStatusRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
-	UpdateStatusStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
+	UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error)
 
 	Execute(ctx context.Context, id uuid.UUID)
 

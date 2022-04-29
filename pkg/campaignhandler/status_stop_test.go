@@ -61,7 +61,7 @@ func Test_UpdateStatusStopping(t *testing.T) {
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignStatusStopping, tt.responseCampaign)
 
-			res, err := h.UpdateStatusStopping(ctx, tt.id)
+			res, err := h.campaignStopping(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -116,7 +116,7 @@ func Test_updateStatusStop(t *testing.T) {
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStop, tt.response)
 
-			res, err := h.updateStatusStop(ctx, tt.id)
+			res, err := h.campaignStopNow(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -171,7 +171,7 @@ func Test_isStoppable(t *testing.T) {
 			false,
 		},
 		{
-			"campaign's status is run",
+			"campaign's status is run but has no campaigncall and execute is stop",
 
 			uuid.FromStringOrNil("8a6cd8d4-c444-11ec-b7a9-87b9a6605375"),
 
@@ -183,7 +183,7 @@ func Test_isStoppable(t *testing.T) {
 			},
 			[]*campaigncall.Campaigncall{},
 
-			false,
+			true,
 		},
 		{
 			"campaign has campaign calls",
@@ -226,7 +226,7 @@ func Test_isStoppable(t *testing.T) {
 
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 
-			if tt.response.Execute == campaign.ExecuteStop && tt.response.Status == campaign.StatusStopping {
+			if tt.response.Execute == campaign.ExecuteStop {
 				mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return(tt.responseCampaigncall, nil)
 			}
 

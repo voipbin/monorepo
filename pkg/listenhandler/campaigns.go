@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -12,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -249,7 +247,7 @@ func (h *listenHandler) v1CampaignsIDExecutePost(ctx context.Context, m *rabbitm
 			"func":        "processV1CampaignsIDExecutePost",
 			"campaign_id": id,
 		})
-	log.Debug("Executing processV1CampaignsIDRunPost.")
+	log.Debug("Executing v1CampaignsIDExecutePost.")
 
 	// execute
 	h.campaignHandler.Execute(ctx, id)
@@ -285,19 +283,7 @@ func (h *listenHandler) v1CampaignsIDStatusPut(ctx context.Context, m *rabbitmqh
 	}
 
 	// update
-	var tmp *campaign.Campaign
-	var err error
-	switch req.Status {
-	case campaign.StatusRun:
-		tmp, err = h.campaignHandler.UpdateStatusRun(ctx, id)
-
-	case campaign.StatusStop, campaign.StatusStopping:
-		tmp, err = h.campaignHandler.UpdateStatusStopping(ctx, id)
-
-	default:
-		log.Errorf("Unsupported status. status: %v", req.Status)
-		return nil, fmt.Errorf("unsupported status. status: %s", req.Status)
-	}
+	tmp, err := h.campaignHandler.UpdateStatus(ctx, id, req.Status)
 	if err != nil {
 		log.Errorf("Could not update the campaign status. err: %v", err)
 		return nil, err

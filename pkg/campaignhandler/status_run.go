@@ -6,16 +6,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 )
 
-// UpdateStatusRun verifies the given campaign for run.
+// campaignRun verifies the given campaign for run.
 // if every condition is ok, it sets the status to run and starts the campaign execution.
-func (h *campaignHandler) UpdateStatusRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "UpdateStatusRun",
@@ -60,7 +57,7 @@ func (h *campaignHandler) UpdateStatusRun(ctx context.Context, id uuid.UUID) (*c
 		log.Debugf("Starting campaign execute.")
 		if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 1000); errExecute != nil {
 			log.Errorf("Could not execute the campaign correctly. Stopping the campaign. campaign_id: %s", id)
-			_, _ = h.updateStatusStop(ctx, id)
+			_, _ = h.campaignStopNow(ctx, id)
 			return nil, errExecute
 		}
 	}
@@ -86,53 +83,4 @@ func (h *campaignHandler) isRunable(ctx context.Context, c *campaign.Campaign) b
 	}
 
 	return true
-}
-
-// getTargetDestination returns target destination
-func (h *campaignHandler) getTargetDestination(ctx context.Context, target *omoutdialtarget.OutdialTarget, plan *outplan.Outplan) (*cmaddress.Address, int, int) {	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "getTargetDestination",
-			"outdial_target": target,
-		})
-	log.Debug("Getting destination address.")
-
-	maxTryCounts := []int{
-		plan.MaxTryCount0,
-		plan.MaxTryCount1,
-		plan.MaxTryCount2,
-		plan.MaxTryCount3,
-		plan.MaxTryCount4,
-	}
-
-	tryCounts := []int{
-		target.TryCount0,
-		target.TryCount1,
-		target.TryCount2,
-		target.TryCount3,
-		target.TryCount4,
-	}
-
-	destinations := []*cmaddress.Address{
-		target.Destination0,
-		target.Destination1,
-		target.Destination2,
-		target.Destination3,
-		target.Destination4,
-	}
-
-	for i, maxTryCount := range maxTryCounts {
-		if destinations[i] == nil {
-			continue
-		}
-
-		if tryCounts[i] >= maxTryCount {
-			continue
-		}
-
-		return destinations[i], i, tryCounts[i] + 1
-	}
-
-	// should not reach to here.
-	log.Errorf("Something went wrong. Could not find dial destination.")
-	return nil, 0, 0
 }

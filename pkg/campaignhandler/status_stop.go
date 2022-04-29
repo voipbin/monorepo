@@ -13,10 +13,50 @@ import (
 
 // UpdateStatusStopping updates the campaign's status to the stopping.
 // it checks the condition for status update and returns updated campaign and error
-func (h *campaignHandler) UpdateStatusStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+func (h *campaignHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error) {
+	switch status {
+	case campaign.StatusRun:
+		return h.campaignRun(ctx, id)
+	case campaign.StatusStop:
+		return h.campaignStop(ctx, id)
+
+	default:
+		return nil, fmt.Errorf("unsupported status. status: %s", status)
+	}
+}
+
+// UpdateStatusStopping updates the campaign's status to the stopping.
+// it checks the condition for status update and returns updated campaign and error
+func (h *campaignHandler) campaignStop(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "UpdateStatusStopping",
+			"func": "campaignStop",
+			"id":   id,
+		})
+	log.Debug("Updating the campaign status to stopping.")
+
+	var res *campaign.Campaign
+	var err error
+	if h.isStoppable(ctx, id) {
+		log.Debugf("The campaign is stoppable. Stop now. campaign_id: %s", id)
+		res, err = h.campaignStopNow(ctx, id)
+	} else {
+		res, err = h.campaignStopping(ctx, id)
+	}
+	if err != nil {
+		log.Errorf("Could not stop the campaign. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// campaignStopping updates the campaign's status to the stopping.
+// it checks the condition for status update and returns updated campaign and error
+func (h *campaignHandler) campaignStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "campaignStopping",
 			"id":   id,
 		})
 	log.Debug("Updating the campaign status to stopping.")
@@ -50,14 +90,14 @@ func (h *campaignHandler) UpdateStatusStopping(ctx context.Context, id uuid.UUID
 	return res, nil
 }
 
-// updateStatusStop updates the campaign's status to stop.
-func (h *campaignHandler) updateStatusStop(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+// campaignStopNow updates the campaign's status to stop.
+func (h *campaignHandler) campaignStopNow(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "updateStatusStop",
+			"func": "campaignStopNow",
 			"id":   id,
 		})
-	log.Debug("Updating the campaign status to stop.")
+	log.Debug("Updating the campaign status to stop now.")
 
 	// get campaign
 	c, err := h.Get(ctx, id)
@@ -69,11 +109,6 @@ func (h *campaignHandler) updateStatusStop(ctx context.Context, id uuid.UUID) (*
 	if c.Status == campaign.StatusStop {
 		// already stopped.
 		return c, nil
-	}
-
-	if c.Status != campaign.StatusStopping {
-		log.Errorf("The campaign's status is not stopping.")
-		return nil, fmt.Errorf("wrong status")
 	}
 
 	// Set status stop
@@ -111,11 +146,6 @@ func (h *campaignHandler) isStoppable(ctx context.Context, id uuid.UUID) bool {
 
 	if c.Execute != campaign.ExecuteStop {
 		// campaign exeuction is still running.
-		return false
-	}
-
-	if c.Status != campaign.StatusStopping {
-		// the only stopping status can go to the stop.
 		return false
 	}
 

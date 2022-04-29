@@ -212,32 +212,17 @@ func (mr *MockCampaignHandlerMockRecorder) UpdateServiceLevel(ctx, id, serviceLe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateServiceLevel", reflect.TypeOf((*MockCampaignHandler)(nil).UpdateServiceLevel), ctx, id, serviceLevel)
 }
 
-// UpdateStatusRun mocks base method.
-func (m *MockCampaignHandler) UpdateStatusRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
+// UpdateStatus mocks base method.
+func (m *MockCampaignHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status campaign.Status) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatusRun", ctx, id)
+	ret := m.ctrl.Call(m, "UpdateStatus", ctx, id, status)
 	ret0, _ := ret[0].(*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// UpdateStatusRun indicates an expected call of UpdateStatusRun.
-func (mr *MockCampaignHandlerMockRecorder) UpdateStatusRun(ctx, id interface{}) *gomock.Call {
+// UpdateStatus indicates an expected call of UpdateStatus.
+func (mr *MockCampaignHandlerMockRecorder) UpdateStatus(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusRun", reflect.TypeOf((*MockCampaignHandler)(nil).UpdateStatusRun), ctx, id)
-}
-
-// UpdateStatusStopping mocks base method.
-func (m *MockCampaignHandler) UpdateStatusStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatusStopping", ctx, id)
-	ret0, _ := ret[0].(*campaign.Campaign)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateStatusStopping indicates an expected call of UpdateStatusStopping.
-func (mr *MockCampaignHandlerMockRecorder) UpdateStatusStopping(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusStopping", reflect.TypeOf((*MockCampaignHandler)(nil).UpdateStatusStopping), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockCampaignHandler)(nil).UpdateStatus), ctx, id, status)
 }
