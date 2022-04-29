@@ -185,18 +185,18 @@ func (mr *MockDBHandlerMockRecorder) OutdialTargetGet(ctx, id interface{}) *gomo
 }
 
 // OutdialTargetGetAvailable mocks base method.
-func (m *MockDBHandler) OutdialTargetGetAvailable(ctx context.Context, outdialID uuid.UUID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4 int, tmUpdate string, limit uint64) ([]*outdialtarget.OutdialTarget, error) {
+func (m *MockDBHandler) OutdialTargetGetAvailable(ctx context.Context, outdialID uuid.UUID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4 int, limit uint64) ([]*outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutdialTargetGetAvailable", ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, tmUpdate, limit)
+	ret := m.ctrl.Call(m, "OutdialTargetGetAvailable", ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 	ret0, _ := ret[0].([]*outdialtarget.OutdialTarget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // OutdialTargetGetAvailable indicates an expected call of OutdialTargetGetAvailable.
-func (mr *MockDBHandlerMockRecorder) OutdialTargetGetAvailable(ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, tmUpdate, limit interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) OutdialTargetGetAvailable(ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialTargetGetAvailable", reflect.TypeOf((*MockDBHandler)(nil).OutdialTargetGetAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, tmUpdate, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialTargetGetAvailable", reflect.TypeOf((*MockDBHandler)(nil).OutdialTargetGetAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 }
 
 // OutdialTargetGetsByOutdialID mocks base method.

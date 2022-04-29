@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -340,7 +339,6 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 		tryCount2 int
 		tryCount3 int
 		tryCount4 int
-		interval  int
 		limit     uint64
 
 		outdialtargets []*outdialtarget.OutdialTarget
@@ -349,7 +347,7 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 		{
 			"normal",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/outdials/c9668112-b36d-11ec-9e02-0f190974012d/available?try_count_0=3&try_count_1=0&try_count_2=0&try_count_3=0&try_count_4=0&interval=600000&limit=1",
+				URI:      "/v1/outdials/c9668112-b36d-11ec-9e02-0f190974012d/available?try_count_0=3&try_count_1=0&try_count_2=0&try_count_3=0&try_count_4=0&limit=1",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 				Data:     nil,
@@ -361,7 +359,6 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 			0,
 			0,
 			0,
-			600000,
 			1,
 
 			[]*outdialtarget.OutdialTarget{
@@ -392,7 +389,7 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdialTarget.EXPECT().GetAvailable(gomock.Any(), tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, time.Millisecond*time.Duration(tt.interval), tt.limit).Return(tt.outdialtargets, nil)
+			mockOutdialTarget.EXPECT().GetAvailable(gomock.Any(), tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit).Return(tt.outdialtargets, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

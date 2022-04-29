@@ -2,7 +2,6 @@ package outdialtargethandler
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -140,7 +139,6 @@ func (h *outdialTargetHandler) GetAvailable(
 	tryCount2 int,
 	tryCount3 int,
 	tryCount4 int,
-	interval time.Duration,
 	limit uint64,
 ) ([]*outdialtarget.OutdialTarget, error) {
 	log := logrus.WithFields(
@@ -149,7 +147,6 @@ func (h *outdialTargetHandler) GetAvailable(
 			"outdial_id": outdialID,
 		})
 
-	ts := dbhandler.GetCurTimeAdd(-interval)
 	res, err := h.db.OutdialTargetGetAvailable(
 		ctx,
 		outdialID,
@@ -158,7 +155,6 @@ func (h *outdialTargetHandler) GetAvailable(
 		tryCount2,
 		tryCount3,
 		tryCount4,
-		ts,
 		limit,
 	)
 	if err != nil {

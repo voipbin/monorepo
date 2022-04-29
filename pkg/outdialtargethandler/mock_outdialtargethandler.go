@@ -7,7 +7,6 @@ package outdialtargethandler
 import (
 	context "context"
 	reflect "reflect"
-	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -84,18 +83,18 @@ func (mr *MockOutdialTargetHandlerMockRecorder) Get(ctx, id interface{}) *gomock
 }
 
 // GetAvailable mocks base method.
-func (m *MockOutdialTargetHandler) GetAvailable(ctx context.Context, outdialID uuid.UUID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4 int, interval time.Duration, limit uint64) ([]*outdialtarget.OutdialTarget, error) {
+func (m *MockOutdialTargetHandler) GetAvailable(ctx context.Context, outdialID uuid.UUID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4 int, limit uint64) ([]*outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAvailable", ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, interval, limit)
+	ret := m.ctrl.Call(m, "GetAvailable", ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 	ret0, _ := ret[0].([]*outdialtarget.OutdialTarget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAvailable indicates an expected call of GetAvailable.
-func (mr *MockOutdialTargetHandlerMockRecorder) GetAvailable(ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, interval, limit interface{}) *gomock.Call {
+func (mr *MockOutdialTargetHandlerMockRecorder) GetAvailable(ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailable", reflect.TypeOf((*MockOutdialTargetHandler)(nil).GetAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, interval, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailable", reflect.TypeOf((*MockOutdialTargetHandler)(nil).GetAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 }
 
 // GetsByOutdialID mocks base method.
