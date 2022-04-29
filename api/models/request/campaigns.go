@@ -49,3 +49,15 @@ type BodyCampaignsIDServiceLevelPUT struct {
 type BodyCampaignsIDActionsPUT struct {
 	Actions []fmaction.Action `json:"actions"`
 }
+
+// BodyCampaignsIDResourceInfoPUT is rquest body define for PUT /campaigns/{id}/resource_info
+type BodyCampaignsIDResourceInfoPUT struct {
+	OutplanID uuid.UUID `json:"outplan_id"`
+	OutdialID uuid.UUID `json:"outdial_id"`
+	QueueID   uuid.UUID `json:"queue_id"`
+}
+
+// BodyCampaignsIDNextCampaignIDPUT is rquest body define for PUT /campaigns/{id}/next_campaign_id
+type BodyCampaignsIDNextCampaignIDPUT struct {
+	NextCampaignID uuid.UUID `json:"next_campaign_id"`
+}

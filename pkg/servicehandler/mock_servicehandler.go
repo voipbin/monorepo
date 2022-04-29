@@ -368,6 +368,36 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateBasicInfo(u, id, name, d
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateBasicInfo", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateBasicInfo), u, id, name, detail)
 }
 
+// CampaignUpdateNextCampaignID mocks base method.
+func (m *MockServiceHandler) CampaignUpdateNextCampaignID(u *customer.Customer, id, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateNextCampaignID", u, id, nextCampaignID)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignUpdateNextCampaignID indicates an expected call of CampaignUpdateNextCampaignID.
+func (mr *MockServiceHandlerMockRecorder) CampaignUpdateNextCampaignID(u, id, nextCampaignID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateNextCampaignID", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateNextCampaignID), u, id, nextCampaignID)
+}
+
+// CampaignUpdateResourceInfo mocks base method.
+func (m *MockServiceHandler) CampaignUpdateResourceInfo(u *customer.Customer, id, outplanID, outdialID, queueID uuid.UUID) (*campaign.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignUpdateResourceInfo", u, id, outplanID, outdialID, queueID)
+	ret0, _ := ret[0].(*campaign.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignUpdateResourceInfo indicates an expected call of CampaignUpdateResourceInfo.
+func (mr *MockServiceHandlerMockRecorder) CampaignUpdateResourceInfo(u, id, outplanID, outdialID, queueID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateResourceInfo", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateResourceInfo), u, id, outplanID, outdialID, queueID)
+}
+
 // CampaignUpdateServiceLevel mocks base method.
 func (m *MockServiceHandler) CampaignUpdateServiceLevel(u *customer.Customer, id uuid.UUID, serviceLevel int) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()

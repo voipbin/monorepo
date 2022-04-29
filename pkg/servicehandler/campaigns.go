@@ -294,3 +294,73 @@ func (h *serviceHandler) CampaignUpdateActions(u *cscustomer.Customer, id uuid.U
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
+
+// CampaignUpdateResourceInfo updates the campaign's resource_info.
+// It returns updated campaign if it succeed.
+func (h *serviceHandler) CampaignUpdateResourceInfo(u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error) {
+	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CampaignUpdateResourceInfo",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"campaign_id": id,
+	})
+	log.Debug("Updating an campaign.")
+
+	// get campaign
+	tmpCampaign, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+	}
+
+	// check the ownership
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpCampaign.CustomerID {
+		log.Info("The customer has no permission.")
+		return nil, fmt.Errorf("customer has no permission")
+	}
+
+	tmp, err := h.reqHandler.CAV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID)
+	if err != nil {
+		logrus.Errorf("Could not update the campaign. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// CampaignUpdateNextCampaignID updates the campaign's next_campaign_id.
+// It returns updated campaign if it succeed.
+func (h *serviceHandler) CampaignUpdateNextCampaignID(u *cscustomer.Customer, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.WebhookMessage, error) {
+	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CampaignUpdateNextCampaignID",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"campaign_id": id,
+	})
+	log.Debug("Updating an campaign.")
+
+	// get campaign
+	tmpCampaign, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+	}
+
+	// check the ownership
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpCampaign.CustomerID {
+		log.Info("The customer has no permission.")
+		return nil, fmt.Errorf("customer has no permission")
+	}
+
+	tmp, err := h.reqHandler.CAV1CampaignUpdateNextCampaignID(ctx, id, nextCampaignID)
+	if err != nil {
+		logrus.Errorf("Could not update the campaign. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
