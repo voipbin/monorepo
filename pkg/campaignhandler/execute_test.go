@@ -116,7 +116,6 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				tt.responseOutplan.MaxTryCount2,
 				tt.responseOutplan.MaxTryCount3,
 				tt.responseOutplan.MaxTryCount4,
-				tt.responseOutplan.TryInterval,
 				1,
 			).Return(tt.responseOmoutdialtarget, nil)
 
@@ -252,7 +251,6 @@ func Test_getTarget(t *testing.T) {
 				tt.p.MaxTryCount2,
 				tt.p.MaxTryCount3,
 				tt.p.MaxTryCount4,
-				tt.p.TryInterval,
 				1,
 			).Return(tt.responseOutdialtarget, nil)
 
