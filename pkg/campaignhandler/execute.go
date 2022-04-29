@@ -165,7 +165,6 @@ func (h *campaignHandler) getTarget(ctx context.Context, c *campaign.Campaign, p
 		p.MaxTryCount2,
 		p.MaxTryCount3,
 		p.MaxTryCount4,
-		p.TryInterval,
 		1,
 	)
 	if err != nil {
