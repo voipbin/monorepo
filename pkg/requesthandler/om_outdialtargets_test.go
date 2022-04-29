@@ -2,6 +2,8 @@ package requesthandler
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"reflect"
 	"testing"
 
@@ -250,6 +252,73 @@ func Test_OMV1OutdialtargetDelete(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.OMV1OutdialtargetDelete(ctx, tt.outdialtargetID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectResult, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			}
+		})
+	}
+}
+
+func Test_OMV1OutdialtargetGetsByOutdialID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		outdialID uuid.UUID
+		pageToken string
+		pageSize  uint64
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectResult []omoutdialtarget.OutdialTarget
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("835e7280-c78e-11ec-9d4c-871c179d2bd9"),
+			"2021-03-02 03:23:20.995000",
+			10,
+
+			"bin-manager.outdial-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      fmt.Sprintf("/v1/outdials/835e7280-c78e-11ec-9d4c-871c179d2bd9/targets?page_token=%s&page_size=10", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: ContentTypeJSON,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"957b59ec-c78e-11ec-9d18-0b17e7b3a2ed"}]`),
+			},
+			[]omoutdialtarget.OutdialTarget{
+				{
+					ID: uuid.FromStringOrNil("957b59ec-c78e-11ec-9d18-0b17e7b3a2ed"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.OMV1OutdialtargetGetsByOutdialID(ctx, tt.outdialID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

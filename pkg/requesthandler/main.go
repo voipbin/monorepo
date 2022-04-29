@@ -444,6 +444,7 @@ type RequestHandler interface {
 	) (*omoutdialtarget.OutdialTarget, error)
 	OMV1OutdialtargetDelete(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error)
 	OMV1OutdialtargetGet(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error)
+	OMV1OutdialtargetGetsByOutdialID(ctx context.Context, outdialID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdialtarget.OutdialTarget, error)
 	OMV1OutdialtargetGetsAvailable(
 		ctx context.Context,
 		outdialID uuid.UUID,

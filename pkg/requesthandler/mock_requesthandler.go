@@ -1940,6 +1940,21 @@ func (mr *MockRequestHandlerMockRecorder) OMV1OutdialtargetGetsAvailable(ctx, ou
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OMV1OutdialtargetGetsAvailable", reflect.TypeOf((*MockRequestHandler)(nil).OMV1OutdialtargetGetsAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 }
 
+// OMV1OutdialtargetGetsByOutdialID mocks base method.
+func (m *MockRequestHandler) OMV1OutdialtargetGetsByOutdialID(ctx context.Context, outdialID uuid.UUID, pageToken string, pageSize uint64) ([]outdialtarget.OutdialTarget, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OMV1OutdialtargetGetsByOutdialID", ctx, outdialID, pageToken, pageSize)
+	ret0, _ := ret[0].([]outdialtarget.OutdialTarget)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OMV1OutdialtargetGetsByOutdialID indicates an expected call of OMV1OutdialtargetGetsByOutdialID.
+func (mr *MockRequestHandlerMockRecorder) OMV1OutdialtargetGetsByOutdialID(ctx, outdialID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OMV1OutdialtargetGetsByOutdialID", reflect.TypeOf((*MockRequestHandler)(nil).OMV1OutdialtargetGetsByOutdialID), ctx, outdialID, pageToken, pageSize)
+}
+
 // OMV1OutdialtargetUpdateStatus mocks base method.
 func (m *MockRequestHandler) OMV1OutdialtargetUpdateStatus(ctx context.Context, outdialtargetID uuid.UUID, status outdialtarget.Status) (*outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
