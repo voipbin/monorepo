@@ -147,7 +147,6 @@ func Test_OMV1OutdialtargetGetsAvailable(t *testing.T) {
 		tryCount2 int
 		tryCount3 int
 		tryCount4 int
-		interval  int
 		limit     int
 
 		expectTarget  string
@@ -164,12 +163,11 @@ func Test_OMV1OutdialtargetGetsAvailable(t *testing.T) {
 			2,
 			2,
 			2,
-			600000,
 			1,
 
 			"bin-manager.outdial-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/outdials/730b3636-b657-11ec-ae8e-3fc6ae86d1ec/available?try_count_0=2&try_count_1=2&try_count_2=2&try_count_3=2&try_count_4=2&interval=600000&limit=1",
+				URI:      "/v1/outdials/730b3636-b657-11ec-ae8e-3fc6ae86d1ec/available?try_count_0=2&try_count_1=2&try_count_2=2&try_count_3=2&try_count_4=2&limit=1",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -194,7 +192,7 @@ func Test_OMV1OutdialtargetGetsAvailable(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			_, err := reqHandler.OMV1OutdialtargetGetsAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.interval, tt.limit)
+			_, err := reqHandler.OMV1OutdialtargetGetsAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
