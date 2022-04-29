@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/gofrs/uuid"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
@@ -125,6 +126,29 @@ func (r *requestHandler) OMV1OutdialtargetDelete(ctx context.Context, outdialtar
 	}
 
 	return &res, nil
+}
+
+// OMV1OutdialtargetGetsByOutdialID returns an list of outdialtarget
+// ctx: context
+func (r *requestHandler) OMV1OutdialtargetGetsByOutdialID(ctx context.Context, outdialtargetID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdialtarget.OutdialTarget, error) {
+	uri := fmt.Sprintf("/v1/outdials/%s/targets?page_token=%s&page_size=%d", outdialtargetID, url.QueryEscape(pageToken), pageSize)
+
+	res, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodGet, resourceOMOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData []omoutdialtarget.OutdialTarget
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return resData, nil
 }
 
 // OMV1OutdialtargetGet returns an outdialtarget
