@@ -152,7 +152,7 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 	}
 }
 
-func Test_getDestination(t *testing.T) {
+func Test_getTarget(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -162,10 +162,7 @@ func Test_getDestination(t *testing.T) {
 
 		responseOutdialtarget []omoutdialtarget.OutdialTarget
 
-		expectResOutdialTarget    *omoutdialtarget.OutdialTarget
-		expectResDestination      *cmaddress.Address
-		expectResDestinationIndex int
-		expectResTryCount         int
+		expectRes *omoutdialtarget.OutdialTarget
 	}{
 		{
 			"normal",
@@ -203,15 +200,9 @@ func Test_getDestination(t *testing.T) {
 				},
 				TryCount0: 0,
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
-				Target: "+821100000001",
-			},
-			0,
-			1,
 		},
 		{
-			"trycount 2",
+			"return empty",
 
 			&campaign.Campaign{
 				ID:        uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
@@ -227,31 +218,9 @@ func Test_getDestination(t *testing.T) {
 				MaxTryCount0: 4,
 			},
 
-			[]omoutdialtarget.OutdialTarget{
-				{
-					ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 1,
-				},
-			},
+			[]omoutdialtarget.OutdialTarget{},
 
-			&omoutdialtarget.OutdialTarget{
-				ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
-					Target: "+821100000001",
-				},
-				TryCount0: 1,
-			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
-				Target: "+821100000001",
-			},
-			0,
-			2,
+			nil,
 		},
 	}
 
@@ -287,14 +256,189 @@ func Test_getDestination(t *testing.T) {
 				1,
 			).Return(tt.responseOutdialtarget, nil)
 
-			resTarget, resDestination, resDestinationIndex, resTrycount, err := h.getDestination(ctx, tt.c, tt.p)
+			res, err := h.getTarget(ctx, tt.c, tt.p)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(resTarget, tt.expectResOutdialTarget) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResOutdialTarget, resTarget)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
+		})
+	}
+}
+
+func Test_isDialableTarget(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		target   *omoutdialtarget.OutdialTarget
+		interval int
+
+		expectRes bool
+	}{
+		{
+			"normal",
+
+			&omoutdialtarget.OutdialTarget{
+				ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
+				Destination0: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				TryCount0: 0,
+				TMCreate:  "2022-04-18 03:00:17.995000",
+				TMUpdate:  "2022-04-18 03:22:17.995000",
+			},
+			600000, // 10 min
+
+			true,
+		},
+		{
+			"never tried before",
+
+			&omoutdialtarget.OutdialTarget{
+				ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
+				Destination0: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				TryCount0: 0,
+				TMCreate:  "2020-04-18 03:22:17.995000",
+				TMUpdate:  "2020-04-18 03:22:17.995000",
+			},
+			315360000000, // 10 years
+
+			true,
+		},
+		{
+			"interval not yet",
+
+			&omoutdialtarget.OutdialTarget{
+				ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
+				Destination0: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				TryCount0: 0,
+				TMCreate:  "2022-04-18 03:00:17.995000",
+				TMUpdate:  "2022-04-18 03:22:17.995000",
+			},
+			315360000000, // 10 years
+
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+				outplanHandler:      mockOutplan,
+			}
+
+			ctx := context.Background()
+
+			res := h.isDialableTarget(ctx, tt.target, tt.interval)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_getTargetDestination(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		target *omoutdialtarget.OutdialTarget
+		plan   *outplan.Outplan
+
+		expectResDestination      *cmaddress.Address
+		expectResDestinationIndex int
+		expectResTryCount         int
+	}{
+		{
+			"normal",
+
+			&omoutdialtarget.OutdialTarget{
+				Destination0: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				TryCount0: 0,
+			},
+			&outplan.Outplan{
+				MaxTryCount0: 3,
+			},
+
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			0,
+			1,
+		},
+		{
+			"destination 0,1 given but selected 1",
+
+			&omoutdialtarget.OutdialTarget{
+				Destination0: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destination1: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000002",
+				},
+				TryCount0: 3,
+				TryCount1: 0,
+			},
+			&outplan.Outplan{
+				MaxTryCount0: 3,
+				MaxTryCount1: 1,
+			},
+
+			&cmaddress.Address{
+				Type:   cmaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			1,
+			1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaignHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+
+			resDestination, resDestinationIndex, resTrycount := h.getTargetDestination(ctx, tt.target, tt.plan)
+
 			if reflect.DeepEqual(resDestination, tt.expectResDestination) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResDestination, resDestination)
 			}
@@ -305,6 +449,54 @@ func Test_getDestination(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResTryCount, resTrycount)
 			}
 
+		})
+	}
+}
+
+func Test_getTargetDestinationError(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		target *omoutdialtarget.OutdialTarget
+		plan   *outplan.Outplan
+	}{
+		{
+			"normal",
+
+			&omoutdialtarget.OutdialTarget{
+				Destination0: &cmaddress.Address{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				TryCount0: 3,
+			},
+			&outplan.Outplan{
+				MaxTryCount0: 2,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaignHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+
+			resDestination, resDestinationIndex, resTrycount := h.getTargetDestination(ctx, tt.target, tt.plan)
+			if resDestination != nil || resDestinationIndex != 0 || resTrycount != 0 {
+				t.Errorf("Wrong match. expect: nil, got: %v", resDestination)
+			}
 		})
 	}
 }

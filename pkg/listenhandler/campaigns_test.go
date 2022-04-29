@@ -411,13 +411,14 @@ func Test_v1CampaignsIDExecutePost(t *testing.T) {
 	}
 }
 
-func Test_v1CampaignsIDStatusPutStopAndStopping(t *testing.T) {
+func Test_v1CampaignsIDStatus(t *testing.T) {
 
 	tests := []struct {
 		name    string
 		request *rabbitmqhandler.Request
 
 		campaignID uuid.UUID
+		status     campaign.Status
 
 		responseCampaign *campaign.Campaign
 
@@ -426,22 +427,23 @@ func Test_v1CampaignsIDStatusPutStopAndStopping(t *testing.T) {
 		{
 			"stopping",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/campaigns/9fdeed7c-c45a-11ec-9637-1f485ea5355c/status",
+				URI:      "/v1/campaigns/088b70c0-c45b-11ec-b93c-87920bba8787/status",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"status":"stopping"}`),
+				Data:     []byte(`{"status":"run"}`),
 			},
 
-			uuid.FromStringOrNil("9fdeed7c-c45a-11ec-9637-1f485ea5355c"),
+			uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
+			campaign.StatusRun,
 
 			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("9fdeed7c-c45a-11ec-9637-1f485ea5355c"),
+				ID: uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
 			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9fdeed7c-c45a-11ec-9637-1f485ea5355c","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"088b70c0-c45b-11ec-b93c-87920bba8787","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -454,6 +456,7 @@ func Test_v1CampaignsIDStatusPutStopAndStopping(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("d26b0c58-c45a-11ec-b42d-3b261e615304"),
+			campaign.StatusStop,
 
 			&campaign.Campaign{
 				ID: uuid.FromStringOrNil("d26b0c58-c45a-11ec-b42d-3b261e615304"),
@@ -480,68 +483,7 @@ func Test_v1CampaignsIDStatusPutStopAndStopping(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateStatusStopping(gomock.Any(), tt.campaignID).Return(tt.responseCampaign, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_v1CampaignsIDStatusPutRun(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		request *rabbitmqhandler.Request
-
-		campaignID uuid.UUID
-
-		responseCampaign *campaign.Campaign
-
-		expectRes *rabbitmqhandler.Response
-	}{
-		{
-			"stopping",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/campaigns/088b70c0-c45b-11ec-b93c-87920bba8787/status",
-				Method:   rabbitmqhandler.RequestMethodPut,
-				DataType: "application/json",
-				Data:     []byte(`{"status":"run"}`),
-			},
-
-			uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
-
-			&campaign.Campaign{
-				ID: uuid.FromStringOrNil("088b70c0-c45b-11ec-b93c-87920bba8787"),
-			},
-
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"088b70c0-c45b-11ec-b93c-87920bba8787","customer_id":"00000000-0000-0000-0000-000000000000","type":"","execute":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","flow_id":"00000000-0000-0000-0000-000000000000","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockCampaign := campaignhandler.NewMockCampaignHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:      mockSock,
-				campaignHandler: mockCampaign,
-			}
-
-			mockCampaign.EXPECT().UpdateStatusRun(gomock.Any(), tt.campaignID).Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateStatus(gomock.Any(), tt.campaignID, tt.status).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -391,28 +391,20 @@ func (h *campaignHandler) updateExecuteStop(ctx context.Context, id uuid.UUID) e
 			"func":        "updateExecuteStop",
 			"campaign_id": id,
 		})
-	log.Debug("Updating campaign service_level.")
+	log.Debug("Updating campaign execute.")
 
 	if err := h.db.CampaignUpdateExecute(ctx, id, campaign.ExecuteStop); err != nil {
 		log.Errorf("Could not stop the campaign execute. err: %v", err)
 		return err
 	}
 
-	// check the campaign is stop-able
-	if h.isStoppable(ctx, id) {
-		log.Debugf("The campaign stop-able. Stop the campaign. campaign_id: %s", id)
-		_, err := h.updateStatusStop(ctx, id)
-		if err != nil {
-			log.Errorf("Could not stop the campaign. err: %v", err)
-		}
-		return nil
-	}
-
-	log.Debugf("Stopping the campaign. campaign_id: %s", id)
-	_, err := h.UpdateStatusStopping(ctx, id)
+	// update campaign to stop
+	c, err := h.campaignStop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not stopping the campaign. err: %v", err)
+		return err
 	}
+	log.WithField("campaign", c).Debugf("Stopping the campaign. campaign_id: %s", id)
 
 	return nil
 }

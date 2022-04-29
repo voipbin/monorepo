@@ -2,6 +2,7 @@ package campaignhandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -71,15 +72,16 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 		return
 	}
 
-	// get destination
-	target, destination, destinationIndex, tryCount, err := h.getDestination(ctx, c, p)
+	// get target
+	target, err := h.getTarget(ctx, c, p)
 	if err != nil {
-		log.Errorf("Could not get outdial target destination. Stopping the campaign. err: %v", err)
+		log.Errorf("Could not get outdial target. Stopping the campaign. err: %v", err)
 		if err := h.updateExecuteStop(ctx, id); err != nil {
 			log.Errorf("Could not stop the campaign execute. err: %v", err)
 		}
 		return
 	}
+
 	if target == nil {
 		// no more target left.
 		if c.EndHandle == campaign.EndHandleStop {
@@ -93,6 +95,29 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 		// the endhandle is not stop. continue the campaign execution with 5 seconds of delay.
 		// send a campaign execute request with 5 seconds of delay
 		_ = h.reqHandler.CAV1CampaignExecute(ctx, id, 5000)
+		return
+	}
+
+	// validate the target is dialable
+	if !h.isDialableTarget(ctx, target, p.TryInterval) {
+		// the campaign has dialble outdial targets.
+		// but need to wait until the tryinterval.
+		// send a campaign execute request with 5 seconds of delay
+		_ = h.reqHandler.CAV1CampaignExecute(ctx, id, 5000)
+		return
+	}
+
+	// get destination
+	destination, destinationIndex, tryCount := h.getTargetDestination(ctx, target, p)
+	if destination == nil {
+		log.WithFields(logrus.Fields{
+			"target":  target,
+			"outplan": p,
+		}).Error("Something went wrong. Could not get destination from the target. Stopping the campaign.")
+
+		if err := h.updateExecuteStop(ctx, id); err != nil {
+			log.Errorf("Could not stop the campaign execute. err: %v", err)
+		}
 		return
 	}
 
@@ -122,16 +147,11 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 	}
 }
 
-// getDestination returns outdialtarget and target address.
-// returns outdialtarget, destination, destinationindex, trycount, error
-func (h *campaignHandler) getDestination(
-	ctx context.Context,
-	c *campaign.Campaign,
-	p *outplan.Outplan,
-) (*omoutdialtarget.OutdialTarget, *cmaddress.Address, int, int, error) {
+// getTarget returns target for dialing
+func (h *campaignHandler) getTarget(ctx context.Context, c *campaign.Campaign, p *outplan.Outplan) (*omoutdialtarget.OutdialTarget, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "getDestination",
+			"func":        "getTarget",
 			"campaign_id": c.ID,
 		},
 	)
@@ -150,25 +170,29 @@ func (h *campaignHandler) getDestination(
 	)
 	if err != nil {
 		log.Errorf("Could not get available outdial target. Stopping the campaign. err: %v", err)
-
-		// send an campaign stop request
-		_, _ = h.reqHandler.CAV1CampaignUpdateStatus(ctx, c.ID, campaign.StatusStop)
-		return nil, nil, 0, 0, err
+		return nil, err
 	}
 
 	if len(targets) == 0 {
-		return nil, nil, 0, 0, nil
+		return nil, nil
 	}
 
-	// get target destination
-	target := targets[0]
-	destination, destinationIndex, tryCount := h.getTargetDestination(ctx, &targets[0], p)
-	if destination == nil {
-		log.WithField("target", target).Error("Something was wrong. Could not find target destination.")
-		return nil, nil, 0, 0, err
+	res := targets[0]
+	return &res, nil
+}
+
+// getDestination returns outdialtarget and target address.
+// returns outdialtarget, destination, destinationindex, trycount, error
+func (h *campaignHandler) isDialableTarget(ctx context.Context, target *omoutdialtarget.OutdialTarget, interval int) bool {
+
+	// is the target never tried before
+	if target.TMCreate == target.TMUpdate {
+		return true
 	}
 
-	return &target, destination, destinationIndex, tryCount, nil
+	// the target is retry-able
+	ts := dbhandler.GetCurTimeAdd(-time.Duration(time.Millisecond * time.Duration(interval)))
+	return target.TMUpdate <= ts
 }
 
 // executeCall handles call type of campaigncall's exeucte.
@@ -340,11 +364,62 @@ func (h *campaignHandler) isDialable(ctx context.Context, campaignID, queueID uu
 	dialingLen := len(dialings)
 	agentCapacity := (len(agents) * serviceLevel) / 100.0
 
-	if int(agentCapacity) <= dialingLen {
+	if agentCapacity <= dialingLen {
 		// currerntly the campaign has enough number of dialings already
+		log.Debugf("The campaign capacity is not enough. agent_capacity: %d, dialing_len: %d", agentCapacity, dialingLen)
 		return false
 	}
 	log.Debugf("The campaign is dialable. agent_capacity: %d, dialing_len: %d", int(agentCapacity), dialingLen)
 
 	return true
+}
+
+// getTargetDestination returns target destination
+func (h *campaignHandler) getTargetDestination(ctx context.Context, target *omoutdialtarget.OutdialTarget, plan *outplan.Outplan) (*cmaddress.Address, int, int) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":           "getTargetDestination",
+			"outdial_target": target,
+		})
+	log.Debug("Getting destination address.")
+
+	maxTryCounts := []int{
+		plan.MaxTryCount0,
+		plan.MaxTryCount1,
+		plan.MaxTryCount2,
+		plan.MaxTryCount3,
+		plan.MaxTryCount4,
+	}
+
+	tryCounts := []int{
+		target.TryCount0,
+		target.TryCount1,
+		target.TryCount2,
+		target.TryCount3,
+		target.TryCount4,
+	}
+
+	destinations := []*cmaddress.Address{
+		target.Destination0,
+		target.Destination1,
+		target.Destination2,
+		target.Destination3,
+		target.Destination4,
+	}
+
+	for i, maxTryCount := range maxTryCounts {
+		if destinations[i] == nil {
+			continue
+		}
+
+		if tryCounts[i] >= maxTryCount {
+			continue
+		}
+
+		return destinations[i], i, tryCounts[i] + 1
+	}
+
+	// should not reach to here.
+	log.Errorf("Something went wrong. Could not find dial destination.")
+	return nil, 0, 0
 }
