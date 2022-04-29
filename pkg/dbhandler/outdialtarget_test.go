@@ -624,279 +624,279 @@ func Test_OutdialTargetUpdateProgressing(t *testing.T) {
 	}
 }
 
-func Test_OutdialTargetGetAvailable(t *testing.T) {
+// func Test_OutdialTargetGetAvailable(t *testing.T) {
 
-	tests := []struct {
-		name           string
-		outdialTargets []*outdialtarget.OutdialTarget
+// 	tests := []struct {
+// 		name           string
+// 		outdialTargets []*outdialtarget.OutdialTarget
 
-		outdialID uuid.UUID
-		tryCount0 int
-		tryCount1 int
-		tryCount2 int
-		tryCount3 int
-		tryCount4 int
-		tmUpdate  string
-		limit     uint64
+// 		outdialID uuid.UUID
+// 		tryCount0 int
+// 		tryCount1 int
+// 		tryCount2 int
+// 		tryCount3 int
+// 		tryCount4 int
+// 		tmUpdate  string
+// 		limit     uint64
 
-		expectRes []*outdialtarget.OutdialTarget
-	}{
-		{
-			"1 record",
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("531cef62-b1ad-11ec-b35b-6baeb43808a6"),
-					OutdialID: uuid.FromStringOrNil("6854c278-b1a9-11ec-a2ac-3315b086e86b"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TMUpdate: "2022-04-01 01:22:17.995000",
-				},
-			},
+// 		expectRes []*outdialtarget.OutdialTarget
+// 	}{
+// 		{
+// 			"1 record",
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("531cef62-b1ad-11ec-b35b-6baeb43808a6"),
+// 					OutdialID: uuid.FromStringOrNil("6854c278-b1a9-11ec-a2ac-3315b086e86b"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TMUpdate: "2022-04-01 01:22:17.995000",
+// 				},
+// 			},
 
-			uuid.FromStringOrNil("6854c278-b1a9-11ec-a2ac-3315b086e86b"),
-			1,
-			0,
-			0,
-			0,
-			0,
-			"2022-04-03 01:22:17.995000",
-			1,
+// 			uuid.FromStringOrNil("6854c278-b1a9-11ec-a2ac-3315b086e86b"),
+// 			1,
+// 			0,
+// 			0,
+// 			0,
+// 			0,
+// 			"2022-04-03 01:22:17.995000",
+// 			1,
 
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("531cef62-b1ad-11ec-b35b-6baeb43808a6"),
-					OutdialID: uuid.FromStringOrNil("6854c278-b1a9-11ec-a2ac-3315b086e86b"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TMUpdate: "2022-04-01 01:22:17.995000",
-				},
-			},
-		},
-		{
-			"2 records",
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("d5d42942-b1ae-11ec-bf29-ff3839164805"),
-					OutdialID: uuid.FromStringOrNil("e0559644-b1ae-11ec-9a02-f3031df53892"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 1,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-				{
-					ID:        uuid.FromStringOrNil("f120b7f6-b1ae-11ec-aec6-134dcb0d87e0"),
-					OutdialID: uuid.FromStringOrNil("e0559644-b1ae-11ec-9a02-f3031df53892"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000002",
-					},
-					TryCount0: 2,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-			},
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("531cef62-b1ad-11ec-b35b-6baeb43808a6"),
+// 					OutdialID: uuid.FromStringOrNil("6854c278-b1a9-11ec-a2ac-3315b086e86b"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TMUpdate: "2022-04-01 01:22:17.995000",
+// 				},
+// 			},
+// 		},
+// 		{
+// 			"2 records",
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("d5d42942-b1ae-11ec-bf29-ff3839164805"),
+// 					OutdialID: uuid.FromStringOrNil("e0559644-b1ae-11ec-9a02-f3031df53892"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TryCount0: 1,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 				{
+// 					ID:        uuid.FromStringOrNil("f120b7f6-b1ae-11ec-aec6-134dcb0d87e0"),
+// 					OutdialID: uuid.FromStringOrNil("e0559644-b1ae-11ec-9a02-f3031df53892"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000002",
+// 					},
+// 					TryCount0: 2,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 			},
 
-			uuid.FromStringOrNil("e0559644-b1ae-11ec-9a02-f3031df53892"),
-			3,
-			0,
-			0,
-			0,
-			0,
-			"2022-04-03 01:22:17.995000",
-			1,
+// 			uuid.FromStringOrNil("e0559644-b1ae-11ec-9a02-f3031df53892"),
+// 			3,
+// 			0,
+// 			0,
+// 			0,
+// 			0,
+// 			"2022-04-03 01:22:17.995000",
+// 			1,
 
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("d5d42942-b1ae-11ec-bf29-ff3839164805"),
-					OutdialID: uuid.FromStringOrNil("e0559644-b1ae-11ec-9a02-f3031df53892"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 1,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-			},
-		},
-		{
-			"3 records",
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("63c77f9c-b1af-11ec-88af-27dedd49efe4"),
-					OutdialID: uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 1,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-				{
-					ID:        uuid.FromStringOrNil("63f39442-b1af-11ec-a341-33e7cceae24a"),
-					OutdialID: uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000002",
-					},
-					TryCount0: 2,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-				{
-					ID:        uuid.FromStringOrNil("6430cb64-b1af-11ec-8baa-7b72d71a40b6"),
-					OutdialID: uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000003",
-					},
-					TryCount0: 1,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-			},
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("d5d42942-b1ae-11ec-bf29-ff3839164805"),
+// 					OutdialID: uuid.FromStringOrNil("e0559644-b1ae-11ec-9a02-f3031df53892"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TryCount0: 1,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 			},
+// 		},
+// 		{
+// 			"3 records",
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("63c77f9c-b1af-11ec-88af-27dedd49efe4"),
+// 					OutdialID: uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TryCount0: 1,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 				{
+// 					ID:        uuid.FromStringOrNil("63f39442-b1af-11ec-a341-33e7cceae24a"),
+// 					OutdialID: uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000002",
+// 					},
+// 					TryCount0: 2,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 				{
+// 					ID:        uuid.FromStringOrNil("6430cb64-b1af-11ec-8baa-7b72d71a40b6"),
+// 					OutdialID: uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000003",
+// 					},
+// 					TryCount0: 1,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 			},
 
-			uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
-			3,
-			0,
-			0,
-			0,
-			0,
-			"2022-04-03 01:22:17.995000",
-			1,
+// 			uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
+// 			3,
+// 			0,
+// 			0,
+// 			0,
+// 			0,
+// 			"2022-04-03 01:22:17.995000",
+// 			1,
 
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("63c77f9c-b1af-11ec-88af-27dedd49efe4"),
-					OutdialID: uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 1,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-			},
-		},
-		{
-			"2 records with 1 invalid tm update",
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("20a530ac-b2a8-11ec-baff-7b0c0eefeed6"),
-					OutdialID: uuid.FromStringOrNil("3fdf22b6-b2a8-11ec-8c5d-3732536fe5dc"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 0,
-					TMUpdate:  "2022-04-04 01:22:17.995000",
-				},
-				{
-					ID:        uuid.FromStringOrNil("2143ff98-b2a8-11ec-b471-6b2b04d9be92"),
-					OutdialID: uuid.FromStringOrNil("3fdf22b6-b2a8-11ec-8c5d-3732536fe5dc"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 3,
-					TryCount1: 1,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-			},
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("63c77f9c-b1af-11ec-88af-27dedd49efe4"),
+// 					OutdialID: uuid.FromStringOrNil("64609e84-b1af-11ec-b713-8b0b5de2ef2b"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TryCount0: 1,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 			},
+// 		},
+// 		{
+// 			"2 records with 1 invalid tm update",
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("20a530ac-b2a8-11ec-baff-7b0c0eefeed6"),
+// 					OutdialID: uuid.FromStringOrNil("3fdf22b6-b2a8-11ec-8c5d-3732536fe5dc"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TryCount0: 0,
+// 					TMUpdate:  "2022-04-04 01:22:17.995000",
+// 				},
+// 				{
+// 					ID:        uuid.FromStringOrNil("2143ff98-b2a8-11ec-b471-6b2b04d9be92"),
+// 					OutdialID: uuid.FromStringOrNil("3fdf22b6-b2a8-11ec-8c5d-3732536fe5dc"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TryCount0: 3,
+// 					TryCount1: 1,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 			},
 
-			uuid.FromStringOrNil("3fdf22b6-b2a8-11ec-8c5d-3732536fe5dc"),
-			3,
-			2,
-			0,
-			0,
-			0,
-			"2022-04-03 01:22:17.995000",
-			1,
+// 			uuid.FromStringOrNil("3fdf22b6-b2a8-11ec-8c5d-3732536fe5dc"),
+// 			3,
+// 			2,
+// 			0,
+// 			0,
+// 			0,
+// 			"2022-04-03 01:22:17.995000",
+// 			1,
 
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("2143ff98-b2a8-11ec-b471-6b2b04d9be92"),
-					OutdialID: uuid.FromStringOrNil("3fdf22b6-b2a8-11ec-8c5d-3732536fe5dc"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 3,
-					TryCount1: 1,
-					TMUpdate:  "2022-04-01 01:22:17.995000",
-				},
-			},
-		},
-		{
-			"no record",
-			[]*outdialtarget.OutdialTarget{
-				{
-					ID:        uuid.FromStringOrNil("a444f730-b1ae-11ec-bf46-a3eb12bf058c"),
-					OutdialID: uuid.FromStringOrNil("a53291c0-b1ae-11ec-b650-3f34598e1b89"),
-					Status:    outdialtarget.StatusIdle,
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					TryCount0: 1,
-					TMUpdate:  "2022-04-01 03:22:17.995000",
-				},
-			},
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("2143ff98-b2a8-11ec-b471-6b2b04d9be92"),
+// 					OutdialID: uuid.FromStringOrNil("3fdf22b6-b2a8-11ec-8c5d-3732536fe5dc"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TryCount0: 3,
+// 					TryCount1: 1,
+// 					TMUpdate:  "2022-04-01 01:22:17.995000",
+// 				},
+// 			},
+// 		},
+// 		{
+// 			"no record",
+// 			[]*outdialtarget.OutdialTarget{
+// 				{
+// 					ID:        uuid.FromStringOrNil("a444f730-b1ae-11ec-bf46-a3eb12bf058c"),
+// 					OutdialID: uuid.FromStringOrNil("a53291c0-b1ae-11ec-b650-3f34598e1b89"),
+// 					Status:    outdialtarget.StatusIdle,
+// 					Destination0: &cmaddress.Address{
+// 						Type:   cmaddress.TypeTel,
+// 						Target: "+821100000001",
+// 					},
+// 					TryCount0: 1,
+// 					TMUpdate:  "2022-04-01 03:22:17.995000",
+// 				},
+// 			},
 
-			uuid.FromStringOrNil("a53291c0-b1ae-11ec-b650-3f34598e1b89"),
-			1,
-			0,
-			0,
-			0,
-			0,
-			"2022-04-01 01:22:17.995000",
-			1,
+// 			uuid.FromStringOrNil("a53291c0-b1ae-11ec-b650-3f34598e1b89"),
+// 			1,
+// 			0,
+// 			0,
+// 			0,
+// 			0,
+// 			"2022-04-01 01:22:17.995000",
+// 			1,
 
-			[]*outdialtarget.OutdialTarget{},
-		},
-	}
+// 			[]*outdialtarget.OutdialTarget{},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := &handler{
-				db:    dbTest,
-				cache: mockCache,
-			}
+// 			mockCache := cachehandler.NewMockCacheHandler(mc)
+// 			h := &handler{
+// 				db:    dbTest,
+// 				cache: mockCache,
+// 			}
 
-			ctx := context.Background()
-			for _, target := range tt.outdialTargets {
-				mockCache.EXPECT().OutdialTargetSet(gomock.Any(), gomock.Any())
-				if err := h.OutdialTargetCreate(ctx, target); err != nil {
-					t.Errorf("Wrong match. expect: ok, got: %v", err)
-				}
-			}
+// 			ctx := context.Background()
+// 			for _, target := range tt.outdialTargets {
+// 				mockCache.EXPECT().OutdialTargetSet(gomock.Any(), gomock.Any())
+// 				if err := h.OutdialTargetCreate(ctx, target); err != nil {
+// 					t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 				}
+// 			}
 
-			res, err := h.OutdialTargetGetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.tmUpdate, tt.limit)
-			if err != nil {
-				t.Errorf("Wroong match. expect: ok, got: %v", err)
-			}
+// 			res, err := h.OutdialTargetGetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.tmUpdate, tt.limit)
+// 			if err != nil {
+// 				t.Errorf("Wroong match. expect: ok, got: %v", err)
+// 			}
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			if reflect.DeepEqual(tt.expectRes, res) == false {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }

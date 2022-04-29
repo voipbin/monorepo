@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -342,11 +341,10 @@ func (h *listenHandler) v1OutdialsIDAvailableGet(ctx context.Context, m *rabbitm
 	tryCount2, _ := strconv.Atoi(u.Query().Get("try_count_2"))
 	tryCount3, _ := strconv.Atoi(u.Query().Get("try_count_3"))
 	tryCount4, _ := strconv.Atoi(u.Query().Get("try_count_4"))
-	interval, _ := strconv.Atoi(u.Query().Get("interval"))
 	tmpLimit, _ := strconv.Atoi(u.Query().Get("limit"))
 	limit := uint64(tmpLimit)
 
-	tmp, err := h.outdialTargetHandler.GetAvailable(ctx, id, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, time.Millisecond*time.Duration(interval), limit)
+	tmp, err := h.outdialTargetHandler.GetAvailable(ctx, id, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 	if err != nil {
 		log.Errorf("Could not get available targets. err: %v", err)
 		return nil, err

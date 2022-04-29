@@ -42,7 +42,6 @@ type DBHandler interface {
 		tryCount2 int,
 		tryCount3 int,
 		tryCount4 int,
-		tmUpdate string,
 		limit uint64,
 	) ([]*outdialtarget.OutdialTarget, error)
 	OutdialTargetUpdateDestinations(

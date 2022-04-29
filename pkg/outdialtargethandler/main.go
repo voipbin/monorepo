@@ -4,7 +4,6 @@ package outdialtargethandler
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
@@ -48,7 +47,6 @@ type OutdialTargetHandler interface {
 		tryCount2 int,
 		tryCount3 int,
 		tryCount4 int,
-		interval time.Duration,
 		limit uint64,
 	) ([]*outdialtarget.OutdialTarget, error)
 

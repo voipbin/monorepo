@@ -72,20 +72,18 @@ const (
 		tm_update,
 		tm_delete,
 
-		try_count_0 + try_count_1 + try_count_2 + try_count_3 + try_count_4 as try_count,
 		case when destination_0 is null then 0 when try_count_0 < ? then 1 else 0 end as des_0,
-		case when destination_0 is null then 0 when try_count_1 < ? then 1 else 0 end as des_1,
-		case when destination_1 is null then 0 when try_count_2 < ? then 1 else 0 end as des_2,
-		case when destination_2 is null then 0 when try_count_3 < ? then 1 else 0 end as des_3,
-		case when destination_3 is null then 0 when try_count_4 < ? then 1 else 0 end as des_4
+		case when destination_1 is null then 0 when try_count_1 < ? then 1 else 0 end as des_1,
+		case when destination_2 is null then 0 when try_count_2 < ? then 1 else 0 end as des_2,
+		case when destination_3 is null then 0 when try_count_3 < ? then 1 else 0 end as des_3,
+		case when destination_4 is null then 0 when try_count_4 < ? then 1 else 0 end as des_4
 	from
 		outdialtargets
-	where
+	having
 		status = "idle"
 		and des_0 + des_1 + des_2 + des_3 + des_4 > 0
-		and tm_update < ?
 		and outdial_id = ?
-	order by try_count asc
+	order by tm_update asc
 	limit ?
 	`
 )
@@ -169,7 +167,6 @@ func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialta
 	var destination3 sql.NullString
 	var destination4 sql.NullString
 
-	var tryCount int
 	var des0 int
 	var des1 int
 	var des2 int
@@ -203,7 +200,6 @@ func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialta
 		&res.TMUpdate,
 		&res.TMDelete,
 
-		&tryCount,
 		&des0,
 		&des1,
 		&des2,
@@ -677,7 +673,6 @@ func (h *handler) OutdialTargetGetAvailable(
 	tryCount2 int,
 	tryCount3 int,
 	tryCount4 int,
-	tmUpdate string,
 	limit uint64,
 ) ([]*outdialtarget.OutdialTarget, error) {
 
@@ -689,7 +684,7 @@ func (h *handler) OutdialTargetGetAvailable(
 	defer stmt.Close()
 
 	// query
-	rows, err := stmt.QueryContext(ctx, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, tmUpdate, outdialID.Bytes(), limit)
+	rows, err := stmt.QueryContext(ctx, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, outdialID.Bytes(), limit)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. OutdialTargetGetAvailable. err: %v", err)
 	}
@@ -699,7 +694,7 @@ func (h *handler) OutdialTargetGetAvailable(
 	for rows.Next() {
 		u, err := h.outdialTargetGetFromRowForAvailable(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. OutdialGets. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. OutdialTargetGetAvailable. err: %v", err)
 		}
 
 		res = append(res, u)

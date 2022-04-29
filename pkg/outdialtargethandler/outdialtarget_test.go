@@ -3,7 +3,6 @@ package outdialtargethandler
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -180,7 +179,6 @@ func Test_GetAvailable(t *testing.T) {
 		tryCount2 int
 		tryCount3 int
 		tryCount4 int
-		interval  time.Duration
 		limit     uint64
 	}{
 		{
@@ -192,7 +190,6 @@ func Test_GetAvailable(t *testing.T) {
 			3,
 			4,
 			5,
-			time.Minute * 30,
 			10,
 		},
 	}
@@ -214,8 +211,8 @@ func Test_GetAvailable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialTargetGetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, gomock.Any(), tt.limit).Return([]*outdialtarget.OutdialTarget{}, nil)
-			_, err := h.GetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.interval, tt.limit)
+			mockDB.EXPECT().OutdialTargetGetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit).Return([]*outdialtarget.OutdialTarget{}, nil)
+			_, err := h.GetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
