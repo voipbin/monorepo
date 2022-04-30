@@ -86,6 +86,30 @@ func (r *requestHandler) AstChannelHangup(ctx context.Context, asteriskID, chann
 	return nil
 }
 
+// AstChannelVariableGet sends the variable get request
+func (r *requestHandler) AstChannelVariableGet(ctx context.Context, asteriskID, channelID, variable string) (string, error) {
+	url := fmt.Sprintf("/ari/channels/%s/variable?variable=%s", channelID, variable)
+
+	res, err := r.sendRequestAst(asteriskID, url, rabbitmqhandler.RequestMethodGet, resourceAstChannelsVar, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return "", err
+	case res.StatusCode > 299:
+		return "", fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	type Tmp struct {
+		Value string `json:"value"`
+	}
+
+	var tmp Tmp
+	if errUnmarshal := json.Unmarshal([]byte(res.Data), &tmp); errUnmarshal != nil {
+		return "", err
+	}
+
+	return tmp.Value, nil
+}
+
 // AstChannelVariableSet sends the variable set request
 func (r *requestHandler) AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error {
 	url := fmt.Sprintf("/ari/channels/%s/variable", channelID)
