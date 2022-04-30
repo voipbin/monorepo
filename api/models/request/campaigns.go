@@ -61,3 +61,8 @@ type BodyCampaignsIDResourceInfoPUT struct {
 type BodyCampaignsIDNextCampaignIDPUT struct {
 	NextCampaignID uuid.UUID `json:"next_campaign_id"`
 }
+
+// ParamCampaignsIDCampaigncallsGET is rquest param define for GET /campaigns/{id}/campaigncalls
+type ParamCampaignsIDCampaigncallsGET struct {
+	Pagination
+}

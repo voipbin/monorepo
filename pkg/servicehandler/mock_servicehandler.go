@@ -16,6 +16,7 @@ import (
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -426,6 +427,51 @@ func (m *MockServiceHandler) CampaignUpdateStatus(u *customer.Customer, id uuid.
 func (mr *MockServiceHandlerMockRecorder) CampaignUpdateStatus(u, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignUpdateStatus", reflect.TypeOf((*MockServiceHandler)(nil).CampaignUpdateStatus), u, id, status)
+}
+
+// CampaigncallDelete mocks base method.
+func (m *MockServiceHandler) CampaigncallDelete(u *customer.Customer, campaigncallID uuid.UUID) (*campaigncall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallDelete", u, campaigncallID)
+	ret0, _ := ret[0].(*campaigncall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaigncallDelete indicates an expected call of CampaigncallDelete.
+func (mr *MockServiceHandlerMockRecorder) CampaigncallDelete(u, campaigncallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallDelete", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallDelete), u, campaigncallID)
+}
+
+// CampaigncallGet mocks base method.
+func (m *MockServiceHandler) CampaigncallGet(u *customer.Customer, campaigncallID uuid.UUID) (*campaigncall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallGet", u, campaigncallID)
+	ret0, _ := ret[0].(*campaigncall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaigncallGet indicates an expected call of CampaigncallGet.
+func (mr *MockServiceHandlerMockRecorder) CampaigncallGet(u, campaigncallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGet", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallGet), u, campaigncallID)
+}
+
+// CampaigncallGetsByCampaignID mocks base method.
+func (m *MockServiceHandler) CampaigncallGetsByCampaignID(u *customer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallGetsByCampaignID", u, campaignID, size, token)
+	ret0, _ := ret[0].([]*campaigncall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaigncallGetsByCampaignID indicates an expected call of CampaigncallGetsByCampaignID.
+func (mr *MockServiceHandlerMockRecorder) CampaigncallGetsByCampaignID(u, campaignID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsByCampaignID", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallGetsByCampaignID), u, campaignID, size, token)
 }
 
 // ConferenceCreate mocks base method.
