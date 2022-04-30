@@ -48,6 +48,10 @@ var (
 	regV1CampaignsIDResourceInfo   = regexp.MustCompile("/v1/campaigns/" + regUUID + "/resource_info$")
 	regV1CampaignsIDNextCampaignID = regexp.MustCompile("/v1/campaigns/" + regUUID + "/next_campaign_id$")
 
+	// campaigncalls
+	regV1CampaigncallsGet = regexp.MustCompile(`/v1/campaigncalls\?`)
+	regV1CampaigncallsID  = regexp.MustCompile("/v1/campaigncalls/" + regUUID + "$")
+
 	// outplans
 	regV1Outplans        = regexp.MustCompile("/v1/outplans$")
 	regV1OutplansGet     = regexp.MustCompile(`/v1/outplans\?`)
@@ -214,6 +218,17 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CampaignsIDNextCampaignID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>/next_campaign_id"
 		response, err = h.v1CampaignsIDNextCampaignIDPut(ctx, m)
+
+	// campaigncalls
+	// /v1/campaigncalls
+	case regV1CampaigncallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/v1/campaigncalls"
+		response, err = h.v1CampaigncallsGet(ctx, m)
+
+	// /v1/campaigncalls/<campaigncall_id>
+	case regV1CampaigncallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/v1/campaigncalls/<campaigncall-id>"
+		response, err = h.v1CampaigncallsIDGet(ctx, m)
 
 	// outplans
 	// /v1/outplans
