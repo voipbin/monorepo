@@ -15,7 +15,7 @@ import (
 
 func TestAstChannelAnswer(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name       string
 		asteriskID string
 		channelID  string
@@ -23,9 +23,7 @@ func TestAstChannelAnswer(t *testing.T) {
 		expectQueue  string
 		expectURI    string
 		expectMethod rabbitmqhandler.RequestMethod
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			"00:11:22:33:44:55",
@@ -37,16 +35,16 @@ func TestAstChannelAnswer(t *testing.T) {
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,
@@ -68,7 +66,7 @@ func TestAstChannelAnswer(t *testing.T) {
 
 func TestAstChannelContinue(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name       string
 		asteriskID string
 		channelID  string
@@ -81,9 +79,7 @@ func TestAstChannelContinue(t *testing.T) {
 		expectQueue  string
 		expectMethod rabbitmqhandler.RequestMethod
 		expectData   []byte
-	}
-
-	tests := []test{
+	}{
 		{
 			"have all item",
 			"00:11:22:33:44:55",
@@ -114,16 +110,15 @@ func TestAstChannelContinue(t *testing.T) {
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
 
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
@@ -144,9 +139,95 @@ func TestAstChannelContinue(t *testing.T) {
 	}
 }
 
+func TestChannelAstChannelVariableGet(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+		variable   string
+
+		response *rabbitmqhandler.Response
+
+		expectURI    string
+		expectQueue  string
+		expectMethod rabbitmqhandler.RequestMethod
+
+		expectRes string
+	}{
+		{
+			"have all item",
+			"00:11:22:33:44:55",
+			"bae178e2-7f6f-11ea-809d-b3dec50dc8f3",
+			"test-variable",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"value": "test-value"}`),
+			},
+
+			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/variable?variable=test-variable",
+			"asterisk.00:11:22:33:44:55.request",
+			rabbitmqhandler.RequestMethodGet,
+
+			"test-value",
+		},
+		{
+			"empty value",
+			"00:11:22:33:44:55",
+			"bae178e2-7f6f-11ea-809d-b3dec50dc8f3",
+			"test-variable",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"value": ""}`),
+			},
+
+			"/ari/channels/bae178e2-7f6f-11ea-809d-b3dec50dc8f3/variable?variable=test-variable",
+			"asterisk.00:11:22:33:44:55.request",
+			rabbitmqhandler.RequestMethodGet,
+
+			"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				&rabbitmqhandler.Request{
+					URI:      tt.expectURI,
+					Method:   tt.expectMethod,
+					DataType: ContentTypeJSON,
+				},
+			).Return(tt.response, nil)
+
+			res, err := reqHandler.AstChannelVariableGet(context.Background(), tt.asteriskID, tt.channelID, tt.variable)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %s, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func TestChannelAstChannelVariableSet(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name       string
 		asteriskID string
 		channelID  string
@@ -157,9 +238,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 		expectQueue  string
 		expectMethod rabbitmqhandler.RequestMethod
 		expectData   []byte
-	}
-
-	tests := []test{
+	}{
 		{
 			"have all item",
 			"00:11:22:33:44:55",
@@ -187,16 +266,15 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
 
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
@@ -219,7 +297,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 
 func TestChannelAstChannelHangup(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name        string
 		asteriskID  string
 		channelID   string
@@ -230,9 +308,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 		expectQueue  string
 		expectMethod rabbitmqhandler.RequestMethod
 		expectData   []byte
-	}
-
-	tests := []test{
+	}{
 		{
 			"have all item",
 			"00:11:22:33:44:55",
@@ -259,16 +335,15 @@ func TestChannelAstChannelHangup(t *testing.T) {
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
 
 			if tt.delay == 0 {
 				mockSock.EXPECT().PublishRPC(
@@ -304,15 +379,8 @@ func TestChannelAstChannelHangup(t *testing.T) {
 }
 
 func TestChannelAstChannelCreateSnoop(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		asteriskID string
 		channelID  string
@@ -325,9 +393,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 		expectQueue  string
 		expectMethod rabbitmqhandler.RequestMethod
 		expectData   []byte
-	}
-
-	tests := []test{
+	}{
 		{
 			"have all item",
 			"00:11:22:33:44:55",
@@ -374,6 +440,13 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
 
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
@@ -395,15 +468,8 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 }
 
 func TestAstChannelGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		asterisk string
 		id       string
@@ -413,9 +479,7 @@ func TestAstChannelGet(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		expectChannel *cmchannel.Channel
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal test",
 			"00:11:22:33:44:55",
@@ -453,6 +517,14 @@ func TestAstChannelGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AstChannelGet(context.Background(), tt.asterisk, tt.id)
@@ -469,15 +541,8 @@ func TestAstChannelGet(t *testing.T) {
 }
 
 func TestAstChannelDTMF(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		asterisk string
 		id       string
@@ -490,9 +555,7 @@ func TestAstChannelDTMF(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal test",
 			"00:11:22:33:44:55",
@@ -539,6 +602,14 @@ func TestAstChannelDTMF(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelDTMF(context.Background(), tt.asterisk, tt.id, tt.digit, tt.duration, tt.before, tt.between, tt.after)
@@ -550,15 +621,8 @@ func TestAstChannelDTMF(t *testing.T) {
 }
 
 func TestAstChannelCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name           string
 		asterisk       string
 		channelID      string
@@ -572,9 +636,7 @@ func TestAstChannelCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal test",
 			"00:11:22:33:44:55",
@@ -622,6 +684,14 @@ func TestAstChannelCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelCreate(context.Background(), tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
@@ -633,15 +703,8 @@ func TestAstChannelCreate(t *testing.T) {
 }
 
 func TestAstChannelDial(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name      string
 		asterisk  string
 		channelID string
@@ -651,9 +714,7 @@ func TestAstChannelDial(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"empty caller",
 			"00:11:22:33:44:55",
@@ -676,6 +737,14 @@ func TestAstChannelDial(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelDial(context.Background(), tt.asterisk, tt.channelID, tt.caller, tt.timeout)
@@ -687,15 +756,8 @@ func TestAstChannelDial(t *testing.T) {
 }
 
 func TestAstChannelPlay(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name      string
 		asterisk  string
 		channelID string
@@ -705,9 +767,7 @@ func TestAstChannelPlay(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"1 media",
 			"00:11:22:33:44:55",
@@ -748,6 +808,14 @@ func TestAstChannelPlay(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelPlay(context.Background(), tt.asterisk, tt.channelID, tt.actionID, tt.medias, "")
@@ -759,15 +827,8 @@ func TestAstChannelPlay(t *testing.T) {
 }
 
 func TestAstChannelRecord(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name      string
 		asterisk  string
 		channelID string
@@ -783,9 +844,7 @@ func TestAstChannelRecord(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			"00:11:22:33:44:55",
@@ -814,6 +873,14 @@ func TestAstChannelRecord(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstChannelRecord(context.Background(), tt.asterisk, tt.channelID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExist)
@@ -825,15 +892,8 @@ func TestAstChannelRecord(t *testing.T) {
 }
 
 func TestAstChannelExternalMedia(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		asterisk       string
@@ -852,9 +912,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *cmchannel.Channel
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -899,6 +957,14 @@ func TestAstChannelExternalMedia(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.AstChannelExternalMedia(context.Background(), tt.asterisk, tt.channelID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
@@ -914,7 +980,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 
 func TestAstChannelRing(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name       string
 		asteriskID string
 		channelID  string
@@ -922,9 +988,7 @@ func TestAstChannelRing(t *testing.T) {
 		expectQueue  string
 		expectURI    string
 		expectMethod rabbitmqhandler.RequestMethod
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			"00:11:22:33:44:55",
@@ -936,16 +1000,16 @@ func TestAstChannelRing(t *testing.T) {
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,

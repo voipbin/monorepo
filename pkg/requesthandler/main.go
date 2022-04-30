@@ -221,6 +221,7 @@ type RequestHandler interface {
 	AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
 	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelRing(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelVariableGet(ctx context.Context, asteriskID, channelID, variable string) (string, error)
 	AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error
 
 	// asterisk playbacks
