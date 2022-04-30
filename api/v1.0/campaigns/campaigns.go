@@ -571,3 +571,81 @@ func campaignsIDNextCampaignIDPUT(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// campaignsIDCampaigncallsGET handles GET /campaigns/{id}/campaigncalls request.
+// It gets a list of campaigncalls with the given info.
+// @Summary Gets a list of campaigns.
+// @Description Gets a list of campaigns
+// @Produce json
+// @Param page_size query int false "The size of results. Max 100"
+// @Param page_token query string false "The token. tm_create"
+// @Success 200 {object} response.ParamOudtialsGET
+// @Router /v1.0/campaigns/{id}/campaigncalls [get]
+func campaignsIDCampaigncallsGET(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "campaignsIDCampaigncallsGET",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get info
+	u := tmp.(cscustomer.Customer)
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("campaign_id", id)
+
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+			"campaign_id":    id,
+		},
+	)
+
+	var req request.ParamCampaignsIDCampaigncallsGET
+	if err := c.BindQuery(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// set max page size
+	pageSize := req.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+	log.Debugf("campaignsGET. Received request detail. page_size: %d, page_token: %s", pageSize, req.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// get campaigncalls
+	campaigncalls, err := serviceHandler.CampaigncallGetsByCampaignID(&u, id, pageSize, req.PageToken)
+	if err != nil {
+		log.Errorf("Could not get a campaign list. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(campaigncalls) > 0 {
+		nextToken = campaigncalls[len(campaigncalls)-1].TMCreate
+	}
+	res := response.BodyCampaignsIDCampaigncallsGET{
+		Result: campaigncalls,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
+	}
+
+	c.JSON(200, res)
+}
