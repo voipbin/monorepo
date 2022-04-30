@@ -46,21 +46,6 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 		return
 	}
 
-	// check the campaign is dial-able
-	if !h.isDialable(ctx, c.ID, c.QueueID, c.ServiceLevel) {
-		log.Debugf("Campaign is not dialable now.")
-
-		// send an execute request with 5 seconds of delay
-		if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 5000); errExecute != nil {
-			log.Errorf("Could not execute the campaign. Stopping the campaign execution.")
-
-			if errUpdate := h.updateExecuteStop(ctx, id); errUpdate != nil {
-				log.Errorf("Could not stop the campaign execute. err: %v", errUpdate)
-			}
-		}
-		return
-	}
-
 	// get outplan
 	p, err := h.outplanHandler.Get(ctx, c.OutplanID)
 	if err != nil {
@@ -95,6 +80,21 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 		// the endhandle is not stop. continue the campaign execution with 5 seconds of delay.
 		// send a campaign execute request with 5 seconds of delay
 		_ = h.reqHandler.CAV1CampaignExecute(ctx, id, 5000)
+		return
+	}
+
+	// check the campaign is dial-able
+	if !h.isDialable(ctx, c.ID, c.QueueID, c.ServiceLevel) {
+		log.Debugf("Campaign is not dialable now.")
+
+		// send an execute request with 5 seconds of delay
+		if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 5000); errExecute != nil {
+			log.Errorf("Could not execute the campaign. Stopping the campaign execution.")
+
+			if errUpdate := h.updateExecuteStop(ctx, id); errUpdate != nil {
+				log.Errorf("Could not stop the campaign execute. err: %v", errUpdate)
+			}
+		}
 		return
 	}
 
