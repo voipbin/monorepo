@@ -30,12 +30,6 @@ func setupServer(app *gin.Engine) {
 
 func Test_outdialsGET(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name        string
 		customer    cscustomer.Customer
@@ -95,6 +89,10 @@ func Test_outdialsGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -108,7 +106,7 @@ func Test_outdialsGET(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/outdials?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().OutdialGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutdials, nil)
+			mockSvc.EXPECT().OutdialGetsByCustomerID(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -667,6 +665,106 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_outdialsIDTargetGET(t *testing.T) {
+	type test struct {
+		name string
+
+		customer  cscustomer.Customer
+		reqQuery  string
+		reqBody   request.ParamOutdialsIDTargetsGET
+		outdialID uuid.UUID
+
+		resOutdialtargets []*omoutdialtarget.WebhookMessage
+		expectRes         string
+	}
+
+	tests := []test{
+		{
+			"1 item",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			"/v1.0/outdials/fe7a06b6-c82c-11ec-89fd-f741623099f0/targets?page_size=10&page_token=2020-09-20%2003:23:21.995000",
+			request.ParamOutdialsIDTargetsGET{
+				Pagination: request.Pagination{
+					PageSize:  10,
+					PageToken: "2020-09-20 03:23:21.995000",
+				},
+			},
+			uuid.FromStringOrNil("fe7a06b6-c82c-11ec-89fd-f741623099f0"),
+
+			[]*omoutdialtarget.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("80fcacd4-c82c-11ec-b008-67e3b5299bec"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+			},
+			`{"result":[{"id":"80fcacd4-c82c-11ec-b008-67e3b5299bec","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+		},
+		{
+			"more than 2 items",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			"/v1.0/outdials/33d8b93c-c82e-11ec-b630-f304b7d48448/targets?page_size=15&page_token=2020-09-20%2003:23:21.995000",
+			request.ParamOutdialsIDTargetsGET{
+				Pagination: request.Pagination{
+					PageSize:  15,
+					PageToken: "2020-09-20 03:23:21.995000",
+				},
+			},
+			uuid.FromStringOrNil("33d8b93c-c82e-11ec-b630-f304b7d48448"),
+
+			[]*omoutdialtarget.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("340757d8-c82e-11ec-92ef-235422080f76"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("34353180-c82e-11ec-b8f2-87eaa2dc5a1b"),
+					TMCreate: "2020-09-20T03:23:22.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("61f53c3c-c82e-11ec-ba3d-f387359c8014"),
+					TMCreate: "2020-09-20T03:23:23.995000",
+				},
+			},
+			`{"result":[{"id":"340757d8-c82e-11ec-92ef-235422080f76","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"34353180-c82e-11ec-b8f2-87eaa2dc5a1b","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"61f53c3c-c82e-11ec-ba3d-f387359c8014","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+
+			mockSvc.EXPECT().OutdialtargetGetsByOutdialID(&tt.customer, tt.outdialID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdialtargets, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body.String())
 			}
 		})
 	}

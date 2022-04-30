@@ -37,16 +37,10 @@ func (h *serviceHandler) OutdialtargetCreate(
 	log.Debug("Executing OutdialUpdateData.")
 
 	// get outdial
-	od, err := h.reqHandler.OMV1OutdialGet(ctx, outdialID)
+	_, err := h.outdialGet(ctx, u, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != od.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
+		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
 	// create
@@ -84,16 +78,10 @@ func (h *serviceHandler) OutdialtargetGet(u *cscustomer.Customer, outdialID uuid
 	log.Debug("Executing OutdialtargetGet.")
 
 	// get outdial
-	od, err := h.reqHandler.OMV1OutdialGet(ctx, outdialID)
+	_, err := h.outdialGet(ctx, u, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != od.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
+		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
 	// get outdialtarget
@@ -110,6 +98,47 @@ func (h *serviceHandler) OutdialtargetGet(u *cscustomer.Customer, outdialID uuid
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// OutdialtargetGetsByOutdialID gets the list of outdialtargets of the given outdial id.
+// It returns list of outdialtargets if it succeed.
+func (h *serviceHandler) OutdialtargetGetsByOutdialID(u *cscustomer.Customer, outdialID uuid.UUID, size uint64, token string) ([]*omoutdialtarget.WebhookMessage, error) {
+	ctx := context.Background()
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "OutdialtargetGetsByOutdialID",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
+	})
+	log.Debug("Getting a outdials.")
+
+	if token == "" {
+		token = getCurTime()
+	}
+
+	// get outdial
+	_, err := h.outdialGet(ctx, u, outdialID)
+	if err != nil {
+		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
+		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
+	}
+
+	// get targets
+	targets, err := h.reqHandler.OMV1OutdialtargetGetsByOutdialID(ctx, outdialID, token, size)
+	if err != nil {
+		log.Errorf("Could not get outdials info from the outdial-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find outdials info. err: %v", err)
+	}
+
+	// create result
+	res := []*omoutdialtarget.WebhookMessage{}
+	for _, f := range targets {
+		tmp := f.ConvertWebhookMessage()
+		res = append(res, tmp)
+	}
+
 	return res, nil
 }
 

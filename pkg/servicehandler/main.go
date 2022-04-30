@@ -149,9 +149,10 @@ type ServiceHandler interface {
 
 	// outdials
 	OutdialCreate(u *cscustomer.Customer, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error)
-	OutdialGets(u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error)
+	OutdialGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error)
 	OutdialDelete(u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error)
 	OutdialGet(u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error)
+	OutdialtargetGetsByOutdialID(u *cscustomer.Customer, outdialID uuid.UUID, size uint64, token string) ([]*omoutdialtarget.WebhookMessage, error)
 	OutdialUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*omoutdial.WebhookMessage, error)
 	OutdialUpdateCampaignID(u *cscustomer.Customer, id, campaignID uuid.UUID) (*omoutdial.WebhookMessage, error)
 	OutdialUpdateData(u *cscustomer.Customer, id uuid.UUID, data string) (*omoutdial.WebhookMessage, error)
