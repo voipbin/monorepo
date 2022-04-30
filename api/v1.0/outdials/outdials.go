@@ -114,7 +114,7 @@ func outdialsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get outdial
-	outdials, err := serviceHandler.OutdialGets(&u, pageSize, req.PageToken)
+	outdials, err := serviceHandler.OutdialGetsByCustomerID(&u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a outdial list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -559,6 +559,84 @@ func outdialsIDTargetsIDDELETE(c *gin.Context) {
 		log.Errorf("Could not delete the outdial target. err: %v", err)
 		c.AbortWithStatus(400)
 		return
+	}
+
+	c.JSON(200, res)
+}
+
+// outdialsIDTargetsGET handles GET /outdials/{id}/targets request.
+// It gets a list of outdialtargets.
+// @Summary Get a list of outdialtargets.
+// @Description Get a list of outdialtargets.
+// @Produce json
+// @Param id query string true "The outdial's id"
+// @Success 200
+// @Router /v1.0/outdials/{id}/targets [get]
+func outdialsIDTargetsGET(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "outdialsIDTargetsGET",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithFields(logrus.Fields{
+		"outdial_id": id,
+	})
+	log.Debug("Executing outdialsIDTargetsGET.")
+
+	var req request.ParamOutdialsIDTargetsGET
+	if err := c.BindQuery(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// set max page size
+	pageSize := req.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+	log.Debugf("outdialsGET. Received request detail. page_size: %d, page_token: %s", pageSize, req.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// get outdial
+	outdialtargets, err := serviceHandler.OutdialtargetGetsByOutdialID(&u, id, pageSize, req.PageToken)
+	if err != nil {
+		log.Errorf("Could not get a outdial list. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(outdialtargets) > 0 {
+		nextToken = outdialtargets[len(outdialtargets)-1].TMCreate
+	}
+	res := response.BodyOutdialsIDTargetsGET{
+		Result: outdialtargets,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
 	}
 
 	c.JSON(200, res)

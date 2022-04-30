@@ -131,7 +131,7 @@ func Test_OutdialGets(t *testing.T) {
 			}
 
 			mockReq.EXPECT().OMV1OutdialGetsByCustomerID(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
-			res, err := h.OutdialGets(tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.OutdialGetsByCustomerID(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
