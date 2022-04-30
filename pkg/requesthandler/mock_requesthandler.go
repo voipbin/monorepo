@@ -22,6 +22,7 @@ import (
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	response "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -783,6 +784,51 @@ func (m *MockRequestHandler) CAV1CampaignUpdateStatus(ctx context.Context, id uu
 func (mr *MockRequestHandlerMockRecorder) CAV1CampaignUpdateStatus(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaignUpdateStatus", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaignUpdateStatus), ctx, id, status)
+}
+
+// CAV1CampaigncallDelete mocks base method.
+func (m *MockRequestHandler) CAV1CampaigncallDelete(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaigncallDelete", ctx, id)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaigncallDelete indicates an expected call of CAV1CampaigncallDelete.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaigncallDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaigncallDelete", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaigncallDelete), ctx, id)
+}
+
+// CAV1CampaigncallGet mocks base method.
+func (m *MockRequestHandler) CAV1CampaigncallGet(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaigncallGet", ctx, id)
+	ret0, _ := ret[0].(*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaigncallGet indicates an expected call of CAV1CampaigncallGet.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaigncallGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaigncallGet", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaigncallGet), ctx, id)
+}
+
+// CAV1CampaigncallGetsByCampaignID mocks base method.
+func (m *MockRequestHandler) CAV1CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, pageToken string, pageSize uint64) ([]campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CAV1CampaigncallGetsByCampaignID", ctx, campaignID, pageToken, pageSize)
+	ret0, _ := ret[0].([]campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CAV1CampaigncallGetsByCampaignID indicates an expected call of CAV1CampaigncallGetsByCampaignID.
+func (mr *MockRequestHandlerMockRecorder) CAV1CampaigncallGetsByCampaignID(ctx, campaignID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CAV1CampaigncallGetsByCampaignID", reflect.TypeOf((*MockRequestHandler)(nil).CAV1CampaigncallGetsByCampaignID), ctx, campaignID, pageToken, pageSize)
 }
 
 // CAV1OutplanCreate mocks base method.
