@@ -20,6 +20,7 @@ import (
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -126,8 +127,9 @@ const (
 	resourceAMAgent resource = "am/agents"
 	resourceAMTag   resource = "am/tags"
 
-	resourceCACampaigns resource = "ca/campaigns"
-	resourceCAOutplans  resource = "ca/outplans"
+	resourceCACampaigns     resource = "ca/campaigns"
+	resourceCACampaigncalls resource = "ca/campaigncalls"
+	resourceCAOutplans      resource = "ca/outplans"
 
 	resourceCMCall               resource = "cm/calls"
 	resourceCMCallsActionNext    resource = "cm/calls/action-next"
@@ -288,6 +290,11 @@ type RequestHandler interface {
 	CAV1CampaignUpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*cacampaign.Campaign, error)
 	CAV1CampaignUpdateResourceInfo(ctx context.Context, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.Campaign, error)
 	CAV1CampaignUpdateNextCampaignID(ctx context.Context, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.Campaign, error)
+
+	// campaign-manager campaigncalls
+	CAV1CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error)
+	CAV1CampaigncallGet(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error)
+	CAV1CampaigncallDelete(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error)
 
 	// campaign-manager outplans
 	CAV1OutplanCreate(
