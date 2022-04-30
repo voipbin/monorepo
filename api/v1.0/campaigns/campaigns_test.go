@@ -3,7 +3,6 @@ package campaigns
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -30,9 +30,11 @@ func setupServer(app *gin.Engine) {
 func Test_campaignsPOST(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		requestBody request.BodyCampaignsPOST
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+		reqBody  request.BodyCampaignsPOST
 
 		response *cacampaign.WebhookMessage
 	}{
@@ -44,6 +46,8 @@ func Test_campaignsPOST(t *testing.T) {
 					cspermission.PermissionAdmin.ID,
 				},
 			},
+
+			"/v1.0/campaigns",
 			request.BodyCampaignsPOST{
 				Name:         "test name",
 				Detail:       "test detail",
@@ -85,25 +89,25 @@ func Test_campaignsPOST(t *testing.T) {
 			setupServer(r)
 
 			// create body
-			body, err := json.Marshal(tt.requestBody)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
 			mockSvc.EXPECT().CampaignCreate(
 				&tt.customer,
-				tt.requestBody.Name,
-				tt.requestBody.Detail,
-				tt.requestBody.Type,
-				tt.requestBody.ServiceLevel,
-				tt.requestBody.EndHandle,
-				tt.requestBody.Actions,
-				tt.requestBody.OutplanID,
-				tt.requestBody.OutdialID,
-				tt.requestBody.QueueID,
-				tt.requestBody.NextCampaignID,
+				tt.reqBody.Name,
+				tt.reqBody.Detail,
+				tt.reqBody.Type,
+				tt.reqBody.ServiceLevel,
+				tt.reqBody.EndHandle,
+				tt.reqBody.Actions,
+				tt.reqBody.OutplanID,
+				tt.reqBody.OutdialID,
+				tt.reqBody.QueueID,
+				tt.reqBody.NextCampaignID,
 			).Return(tt.response, nil)
-			req, _ := http.NewRequest("POST", "/v1.0/campaigns", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -117,9 +121,11 @@ func Test_campaignsPOST(t *testing.T) {
 func Test_campaignsGET(t *testing.T) {
 
 	type test struct {
-		name        string
-		customer    cscustomer.Customer
-		req         request.ParamCampaignsGET
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery    string
+		reqBody     request.ParamCampaignsGET
 		resOutdials []*cacampaign.WebhookMessage
 		expectRes   string
 	}
@@ -130,12 +136,15 @@ func Test_campaignsGET(t *testing.T) {
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
+
+			"/v1.0/campaigns?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			request.ParamCampaignsGET{
 				Pagination: request.Pagination{
 					PageSize:  10,
-					PageToken: "2020-09-20T03:23:20.995000",
+					PageToken: "2020-09-20 03:23:20.995000",
 				},
 			},
+
 			[]*cacampaign.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
@@ -149,10 +158,12 @@ func Test_campaignsGET(t *testing.T) {
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
+
+			"/v1.0/campaigns?page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			request.ParamCampaignsGET{
 				Pagination: request.Pagination{
 					PageSize:  10,
-					PageToken: "2020-09-20T03:23:20.995000",
+					PageToken: "2020-09-20 03:23:20.995000",
 				},
 			},
 			[]*cacampaign.WebhookMessage{
@@ -190,11 +201,9 @@ func Test_campaignsGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			reqQuery := fmt.Sprintf("/v1.0/campaigns?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
-			req, _ := http.NewRequest("GET", reqQuery, nil)
+			mockSvc.EXPECT().CampaignGetsByCustomerID(&tt.customer, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
 
-			mockSvc.EXPECT().CampaignGetsByCustomerID(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutdials, nil)
-
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -214,6 +223,8 @@ func Test_campaignsIDGET(t *testing.T) {
 		customer   cscustomer.Customer
 		campaignID uuid.UUID
 
+		reqQuery string
+
 		response *cacampaign.WebhookMessage
 	}{
 		{
@@ -222,6 +233,8 @@ func Test_campaignsIDGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("832bd31a-c68b-11ec-bcd0-7f66f70ae88d"),
+
+			"/v1.0/campaigns/832bd31a-c68b-11ec-bcd0-7f66f70ae88d",
 
 			&cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("832bd31a-c68b-11ec-bcd0-7f66f70ae88d"),
@@ -247,7 +260,7 @@ func Test_campaignsIDGET(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().CampaignGet(&tt.customer, tt.campaignID).Return(tt.response, nil)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/campaigns/%s", tt.campaignID), nil)
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -264,6 +277,7 @@ func Test_campaignsIDDELETE(t *testing.T) {
 		customer   cscustomer.Customer
 		campaignID uuid.UUID
 
+		reqQuery string
 		response *cacampaign.WebhookMessage
 	}{
 		{
@@ -272,6 +286,8 @@ func Test_campaignsIDDELETE(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			uuid.FromStringOrNil("aa1a055a-c68b-11ec-99c7-173b42898a47"),
+
+			"/v1.0/campaigns/aa1a055a-c68b-11ec-99c7-173b42898a47",
 			&cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("aa1a055a-c68b-11ec-99c7-173b42898a47"),
 			},
@@ -296,7 +312,7 @@ func Test_campaignsIDDELETE(t *testing.T) {
 			setupServer(r)
 
 			mockSvc.EXPECT().CampaignDelete(&tt.customer, tt.campaignID).Return(tt.response, nil)
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/campaigns/%s", tt.campaignID), nil)
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -309,11 +325,13 @@ func Test_campaignsIDDELETE(t *testing.T) {
 func Test_campaignsIDPUT(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		outdialID   uuid.UUID
-		requestBody request.BodyCampaignsIDPUT
-		response    *cacampaign.WebhookMessage
+		name      string
+		customer  cscustomer.Customer
+		outdialID uuid.UUID
+
+		reqQuery string
+		reqBody  request.BodyCampaignsIDPUT
+		response *cacampaign.WebhookMessage
 	}{
 		{
 			"normal",
@@ -324,6 +342,8 @@ func Test_campaignsIDPUT(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
+
+			"/v1.0/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
 			request.BodyCampaignsIDPUT{
 				Name:   "test name",
 				Detail: "test detail",
@@ -352,13 +372,13 @@ func Test_campaignsIDPUT(t *testing.T) {
 			setupServer(r)
 
 			// create body
-			body, err := json.Marshal(tt.requestBody)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateBasicInfo(&tt.customer, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
-			req, _ := http.NewRequest("PUT", "/v1.0/campaigns/"+tt.outdialID.String(), bytes.NewBuffer(body))
+			mockSvc.EXPECT().CampaignUpdateBasicInfo(&tt.customer, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail).Return(tt.response, nil)
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -372,11 +392,13 @@ func Test_campaignsIDPUT(t *testing.T) {
 func Test_campaignsIDStatusPUT(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		outdialID   uuid.UUID
-		requestBody request.BodyCampaignsIDStatusPUT
-		response    *cacampaign.WebhookMessage
+		name       string
+		customer   cscustomer.Customer
+		campaignID uuid.UUID
+
+		reqQuery string
+		reqBody  request.BodyCampaignsIDStatusPUT
+		response *cacampaign.WebhookMessage
 	}{
 		{
 			"normal",
@@ -387,6 +409,8 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("1bbc5316-c68c-11ec-a2cd-7b9fb7e1e855"),
+
+			"/v1.0/campaigns/1bbc5316-c68c-11ec-a2cd-7b9fb7e1e855/status",
 			request.BodyCampaignsIDStatusPUT{
 				Status: cacampaign.StatusRun,
 			},
@@ -414,13 +438,13 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 			setupServer(r)
 
 			// create body
-			body, err := json.Marshal(tt.requestBody)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateStatus(&tt.customer, tt.outdialID, tt.requestBody.Status).Return(tt.response, nil)
-			req, _ := http.NewRequest("PUT", "/v1.0/campaigns/"+tt.outdialID.String()+"/status", bytes.NewBuffer(body))
+			mockSvc.EXPECT().CampaignUpdateStatus(&tt.customer, tt.campaignID, tt.reqBody.Status).Return(tt.response, nil)
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -434,11 +458,13 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		outdialID   uuid.UUID
-		requestBody request.BodyCampaignsIDServiceLevelPUT
-		response    *cacampaign.WebhookMessage
+		name       string
+		customer   cscustomer.Customer
+		campaignID uuid.UUID
+
+		reqQuery string
+		reqBody  request.BodyCampaignsIDServiceLevelPUT
+		response *cacampaign.WebhookMessage
 	}{
 		{
 			"normal",
@@ -449,6 +475,8 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("40460ace-c68c-11ec-9694-830803c448f7"),
+
+			"/v1.0/campaigns/40460ace-c68c-11ec-9694-830803c448f7/service_level",
 			request.BodyCampaignsIDServiceLevelPUT{
 				ServiceLevel: 100,
 			},
@@ -476,13 +504,13 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 			setupServer(r)
 
 			// create body
-			body, err := json.Marshal(tt.requestBody)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateServiceLevel(&tt.customer, tt.outdialID, tt.requestBody.ServiceLevel).Return(tt.response, nil)
-			req, _ := http.NewRequest("PUT", "/v1.0/campaigns/"+tt.outdialID.String()+"/service_level", bytes.NewBuffer(body))
+			mockSvc.EXPECT().CampaignUpdateServiceLevel(&tt.customer, tt.campaignID, tt.reqBody.ServiceLevel).Return(tt.response, nil)
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -496,11 +524,13 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 func Test_campaignsIDActionsPUT(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		outdialID   uuid.UUID
-		requestBody request.BodyCampaignsIDActionsPUT
-		response    *cacampaign.WebhookMessage
+		name      string
+		customer  cscustomer.Customer
+		outdialID uuid.UUID
+
+		reqQuery string
+		reqBody  request.BodyCampaignsIDActionsPUT
+		response *cacampaign.WebhookMessage
 	}{
 		{
 			"normal",
@@ -511,6 +541,8 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("79027712-c68c-11ec-b75e-27bce33a22a8"),
+
+			"/v1.0/campaigns/79027712-c68c-11ec-b75e-27bce33a22a8/actions",
 			request.BodyCampaignsIDActionsPUT{
 				Actions: []fmaction.Action{
 					{
@@ -542,13 +574,13 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 			setupServer(r)
 
 			// create body
-			body, err := json.Marshal(tt.requestBody)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateActions(&tt.customer, tt.outdialID, tt.requestBody.Actions).Return(tt.response, nil)
-			req, _ := http.NewRequest("PUT", "/v1.0/campaigns/"+tt.outdialID.String()+"/actions", bytes.NewBuffer(body))
+			mockSvc.EXPECT().CampaignUpdateActions(&tt.customer, tt.outdialID, tt.reqBody.Actions).Return(tt.response, nil)
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -562,11 +594,13 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		campaignID  uuid.UUID
-		requestBody request.BodyCampaignsIDResourceInfoPUT
-		response    *cacampaign.WebhookMessage
+		name       string
+		customer   cscustomer.Customer
+		campaignID uuid.UUID
+
+		reqQuery string
+		reqBody  request.BodyCampaignsIDResourceInfoPUT
+		response *cacampaign.WebhookMessage
 	}{
 		{
 			"normal",
@@ -577,6 +611,8 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("47a64a88-c6b7-11ec-973d-1f139c4db335"),
+
+			"/v1.0/campaigns/47a64a88-c6b7-11ec-973d-1f139c4db335/resource_info",
 			request.BodyCampaignsIDResourceInfoPUT{
 				OutplanID: uuid.FromStringOrNil("60fbac4e-c6b7-11ec-869d-3bb7acd5d21a"),
 				OutdialID: uuid.FromStringOrNil("61276366-c6b7-11ec-9a5f-07c38e459ee5"),
@@ -606,13 +642,13 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 			setupServer(r)
 
 			// create body
-			body, err := json.Marshal(tt.requestBody)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateResourceInfo(&tt.customer, tt.campaignID, tt.requestBody.OutplanID, tt.requestBody.OutdialID, tt.requestBody.QueueID).Return(tt.response, nil)
-			req, _ := http.NewRequest("PUT", "/v1.0/campaigns/"+tt.campaignID.String()+"/resource_info", bytes.NewBuffer(body))
+			mockSvc.EXPECT().CampaignUpdateResourceInfo(&tt.customer, tt.campaignID, tt.reqBody.OutplanID, tt.reqBody.OutdialID, tt.reqBody.QueueID).Return(tt.response, nil)
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
@@ -626,9 +662,11 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		campaignID  uuid.UUID
+		name       string
+		customer   cscustomer.Customer
+		campaignID uuid.UUID
+
+		reqQuery    string
 		requestBody request.BodyCampaignsIDNextCampaignIDPUT
 		response    *cacampaign.WebhookMessage
 	}{
@@ -641,6 +679,8 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
+
+			"/v1.0/campaigns/a76dcb26-c6b7-11ec-b0dc-23d4f8625f83/next_campaign_id",
 			request.BodyCampaignsIDNextCampaignIDPUT{
 				NextCampaignID: uuid.FromStringOrNil("b045bff6-c6b7-11ec-8d03-2f6187fcf80f"),
 			},
@@ -674,12 +714,114 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 			}
 
 			mockSvc.EXPECT().CampaignUpdateNextCampaignID(&tt.customer, tt.campaignID, tt.requestBody.NextCampaignID).Return(tt.response, nil)
-			req, _ := http.NewRequest("PUT", "/v1.0/campaigns/"+tt.campaignID.String()+"/next_campaign_id", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_campaignsIDCampaigncallsGET(t *testing.T) {
+
+	type test struct {
+		name       string
+		customer   cscustomer.Customer
+		campaignID uuid.UUID
+
+		reqQuery    string
+		reqBody     request.ParamCampaignsIDCampaigncallsGET
+		resOutdials []*cacampaigncall.WebhookMessage
+		expectRes   string
+	}
+
+	tests := []test{
+		{
+			"1 item",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			uuid.FromStringOrNil("571e5aa6-c86e-11ec-a62f-d7989ff2e4dd"),
+
+			"/v1.0/campaigns/571e5aa6-c86e-11ec-a62f-d7989ff2e4dd/campaigncalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			request.ParamCampaignsIDCampaigncallsGET{
+				Pagination: request.Pagination{
+					PageSize:  10,
+					PageToken: "2020-09-20 03:23:20.995000",
+				},
+			},
+			[]*cacampaigncall.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+			},
+			`{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+		},
+		{
+			"more than 2 items",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			uuid.FromStringOrNil("ef319a88-c86e-11ec-a8b2-abe87e962b9b"),
+
+			"/v1.0/campaigns/ef319a88-c86e-11ec-a8b2-abe87e962b9b/campaigncalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			request.ParamCampaignsIDCampaigncallsGET{
+				Pagination: request.Pagination{
+					PageSize:  10,
+					PageToken: "2020-09-20 03:23:20.995000",
+				},
+			},
+			[]*cacampaigncall.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("ef5da59c-c86e-11ec-95bf-b7309c164fc2"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("ef83ff26-c86e-11ec-bfae-d34d64f4c3a5"),
+					TMCreate: "2020-09-20T03:23:22.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("efab58fa-c86e-11ec-9fcb-4b7edd03d7cb"),
+					TMCreate: "2020-09-20T03:23:23.995000",
+				},
+			},
+			`{"result":[{"id":"ef5da59c-c86e-11ec-95bf-b7309c164fc2","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":""},{"id":"ef83ff26-c86e-11ec-bfae-d34d64f4c3a5","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":""},{"id":"efab58fa-c86e-11ec-9fcb-4b7edd03d7cb","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// reqQuery := fmt.Sprintf("/v1.0/campaigns?page_size=%d&page_token=%s", tt.reqBody.PageSize, tt.reqBody.PageToken)
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+
+			mockSvc.EXPECT().CampaigncallGetsByCampaignID(&tt.customer, tt.campaignID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
 	}

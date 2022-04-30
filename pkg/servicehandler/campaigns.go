@@ -12,6 +12,34 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
+// campaignGet validates the campaign's ownership and returns the campaign info.
+func (h *serviceHandler) campaignGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "campaignGet",
+			"customer_id": u.ID,
+			"agent_id":    id,
+		},
+	)
+
+	// send request
+	tmp, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the campaign info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("campaign", tmp).Debug("Received result.")
+
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// create result
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // CampaignCreate is a service handler for campaign creation.
 func (h *serviceHandler) CampaignCreate(
 	u *cscustomer.Customer,
@@ -105,19 +133,12 @@ func (h *serviceHandler) CampaignGet(u *cscustomer.Customer, id uuid.UUID) (*cac
 	log.Debug("Getting an campaign.")
 
 	// get campaign
-	tmp, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	res, err := h.campaignGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Errorf("The customer has no permission for this campaign. customer: %s, campaign_customer: %s", u.ID, tmp.CustomerID)
-		return nil, fmt.Errorf("customer has no permission")
-	}
-
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -133,16 +154,10 @@ func (h *serviceHandler) CampaignDelete(u *cscustomer.Customer, id uuid.UUID) (*
 	log.Debug("Deleting a campaign.")
 
 	// get campaign
-	f, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	_, err := h.campaignGet(ctx, u, id)
 	if err != nil {
-		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find flow info. err: %v", err)
-	}
-
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != f.CustomerID {
-		log.Errorf("The customer has no permission for this flow. customer: %s, flow_customer: %s", u.ID, f.CustomerID)
-		return nil, fmt.Errorf("customer has no permission")
+		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
 	tmp, err := h.reqHandler.CAV1CampaignDelete(ctx, id)
@@ -168,16 +183,10 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(u *cscustomer.Customer, id uuid
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	tmpCampaign, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	_, err := h.campaignGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpCampaign.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	tmp, err := h.reqHandler.CAV1CampaignUpdateBasicInfo(ctx, id, name, detail)
@@ -203,16 +212,10 @@ func (h *serviceHandler) CampaignUpdateStatus(u *cscustomer.Customer, id uuid.UU
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	tmpCampaign, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	_, err := h.campaignGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpCampaign.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	tmp, err := h.reqHandler.CAV1CampaignUpdateStatus(ctx, id, status)
@@ -238,16 +241,10 @@ func (h *serviceHandler) CampaignUpdateServiceLevel(u *cscustomer.Customer, id u
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	tmpCampaign, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	_, err := h.campaignGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpCampaign.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	tmp, err := h.reqHandler.CAV1CampaignUpdateServiceLevel(ctx, id, serviceLevel)
@@ -273,16 +270,10 @@ func (h *serviceHandler) CampaignUpdateActions(u *cscustomer.Customer, id uuid.U
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	tmpCampaign, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	_, err := h.campaignGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpCampaign.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	tmp, err := h.reqHandler.CAV1CampaignUpdateActions(ctx, id, actions)
@@ -308,16 +299,10 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(u *cscustomer.Customer, id u
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	tmpCampaign, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	_, err := h.campaignGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpCampaign.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	tmp, err := h.reqHandler.CAV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID)
@@ -343,16 +328,10 @@ func (h *serviceHandler) CampaignUpdateNextCampaignID(u *cscustomer.Customer, id
 	log.Debug("Updating an campaign.")
 
 	// get campaign
-	tmpCampaign, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	_, err := h.campaignGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpCampaign.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	tmp, err := h.reqHandler.CAV1CampaignUpdateNextCampaignID(ctx, id, nextCampaignID)

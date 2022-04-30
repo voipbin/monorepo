@@ -22,7 +22,7 @@ require (
 	github.com/swaggo/gin-swagger v1.4.3
 	github.com/swaggo/swag v1.8.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220414221219-afe912d6515b
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220429075012-5b954dca5c51
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220430080316-d7978ebd5bcb
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220426052956-29bf45e8f93f
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220413022009-130ed4292bdf
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220424171422-5a3b77610aae
@@ -37,7 +37,7 @@ require (
 
 require (
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220413020856-9bff29d04032
-	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220429074231-bc01445daf23
+	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220430073233-24abd299620b
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220413021200-204155e694ef
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220413021508-2a83dea8ea6c
