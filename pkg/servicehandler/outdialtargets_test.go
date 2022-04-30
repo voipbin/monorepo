@@ -203,6 +203,80 @@ func Test_OutdialtargetGet(t *testing.T) {
 	}
 }
 
+func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	type test struct {
+		name      string
+		customer  *cscustomer.Customer
+		outdialID uuid.UUID
+		pageToken string
+		pageSize  uint64
+
+		responseOutdial *omoutdial.Outdial
+		response        []omoutdialtarget.OutdialTarget
+		expectRes       []*omoutdialtarget.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			uuid.FromStringOrNil("cf21cd20-c829-11ec-8452-6746e25a4103"),
+			"2021-03-01 01:00:00.995000",
+			10,
+
+			&omoutdial.Outdial{
+				ID:         uuid.FromStringOrNil("cf21cd20-c829-11ec-8452-6746e25a4103"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			[]omoutdialtarget.OutdialTarget{
+				{
+					ID: uuid.FromStringOrNil("cf484284-c829-11ec-8bde-6f873b300703"),
+				},
+			},
+			[]*omoutdialtarget.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("cf484284-c829-11ec-8bde-6f873b300703"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockReq.EXPECT().OMV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OMV1OutdialtargetGetsByOutdialID(gomock.Any(), tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+
+			res, err := h.OutdialtargetGetsByOutdialID(tt.customer, tt.outdialID, tt.pageSize, tt.pageToken)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			for _, tmp := range res {
+				tmp.TMCreate = ""
+				tmp.TMUpdate = ""
+				tmp.TMDelete = ""
+			}
+
+			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+			}
+		})
+	}
+}
+
 func Test_OutdialtargetDelete(t *testing.T) {
 
 	tests := []struct {

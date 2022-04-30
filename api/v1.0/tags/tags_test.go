@@ -26,12 +26,6 @@ func setupServer(app *gin.Engine) {
 
 func TestTagsPOST(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name     string
 		customer cscustomer.Customer
@@ -67,6 +61,11 @@ func TestTagsPOST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -96,12 +95,6 @@ func TestTagsPOST(t *testing.T) {
 }
 
 func TestTagsGET(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name     string
@@ -161,6 +154,11 @@ func TestTagsGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -188,12 +186,6 @@ func TestTagsGET(t *testing.T) {
 
 func TestTagsDelete(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name     string
 		customer cscustomer.Customer
@@ -214,6 +206,11 @@ func TestTagsDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -238,12 +235,6 @@ func TestTagsDelete(t *testing.T) {
 }
 
 func TestTagsIDGet(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name     string
@@ -271,6 +262,11 @@ func TestTagsIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -295,12 +291,6 @@ func TestTagsIDGet(t *testing.T) {
 }
 
 func TestTagsIDPut(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name     string
@@ -330,6 +320,11 @@ func TestTagsIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)

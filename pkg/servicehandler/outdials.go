@@ -11,6 +11,34 @@ import (
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 )
 
+// outdialGet validates the outdial's ownership and returns the outdial info.
+func (h *serviceHandler) outdialGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "outdialGet",
+			"customer_id": u.ID,
+			"agent_id":    id,
+		},
+	)
+
+	// send request
+	tmp, err := h.reqHandler.OMV1OutdialGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the outdial info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("outdial", tmp).Debug("Received result.")
+
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+		log.Info("The user has no permission for this agent.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// create result
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // OutdialCreate is a service handler for outdial creation.
 func (h *serviceHandler) OutdialCreate(u *cscustomer.Customer, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error) {
 	ctx := context.Background()
@@ -31,11 +59,12 @@ func (h *serviceHandler) OutdialCreate(u *cscustomer.Customer, campaignID uuid.U
 	return res, nil
 }
 
-// OutdialGets gets the list of outdials of the given customer id.
+// OutdialGetsByCustomerID gets the list of outdials of the given customer id.
 // It returns list of outdials if it succeed.
-func (h *serviceHandler) OutdialGets(u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error) {
+func (h *serviceHandler) OutdialGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "OutdialGetsByCustomerID",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"size":        size,
@@ -75,16 +104,10 @@ func (h *serviceHandler) OutdialDelete(u *cscustomer.Customer, id uuid.UUID) (*o
 	log.Debug("Deleting a outdial.")
 
 	// get outdial
-	f, err := h.reqHandler.OMV1OutdialGet(ctx, id)
+	_, err := h.outdialGet(ctx, u, id)
 	if err != nil {
-		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find flow info. err: %v", err)
-	}
-
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != f.CustomerID {
-		log.Errorf("The customer has no permission for this flow. customer: %s, flow_customer: %s", u.ID, f.CustomerID)
-		return nil, fmt.Errorf("customer has no permission")
+		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
+		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
 	tmp, err := h.reqHandler.OMV1OutdialDelete(ctx, id)
@@ -109,19 +132,12 @@ func (h *serviceHandler) OutdialGet(u *cscustomer.Customer, id uuid.UUID) (*omou
 	log.Debug("Getting an outdial.")
 
 	// get outdial
-	tmp, err := h.reqHandler.OMV1OutdialGet(ctx, id)
+	res, err := h.outdialGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
+		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Errorf("The customer has no permission for this outdial. customer: %s, outdial_customer: %s", u.ID, tmp.CustomerID)
-		return nil, fmt.Errorf("customer has no permission")
-	}
-
-	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
@@ -138,16 +154,10 @@ func (h *serviceHandler) OutdialUpdateBasicInfo(u *cscustomer.Customer, id uuid.
 	log.Debug("Updating an outdial.")
 
 	// get outdial
-	tmpOutdial, err := h.reqHandler.OMV1OutdialGet(ctx, id)
+	_, err := h.outdialGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpOutdial.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
+		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
 	tmp, err := h.reqHandler.OMV1OutdialUpdateBasicInfo(ctx, id, name, detail)
@@ -174,16 +184,10 @@ func (h *serviceHandler) OutdialUpdateCampaignID(u *cscustomer.Customer, id, cam
 	log.Debug("Executing OutdialUpdateCampaignID.")
 
 	// get outdial
-	tmpFlow, err := h.reqHandler.OMV1OutdialGet(ctx, id)
+	_, err := h.outdialGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpFlow.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
+		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
 	tmp, err := h.reqHandler.OMV1OutdialUpdateCampaignID(ctx, id, campaignID)
@@ -210,16 +214,10 @@ func (h *serviceHandler) OutdialUpdateData(u *cscustomer.Customer, id uuid.UUID,
 	log.Debug("Executing OutdialUpdateData.")
 
 	// get outdial
-	tmpFlow, err := h.reqHandler.OMV1OutdialGet(ctx, id)
+	_, err := h.outdialGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
-	}
-
-	// check the ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmpFlow.CustomerID {
-		log.Info("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
+		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
 	tmp, err := h.reqHandler.OMV1OutdialUpdateData(ctx, id, data)

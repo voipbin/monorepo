@@ -45,3 +45,8 @@ type BodyOutdialsIDTargetsPOST struct {
 	Destination3 *cmaddress.Address `json:"destination_3"`
 	Destination4 *cmaddress.Address `json:"destination_4"`
 }
+
+// ParamOutdialsIDTargetsGET is rquest param define for GET /outdials/{id}/targets
+type ParamOutdialsIDTargetsGET struct {
+	Pagination
+}

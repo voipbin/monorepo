@@ -1026,19 +1026,19 @@ func (mr *MockServiceHandlerMockRecorder) OutdialGet(u, id interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialGet", reflect.TypeOf((*MockServiceHandler)(nil).OutdialGet), u, id)
 }
 
-// OutdialGets mocks base method.
-func (m *MockServiceHandler) OutdialGets(u *customer.Customer, size uint64, token string) ([]*outdial.WebhookMessage, error) {
+// OutdialGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) OutdialGetsByCustomerID(u *customer.Customer, size uint64, token string) ([]*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutdialGets", u, size, token)
+	ret := m.ctrl.Call(m, "OutdialGetsByCustomerID", u, size, token)
 	ret0, _ := ret[0].([]*outdial.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// OutdialGets indicates an expected call of OutdialGets.
-func (mr *MockServiceHandlerMockRecorder) OutdialGets(u, size, token interface{}) *gomock.Call {
+// OutdialGetsByCustomerID indicates an expected call of OutdialGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) OutdialGetsByCustomerID(u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialGets", reflect.TypeOf((*MockServiceHandler)(nil).OutdialGets), u, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).OutdialGetsByCustomerID), u, size, token)
 }
 
 // OutdialUpdateBasicInfo mocks base method.
@@ -1129,6 +1129,21 @@ func (m *MockServiceHandler) OutdialtargetGet(u *customer.Customer, outdialID, o
 func (mr *MockServiceHandlerMockRecorder) OutdialtargetGet(u, outdialID, outdialtargetID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialtargetGet", reflect.TypeOf((*MockServiceHandler)(nil).OutdialtargetGet), u, outdialID, outdialtargetID)
+}
+
+// OutdialtargetGetsByOutdialID mocks base method.
+func (m *MockServiceHandler) OutdialtargetGetsByOutdialID(u *customer.Customer, outdialID uuid.UUID, size uint64, token string) ([]*outdialtarget.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutdialtargetGetsByOutdialID", u, outdialID, size, token)
+	ret0, _ := ret[0].([]*outdialtarget.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutdialtargetGetsByOutdialID indicates an expected call of OutdialtargetGetsByOutdialID.
+func (mr *MockServiceHandlerMockRecorder) OutdialtargetGetsByOutdialID(u, outdialID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialtargetGetsByOutdialID", reflect.TypeOf((*MockServiceHandler)(nil).OutdialtargetGetsByOutdialID), u, outdialID, size, token)
 }
 
 // OutplanCreate mocks base method.

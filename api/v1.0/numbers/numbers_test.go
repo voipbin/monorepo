@@ -28,12 +28,6 @@ func setupServer(app *gin.Engine) {
 
 func TestNumbersGET(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	tests := []struct {
 		name     string
 		customer cscustomer.Customer
@@ -64,6 +58,11 @@ func TestNumbersGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -86,12 +85,6 @@ func TestNumbersGET(t *testing.T) {
 }
 
 func TestNumbersIDGET(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	tests := []struct {
 		name     string
@@ -118,6 +111,11 @@ func TestNumbersIDGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -150,12 +148,6 @@ func TestNumbersIDGET(t *testing.T) {
 
 func TestNumbersIDDELETE(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name     string
 		customer cscustomer.Customer
@@ -181,6 +173,11 @@ func TestNumbersIDDELETE(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -203,12 +200,6 @@ func TestNumbersIDDELETE(t *testing.T) {
 }
 
 func TestNumbersPOST(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name        string
@@ -235,6 +226,11 @@ func TestNumbersPOST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -263,12 +259,6 @@ func TestNumbersPOST(t *testing.T) {
 }
 
 func TestNumbersIDPUT(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name     string
@@ -301,6 +291,11 @@ func TestNumbersIDPUT(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -329,12 +324,6 @@ func TestNumbersIDPUT(t *testing.T) {
 }
 
 func TestNumbersIDFlowIDPUT(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name     string
@@ -367,6 +356,11 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
