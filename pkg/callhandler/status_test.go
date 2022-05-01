@@ -15,26 +15,12 @@ import (
 )
 
 func TestUpdateStatusRinging(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
 		call    *call.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"call status dialing",
 			&channel.Channel{
@@ -49,6 +35,18 @@ func TestUpdateStatusRinging(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusRinging, tt.channel.TMRinging).Return(nil)
@@ -63,26 +61,12 @@ func TestUpdateStatusRinging(t *testing.T) {
 }
 
 func TestUpdateStatusRingingFail(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
 		call    *call.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"call status ringing",
 			&channel.Channel{
@@ -137,6 +121,19 @@ func TestUpdateStatusRingingFail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			ctx := context.Background()
 
 			if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err == nil {
@@ -147,28 +144,14 @@ func TestUpdateStatusRingingFail(t *testing.T) {
 }
 
 func TestUpdateStatusProgressing(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
 		call    *call.Call
-	}
-
-	tests := []test{
+	}{
 		{
-			"call status dialing",
+			"call status dialing for incoming",
 			&channel.Channel{
 				TMAnswer: "2020-09-20T03:23:20.995000",
 			},
@@ -179,7 +162,7 @@ func TestUpdateStatusProgressing(t *testing.T) {
 			},
 		},
 		{
-			"call status ringing",
+			"call status ringing for incoming",
 			&channel.Channel{
 				TMAnswer: "2020-09-20T03:23:20.995000",
 			},
@@ -189,15 +172,60 @@ func TestUpdateStatusProgressing(t *testing.T) {
 				Direction: call.DirectionIncoming,
 			},
 		},
+		{
+			"call status dialing for outgoing",
+			&channel.Channel{
+				TMAnswer: "2020-09-20T03:23:20.995000",
+			},
+			&call.Call{
+				ID:        uuid.FromStringOrNil("0c864f8e-c8a6-11ec-af3c-372ebc5b6d6d"),
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+			},
+		},
+		{
+			"call status ringing for outgoing",
+			&channel.Channel{
+				TMAnswer: "2020-09-20T03:23:20.995000",
+			},
+			&call.Call{
+				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Status:    call.StatusRinging,
+				Direction: call.DirectionOutgoing,
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallAnswered, tt.call)
+
+			if tt.call.Direction != call.DirectionIncoming {
+				// handleSIPCallID
+				mockReq.EXPECT().AstChannelVariableGet(ctx, tt.channel.AsteriskID, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
+				mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
+
+				mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, gomock.Any(), gomock.Any())
+				mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
+			}
 
 			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -207,24 +235,12 @@ func TestUpdateStatusProgressing(t *testing.T) {
 }
 
 func TestUpdateStatusProgressingFail(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
 		call    *call.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"call status progressing",
 			&channel.Channel{
@@ -273,6 +289,16 @@ func TestUpdateStatusProgressingFail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
 
 			ctx := context.Background()
 

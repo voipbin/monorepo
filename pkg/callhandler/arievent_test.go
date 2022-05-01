@@ -18,26 +18,12 @@ import (
 )
 
 func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotfiy,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
 		call    *call.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal answer",
 			&channel.Channel{
@@ -70,6 +56,19 @@ func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotfiy,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
@@ -77,9 +76,14 @@ func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil).AnyTimes()
 
 			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallAnswered, tt.call)
+			if tt.call.Direction != call.DirectionIncoming {
+				// handleSIPCallID
+				mockReq.EXPECT().AstChannelVariableGet(ctx, tt.channel.AsteriskID, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
+				mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
 
-			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any())
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
+				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any())
+				mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
+			}
 
 			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -89,26 +93,12 @@ func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
 }
 
 func TestARIChannelStateChangeStatusRinging(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotfiy,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
 		call    *call.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal ringing",
 			&channel.Channel{
@@ -127,6 +117,19 @@ func TestARIChannelStateChangeStatusRinging(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotfiy,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
@@ -143,23 +146,11 @@ func TestARIChannelStateChangeStatusRinging(t *testing.T) {
 }
 
 func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
-	}
-
-	tests := []test{
+	}{
 		{
 			"call normal destroy",
 			&channel.Channel{
@@ -173,6 +164,17 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf("no call"))
@@ -185,23 +187,11 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 }
 
 func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
-	}
-
-	tests := []test{
+	}{
 		{
 			"conference normal destroy",
 			&channel.Channel{
@@ -215,6 +205,17 @@ func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 			if err := h.ARIChannelDestroyed(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -224,25 +225,13 @@ func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
 }
 
 func TestARIPlaybackFinished(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		channel    *channel.Channel
 		call       *call.Call
 		playbackID string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&channel.Channel{
@@ -265,6 +254,17 @@ func TestARIPlaybackFinished(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 			returnAction := action.Action{
 				Type:   action.TypeHangup,
