@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	_ "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall" // for sweg use.
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -16,7 +17,7 @@ import (
 // @Description Returns detail campaigns info of the given campaigncall id.
 // @Produce json
 // @Param id path string true "The ID of the campaigncall"
-// @Success 200 {object} campaigncall.Campaigncall
+// @Success 200 {object} campaigncall.WebhookMessage
 // @Router /v1.0/campaigncalls/{id} [get]
 func campaigncallsIDGET(c *gin.Context) {
 	log := logrus.WithFields(

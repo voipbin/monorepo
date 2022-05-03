@@ -211,8 +211,8 @@ Parameters
         }
     }
 
-* *default_target_id*: action id for default selection. This will be generated automatically by the given default_index.
-* *target_ids*: set of input digit and target id fair. This will be generated automatically by the given target_indexes.
+* default_target_id: action id for default selection. This will be generated automatically by the given default_index.
+* target_ids: set of input digit and target id fair. This will be generated automatically by the given target_indexes.
 
 Example
 +++++++
@@ -221,11 +221,11 @@ Example
     {
         "type": "branch",
         "option": {
-            "default_target_id": "779f2580-9c8b-11ec-ae23-0bb6b66c8a86",
-            "target_indexes": {
-                "1": "78dcfb2a-9c8b-11ec-b0fd-cb5d94b8bd32",
-                "2": "7903829a-9c8b-11ec-8aa5-978e3a1124e9",
-                "3": "792b07c0-9c8b-11ec-8407-dbe1a113664c"
+            "default_target_id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
+            "target_ids": {
+                "1": "c3eb8e62-c524-11ec-94c5-abafec8af561",
+                "2": "dc87123e-c524-11ec-89c6-5fb18da14034",
+                "3": "e70fb030-c524-11ec-b657-ebec72f097ef"
             }
         }
     }
