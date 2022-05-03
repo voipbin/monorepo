@@ -5,6 +5,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	_ "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial" // for swag use
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -18,7 +19,7 @@ import (
 // @Description Create a new outdial and returns detail created outdial info.
 // @Produce json
 // @Param outdial body request.BodyOutdialsPOST true "outdial info."
-// @Success 200 {object} outdial.Outdial
+// @Success 200 {object} outdial.WebhookMessage
 // @Router /v1.0/outdials [post]
 func outdialsPOST(c *gin.Context) {
 	log := logrus.WithFields(
@@ -70,7 +71,7 @@ func outdialsPOST(c *gin.Context) {
 // @Produce json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.ParamOudtialsGET
+// @Success 200 {object} response.BodyOutdialsGET
 // @Router /v1.0/outdials [get]
 func outdialsGET(c *gin.Context) {
 	log := logrus.WithFields(

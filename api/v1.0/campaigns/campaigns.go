@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	_ "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign" // for swag use
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -18,7 +19,7 @@ import (
 // @Description Create a new campaign and returns detail created campaign info.
 // @Produce json
 // @Param campaign body request.BodyCampaignsPOST true "campaign info."
-// @Success 200 {object} campaign.Campaign
+// @Success 200 {object} campaign.WebhookMessage
 // @Router /v1.0/campaigns [post]
 func campaignsPOST(c *gin.Context) {
 	log := logrus.WithFields(
@@ -70,7 +71,7 @@ func campaignsPOST(c *gin.Context) {
 // @Produce json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.ParamOudtialsGET
+// @Success 200 {object} response.BodyCampaignsGET
 // @Router /v1.0/campaigns [get]
 func campaignsGET(c *gin.Context) {
 	log := logrus.WithFields(
@@ -579,7 +580,7 @@ func campaignsIDNextCampaignIDPUT(c *gin.Context) {
 // @Produce json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.ParamOudtialsGET
+// @Success 200 {object} response.BodyCampaignsIDCampaigncallsGET
 // @Router /v1.0/campaigns/{id}/campaigncalls [get]
 func campaignsIDCampaigncallsGET(c *gin.Context) {
 	log := logrus.WithFields(

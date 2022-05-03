@@ -156,6 +156,121 @@ definitions:
       webhook_uri:
         type: string
     type: object
+  campaign.Campaign:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      customer_id:
+        type: string
+      detail:
+        type: string
+      end_handle:
+        type: EndHandle
+      execute:
+        type: Execute
+      flow_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      next_campaign_id:
+        type: string
+      outdial_id:
+        type: string
+      outplan_id:
+        type: string
+      queue_id:
+        type: string
+      service_level:
+        type: integer
+      status:
+        type: Status
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: Type
+    type: object
+  campaign.WebhookMessage:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      detail:
+        type: string
+      end_handle:
+        type: EndHandle
+      id:
+        type: string
+      name:
+        type: string
+      next_campaign_id:
+        type: string
+      outdial_id:
+        type: string
+      outplan_id:
+        type: string
+      queue_id:
+        type: string
+      service_level:
+        type: integer
+      status:
+        type: Status
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: Type
+    type: object
+  campaigncall.WebhookMessage:
+    properties:
+      activeflow_id:
+        type: string
+      campaign_id:
+        type: string
+      destination:
+        $ref: '#/definitions/address.Address'
+        type: object
+      destination_index:
+        type: integer
+      id:
+        type: string
+      outdial_id:
+        type: string
+      outdial_target_id:
+        type: string
+      outplan_id:
+        type: string
+      queue_id:
+        type: string
+      reference_id:
+        type: string
+      reference_type:
+        type: ReferenceType
+      result:
+        type: Result
+      source:
+        $ref: '#/definitions/address.Address'
+        type: object
+      status:
+        type: Status
+      tm_create:
+        type: string
+      tm_update:
+        type: string
+      try_count:
+        type: integer
+    type: object
   conference.Conference:
     properties:
       call_ids:
@@ -342,6 +457,112 @@ definitions:
       tm_update:
         type: string
     type: object
+  outdial.Outdial:
+    properties:
+      campaign_id:
+        type: string
+      customer_id:
+        type: string
+      data:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
+  outdial.WebhookMessage:
+    properties:
+      campaign_id:
+        type: string
+      data:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
+  outplan.Outplan:
+    properties:
+      customer_id:
+        type: string
+      detail:
+        type: string
+      dial_timeout:
+        type: integer
+      id:
+        type: string
+      max_try_count_0:
+        type: integer
+      max_try_count_1:
+        type: integer
+      max_try_count_2:
+        type: integer
+      max_try_count_3:
+        type: integer
+      max_try_count_4:
+        type: integer
+      name:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+        type: object
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      try_interval:
+        type: integer
+    type: object
+  outplan.WebhookMessage:
+    properties:
+      detail:
+        type: string
+      dial_timeout:
+        type: integer
+      id:
+        type: string
+      max_try_count_0:
+        type: integer
+      max_try_count_1:
+        type: integer
+      max_try_count_2:
+        type: integer
+      max_try_count_3:
+        type: integer
+      max_try_count_4:
+        type: integer
+      name:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+        type: object
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      try_interval:
+        type: integer
+    type: object
   queue.WebhookMessage:
     properties:
       detail:
@@ -491,6 +712,54 @@ definitions:
     - destinations
     - source
     type: object
+  request.BodyCampaignsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  request.BodyCampaignsIDResourceInfoPUT:
+    properties:
+      outdial_id:
+        type: string
+      outplan_id:
+        type: string
+      queue_id:
+        type: string
+    type: object
+  request.BodyCampaignsIDStatusPUT:
+    properties:
+      status:
+        type: string
+    type: object
+  request.BodyCampaignsPOST:
+    properties:
+      actions:
+        description: this actions will be stored to the flow
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      detail:
+        type: string
+      end_handle:
+        type: string
+      name:
+        type: string
+      next_campaign_id:
+        type: string
+      outdial_id:
+        type: string
+      outplan_id:
+        description: resource info
+        type: string
+      queue_id:
+        type: string
+      service_level:
+        type: integer
+      type:
+        type: string
+    type: object
   request.BodyConferencesPOST:
     properties:
       detail:
@@ -578,7 +847,9 @@ definitions:
     type: object
   request.BodyNumbersIDFlowIDPUT:
     properties:
-      flow_id:
+      call_flow_id:
+        type: string
+      message_flow_id:
         type: string
     type: object
   request.BodyNumbersIDPUT:
@@ -590,14 +861,90 @@ definitions:
     type: object
   request.BodyNumbersPOST:
     properties:
+      call_flow_id:
+        type: string
       detail:
         type: string
-      flow_id:
+      message_flow_id:
         type: string
       name:
         type: string
       number:
         type: string
+    type: object
+  request.BodyOutdialsIDDataPUT:
+    properties:
+      data:
+        type: string
+    type: object
+  request.BodyOutdialsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  request.BodyOutdialsPOST:
+    properties:
+      campaign_id:
+        type: string
+      data:
+        type: string
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  request.BodyOutplansIDDialInfoPUT:
+    properties:
+      dial_timeout:
+        type: integer
+      max_try_count_0:
+        type: integer
+      max_try_count_1:
+        type: integer
+      max_try_count_2:
+        type: integer
+      max_try_count_3:
+        type: integer
+      max_try_count_4:
+        type: integer
+      source:
+        $ref: '#/definitions/address.Address'
+        type: object
+      try_interval:
+        type: integer
+    type: object
+  request.BodyOutplansIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  request.BodyOutplansPOST:
+    properties:
+      detail:
+        type: string
+      dial_timeout:
+        type: integer
+      max_try_count_0:
+        type: integer
+      max_try_count_1:
+        type: integer
+      max_try_count_2:
+        type: integer
+      max_try_count_3:
+        type: integer
+      max_try_count_4:
+        type: integer
+      name:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+        type: object
+      try_interval:
+        type: integer
     type: object
   request.BodyQueuesIDActionsPUT:
     properties:
@@ -659,6 +1006,24 @@ definitions:
       result:
         type: string
     type: object
+  response.BodyCampaignsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/campaign.WebhookMessage'
+        type: array
+    type: object
+  response.BodyCampaignsIDCampaigncallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/campaigncall.WebhookMessage'
+        type: array
+    type: object
   response.BodyCustomersGET:
     properties:
       next_page_token:
@@ -700,6 +1065,24 @@ definitions:
         type: string
       result:
         type: string
+    type: object
+  response.BodyOutdialsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/outdial.WebhookMessage'
+        type: array
+    type: object
+  response.BodyOutplansGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/outplan.WebhookMessage'
+        type: array
     type: object
   response.BodyQueuesGET:
     properties:
@@ -1063,6 +1446,260 @@ paths:
           schema:
             $ref: '#/definitions/call.Call'
       summary: Get detail call info.
+  /v1.0/campaigncalls/{id}:
+    delete:
+      description: Delete a existing campaign.
+      parameters:
+      - description: The campaign's id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Finish a existing campaign.
+    get:
+      description: Returns detail campaigns info of the given campaigncall id.
+      parameters:
+      - description: The ID of the campaigncall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaigncall.WebhookMessage'
+      summary: Returns detail campaigncall info.
+  /v1.0/campaigns:
+    get:
+      description: Gets a list of campaigns
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyCampaignsGET'
+      summary: Gets a list of campaigns.
+    post:
+      description: Create a new campaign and returns detail created campaign info.
+      parameters:
+      - description: campaign info.
+        in: body
+        name: campaign
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyCampaignsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaign.WebhookMessage'
+      summary: Create a new campaign and returns detail created campaign info.
+  /v1.0/campaigns/{id}:
+    delete:
+      description: Delete a existing campaign.
+      parameters:
+      - description: The campaign's id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete a existing campaign.
+    get:
+      description: Returns detail campaigns info of the given campaigns id.
+      parameters:
+      - description: The ID of the campaigns
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaign.Campaign'
+      summary: Returns detail campaigns info.
+    put:
+      description: Update a campaign and returns detail updated campaign info.
+      parameters:
+      - description: The campaign's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyCampaignsIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaign.Campaign'
+      summary: Update a campaign and reuturns updated campaign info.
+  /v1.0/campaigns/{id}/actions:
+    put:
+      description: Update a campaign and returns detail updated campaign info.
+      parameters:
+      - description: The campaign's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyCampaignsIDStatusPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaign.Campaign'
+      summary: Update a campaign and reuturns updated campaign info.
+  /v1.0/campaigns/{id}/campaigncalls:
+    get:
+      description: Gets a list of campaigns
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyCampaignsIDCampaigncallsGET'
+      summary: Gets a list of campaigns.
+  /v1.0/campaigns/{id}/next_campaign_id:
+    put:
+      description: Update a campaign and returns detail updated campaign info.
+      parameters:
+      - description: The campaign's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyCampaignsIDResourceInfoPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaign.Campaign'
+      summary: Update a campaign and reuturns updated campaign info.
+  /v1.0/campaigns/{id}/resource_info:
+    put:
+      description: Update a campaign and returns detail updated campaign info.
+      parameters:
+      - description: The campaign's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyCampaignsIDResourceInfoPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaign.Campaign'
+      summary: Update a campaign and reuturns updated campaign info.
+  /v1.0/campaigns/{id}/service_level:
+    put:
+      description: Update a campaign and returns detail updated campaign info.
+      parameters:
+      - description: The campaign's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyCampaignsIDStatusPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaign.Campaign'
+      summary: Update a campaign and reuturns updated campaign info.
+  /v1.0/campaigns/{id}/status:
+    put:
+      description: Update a campaign and returns detail updated campaign info.
+      parameters:
+      - description: The campaign's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyCampaignsIDStatusPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/campaign.Campaign'
+      summary: Update a campaign and reuturns updated campaign info.
   /v1.0/conferences:
     get:
       description: get conferences of the customer
@@ -1677,6 +2314,303 @@ paths:
           schema:
             $ref: '#/definitions/number.Number'
       summary: Update the number's flow_id.
+  /v1.0/outdials:
+    get:
+      description: Gets a list of outdials
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyOutdialsGET'
+      summary: Gets a list of outdials.
+    post:
+      description: Create a new outdial and returns detail created outdial info.
+      parameters:
+      - description: outdial info.
+        in: body
+        name: outdial
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyOutdialsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outdial.WebhookMessage'
+      summary: Create a new outdial and returns detail created outdial info.
+  /v1.0/outdials/{id}:
+    delete:
+      description: Delete a existing outdial.
+      parameters:
+      - description: The outdial's id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete a existing outdial.
+    get:
+      description: Returns detail outdials info of the given outdials id.
+      parameters:
+      - description: The ID of the outdials
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outdial.Outdial'
+      summary: Returns detail outdials info.
+    put:
+      description: Update a outdial and returns detail updated outdial info.
+      parameters:
+      - description: The outdial's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyOutdialsIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outdial.Outdial'
+      summary: Update a outdial and reuturns updated outdial info.
+  /v1.0/outdials/{id}/campaign_id:
+    put:
+      description: Update a outdial's campaign_id and returns detail updated outdial info.
+      parameters:
+      - description: The outdial's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyOutdialsIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outdial.Outdial'
+      summary: Update a outdial's campaign_id and reuturns updated outdial info.
+  /v1.0/outdials/{id}/data:
+    put:
+      description: Update a outdial's data and returns detail updated outdial info.
+      parameters:
+      - description: The outdial's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyOutdialsIDDataPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outdial.Outdial'
+      summary: Update a outdial's data and reuturns updated outdial info.
+  /v1.0/outdials/{id}/targets:
+    get:
+      description: Get a list of outdialtargets.
+      parameters:
+      - description: The outdial's id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Get a list of outdialtargets.
+    post:
+      description: Update a outdial's data and returns detail updated outdial info.
+      parameters:
+      - description: The outdial's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyOutdialsIDDataPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outdial.Outdial'
+      summary: Create a new outdialtarget's data and reuturns updated outdial info.
+  /v1.0/outdials/{id}/targets/{target_id}:
+    delete:
+      description: Delete a existing outdialtarget.
+      parameters:
+      - description: The outdial's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The outdialtarget's id
+        in: query
+        name: target_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete a existing outdialtarget.
+    get:
+      description: Get a existing outdialtarget.
+      parameters:
+      - description: The outdial's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The outdialtarget's id
+        in: query
+        name: target_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Get a existing outdialtarget.
+  /v1.0/outplans:
+    get:
+      description: Gets a list of outplans
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyOutplansGET'
+      summary: Gets a list of outplans.
+    post:
+      description: Create a new outplan and returns detail created outplan info.
+      parameters:
+      - description: outplan info.
+        in: body
+        name: outplan
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyOutplansPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outplan.WebhookMessage'
+      summary: Create a new outplan and returns detail created outplan info.
+  /v1.0/outplans/{id}:
+    delete:
+      description: Delete a existing outplan.
+      parameters:
+      - description: The outplan's id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete a existing outplan.
+    get:
+      description: Returns detail outplans info of the given outplans id.
+      parameters:
+      - description: The ID of the outplans
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outplan.Outplan'
+      summary: Returns detail outplans info.
+    put:
+      description: Update a outplan and returns detail updated outplan info.
+      parameters:
+      - description: The outplan's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyOutplansIDDialInfoPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/outplan.Outplan'
+      summary: Update a outplan and reuturns updated outplan info.
   /v1.0/queues:
     get:
       description: get queues of the customer

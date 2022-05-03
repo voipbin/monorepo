@@ -421,6 +421,392 @@
                 }
             }
         },
+        "/v1.0/campaigncalls/{id}": {
+            "get": {
+                "description": "Returns detail campaigns info of the given campaigncall id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail campaigncall info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the campaigncall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaigncall.WebhookMessage"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing campaign.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Finish a existing campaign.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The campaign's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/campaigns": {
+            "get": {
+                "description": "Gets a list of campaigns",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of campaigns.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyCampaignsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new campaign and returns detail created campaign info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new campaign and returns detail created campaign info.",
+                "parameters": [
+                    {
+                        "description": "campaign info.",
+                        "name": "campaign",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCampaignsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaign.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/campaigns/{id}": {
+            "get": {
+                "description": "Returns detail campaigns info of the given campaigns id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail campaigns info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the campaigns",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaign.Campaign"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a campaign and returns detail updated campaign info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a campaign and reuturns updated campaign info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The campaign's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCampaignsIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaign.Campaign"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing campaign.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing campaign.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The campaign's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/campaigns/{id}/actions": {
+            "put": {
+                "description": "Update a campaign and returns detail updated campaign info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a campaign and reuturns updated campaign info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The campaign's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCampaignsIDStatusPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaign.Campaign"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/campaigns/{id}/campaigncalls": {
+            "get": {
+                "description": "Gets a list of campaigns",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of campaigns.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyCampaignsIDCampaigncallsGET"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/campaigns/{id}/next_campaign_id": {
+            "put": {
+                "description": "Update a campaign and returns detail updated campaign info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a campaign and reuturns updated campaign info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The campaign's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCampaignsIDResourceInfoPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaign.Campaign"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/campaigns/{id}/resource_info": {
+            "put": {
+                "description": "Update a campaign and returns detail updated campaign info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a campaign and reuturns updated campaign info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The campaign's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCampaignsIDResourceInfoPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaign.Campaign"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/campaigns/{id}/service_level": {
+            "put": {
+                "description": "Update a campaign and returns detail updated campaign info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a campaign and reuturns updated campaign info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The campaign's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCampaignsIDStatusPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaign.Campaign"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/campaigns/{id}/status": {
+            "put": {
+                "description": "Update a campaign and returns detail updated campaign info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a campaign and reuturns updated campaign info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The campaign's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCampaignsIDStatusPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/campaign.Campaign"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/conferences": {
             "get": {
                 "description": "get conferences of the customer",
@@ -1354,6 +1740,454 @@
                 }
             }
         },
+        "/v1.0/outdials": {
+            "get": {
+                "description": "Gets a list of outdials",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of outdials.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyOutdialsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new outdial and returns detail created outdial info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new outdial and returns detail created outdial info.",
+                "parameters": [
+                    {
+                        "description": "outdial info.",
+                        "name": "outdial",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyOutdialsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outdial.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/outdials/{id}": {
+            "get": {
+                "description": "Returns detail outdials info of the given outdials id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail outdials info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the outdials",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outdial.Outdial"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a outdial and returns detail updated outdial info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a outdial and reuturns updated outdial info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outdial's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyOutdialsIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outdial.Outdial"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing outdial.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing outdial.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outdial's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/outdials/{id}/campaign_id": {
+            "put": {
+                "description": "Update a outdial's campaign_id and returns detail updated outdial info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a outdial's campaign_id and reuturns updated outdial info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outdial's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyOutdialsIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outdial.Outdial"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/outdials/{id}/data": {
+            "put": {
+                "description": "Update a outdial's data and returns detail updated outdial info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a outdial's data and reuturns updated outdial info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outdial's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyOutdialsIDDataPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outdial.Outdial"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/outdials/{id}/targets": {
+            "get": {
+                "description": "Get a list of outdialtargets.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a list of outdialtargets.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outdial's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "post": {
+                "description": "Update a outdial's data and returns detail updated outdial info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new outdialtarget's data and reuturns updated outdial info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outdial's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyOutdialsIDDataPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outdial.Outdial"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/outdials/{id}/targets/{target_id}": {
+            "get": {
+                "description": "Get a existing outdialtarget.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a existing outdialtarget.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outdial's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The outdialtarget's id",
+                        "name": "target_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "delete": {
+                "description": "Delete a existing outdialtarget.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing outdialtarget.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outdial's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The outdialtarget's id",
+                        "name": "target_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/v1.0/outplans": {
+            "get": {
+                "description": "Gets a list of outplans",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of outplans.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyOutplansGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new outplan and returns detail created outplan info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new outplan and returns detail created outplan info.",
+                "parameters": [
+                    {
+                        "description": "outplan info.",
+                        "name": "outplan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyOutplansPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outplan.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/outplans/{id}": {
+            "get": {
+                "description": "Returns detail outplans info of the given outplans id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail outplans info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the outplans",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outplan.Outplan"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a outplan and returns detail updated outplan info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a outplan and reuturns updated outplan info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outplan's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyOutplansIDDialInfoPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/outplan.Outplan"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing outplan.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing outplan.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The outplan's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/v1.0/queues": {
             "get": {
                 "description": "get queues of the customer",
@@ -2019,6 +2853,179 @@
                 }
             }
         },
+        "campaign.Campaign": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "end_handle": {
+                    "type": "EndHandle"
+                },
+                "execute": {
+                    "type": "Execute"
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "next_campaign_id": {
+                    "type": "string"
+                },
+                "outdial_id": {
+                    "type": "string"
+                },
+                "outplan_id": {
+                    "type": "string"
+                },
+                "queue_id": {
+                    "type": "string"
+                },
+                "service_level": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "Status"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "Type"
+                }
+            }
+        },
+        "campaign.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "end_handle": {
+                    "type": "EndHandle"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "next_campaign_id": {
+                    "type": "string"
+                },
+                "outdial_id": {
+                    "type": "string"
+                },
+                "outplan_id": {
+                    "type": "string"
+                },
+                "queue_id": {
+                    "type": "string"
+                },
+                "service_level": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "Status"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "Type"
+                }
+            }
+        },
+        "campaigncall.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "activeflow_id": {
+                    "type": "string"
+                },
+                "campaign_id": {
+                    "type": "string"
+                },
+                "destination": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "destination_index": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "outdial_id": {
+                    "type": "string"
+                },
+                "outdial_target_id": {
+                    "type": "string"
+                },
+                "outplan_id": {
+                    "type": "string"
+                },
+                "queue_id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "ReferenceType"
+                },
+                "result": {
+                    "type": "Result"
+                },
+                "source": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "status": {
+                    "type": "Status"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "try_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "conference.Conference": {
             "type": "object",
             "properties": {
@@ -2294,6 +3301,166 @@
                 }
             }
         },
+        "outdial.Outdial": {
+            "type": "object",
+            "properties": {
+                "campaign_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "outdial.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "campaign_id": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "outplan.Outplan": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "dial_timeout": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "max_try_count_0": {
+                    "type": "integer"
+                },
+                "max_try_count_1": {
+                    "type": "integer"
+                },
+                "max_try_count_2": {
+                    "type": "integer"
+                },
+                "max_try_count_3": {
+                    "type": "integer"
+                },
+                "max_try_count_4": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "try_interval": {
+                    "type": "integer"
+                }
+            }
+        },
+        "outplan.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "dial_timeout": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "max_try_count_0": {
+                    "type": "integer"
+                },
+                "max_try_count_1": {
+                    "type": "integer"
+                },
+                "max_try_count_2": {
+                    "type": "integer"
+                },
+                "max_try_count_3": {
+                    "type": "integer"
+                },
+                "max_try_count_4": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "try_interval": {
+                    "type": "integer"
+                }
+            }
+        },
         "queue.WebhookMessage": {
             "type": "object",
             "properties": {
@@ -2520,6 +3687,79 @@
                 }
             }
         },
+        "request.BodyCampaignsIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyCampaignsIDResourceInfoPUT": {
+            "type": "object",
+            "properties": {
+                "outdial_id": {
+                    "type": "string"
+                },
+                "outplan_id": {
+                    "type": "string"
+                },
+                "queue_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyCampaignsIDStatusPUT": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyCampaignsPOST": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "description": "this actions will be stored to the flow",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "end_handle": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "next_campaign_id": {
+                    "type": "string"
+                },
+                "outdial_id": {
+                    "type": "string"
+                },
+                "outplan_id": {
+                    "description": "resource info",
+                    "type": "string"
+                },
+                "queue_id": {
+                    "type": "string"
+                },
+                "service_level": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyConferencesPOST": {
             "type": "object",
             "required": [
@@ -2653,7 +3893,10 @@
         "request.BodyNumbersIDFlowIDPUT": {
             "type": "object",
             "properties": {
-                "flow_id": {
+                "call_flow_id": {
+                    "type": "string"
+                },
+                "message_flow_id": {
                     "type": "string"
                 }
             }
@@ -2672,10 +3915,13 @@
         "request.BodyNumbersPOST": {
             "type": "object",
             "properties": {
+                "call_flow_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
-                "flow_id": {
+                "message_flow_id": {
                     "type": "string"
                 },
                 "name": {
@@ -2683,6 +3929,119 @@
                 },
                 "number": {
                     "type": "string"
+                }
+            }
+        },
+        "request.BodyOutdialsIDDataPUT": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyOutdialsIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyOutdialsPOST": {
+            "type": "object",
+            "properties": {
+                "campaign_id": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyOutplansIDDialInfoPUT": {
+            "type": "object",
+            "properties": {
+                "dial_timeout": {
+                    "type": "integer"
+                },
+                "max_try_count_0": {
+                    "type": "integer"
+                },
+                "max_try_count_1": {
+                    "type": "integer"
+                },
+                "max_try_count_2": {
+                    "type": "integer"
+                },
+                "max_try_count_3": {
+                    "type": "integer"
+                },
+                "max_try_count_4": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "try_interval": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.BodyOutplansIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyOutplansPOST": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "dial_timeout": {
+                    "type": "integer"
+                },
+                "max_try_count_0": {
+                    "type": "integer"
+                },
+                "max_try_count_1": {
+                    "type": "integer"
+                },
+                "max_try_count_2": {
+                    "type": "integer"
+                },
+                "max_try_count_3": {
+                    "type": "integer"
+                },
+                "max_try_count_4": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "try_interval": {
+                    "type": "integer"
                 }
             }
         },
@@ -2780,6 +4139,34 @@
                 }
             }
         },
+        "response.BodyCampaignsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/campaign.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyCampaignsIDCampaigncallsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/campaigncall.WebhookMessage"
+                    }
+                }
+            }
+        },
         "response.BodyCustomersGET": {
             "type": "object",
             "properties": {
@@ -2843,6 +4230,34 @@
                 },
                 "result": {
                     "type": "string"
+                }
+            }
+        },
+        "response.BodyOutdialsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/outdial.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyOutplansGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/outplan.WebhookMessage"
+                    }
                 }
             }
         },
