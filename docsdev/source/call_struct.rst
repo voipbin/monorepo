@@ -44,8 +44,8 @@ Call
         "tm_hangup": "<string>"
     }
 
-* *id*: Call's ID.
-* *flow_id*: Call's flow id.
+* id: Call's ID.
+* flow_id: Call's flow id.
 * *type*: Call's type. See detail :ref:`here <call-struct-type>`.
 * *master_call_id*: Master call's id. If the master_call_id set, it follows master call's hangup.
 * *chained_call_ids*: List of chained call ids. If the call hangs up, the chained call also will hangup.
