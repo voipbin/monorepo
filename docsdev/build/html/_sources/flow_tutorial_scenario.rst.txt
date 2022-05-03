@@ -156,6 +156,7 @@ It will get the digits from the call and will execute the branch.
     {
         "actions": [
             {
+                "id": "b8781e56-c524-11ec-889f-d37b0dbb7eb8",
                 "type": "talk",
                 "option": {
                     "text": "Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust",
@@ -173,15 +174,16 @@ It will get the digits from the call and will execute the branch.
             {
                 "type": "branch",
                 "option": {
-                    "default_index": 9,
-                    "target_indexes": {
-                        "1": 3,
-                        "2": 5,
-                        "3": 7
+                    "default_target_id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
+                    "target_ids": {
+                        "1": "c3eb8e62-c524-11ec-94c5-abafec8af561",
+                        "2": "dc87123e-c524-11ec-89c6-5fb18da14034",
+                        "3": "e70fb030-c524-11ec-b657-ebec72f097ef"
                     }
                 }
             },
             {
+                "id": "c3eb8e62-c524-11ec-94c5-abafec8af561",
                 "type": "talk",
                 "option": {
                     "text": "Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime",
@@ -193,6 +195,7 @@ It will get the digits from the call and will execute the branch.
                 "type": "hangup"
             },
             {
+                "id": "dc87123e-c524-11ec-89c6-5fb18da14034",
                 "type": "talk",
                 "option": {
                     "text": "Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he's dead. Mama, life had just begun, But now I've gone and thrown it all away.",
@@ -204,6 +207,7 @@ It will get the digits from the call and will execute the branch.
                 "type": "hangup"
             },
             {
+                "id": "e70fb030-c524-11ec-b657-ebec72f097ef",
                 "type": "talk",
                 "option": {
                     "text": "Steve walks warily down the street. With his brim pulled way down low. Ain't no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?",
@@ -215,6 +219,7 @@ It will get the digits from the call and will execute the branch.
                 "type": "hangup"
             },
             {
+                "id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
                 "type": "talk",
                 "option": {
                     "text": "You didn't choice correct number. Default selected.",
@@ -225,8 +230,7 @@ It will get the digits from the call and will execute the branch.
             {
                 "type": "goto",
                 "option": {
-                    "target_index": 0,
-                    "loop": true,
+                    "target_id": "b8781e56-c524-11ec-889f-d37b0dbb7eb8",
                     "loop_count": 2
                 }
             },

@@ -23,6 +23,9 @@ Welcome to voipbin's documentation!
    queue
    recording
    tag
+   campaign
+   outdial
+   outplan
 
 
 Indices and tables

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	_ "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan" // for swag use
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -18,7 +19,7 @@ import (
 // @Description Create a new outplan and returns detail created outplan info.
 // @Produce json
 // @Param outplan body request.BodyOutplansPOST true "outplan info."
-// @Success 200 {object} outplan.Outplan
+// @Success 200 {object} outplan.WebhookMessage
 // @Router /v1.0/outplans [post]
 func outplansPOST(c *gin.Context) {
 	log := logrus.WithFields(
@@ -70,7 +71,7 @@ func outplansPOST(c *gin.Context) {
 // @Produce json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.ParamOudtialsGET
+// @Success 200 {object} response.BodyOutplansGET
 // @Router /v1.0/outplans [get]
 func outplansGET(c *gin.Context) {
 	log := logrus.WithFields(

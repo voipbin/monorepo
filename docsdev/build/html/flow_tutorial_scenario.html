@@ -94,6 +94,9 @@
 <li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
 
             
@@ -304,6 +307,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;</span><span class="p">,</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;</span><span class="p">,</span>
@@ -321,15 +325,16 @@
         <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;default_index&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
-                <span class="s2">&quot;target_indexes&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-                    <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-                    <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="mi">7</span>
+                <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;</span>
                 <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;</span><span class="p">,</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime&quot;</span><span class="p">,</span>
@@ -341,6 +346,7 @@
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;</span><span class="p">,</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he&#39;s dead. Mama, life had just begun, But now I&#39;ve gone and thrown it all away.&quot;</span><span class="p">,</span>
@@ -352,6 +358,7 @@
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;</span><span class="p">,</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Steve walks warily down the street. With his brim pulled way down low. Ain&#39;t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?&quot;</span><span class="p">,</span>
@@ -363,6 +370,7 @@
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;</span><span class="p">,</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;You didn&#39;t choice correct number. Default selected.&quot;</span><span class="p">,</span>
@@ -373,8 +381,7 @@
         <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;target_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;loop&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+                <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">2</span>
             <span class="p">}</span>
         <span class="p">},</span>
