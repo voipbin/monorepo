@@ -339,7 +339,7 @@ func (h *campaignHandler) UpdateActions(ctx context.Context, id uuid.UUID, actio
 	log.WithField("flow", f).Debugf("Updated actions. flow_id: %s", f.ID)
 
 	// update campaign's actions
-	if err := h.db.CampaignUpdateActions(ctx, id, tmpActions); err != nil {
+	if err := h.db.CampaignUpdateActions(ctx, id, actions); err != nil {
 		log.Errorf("Could not update campaign service_level. err: %v", err)
 		return nil, err
 	}

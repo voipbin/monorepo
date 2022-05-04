@@ -491,6 +491,36 @@ func Test_UpdateActions(t *testing.T) {
 				},
 			},
 		},
+		{
+			"has valid queue info",
+
+			uuid.FromStringOrNil("ffce8382-cbd0-11ec-9cfd-af33d5b4a740"),
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+
+			&campaign.Campaign{
+				ID:         uuid.FromStringOrNil("ffce8382-cbd0-11ec-9cfd-af33d5b4a740"),
+				CustomerID: uuid.FromStringOrNil("fffd05d6-cbd0-11ec-85f8-c79ba4d71e60"),
+				FlowID:     uuid.FromStringOrNil("0027a886-cbd1-11ec-8440-137d167ffeb1"),
+				QueueID:    uuid.FromStringOrNil("0054fcf0-cbd1-11ec-978d-9b83e6ca7ad6"),
+			},
+			&fmflow.Flow{
+				ID: uuid.FromStringOrNil("0027a886-cbd1-11ec-8440-137d167ffeb1"),
+			},
+
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+				{
+					Type:   fmaction.TypeQueueJoin,
+					Option: []byte(`{"queue_id":"0054fcf0-cbd1-11ec-978d-9b83e6ca7ad6"}`),
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -511,7 +541,7 @@ func Test_UpdateActions(t *testing.T) {
 
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockReq.EXPECT().FMV1FlowUpdateActions(ctx, tt.response.FlowID, tt.expectActions).Return(tt.responseFlow, nil)
-			mockDB.EXPECT().CampaignUpdateActions(ctx, tt.id, tt.expectActions)
+			mockDB.EXPECT().CampaignUpdateActions(ctx, tt.id, tt.actions)
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 
