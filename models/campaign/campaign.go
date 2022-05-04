@@ -63,9 +63,6 @@ const (
 	StatusStop     Status = "stop"
 	StatusStopping Status = "stopping" // preparing stop
 	StatusRun      Status = "run"
-	StatusRunning  Status = "running" // preparing run
-	// StatusPause    Status = "pause"
-	// StatusPausing  Status = "pausing" // preparing pause
 )
 
 // EndHandle defines
