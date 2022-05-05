@@ -294,7 +294,7 @@ Making an outbound call with brach. It will get the digits from the call and wil
     |       |
     |      Talk(...)
     |       |
-    ----goto(loop 3 times)
+    ----goto(loop 2 times)
             |
             |
            Talk(...)
@@ -304,9 +304,9 @@ Making an outbound call with brach. It will get the digits from the call and wil
 
 .. code::
 
-    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0' \
     --header 'Content-Type: application/json' \
-    --header 'Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    --header 'Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0' \
     --data-raw '{
         "source": {
             "type": "tel",
@@ -320,6 +320,7 @@ Making an outbound call with brach. It will get the digits from the call and wil
         ],
         "actions": [
             {
+                "id": "b8781e56-c524-11ec-889f-d37b0dbb7eb8",
                 "type": "talk",
                 "option": {
                     "text": "Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust",
@@ -337,15 +338,16 @@ Making an outbound call with brach. It will get the digits from the call and wil
             {
                 "type": "branch",
                 "option": {
-                    "default_index": 9,
-                    "target_indexes": {
-                        "1": 3,
-                        "2": 5,
-                        "3": 7
+                    "default_target_id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
+                    "target_ids": {
+                        "1": "c3eb8e62-c524-11ec-94c5-abafec8af561",
+                        "2": "dc87123e-c524-11ec-89c6-5fb18da14034",
+                        "3": "e70fb030-c524-11ec-b657-ebec72f097ef"
                     }
                 }
             },
             {
+                "id": "c3eb8e62-c524-11ec-94c5-abafec8af561",
                 "type": "talk",
                 "option": {
                     "text": "Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime",
@@ -357,9 +359,10 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "hangup"
             },
             {
+                "id": "dc87123e-c524-11ec-89c6-5fb18da14034",
                 "type": "talk",
                 "option": {
-                    "text": "Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he's dead. Mama, life had just begun, But now I've gone and thrown it all away.",
+                    "text": "Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he'\''s dead. Mama, life had just begun, But now I'\''ve gone and thrown it all away.",
                     "gender": "female",
                     "language": "en-US"
                 }
@@ -368,9 +371,10 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "hangup"
             },
             {
+                "id": "e70fb030-c524-11ec-b657-ebec72f097ef",
                 "type": "talk",
                 "option": {
-                    "text": "Steve walks warily down the street. With his brim pulled way down low. Ain't no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?",
+                    "text": "Steve walks warily down the street. With his brim pulled way down low. Ain'\''t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?",
                     "gender": "female",
                     "language": "en-US"
                 }
@@ -379,9 +383,10 @@ Making an outbound call with brach. It will get the digits from the call and wil
                 "type": "hangup"
             },
             {
+                "id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
                 "type": "talk",
                 "option": {
-                    "text": "You didn't choice correct number. Default selected.",
+                    "text": "You didn'\''t choice correct number. Default selected.",
                     "gender": "female",
                     "language": "en-US"
                 }
@@ -389,8 +394,7 @@ Making an outbound call with brach. It will get the digits from the call and wil
             {
                 "type": "goto",
                 "option": {
-                    "target_index": 0,
-                    "loop": true,
+                    "target_id": "b8781e56-c524-11ec-889f-d37b0dbb7eb8",
                     "loop_count": 2
                 }
             },

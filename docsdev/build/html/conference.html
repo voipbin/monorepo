@@ -97,9 +97,18 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#get-list-of-conferences">Get list of conferences</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-detail-of-conference">Get detail of conference</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-a-new-conference">Create a new conference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-list-of-conferences">Get list of conferences</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#get-detail-of-conference">Get detail of conference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-new-conference">Create a new conference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Example</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -113,6 +122,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
 
             
@@ -292,7 +302,8 @@ Conferences are the fundamental concept the API revolves around. Conferences are
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="get-list-of-conferences">
 <h3>Get list of conferences<a class="headerlink" href="#get-list-of-conferences" title="Permalink to this headline">¶</a></h3>
-<p>Example</p>
+<div class="section" id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
 
 {
@@ -318,9 +329,11 @@ Conferences are the fundamental concept the API revolves around. Conferences are
 </pre></div>
 </div>
 </div>
+</div>
 <div class="section" id="get-detail-of-conference">
 <h3>Get detail of conference<a class="headerlink" href="#get-detail-of-conference" title="Permalink to this headline">¶</a></h3>
-<p>Example</p>
+<div class="section" id="id2">
+<h4>Example<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences/0e7112d7-6ddc-47ea-bba5-223a3a55ff79?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
 
 {
@@ -340,9 +353,11 @@ Conferences are the fundamental concept the API revolves around. Conferences are
 </pre></div>
 </div>
 </div>
+</div>
 <div class="section" id="create-a-new-conference">
 <h3>Create a new conference<a class="headerlink" href="#create-a-new-conference" title="Permalink to this headline">¶</a></h3>
-<p>Example</p>
+<div class="section" id="id3">
+<h4>Example<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/conferences?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
     --data-raw &#39;{
         &quot;type&quot;: &quot;conference&quot;,
@@ -365,6 +380,7 @@ Conferences are the fundamental concept the API revolves around. Conferences are
     &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>
+</div>
 </div>
 </div>
 </div>

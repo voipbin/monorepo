@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
 
             
@@ -206,10 +207,10 @@
 <li><p>id: Call’s ID.</p></li>
 <li><p>flow_id: Call’s flow id.</p></li>
 <li><p><em>type</em>: Call’s type. See detail <a class="reference internal" href="#call-struct-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>master_call_id</em>: Master call’s id. If the master_call_id set, it follows master call’s hangup.</p></li>
-<li><p><em>chained_call_ids</em>: List of chained call ids. If the call hangs up, the chained call also will hangup.</p></li>
-<li><p><em>recording_id</em>: Shows currently recording id.</p></li>
-<li><p><em>recording_ids</em>: List of recording ids.</p></li>
+<li><p>master_call_id: Master call’s id. If the master_call_id set, it follows master call’s hangup.</p></li>
+<li><p>chained_call_ids: List of chained call ids. If the call hangs up, the chained call also will hangup.</p></li>
+<li><p>recording_id: Shows currently recording id.</p></li>
+<li><p>recording_ids: List of recording ids.</p></li>
 <li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>status</em>: Call’s status. See detail <a class="reference internal" href="#call-struct-status"><span class="std std-ref">here</span></a>.</p></li>
@@ -218,6 +219,54 @@
 <li><p><em>hangup_by</em>: Shows call’s hangup end. See detail <a class="reference internal" href="#call-struct-hangupby"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>hangup_reason</em>: Show call’s hangup reason. See detail <a class="reference internal" href="#call-struct-hangupreason"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
+<div class="section" id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d9d32881-12fd-4b19-a6b2-6d5b6b6acf76&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;4553c074-c88d-49e5-9d47-5c01598ac099&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0db08d32-b7d7-470d-8bda-9feff0877077&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is Sungtae, nice to meet you. hahaha&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;tm_execute&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:38.785510878&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:23.414798&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:44.781000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:38.721000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:26.978000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:44.781000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="type">
 <span id="call-struct-type"></span><h2>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
@@ -279,14 +328,16 @@
 </tr>
 </tbody>
 </table>
+<p><strong>state diagram</strong></p>
+<img alt="_images/call_struct_status.png" src="_images/call_struct_status.png" />
 </div>
 <div class="section" id="direction">
 <span id="call-struct-direction"></span><h2>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h2>
 <p>Call’s direction.</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 21%" />
-<col style="width: 79%" />
+<col style="width: 19%" />
+<col style="width: 81%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Direction</p></th>
@@ -295,10 +346,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>incoming</p></td>
-<td><p>Call is coming from outside from voipbin.</p></td>
+<td><p>The call was coming from the outside of VoIPBIN.</p></td>
 </tr>
 <tr class="row-odd"><td><p>outgoing</p></td>
-<td><p>Call is generating form the voipbin.</p></td>
+<td><p>The call was generated by VoIPBIN.</p></td>
 </tr>
 </tbody>
 </table>
@@ -355,11 +406,14 @@
 <tr class="row-even"><td><p>timeout</p></td>
 <td><p>Call reached max call duration after it was answered.</p></td>
 </tr>
-<tr class="row-odd"><td><p>unanswer</p></td>
+<tr class="row-odd"><td><p>noanswer</p></td>
 <td><p>Destination didn’t answer until destination’s timeout.</p></td>
 </tr>
 <tr class="row-even"><td><p>dialout</p></td>
 <td><p>The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).</p></td>
+</tr>
+<tr class="row-odd"><td><p>amd</p></td>
+<td><p>Hangup caused by the action type amd. The call’s amd action result hung up the call.</p></td>
 </tr>
 </tbody>
 </table>
@@ -378,10 +432,10 @@
 </div>
 <ul class="simple">
 <li><p><em>type</em>: Address type. See detail <a class="reference internal" href="#call-struct-address-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>target</em>: address endpoint.</p></li>
-<li><p><em>target_name</em>: address’s name.</p></li>
-<li><p><em>name</em>: Name.</p></li>
-<li><p><em>detail</em>: Detail description.</p></li>
+<li><p>target: The address endpoint. Caller’s destinatino address.</p></li>
+<li><p>target_name: The address’s name. Caller’s name.</p></li>
+<li><p>name: Name.</p></li>
+<li><p>detail: Detail description.</p></li>
 </ul>
 </div>
 <div class="section" id="address-type">

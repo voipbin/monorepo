@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
 
             
@@ -441,7 +442,7 @@ When the destination answer the call, it will play the given media file.</p>
 <span class="o">|</span>       <span class="o">|</span>
 <span class="o">|</span>      <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="o">|</span>       <span class="o">|</span>
-<span class="o">----</span><span class="n">goto</span><span class="p">(</span><span class="n">loop</span> <span class="mi">3</span> <span class="n">times</span><span class="p">)</span>
+<span class="o">----</span><span class="n">goto</span><span class="p">(</span><span class="n">loop</span> <span class="mi">2</span> <span class="n">times</span><span class="p">)</span>
         <span class="o">|</span>
         <span class="o">|</span>
        <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
@@ -450,9 +451,9 @@ When the destination answer the call, it will play the given media file.</p>
        <span class="n">Hangup</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
 --header &#39;Content-Type: application/json&#39; \
---header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
 --data-raw &#39;{
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
@@ -466,6 +467,7 @@ When the destination answer the call, it will play the given media file.</p>
     ],
     &quot;actions&quot;: [
         {
+            &quot;id&quot;: &quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;,
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
                 &quot;text&quot;: &quot;Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;,
@@ -483,15 +485,16 @@ When the destination answer the call, it will play the given media file.</p>
         {
             &quot;type&quot;: &quot;branch&quot;,
             &quot;option&quot;: {
-                &quot;default_index&quot;: 9,
-                &quot;target_indexes&quot;: {
-                    &quot;1&quot;: 3,
-                    &quot;2&quot;: 5,
-                    &quot;3&quot;: 7
+                &quot;default_target_id&quot;: &quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;,
+                &quot;target_ids&quot;: {
+                    &quot;1&quot;: &quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;,
+                    &quot;2&quot;: &quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;,
+                    &quot;3&quot;: &quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;
                 }
             }
         },
         {
+            &quot;id&quot;: &quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;,
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
                 &quot;text&quot;: &quot;Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime&quot;,
@@ -503,9 +506,10 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;type&quot;: &quot;hangup&quot;
         },
         {
+            &quot;id&quot;: &quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;,
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
-                &quot;text&quot;: &quot;Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he&#39;s dead. Mama, life had just begun, But now I&#39;ve gone and thrown it all away.&quot;,
+                &quot;text&quot;: &quot;Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he&#39;\&#39;&#39;s dead. Mama, life had just begun, But now I&#39;\&#39;&#39;ve gone and thrown it all away.&quot;,
                 &quot;gender&quot;: &quot;female&quot;,
                 &quot;language&quot;: &quot;en-US&quot;
             }
@@ -514,9 +518,10 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;type&quot;: &quot;hangup&quot;
         },
         {
+            &quot;id&quot;: &quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;,
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
-                &quot;text&quot;: &quot;Steve walks warily down the street. With his brim pulled way down low. Ain&#39;t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?&quot;,
+                &quot;text&quot;: &quot;Steve walks warily down the street. With his brim pulled way down low. Ain&#39;\&#39;&#39;t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?&quot;,
                 &quot;gender&quot;: &quot;female&quot;,
                 &quot;language&quot;: &quot;en-US&quot;
             }
@@ -525,9 +530,10 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;type&quot;: &quot;hangup&quot;
         },
         {
+            &quot;id&quot;: &quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;,
             &quot;type&quot;: &quot;talk&quot;,
             &quot;option&quot;: {
-                &quot;text&quot;: &quot;You didn&#39;t choice correct number. Default selected.&quot;,
+                &quot;text&quot;: &quot;You didn&#39;\&#39;&#39;t choice correct number. Default selected.&quot;,
                 &quot;gender&quot;: &quot;female&quot;,
                 &quot;language&quot;: &quot;en-US&quot;
             }
@@ -535,8 +541,7 @@ When the destination answer the call, it will play the given media file.</p>
         {
             &quot;type&quot;: &quot;goto&quot;,
             &quot;option&quot;: {
-                &quot;target_index&quot;: 0,
-                &quot;loop&quot;: true,
+                &quot;target_id&quot;: &quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;,
                 &quot;loop_count&quot;: 2
             }
         },
