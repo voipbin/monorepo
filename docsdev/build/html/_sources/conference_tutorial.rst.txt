@@ -7,6 +7,7 @@ Get list of conferences
 -----------------------
 
 Example
++++++++
 
 .. code::
 
@@ -38,6 +39,7 @@ Get detail of conference
 ------------------------
 
 Example
++++++++
 
 .. code::
 
@@ -63,6 +65,7 @@ Create a new conference
 -----------------------
 
 Example
++++++++
 
 .. code::
 

@@ -98,14 +98,21 @@
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Outdial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Outdial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#outdial-target">Outdial target</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#struct-outdial">Struct outdial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#outdial-struct-outdial">Outdial</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#example">example</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#struct-outdialtarget">Struct outdialtarget</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#outdialtarget">Outdialtarget</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id2">example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
@@ -193,12 +200,22 @@
 <span id="outdial-main"></span><h1>Outdial<a class="headerlink" href="#outdial" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="overview">
 <span id="outdial-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>The VoIPBIN’s outdial API provides outdial target’s management.</p>
+<p>The VoIPBIN’s outdial API provides outdial and outdial target’s management.</p>
+<div class="section" id="id1">
+<h3>Outdial<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The outdial concist the set of outdial targets.</p>
+<img alt="_images/outdial_overview_outdial.png" src="_images/outdial_overview_outdial.png" />
 </div>
-<div class="section" id="struct">
-<span id="outdial-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="outdial-target">
+<h3>Outdial target<a class="headerlink" href="#outdial-target" title="Permalink to this headline">¶</a></h3>
+<p>The outdial contains actual destination’s addresses and try count of each address.</p>
+<img alt="_images/outdial_overview_outdialtarget.png" src="_images/outdial_overview_outdialtarget.png" />
+</div>
+</div>
+<div class="section" id="struct-outdial">
+<span id="outdial-struct"></span><h2>Struct outdial<a class="headerlink" href="#struct-outdial" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="outdial-struct-outdial">
-<span id="id1"></span><h3>Outdial<a class="headerlink" href="#outdial-struct-outdial" title="Permalink to this headline">¶</a></h3>
+<span id="id2"></span><h3>Outdial<a class="headerlink" href="#outdial-struct-outdial" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -234,8 +251,11 @@
 </div>
 </div>
 </div>
+</div>
+<div class="section" id="struct-outdialtarget">
+<span id="outdial-struct-outdialtarget"></span><h2>Struct outdialtarget<a class="headerlink" href="#struct-outdialtarget" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="outdialtarget">
-<h3>Outdialtarget<a class="headerlink" href="#outdialtarget" title="Permalink to this headline">¶</a></h3>
+<span id="outdial-struct-outdialtarget-outdialtarget"></span><h3>Outdialtarget<a class="headerlink" href="#outdialtarget" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;outdial_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -275,7 +295,7 @@
 <li><p>name: outdialtarget’s name.</p></li>
 <li><p>detail: outdialtarget’s detail.</p></li>
 <li><p>data: outdialtarget’s data.</p></li>
-<li><p><em>status</em>: outdialtarget’s status. See detail <a class="reference internal" href="#outdial-struct-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>status</em>: outdialtarget’s status. See detail <a class="reference internal" href="outdial_struct_outdialtarget.html#outdial-struct-outdialtarget-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>destination_0</em>: outdialtarget’s destination. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>destination_1</em>: outdialtarget’s destination. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>destination_2</em>: outdialtarget’s destination. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
@@ -287,8 +307,8 @@
 <li><p>try_count_3: destination 3’s try count.</p></li>
 <li><p>try_count_4: destination 4’s try count.</p></li>
 </ul>
-<div class="section" id="id2">
-<h4>example<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id3">
+<h4>Example<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1b3d7a92-7146-466d-90f5-4bc701ada4c0&quot;</span><span class="p">,</span>
     <span class="s2">&quot;outdial_id&quot;</span><span class="p">:</span> <span class="s2">&quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;</span><span class="p">,</span>
@@ -321,7 +341,7 @@
 </div>
 </div>
 <div class="section" id="status">
-<span id="outdial-struct-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
+<span id="outdial-struct-outdialtarget-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
 <p>Outdialtarget’s status.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -345,6 +365,8 @@
 </tr>
 </tbody>
 </table>
+<p><strong>state diagram</strong></p>
+<img alt="_images/outdial_struct_outdialtarget_status.png" src="_images/outdial_struct_outdialtarget_status.png" />
 </div>
 </div>
 <div class="section" id="tutorial">
