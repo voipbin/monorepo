@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Struct &mdash; voipbin  documentation</title>
+  <title>Struct outdial &mdash; voipbin  documentation</title>
   
 
   
@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
 
             
@@ -144,13 +145,13 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Struct</li>
+      <li>Struct outdial</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/campaign_struct.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/outdial_struct_outdial.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -163,25 +164,16 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="struct">
-<span id="campaign-struct"></span><h1>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="campaign">
-<h2>Campaign<a class="headerlink" href="#campaign" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="struct-outdial">
+<span id="outdial-struct"></span><h1>Struct outdial<a class="headerlink" href="#struct-outdial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="outdial">
+<span id="outdial-struct-outdial"></span><h2>Outdial<a class="headerlink" href="#outdial" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;service_level&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;end_handle&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="o">...</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;outplan_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;outdial_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;next_campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -189,91 +181,27 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Campaign’s ID.</p></li>
-<li><p><em>type</em>: Campaign’s type. See detail <a class="reference internal" href="#campaign-struct-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>name: Campaign’s name.</p></li>
-<li><p>detail: Campaign’s detail.</p></li>
-<li><p><em>status</em>: Campaign’s status. See detail <a class="reference internal" href="#campaign-struct-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>service_level: Campaign’s service level.</p></li>
-<li><p><em>end_handle</em>: Campaign’s outdial list end handle. See detail <a class="reference internal" href="#campaign-struct-end-handle"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>actions</em>: Campaign’s list of actions. See detail <a class="reference internal" href="flow_action.html#flow-action-action"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>outplan_id: Outplan’s ID.</p></li>
-<li><p>outdial_id: Outdial’s ID.</p></li>
-<li><p>queue_id: Queue’s ID.</p></li>
-<li><p>next_campaign_id: Next campaign’s ID.</p></li>
+<li><p>id: Outdial’s ID.</p></li>
+<li><p>campaign_id: Campaign’s ID.</p></li>
+<li><p>name: outdial’s name.</p></li>
+<li><p>detail: outdial’s detail.</p></li>
+<li><p>data: outdial’s data.</p></li>
 </ul>
+<div class="section" id="example">
+<h3>example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test outdial&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;outdial for test use.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-28 01:41:40.503790&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
 </div>
-<div class="section" id="type">
-<span id="campaign-struct-type"></span><h2>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
-<p>Campaign’s type.</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 15%" />
-<col style="width: 85%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>call</p></td>
-<td><p>The campaign will make a call to the destination with a flow.</p></td>
-</tr>
-<tr class="row-odd"><td><p>flow</p></td>
-<td><p>The campaign will execute flow with a destination.</p></td>
-</tr>
-</tbody>
-</table>
 </div>
-<div class="section" id="status">
-<span id="campaign-struct-status"></span><h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
-<p>Campaign’s status.</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 13%" />
-<col style="width: 87%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>stop</p></td>
-<td><p>The campaign stopped.</p></td>
-</tr>
-<tr class="row-odd"><td><p>stopping</p></td>
-<td><p>The campaign is being stop. Waiting for dialing/process call’s termination.</p></td>
-</tr>
-<tr class="row-even"><td><p>run</p></td>
-<td><p>The campaign is running. It will create a new call or flow execution.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="end-handle">
-<span id="campaign-struct-end-handle"></span><h2>End handle<a class="headerlink" href="#end-handle" title="Permalink to this headline">¶</a></h2>
-<p>Campaign’s outdial list end handle.</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 13%" />
-<col style="width: 87%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>stop</p></td>
-<td><p>The campaign will stop if the outdial has no more outdial target</p></td>
-</tr>
-<tr class="row-odd"><td><p>continue</p></td>
-<td><p>The campaign will continue to run after outdial has no more outdial target.</p></td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 

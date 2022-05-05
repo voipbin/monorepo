@@ -5,6 +5,6 @@ Campaign
 ************
 
 .. include:: campaign_overview.rst
-.. include:: campaign_struct.rst
+.. include:: campaign_struct_campaign.rst
 .. include:: campaign_struct_campaigncall.rst
-.. include:: campaign_resource.rst
+.. include:: campaign_tutorial.rst

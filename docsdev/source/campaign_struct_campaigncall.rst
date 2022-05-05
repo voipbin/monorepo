@@ -1,6 +1,9 @@
-.. _campaign-struct-campaigncall:
+.. _campaign-struct_campaigncall:
 
-.. _campaign-struct-campaigncall-campaigncall:
+Struct campaigncall
+===================
+
+.. _campaign-struct_campaigncall-campaigncall:
 
 Campaigncall
 ------------
@@ -38,10 +41,10 @@ Campaigncall
 * outdial_target_id: outdialtarget's ID.
 * queue_id: Queue's ID.
 * activeflow_id: Activeflow's ID.
-* *reference_type*: Reference's type. See detail :ref:`here <campaign-struct-campaigncall-reference_type>`.
+* *reference_type*: Reference's type. See detail :ref:`here <campaign-struct_campaigncall-reference_type>`.
 * reference_id: Reference's ID.
-* *status*: Campaigncall's status. See detail :ref:`here <campaign-struct-campaigncall-status>`.
-* *result*: Campaigncall's result. See detail :ref:`here <campaign-struct-campaigncall-result>`.
+* *status*: Campaigncall's status. See detail :ref:`here <campaign-struct_campaigncall-status>`.
+* *result*: Campaigncall's result. See detail :ref:`here <campaign-struct_campaigncall-result>`.
 * *source*: Source address info. See detail :ref:`here <call-struct-address>`.
 * *destination*: Destination address info. See detail :ref:`here <call-struct-address>`.
 * destination_index: Destination's index.
@@ -84,7 +87,7 @@ Example
         "tm_update": "2022-04-29 07:02:48.304704"
     }
 
-.. _campaign-struct-campaigncall-reference_type:
+.. _campaign-struct_campaigncall-reference_type:
 
 Reference type
 --------------
@@ -97,7 +100,7 @@ none        Has no reference type.
 call        The reference type is call. Reference id is call's ID.
 =========== ============
 
-.. _campaign-struct-campaigncall-status:
+.. _campaign-struct_campaigncall-status:
 
 Status
 ------
@@ -111,16 +114,27 @@ progressing The campaigncall is progressing(the call answered)
 done        The campaigncall is hungup
 =========== ============
 
-.. _campaign-struct-campaigncall-result:
+.. _campaign-struct_campaigncall-result:
 
 Result
 ------
-Campaigncall's status.
+Campaigncall's result. The result is calculated by the final status/result of the referenced resource(call/sms/...).
+
+For example, if the call ended with no_answer, the result will be calculated to the fail.
 
 =========== ============
 Type        Description
 =========== ============
-"""         Have no result yet.
-success     The campaigncall ended successfully.
-fail        The campaigncall ended unsuccesfully.
+""          Have no result yet.
+success     The campaigncall ended successfully. The target's status will be set to the done and will not make retry.
+fail        The campaigncall ended unsuccesfully. The target's status will be set to the idle and will make a retry.
 =========== ============
+
+The call hangup reason - result mapping table.
+
+================== ============
+Call hangup reason Calculated result
+================== ============
+normal             success
+All others         fail
+================== ============

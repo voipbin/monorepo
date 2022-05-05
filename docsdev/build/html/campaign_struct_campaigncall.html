@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Campaigncall &mdash; voipbin  documentation</title>
+  <title>Struct campaigncall &mdash; voipbin  documentation</title>
   
 
   
@@ -145,7 +145,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Campaigncall</li>
+      <li>Struct campaigncall</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -164,8 +164,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="campaigncall">
-<span id="campaign-struct-campaigncall-campaigncall"></span><span id="campaign-struct-campaigncall"></span><h1>Campaigncall<a class="headerlink" href="#campaigncall" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="struct-campaigncall">
+<span id="campaign-struct-campaigncall"></span><h1>Struct campaigncall<a class="headerlink" href="#struct-campaigncall" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="campaigncall">
+<span id="campaign-struct-campaigncall-campaigncall"></span><h2>Campaigncall<a class="headerlink" href="#campaigncall" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -209,7 +211,7 @@
 <li><p>try_count: Try count.</p></li>
 </ul>
 <div class="section" id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;56347901-5bb9-422d-add5-5a2ca47fa737&quot;</span><span class="p">,</span>
     <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;183c0d5c-691e-42f3-af2b-9bffc2740f83&quot;</span><span class="p">,</span>
@@ -246,7 +248,7 @@
 </div>
 </div>
 <div class="section" id="reference-type">
-<span id="campaign-struct-campaigncall-reference-type"></span><h1>Reference type<a class="headerlink" href="#reference-type" title="Permalink to this headline">¶</a></h1>
+<span id="campaign-struct-campaigncall-reference-type"></span><h2>Reference type<a class="headerlink" href="#reference-type" title="Permalink to this headline">¶</a></h2>
 <p>Campaigncall’s reference type.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -269,7 +271,7 @@
 </table>
 </div>
 <div class="section" id="status">
-<span id="campaign-struct-campaigncall-status"></span><h1>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h1>
+<span id="campaign-struct-campaigncall-status"></span><h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <p>Campaigncall’s status.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -295,12 +297,13 @@
 </table>
 </div>
 <div class="section" id="result">
-<span id="campaign-struct-campaigncall-result"></span><h1>Result<a class="headerlink" href="#result" title="Permalink to this headline">¶</a></h1>
-<p>Campaigncall’s status.</p>
+<span id="campaign-struct-campaigncall-result"></span><h2>Result<a class="headerlink" href="#result" title="Permalink to this headline">¶</a></h2>
+<p>Campaigncall’s result. The result is calculated by the final status/result of the referenced resource(call/sms/…).</p>
+<p>For example, if the call ended with no_answer, the result will be calculated to the fail.</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 23%" />
-<col style="width: 77%" />
+<col style="width: 9%" />
+<col style="width: 91%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -308,17 +311,38 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>“””</p></td>
+<tr class="row-even"><td><p>“”</p></td>
 <td><p>Have no result yet.</p></td>
 </tr>
 <tr class="row-odd"><td><p>success</p></td>
-<td><p>The campaigncall ended successfully.</p></td>
+<td><p>The campaigncall ended successfully. The target’s status will be set to the done and will not make retry.</p></td>
 </tr>
 <tr class="row-even"><td><p>fail</p></td>
-<td><p>The campaigncall ended unsuccesfully.</p></td>
+<td><p>The campaigncall ended unsuccesfully. The target’s status will be set to the idle and will make a retry.</p></td>
 </tr>
 </tbody>
 </table>
+<p>The call hangup reason - result mapping table.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 51%" />
+<col style="width: 49%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Call hangup reason</p></th>
+<th class="head"><p>Calculated result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>normal</p></td>
+<td><p>success</p></td>
+</tr>
+<tr class="row-odd"><td><p>All others</p></td>
+<td><p>fail</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
