@@ -1,48 +1,9 @@
-.. _outdial-struct:
+.. _outdial-struct_outdialtarget:
 
-Struct
-======
+Struct outdialtarget
+====================
 
-.. _outdial-struct-outdial:
-
-Outdial
--------
-
-.. code::
-
-    {
-        "id": "<string>",
-        "campaign_id": "<string>",
-        "name": "<string>",
-        "detail": "<string>",
-        "data": "<string>",
-        "tm_create": "<string>",
-        "tm_update": "<string>",
-        "tm_delete": "<string>"
-    }
-
-* id: Outdial's ID.
-* campaign_id: Campaign's ID.
-* name: outdial's name.
-* detail: outdial's detail.
-* data: outdial's data.
-
-example
-+++++++
-
-.. code::
-
-    {
-        "id": "40bea034-1d17-474d-a5de-da00d0861c69",
-        "campaign_id": "00000000-0000-0000-0000-000000000000",
-        "name": "test outdial",
-        "detail": "outdial for test use.",
-        "data": "",
-        "tm_create": "2022-04-28 01:41:40.503790",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
-    }
-
+.. _outdial-struct_outdialtarget-outdialtarget:
 
 Outdialtarget
 -------------
@@ -86,7 +47,7 @@ Outdialtarget
 * name: outdialtarget's name.
 * detail: outdialtarget's detail.
 * data: outdialtarget's data.
-* *status*: outdialtarget's status. See detail :ref:`here <outdial-struct-status>`.
+* *status*: outdialtarget's status. See detail :ref:`here <outdial-struct_outdialtarget-status>`.
 * *destination_0*: outdialtarget's destination. See detail :ref:`here <call-struct-address>`.
 * *destination_1*: outdialtarget's destination. See detail :ref:`here <call-struct-address>`.
 * *destination_2*: outdialtarget's destination. See detail :ref:`here <call-struct-address>`.
@@ -98,7 +59,7 @@ Outdialtarget
 * try_count_3: destination 3's try count.
 * try_count_4: destination 4's try count.
 
-example
+Example
 +++++++
 
 .. code::
@@ -131,7 +92,7 @@ example
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
-.. _outdial-struct-status:
+.. _outdial-struct_outdialtarget-status:
 
 Status
 ------
@@ -145,3 +106,6 @@ progressing The outdialtarget is calling
 done        The outdialtarget has done to dialing.
 =========== ============
 
+**state diagram**
+
+.. image:: _static/images/outdial_struct_outdialtarget_status.png
