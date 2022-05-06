@@ -13,6 +13,7 @@ import (
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	variable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 )
 
 // MockDBHandler is a mock of DBHandler interface.
@@ -223,4 +224,48 @@ func (m *MockDBHandler) FlowUpdateActions(ctx context.Context, id uuid.UUID, act
 func (mr *MockDBHandlerMockRecorder) FlowUpdateActions(ctx, id, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdateActions", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdateActions), ctx, id, actions)
+}
+
+// VariableCreate mocks base method.
+func (m *MockDBHandler) VariableCreate(ctx context.Context, t *variable.Variable) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VariableCreate", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VariableCreate indicates an expected call of VariableCreate.
+func (mr *MockDBHandlerMockRecorder) VariableCreate(ctx, t interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VariableCreate", reflect.TypeOf((*MockDBHandler)(nil).VariableCreate), ctx, t)
+}
+
+// VariableGet mocks base method.
+func (m *MockDBHandler) VariableGet(ctx context.Context, id uuid.UUID) (*variable.Variable, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VariableGet", ctx, id)
+	ret0, _ := ret[0].(*variable.Variable)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VariableGet indicates an expected call of VariableGet.
+func (mr *MockDBHandlerMockRecorder) VariableGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VariableGet", reflect.TypeOf((*MockDBHandler)(nil).VariableGet), ctx, id)
+}
+
+// VariableUpdate mocks base method.
+func (m *MockDBHandler) VariableUpdate(ctx context.Context, t *variable.Variable) (*variable.Variable, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VariableUpdate", ctx, t)
+	ret0, _ := ret[0].(*variable.Variable)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VariableUpdate indicates an expected call of VariableUpdate.
+func (mr *MockDBHandlerMockRecorder) VariableUpdate(ctx, t interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VariableUpdate", reflect.TypeOf((*MockDBHandler)(nil).VariableUpdate), ctx, t)
 }

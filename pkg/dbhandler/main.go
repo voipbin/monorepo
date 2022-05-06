@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
 )
 
@@ -35,6 +36,10 @@ type DBHandler interface {
 	FlowSetToCache(ctx context.Context, f *flow.Flow) error
 	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) error
 	FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) error
+
+	VariableCreate(ctx context.Context, t *variable.Variable) error
+	VariableGet(ctx context.Context, id uuid.UUID) (*variable.Variable, error)
+	VariableUpdate(ctx context.Context, t *variable.Variable) (*variable.Variable, error)
 }
 
 // handler database handler

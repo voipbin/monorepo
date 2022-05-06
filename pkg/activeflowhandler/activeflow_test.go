@@ -13,11 +13,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
-func TestActiveFlowCreate(t *testing.T) {
+func Test_ActiveFlowCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -88,18 +90,21 @@ func TestActiveFlowCreate(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				variableHandler: mockVariableHandler,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
-			mockDB.EXPECT().ActiveflowCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(gomock.Any(), gomock.Any()).Return(tt.expectActive, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectActive.CustomerID, activeflow.EventTypeActiveflowCreated, tt.expectActive)
+			mockDB.EXPECT().FlowGet(ctx, tt.flow.ID).Return(tt.flow, nil)
+			mockDB.EXPECT().ActiveflowCreate(ctx, gomock.Any()).Return(nil)
+			mockVariableHandler.EXPECT().Create(ctx, gomock.Any(), map[string]string{}).Return(&variable.Variable{}, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any()).Return(tt.expectActive, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectActive.CustomerID, activeflow.EventTypeActiveflowCreated, tt.expectActive)
 
 			res, err := h.Create(ctx, tt.id, tt.refereceType, tt.referenceID, tt.flowID)
 			if err != nil {
@@ -113,7 +118,7 @@ func TestActiveFlowCreate(t *testing.T) {
 	}
 }
 
-func TestActiveFlowUpdateCurrentAction(t *testing.T) {
+func Test_ActiveFlowUpdateCurrentAction(t *testing.T) {
 
 	tests := []struct {
 		name   string

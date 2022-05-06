@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
 // pagination parameters
@@ -30,6 +31,7 @@ type listenHandler struct {
 
 	flowHandler       flowhandler.FlowHandler
 	activeflowHandler activeflowhandler.ActiveflowHandler
+	variableHandler   variablehandler.VariableHandler
 }
 
 var (
@@ -48,6 +50,10 @@ var (
 	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID + "$")
 	regV1FlowsIDActions   = regexp.MustCompile("/v1/flows/" + regUUID + "/actions$")
 	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
+
+	// variables
+	regV1VariablesID          = regexp.MustCompile("/v1/variables/" + regUUID + "$")
+	regV1VariablesIDVariables = regexp.MustCompile("/v1/variables/" + regUUID + "/variables$")
 )
 
 var (
@@ -84,11 +90,13 @@ func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	flowHandler flowhandler.FlowHandler,
 	activeflowHandler activeflowhandler.ActiveflowHandler,
+	variableHandler variablehandler.VariableHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:        rabbitSock,
 		flowHandler:       flowHandler,
 		activeflowHandler: activeflowHandler,
+		variableHandler:   variableHandler,
 	}
 
 	return h
@@ -208,6 +216,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1FlowsIDActionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/flows/<flow-id>/actions/<action-id>"
 		response, err = h.v1FlowsIDActionsIDGet(ctx, m)
+
+	// variables/<variable-id>
+	case regV1VariablesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/variables/<variable-id>"
+		response, err = h.v1VariablesIDGet(ctx, m)
+
+	// variables/<variable-id>/variables
+	case regV1VariablesIDVariables.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		requestType = "/variables/<variable-id>/variables"
+		response, err = h.v1VariablesIDVariablesPost(ctx, m)
 
 	default:
 		logrus.WithFields(

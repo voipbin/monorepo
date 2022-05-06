@@ -65,6 +65,14 @@ func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, referenceT
 		return nil, err
 	}
 
+	// create a new v
+	v, err := h.variableHandler.Create(ctx, id, map[string]string{})
+	if err != nil {
+		log.Errorf("Could not create variable. err: %v", err)
+		return nil, err
+	}
+	log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
+
 	// get created active flow
 	af, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {

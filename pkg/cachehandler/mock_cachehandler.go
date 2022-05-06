@@ -12,6 +12,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	variable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -121,4 +122,33 @@ func (m *MockCacheHandler) FlowSet(ctx context.Context, flow *flow.Flow) error {
 func (mr *MockCacheHandlerMockRecorder) FlowSet(ctx, flow interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowSet", reflect.TypeOf((*MockCacheHandler)(nil).FlowSet), ctx, flow)
+}
+
+// VariableGet mocks base method.
+func (m *MockCacheHandler) VariableGet(ctx context.Context, id uuid.UUID) (*variable.Variable, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VariableGet", ctx, id)
+	ret0, _ := ret[0].(*variable.Variable)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VariableGet indicates an expected call of VariableGet.
+func (mr *MockCacheHandlerMockRecorder) VariableGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VariableGet", reflect.TypeOf((*MockCacheHandler)(nil).VariableGet), ctx, id)
+}
+
+// VariableSet mocks base method.
+func (m *MockCacheHandler) VariableSet(ctx context.Context, t *variable.Variable) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VariableSet", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VariableSet indicates an expected call of VariableSet.
+func (mr *MockCacheHandlerMockRecorder) VariableSet(ctx, t interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VariableSet", reflect.TypeOf((*MockCacheHandler)(nil).VariableSet), ctx, t)
 }

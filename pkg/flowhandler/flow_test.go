@@ -16,7 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 )
 
-func TestFlowCreate(t *testing.T) {
+func Test_FlowCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -93,7 +93,7 @@ func TestFlowCreate(t *testing.T) {
 	}
 }
 
-func TestFlowGet(t *testing.T) {
+func Test_FlowGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -128,7 +128,7 @@ func TestFlowGet(t *testing.T) {
 	}
 }
 
-func TestFlowDelete(t *testing.T) {
+func Test_FlowDelete(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -178,7 +178,7 @@ func TestFlowDelete(t *testing.T) {
 	}
 }
 
-func TestFlowGets(t *testing.T) {
+func Test_FlowGets(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -215,7 +215,7 @@ func TestFlowGets(t *testing.T) {
 	}
 }
 
-func TestFlowUpdate(t *testing.T) {
+func Test_FlowUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
