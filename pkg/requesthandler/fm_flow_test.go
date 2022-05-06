@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestFMV1FlowCreate(t *testing.T) {
+func Test_FMV1FlowCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -95,7 +95,7 @@ func TestFMV1FlowCreate(t *testing.T) {
 	}
 }
 
-func TestFMV1FlowUpdate(t *testing.T) {
+func Test_FMV1FlowUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -165,7 +165,7 @@ func TestFMV1FlowUpdate(t *testing.T) {
 	}
 }
 
-func TestFMV1FlowGet(t *testing.T) {
+func Test_FMV1FlowGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -232,7 +232,7 @@ func TestFMV1FlowGet(t *testing.T) {
 	}
 }
 
-func TestFMV1FlowDelete(t *testing.T) {
+func Test_FMV1FlowDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -291,7 +291,7 @@ func TestFMV1FlowDelete(t *testing.T) {
 	}
 }
 
-func TestFMV1FlowGets(t *testing.T) {
+func Test_FMV1FlowGets(t *testing.T) {
 
 	tests := []struct {
 		name string

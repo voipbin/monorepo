@@ -29,6 +29,7 @@ import (
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	variable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	hook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
 	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
@@ -1626,6 +1627,36 @@ func (m *MockRequestHandler) FMV1FlowUpdateActions(ctx context.Context, flowID u
 func (mr *MockRequestHandlerMockRecorder) FMV1FlowUpdateActions(ctx, flowID, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowUpdateActions", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowUpdateActions), ctx, flowID, actions)
+}
+
+// FMV1VariableGet mocks base method.
+func (m *MockRequestHandler) FMV1VariableGet(ctx context.Context, variableID uuid.UUID) (*variable.Variable, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMV1VariableGet", ctx, variableID)
+	ret0, _ := ret[0].(*variable.Variable)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMV1VariableGet indicates an expected call of FMV1VariableGet.
+func (mr *MockRequestHandlerMockRecorder) FMV1VariableGet(ctx, variableID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1VariableGet", reflect.TypeOf((*MockRequestHandler)(nil).FMV1VariableGet), ctx, variableID)
+}
+
+// FMV1VariableSetVariable mocks base method.
+func (m *MockRequestHandler) FMV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key, value string) (*variable.Variable, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMV1VariableSetVariable", ctx, variableID, key, value)
+	ret0, _ := ret[0].(*variable.Variable)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FMV1VariableSetVariable indicates an expected call of FMV1VariableSetVariable.
+func (mr *MockRequestHandlerMockRecorder) FMV1VariableSetVariable(ctx, variableID, key, value interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1VariableSetVariable", reflect.TypeOf((*MockRequestHandler)(nil).FMV1VariableSetVariable), ctx, variableID, key, value)
 }
 
 // MMV1Hook mocks base method.
