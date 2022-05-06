@@ -24,6 +24,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/flowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
 const serviceName = "flow-manager"
@@ -149,21 +150,27 @@ func run(dbHandler dbhandler.DBHandler) {
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 
 	actionHandler := actionhandler.NewActionHandler()
-	activeflowHandler := activeflowhandler.NewActiveflowHandler(dbHandler, reqHandler, notifyHandler, actionHandler)
+	variableHandler := variablehandler.NewVariableHandler(dbHandler)
+	activeflowHandler := activeflowhandler.NewActiveflowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, variableHandler)
 	flowHandler := flowhandler.NewFlowHandler(dbHandler, reqHandler, notifyHandler, actionHandler, activeflowHandler)
 
 	// run listen
-	if errListen := runListen(rabbitSock, flowHandler, activeflowHandler); errListen != nil {
+	if errListen := runListen(rabbitSock, flowHandler, activeflowHandler, variableHandler); errListen != nil {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
 }
 
 // runListen runs the listen service
-func runListen(sockListen rabbitmqhandler.Rabbit, flowHandler flowhandler.FlowHandler, activeflowHandler activeflowhandler.ActiveflowHandler) error {
+func runListen(
+	sockListen rabbitmqhandler.Rabbit,
+	flowHandler flowhandler.FlowHandler,
+	activeflowHandler activeflowhandler.ActiveflowHandler,
+	variableHandler variablehandler.VariableHandler,
+) error {
 	log := logrus.WithField("func", "runListen")
 
-	listenHandler := listenhandler.NewListenHandler(sockListen, flowHandler, activeflowHandler)
+	listenHandler := listenhandler.NewListenHandler(sockListen, flowHandler, activeflowHandler, variableHandler)
 
 	// run the service
 	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {

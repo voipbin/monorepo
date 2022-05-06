@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 )
 
 // getSerialize returns cached serialized info.
@@ -97,6 +98,29 @@ func (h *handler) ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.
 	key := fmt.Sprintf("activeflow:%s", id)
 
 	var res activeflow.Activeflow
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ActiveflowSet sets the variable info into the cache
+func (h *handler) VariableSet(ctx context.Context, t *variable.Variable) error {
+	key := fmt.Sprintf("variable:%s", t.ID)
+
+	if err := h.setSerialize(ctx, key, t); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// VariableGet returns cached variable info
+func (h *handler) VariableGet(ctx context.Context, id uuid.UUID) (*variable.Variable, error) {
+	key := fmt.Sprintf("variable:%s", id)
+
+	var res variable.Variable
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}

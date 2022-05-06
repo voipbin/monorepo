@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 )
 
 type handler struct {
@@ -30,6 +31,9 @@ type CacheHandler interface {
 	FlowDel(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	FlowSet(ctx context.Context, flow *flow.Flow) error
+
+	VariableSet(ctx context.Context, t *variable.Variable) error
+	VariableGet(ctx context.Context, id uuid.UUID) (*variable.Variable, error)
 }
 
 // NewHandler creates DBHandler

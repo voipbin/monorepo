@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
 const (
@@ -25,7 +26,8 @@ type activeflowHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	actionHandler actionhandler.ActionHandler
+	actionHandler   actionhandler.ActionHandler
+	variableHandler variablehandler.VariableHandler
 }
 
 // ActiveflowHandler defines
@@ -45,12 +47,14 @@ func NewActiveflowHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	actionHandler actionhandler.ActionHandler,
+	variableHandler variablehandler.VariableHandler,
 ) ActiveflowHandler {
 
 	return &activeflowHandler{
-		db:            db,
-		reqHandler:    reqHandler,
-		notifyHandler: notifyHandler,
-		actionHandler: actionHandler,
+		db:              db,
+		reqHandler:      reqHandler,
+		notifyHandler:   notifyHandler,
+		actionHandler:   actionHandler,
+		variableHandler: variableHandler,
 	}
 }

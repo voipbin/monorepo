@@ -1,0 +1,37 @@
+package variablehandler
+
+import (
+	"context"
+
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+)
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package variablehandler -destination ./mock_variablehandler.go -source main.go -build_flags=-mod=mod
+
+// variableHandler struct
+type variableHandler struct {
+	db dbhandler.DBHandler
+}
+
+// VariableHandler interface
+type VariableHandler interface {
+	Create(ctx context.Context, activeflowID uuid.UUID, variables map[string]string) (*variable.Variable, error)
+	Get(ctx context.Context, id uuid.UUID) (*variable.Variable, error)
+	Set(ctx context.Context, t *variable.Variable) (*variable.Variable, error)
+
+	SetVariable(ctx context.Context, id uuid.UUID, key string, value string) (*variable.Variable, error)
+}
+
+// NewVariableHandler return VariableHandler
+func NewVariableHandler(
+	db dbhandler.DBHandler,
+) VariableHandler {
+	h := &variableHandler{
+		db: db,
+	}
+
+	return h
+}
