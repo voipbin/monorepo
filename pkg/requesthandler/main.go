@@ -27,6 +27,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	fmvariable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	hmhook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
@@ -150,6 +151,7 @@ const (
 	resourceFlowsActions  resource = "flows/actions"
 	resourceFMFlows       resource = "fm/flows"
 	resourceFMActiveFlows resource = "fm/activeflows"
+	resourceFMVariables   resource = "fm/variables"
 
 	resourceMMMessages resource = "mm/messages"
 
@@ -405,6 +407,10 @@ type RequestHandler interface {
 	FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error)
 	FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error)
 	FMV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error)
+
+	// flow-manager variables
+	FMV1VariableGet(ctx context.Context, variableID uuid.UUID) (*fmvariable.Variable, error)
+	FMV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key string, value string) (*fmvariable.Variable, error)
 
 	// message-manager hook
 	MMV1Hook(ctx context.Context, hm *hmhook.Hook) error
