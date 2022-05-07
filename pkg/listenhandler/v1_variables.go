@@ -76,22 +76,14 @@ func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *rabbi
 		return nil, err
 	}
 
-	tmp, err := h.variableHandler.SetVariable(ctx, variableID, req.Key, req.Value)
-	if err != nil {
+	if err := h.variableHandler.SetVariable(ctx, variableID, req.Key, req.Value); err != nil {
 		log.Errorf("Could not set variable info. key: %s, value: %s, err: %v", req.Key, req.Value, err)
-		return nil, err
-	}
-
-	data, err := json.Marshal(tmp)
-	if err != nil {
-		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
-		Data:       data,
 	}
 
 	return res, nil

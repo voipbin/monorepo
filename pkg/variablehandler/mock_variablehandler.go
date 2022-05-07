@@ -67,12 +67,11 @@ func (mr *MockVariableHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call
 }
 
 // Set mocks base method.
-func (m *MockVariableHandler) Set(ctx context.Context, t *variable.Variable) (*variable.Variable, error) {
+func (m *MockVariableHandler) Set(ctx context.Context, t *variable.Variable) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set", ctx, t)
-	ret0, _ := ret[0].(*variable.Variable)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Set indicates an expected call of Set.
@@ -82,12 +81,11 @@ func (mr *MockVariableHandlerMockRecorder) Set(ctx, t interface{}) *gomock.Call 
 }
 
 // SetVariable mocks base method.
-func (m *MockVariableHandler) SetVariable(ctx context.Context, id uuid.UUID, key, value string) (*variable.Variable, error) {
+func (m *MockVariableHandler) SetVariable(ctx context.Context, id uuid.UUID, key, value string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetVariable", ctx, id, key, value)
-	ret0, _ := ret[0].(*variable.Variable)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SetVariable indicates an expected call of SetVariable.

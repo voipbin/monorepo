@@ -39,7 +39,7 @@ type DBHandler interface {
 
 	VariableCreate(ctx context.Context, t *variable.Variable) error
 	VariableGet(ctx context.Context, id uuid.UUID) (*variable.Variable, error)
-	VariableUpdate(ctx context.Context, t *variable.Variable) (*variable.Variable, error)
+	VariableUpdate(ctx context.Context, t *variable.Variable) error
 }
 
 // handler database handler
