@@ -107,15 +107,10 @@ func Test_Set(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().VariableUpdate(ctx, tt.variable).Return(tt.expectRes, nil)
+			mockDB.EXPECT().VariableUpdate(ctx, tt.variable).Return(nil)
 
-			res, err := h.Set(ctx, tt.variable)
-			if err != nil {
+			if err := h.Set(ctx, tt.variable); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -133,7 +128,7 @@ func Test_SetVariable(t *testing.T) {
 
 		responseVariable *variable.Variable
 
-		expectRes *variable.Variable
+		updateVariable *variable.Variable
 	}{
 		{
 			"normal",
@@ -169,15 +164,10 @@ func Test_SetVariable(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().VariableGet(ctx, tt.id).Return(tt.responseVariable, nil)
-			mockDB.EXPECT().VariableUpdate(ctx, tt.expectRes).Return(tt.expectRes, nil)
+			mockDB.EXPECT().VariableUpdate(ctx, tt.updateVariable).Return(nil)
 
-			res, err := h.SetVariable(ctx, tt.id, tt.key, tt.value)
-			if err != nil {
+			if err := h.SetVariable(ctx, tt.id, tt.key, tt.value); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})

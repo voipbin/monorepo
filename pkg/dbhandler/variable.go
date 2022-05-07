@@ -41,10 +41,10 @@ func (h *handler) VariableGet(ctx context.Context, id uuid.UUID) (*variable.Vari
 }
 
 // VariableUpdate updates the variable.
-func (h *handler) VariableUpdate(ctx context.Context, t *variable.Variable) (*variable.Variable, error) {
+func (h *handler) VariableUpdate(ctx context.Context, t *variable.Variable) error {
 	if err := h.variableSetToCache(ctx, t); err != nil {
-		return nil, err
+		return err
 	}
 
-	return h.variableGetFromCache(ctx, t.ID)
+	return nil
 }

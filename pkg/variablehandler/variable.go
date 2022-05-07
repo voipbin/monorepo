@@ -49,25 +49,24 @@ func (h *variableHandler) Get(ctx context.Context, id uuid.UUID) (*variable.Vari
 	return res, nil
 }
 
-func (h *variableHandler) Set(ctx context.Context, t *variable.Variable) (*variable.Variable, error) {
+func (h *variableHandler) Set(ctx context.Context, t *variable.Variable) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Set",
 		"variable_id": t.ID,
 	})
 
-	res, err := h.db.VariableUpdate(ctx, t)
-	if err != nil {
+	if err := h.db.VariableUpdate(ctx, t); err != nil {
 
 		log.Errorf("Could not update the variable. err: %v", err)
-		return nil, err
+		return err
 
 	}
 
-	return res, nil
+	return nil
 }
 
 // SetVariable sets the variable with value
-func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, key string, value string) (*variable.Variable, error) {
+func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, key string, value string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SetVariable",
 		"variable_id": id,
@@ -79,15 +78,14 @@ func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, key str
 	v, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get variable. err: %v", err)
-		return nil, err
+		return err
 	}
 
 	v.Variables[key] = value
-	res, err := h.Set(ctx, v)
-	if err != nil {
+	if err := h.Set(ctx, v); err != nil {
 		log.Errorf("Could not set variable. err: %v", err)
-		return nil, err
+		return err
 	}
 
-	return res, nil
+	return nil
 }

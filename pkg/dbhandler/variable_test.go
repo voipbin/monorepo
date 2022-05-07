@@ -69,19 +69,11 @@ func Test_VariableUpdate(t *testing.T) {
 		variable *variable.Variable
 
 		updateVariable *variable.Variable
-		expectRes      *variable.Variable
 	}{
 		{
 			"test normal",
 			&variable.Variable{
 				ID: uuid.FromStringOrNil("585b7a74-18a0-48ac-b4c5-1ba5ddea87ae"),
-			},
-
-			&variable.Variable{
-				ID: uuid.FromStringOrNil("585b7a74-18a0-48ac-b4c5-1ba5ddea87ae"),
-				Variables: map[string]string{
-					"test variable": "test value",
-				},
 			},
 
 			&variable.Variable{
@@ -109,15 +101,10 @@ func Test_VariableUpdate(t *testing.T) {
 			}
 
 			mockCache.EXPECT().VariableSet(ctx, tt.updateVariable).Return(nil)
-			mockCache.EXPECT().VariableGet(ctx, tt.updateVariable.ID).Return(tt.expectRes, nil)
-			res, err := h.VariableUpdate(context.Background(), tt.updateVariable)
-			if err != nil {
+			if err := h.VariableUpdate(context.Background(), tt.updateVariable); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
 		})
 	}
 }

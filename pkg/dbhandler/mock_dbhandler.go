@@ -256,12 +256,11 @@ func (mr *MockDBHandlerMockRecorder) VariableGet(ctx, id interface{}) *gomock.Ca
 }
 
 // VariableUpdate mocks base method.
-func (m *MockDBHandler) VariableUpdate(ctx context.Context, t *variable.Variable) (*variable.Variable, error) {
+func (m *MockDBHandler) VariableUpdate(ctx context.Context, t *variable.Variable) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VariableUpdate", ctx, t)
-	ret0, _ := ret[0].(*variable.Variable)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // VariableUpdate indicates an expected call of VariableUpdate.

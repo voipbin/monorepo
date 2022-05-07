@@ -20,9 +20,9 @@ type variableHandler struct {
 type VariableHandler interface {
 	Create(ctx context.Context, activeflowID uuid.UUID, variables map[string]string) (*variable.Variable, error)
 	Get(ctx context.Context, id uuid.UUID) (*variable.Variable, error)
-	Set(ctx context.Context, t *variable.Variable) (*variable.Variable, error)
+	Set(ctx context.Context, t *variable.Variable) error
 
-	SetVariable(ctx context.Context, id uuid.UUID, key string, value string) (*variable.Variable, error)
+	SetVariable(ctx context.Context, id uuid.UUID, key string, value string) error
 }
 
 // NewVariableHandler return VariableHandler
