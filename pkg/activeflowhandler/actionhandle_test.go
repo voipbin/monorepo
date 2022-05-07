@@ -639,7 +639,7 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 	}
 }
 
-func Test_actionHandlePatchFlow(t *testing.T) {
+func Test_actionHandleFetchFlow(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -658,7 +658,7 @@ func Test_actionHandlePatchFlow(t *testing.T) {
 			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
-					Type:   action.TypePatchFlow,
+					Type:   action.TypeFetchFlow,
 					Option: []byte(`{"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa"}`),
 				},
 				Actions: []action.Action{
@@ -668,7 +668,7 @@ func Test_actionHandlePatchFlow(t *testing.T) {
 					},
 					{
 						ID:   uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
-						Type: action.TypePatchFlow,
+						Type: action.TypeFetchFlow,
 					},
 					{
 						ID:   uuid.FromStringOrNil("ad108d6a-648e-11ec-a226-536bc1253066"),
@@ -690,7 +690,7 @@ func Test_actionHandlePatchFlow(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("e2af181a-648e-11ec-878b-2bb6c0cebb3e"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("ec99431a-3cbf-11ec-b530-b3c665dd8156"),
-					Type:   action.TypePatchFlow,
+					Type:   action.TypeFetchFlow,
 					Option: []byte(`{"flow_id": "a1d247b4-3cbf-11ec-8d08-970ce7001aaa"}`),
 				},
 				Actions: []action.Action{
@@ -716,7 +716,7 @@ func Test_actionHandlePatchFlow(t *testing.T) {
 			&activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
-					Type:   action.TypePatchFlow,
+					Type:   action.TypeFetchFlow,
 					Option: []byte(`{"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e"}`),
 				},
 				Actions: []action.Action{
@@ -726,7 +726,7 @@ func Test_actionHandlePatchFlow(t *testing.T) {
 					},
 					{
 						ID:   uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
-						Type: action.TypePatchFlow,
+						Type: action.TypeFetchFlow,
 					},
 					{
 						ID:   uuid.FromStringOrNil("36ba131a-648f-11ec-8a6b-830a37358fbe"),
@@ -752,7 +752,7 @@ func Test_actionHandlePatchFlow(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("59b5a226-648f-11ec-a356-ff8a386afbb9"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("36679982-648f-11ec-b604-63e47c25e1e7"),
-					Type:   action.TypePatchFlow,
+					Type:   action.TypeFetchFlow,
 					Option: []byte(`{"flow_id": "36e14dae-648f-11ec-b947-6f91a363d29e"}`),
 				},
 				Actions: []action.Action{
@@ -797,7 +797,7 @@ func Test_actionHandlePatchFlow(t *testing.T) {
 			mockReq.EXPECT().FMV1FlowGet(ctx, tt.flowID).Return(tt.responseflow, nil)
 			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectFlow).Return(nil)
 
-			if err := h.actionHandlePatchFlow(ctx, tt.activeFlow); err != nil {
+			if err := h.actionHandleFetchFlow(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

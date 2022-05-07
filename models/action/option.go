@@ -108,6 +108,17 @@ type OptionExternalMediaStop struct {
 	// no option
 }
 
+// OptionFetch defines action fetch's option.
+type OptionFetch struct {
+	EventURL    string `json:"event_url"`
+	EventMethod string `json:"event_method"`
+}
+
+// OptionFetchFlow defines action fetch_flow's option.
+type OptionFetchFlow struct {
+	FlowID uuid.UUID `json:"flow_id"`
+}
+
 // OptionGoto defines action goto's option
 type OptionGoto struct {
 	TargetID  uuid.UUID `json:"target_id"`  // target's action id in the flow array for go to.
@@ -124,17 +135,6 @@ type OptionMessageSend struct {
 	Source       *cmaddress.Address  `json:"source"`
 	Destinations []cmaddress.Address `json:"destinations"`
 	Text         string              `json:"text"`
-}
-
-// OptionPatch defines action patch's option.
-type OptionPatch struct {
-	EventURL    string `json:"event_url"`
-	EventMethod string `json:"event_method"`
-}
-
-// OptionPatchFlow defines action patch_flow's option.
-type OptionPatchFlow struct {
-	FlowID uuid.UUID `json:"flow_id"`
 }
 
 // OptionPlay defines action play's option.

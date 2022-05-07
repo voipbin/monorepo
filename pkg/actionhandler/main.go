@@ -16,7 +16,7 @@ type actionHandler struct{}
 // ActionHandler fefines
 type ActionHandler interface {
 	ValidateActions(actions []action.Action) error
-	ActionPatchGet(act *action.Action, callID uuid.UUID) ([]action.Action, error)
+	ActionFetchGet(act *action.Action, activeflowID uuid.UUID, referenceID uuid.UUID) ([]action.Action, error)
 	GenerateFlowActions(ctx context.Context, actions []action.Action) ([]action.Action, error)
 }
 
