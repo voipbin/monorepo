@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestUpdateStatusRinging(t *testing.T) {
+func Test_UpdateStatusRinging(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -60,7 +60,7 @@ func TestUpdateStatusRinging(t *testing.T) {
 	}
 }
 
-func TestUpdateStatusRingingFail(t *testing.T) {
+func Test_UpdateStatusRingingFail(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -143,7 +143,7 @@ func TestUpdateStatusRingingFail(t *testing.T) {
 	}
 }
 
-func TestUpdateStatusProgressing(t *testing.T) {
+func Test_UpdateStatusProgressing(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -234,7 +234,7 @@ func TestUpdateStatusProgressing(t *testing.T) {
 	}
 }
 
-func TestUpdateStatusProgressingFail(t *testing.T) {
+func Test_UpdateStatusProgressingFail(t *testing.T) {
 
 	tests := []struct {
 		name    string

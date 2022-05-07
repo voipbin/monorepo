@@ -23,7 +23,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestGetTypeContextIncomingCall(t *testing.T) {
+func Test_GetTypeContextIncomingCall(t *testing.T) {
 	type test struct {
 		name       string
 		domain     string
@@ -63,19 +63,7 @@ func TestGetTypeContextIncomingCall(t *testing.T) {
 	}
 }
 
-func TestTypeSipServiceStartSvcEcho(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
+func Test_TypeSipServiceStartSvcEcho(t *testing.T) {
 
 	type test struct {
 		name         string
@@ -115,6 +103,19 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(nil)
 
@@ -136,19 +137,7 @@ func TestTypeSipServiceStartSvcEcho(t *testing.T) {
 	}
 }
 
-func TestTypeConferenceStart(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
+func Test_TypeConferenceStart(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -200,46 +189,51 @@ func TestTypeConferenceStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
-			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
-			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
-			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), uuid.Nil, tt.conference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.activeFlow, nil)
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
 
-			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
+			ctx := context.Background()
+
+			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(nil)
+
+			mockReq.EXPECT().CFV1ConferenceGet(ctx, uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.conference, nil)
+			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, uuid.Nil, tt.conference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.activeFlow, nil)
+
+			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
+
+			// setVariables
+			mockReq.EXPECT().FMV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			// action next part.
-			mockReq.EXPECT().FMV1ActiveflowGetNextAction(gomock.Any(), gomock.Any(), fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
-			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
+			mockReq.EXPECT().FMV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
+			mockDB.EXPECT().CallSetAction(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
 
-			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
+			if err := h.StartCallHandle(ctx, tt.channel, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
+func Test_TypeSipServiceStartSvcAnswer(t *testing.T) {
 
 	type test struct {
 		name    string
@@ -276,6 +270,19 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			option := fmaction.OptionAnswer{}
 			opt, err := json.Marshal(option)
 			if err != nil {
@@ -309,19 +316,7 @@ func TestTypeSipServiceStartSvcAnswer(t *testing.T) {
 	}
 }
 
-func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
+func Test_TypeSipServiceStartSvcStreamEcho(t *testing.T) {
 
 	type test struct {
 		name         string
@@ -364,6 +359,19 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			ctx := context.Background()
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(nil)
@@ -386,21 +394,7 @@ func TestTypeSipServiceStartSvcStreamEcho(t *testing.T) {
 	}
 }
 
-func TestTypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
-
-	h := &callHandler{
-		reqHandler:        mockReq,
-		notifyHandler:     mockNotify,
-		db:                mockDB,
-		confbridgeHandler: mockConfbridge,
-	}
+func Test_TypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 
 	tests := []struct {
 		name         string
@@ -449,6 +443,21 @@ func TestTypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &callHandler{
+				reqHandler:        mockReq,
+				notifyHandler:     mockNotify,
+				db:                mockDB,
+				confbridgeHandler: mockConfbridge,
+			}
+
 			ctx := context.Background()
 
 			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
@@ -471,19 +480,7 @@ func TestTypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 	}
 }
 
-func TestTypeSipServiceStartSvcPlay(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
+func Test_TypeSipServiceStartSvcPlay(t *testing.T) {
 
 	type test struct {
 		name         string
@@ -526,6 +523,19 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID)
@@ -548,19 +558,7 @@ func TestTypeSipServiceStartSvcPlay(t *testing.T) {
 	}
 }
 
-func TestTypeFlowStart(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
+func Test_TypeFlowStart(t *testing.T) {
 
 	type test struct {
 		name    string
@@ -661,25 +659,41 @@ func TestTypeFlowStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(nil)
 
-			mockReq.EXPECT().NMV1NumberGetByNumber(gomock.Any(), tt.channel.DestinationNumber).Return(tt.numb, nil)
-			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), uuid.Nil, tt.numb.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
-			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
-			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
-			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
+			mockReq.EXPECT().NMV1NumberGetByNumber(ctx, tt.channel.DestinationNumber).Return(tt.numb, nil)
+			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, uuid.Nil, tt.numb.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
+			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
+
+			// setVariables
+			mockReq.EXPECT().FMV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			// action next part.
-			mockReq.EXPECT().FMV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
-			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
+			mockReq.EXPECT().FMV1ActiveflowGetNextAction(ctx, tt.call.ActiveFlowID, fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
+			mockDB.EXPECT().CallSetAction(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
 
 			if err := h.StartCallHandle(ctx, tt.channel, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -688,28 +702,14 @@ func TestTypeFlowStart(t *testing.T) {
 	}
 }
 
-func TestStartHandlerContextOutgoingCall(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_StartHandlerContextOutgoingCall(t *testing.T) {
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
 		data    map[string]string
 		call    *call.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&channel.Channel{
@@ -735,6 +735,19 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetAsteriskID(ctx, tt.call.ID, tt.channel.AsteriskID, gomock.Any()).Return(nil)
@@ -753,28 +766,14 @@ func TestStartHandlerContextOutgoingCall(t *testing.T) {
 	}
 }
 
-func TestStartHandlerContextExternalMedia(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_StartHandlerContextExternalMedia(t *testing.T) {
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		channel  *channel.Channel
 		data     map[string]string
 		bridgeID string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&channel.Channel{
@@ -793,6 +792,19 @@ func TestStartHandlerContextExternalMedia(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
@@ -802,28 +814,14 @@ func TestStartHandlerContextExternalMedia(t *testing.T) {
 	}
 }
 
-func TestStartHandlerContextExternalSnoop(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		channel  *channel.Channel
 		data     map[string]string
 		bridgeID string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&channel.Channel{
@@ -842,6 +840,19 @@ func TestStartHandlerContextExternalSnoop(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
@@ -851,28 +862,14 @@ func TestStartHandlerContextExternalSnoop(t *testing.T) {
 	}
 }
 
-func TestStartHandlerContextJoin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_StartHandlerContextJoin(t *testing.T) {
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		channel  *channel.Channel
 		data     map[string]string
 		bridgeID string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&channel.Channel{
@@ -892,11 +889,21 @@ func TestStartHandlerContextJoin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeJoin)).Return(nil)
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
-
-			// mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "PJSIP_HEADER(add,VB-CALL-ID)", tt.data["call_id"]).Return(nil)
-			// mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "PJSIP_HEADER(add,VB-CONFBRIDGE-ID)", tt.data["confbridge_id"]).Return(nil)
 
 			mockReq.EXPECT().AstChannelDial(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "", defaultDialTimeout).Return(nil)
 

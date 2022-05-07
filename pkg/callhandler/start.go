@@ -501,6 +501,12 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 		})
 	log.WithField("call", c).Debug("Created a call.")
 
+	// set variables
+	if errVariables := h.setVariables(ctx, c); errVariables != nil {
+		log.Errorf("Could not set variables. err: %v", errVariables)
+		return errVariables
+	}
+
 	return h.ActionNext(ctx, c)
 }
 
@@ -563,6 +569,12 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 			"call": c,
 		})
 	log.Debugf("Created a call. call: %s", c.ID)
+
+	// set variables
+	if errVariables := h.setVariables(ctx, c); errVariables != nil {
+		log.Errorf("Could not set variables. err: %v", errVariables)
+		return errVariables
+	}
 
 	return h.ActionNext(ctx, c)
 }
