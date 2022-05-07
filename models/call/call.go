@@ -52,11 +52,6 @@ type Call struct {
 	TMHangup      string `json:"tm_hangup"`
 }
 
-// fixed user id
-const (
-	UserIDAdmin uint64 = 1 // admin user id
-)
-
 // Type type
 type Type string
 

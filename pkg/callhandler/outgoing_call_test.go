@@ -19,21 +19,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestCreateCallOutgoing(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_CreateCallOutgoing(t *testing.T) {
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		db:            mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id           uuid.UUID
@@ -49,9 +37,7 @@ func TestCreateCallOutgoing(t *testing.T) {
 		expectCall        *call.Call
 		expectEndpointDst string
 		expectVariables   map[string]string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -152,7 +138,6 @@ func TestCreateCallOutgoing(t *testing.T) {
 					ID: action.IDStart,
 				},
 			},
-			// "pjsip/call-out/sip:+123456789@voipbin.pstn.twilio.com",
 			"pjsip/call-out/sip:+123456789@sip.telnyx.com;transport=udp",
 			map[string]string{
 				"CALLERID(all)":                         "+99999888",
@@ -163,28 +148,45 @@ func TestCreateCallOutgoing(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().FMV1ActiveflowCreate(gomock.Any(), tt.activeflowID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.af, nil)
-			mockDB.EXPECT().CallCreate(gomock.Any(), tt.expectCall).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.expectCall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, tt.activeflowID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.af, nil)
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
+
+			// setVariables
+			mockReq.EXPECT().FMV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			if tt.masterCallID != uuid.Nil {
 				mockDB.EXPECT().CallTXStart(tt.masterCallID).Return(nil, &call.Call{}, nil)
 				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
-				mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.expectCall.ID, tt.masterCallID).Return(nil)
+				mockDB.EXPECT().CallSetMasterCallID(ctx, tt.expectCall.ID, tt.masterCallID).Return(nil)
 				mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-				mockDB.EXPECT().CallGet(gomock.Any(), tt.masterCallID).Return(&call.Call{}, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+				mockDB.EXPECT().CallGet(ctx, tt.masterCallID).Return(&call.Call{}, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
-				mockDB.EXPECT().CallGet(gomock.Any(), tt.expectCall.ID).Return(&call.Call{}, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+				mockDB.EXPECT().CallGet(ctx, tt.expectCall.ID).Return(&call.Call{}, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 			}
 
-			mockReq.EXPECT().AstChannelCreate(gomock.Any(), requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
 
-			res, err := h.CreateCallOutgoing(context.Background(), tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -196,26 +198,13 @@ func TestCreateCallOutgoing(t *testing.T) {
 	}
 }
 
-func TestGetEndpointDestinationTypeTel(t *testing.T) {
+func Test_GetEndpointDestinationTypeTel(t *testing.T) {
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name               string
 		destination        *address.Address
 		expectEndpointDest string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&address.Address{
@@ -228,8 +217,20 @@ func TestGetEndpointDestinationTypeTel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			res, err := h.getDialURI(context.Background(), *tt.destination)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			res, err := h.getDialURI(ctx, *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -241,26 +242,13 @@ func TestGetEndpointDestinationTypeTel(t *testing.T) {
 	}
 }
 
-func TestGetEndpointDestinationTypeSIP(t *testing.T) {
+func Test_GetEndpointDestinationTypeSIP(t *testing.T) {
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name               string
 		destination        *address.Address
 		expectEndpointDest string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&address.Address{
@@ -273,8 +261,20 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			res, err := h.getDialURI(context.Background(), *tt.destination)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			res, err := h.getDialURI(ctx, *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -286,26 +286,13 @@ func TestGetEndpointDestinationTypeSIP(t *testing.T) {
 	}
 }
 
-func TestGetDialingURISIP(t *testing.T) {
+func Test_GetDialingURISIP(t *testing.T) {
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name        string
 		destination *address.Address
 		expectRes   string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&address.Address{
@@ -319,7 +306,20 @@ func TestGetDialingURISIP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.getDialURI(context.Background(), *tt.destination)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			res, err := h.getDialURI(ctx, *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -331,26 +331,13 @@ func TestGetDialingURISIP(t *testing.T) {
 	}
 }
 
-func TestGetDialingURITel(t *testing.T) {
+func Test_GetDialingURITel(t *testing.T) {
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name        string
 		destination *address.Address
 		expectRes   string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&address.Address{
@@ -364,7 +351,20 @@ func TestGetDialingURITel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.getDialURI(context.Background(), *tt.destination)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			res, err := h.getDialURI(ctx, *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -376,27 +376,14 @@ func TestGetDialingURITel(t *testing.T) {
 	}
 }
 
-func TestGetDialURIExtension(t *testing.T) {
+func Test_GetDialURIExtension(t *testing.T) {
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name        string
 		destination *address.Address
 		contacts    []*astcontact.AstContact
 		expectRes   string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&address.Address{
@@ -526,10 +513,22 @@ func TestGetDialURIExtension(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().RMV1ContactGets(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			res, err := h.getDialURI(context.Background(), *tt.destination)
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().RMV1ContactGets(ctx, tt.destination.Target).Return(tt.contacts, nil)
+
+			res, err := h.getDialURI(ctx, *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -541,26 +540,13 @@ func TestGetDialURIExtension(t *testing.T) {
 	}
 }
 
-func TestGetDialURIEndpointError(t *testing.T) {
+func Test_GetDialURIEndpointError(t *testing.T) {
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name        string
 		destination *address.Address
 		contacts    []*astcontact.AstContact
-	}
-
-	tests := []test{
+	}{
 		{
 			"no contact",
 			&address.Address{
@@ -573,8 +559,20 @@ func TestGetDialURIEndpointError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().RMV1ContactGets(gomock.Any(), tt.destination.Target).Return(tt.contacts, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().RMV1ContactGets(ctx, tt.destination.Target).Return(tt.contacts, nil)
 
 			_, err := h.getDialURI(context.Background(), *tt.destination)
 			if err == nil {
