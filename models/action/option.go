@@ -188,7 +188,13 @@ type OptionTranscribeStop struct {
 	// no option
 }
 
-// OptionTranscribeRecording defines action OptionTranscribeRecording's option.
+// OptionTranscribeRecording defines action TypeTranscribeRecording's option.
 type OptionTranscribeRecording struct {
 	Language string `json:"language"` // BCP47 format. en-US
+}
+
+// OptionVariableSet defines action TypeVariableSet's option.
+type OptionVariableSet struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }

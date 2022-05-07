@@ -73,10 +73,10 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 
 // actionHandlePatch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *activeflowHandler) actionHandlePatch(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandlePatch(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionPatch",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -84,7 +84,7 @@ func (h *activeflowHandler) actionHandlePatch(ctx context.Context, id uuid.UUID,
 	act := &af.CurrentAction
 
 	// patch the actions from the remote
-	patchedActions, err := h.actionHandler.ActionPatchGet(act, id)
+	patchedActions, err := h.actionHandler.ActionPatchGet(act, af.ID)
 	if err != nil {
 		log.Errorf("Could not patch the actions from the remote. err: %v", err)
 		return err
@@ -109,10 +109,10 @@ func (h *activeflowHandler) actionHandlePatch(ctx context.Context, id uuid.UUID,
 
 // actionHandlePatchFlow handles action patch_flow with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *activeflowHandler) actionHandlePatchFlow(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandlePatchFlow(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionPatchFlow",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -151,10 +151,10 @@ func (h *activeflowHandler) actionHandlePatchFlow(ctx context.Context, id uuid.U
 
 // actionHandleConditionCallDigits handles action condition_call_digits with active flow.
 // it checks the received digits and sets the forward action id.
-func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "actionHandleConditionCallDigits",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -169,7 +169,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 	log.WithField("option", opt).Debugf("Detail option.")
 
 	// gets the received digits
-	digits, err := h.reqHandler.CMV1CallGetDigits(ctx, id)
+	digits, err := h.reqHandler.CMV1CallGetDigits(ctx, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get digits. err: %v", err)
 		return err
@@ -198,10 +198,10 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 
 // actionHandleConditionCallStatus handles action condition_call_status with active flow.
 // it checks the call's status and sets the forward action id.
-func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "actionHandleConditionCallStatus",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -216,12 +216,12 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 	log.WithField("option", opt).Debugf("Detail option.")
 
 	// gets the call
-	c, err := h.reqHandler.CMV1CallGet(ctx, id)
+	c, err := h.reqHandler.CMV1CallGet(ctx, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get call. err: %v", err)
 		return err
 	}
-	log.WithField("call", c).Debugf("Received call info. call_id: %s", id)
+	log.WithField("call", c).Debugf("Received call info. call_id: %s", c.ID)
 
 	// match the condition
 	if string(opt.Status) == string(c.Status) {
@@ -242,10 +242,10 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 
 // actionHandleConferenceJoin handles action conference_join with active flow.
 // it gets the given conference's flow and replace it.
-func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionConferenceJoin",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -297,10 +297,10 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, id u
 }
 
 // actionHandleConnect handles action connect with active flow.
-func (h *activeflowHandler) actionHandleConnect(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionConnect",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -349,7 +349,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, id uuid.UUI
 	}
 
 	// set master call id.
-	masterCallID := id
+	masterCallID := af.ReferenceID
 	if optConnect.Unchained {
 		masterCallID = uuid.Nil
 	}
@@ -386,10 +386,10 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, id uuid.UUI
 }
 
 // actionHandleGoto handles action goto with active flow.
-func (h *activeflowHandler) actionHandleGoto(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionGoto",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -416,10 +416,10 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, id uuid.UUID, 
 }
 
 // actionHandleTranscribeRecording handles transcribe_recording
-func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context, af *activeflow.Activeflow, id uuid.UUID, act *action.Action) error {
+func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context, af *activeflow.Activeflow, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "activeFlowHandleActionTranscribeRecording",
-		"activeflow_id":  id,
+		"activeflow_id":  af.ID,
 		"reference_type": af.ReferenceType,
 		"reference_id":   af.ReferenceID,
 		"action_id":      act.ID,
@@ -432,7 +432,7 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 	}
 
 	// transcribe-recording
-	res, err := h.reqHandler.TSV1CallRecordingCreate(ctx, af.CustomerID, id, optRecordingToText.Language, 120000, 30)
+	res, err := h.reqHandler.TSV1CallRecordingCreate(ctx, af.CustomerID, af.ReferenceID, optRecordingToText.Language, 120000, 30)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
@@ -443,10 +443,10 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 }
 
 // actionHandleTranscribeStart handles transcribe_start
-func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af *activeflow.Activeflow, id uuid.UUID, act *action.Action) error {
+func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af *activeflow.Activeflow, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "activeFlowHandleActionTranscribeStart",
-		"activeflow_id":  id,
+		"activeflow_id":  af.ID,
 		"reference_type": af.ReferenceType,
 		"reference_id":   af.ReferenceID,
 		"action_id":      act.ID,
@@ -459,7 +459,7 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 	}
 
 	// transcribe-recording
-	trans, err := h.reqHandler.TSV1StreamingCreate(ctx, af.CustomerID, id, tstranscribe.TypeCall, opt.Language)
+	trans, err := h.reqHandler.TSV1StreamingCreate(ctx, af.CustomerID, af.ReferenceID, tstranscribe.TypeCall, opt.Language)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
@@ -470,10 +470,10 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 }
 
 // actionHandleAgentCall handles action agent_call with active flow.
-func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionAgentCall",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -499,7 +499,7 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, id uuid.U
 	log.Debug("Created conference for agent_call.")
 
 	// get call info
-	c, err := h.reqHandler.CMV1CallGet(ctx, id)
+	c, err := h.reqHandler.CMV1CallGet(ctx, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
 		return err
@@ -515,8 +515,8 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, id uuid.U
 	log.WithField("flow", f).Debug("Created a flow.")
 
 	// call to the agent
-	log.Debugf("Dialing to the agent. call_id: %s, flow_id: %s", id, f.ID)
-	agentDial, err := h.reqHandler.AMV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, id)
+	log.Debugf("Dialing to the agent. call_id: %s, flow_id: %s", af.ReferenceID, f.ID)
+	agentDial, err := h.reqHandler.AMV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not dial to the agent. err: %v", err)
 		return err
@@ -556,10 +556,10 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, id uuid.U
 }
 
 // actionHandleQueueJoin handles queue_join action type.
-func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionQueueJoin",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -595,7 +595,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, id uuid.U
 	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, q.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitActionID)
 	if err != nil {
 		log.WithField("exit_action_id", exitActionID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
-		errForward := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, id, exitActionID, true)
+		errForward := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, af.ReferenceID, exitActionID, true)
 		if errForward != nil {
 			log.Errorf("Could not forward the active flow. err: %v", errForward)
 		}
@@ -635,10 +635,10 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, id uuid.U
 }
 
 // actionHandleBranch handles branch action type.
-func (h *activeflowHandler) actionHandleBranch(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionBranch",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -652,14 +652,14 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, id uuid.UUID
 	}
 
 	// get received digits
-	digits, err := h.reqHandler.CMV1CallGetDigits(ctx, id)
+	digits, err := h.reqHandler.CMV1CallGetDigits(ctx, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get digits. err: %v", err)
 		return err
 	}
 
 	// send digits reset
-	if errDigits := h.reqHandler.CMV1CallSetDigits(ctx, id, ""); errDigits != nil {
+	if errDigits := h.reqHandler.CMV1CallSetDigits(ctx, af.ReferenceID, ""); errDigits != nil {
 		// we got the error here, but this is minor issue.
 		// just write the log.
 		log.Errorf("Could not reset the call digits. err: %v", errDigits)
@@ -681,10 +681,10 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, id uuid.UUID
 }
 
 // actionHandleMessageSend handles message_send action type.
-func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "actionHandleMessageSend",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -708,10 +708,10 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, id uuid
 }
 
 // actionHandleCall handles action call with active flow.
-func (h *activeflowHandler) actionHandleCall(ctx context.Context, id uuid.UUID, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "actionHandleCall",
-		"activeflow_id":     id,
+		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
@@ -750,6 +750,32 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, id uuid.UUID, 
 		return err
 	}
 	log.WithField("calls", resCalls).Debugf("Created outgoing calls for action call. count: %d", len(resCalls))
+
+	return nil
+}
+
+// actionHandleVariableSet handles action variable_set with active flow.
+func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleVariableSet",
+		"activeflow_id":     af.ID,
+		"reference_type":    af.ReferenceType,
+		"reference_id":      af.ReferenceID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	log.Debugf("Executing the action variable_set. reference_id: %s", af.ReferenceID)
+
+	act := &af.CurrentAction
+
+	var opt action.OptionVariableSet
+	if errUnmarshal := json.Unmarshal(act.Option, &opt); errUnmarshal != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", errUnmarshal)
+		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
+	}
+
+	if errVariable := h.variableHandler.SetVariable(ctx, af.ID, opt.Key, opt.Value); errVariable != nil {
+		return fmt.Errorf("could not set varialbe. err: %v", errVariable)
+	}
 
 	return nil
 }

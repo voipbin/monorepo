@@ -56,100 +56,106 @@ func (h *activeflowHandler) executeAction(ctx context.Context, id uuid.UUID, act
 
 	switch act.Type {
 	case action.TypeAgentCall:
-		if errHandle := h.actionHandleAgentCall(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleAgentCall(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the agent_call action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeBranch:
-		if errHandle := h.actionHandleBranch(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleBranch(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the branch action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeCall:
-		if errHandle := h.actionHandleCall(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleCall(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the call action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeConditionCallDigits:
-		if errHandle := h.actionHandleConditionCallDigits(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleConditionCallDigits(ctx, af); errHandle != nil {
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeConditionCallStatus:
-		if errHandle := h.actionHandleConditionCallStatus(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleConditionCallStatus(ctx, af); errHandle != nil {
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeConferenceJoin:
-		if errHandle := h.actionHandleConferenceJoin(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleConferenceJoin(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the conference_join action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeConnect:
-		if errHandle := h.actionHandleConnect(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleConnect(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the connect action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeGoto:
-		if errHandle := h.actionHandleGoto(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleGoto(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the goto action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeMessageSend:
-		if errHandler := h.actionHandleMessageSend(ctx, id, af); errHandler != nil {
+		if errHandler := h.actionHandleMessageSend(ctx, af); errHandler != nil {
 			log.Errorf("Could not handle the message_send action correctly. err: %v", errHandler)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypePatch:
-		if errHandle := h.actionHandlePatch(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandlePatch(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the patch action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypePatchFlow:
-		if errHandle := h.actionHandlePatchFlow(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandlePatchFlow(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the patch_flow action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeQueueJoin:
-		if errHandle := h.actionHandleQueueJoin(ctx, id, af); errHandle != nil {
+		if errHandle := h.actionHandleQueueJoin(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the queue_join action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeTranscribeRecording:
-		if err := h.actionHandleTranscribeRecording(ctx, af, id, act); err != nil {
+		if err := h.actionHandleTranscribeRecording(ctx, af, act); err != nil {
 			log.Errorf("Could not handle the recording_to_text action correctly. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
 	case action.TypeTranscribeStart:
-		if err := h.actionHandleTranscribeStart(ctx, af, id, act); err != nil {
+		if err := h.actionHandleTranscribeStart(ctx, af, act); err != nil {
 			log.Errorf("Could not start the transcribe. err: %v", err)
 			// we can move on to the next action even it's failed
 		}
 		return h.GetNextAction(ctx, id, act.ID)
+
+	case action.TypeVariableSet:
+		if err := h.actionHandleVariableSet(ctx, af); err != nil {
+			log.Errorf("Could not handle the variable_set. err: %v", err)
+		}
+		return h.getNextAction(ctx, id, act.ID)
 	}
 
 	return act, nil
