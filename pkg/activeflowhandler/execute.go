@@ -116,15 +116,15 @@ func (h *activeflowHandler) executeAction(ctx context.Context, id uuid.UUID, act
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
-	case action.TypePatch:
-		if errHandle := h.actionHandlePatch(ctx, af); errHandle != nil {
+	case action.TypeFetch:
+		if errHandle := h.actionHandleFetch(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the patch action correctly. err: %v", err)
 			return nil, err
 		}
 		return h.GetNextAction(ctx, id, act.ID)
 
-	case action.TypePatchFlow:
-		if errHandle := h.actionHandlePatchFlow(ctx, af); errHandle != nil {
+	case action.TypeFetchFlow:
+		if errHandle := h.actionHandleFetchFlow(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the patch_flow action correctly. err: %v", err)
 			return nil, err
 		}

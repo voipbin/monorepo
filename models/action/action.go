@@ -58,11 +58,11 @@ const (
 	TypeEcho                Type = "echo"                  // call-manager.
 	TypeExternalMediaStart  Type = "external_media_start"  // call-manager.
 	TypeExternalMediaStop   Type = "external_media_stop"   // call-manager.
+	TypeFetch               Type = "fetch"                 // flow-manager.
+	TypeFetchFlow           Type = "fetch_flow"            // flow-manager.
 	TypeGoto                Type = "goto"                  // flow-manager.
 	TypeHangup              Type = "hangup"                // call-manager.
 	TypeMessageSend         Type = "message_send"          // message-manager.
-	TypePatch               Type = "patch"                 // flow-manager.
-	TypePatchFlow           Type = "patch_flow"            // flow-manager.
 	TypePlay                Type = "play"                  // call-manager.
 	TypeQueueJoin           Type = "queue_join"            // flow-manager. put the call into the queue.
 	TypeRecordingStart      Type = "recording_start"       // call-manager. startr the record of the given call.
@@ -94,11 +94,11 @@ var TypeList []Type = []Type{
 	TypeEcho,
 	TypeExternalMediaStart,
 	TypeExternalMediaStop,
+	TypeFetch,
+	TypeFetchFlow,
 	TypeGoto,
 	TypeHangup,
 	TypeMessageSend,
-	TypePatch,
-	TypePatchFlow,
 	TypePlay,
 	TypeQueueJoin,
 	TypeRecordingStart,

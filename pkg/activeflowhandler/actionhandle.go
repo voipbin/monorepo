@@ -71,11 +71,11 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 	return nil
 }
 
-// actionHandlePatch handles action patch with active flow.
+// actionHandleFetch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *activeflowHandler) actionHandlePatch(ctx context.Context, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionPatch",
+		"func":              "actionHandleFetch",
 		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
@@ -84,7 +84,7 @@ func (h *activeflowHandler) actionHandlePatch(ctx context.Context, af *activeflo
 	act := &af.CurrentAction
 
 	// patch the actions from the remote
-	patchedActions, err := h.actionHandler.ActionPatchGet(act, af.ID)
+	patchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not patch the actions from the remote. err: %v", err)
 		return err
@@ -107,11 +107,11 @@ func (h *activeflowHandler) actionHandlePatch(ctx context.Context, af *activeflo
 	return nil
 }
 
-// actionHandlePatchFlow handles action patch_flow with active flow.
+// actionHandleFetchFlow handles action patch_flow with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *activeflowHandler) actionHandlePatchFlow(ctx context.Context, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionPatchFlow",
+		"func":              "actionHandleFetchFlow",
 		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
@@ -119,7 +119,7 @@ func (h *activeflowHandler) actionHandlePatchFlow(ctx context.Context, af *activ
 	})
 	act := &af.CurrentAction
 
-	var option action.OptionPatchFlow
+	var option action.OptionFetchFlow
 	if err := json.Unmarshal(act.Option, &option); err != nil {
 		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return err

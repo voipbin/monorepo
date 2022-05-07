@@ -33,28 +33,34 @@ func (h *actionHandler) ValidateActions(actions []action.Action) error {
 	return nil
 }
 
-// actionPatchGet gets the action from the remote.
-func (h *actionHandler) ActionPatchGet(act *action.Action, callID uuid.UUID) ([]action.Action, error) {
+// ActionFetchGet gets the action from the remote.
+func (h *actionHandler) ActionFetchGet(act *action.Action, activeflowID uuid.UUID, referenceID uuid.UUID) ([]action.Action, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ActionFetchGet",
+		"activeflow_id": activeflowID,
+		"reference_id":  referenceID,
+	})
 
-	var option action.OptionPatch
+	var option action.OptionFetch
 	if err := json.Unmarshal(act.Option, &option); err != nil {
-		logrus.Errorf("Could not unmarshal the option. err: %v", err)
+		log.Errorf("Could not unmarshal the option. err: %v", err)
 		return nil, err
 	}
 
 	// create a request body
 	reqBody, err := json.Marshal(map[string]interface{}{
-		"call_id": callID.String(),
+		"activeflow_id": activeflowID,
+		"reference_id":  referenceID,
 	})
 	if err != nil {
-		logrus.Errorf("Could not create a request body. err: %v", err)
+		log.Errorf("Could not create a request body. err: %v", err)
 		return nil, err
 	}
 
 	// set the HTTP method, url, and request body
 	req, err := http.NewRequest(option.EventMethod, option.EventURL, bytes.NewBuffer(reqBody))
 	if err != nil {
-		logrus.Errorf("Could not create a request. err: %v", err)
+		log.Errorf("Could not create a request. err: %v", err)
 		return nil, err
 	}
 
@@ -63,7 +69,7 @@ func (h *actionHandler) ActionPatchGet(act *action.Action, callID uuid.UUID) ([]
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		logrus.Errorf("Could not get correct result. err: %v", err)
+		log.Errorf("Could not get correct result. err: %v", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -74,13 +80,13 @@ func (h *actionHandler) ActionPatchGet(act *action.Action, callID uuid.UUID) ([]
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.Errorf("Could not get the result. err: %v", err)
+		log.Errorf("Could not get the result. err: %v", err)
 		return nil, err
 	}
 
 	var res []action.Action
 	if err := json.Unmarshal(body, &res); err != nil {
-		logrus.Errorf("Could not unmarshal the result. body: %s, err: %v", body, err)
+		log.Errorf("Could not unmarshal the result. body: %s, err: %v", body, err)
 		return nil, err
 	}
 
