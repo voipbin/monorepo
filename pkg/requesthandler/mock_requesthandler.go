@@ -1645,12 +1645,11 @@ func (mr *MockRequestHandlerMockRecorder) FMV1VariableGet(ctx, variableID interf
 }
 
 // FMV1VariableSetVariable mocks base method.
-func (m *MockRequestHandler) FMV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key, value string) (*variable.Variable, error) {
+func (m *MockRequestHandler) FMV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key, value string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FMV1VariableSetVariable", ctx, variableID, key, value)
-	ret0, _ := ret[0].(*variable.Variable)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // FMV1VariableSetVariable indicates an expected call of FMV1VariableSetVariable.

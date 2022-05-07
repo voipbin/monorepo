@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
-	fmvariable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -90,7 +89,6 @@ func Test_FMV1VariableSetVariable(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *fmvariable.Variable
 	}{
 		{
 			"normal",
@@ -102,7 +100,6 @@ func Test_FMV1VariableSetVariable(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id": "4d3c129c-cd07-11ec-bd2f-2fcee708f983", "variables": {"key 1": "value 1"}}`),
 			},
 
 			"bin-manager.flow-manager.request",
@@ -111,12 +108,6 @@ func Test_FMV1VariableSetVariable(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"key":"key 1","value":"value 1"}`),
-			},
-			&fmvariable.Variable{
-				ID: uuid.FromStringOrNil("4d3c129c-cd07-11ec-bd2f-2fcee708f983"),
-				Variables: map[string]string{
-					"key 1": "value 1",
-				},
 			},
 		},
 	}
@@ -134,14 +125,10 @@ func Test_FMV1VariableSetVariable(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1VariableSetVariable(ctx, tt.variableID, tt.key, tt.value)
-			if err != nil {
+			if err := reqHandler.FMV1VariableSetVariable(ctx, tt.variableID, tt.key, tt.value); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(*tt.expectResult, *res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
-			}
 		})
 	}
 }
