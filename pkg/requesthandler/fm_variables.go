@@ -37,7 +37,7 @@ func (r *requestHandler) FMV1VariableGet(ctx context.Context, variableID uuid.UU
 // FMV1VariableSetVariable sends a request to flow-manager
 // to set the detail variable info.
 // it returns updated variable info if it succeed.
-func (r *requestHandler) FMV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key string, value string) (*fmvariable.Variable, error) {
+func (r *requestHandler) FMV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key string, value string) error {
 	uri := fmt.Sprintf("/v1/variables/%s/variables", variableID)
 
 	data := &fmrequest.V1DataVariablesIDVariablesPost{
@@ -47,24 +47,19 @@ func (r *requestHandler) FMV1VariableSetVariable(ctx context.Context, variableID
 
 	m, err := json.Marshal(data)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFMVariables, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return nil, err
+		return err
 	case tmp == nil:
 		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
+		return fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res fmvariable.Variable
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
+	return nil
 }
