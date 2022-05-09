@@ -11,7 +11,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
-	availablenumber "gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -23,6 +22,7 @@ import (
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	outdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	outdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
@@ -206,10 +206,10 @@ func (mr *MockServiceHandlerMockRecorder) AuthLogin(username, password interface
 }
 
 // AvailableNumberGets mocks base method.
-func (m *MockServiceHandler) AvailableNumberGets(u *customer.Customer, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error) {
+func (m *MockServiceHandler) AvailableNumberGets(u *customer.Customer, size uint64, countryCode string) ([]*availablenumber.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AvailableNumberGets", u, size, countryCode)
-	ret0, _ := ret[0].([]*availablenumber.AvailableNumber)
+	ret0, _ := ret[0].([]*availablenumber.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

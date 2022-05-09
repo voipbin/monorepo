@@ -109,6 +109,7 @@ $ go get -u github.com/swaggo/files
 swag
 ```
 $ swag init -g cmd/api-manager/main.go -o docsapi
+$ swag init --parseDependency -g cmd/api-manager/main.go -o docsapi
 ```
 
 # API documents

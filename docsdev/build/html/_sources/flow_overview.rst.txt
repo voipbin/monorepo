@@ -13,3 +13,9 @@ VoIPBIN then reads the Flow instructions to determine what to do, whether it's r
 
 At its core, Flow is an array of json objects with special tags defined by VoIPBIN to help you build your Programmable Voice application.
 
+
+Non-linear action execution
+---------------------------
+The VoIPBIN's flow provides Non-linear type of action execution. The user can customize their own actions in linear or non-linear way.
+
+.. image:: _static/images/flow_overview_non_linear.png

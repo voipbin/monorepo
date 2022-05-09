@@ -37,7 +37,7 @@ Campaign
 * *status*: Campaign's status. See detail :ref:`here <campaign-struct_campaign-status>`.
 * *service_level*: Campaign's service level. See detail :ref:`here <campaign-struct_campaign-service_level>`.
 * *end_handle*: Campaign's outdial list end handle. See detail :ref:`here <campaign-struct_campaign-end_handle>`.
-* *actions*: Campaign's list of actions. See detail :ref:`here <flow-action-action>`.
+* *actions*: Campaign's list of actions. See detail :ref:`here <flow-struct-action-action>`.
 * outplan_id: Outplan's ID.
 * outdial_id: Outdial's ID.
 * queue_id: Queue's ID.

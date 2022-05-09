@@ -5,8 +5,6 @@ package cachehandler
 import (
 	"context"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
-
 	"github.com/go-redis/redis/v8"
 )
 
@@ -21,9 +19,6 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
-
-	UserGet(ctx context.Context, id uint64) (*user.User, error)
-	UserSet(ctx context.Context, u *user.User) error
 }
 
 // NewHandler creates DBHandler

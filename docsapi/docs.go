@@ -2674,23 +2674,23 @@ var doc = `{
             "type": "object",
             "properties": {
                 "detail": {
-                    "description": "Detail.",
+                    "description": "detail description.",
                     "type": "string"
                 },
                 "name": {
-                    "description": "Name.",
+                    "description": "name",
                     "type": "string"
                 },
                 "target": {
-                    "description": "Target address. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).",
+                    "description": "address endpoint",
                     "type": "string"
                 },
                 "target_name": {
-                    "description": "Target's shown name.",
+                    "description": "address's name.",
                     "type": "string"
                 },
                 "type": {
-                    "description": "Type of address. must be one of [\"sip\", \"tel\"].",
+                    "description": "type of address",
                     "type": "string"
                 }
             }
@@ -2706,8 +2706,71 @@ var doc = `{
                     }
                 },
                 "customer_id": {
-                    "description": "owned customer's id",
+                    "description": "owner's id",
                     "type": "string"
+                },
+                "detail": {
+                    "description": "agent's detail",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "agent id",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "agent's name",
+                    "type": "string"
+                },
+                "password_hash": {
+                    "description": "hashed Password",
+                    "type": "string"
+                },
+                "permission": {
+                    "description": "agent's permission.",
+                    "type": "integer"
+                },
+                "ring_method": {
+                    "description": "agent's ring method",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "agent's status",
+                    "type": "string"
+                },
+                "tag_ids": {
+                    "description": "agent's tag ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "agent's username",
+                    "type": "string"
+                }
+            }
+        },
+        "agent.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "addresses": {
+                    "description": "agent's endpoint addresses",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
                 },
                 "detail": {
                     "description": "agent's detail",
@@ -2758,7 +2821,7 @@ var doc = `{
                 }
             }
         },
-        "availablenumber.AvailableNumber": {
+        "availablenumber.WebhookMessage": {
             "type": "object",
             "properties": {
                 "country": {
@@ -2788,6 +2851,17 @@ var doc = `{
                     "type": "object",
                     "$ref": "#/definitions/action.Action"
                 },
+                "active_flow_id": {
+                    "description": "active flow id",
+                    "type": "string"
+                },
+                "asterisk_id": {
+                    "type": "string"
+                },
+                "bridge_id": {
+                    "description": "call bridge id",
+                    "type": "string"
+                },
                 "chained_call_ids": {
                     "description": "chained call ids",
                     "type": "array",
@@ -2795,9 +2869,21 @@ var doc = `{
                         "type": "string"
                     }
                 },
+                "channel_id": {
+                    "type": "string"
+                },
                 "confbridge_id": {
                     "description": "currently joined confbridge id.",
                     "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "destination": {
                     "type": "object",
@@ -2863,8 +2949,86 @@ var doc = `{
                 "type": {
                     "description": "call type",
                     "type": "string"
+                }
+            }
+        },
+        "call.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "object",
+                    "$ref": "#/definitions/action.Action"
                 },
-                "webhook_uri": {
+                "chained_call_ids": {
+                    "description": "chained call ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "destination": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "flow_id": {
+                    "description": "flow id",
+                    "type": "string"
+                },
+                "hangup_by": {
+                    "type": "string"
+                },
+                "hangup_reason": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "identity",
+                    "type": "string"
+                },
+                "master_call_id": {
+                    "description": "etc info",
+                    "type": "string"
+                },
+                "recording_id": {
+                    "description": "recording id(current)",
+                    "type": "string"
+                },
+                "recording_ids": {
+                    "description": "recording ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "source": {
+                    "description": "source/destination",
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "status": {
+                    "description": "info",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_hangup": {
+                    "type": "string"
+                },
+                "tm_progressing": {
+                    "type": "string"
+                },
+                "tm_ringing": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "call type",
                     "type": "string"
                 }
             }
@@ -2873,6 +3037,7 @@ var doc = `{
             "type": "object",
             "properties": {
                 "actions": {
+                    "description": "this actions will be stored to the flow",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/action.Action"
@@ -2885,12 +3050,14 @@ var doc = `{
                     "type": "string"
                 },
                 "end_handle": {
-                    "type": "EndHandle"
+                    "type": "string"
                 },
                 "execute": {
-                    "type": "Execute"
+                    "description": "if the execute is running, this sets to true",
+                    "type": "string"
                 },
                 "flow_id": {
+                    "description": "action settings",
                     "type": "string"
                 },
                 "id": {
@@ -2906,6 +3073,7 @@ var doc = `{
                     "type": "string"
                 },
                 "outplan_id": {
+                    "description": "resource info",
                     "type": "string"
                 },
                 "queue_id": {
@@ -2915,7 +3083,7 @@ var doc = `{
                     "type": "integer"
                 },
                 "status": {
-                    "type": "Status"
+                    "type": "string"
                 },
                 "tm_create": {
                     "type": "string"
@@ -2927,7 +3095,7 @@ var doc = `{
                     "type": "string"
                 },
                 "type": {
-                    "type": "Type"
+                    "type": "string"
                 }
             }
         },
@@ -2935,6 +3103,7 @@ var doc = `{
             "type": "object",
             "properties": {
                 "actions": {
+                    "description": "action settings",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/action.Action"
@@ -2944,7 +3113,7 @@ var doc = `{
                     "type": "string"
                 },
                 "end_handle": {
-                    "type": "EndHandle"
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
@@ -2959,6 +3128,7 @@ var doc = `{
                     "type": "string"
                 },
                 "outplan_id": {
+                    "description": "resource info",
                     "type": "string"
                 },
                 "queue_id": {
@@ -2968,7 +3138,7 @@ var doc = `{
                     "type": "integer"
                 },
                 "status": {
-                    "type": "Status"
+                    "type": "string"
                 },
                 "tm_create": {
                     "type": "string"
@@ -2980,7 +3150,7 @@ var doc = `{
                     "type": "string"
                 },
                 "type": {
-                    "type": "Type"
+                    "type": "string"
                 }
             }
         },
@@ -2988,6 +3158,7 @@ var doc = `{
             "type": "object",
             "properties": {
                 "activeflow_id": {
+                    "description": "this is required",
                     "type": "string"
                 },
                 "campaign_id": {
@@ -3016,20 +3187,22 @@ var doc = `{
                     "type": "string"
                 },
                 "reference_id": {
+                    "description": "reference id",
                     "type": "string"
                 },
                 "reference_type": {
-                    "type": "ReferenceType"
+                    "description": "none or call",
+                    "type": "string"
                 },
                 "result": {
-                    "type": "Result"
+                    "type": "string"
                 },
                 "source": {
                     "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "status": {
-                    "type": "Status"
+                    "type": "string"
                 },
                 "tm_create": {
                     "type": "string"
@@ -3052,11 +3225,22 @@ var doc = `{
                         "type": "string"
                     }
                 },
+                "confbridge_id": {
+                    "description": "confbridge id(call-manager)",
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
                 "data": {
                     "type": "object",
                     "additionalProperties": true
                 },
                 "detail": {
+                    "type": "string"
+                },
+                "flow_id": {
+                    "description": "flow id(flow-manager)",
                     "type": "string"
                 },
                 "id": {
@@ -3106,9 +3290,6 @@ var doc = `{
                 },
                 "type": {
                     "type": "string"
-                },
-                "webhook_uri": {
-                    "type": "string"
                 }
             }
         },
@@ -3116,6 +3297,108 @@ var doc = `{
             "type": "object",
             "properties": {
                 "detail": {
+                    "description": "detail",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Customer's ID",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "name",
+                    "type": "string"
+                },
+                "permission_ids": {
+                    "description": "customer's permission ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Customer's username",
+                    "type": "string"
+                },
+                "webhook_method": {
+                    "description": "webhook method",
+                    "type": "string"
+                },
+                "webhook_uri": {
+                    "description": "webhook uri",
+                    "type": "string"
+                }
+            }
+        },
+        "customer.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "description": "detail",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Customer's ID",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "name",
+                    "type": "string"
+                },
+                "permission_ids": {
+                    "description": "customer's permission ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Customer's username",
+                    "type": "string"
+                },
+                "webhook_method": {
+                    "description": "webhook method",
+                    "type": "string"
+                },
+                "webhook_uri": {
+                    "description": "webhook uri",
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Domain": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "domain_name": {
                     "type": "string"
                 },
                 "id": {
@@ -3123,12 +3406,6 @@ var doc = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "permission_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "tm_create": {
                     "type": "string"
@@ -3138,19 +3415,10 @@ var doc = `{
                 },
                 "tm_update": {
                     "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                },
-                "webhook_method": {
-                    "type": "WebhookMethod"
-                },
-                "webhook_uri": {
-                    "type": "string"
                 }
             }
         },
-        "domain.Domain": {
+        "domain.WebhookMessage": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -3179,10 +3447,23 @@ var doc = `{
         "extension.Extension": {
             "type": "object",
             "properties": {
+                "aor_id": {
+                    "type": "string"
+                },
+                "auth_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
                 "domain_id": {
+                    "type": "string"
+                },
+                "endpoint_id": {
+                    "description": "asterisk resources",
                     "type": "string"
                 },
                 "extension": {
@@ -3192,6 +3473,9 @@ var doc = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 },
                 "tm_create": {
@@ -3209,42 +3493,127 @@ var doc = `{
             "type": "object",
             "properties": {
                 "actions": {
-                    "description": "Actions",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "persist": {
+                    "type": "boolean"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "flow.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "actions": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/action.Action"
                     }
                 },
                 "detail": {
-                    "description": "Detail",
                     "type": "string"
                 },
                 "id": {
-                    "description": "Flow's ID",
                     "type": "string"
                 },
                 "name": {
-                    "description": "Name",
                     "type": "string"
                 },
                 "tm_create": {
-                    "description": "Created timestamp.",
                     "type": "string"
                 },
                 "tm_delete": {
-                    "description": "Deleted timestamp.",
                     "type": "string"
                 },
                 "tm_update": {
-                    "description": "Updated timestamp.",
                     "type": "string"
                 },
-                "webhook_uri": {
+                "type": {
                     "type": "string"
                 }
             }
         },
         "message.Message": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provider_name": {
+                    "description": "provider info",
+                    "type": "string"
+                },
+                "provider_reference_id": {
+                    "type": "string"
+                },
+                "source": {
+                    "description": "from/to info",
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "targets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/target.Target"
+                    }
+                },
+                "text": {
+                    "description": "message info",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "message.WebhookMessage": {
             "type": "object",
             "properties": {
                 "direction": {
@@ -3259,7 +3628,10 @@ var doc = `{
                     "$ref": "#/definitions/address.Address"
                 },
                 "targets": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/target.Target"
+                    }
                 },
                 "text": {
                     "description": "message info",
@@ -3282,16 +3654,73 @@ var doc = `{
         "number.Number": {
             "type": "object",
             "properties": {
+                "call_flow_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
                 "emergency_enabled": {
                     "type": "boolean"
                 },
-                "flow_id": {
+                "id": {
                     "type": "string"
                 },
+                "message_flow_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "provider_name": {
+                    "type": "string"
+                },
+                "provider_reference_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "t38_enabled": {
+                    "type": "boolean"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_purchase": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "number.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "call_flow_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "emergency_enabled": {
+                    "type": "boolean"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "message_flow_id": {
                     "type": "string"
                 },
                 "name": {
@@ -3388,30 +3817,38 @@ var doc = `{
                     "type": "string"
                 },
                 "dial_timeout": {
+                    "description": "plan dial settings",
                     "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
                 "max_try_count_0": {
+                    "description": "max try count",
                     "type": "integer"
                 },
                 "max_try_count_1": {
+                    "description": "max try count for destination_1",
                     "type": "integer"
                 },
                 "max_try_count_2": {
+                    "description": "max try count for destination_2",
                     "type": "integer"
                 },
                 "max_try_count_3": {
+                    "description": "max try count for destination_3",
                     "type": "integer"
                 },
                 "max_try_count_4": {
+                    "description": "max try count for destination_4",
                     "type": "integer"
                 },
                 "name": {
+                    "description": "basic info",
                     "type": "string"
                 },
                 "source": {
+                    "description": "source settings",
                     "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
@@ -3425,6 +3862,7 @@ var doc = `{
                     "type": "string"
                 },
                 "try_interval": {
+                    "description": "milliseconds",
                     "type": "integer"
                 }
             }
@@ -3436,6 +3874,7 @@ var doc = `{
                     "type": "string"
                 },
                 "dial_timeout": {
+                    "description": "plan dial settings",
                     "type": "integer"
                 },
                 "id": {
@@ -3457,9 +3896,11 @@ var doc = `{
                     "type": "integer"
                 },
                 "name": {
+                    "description": "basic info",
                     "type": "string"
                 },
                 "source": {
+                    "description": "source settings",
                     "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
@@ -3473,6 +3914,7 @@ var doc = `{
                     "type": "string"
                 },
                 "try_interval": {
+                    "description": "milliseconds",
                     "type": "integer"
                 }
             }
@@ -3481,31 +3923,117 @@ var doc = `{
             "type": "object",
             "properties": {
                 "detail": {
+                    "description": "queue's detail",
                     "type": "string"
                 },
                 "id": {
+                    "description": "queue id",
                     "type": "string"
                 },
                 "name": {
+                    "description": "basic info",
                     "type": "string"
                 },
                 "routing_method": {
-                    "type": "RoutingMethod"
+                    "description": "operation info",
+                    "type": "string"
                 },
                 "service_queue_call_ids": {
+                    "description": "service queue call ids(ms).",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "service_timeout": {
+                    "description": "service queue timeout(ms).",
                     "type": "integer"
                 },
                 "tag_ids": {
+                    "description": "queue's tag ids",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                },
+                "total_abandoned_count": {
+                    "description": "total abandoned call count",
+                    "type": "integer"
+                },
+                "total_incoming_count": {
+                    "description": "total incoming call count",
+                    "type": "integer"
+                },
+                "total_service_duration": {
+                    "description": "total service duration(ms)",
+                    "type": "integer"
+                },
+                "total_serviced_count": {
+                    "description": "total serviced call count",
+                    "type": "integer"
+                },
+                "total_waittime": {
+                    "description": "total wait time(ms)",
+                    "type": "integer"
+                },
+                "wait_actions": {
+                    "description": "wait/service info",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "wait_queue_call_ids": {
+                    "description": "queuecall info",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "wait_timeout": {
+                    "description": "wait queue timeout.(ms)",
+                    "type": "integer"
+                }
+            }
+        },
+        "recording.Recording": {
+            "type": "object",
+            "properties": {
+                "asterisk_id": {
+                    "type": "string"
+                },
+                "channel_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "format": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 },
                 "tm_create": {
                     "type": "string"
@@ -3513,42 +4041,21 @@ var doc = `{
                 "tm_delete": {
                     "type": "string"
                 },
+                "tm_end": {
+                    "type": "string"
+                },
+                "tm_start": {
+                    "type": "string"
+                },
                 "tm_update": {
                     "type": "string"
                 },
-                "total_abandoned_count": {
-                    "type": "integer"
-                },
-                "total_incoming_count": {
-                    "type": "integer"
-                },
-                "total_service_duration": {
-                    "type": "integer"
-                },
-                "total_serviced_count": {
-                    "type": "integer"
-                },
-                "total_waittime": {
-                    "type": "integer"
-                },
-                "wait_actions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/action.Action"
-                    }
-                },
-                "wait_queue_call_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "wait_timeout": {
-                    "type": "integer"
+                "type": {
+                    "type": "string"
                 }
             }
         },
-        "recording.Recording": {
+        "recording.WebhookMessage": {
             "type": "object",
             "properties": {
                 "format": {
@@ -4129,7 +4636,10 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/agent.WebhookMessage"
+                    }
                 }
             }
         },
@@ -4139,7 +4649,7 @@ var doc = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/availablenumber.AvailableNumber"
+                        "$ref": "#/definitions/availablenumber.WebhookMessage"
                     }
                 }
             }
@@ -4151,7 +4661,10 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/call.WebhookMessage"
+                    }
                 }
             }
         },
@@ -4190,7 +4703,10 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/customer.WebhookMessage"
+                    }
                 }
             }
         },
@@ -4201,7 +4717,10 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.WebhookMessage"
+                    }
                 }
             }
         },
@@ -4212,7 +4731,10 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/flow.WebhookMessage"
+                    }
                 }
             }
         },
@@ -4234,7 +4756,10 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/message.WebhookMessage"
+                    }
                 }
             }
         },
@@ -4245,7 +4770,10 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/number.WebhookMessage"
+                    }
                 }
             }
         },
@@ -4298,7 +4826,10 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/recording.WebhookMessage"
+                    }
                 }
             }
         },
@@ -4309,11 +4840,47 @@ var doc = `{
                     "type": "string"
                 },
                 "result": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/tag.WebhookMessage"
+                    }
                 }
             }
         },
         "tag.Tag": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "description": "owner's id",
+                    "type": "string"
+                },
+                "detail": {
+                    "description": "tag's detail",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "tag id",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "tag's name",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
+                }
+            }
+        },
+        "tag.WebhookMessage": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -4342,9 +4909,39 @@ var doc = `{
                 }
             }
         },
+        "target.Target": {
+            "type": "object",
+            "properties": {
+                "destination": {
+                    "type": "object",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "parts": {
+                    "description": "number of messages",
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
         "transcribe.Transcribe": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "description": "customer",
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "host_id": {
+                    "description": "host id",
+                    "type": "string"
+                },
                 "id": {
                     "description": "Transcribe id",
                     "type": "string"
@@ -4354,35 +4951,43 @@ var doc = `{
                     "type": "string"
                 },
                 "reference_id": {
-                    "description": "recording's id",
+                    "description": "call/conference/recording's id",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
                     "type": "string"
                 },
                 "transcripts": {
                     "description": "transcripts",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/transcribe.Transcript"
+                        "$ref": "#/definitions/transcript.Transcript"
                     }
                 },
                 "type": {
                     "description": "type",
                     "type": "string"
-                },
-                "webhook_method": {
-                    "description": "webhook method",
-                    "type": "string"
-                },
-                "webhook_uri": {
-                    "description": "webhook destination uri",
-                    "type": "string"
                 }
             }
         },
-        "transcribe.Transcript": {
+        "transcript.Transcript": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "direction": {
                     "description": "direction. in/out",
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "message": {
@@ -4391,6 +4996,9 @@ var doc = `{
                 },
                 "tm_create": {
                     "description": "timestamp",
+                    "type": "string"
+                },
+                "transcribe_id": {
                     "type": "string"
                 }
             }

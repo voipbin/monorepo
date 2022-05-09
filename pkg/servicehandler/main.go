@@ -21,6 +21,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
@@ -29,7 +30,6 @@ import (
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
@@ -65,7 +65,7 @@ type ServiceHandler interface {
 	AuthLogin(username, password string) (string, error)
 
 	// available numbers
-	AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error)
+	AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
 
 	// call handlers
 	CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, destinations []cmaddress.Address) ([]*cmcall.WebhookMessage, error)
