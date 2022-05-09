@@ -1,9 +1,9 @@
-.. _flow-action:
+.. _flow-struct-action:
 
 Action
 ======
 
-.. _flow-action-action:
+.. _flow-struct-action-action:
 
 Action
 ------
@@ -25,10 +25,10 @@ Action
 * *type*: Action's type. See detail :ref:`here <flow-struct-action-type>`.
 * *option*: Action's option.
 
-.. _flow-action-action-type:
+.. _flow-struct-action-type:
 
-Action type
------------
+Type
+----
 
 ======================= ==================
 type                    Description
@@ -49,11 +49,11 @@ digits_send             Send the digits(dtmfs).
 echo                    Echo to stream.
 external_media_start    Start the external media.
 external_media_stop     Stop the external media.
+fetch                   Fetch the actions from endpoint.
+fetch_flow              Fetch the actions from the exist flow.
 goto                    Goto.
 hangup                  Hangup the call.
 message_send            Send a message.
-patch                   Patch the actions from endpoint.
-patch_flow              Patch the actions from the exist flow.
 play                    Play the file.
 queue_join              Join to the queue.
 recording_start         Startr the record of the given call.
@@ -64,15 +64,10 @@ talk                    Generate audio from the given text(ssml or plain text) a
 transcribe_start        Start transcribe the call
 transcribe_stop         Stop transcribe the call
 transcribe_recording    Transcribe the recording and send it to webhook.
+variable_set            Sets the variable.
 ======================= ==================
 
-.. _flow-actions:
-
-Actions
-=======
-List of actions
-
-.. _flow-action-agent_call:
+.. _flow-struct-action-agent_call:
 
 Agent Call
 ----------
@@ -102,7 +97,7 @@ Example
         }
     }
 
-.. _flow-action-amd: flow-action-amd
+.. _flow-struct-action-amd: flow-struct-action-amd
 
 AMD
 ---
@@ -120,10 +115,10 @@ Parameters
         }
     }
 
-* *machine_handle*: hangup,delay,continue if the machine answered a call. See detail :ref:`here <flow-action-amd-machinehandle>`.
+* *machine_handle*: hangup,delay,continue if the machine answered a call. See detail :ref:`here <flow-struct-action-amd-machinehandle>`.
 * *async*: if it's false, the call flow will be stop until amd done.
 
-.. _flow-action-amd-machinehandle:
+.. _flow-struct-action-amd-machinehandle:
 
 Machine handle
 ++++++++++++++
@@ -146,7 +141,7 @@ Example
         }
     }
 
-.. _flow-action-answer:
+.. _flow-struct-action-answer:
 
 Answer
 ------
@@ -168,7 +163,7 @@ Example
         "type": "answer"
     }
 
-.. _flow-action-beep:
+.. _flow-struct-action-beep:
 
 Beep
 ------
@@ -191,7 +186,7 @@ Example
     }
 
 
-.. _flow-action-branch:
+.. _flow-struct-action-branch:
 
 Branch
 ------
@@ -230,7 +225,7 @@ Example
         }
     }
 
-.. _flow-action-call:
+.. _flow-struct-action-call:
 
 Call
 ----
@@ -303,7 +298,7 @@ Example
         }
     }
 
-.. _flow-action-confbridge_join:
+.. _flow-struct-action-confbridge_join:
 
 Confbridge Join
 ----------------
@@ -322,7 +317,7 @@ Parameters
 
 * *confbridge_id*: Target confbridge id.
 
-.. _flow-action-condition_call_digits:
+.. _flow-struct-action-condition_call_digits:
 
 Condition Call Digits
 ---------------------
@@ -342,9 +337,9 @@ Parameters
         }
     }
 
-* *length*: match digits length.
-* *key*: match digits contain.
-* *false_target_id*: action id for false condition.
+* length: match digits length.
+* key: match digits contain.
+* false_target_id: action id for false condition.
 
 Example
 +++++++
@@ -358,7 +353,7 @@ Example
         }
     }
 
-.. _flow-action-condition_call_status:
+.. _flow-struct-action-condition_call_status:
 
 Condition Call Status
 ---------------------
@@ -378,7 +373,7 @@ Parameters
     }
 
 * *status*: match call's status. See detail :ref:`here <call-struct-status>`.
-* *false_target_id*: action id for false condition.
+* false_target_id: action id for false condition.
 
 Example
 +++++++
@@ -393,7 +388,7 @@ Example
     }
 
 
-.. _flow-action-conference_join:
+.. _flow-struct-action-conference_join:
 
 Conference Join
 ---------------
@@ -410,7 +405,7 @@ Parameters
         }
     }
 
-* *conference_id*: Conference's id to join.
+* conference_id: Conference's id to join.
 
 Example
 +++++++
@@ -423,7 +418,7 @@ Example
         }
     }
 
-.. _flow-action-connect:
+.. _flow-struct-action-connect:
 
 Connect
 -------
@@ -446,7 +441,7 @@ Parameters
 
 * *source*: Source address. See detail :ref:`here <call-struct-address>`.
 * *destinations*: Array of destination addresses. See detail :ref:`here <call-struct-address>`.
-* *unchained*: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
+* unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 
 Example
 +++++++
@@ -468,7 +463,7 @@ Example
         }
     }
 
-.. _flow-action-digits_receive:
+.. _flow-struct-action-digits_receive:
 
 Digits Receive
 --------------
@@ -487,9 +482,9 @@ Parameters
         }
     }
 
-* *duration*: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.
-* *length*: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.
-* *key*: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
+* duration: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.
+* length: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.
+* key: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.
 
 Example
 +++++++
@@ -504,7 +499,7 @@ Example
         }
     }
 
-.. _flow-action-digits_send:
+.. _flow-struct-action-digits_send:
 
 Digits Send
 -----------
@@ -523,9 +518,9 @@ Parameters
         }
     }
 
-* *digits*: The digit string to send. Allowed set of characters: 0-9,A-D, #, '*'; with a maximum of 100 keys.
-* *duration*: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
-* *interval*: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
+* digits: The digit string to send. Allowed set of characters: 0-9,A-D, #, '*'; with a maximum of 100 keys.
+* duration: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.
+* interval: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.
 
 Example
 +++++++
@@ -540,7 +535,7 @@ Example
         }
     },
 
-.. _flow-action-echo:
+.. _flow-struct-action-echo:
 
 Echo
 ----
@@ -570,7 +565,7 @@ Example
         }
     }
 
-.. _flow-action-external_media_start:
+.. _flow-struct-action-external_media_start:
 
 External Media Start
 --------------------
@@ -593,15 +588,15 @@ Parameters
         }
     }
 
-* *external_host*: external media target host address.
-* *encapsulation*: encapsulation. default: rtp.
-* *transport*: transport. default: udp.
-* *connection_type*: connection type. default: client
-* *format*: format default: ulaw
-* *direction*: Direction. default: both.
-* *data*: Data. Reserved.
+* external_host: external media target host address.
+* encapsulation: encapsulation. default: rtp.
+* transport: transport. default: udp.
+* connection_type: connection type. default: client
+* format: format default: ulaw
+* direction: Direction. default: both.
+* data: Data. Reserved.
 
-.. _flow-action-external_media_stop:
+.. _flow-struct-action-external_media_stop:
 
 External Media Stop
 --------------------
@@ -615,7 +610,70 @@ Parameters
         "type": "external_media_stop",
     }
 
-.. _flow-action-goto:
+.. _flow-struct-action-fetch: flow-struct-action-fetch
+
+Fetch
+-----
+Fetch the next flow from the remote.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "fetch",
+        "option": {
+            "event_url": "<string>",
+            "event_method": "<string>"
+        }
+    }
+
+* event_url: The url for flow fetching.
+* event_method: The method for flow fetching.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "fetch".
+        "option": {
+            "event_method": "POST",
+            "event_url": "https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211"
+        }
+    }
+
+.. _flow-struct-action-fetch_flow:
+
+Fetch Flow
+----------
+Fetch the next flow from the existed flow.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "fetch_flow",
+        "option": {
+            "flow_id": "<string>"
+        }
+    }
+
+* *flow_id*: The id of flow.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "fetch_flow".
+        "option": {
+            "flow_id": "212a32a8-9529-11ec-8bf0-8b89df407b6e"
+        }
+    }
+
+.. _flow-struct-action-goto:
 
 Goto
 ----
@@ -633,8 +691,8 @@ Parameters
         }
     }
 
-* *target_id*: action id for move target.
-* *loop_count*: The number of loop.
+* target_id: action id for move target.
+* loop_count: The number of loop.
 
 Example
 +++++++
@@ -648,7 +706,7 @@ Example
         }
     }
 
-.. _flow-action-hangup:
+.. _flow-struct-action-hangup:
 
 Hangup
 ------
@@ -670,7 +728,7 @@ Example
         "type": "hangup"
     }
 
-.. _flow-action-message_send:
+.. _flow-struct-action-message_send:
 
 Message send
 ------------
@@ -700,69 +758,7 @@ Parameters
 * *destinations*: Array of destination addresses. See detail :ref:`here <call-struct-address>`.
 * text: Message's text.
 
-.. _flow-action-patch: flow-action-patch
-
-Patch
------
-Patch the next flow from the remote.
-
-Parameters
-++++++++++
-.. code::
-
-    {
-        "type": "patch",
-        "option": {
-            "event_url": "<string>",
-            "event_method": "<string>"
-        }
-    }
-
-* *event_url*: The url for flow patching.
-* *event_method*: The method for flow patching.
-
-Example
-+++++++
-.. code::
-
-    {
-        "type": "patch".
-        "option": {
-            "event_url": "https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211"
-        }
-    }
-
-.. _flow-action-patch_flow:
-
-Patch Flow
-----------
-Patch the next flow from the existed flow.
-
-Parameters
-++++++++++
-.. code::
-
-    {
-        "type": "patch_flow",
-        "option": {
-            "flow_id": "<string>"
-        }
-    }
-
-* *flow_id*: The id of flow.
-
-Example
-+++++++
-.. code::
-
-    {
-        "type": "patch_flow".
-        "option": {
-            "flow_id": "212a32a8-9529-11ec-8bf0-8b89df407b6e"
-        }
-    }
-
-.. _flow-action-play:
+.. _flow-struct-action-play:
 
 Play
 ----
@@ -782,7 +778,7 @@ Parameters
         }
     }
 
-* *stream_urls*: Stream url array for media.
+* stream_urls: Stream url array for media.
 
 Example
 +++++++
@@ -797,7 +793,7 @@ Example
         }
     }
 
-.. _flow-action-queue_join:
+.. _flow-struct-action-queue_join:
 
 Queue Join
 ----------
@@ -814,7 +810,7 @@ Parameters
         }
     }
 
-* *queue_id*: Target queue id.
+* queue_id: Target queue id.
 
 Example
 +++++++
@@ -827,7 +823,7 @@ Example
         }
     }
 
-.. _flow-action-recording_start:
+.. _flow-struct-action-recording_start:
 
 Recording Start
 ---------------
@@ -848,11 +844,11 @@ Parameters
         }
     }
 
-* *format*: Format to encode audio in. wav, mp3, ogg.
-* *end_of_silence*: Maximum duration of silence, in seconds. 0 for no limit.
-* *end_of_key*: DTMF input to terminate recording. none, any, \*, #.
-* *duration*: Maximum duration of the recording, in seconds. 0 for no limit.
-* *beep_start*: Play beep when recording begins
+* format: Format to encode audio in. wav, mp3, ogg.
+* end_of_silence: Maximum duration of silence, in seconds. 0 for no limit.
+* end_of_key: DTMF input to terminate recording. none, any, \*, #.
+* duration: Maximum duration of the recording, in seconds. 0 for no limit.
+* beep_start: Play beep when recording begins
 
 Example
 +++++++
@@ -865,7 +861,7 @@ Example
         }
     }
 
-.. _flow-action-recording_stop:
+.. _flow-struct-action-recording_stop:
 
 Recording Stop
 --------------
@@ -887,7 +883,7 @@ Example
         "type": "recording_stop"
     }
 
-.. _flow-action-sleep:
+.. _flow-struct-action-sleep:
 
 Sleep
 --------------
@@ -906,7 +902,7 @@ Parameters
 
 * duration: Sleep duration(ms).
 
-.. _flow-action-stream_echo:
+.. _flow-struct-action-stream_echo:
 
 Stream Echo
 -----------
@@ -936,7 +932,7 @@ Example
         }
     }
 
-.. _flow-action-talk:
+.. _flow-struct-action-talk:
 
 Talk
 ----
@@ -955,9 +951,9 @@ Parameters
         }
     }
 
-* *text*: Text to speech. SSML(https://cloud.google.com/text-to-speech/docs/ssml) supported.
-* *gender*: male/female.
-* *language*: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).
+* text: Text to speech. SSML(https://cloud.google.com/text-to-speech/docs/ssml) supported.
+* gender: male/female.
+* language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).
 
 Example
 +++++++
@@ -972,9 +968,9 @@ Example
         }
     }
 
-.. _flow-action-transribe_start:
+.. _flow-struct-action-transribe_start:
 
-Transcribe Start
+Transcribe start
 ----------------
 Start the STT(Speech to text) transcribe in realtime.
 
@@ -1002,9 +998,9 @@ Example
         }
     }
 
-.. _flow-action-transcribe_stop:
+.. _flow-struct-action-transcribe_stop:
 
-Transcribe Stop
+Transcribe stop
 ---------------
 Stop the transcribe talk in realtime.
 
@@ -1022,5 +1018,38 @@ Example
 
     {
         "type": "transcribe_stop"
+    }
+
+.. _flow-struct-action-variable_set:
+
+Variable set
+---------------
+Stop the transcribe talk in realtime.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "variable_set"
+        "option": {
+            "key": "key 1",
+            "value": "value 1"
+        }
+    }
+
+* key: Variable name.
+* value" Varialbe value.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "transcribe_stop"
+        "option": {
+            "key": "Provider name",
+            "value": "voipbin"
+        }
     }
 
