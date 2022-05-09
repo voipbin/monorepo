@@ -5,11 +5,9 @@
 package cachehandler
 
 import (
-	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	user "gitlab.com/voipbin/bin-manager/api-manager.git/models/user"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -47,33 +45,4 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
-}
-
-// UserGet mocks base method.
-func (m *MockCacheHandler) UserGet(ctx context.Context, id uint64) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserGet", ctx, id)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UserGet indicates an expected call of UserGet.
-func (mr *MockCacheHandlerMockRecorder) UserGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGet", reflect.TypeOf((*MockCacheHandler)(nil).UserGet), ctx, id)
-}
-
-// UserSet mocks base method.
-func (m *MockCacheHandler) UserSet(ctx context.Context, u *user.User) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserSet", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UserSet indicates an expected call of UserSet.
-func (mr *MockCacheHandlerMockRecorder) UserSet(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserSet", reflect.TypeOf((*MockCacheHandler)(nil).UserSet), ctx, u)
 }

@@ -54,7 +54,7 @@ Call
 * *source*: Source address info. See detail :ref:`here <call-struct-address>`.
 * *destination*: Destination address info. See detail :ref:`here <call-struct-address>`.
 * *status*: Call's status. See detail :ref:`here <call-struct-status>`.
-* *action*: Call's current action. See detail :ref:`here <flow-action>`.
+* *action*: Call's current action. See detail :ref:`here <flow-struct-action>`.
 * *direction*: Call's direction. See detail :ref:`here <call-struct-direction>`.
 * *hangup_by*: Shows call's hangup end. See detail :ref:`here <call-struct-hangupby>`.
 * *hangup_reason*: Show call's hangup reason. See detail :ref:`here <call-struct-hangupreason>`.

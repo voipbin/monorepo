@@ -17,7 +17,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -72,7 +71,7 @@ func TestAgentsPOST(t *testing.T) {
 			"password1",
 			"test1 name",
 			"test1 detail",
-			agent.RingMethodRingAll,
+			amagent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
 			[]cmaddress.Address{},
@@ -101,7 +100,7 @@ func TestAgentsPOST(t *testing.T) {
 			"password1",
 			"test1 name",
 			"test1 detail",
-			agent.RingMethodRingAll,
+			amagent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
 			[]cmaddress.Address{},
@@ -306,10 +305,6 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
-
-			// if w.Body.String() != tt.expectRes {
-			// 	t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
-			// }
 		})
 	}
 }

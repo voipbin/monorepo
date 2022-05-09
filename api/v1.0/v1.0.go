@@ -49,5 +49,4 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	recordingfiles.ApplyRoutes(v1)
 	tags.ApplyRoutes(v1)
 	transcribes.ApplyRoutes(v1)
-	// users.ApplyRoutes(v1)
 }

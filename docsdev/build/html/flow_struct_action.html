@@ -151,7 +151,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/flow_action.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/flow_struct_action.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -165,9 +165,9 @@
            <div itemprop="articleBody">
             
   <div class="section" id="action">
-<span id="flow-action"></span><h1>Action<a class="headerlink" href="#action" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="flow-action-action">
-<span id="id1"></span><h2>Action<a class="headerlink" href="#flow-action-action" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action"></span><h1>Action<a class="headerlink" href="#action" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="flow-struct-action-action">
+<span id="id1"></span><h2>Action<a class="headerlink" href="#flow-struct-action-action" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span><span class="p">,</span>
@@ -182,12 +182,12 @@
 <ul class="simple">
 <li><p><em>id</em>: Action’s id.</p></li>
 <li><p><em>next_id</em>: Action’s next id. If it sets empty, just move on to the next action in the action array.</p></li>
-<li><p><em>type</em>: Action’s type. See detail <a class="reference internal" href="flow_struct.html#flow-struct-action-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>type</em>: Action’s type. See detail <a class="reference internal" href="#flow-struct-action-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>option</em>: Action’s option.</p></li>
 </ul>
 </div>
-<div class="section" id="action-type">
-<span id="flow-action-action-type"></span><h2>Action type<a class="headerlink" href="#action-type" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="type">
+<span id="flow-struct-action-type"></span><h2>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 26%" />
@@ -247,6 +247,12 @@
 <tr class="row-odd"><td><p>external_media_stop</p></td>
 <td><p>Stop the external media.</p></td>
 </tr>
+<tr class="row-even"><td><p>fetch</p></td>
+<td><p>Fetch the actions from endpoint.</p></td>
+</tr>
+<tr class="row-odd"><td><p>fetch_flow</p></td>
+<td><p>Fetch the actions from the exist flow.</p></td>
+</tr>
 <tr class="row-even"><td><p>goto</p></td>
 <td><p>Goto.</p></td>
 </tr>
@@ -255,12 +261,6 @@
 </tr>
 <tr class="row-even"><td><p>message_send</p></td>
 <td><p>Send a message.</p></td>
-</tr>
-<tr class="row-odd"><td><p>patch</p></td>
-<td><p>Patch the actions from endpoint.</p></td>
-</tr>
-<tr class="row-even"><td><p>patch_flow</p></td>
-<td><p>Patch the actions from the exist flow.</p></td>
 </tr>
 <tr class="row-odd"><td><p>play</p></td>
 <td><p>Play the file.</p></td>
@@ -292,15 +292,14 @@
 <tr class="row-even"><td><p>transcribe_recording</p></td>
 <td><p>Transcribe the recording and send it to webhook.</p></td>
 </tr>
+<tr class="row-odd"><td><p>variable_set</p></td>
+<td><p>Sets the variable.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
-</div>
-<div class="section" id="actions">
-<span id="flow-actions"></span><h1>Actions<a class="headerlink" href="#actions" title="Permalink to this headline">¶</a></h1>
-<p>List of actions</p>
 <div class="section" id="agent-call">
-<span id="flow-action-agent-call"></span><h2>Agent Call<a class="headerlink" href="#agent-call" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-agent-call"></span><h2>Agent Call<a class="headerlink" href="#agent-call" title="Permalink to this headline">¶</a></h2>
 <p>Call to agent.</p>
 <div class="section" id="parameters">
 <h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
@@ -343,12 +342,12 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>machine_handle</em>: hangup,delay,continue if the machine answered a call. See detail <a class="reference internal" href="#flow-action-amd-machinehandle"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>machine_handle</em>: hangup,delay,continue if the machine answered a call. See detail <a class="reference internal" href="#flow-struct-action-amd-machinehandle"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>async</em>: if it’s false, the call flow will be stop until amd done.</p></li>
 </ul>
 </div>
 <div class="section" id="machine-handle">
-<span id="flow-action-amd-machinehandle"></span><h3>Machine handle<a class="headerlink" href="#machine-handle" title="Permalink to this headline">¶</a></h3>
+<span id="flow-struct-action-amd-machinehandle"></span><h3>Machine handle<a class="headerlink" href="#machine-handle" title="Permalink to this headline">¶</a></h3>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 31%" />
@@ -383,7 +382,7 @@
 </div>
 </div>
 <div class="section" id="answer">
-<span id="flow-action-answer"></span><h2>Answer<a class="headerlink" href="#answer" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-answer"></span><h2>Answer<a class="headerlink" href="#answer" title="Permalink to this headline">¶</a></h2>
 <p>Answer the call</p>
 <div class="section" id="id4">
 <h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
@@ -403,7 +402,7 @@
 </div>
 </div>
 <div class="section" id="beep">
-<span id="flow-action-beep"></span><h2>Beep<a class="headerlink" href="#beep" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-beep"></span><h2>Beep<a class="headerlink" href="#beep" title="Permalink to this headline">¶</a></h2>
 <p>Make a beep sound.</p>
 <div class="section" id="id6">
 <h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
@@ -423,7 +422,7 @@
 </div>
 </div>
 <div class="section" id="branch">
-<span id="flow-action-branch"></span><h2>Branch<a class="headerlink" href="#branch" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-branch"></span><h2>Branch<a class="headerlink" href="#branch" title="Permalink to this headline">¶</a></h2>
 <p>Branch the flow.</p>
 <div class="section" id="id8">
 <h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
@@ -461,7 +460,7 @@
 </div>
 </div>
 <div class="section" id="call">
-<span id="flow-action-call"></span><h2>Call<a class="headerlink" href="#call" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-call"></span><h2>Call<a class="headerlink" href="#call" title="Permalink to this headline">¶</a></h2>
 <p>Make a new outbound call in a new context.</p>
 <img alt="_images/flow_action_call.png" src="_images/flow_action_call.png" />
 <div class="section" id="id10">
@@ -532,7 +531,7 @@
 </div>
 </div>
 <div class="section" id="confbridge-join">
-<span id="flow-action-confbridge-join"></span><h2>Confbridge Join<a class="headerlink" href="#confbridge-join" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-confbridge-join"></span><h2>Confbridge Join<a class="headerlink" href="#confbridge-join" title="Permalink to this headline">¶</a></h2>
 <p>Join to the confbridge.</p>
 <div class="section" id="id12">
 <h3>Parameters<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
@@ -550,7 +549,7 @@
 </div>
 </div>
 <div class="section" id="condition-call-digits">
-<span id="flow-action-condition-call-digits"></span><h2>Condition Call Digits<a class="headerlink" href="#condition-call-digits" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-condition-call-digits"></span><h2>Condition Call Digits<a class="headerlink" href="#condition-call-digits" title="Permalink to this headline">¶</a></h2>
 <p>Check the condition of received digits.
 It checks the received digits and if it matched condition move to the next action. If not, move to the false_target_id.</p>
 <div class="section" id="id13">
@@ -566,9 +565,9 @@ It checks the received digits and if it matched condition move to the next actio
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>length</em>: match digits length.</p></li>
-<li><p><em>key</em>: match digits contain.</p></li>
-<li><p><em>false_target_id</em>: action id for false condition.</p></li>
+<li><p>length: match digits length.</p></li>
+<li><p>key: match digits contain.</p></li>
+<li><p>false_target_id: action id for false condition.</p></li>
 </ul>
 </div>
 <div class="section" id="id14">
@@ -585,7 +584,7 @@ It checks the received digits and if it matched condition move to the next actio
 </div>
 </div>
 <div class="section" id="condition-call-status">
-<span id="flow-action-condition-call-status"></span><h2>Condition Call Status<a class="headerlink" href="#condition-call-status" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-condition-call-status"></span><h2>Condition Call Status<a class="headerlink" href="#condition-call-status" title="Permalink to this headline">¶</a></h2>
 <p>Check the condition of call’s status.
 It checks the call’s status and if it matched with condition then move to the next action. If not, move to the false_target_id.</p>
 <div class="section" id="id15">
@@ -601,7 +600,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 <ul class="simple">
 <li><p><em>status</em>: match call’s status. See detail <a class="reference internal" href="call_struct.html#call-struct-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>false_target_id</em>: action id for false condition.</p></li>
+<li><p>false_target_id: action id for false condition.</p></li>
 </ul>
 </div>
 <div class="section" id="id16">
@@ -618,7 +617,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="conference-join">
-<span id="flow-action-conference-join"></span><h2>Conference Join<a class="headerlink" href="#conference-join" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-conference-join"></span><h2>Conference Join<a class="headerlink" href="#conference-join" title="Permalink to this headline">¶</a></h2>
 <p>Join to the conference</p>
 <div class="section" id="id17">
 <h3>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
@@ -631,7 +630,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>conference_id</em>: Conference’s id to join.</p></li>
+<li><p>conference_id: Conference’s id to join.</p></li>
 </ul>
 </div>
 <div class="section" id="id18">
@@ -647,7 +646,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="connect">
-<span id="flow-action-connect"></span><h2>Connect<a class="headerlink" href="#connect" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-connect"></span><h2>Connect<a class="headerlink" href="#connect" title="Permalink to this headline">¶</a></h2>
 <p>Originate to the other destination(s) and connect to them each other.</p>
 <div class="section" id="id19">
 <h3>Parameters<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
@@ -666,7 +665,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <ul class="simple">
 <li><p><em>source</em>: Source address. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>destinations</em>: Array of destination addresses. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>unchained</em>: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.</p></li>
+<li><p>unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.</p></li>
 </ul>
 </div>
 <div class="section" id="id20">
@@ -691,7 +690,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="digits-receive">
-<span id="flow-action-digits-receive"></span><h2>Digits Receive<a class="headerlink" href="#digits-receive" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-digits-receive"></span><h2>Digits Receive<a class="headerlink" href="#digits-receive" title="Permalink to this headline">¶</a></h2>
 <p>Receives the digits for given duration or numbers.</p>
 <div class="section" id="id21">
 <h3>Parameters<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
@@ -706,9 +705,9 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>duration</em>: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.</p></li>
-<li><p><em>length</em>: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.</p></li>
-<li><p><em>key</em>: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.</p></li>
+<li><p>duration: The duration allows you to set the limit (in ms) that VoIPBIN will wait for the endpoint to press another digit or say another word before it continue to the next action.</p></li>
+<li><p>length: You can set the number of DTMFs you expect. An optional limit to the number of DTMF events that should be gathered before continuing to the next action. By default, this is set to 1, so any key will trigger the next step. If EndKey is set and MaxNumKeys is unset, no limit for the number of keys that will be gathered will be imposed. It is possible for less keys to be gathered if the EndKey is pressed or the timeout being reached.</p></li>
+<li><p>key: If set, determines which DTMF triggers the next step. The finish_on_key will be included in the resulting variable. If not set, no key will trigger the next action.</p></li>
 </ul>
 </div>
 <div class="section" id="id22">
@@ -726,7 +725,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="digits-send">
-<span id="flow-action-digits-send"></span><h2>Digits Send<a class="headerlink" href="#digits-send" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-digits-send"></span><h2>Digits Send<a class="headerlink" href="#digits-send" title="Permalink to this headline">¶</a></h2>
 <p>Sends the digits with given duration and interval.</p>
 <div class="section" id="id23">
 <h3>Parameters<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
@@ -741,9 +740,9 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>digits</em>: The digit string to send. Allowed set of characters: 0-9,A-D, #, ‘*’; with a maximum of 100 keys.</p></li>
-<li><p><em>duration</em>: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.</p></li>
-<li><p><em>interval</em>: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.</p></li>
+<li><p>digits: The digit string to send. Allowed set of characters: 0-9,A-D, #, ‘*’; with a maximum of 100 keys.</p></li>
+<li><p>duration: The duration of DTMF tone per key in milliseconds. Allowed values: Between 100 and 1000.</p></li>
+<li><p>interval: Interval between sending keys in milliseconds. Allowed values: Between 0 and 5000.</p></li>
 </ul>
 </div>
 <div class="section" id="id24">
@@ -761,7 +760,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="echo">
-<span id="flow-action-echo"></span><h2>Echo<a class="headerlink" href="#echo" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-echo"></span><h2>Echo<a class="headerlink" href="#echo" title="Permalink to this headline">¶</a></h2>
 <p>Echoing the call.</p>
 <div class="section" id="id25">
 <h3>Parameters<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
@@ -790,7 +789,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="external-media-start">
-<span id="flow-action-external-media-start"></span><h2>External Media Start<a class="headerlink" href="#external-media-start" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-external-media-start"></span><h2>External Media Start<a class="headerlink" href="#external-media-start" title="Permalink to this headline">¶</a></h2>
 <p>Start the external media.</p>
 <div class="section" id="id27">
 <h3>Parameters<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
@@ -809,18 +808,18 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>external_host</em>: external media target host address.</p></li>
-<li><p><em>encapsulation</em>: encapsulation. default: rtp.</p></li>
-<li><p><em>transport</em>: transport. default: udp.</p></li>
-<li><p><em>connection_type</em>: connection type. default: client</p></li>
-<li><p><em>format</em>: format default: ulaw</p></li>
-<li><p><em>direction</em>: Direction. default: both.</p></li>
-<li><p><em>data</em>: Data. Reserved.</p></li>
+<li><p>external_host: external media target host address.</p></li>
+<li><p>encapsulation: encapsulation. default: rtp.</p></li>
+<li><p>transport: transport. default: udp.</p></li>
+<li><p>connection_type: connection type. default: client</p></li>
+<li><p>format: format default: ulaw</p></li>
+<li><p>direction: Direction. default: both.</p></li>
+<li><p>data: Data. Reserved.</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="external-media-stop">
-<span id="flow-action-external-media-stop"></span><h2>External Media Stop<a class="headerlink" href="#external-media-stop" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-external-media-stop"></span><h2>External Media Stop<a class="headerlink" href="#external-media-stop" title="Permalink to this headline">¶</a></h2>
 <p>Stop the external media.</p>
 <div class="section" id="id28">
 <h3>Parameters<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
@@ -831,11 +830,72 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 </div>
-<div class="section" id="goto">
-<span id="flow-action-goto"></span><h2>Goto<a class="headerlink" href="#goto" title="Permalink to this headline">¶</a></h2>
-<p>Move the action execution.</p>
+<div class="section" id="fetch">
+<h2>Fetch<a class="headerlink" href="#fetch" title="Permalink to this headline">¶</a></h2>
+<p>Fetch the next flow from the remote.</p>
 <div class="section" id="id29">
 <h3>Parameters<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;event_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>event_url: The url for flow fetching.</p></li>
+<li><p>event_method: The method for flow fetching.</p></li>
+</ul>
+</div>
+<div class="section" id="id30">
+<h3>Example<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch&quot;</span><span class="o">.</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;event_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="fetch-flow">
+<span id="flow-struct-action-fetch-flow"></span><h2>Fetch Flow<a class="headerlink" href="#fetch-flow" title="Permalink to this headline">¶</a></h2>
+<p>Fetch the next flow from the existed flow.</p>
+<div class="section" id="id31">
+<h3>Parameters<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><em>flow_id</em>: The id of flow.</p></li>
+</ul>
+</div>
+<div class="section" id="id32">
+<h3>Example<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="o">.</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;212a32a8-9529-11ec-8bf0-8b89df407b6e&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="goto">
+<span id="flow-struct-action-goto"></span><h2>Goto<a class="headerlink" href="#goto" title="Permalink to this headline">¶</a></h2>
+<p>Move the action execution.</p>
+<div class="section" id="id33">
+<h3>Parameters<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -846,12 +906,12 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>target_id</em>: action id for move target.</p></li>
-<li><p><em>loop_count</em>: The number of loop.</p></li>
+<li><p>target_id: action id for move target.</p></li>
+<li><p>loop_count: The number of loop.</p></li>
 </ul>
 </div>
-<div class="section" id="id30">
-<h3>Example<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id34">
+<h3>Example<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -864,18 +924,18 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="hangup">
-<span id="flow-action-hangup"></span><h2>Hangup<a class="headerlink" href="#hangup" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-hangup"></span><h2>Hangup<a class="headerlink" href="#hangup" title="Permalink to this headline">¶</a></h2>
 <p>Hangup the call.</p>
-<div class="section" id="id31">
-<h3>Parameters<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id35">
+<h3>Parameters<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="id32">
-<h3>Example<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id36">
+<h3>Example<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
@@ -884,10 +944,10 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="message-send">
-<span id="flow-action-message-send"></span><h2>Message send<a class="headerlink" href="#message-send" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-message-send"></span><h2>Message send<a class="headerlink" href="#message-send" title="Permalink to this headline">¶</a></h2>
 <p>Send a message.</p>
-<div class="section" id="id33">
-<h3>Parameters<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id37">
+<h3>Parameters<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -912,68 +972,8 @@ It checks the call’s status and if it matched with condition then move to the 
 </ul>
 </div>
 </div>
-<div class="section" id="patch">
-<h2>Patch<a class="headerlink" href="#patch" title="Permalink to this headline">¶</a></h2>
-<p>Patch the next flow from the remote.</p>
-<div class="section" id="id34">
-<h3>Parameters<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;event_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><em>event_url</em>: The url for flow patching.</p></li>
-<li><p><em>event_method</em>: The method for flow patching.</p></li>
-</ul>
-</div>
-<div class="section" id="id35">
-<h3>Example<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch&quot;</span><span class="o">.</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="patch-flow">
-<span id="flow-action-patch-flow"></span><h2>Patch Flow<a class="headerlink" href="#patch-flow" title="Permalink to this headline">¶</a></h2>
-<p>Patch the next flow from the existed flow.</p>
-<div class="section" id="id36">
-<h3>Parameters<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch_flow&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><em>flow_id</em>: The id of flow.</p></li>
-</ul>
-</div>
-<div class="section" id="id37">
-<h3>Example<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;patch_flow&quot;</span><span class="o">.</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;212a32a8-9529-11ec-8bf0-8b89df407b6e&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
 <div class="section" id="play">
-<span id="flow-action-play"></span><h2>Play<a class="headerlink" href="#play" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-play"></span><h2>Play<a class="headerlink" href="#play" title="Permalink to this headline">¶</a></h2>
 <p>Plays the linked file.</p>
 <div class="section" id="id38">
 <h3>Parameters<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h3>
@@ -989,7 +989,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>stream_urls</em>: Stream url array for media.</p></li>
+<li><p>stream_urls: Stream url array for media.</p></li>
 </ul>
 </div>
 <div class="section" id="id39">
@@ -1007,7 +1007,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="queue-join">
-<span id="flow-action-queue-join"></span><h2>Queue Join<a class="headerlink" href="#queue-join" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-queue-join"></span><h2>Queue Join<a class="headerlink" href="#queue-join" title="Permalink to this headline">¶</a></h2>
 <p>Join to the queue.</p>
 <div class="section" id="id40">
 <h3>Parameters<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
@@ -1020,7 +1020,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>queue_id</em>: Target queue id.</p></li>
+<li><p>queue_id: Target queue id.</p></li>
 </ul>
 </div>
 <div class="section" id="id41">
@@ -1036,7 +1036,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="recording-start">
-<span id="flow-action-recording-start"></span><h2>Recording Start<a class="headerlink" href="#recording-start" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-recording-start"></span><h2>Recording Start<a class="headerlink" href="#recording-start" title="Permalink to this headline">¶</a></h2>
 <p>Starts the call recording.</p>
 <div class="section" id="id42">
 <h3>Parameters<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h3>
@@ -1053,11 +1053,11 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>format</em>: Format to encode audio in. wav, mp3, ogg.</p></li>
-<li><p><em>end_of_silence</em>: Maximum duration of silence, in seconds. 0 for no limit.</p></li>
-<li><p><em>end_of_key</em>: DTMF input to terminate recording. none, any, *, #.</p></li>
-<li><p><em>duration</em>: Maximum duration of the recording, in seconds. 0 for no limit.</p></li>
-<li><p><em>beep_start</em>: Play beep when recording begins</p></li>
+<li><p>format: Format to encode audio in. wav, mp3, ogg.</p></li>
+<li><p>end_of_silence: Maximum duration of silence, in seconds. 0 for no limit.</p></li>
+<li><p>end_of_key: DTMF input to terminate recording. none, any, *, #.</p></li>
+<li><p>duration: Maximum duration of the recording, in seconds. 0 for no limit.</p></li>
+<li><p>beep_start: Play beep when recording begins</p></li>
 </ul>
 </div>
 <div class="section" id="id43">
@@ -1073,7 +1073,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="recording-stop">
-<span id="flow-action-recording-stop"></span><h2>Recording Stop<a class="headerlink" href="#recording-stop" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-recording-stop"></span><h2>Recording Stop<a class="headerlink" href="#recording-stop" title="Permalink to this headline">¶</a></h2>
 <p>Stops the call recording.</p>
 <div class="section" id="id44">
 <h3>Parameters<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
@@ -1093,7 +1093,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="sleep">
-<span id="flow-action-sleep"></span><h2>Sleep<a class="headerlink" href="#sleep" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-sleep"></span><h2>Sleep<a class="headerlink" href="#sleep" title="Permalink to this headline">¶</a></h2>
 <p>Sleep the call.</p>
 <div class="section" id="id46">
 <h3>Parameters<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
@@ -1111,7 +1111,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="stream-echo">
-<span id="flow-action-stream-echo"></span><h2>Stream Echo<a class="headerlink" href="#stream-echo" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-stream-echo"></span><h2>Stream Echo<a class="headerlink" href="#stream-echo" title="Permalink to this headline">¶</a></h2>
 <p>Echoing the RTP stream including the digits receive.</p>
 <div class="section" id="id47">
 <h3>Parameters<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h3>
@@ -1140,7 +1140,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="talk">
-<span id="flow-action-talk"></span><h2>Talk<a class="headerlink" href="#talk" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-talk"></span><h2>Talk<a class="headerlink" href="#talk" title="Permalink to this headline">¶</a></h2>
 <p>Text to speech. SSML(<a class="reference external" href="https://www.w3.org/TR/speech-synthesis/">https://www.w3.org/TR/speech-synthesis/</a>) supported.</p>
 <div class="section" id="id49">
 <h3>Parameters<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
@@ -1155,9 +1155,9 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>text</em>: Text to speech. SSML(<a class="reference external" href="https://cloud.google.com/text-to-speech/docs/ssml">https://cloud.google.com/text-to-speech/docs/ssml</a>) supported.</p></li>
-<li><p><em>gender</em>: male/female.</p></li>
-<li><p><em>language</em>: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
+<li><p>text: Text to speech. SSML(<a class="reference external" href="https://cloud.google.com/text-to-speech/docs/ssml">https://cloud.google.com/text-to-speech/docs/ssml</a>) supported.</p></li>
+<li><p>gender: male/female.</p></li>
+<li><p>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
 </ul>
 </div>
 <div class="section" id="id50">
@@ -1175,7 +1175,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="transcribe-start">
-<span id="flow-action-transribe-start"></span><h2>Transcribe Start<a class="headerlink" href="#transcribe-start" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-transribe-start"></span><h2>Transcribe start<a class="headerlink" href="#transcribe-start" title="Permalink to this headline">¶</a></h2>
 <p>Start the STT(Speech to text) transcribe in realtime.</p>
 <div class="section" id="id51">
 <h3>Parameters<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
@@ -1204,7 +1204,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 </div>
 <div class="section" id="transcribe-stop">
-<span id="flow-action-transcribe-stop"></span><h2>Transcribe Stop<a class="headerlink" href="#transcribe-stop" title="Permalink to this headline">¶</a></h2>
+<span id="flow-struct-action-transcribe-stop"></span><h2>Transcribe stop<a class="headerlink" href="#transcribe-stop" title="Permalink to this headline">¶</a></h2>
 <p>Stop the transcribe talk in realtime.</p>
 <div class="section" id="id53">
 <h3>Parameters<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
@@ -1218,6 +1218,38 @@ It checks the call’s status and if it matched with condition then move to the 
 <h3>Example<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="variable-set">
+<span id="flow-struct-action-variable-set"></span><h2>Variable set<a class="headerlink" href="#variable-set" title="Permalink to this headline">¶</a></h2>
+<p>Stop the transcribe talk in realtime.</p>
+<div class="section" id="id55">
+<h3>Parameters<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;key 1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;value 1&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>key: Variable name.</p></li>
+<li><p>value” Varialbe value.</p></li>
+</ul>
+</div>
+<div class="section" id="id56">
+<h3>Example<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;Provider name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin&quot;</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
