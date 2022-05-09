@@ -10,10 +10,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
 
@@ -36,7 +36,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 		pageSize    uint64
 		countryCode string
 
-		resAvailableNumbers []*availablenumber.AvailableNumber
+		resAvailableNumbers []*nmavailablenumber.WebhookMessage
 	}
 
 	tests := []test{
@@ -47,12 +47,12 @@ func TestAvailableNumbersGET(t *testing.T) {
 			},
 			10,
 			"US",
-			[]*availablenumber.AvailableNumber{
+			[]*nmavailablenumber.WebhookMessage{
 				{
 					Number:   "+16188850188",
 					Country:  "US",
 					Region:   "IL",
-					Features: []string{"emergency", "fax", "voice", "sms"},
+					Features: []nmavailablenumber.Feature{"emergency", "fax", "voice", "sms"},
 				},
 			},
 		},

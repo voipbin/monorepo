@@ -17,19 +17,19 @@ definitions:
   address.Address:
     properties:
       detail:
-        description: Detail.
+        description: detail description.
         type: string
       name:
-        description: Name.
+        description: name
         type: string
       target:
-        description: Target address. If the type is 'tel' type, the terget must follow the E.164 format(https://www.itu.int/rec/T-REC-E.164/en).
+        description: address endpoint
         type: string
       target_name:
-        description: Target's shown name.
+        description: address's name.
         type: string
       type:
-        description: Type of address. must be one of ["sip", "tel"].
+        description: type of address
         type: string
     type: object
   agent.Agent:
@@ -40,8 +40,54 @@ definitions:
           $ref: '#/definitions/address.Address'
         type: array
       customer_id:
-        description: owned customer's id
+        description: owner's id
         type: string
+      detail:
+        description: agent's detail
+        type: string
+      id:
+        description: agent id
+        type: string
+      name:
+        description: agent's name
+        type: string
+      password_hash:
+        description: hashed Password
+        type: string
+      permission:
+        description: agent's permission.
+        type: integer
+      ring_method:
+        description: agent's ring method
+        type: string
+      status:
+        description: agent's status
+        type: string
+      tag_ids:
+        description: agent's tag ids
+        items:
+          type: string
+        type: array
+      tm_create:
+        description: Created timestamp.
+        type: string
+      tm_delete:
+        description: Deleted timestamp.
+        type: string
+      tm_update:
+        description: Updated timestamp.
+        type: string
+      username:
+        description: agent's username
+        type: string
+    type: object
+  agent.WebhookMessage:
+    properties:
+      addresses:
+        description: agent's endpoint addresses
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
       detail:
         description: agent's detail
         type: string
@@ -78,7 +124,7 @@ definitions:
         description: agent's username
         type: string
     type: object
-  availablenumber.AvailableNumber:
+  availablenumber.WebhookMessage:
     properties:
       country:
         type: string
@@ -98,14 +144,30 @@ definitions:
       action:
         $ref: '#/definitions/action.Action'
         type: object
+      active_flow_id:
+        description: active flow id
+        type: string
+      asterisk_id:
+        type: string
+      bridge_id:
+        description: call bridge id
+        type: string
       chained_call_ids:
         description: chained call ids
         items:
           type: string
         type: array
+      channel_id:
+        type: string
       confbridge_id:
         description: currently joined confbridge id.
         type: string
+      customer_id:
+        type: string
+      data:
+        additionalProperties:
+          type: string
+        type: object
       destination:
         $ref: '#/definitions/address.Address'
         type: object
@@ -153,12 +215,69 @@ definitions:
       type:
         description: call type
         type: string
-      webhook_uri:
+    type: object
+  call.WebhookMessage:
+    properties:
+      action:
+        $ref: '#/definitions/action.Action'
+        type: object
+      chained_call_ids:
+        description: chained call ids
+        items:
+          type: string
+        type: array
+      destination:
+        $ref: '#/definitions/address.Address'
+        type: object
+      direction:
+        type: string
+      flow_id:
+        description: flow id
+        type: string
+      hangup_by:
+        type: string
+      hangup_reason:
+        type: string
+      id:
+        description: identity
+        type: string
+      master_call_id:
+        description: etc info
+        type: string
+      recording_id:
+        description: recording id(current)
+        type: string
+      recording_ids:
+        description: recording ids
+        items:
+          type: string
+        type: array
+      source:
+        $ref: '#/definitions/address.Address'
+        description: source/destination
+        type: object
+      status:
+        description: info
+        type: string
+      tm_create:
+        description: timestamp
+        type: string
+      tm_hangup:
+        type: string
+      tm_progressing:
+        type: string
+      tm_ringing:
+        type: string
+      tm_update:
+        type: string
+      type:
+        description: call type
         type: string
     type: object
   campaign.Campaign:
     properties:
       actions:
+        description: this actions will be stored to the flow
         items:
           $ref: '#/definitions/action.Action'
         type: array
@@ -167,10 +286,12 @@ definitions:
       detail:
         type: string
       end_handle:
-        type: EndHandle
+        type: string
       execute:
-        type: Execute
+        description: if the execute is running, this sets to true
+        type: string
       flow_id:
+        description: action settings
         type: string
       id:
         type: string
@@ -181,13 +302,14 @@ definitions:
       outdial_id:
         type: string
       outplan_id:
+        description: resource info
         type: string
       queue_id:
         type: string
       service_level:
         type: integer
       status:
-        type: Status
+        type: string
       tm_create:
         type: string
       tm_delete:
@@ -195,18 +317,19 @@ definitions:
       tm_update:
         type: string
       type:
-        type: Type
+        type: string
     type: object
   campaign.WebhookMessage:
     properties:
       actions:
+        description: action settings
         items:
           $ref: '#/definitions/action.Action'
         type: array
       detail:
         type: string
       end_handle:
-        type: EndHandle
+        type: string
       id:
         type: string
       name:
@@ -216,13 +339,14 @@ definitions:
       outdial_id:
         type: string
       outplan_id:
+        description: resource info
         type: string
       queue_id:
         type: string
       service_level:
         type: integer
       status:
-        type: Status
+        type: string
       tm_create:
         type: string
       tm_delete:
@@ -230,11 +354,12 @@ definitions:
       tm_update:
         type: string
       type:
-        type: Type
+        type: string
     type: object
   campaigncall.WebhookMessage:
     properties:
       activeflow_id:
+        description: this is required
         type: string
       campaign_id:
         type: string
@@ -254,16 +379,18 @@ definitions:
       queue_id:
         type: string
       reference_id:
+        description: reference id
         type: string
       reference_type:
-        type: ReferenceType
+        description: none or call
+        type: string
       result:
-        type: Result
+        type: string
       source:
         $ref: '#/definitions/address.Address'
         type: object
       status:
-        type: Status
+        type: string
       tm_create:
         type: string
       tm_update:
@@ -278,10 +405,18 @@ definitions:
         items:
           type: string
         type: array
+      confbridge_id:
+        description: confbridge id(call-manager)
+        type: string
+      customer_id:
+        type: string
       data:
         additionalProperties: true
         type: object
       detail:
+        type: string
+      flow_id:
+        description: flow id(flow-manager)
         type: string
       id:
         type: string
@@ -316,35 +451,97 @@ definitions:
         type: string
       type:
         type: string
-      webhook_uri:
-        type: string
     type: object
   customer.Customer:
     properties:
       detail:
+        description: detail
+        type: string
+      id:
+        description: Customer's ID
+        type: string
+      name:
+        description: name
+        type: string
+      permission_ids:
+        description: customer's permission ids
+        items:
+          type: string
+        type: array
+      tm_create:
+        description: Created timestamp.
+        type: string
+      tm_delete:
+        description: Deleted timestamp.
+        type: string
+      tm_update:
+        description: Updated timestamp.
+        type: string
+      username:
+        description: Customer's username
+        type: string
+      webhook_method:
+        description: webhook method
+        type: string
+      webhook_uri:
+        description: webhook uri
+        type: string
+    type: object
+  customer.WebhookMessage:
+    properties:
+      detail:
+        description: detail
+        type: string
+      id:
+        description: Customer's ID
+        type: string
+      name:
+        description: name
+        type: string
+      permission_ids:
+        description: customer's permission ids
+        items:
+          type: string
+        type: array
+      tm_create:
+        description: Created timestamp.
+        type: string
+      tm_delete:
+        description: Deleted timestamp.
+        type: string
+      tm_update:
+        description: Updated timestamp.
+        type: string
+      username:
+        description: Customer's username
+        type: string
+      webhook_method:
+        description: webhook method
+        type: string
+      webhook_uri:
+        description: webhook uri
+        type: string
+    type: object
+  domain.Domain:
+    properties:
+      customer_id:
+        type: string
+      detail:
+        type: string
+      domain_name:
         type: string
       id:
         type: string
       name:
         type: string
-      permission_ids:
-        items:
-          type: string
-        type: array
       tm_create:
         type: string
       tm_delete:
         type: string
       tm_update:
         type: string
-      username:
-        type: string
-      webhook_method:
-        type: WebhookMethod
-      webhook_uri:
-        type: string
     type: object
-  domain.Domain:
+  domain.WebhookMessage:
     properties:
       detail:
         type: string
@@ -363,15 +560,26 @@ definitions:
     type: object
   extension.Extension:
     properties:
+      aor_id:
+        type: string
+      auth_id:
+        type: string
+      customer_id:
+        type: string
       detail:
         type: string
       domain_id:
+        type: string
+      endpoint_id:
+        description: asterisk resources
         type: string
       extension:
         type: string
       id:
         type: string
       name:
+        type: string
+      password:
         type: string
       tm_create:
         type: string
@@ -383,32 +591,87 @@ definitions:
   flow.Flow:
     properties:
       actions:
-        description: Actions
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      customer_id:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      persist:
+        type: boolean
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  flow.WebhookMessage:
+    properties:
+      actions:
         items:
           $ref: '#/definitions/action.Action'
         type: array
       detail:
-        description: Detail
         type: string
       id:
-        description: Flow's ID
         type: string
       name:
-        description: Name
         type: string
       tm_create:
-        description: Created timestamp.
         type: string
       tm_delete:
-        description: Deleted timestamp.
         type: string
       tm_update:
-        description: Updated timestamp.
         type: string
-      webhook_uri:
+      type:
         type: string
     type: object
   message.Message:
+    properties:
+      customer_id:
+        type: string
+      direction:
+        type: string
+      id:
+        type: string
+      medias:
+        items:
+          type: string
+        type: array
+      provider_name:
+        description: provider info
+        type: string
+      provider_reference_id:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+        description: from/to info
+        type: object
+      targets:
+        items:
+          $ref: '#/definitions/target.Target'
+        type: array
+      text:
+        description: message info
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  message.WebhookMessage:
     properties:
       direction:
         type: string
@@ -419,7 +682,9 @@ definitions:
         description: from/to info
         type: object
       targets:
-        type: string
+        items:
+          $ref: '#/definitions/target.Target'
+        type: array
       text:
         description: message info
         type: string
@@ -434,13 +699,51 @@ definitions:
     type: object
   number.Number:
     properties:
+      call_flow_id:
+        type: string
+      customer_id:
+        type: string
       detail:
         type: string
       emergency_enabled:
         type: boolean
-      flow_id:
-        type: string
       id:
+        type: string
+      message_flow_id:
+        type: string
+      name:
+        type: string
+      number:
+        type: string
+      provider_name:
+        type: string
+      provider_reference_id:
+        type: string
+      status:
+        type: string
+      t38_enabled:
+        type: boolean
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_purchase:
+        description: timestamp
+        type: string
+      tm_update:
+        type: string
+    type: object
+  number.WebhookMessage:
+    properties:
+      call_flow_id:
+        type: string
+      detail:
+        type: string
+      emergency_enabled:
+        type: boolean
+      id:
+        type: string
+      message_flow_id:
         type: string
       name:
         type: string
@@ -504,23 +807,31 @@ definitions:
       detail:
         type: string
       dial_timeout:
+        description: plan dial settings
         type: integer
       id:
         type: string
       max_try_count_0:
+        description: max try count
         type: integer
       max_try_count_1:
+        description: max try count for destination_1
         type: integer
       max_try_count_2:
+        description: max try count for destination_2
         type: integer
       max_try_count_3:
+        description: max try count for destination_3
         type: integer
       max_try_count_4:
+        description: max try count for destination_4
         type: integer
       name:
+        description: basic info
         type: string
       source:
         $ref: '#/definitions/address.Address'
+        description: source settings
         type: object
       tm_create:
         type: string
@@ -529,6 +840,7 @@ definitions:
       tm_update:
         type: string
       try_interval:
+        description: milliseconds
         type: integer
     type: object
   outplan.WebhookMessage:
@@ -536,6 +848,7 @@ definitions:
       detail:
         type: string
       dial_timeout:
+        description: plan dial settings
         type: integer
       id:
         type: string
@@ -550,9 +863,11 @@ definitions:
       max_try_count_4:
         type: integer
       name:
+        description: basic info
         type: string
       source:
         $ref: '#/definitions/address.Address'
+        description: source settings
         type: object
       tm_create:
         type: string
@@ -561,56 +876,106 @@ definitions:
       tm_update:
         type: string
       try_interval:
+        description: milliseconds
         type: integer
     type: object
   queue.WebhookMessage:
     properties:
       detail:
+        description: queue's detail
         type: string
       id:
+        description: queue id
         type: string
       name:
+        description: basic info
         type: string
       routing_method:
-        type: RoutingMethod
+        description: operation info
+        type: string
       service_queue_call_ids:
+        description: service queue call ids(ms).
         items:
           type: string
         type: array
       service_timeout:
+        description: service queue timeout(ms).
         type: integer
       tag_ids:
+        description: queue's tag ids
         items:
           type: string
         type: array
       tm_create:
+        description: Created timestamp.
         type: string
       tm_delete:
+        description: Deleted timestamp.
         type: string
       tm_update:
+        description: Updated timestamp.
         type: string
       total_abandoned_count:
+        description: total abandoned call count
         type: integer
       total_incoming_count:
+        description: total incoming call count
         type: integer
       total_service_duration:
+        description: total service duration(ms)
         type: integer
       total_serviced_count:
+        description: total serviced call count
         type: integer
       total_waittime:
+        description: total wait time(ms)
         type: integer
       wait_actions:
+        description: wait/service info
         items:
           $ref: '#/definitions/action.Action'
         type: array
       wait_queue_call_ids:
+        description: queuecall info
         items:
           type: string
         type: array
       wait_timeout:
+        description: wait queue timeout.(ms)
         type: integer
     type: object
   recording.Recording:
+    properties:
+      asterisk_id:
+        type: string
+      channel_id:
+        type: string
+      customer_id:
+        type: string
+      filename:
+        type: string
+      format:
+        type: string
+      id:
+        type: string
+      reference_id:
+        type: string
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_end:
+        type: string
+      tm_start:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  recording.WebhookMessage:
     properties:
       format:
         type: string
@@ -990,13 +1355,15 @@ definitions:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/agent.WebhookMessage'
+        type: array
     type: object
   response.BodyAvailableNumbersGET:
     properties:
       result:
         items:
-          $ref: '#/definitions/availablenumber.AvailableNumber'
+          $ref: '#/definitions/availablenumber.WebhookMessage'
         type: array
     type: object
   response.BodyCallsGET:
@@ -1004,7 +1371,9 @@ definitions:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/call.WebhookMessage'
+        type: array
     type: object
   response.BodyCampaignsGET:
     properties:
@@ -1029,21 +1398,27 @@ definitions:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/customer.WebhookMessage'
+        type: array
     type: object
   response.BodyDomainsGET:
     properties:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/domain.WebhookMessage'
+        type: array
     type: object
   response.BodyFlowsGET:
     properties:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/flow.WebhookMessage'
+        type: array
     type: object
   response.BodyLoginPOST:
     properties:
@@ -1057,14 +1432,18 @@ definitions:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/message.WebhookMessage'
+        type: array
     type: object
   response.BodyNumbersGET:
     properties:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/number.WebhookMessage'
+        type: array
     type: object
   response.BodyOutdialsGET:
     properties:
@@ -1098,16 +1477,44 @@ definitions:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/recording.WebhookMessage'
+        type: array
     type: object
   response.BodyTagsGET:
     properties:
       next_page_token:
         type: string
       result:
-        type: string
+        items:
+          $ref: '#/definitions/tag.WebhookMessage'
+        type: array
     type: object
   tag.Tag:
+    properties:
+      customer_id:
+        description: owner's id
+        type: string
+      detail:
+        description: tag's detail
+        type: string
+      id:
+        description: tag id
+        type: string
+      name:
+        description: tag's name
+        type: string
+      tm_create:
+        description: Created timestamp.
+        type: string
+      tm_delete:
+        description: Deleted timestamp.
+        type: string
+      tm_update:
+        description: Updated timestamp.
+        type: string
+    type: object
+  tag.WebhookMessage:
     properties:
       detail:
         description: tag's detail
@@ -1128,8 +1535,29 @@ definitions:
         description: Updated timestamp.
         type: string
     type: object
+  target.Target:
+    properties:
+      destination:
+        $ref: '#/definitions/address.Address'
+        type: object
+      parts:
+        description: number of messages
+        type: integer
+      status:
+        type: string
+      tm_update:
+        type: string
+    type: object
   transcribe.Transcribe:
     properties:
+      customer_id:
+        description: customer
+        type: string
+      direction:
+        type: string
+      host_id:
+        description: host id
+        type: string
       id:
         description: Transcribe id
         type: string
@@ -1137,33 +1565,40 @@ definitions:
         description: BCP47 type's language code. en-US
         type: string
       reference_id:
-        description: recording's id
+        description: call/conference/recording's id
+        type: string
+      tm_create:
+        description: timestamp
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
         type: string
       transcripts:
         description: transcripts
         items:
-          $ref: '#/definitions/transcribe.Transcript'
+          $ref: '#/definitions/transcript.Transcript'
         type: array
       type:
         description: type
         type: string
-      webhook_method:
-        description: webhook method
-        type: string
-      webhook_uri:
-        description: webhook destination uri
-        type: string
     type: object
-  transcribe.Transcript:
+  transcript.Transcript:
     properties:
+      customer_id:
+        type: string
       direction:
         description: direction. in/out
+        type: string
+      id:
         type: string
       message:
         description: message
         type: string
       tm_create:
         description: timestamp
+        type: string
+      transcribe_id:
         type: string
     type: object
 host: api.voipbin.net

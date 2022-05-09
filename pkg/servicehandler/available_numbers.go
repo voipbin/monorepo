@@ -5,14 +5,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/availablenumber"
+	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 )
 
 // AvailableNumberGets sends a handles available number get
 // It sends a request to the number-manager to getting a list of calls.
 // it returns list of available numbers if it succeed.
-func (h *serviceHandler) AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*availablenumber.AvailableNumber, error) {
+func (h *serviceHandler) AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  u.ID,
@@ -29,9 +28,9 @@ func (h *serviceHandler) AvailableNumberGets(u *cscustomer.Customer, size uint64
 	}
 
 	// create result
-	res := []*availablenumber.AvailableNumber{}
+	res := []*nmavailablenumber.WebhookMessage{}
 	for _, tmp := range tmps {
-		c := availablenumber.ConvertNumber(&tmp)
+		c := tmp.ConvertWebhookMessage()
 		res = append(res, c)
 	}
 

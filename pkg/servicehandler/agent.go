@@ -13,7 +13,6 @@ import (
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/models/agent"
 )
 
 // agentGet validates the agent's ownership and returns the agent info.
@@ -184,9 +183,8 @@ func (h *serviceHandler) AgentLogin(customerID uuid.UUID, username, password str
 		log.Warningf("Could not agent login. err: %v", err)
 		return "", err
 	}
-	tmp := agent.ConvertToAgent(ag)
 
-	// serialized := tmp.Serialize()
+	tmp := ag.ConvertWebhookMessage()
 	serialized, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
