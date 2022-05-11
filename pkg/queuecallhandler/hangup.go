@@ -40,7 +40,7 @@ func (h *queuecallHandler) Hungup(ctx context.Context, referenceID uuid.UUID) {
 	log = log.WithField("queuecall_id", qc.ID)
 
 	// check queuecall's status
-	if qc.Status != queuecall.StatusWait && qc.Status != queuecall.StatusKicking {
+	if qc.Status != queuecall.StatusWaiting && qc.Status != queuecall.StatusKicking {
 		// nothing to do here
 		return
 	}

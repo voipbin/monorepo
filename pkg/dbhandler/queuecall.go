@@ -342,8 +342,8 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queu
 	return nil
 }
 
-// QueuecallSetServiceAgentID sets the QueueCall's service_agent_id.
-func (h *handler) QueuecallSetServiceAgentID(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error {
+// QueuecallSetStatusConnecting sets the QueueCall's status to the connecting.
+func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error {
 	// prepare
 	q := `
 	update
@@ -351,15 +351,14 @@ func (h *handler) QueuecallSetServiceAgentID(ctx context.Context, id uuid.UUID, 
 	set
 		status = ?,
 		service_agent_id = ?,
-		tm_service = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
-	t := GetCurTime()
-	_, err := h.db.Exec(q, queuecall.StatusEntering, serviceAgentID.Bytes(), t, t, id.Bytes())
+
+	_, err := h.db.Exec(q, queuecall.StatusConnecting, serviceAgentID.Bytes(), GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetServiceAgentID. err: %v", err)
+		return fmt.Errorf("could not execute. QueuecallSetStatusConnecting. err: %v", err)
 	}
 
 	// update the cache

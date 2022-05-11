@@ -35,7 +35,7 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 	log.WithField("queuecall", qc).Debug("Found queuecall info.")
 
 	// check the status
-	if qc.Status != queuecall.StatusWait {
+	if qc.Status != queuecall.StatusWaiting {
 		// no need to execute anymore.
 		log.Errorf("The queuecall status is not wait. Will handle in other place. status: %v", qc.Status)
 		return
@@ -91,10 +91,10 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 		return
 	}
 
-	// update the queuecall
-	log.Debugf("Update the queuecall service agent id. agent_id: %s", targetAgent.ID)
-	if err := h.db.QueuecallSetServiceAgentID(ctx, qc.ID, targetAgent.ID); err != nil {
-		log.Errorf("Could not ser the service agent id. err: %v", err)
+	// update the queuecall status to connecting
+	log.Debugf("Update the queuecall status to connecting. agent_id: %s", targetAgent.ID)
+	if err := h.db.QueuecallSetStatusConnecting(ctx, qc.ID, targetAgent.ID); err != nil {
+		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
 		return
 	}
 
@@ -104,7 +104,7 @@ func (h *queuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUI
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallEntering, tmp)
+	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallConnecting, tmp)
 }
 
 // generateFlowForAgentCall creates a flow for the agent call action.

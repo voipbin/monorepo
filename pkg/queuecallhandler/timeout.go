@@ -25,7 +25,7 @@ func (h *queuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid.UUI
 		return
 	}
 
-	if qc.Status != queuecall.StatusWait {
+	if qc.Status != queuecall.StatusWaiting {
 		log.Debugf("The queuecall status is not wait. Ignore the request. status: %s", qc.Status)
 		return
 	}

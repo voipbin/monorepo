@@ -28,7 +28,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID, d
 	log.WithField("queuecall", qc).Debug("Found queuecall info.")
 
 	// check the status
-	if qc.Status != queuecall.StatusWait {
+	if qc.Status != queuecall.StatusWaiting {
 		// no need to execute anymore.
 		log.Errorf("The queuecall status is not wait. Will handle in other place. status: %v", qc.Status)
 		return nil, fmt.Errorf("invalid queuecall status. status: %s", qc.Status)

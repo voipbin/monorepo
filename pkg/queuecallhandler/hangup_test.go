@@ -71,7 +71,7 @@ func TestHungup(t *testing.T) {
 					uuid.FromStringOrNil("a9ca8282-5edf-11ec-a876-df977791e643"),
 				},
 
-				Status: queuecall.StatusWait,
+				Status: queuecall.StatusWaiting,
 			},
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("b5bbd69e-5ef9-11ec-a39e-73a3a50a1e26"),
@@ -90,7 +90,7 @@ func TestHungup(t *testing.T) {
 					uuid.FromStringOrNil("a9ca8282-5edf-11ec-a876-df977791e643"),
 				},
 
-				Status:   queuecall.StatusWait,
+				Status:   queuecall.StatusWaiting,
 				TMCreate: "2021-04-18 03:22:17.994000",
 				TMDelete: "2021-04-18 03:52:17.994000",
 			},

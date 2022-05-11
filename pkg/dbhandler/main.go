@@ -43,7 +43,7 @@ type DBHandler interface {
 	QueuecallGetsByReferenceID(ctx context.Context, referenceID uuid.UUID) ([]*queuecall.Queuecall, error)
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error
-	QueuecallSetServiceAgentID(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
+	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
 	QueuecallSetStatusService(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
 

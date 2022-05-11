@@ -51,10 +51,10 @@ type Status string
 
 // list of status
 const (
-	StatusWait      Status = "wait"      // queue call is waiting in the wait actions.
-	StatusEntering  Status = "entering"  // queue call is entering to the queue's confbridge
-	StatusKicking   Status = "kicking"   // queue call is being kick from the queue
-	StatusService   Status = "service"   // queue call is being service now.
-	StatusDone      Status = "done"      // queue call done.
-	StatusAbandoned Status = "abandoned" // queue call has been abandoned.
+	StatusWaiting    Status = "waiting"    // queue call is waiting in the wait actions.
+	StatusConnecting Status = "connecting" // queue call is connecting to the agent.
+	StatusKicking    Status = "kicking"    // queue call is being kick from the queue
+	StatusService    Status = "service"    // queue call is being service now.
+	StatusDone       Status = "done"       // queue call done.
+	StatusAbandoned  Status = "abandoned"  // queue call has been abandoned.
 )

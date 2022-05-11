@@ -61,7 +61,7 @@ func TestExecute(t *testing.T) {
 					uuid.FromStringOrNil("a9ca8282-5edf-11ec-a876-df977791e643"),
 				},
 
-				Status: queuecall.StatusWait,
+				Status: queuecall.StatusWaiting,
 			},
 		},
 	}
