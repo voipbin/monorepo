@@ -1,9 +1,9 @@
-.. _campaign-struct_campaign:
+.. _campaign-struct-campaign:
 
-Struct campaign
+Campaign
 ===============
 
-.. _campaign-struct_campaign-campaign:
+.. _campaign-struct-campaign-campaign:
 
 Campaign
 --------
@@ -31,12 +31,12 @@ Campaign
     }
 
 * id: Campaign's ID.
-* *type*: Campaign's type. See detail :ref:`here <campaign-struct_campaign-type>`.
+* *type*: Campaign's type. See detail :ref:`here <campaign-struct-campaign-type>`.
 * name: Campaign's name.
 * detail: Campaign's detail.
-* *status*: Campaign's status. See detail :ref:`here <campaign-struct_campaign-status>`.
-* *service_level*: Campaign's service level. See detail :ref:`here <campaign-struct_campaign-service_level>`.
-* *end_handle*: Campaign's outdial list end handle. See detail :ref:`here <campaign-struct_campaign-end_handle>`.
+* *status*: Campaign's status. See detail :ref:`here <campaign-struct-campaign-status>`.
+* *service_level*: Campaign's service level. See detail :ref:`here <campaign-struct-campaign-service_level>`.
+* *end_handle*: Campaign's outdial list end handle. See detail :ref:`here <campaign-struct-campaign-end_handle>`.
 * *actions*: Campaign's list of actions. See detail :ref:`here <flow-struct-action-action>`.
 * outplan_id: Outplan's ID.
 * outdial_id: Outdial's ID.
@@ -77,7 +77,7 @@ Example
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
-.. _campaign-struct_campaign-type:
+.. _campaign-struct-campaign-type:
 
 Type
 ----
@@ -90,7 +90,7 @@ call        The campaign will make a call to the destination with a flow.
 flow        The campaign will execute flow with a destination.
 =========== ============
 
-.. _campaign-struct_campaign-status:
+.. _campaign-struct-campaign-status:
 
 Status
 ------
@@ -104,7 +104,7 @@ stopping    The campaign is being stop. Waiting for dialing/process call's termi
 run         The campaign is running. It will create a new call or flow execution.
 =========== ============
 
-.. _campaign-struct_campaign-service_level:
+.. _campaign-struct-campaign-service_level:
 
 Service level
 -------------
@@ -118,7 +118,7 @@ The campaign makes a new campaigncall when...
 
 It valid only if the campaign has a valid queue_id.
 
-.. _campaign-struct_campaign-end_handle:
+.. _campaign-struct-campaign-end_handle:
 
 End handle
 ----------

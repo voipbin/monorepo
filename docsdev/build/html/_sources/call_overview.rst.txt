@@ -13,6 +13,12 @@ With the VoIPBIN API you can:
 - Create conference calls.
 - Send text-to-speech messages in 50 languages with different gender and accents.
 
+Protocol
+--------
+VoIPBIN supports various call/video protocols. They can join to the same conference room in the VoIPBIN and can communicate each other.
+
+.. image:: _static/images/call_overview_protocol.png
+
 PSTN/Phone number format
 ------------------------
 Within the VoIPBIN APIs, all PSTN/Phone numbers are in `+E164 <https://en.wikipedia.org/wiki/E.164>`_ format. This means that numbers:

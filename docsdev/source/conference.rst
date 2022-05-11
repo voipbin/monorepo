@@ -5,5 +5,5 @@ Conference
 ************
 
 .. include:: conference_overview.rst
-.. include:: conference_struct.rst
+.. include:: conference_struct_conference.rst
 .. include:: conference_tutorial.rst
