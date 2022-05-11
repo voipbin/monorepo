@@ -1,9 +1,9 @@
-.. _outdial-struct:
+.. _outdial-struct-outdial:
 
-Struct outdial
+Outdial
 ==============
 
-.. _outdial-struct-outdial:
+.. _outdial-struct-outdial-outdial:
 
 Outdial
 -------

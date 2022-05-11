@@ -103,7 +103,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dialing-strategy">Dialing strategy</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#struct-campaign">Struct campaign</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#campaign-struct-campaign">Campaign</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#campaign-struct-campaign-campaign">Campaign</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
 </ul>
@@ -114,9 +114,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#end-handle">End handle</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#struct-campaigncall">Struct campaigncall</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#campaigncall">Campaigncall</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id2">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#campaigncall">Campaigncall</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#campaign-struct-campaigncall-campaigncall">Campaigncall</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#reference-type">Reference type</a></li>
@@ -126,15 +126,15 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#get-list-of-campaigns">Get list of campaigns</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id4">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#get-detail-of-campaign">Get detail of campaign</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id5">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#create-a-new-campaign">Create a new campaign</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id6">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -143,6 +143,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 </ul>
 
             
@@ -243,10 +245,10 @@
 <img alt="_images/campaign_overview_dialing_strategy.png" src="_images/campaign_overview_dialing_strategy.png" />
 </div>
 </div>
-<div class="section" id="struct-campaign">
-<span id="campaign-struct-campaign"></span><h2>Struct campaign<a class="headerlink" href="#struct-campaign" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="campaign-struct-campaign">
+<span id="id1"></span><h2>Campaign<a class="headerlink" href="#campaign-struct-campaign" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="campaign-struct-campaign-campaign">
-<span id="id1"></span><h3>Campaign<a class="headerlink" href="#campaign-struct-campaign-campaign" title="Permalink to this headline">¶</a></h3>
+<span id="id2"></span><h3>Campaign<a class="headerlink" href="#campaign-struct-campaign-campaign" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -398,10 +400,10 @@
 </table>
 </div>
 </div>
-<div class="section" id="struct-campaigncall">
-<span id="campaign-struct-campaigncall"></span><h2>Struct campaigncall<a class="headerlink" href="#struct-campaigncall" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="campaigncall">
-<span id="campaign-struct-campaigncall-campaigncall"></span><h3>Campaigncall<a class="headerlink" href="#campaigncall" title="Permalink to this headline">¶</a></h3>
+<span id="campaign-struct-campaigncall"></span><h2>Campaigncall<a class="headerlink" href="#campaigncall" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="campaign-struct-campaigncall-campaigncall">
+<span id="id3"></span><h3>Campaigncall<a class="headerlink" href="#campaign-struct-campaigncall-campaigncall" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -439,13 +441,13 @@
 <li><p>reference_id: Reference’s ID.</p></li>
 <li><p><em>status</em>: Campaigncall’s status. See detail <a class="reference internal" href="campaign_struct_campaigncall.html#campaign-struct-campaigncall-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>result</em>: Campaigncall’s result. See detail <a class="reference internal" href="campaign_struct_campaigncall.html#campaign-struct-campaigncall-result"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>destination_index: Destination’s index.</p></li>
 <li><p>try_count: Try count.</p></li>
 </ul>
-<div class="section" id="id2">
-<h4>Example<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id4">
+<h4>Example<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;56347901-5bb9-422d-add5-5a2ca47fa737&quot;</span><span class="p">,</span>
     <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;183c0d5c-691e-42f3-af2b-9bffc2740f83&quot;</span><span class="p">,</span>
@@ -505,7 +507,7 @@
 </table>
 </div>
 <div class="section" id="campaign-struct-campaigncall-status">
-<span id="id3"></span><h3>Status<a class="headerlink" href="#campaign-struct-campaigncall-status" title="Permalink to this headline">¶</a></h3>
+<span id="id5"></span><h3>Status<a class="headerlink" href="#campaign-struct-campaigncall-status" title="Permalink to this headline">¶</a></h3>
 <p>Campaigncall’s status.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -582,8 +584,8 @@
 <span id="campaign-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="get-list-of-campaigns">
 <h3>Get list of campaigns<a class="headerlink" href="#get-list-of-campaigns" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id4">
-<h4>Example<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id6">
+<h4>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/campaigns?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39;
 
 {
@@ -625,8 +627,8 @@
 </div>
 <div class="section" id="get-detail-of-campaign">
 <h3>Get detail of campaign<a class="headerlink" href="#get-detail-of-campaign" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id5">
-<h4>Example<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id7">
+<h4>Example<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/campaigns/183c0d5c-691e-42f3-af2b-9bffc2740f83?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39;
 
 {
@@ -663,8 +665,8 @@
 </div>
 <div class="section" id="create-a-new-campaign">
 <h3>Create a new campaign<a class="headerlink" href="#create-a-new-campaign" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="id6">
-<h4>Example<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id8">
+<h4>Example<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/campaigns?token=eyJhbGciOiJIUzI1NiIsInR5cCIJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{

@@ -93,7 +93,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#agent-struct-agent">Agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#agent-struct-agent-agent">Agent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ring-method">Ring method</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
 </ul>
@@ -117,6 +117,8 @@
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 </ul>
 
             
@@ -197,9 +199,9 @@ In general, the place of work is a call centre, where a number of agents are emp
 </div>
 </div>
 <div class="section" id="struct">
-<span id="agent-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="agent-struct-agent">
-<span id="id1"></span><h3>Agent<a class="headerlink" href="#agent-struct-agent" title="Permalink to this headline">¶</a></h3>
+<span id="agent-struct-agent"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="agent-struct-agent-agent">
+<span id="id1"></span><h3>Agent<a class="headerlink" href="#agent-struct-agent-agent" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -225,15 +227,15 @@ In general, the place of work is a call centre, where a number of agents are emp
 <li><p><em>username</em>: Agent’s login username.</p></li>
 <li><p><em>name</em>: Agent’s name.</p></li>
 <li><p><em>detail</em>: Agent’s detail description.</p></li>
-<li><p><em>ring_method</em>: Ring method for agent calling. See detail <a class="reference internal" href="agent_struct.html#agent-struct-ring-method"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>status</em>: Agent’s status. See detail <a class="reference internal" href="agent_struct.html#agent-struct-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>ring_method</em>: Ring method for agent calling. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-ring-method"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>status</em>: Agent’s status. See detail <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>permission</em>: Agent’s permission.</p></li>
 <li><p><em>tag_ids</em>: List of agent’s tags.</p></li>
-<li><p><em>addresses</em>: List of agent’s addresses. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>addresses</em>: List of agent’s addresses. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </div>
 <div class="section" id="ring-method">
-<span id="agent-struct-ring-method"></span><h3>Ring method<a class="headerlink" href="#ring-method" title="Permalink to this headline">¶</a></h3>
+<span id="agent-struct-agent-ring-method"></span><h3>Ring method<a class="headerlink" href="#ring-method" title="Permalink to this headline">¶</a></h3>
 <p>Agent’s calling method.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -253,7 +255,7 @@ In general, the place of work is a call centre, where a number of agents are emp
 </table>
 </div>
 <div class="section" id="status">
-<span id="agent-struct-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
+<span id="agent-struct-agent-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
 <p>Agent’s status.</p>
 <table class="docutils align-default">
 <colgroup>

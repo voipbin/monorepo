@@ -1,9 +1,9 @@
-.. _flow-struct:
-
-Struct
-======
-
 .. _flow-struct-flow:
+
+Flow
+====
+
+.. _flow-struct-flow-flow:
 
 Flow
 ----
@@ -24,7 +24,7 @@ Flow
     },
 
 * id: Flow's ID.
-* type: Flow's types. See detail :ref:`here <flow-struct-type>`.
+* type: Flow's types. See detail :ref:`here <flow-struct-flow-type>`.
 * name: Flow's name.
 * detail: Flow's detail.
 * actions: List of actions. See detail :ref:`here <flow-struct-action>`.
@@ -63,7 +63,7 @@ Flow
     }
 
 
-.. _flow-struct-type:
+.. _flow-struct-flow-type:
 
 Type
 ----

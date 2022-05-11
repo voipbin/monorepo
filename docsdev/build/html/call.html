@@ -87,14 +87,15 @@
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Call</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#protocol">Protocol</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pstn-phone-number-format">PSTN/Phone number format</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extension-number-format">Extension number format</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#incoming-call">Incoming call</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#outgoing-call">Outgoing call</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#call-struct-call">Call</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#call-struct-call">Call</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#call-struct-call-call">Call</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
@@ -105,6 +106,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#hangup-reason">Hangup reason</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#address">Address</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#address-type">Address type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#variable">Variable</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#source-address">Source address</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#destination-address">Destination address</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tutorial">Tutorial</a><ul>
@@ -132,6 +138,8 @@
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 </ul>
 
             
@@ -212,6 +220,11 @@
 <li><p>Create conference calls.</p></li>
 <li><p>Send text-to-speech messages in 50 languages with different gender and accents.</p></li>
 </ul>
+<div class="section" id="protocol">
+<h3>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline">¶</a></h3>
+<p>VoIPBIN supports various call/video protocols. They can join to the same conference room in the VoIPBIN and can communicate each other.</p>
+<img alt="_images/call_overview_protocol.png" src="_images/call_overview_protocol.png" />
+</div>
 <div class="section" id="pstn-phone-number-format">
 <h3>PSTN/Phone number format<a class="headerlink" href="#pstn-phone-number-format" title="Permalink to this headline">¶</a></h3>
 <p>Within the VoIPBIN APIs, all PSTN/Phone numbers are in <a class="reference external" href="https://en.wikipedia.org/wiki/E.164">+E164</a> format. This means that numbers:</p>
@@ -241,10 +254,10 @@ Waiting for call’s answer, then execute the flow actions.</p>
 <img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
 </div>
 </div>
-<div class="section" id="struct">
-<h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="call-struct-call">
-<span id="id1"></span><h3>Call<a class="headerlink" href="#call-struct-call" title="Permalink to this headline">¶</a></h3>
+<span id="id1"></span><h2>Call<a class="headerlink" href="#call-struct-call" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="call-struct-call-call">
+<span id="id2"></span><h3>Call<a class="headerlink" href="#call-struct-call-call" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -283,18 +296,18 @@ Waiting for call’s answer, then execute the flow actions.</p>
 <ul class="simple">
 <li><p>id: Call’s ID.</p></li>
 <li><p>flow_id: Call’s flow id.</p></li>
-<li><p><em>type</em>: Call’s type. See detail <a class="reference internal" href="call_struct.html#call-struct-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>type</em>: Call’s type. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>master_call_id: Master call’s id. If the master_call_id set, it follows master call’s hangup.</p></li>
 <li><p>chained_call_ids: List of chained call ids. If the call hangs up, the chained call also will hangup.</p></li>
 <li><p>recording_id: Shows currently recording id.</p></li>
 <li><p>recording_ids: List of recording ids.</p></li>
-<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>status</em>: Call’s status. See detail <a class="reference internal" href="call_struct.html#call-struct-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>status</em>: Call’s status. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>action</em>: Call’s current action. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>direction</em>: Call’s direction. See detail <a class="reference internal" href="call_struct.html#call-struct-direction"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>hangup_by</em>: Shows call’s hangup end. See detail <a class="reference internal" href="call_struct.html#call-struct-hangupby"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>hangup_reason</em>: Show call’s hangup reason. See detail <a class="reference internal" href="call_struct.html#call-struct-hangupreason"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>direction</em>: Call’s direction. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-direction"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>hangup_by</em>: Shows call’s hangup end. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-hangupby"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>hangup_reason</em>: Show call’s hangup reason. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-hangupreason"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <div class="section" id="example">
 <h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
@@ -346,7 +359,7 @@ Waiting for call’s answer, then execute the flow actions.</p>
 </div>
 </div>
 <div class="section" id="type">
-<span id="call-struct-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
+<span id="call-struct-call-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
 <p>Call’s type.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -372,7 +385,7 @@ Waiting for call’s answer, then execute the flow actions.</p>
 </table>
 </div>
 <div class="section" id="status">
-<span id="call-struct-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
+<span id="call-struct-call-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
 <p>Call’s status.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -409,7 +422,7 @@ Waiting for call’s answer, then execute the flow actions.</p>
 <img alt="_images/call_struct_status.png" src="_images/call_struct_status.png" />
 </div>
 <div class="section" id="direction">
-<span id="call-struct-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h3>
+<span id="call-struct-call-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h3>
 <p>Call’s direction.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -432,7 +445,7 @@ Waiting for call’s answer, then execute the flow actions.</p>
 </table>
 </div>
 <div class="section" id="hangup-by">
-<span id="call-struct-hangupby"></span><h3>Hangup by<a class="headerlink" href="#hangup-by" title="Permalink to this headline">¶</a></h3>
+<span id="call-struct-call-hangupby"></span><h3>Hangup by<a class="headerlink" href="#hangup-by" title="Permalink to this headline">¶</a></h3>
 <p>The Hangup by shows which endpoint sent the hangup request first.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -455,7 +468,7 @@ Waiting for call’s answer, then execute the flow actions.</p>
 </table>
 </div>
 <div class="section" id="hangup-reason">
-<span id="call-struct-hangupreason"></span><h3>Hangup reason<a class="headerlink" href="#hangup-reason" title="Permalink to this headline">¶</a></h3>
+<span id="call-struct-call-hangupreason"></span><h3>Hangup reason<a class="headerlink" href="#hangup-reason" title="Permalink to this headline">¶</a></h3>
 <p>Shows why the call was hungup.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -496,7 +509,7 @@ Waiting for call’s answer, then execute the flow actions.</p>
 </table>
 </div>
 <div class="section" id="address">
-<span id="call-struct-address"></span><h3>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h3>
+<span id="call-struct-call-address"></span><h3>Address<a class="headerlink" href="#address" title="Permalink to this headline">¶</a></h3>
 <p>Defines target(source/destination) address.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -508,7 +521,7 @@ Waiting for call’s answer, then execute the flow actions.</p>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>type</em>: Address type. See detail <a class="reference internal" href="call_struct.html#call-struct-address-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>type</em>: Address type. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>target: The address endpoint. Caller’s destinatino address.</p></li>
 <li><p>target_name: The address’s name. Caller’s name.</p></li>
 <li><p>name: Name.</p></li>
@@ -516,7 +529,7 @@ Waiting for call’s answer, then execute the flow actions.</p>
 </ul>
 </div>
 <div class="section" id="address-type">
-<span id="call-struct-address-type"></span><h3>Address type<a class="headerlink" href="#address-type" title="Permalink to this headline">¶</a></h3>
+<span id="call-struct-call-address-type"></span><h3>Address type<a class="headerlink" href="#address-type" title="Permalink to this headline">¶</a></h3>
 <p>Defines types of address.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -543,6 +556,30 @@ Waiting for call’s answer, then execute the flow actions.</p>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div class="section" id="variable">
+<span id="call-variable"></span><h2>Variable<a class="headerlink" href="#variable" title="Permalink to this headline">¶</a></h2>
+<p>The call sets these variables.</p>
+<div class="section" id="source-address">
+<h3>Source address<a class="headerlink" href="#source-address" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>voipbin.call.source.name: Source address’s name.</p></li>
+<li><p>voipbin.call.source.detail: Source address’s detail.</p></li>
+<li><p>voipbin.call.source.target: Source address’s target.</p></li>
+<li><p>voipbin.call.source.target_name: Source address’s target name.</p></li>
+<li><p>voipbin.call.source.type: Source address’s type.</p></li>
+</ul>
+</div>
+<div class="section" id="destination-address">
+<h3>Destination address<a class="headerlink" href="#destination-address" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>voipbin.call.destination.name: Destination address’s name.</p></li>
+<li><p>voipbin.call.destination.detail: Destination address’s detail.</p></li>
+<li><p>voipbin.call.destination.target: Destination address’s target.</p></li>
+<li><p>voipbin.call.destination.target_name: Destination address’s target name.</p></li>
+<li><p>voipbin.call.destination.type: Destination address’s type.</p></li>
+</ul>
 </div>
 </div>
 <div class="section" id="tutorial">

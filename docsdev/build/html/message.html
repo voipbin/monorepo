@@ -88,8 +88,8 @@
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Message</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#message-struct-message">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#message-struct-message">Message</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#message-struct-message-message">Message</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#target">Target</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#type">Type</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#direction">Direction</a></li>
@@ -114,6 +114,8 @@
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 </ul>
 
             
@@ -187,10 +189,10 @@
 <span id="message-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>VoIPBIN’s message allows to user send a SMS/MMS to the destinations.</p>
 </div>
-<div class="section" id="struct">
-<span id="message-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="message-struct-message">
-<span id="id1"></span><h3>Message<a class="headerlink" href="#message-struct-message" title="Permalink to this headline">¶</a></h3>
+<span id="id1"></span><h2>Message<a class="headerlink" href="#message-struct-message" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="message-struct-message-message">
+<span id="id2"></span><h3>Message<a class="headerlink" href="#message-struct-message-message" title="Permalink to this headline">¶</a></h3>
 <p>Message struct</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -226,17 +228,17 @@
 </div>
 <ul class="simple">
 <li><p>id: Message’s ID.</p></li>
-<li><p><em>type</em>: Message’s type. See detail <a class="reference internal" href="message_struct.html#message-struct-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>targets</em>: List of targets. See detail <a class="reference internal" href="message_struct.html#message-struct-target"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destinations</em>: List of destination addresses info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>targets</em>: List of targets. See detail <a class="reference internal" href="message_struct.html#message-struct-target"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>type</em>: Message’s type. See detail <a class="reference internal" href="message_struct_message.html#message-struct-message-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>targets</em>: List of targets. See detail <a class="reference internal" href="message_struct_message.html#message-struct-message-target"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destinations</em>: List of destination addresses info. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>targets</em>: List of targets. See detail <a class="reference internal" href="message_struct_message.html#message-struct-message-target"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>text: Message’s text.</p></li>
-<li><p><em>direction</em>: Message’s direction. See detail <a class="reference internal" href="message_struct.html#message-struct-direction"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>direction</em>: Message’s direction. See detail <a class="reference internal" href="message_struct_message.html#message-struct-message-direction"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </div>
 <div class="section" id="target">
-<span id="message-struct-target"></span><h3>Target<a class="headerlink" href="#target" title="Permalink to this headline">¶</a></h3>
+<span id="message-struct-message-target"></span><h3>Target<a class="headerlink" href="#target" title="Permalink to this headline">¶</a></h3>
 <p>Target struct</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -253,13 +255,13 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="call_struct.html#call-struct-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>status: Message’s status for this destination.</p></li>
 <li><p>parts: Number of parted message.</p></li>
 </ul>
 </div>
 <div class="section" id="type">
-<span id="message-struct-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
+<span id="message-struct-message-type"></span><h3>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h3>
 <p>Message’s type.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -279,7 +281,7 @@
 </table>
 </div>
 <div class="section" id="direction">
-<span id="message-struct-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h3>
+<span id="message-struct-message-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Permalink to this headline">¶</a></h3>
 <p>Message’s direction.</p>
 <table class="docutils align-default">
 <colgroup>
