@@ -1,4 +1,4 @@
-.. _outplan_overview:
+.. _outplan-overview:
 
 Overview
 ========

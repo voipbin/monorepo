@@ -5,5 +5,6 @@ Call
 ************
 
 .. include:: call_overview.rst
-.. include:: call_struct.rst
+.. include:: call_struct_call.rst
+.. include:: call_variable.rst
 .. include:: call_tutorial.rst

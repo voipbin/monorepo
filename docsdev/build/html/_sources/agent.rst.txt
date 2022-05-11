@@ -5,5 +5,5 @@ Agent
 **************
 
 .. include:: agent_overview.rst
-.. include:: agent_struct.rst
+.. include:: agent_struct_agent.rst
 .. include:: agent_tutorial.rst
