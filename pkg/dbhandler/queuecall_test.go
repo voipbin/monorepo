@@ -49,7 +49,7 @@ func TestQueuecallCreate(t *testing.T) {
 					uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
 				},
 
-				Status:         queuecall.StatusWait,
+				Status:         queuecall.StatusWaiting,
 				ServiceAgentID: [16]byte{},
 				TMCreate:       DefaultTimeStamp,
 				TMService:      DefaultTimeStamp,
@@ -75,7 +75,7 @@ func TestQueuecallCreate(t *testing.T) {
 					uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
 				},
 
-				Status:         queuecall.StatusWait,
+				Status:         queuecall.StatusWaiting,
 				ServiceAgentID: [16]byte{},
 				TMCreate:       DefaultTimeStamp,
 				TMService:      DefaultTimeStamp,
@@ -105,7 +105,7 @@ func TestQueuecallCreate(t *testing.T) {
 					uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
 				},
 
-				Status:         queuecall.StatusWait,
+				Status:         queuecall.StatusWaiting,
 				ServiceAgentID: [16]byte{},
 				TMCreate:       DefaultTimeStamp,
 				TMService:      DefaultTimeStamp,
@@ -132,7 +132,7 @@ func TestQueuecallCreate(t *testing.T) {
 					uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
 				},
 
-				Status:         queuecall.StatusWait,
+				Status:         queuecall.StatusWaiting,
 				ServiceAgentID: [16]byte{},
 				TMCreate:       DefaultTimeStamp,
 				TMService:      DefaultTimeStamp,
@@ -427,7 +427,7 @@ func TestQueuecallDelete(t *testing.T) {
 	}
 }
 
-func TestQueuecallSetServiceAgentID(t *testing.T) {
+func TestQueuecallSetStatusConnecting(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -455,7 +455,7 @@ func TestQueuecallSetServiceAgentID(t *testing.T) {
 
 			&queuecall.Queuecall{
 				ID:             uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
-				Status:         queuecall.StatusEntering,
+				Status:         queuecall.StatusConnecting,
 				Source:         cmaddress.Address{},
 				TagIDs:         []uuid.UUID{},
 				ServiceAgentID: uuid.FromStringOrNil("85b89f08-5ab8-11ec-94ea-5bed0069b7e9"),
@@ -475,7 +475,7 @@ func TestQueuecallSetServiceAgentID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallSetServiceAgentID(ctx, tt.id, tt.serviceAgentID)
+			err := h.QueuecallSetStatusConnecting(ctx, tt.id, tt.serviceAgentID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -483,9 +483,6 @@ func TestQueuecallSetServiceAgentID(t *testing.T) {
 			res, err := h.QueuecallGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
-			}
-			if res.TMService == "" || res.TMUpdate == "" {
-				t.Errorf("Wrong match. expect: not empty, got: empty")
 			}
 
 			tt.expectRes.TMUpdate = res.TMUpdate

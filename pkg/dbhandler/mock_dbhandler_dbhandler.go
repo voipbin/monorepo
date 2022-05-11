@@ -340,18 +340,18 @@ func (mr *MockDBHandlerMockRecorder) QueuecallReferenceSetCurrentQueuecallID(ctx
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallReferenceSetCurrentQueuecallID", reflect.TypeOf((*MockDBHandler)(nil).QueuecallReferenceSetCurrentQueuecallID), ctx, id, queuecallID)
 }
 
-// QueuecallSetServiceAgentID mocks base method.
-func (m *MockDBHandler) QueuecallSetServiceAgentID(ctx context.Context, id, serviceAgentID uuid.UUID) error {
+// QueuecallSetStatusConnecting mocks base method.
+func (m *MockDBHandler) QueuecallSetStatusConnecting(ctx context.Context, id, serviceAgentID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallSetServiceAgentID", ctx, id, serviceAgentID)
+	ret := m.ctrl.Call(m, "QueuecallSetStatusConnecting", ctx, id, serviceAgentID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// QueuecallSetServiceAgentID indicates an expected call of QueuecallSetServiceAgentID.
-func (mr *MockDBHandlerMockRecorder) QueuecallSetServiceAgentID(ctx, id, serviceAgentID interface{}) *gomock.Call {
+// QueuecallSetStatusConnecting indicates an expected call of QueuecallSetStatusConnecting.
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusConnecting(ctx, id, serviceAgentID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetServiceAgentID", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetServiceAgentID), ctx, id, serviceAgentID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusConnecting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusConnecting), ctx, id, serviceAgentID)
 }
 
 // QueuecallSetStatusKicking mocks base method.

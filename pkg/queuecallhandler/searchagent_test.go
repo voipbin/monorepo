@@ -65,7 +65,7 @@ func Test_SearchAgent(t *testing.T) {
 					uuid.FromStringOrNil("a9ca8282-5edf-11ec-a876-df977791e643"),
 				},
 
-				Status: queuecall.StatusWait,
+				Status: queuecall.StatusWaiting,
 			},
 			[]amagent.Agent{
 				{
@@ -91,7 +91,7 @@ func Test_SearchAgent(t *testing.T) {
 					uuid.FromStringOrNil("a9ca8282-5edf-11ec-a876-df977791e643"),
 				},
 
-				Status:    queuecall.StatusWait,
+				Status:    queuecall.StatusWaiting,
 				TMCreate:  "2021-04-18 03:22:17.994000",
 				TMService: "2021-04-18 03:52:17.994000",
 			},
@@ -107,9 +107,9 @@ func Test_SearchAgent(t *testing.T) {
 			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(&fmflow.Flow{}, nil)
 			mockReq.EXPECT().AMV1AgentDial(gomock.Any(), gomock.Any(), &tt.queuecall.Source, gomock.Any(), tt.queuecall.ReferenceID).Return(&amagentdial.AgentDial{}, nil)
 			mockReq.EXPECT().FMV1ActiveflowUpdateForwardActionID(gomock.Any(), tt.queuecall.ReferenceActiveflowID, tt.queuecall.ForwardActionID, true).Return(nil)
-			mockDB.EXPECT().QueuecallSetServiceAgentID(gomock.Any(), tt.queuecall.ID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().QueuecallSetStatusConnecting(gomock.Any(), tt.queuecall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queueCallID).Return(tt.responseQueuecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallEntering, tt.responseQueuecall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.responseQueuecall)
 
 			h.SearchAgent(ctx, tt.queueCallID)
 		})
@@ -213,7 +213,7 @@ func TestSearchAgentWithWrongAgents(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
 
-				Status: queuecall.StatusWait,
+				Status: queuecall.StatusWaiting,
 			},
 			[]amagent.Agent{},
 			nil,
@@ -226,7 +226,7 @@ func TestSearchAgentWithWrongAgents(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
 
-				Status: queuecall.StatusWait,
+				Status: queuecall.StatusWaiting,
 			},
 			[]amagent.Agent{
 				{
@@ -280,7 +280,7 @@ func TestSearchAgentWithWrongRoutingMethod(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
 
-				Status:        queuecall.StatusWait,
+				Status:        queuecall.StatusWaiting,
 				RoutingMethod: queue.RoutingMethodNone,
 			},
 			[]amagent.Agent{
@@ -334,7 +334,7 @@ func TestSearchAgentWithAgentDialFailure(t *testing.T) {
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
 
-				Status:        queuecall.StatusWait,
+				Status:        queuecall.StatusWaiting,
 				RoutingMethod: queue.RoutingMethodRandom,
 			},
 			[]amagent.Agent{

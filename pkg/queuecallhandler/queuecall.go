@@ -117,7 +117,7 @@ func (h *queuecallHandler) Create(
 		RoutingMethod: routingMethod,
 		TagIDs:        tagIDs,
 
-		Status:         queuecall.StatusWait,
+		Status:         queuecall.StatusWaiting,
 		ServiceAgentID: uuid.Nil,
 
 		TimeoutWait:    timeoutWait,
