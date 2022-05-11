@@ -96,8 +96,8 @@
 <li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Recording</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#recording-struct-recording">Recording</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#recording-struct-recording">Recording</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#recording-struct-recording-recording">Recording</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#type">Type</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#status">Status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#format">Format</a></li>
@@ -115,6 +115,8 @@
 <li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 </ul>
 
             
@@ -196,10 +198,10 @@
 <li><p>Asynchronously export call recording in bulk.</p></li>
 </ul>
 </div>
-<div class="section" id="struct">
-<span id="recording-struct"></span><h2>Struct<a class="headerlink" href="#struct" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="recording-struct-recording">
-<span id="id1"></span><h3>Recording<a class="headerlink" href="#recording-struct-recording" title="Permalink to this headline">¶</a></h3>
+<span id="id1"></span><h2>Recording<a class="headerlink" href="#recording-struct-recording" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="recording-struct-recording-recording">
+<span id="id2"></span><h3>Recording<a class="headerlink" href="#recording-struct-recording-recording" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -216,10 +218,10 @@
 </div>
 <ul class="simple">
 <li><p>id: Recording’s ID.</p></li>
-<li><p>type: Recording’s type. See detail <a class="reference internal" href="recording_struct.html#reocording-struct-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>type: Recording’s type. See detail <a class="reference internal" href="recording_struct_recording.html#reocording-struct-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>reference_id: Reference’s ID. It shows call/conference’s ID.</p></li>
-<li><p>status: Recording status. See detail <a class="reference internal" href="recording_struct.html#recording-struct-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>format: Recording file format. See detail <a class="reference internal" href="recording_struct.html#recording-struct-format"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>status: Recording status. See detail <a class="reference internal" href="recording_struct_recording.html#recording-struct-recording-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>format: Recording file format. See detail <a class="reference internal" href="recording_struct_recording.html#recording-struct-recording-format"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </div>
 <div class="section" id="type">
@@ -245,7 +247,7 @@
 </table>
 </div>
 <div class="section" id="status">
-<span id="recording-struct-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
+<span id="recording-struct-recording-status"></span><h3>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h3>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 29%" />
@@ -270,7 +272,7 @@
 </table>
 </div>
 <div class="section" id="format">
-<span id="recording-struct-format"></span><h3>Format<a class="headerlink" href="#format" title="Permalink to this headline">¶</a></h3>
+<span id="recording-struct-recording-format"></span><h3>Format<a class="headerlink" href="#format" title="Permalink to this headline">¶</a></h3>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 48%" />

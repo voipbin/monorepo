@@ -1,9 +1,9 @@
-.. _campaign-struct_campaigncall:
+.. _campaign-struct-campaigncall:
 
-Struct campaigncall
+Campaigncall
 ===================
 
-.. _campaign-struct_campaigncall-campaigncall:
+.. _campaign-struct-campaigncall-campaigncall:
 
 Campaigncall
 ------------
@@ -41,12 +41,12 @@ Campaigncall
 * outdial_target_id: outdialtarget's ID.
 * queue_id: Queue's ID.
 * activeflow_id: Activeflow's ID.
-* *reference_type*: Reference's type. See detail :ref:`here <campaign-struct_campaigncall-reference_type>`.
+* *reference_type*: Reference's type. See detail :ref:`here <campaign-struct-campaigncall-reference_type>`.
 * reference_id: Reference's ID.
-* *status*: Campaigncall's status. See detail :ref:`here <campaign-struct_campaigncall-status>`.
-* *result*: Campaigncall's result. See detail :ref:`here <campaign-struct_campaigncall-result>`.
-* *source*: Source address info. See detail :ref:`here <call-struct-address>`.
-* *destination*: Destination address info. See detail :ref:`here <call-struct-address>`.
+* *status*: Campaigncall's status. See detail :ref:`here <campaign-struct-campaigncall-status>`.
+* *result*: Campaigncall's result. See detail :ref:`here <campaign-struct-campaigncall-result>`.
+* *source*: Source address info. See detail :ref:`here <call-struct-call-address>`.
+* *destination*: Destination address info. See detail :ref:`here <call-struct-call-address>`.
 * destination_index: Destination's index.
 * try_count: Try count.
 
@@ -87,7 +87,7 @@ Example
         "tm_update": "2022-04-29 07:02:48.304704"
     }
 
-.. _campaign-struct_campaigncall-reference_type:
+.. _campaign-struct-campaigncall-reference_type:
 
 Reference type
 --------------
@@ -100,7 +100,7 @@ none        Has no reference type.
 call        The reference type is call. Reference id is call's ID.
 =========== ============
 
-.. _campaign-struct_campaigncall-status:
+.. _campaign-struct-campaigncall-status:
 
 Status
 ------
@@ -114,7 +114,7 @@ progressing The campaigncall is progressing(the call answered)
 done        The campaigncall is hungup
 =========== ============
 
-.. _campaign-struct_campaigncall-result:
+.. _campaign-struct-campaigncall-result:
 
 Result
 ------

@@ -1,9 +1,9 @@
-.. _outdial-struct_outdialtarget:
+.. _outdial-struct-outdialtarget:
 
-Struct outdialtarget
+Outdialtarget
 ====================
 
-.. _outdial-struct_outdialtarget-outdialtarget:
+.. _outdial-struct-outdialtarget-outdialtarget:
 
 Outdialtarget
 -------------
@@ -47,12 +47,12 @@ Outdialtarget
 * name: outdialtarget's name.
 * detail: outdialtarget's detail.
 * data: outdialtarget's data.
-* *status*: outdialtarget's status. See detail :ref:`here <outdial-struct_outdialtarget-status>`.
-* *destination_0*: outdialtarget's destination. See detail :ref:`here <call-struct-address>`.
-* *destination_1*: outdialtarget's destination. See detail :ref:`here <call-struct-address>`.
-* *destination_2*: outdialtarget's destination. See detail :ref:`here <call-struct-address>`.
-* *destination_3*: outdialtarget's destination. See detail :ref:`here <call-struct-address>`.
-* *destination_4*: outdialtarget's destination. See detail :ref:`here <call-struct-address>`.
+* *status*: outdialtarget's status. See detail :ref:`here <outdial-struct-outdialtarget-status>`.
+* *destination_0*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
+* *destination_1*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
+* *destination_2*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
+* *destination_3*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
+* *destination_4*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
 * try_count_0: destination 0's try count.
 * try_count_1: destination 1's try count.
 * try_count_2: destination 2's try count.
@@ -92,7 +92,7 @@ Example
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
-.. _outdial-struct_outdialtarget-status:
+.. _outdial-struct-outdialtarget-status:
 
 Status
 ------
