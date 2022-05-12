@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestQMV1QueueGets(t *testing.T) {
+func Test_QMV1QueueGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -107,7 +107,7 @@ func TestQMV1QueueGets(t *testing.T) {
 	}
 }
 
-func TestAMV1QueueGet(t *testing.T) {
+func Test_QMV1QueueGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -166,7 +166,7 @@ func TestAMV1QueueGet(t *testing.T) {
 	}
 }
 
-func Test_AMV1QueueGetAgents(t *testing.T) {
+func Test_QMV1QueueGetAgents(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -252,7 +252,7 @@ func Test_AMV1QueueGetAgents(t *testing.T) {
 	}
 }
 
-func TestQMVQueueCreate(t *testing.T) {
+func Test_QMV1QueueCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -332,7 +332,7 @@ func TestQMVQueueCreate(t *testing.T) {
 	}
 }
 
-func TestAMV1QueueDelete(t *testing.T) {
+func Test_QMV1QueueDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -394,7 +394,7 @@ func TestAMV1QueueDelete(t *testing.T) {
 	}
 }
 
-func TestQMVQueueUpdate(t *testing.T) {
+func Test_QMV1QueueUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -460,7 +460,7 @@ func TestQMVQueueUpdate(t *testing.T) {
 	}
 }
 
-func TestQMVQueueUpdateTagIDs(t *testing.T) {
+func Test_QMV1QueueUpdateTagIDs(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -527,7 +527,7 @@ func TestQMVQueueUpdateTagIDs(t *testing.T) {
 	}
 }
 
-func TestQMVQueueUpdateRoutingMethod(t *testing.T) {
+func Test_QMV1QueueUpdateRoutingMethod(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -592,7 +592,7 @@ func TestQMVQueueUpdateRoutingMethod(t *testing.T) {
 	}
 }
 
-func TestQMVQueueUpdateActions(t *testing.T) {
+func Test_QMV1QueueUpdateActions(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -665,7 +665,7 @@ func TestQMVQueueUpdateActions(t *testing.T) {
 	}
 }
 
-func TestQMVQueueCreateQueuecall(t *testing.T) {
+func Test_QMV1QueueCreateQueuecall(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -730,6 +730,57 @@ func TestQMVQueueCreateQueuecall(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_QMV1QueueExecute(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		executeDelay int
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("4ab73968-d197-11ec-ab6a-17c76533c5d6"),
+			1000,
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queues/4ab73968-d197-11ec-ab6a-17c76533c5d6/execute",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.QMV1QueueExecute(ctx, tt.id, tt.executeDelay); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
