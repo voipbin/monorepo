@@ -12,14 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestQMV1QueuecallGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_QMV1QueuecallGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -88,6 +81,14 @@ func TestQMV1QueuecallGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -103,14 +104,7 @@ func TestQMV1QueuecallGets(t *testing.T) {
 	}
 }
 
-func TestAMV1QueuecallGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_QMV1QueuecallGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -146,6 +140,14 @@ func TestAMV1QueuecallGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -161,14 +163,7 @@ func TestAMV1QueuecallGet(t *testing.T) {
 	}
 }
 
-func TestQMQueuecallDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_QMQueuecallDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -206,6 +201,14 @@ func TestQMQueuecallDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -221,14 +224,7 @@ func TestQMQueuecallDelete(t *testing.T) {
 	}
 }
 
-func TestQMQueuecallDeleteByReferenceID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_QMQueuecallDeleteByReferenceID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -266,6 +262,14 @@ func TestQMQueuecallDeleteByReferenceID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -281,14 +285,7 @@ func TestQMQueuecallDeleteByReferenceID(t *testing.T) {
 	}
 }
 
-func TestQMV1QueuecallTimeoutWait(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_QMV1QueuecallTimeoutWait(t *testing.T) {
 
 	type test struct {
 		name string
@@ -318,6 +315,14 @@ func TestQMV1QueuecallTimeoutWait(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
@@ -329,14 +334,7 @@ func TestQMV1QueuecallTimeoutWait(t *testing.T) {
 	}
 }
 
-func TestQMV1QueuecallTimeoutService(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_QMV1QueuecallTimeoutService(t *testing.T) {
 
 	type test struct {
 		name string
@@ -366,6 +364,14 @@ func TestQMV1QueuecallTimeoutService(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
@@ -373,6 +379,66 @@ func TestQMV1QueuecallTimeoutService(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+		})
+	}
+}
+
+func Test_QMV1QueuecallUpdateStatusWaiting(t *testing.T) {
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("092c9606-d1c8-11ec-8a0e-3383eeba05b5"),
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queuecalls/092c9606-d1c8-11ec-8a0e-3383eeba05b5/status_waiting",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"092c9606-d1c8-11ec-8a0e-3383eeba05b5"}`),
+			},
+			&qmqueuecall.Queuecall{
+				ID: uuid.FromStringOrNil("092c9606-d1c8-11ec-8a0e-3383eeba05b5"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.QMV1QueuecallUpdateStatusWaiting(ctx, tt.queuecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
 		})
 	}
 }

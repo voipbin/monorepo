@@ -2343,6 +2343,21 @@ func (mr *MockRequestHandlerMockRecorder) QMV1QueuecallTimeoutWait(ctx, queuecal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueuecallTimeoutWait", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueuecallTimeoutWait), ctx, queuecallID, delay)
 }
 
+// QMV1QueuecallUpdateStatusWaiting mocks base method.
+func (m *MockRequestHandler) QMV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QMV1QueuecallUpdateStatusWaiting", ctx, queuecallID)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QMV1QueuecallUpdateStatusWaiting indicates an expected call of QMV1QueuecallUpdateStatusWaiting.
+func (mr *MockRequestHandlerMockRecorder) QMV1QueuecallUpdateStatusWaiting(ctx, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueuecallUpdateStatusWaiting", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueuecallUpdateStatusWaiting), ctx, queuecallID)
+}
+
 // RMV1ContactGets mocks base method.
 func (m *MockRequestHandler) RMV1ContactGets(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
