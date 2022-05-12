@@ -14,12 +14,33 @@ import (
 )
 
 // Gets returns queuecalls
-func (h *queuecallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
-	log := logrus.WithField("func", "Gets")
+func (h *queuecallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "GetsByCustomerID",
+			"customer_id": customerID,
+		})
 
-	res, err := h.db.QueuecallGets(ctx, customerID, size, token)
+	res, err := h.db.QueuecallGetsByCustomerID(ctx, customerID, size, token)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// GetsByQueueIDAndStatus returns queuecall info of the given queueID and status.
+func (h *queuecallHandler) GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":     "GetsByQueueIDAndStatus",
+			"queue_id": queueID,
+		})
+
+	res, err := h.db.QueuecallGetsByQueueIDAndStatus(ctx, queueID, status, size, token)
+	if err != nil {
+		log.Errorf("Could not get queuecalls. err: %v", err)
 		return nil, err
 	}
 
@@ -148,6 +169,29 @@ func (h *queuecallHandler) Create(
 		if errTiemout := h.reqHandler.QMV1QueuecallTimeoutWait(ctx, res.ID, res.TimeoutWait); errTiemout != nil {
 			log.Errorf("Could not send the timeout-wait request. err: %v", errTiemout)
 		}
+	}
+
+	return res, nil
+}
+
+// UpdateStatusConnecting updates the queuecall's status to the connecting.
+func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateStatusConnecting",
+		"queuecall_id": id,
+		"agent_id":     agentID,
+	})
+	log.Debug("Creating a new queuecall.")
+
+	if err := h.db.QueuecallSetStatusConnecting(ctx, id, agentID); err != nil {
+		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.QueuecallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queuecall. err: %v", err)
+		return nil, err
 	}
 
 	return res, nil

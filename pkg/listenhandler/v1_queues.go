@@ -460,3 +460,28 @@ func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *rabbi
 
 	return res, nil
 }
+
+// processV1QueuesIDExecutePost handles Post /v1/queues/<queue-id>/execute request
+func (h *listenHandler) processV1QueuesIDExecutePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":     "processV1QueuesIDExecutePost",
+			"queue_id": id,
+		})
+	log.Debug("Executing processV1QueuesIDExecutePost.")
+
+	h.queueHandler.Execute(ctx, id)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}

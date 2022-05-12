@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -54,18 +55,18 @@ func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, customerID, queueID, ref
 }
 
 // Execute mocks base method.
-func (m *MockQueuecallHandler) Execute(ctx context.Context, queuecallID uuid.UUID, delay int) (*queuecall.Queuecall, error) {
+func (m *MockQueuecallHandler) Execute(ctx context.Context, qc *queuecall.Queuecall, agent *agent.Agent) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Execute", ctx, queuecallID, delay)
+	ret := m.ctrl.Call(m, "Execute", ctx, qc, agent)
 	ret0, _ := ret[0].(*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockQueuecallHandlerMockRecorder) Execute(ctx, queuecallID, delay interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Execute(ctx, qc, agent interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueuecallHandler)(nil).Execute), ctx, queuecallID, delay)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueuecallHandler)(nil).Execute), ctx, qc, agent)
 }
 
 // Get mocks base method.
@@ -98,19 +99,34 @@ func (mr *MockQueuecallHandlerMockRecorder) GetByReferenceID(ctx, referenceID in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
-// Gets mocks base method.
-func (m *MockQueuecallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
+// GetsByCustomerID mocks base method.
+func (m *MockQueuecallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockQueuecallHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
+// GetsByCustomerID indicates an expected call of GetsByCustomerID.
+func (mr *MockQueuecallHandlerMockRecorder) GetsByCustomerID(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueuecallHandler)(nil).Gets), ctx, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetsByCustomerID), ctx, customerID, size, token)
+}
+
+// GetsByQueueIDAndStatus mocks base method.
+func (m *MockQueuecallHandler) GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetsByQueueIDAndStatus", ctx, queueID, status, size, token)
+	ret0, _ := ret[0].([]*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetsByQueueIDAndStatus indicates an expected call of GetsByQueueIDAndStatus.
+func (mr *MockQueuecallHandlerMockRecorder) GetsByQueueIDAndStatus(ctx, queueID, status, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByQueueIDAndStatus", reflect.TypeOf((*MockQueuecallHandler)(nil).GetsByQueueIDAndStatus), ctx, queueID, status, size, token)
 }
 
 // Hungup mocks base method.
@@ -179,18 +195,6 @@ func (mr *MockQueuecallHandlerMockRecorder) Leaved(ctx, referenceID, confbridgeI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockQueuecallHandler)(nil).Leaved), ctx, referenceID, confbridgeID)
 }
 
-// SearchAgent mocks base method.
-func (m *MockQueuecallHandler) SearchAgent(ctx context.Context, queuecallID uuid.UUID) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SearchAgent", ctx, queuecallID)
-}
-
-// SearchAgent indicates an expected call of SearchAgent.
-func (mr *MockQueuecallHandlerMockRecorder) SearchAgent(ctx, queuecallID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAgent", reflect.TypeOf((*MockQueuecallHandler)(nil).SearchAgent), ctx, queuecallID)
-}
-
 // TimeoutService mocks base method.
 func (m *MockQueuecallHandler) TimeoutService(ctx context.Context, queuecallID uuid.UUID) {
 	m.ctrl.T.Helper()
@@ -213,4 +217,19 @@ func (m *MockQueuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid
 func (mr *MockQueuecallHandlerMockRecorder) TimeoutWait(ctx, queuecallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeoutWait", reflect.TypeOf((*MockQueuecallHandler)(nil).TimeoutWait), ctx, queuecallID)
+}
+
+// UpdateStatusConnecting mocks base method.
+func (m *MockQueuecallHandler) UpdateStatusConnecting(ctx context.Context, id, agentID uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatusConnecting", ctx, id, agentID)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatusConnecting indicates an expected call of UpdateStatusConnecting.
+func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusConnecting(ctx, id, agentID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusConnecting", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusConnecting), ctx, id, agentID)
 }

@@ -17,16 +17,6 @@ import (
 )
 
 func Test_processV1QueuesPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -82,6 +72,8 @@ func Test_processV1QueuesPost(t *testing.T) {
 					uuid.FromStringOrNil("a4d0c36c-5f35-11ec-bf02-3b945ceab651"),
 				},
 
+				Execute: queue.ExecuteStop,
+
 				WaitActions: []fmaction.Action{
 					{
 						ID:   uuid.FromStringOrNil("8299402a-5f36-11ec-bd2a-b75b037f00f2"),
@@ -105,13 +97,24 @@ func Test_processV1QueuesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"442f5d62-7f55-11ec-a2c0-0bcd3814d515","name":"name","detail":"detail","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"442f5d62-7f55-11ec-a2c0-0bcd3814d515","name":"name","detail":"detail","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"execute":"stop","wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().Create(
 				gomock.Any(),
@@ -138,17 +141,6 @@ func Test_processV1QueuesPost(t *testing.T) {
 }
 
 func TestProcessV1QueuesGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock: mockSock,
-
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -181,7 +173,7 @@ func TestProcessV1QueuesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"570b5094-7f55-11ec-b5cd-1b925f9028af","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"570b5094-7f55-11ec-b5cd-1b925f9028af","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -206,13 +198,24 @@ func TestProcessV1QueuesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.queues, nil)
 			res, err := h.processRequest(tt.request)
@@ -229,16 +232,6 @@ func TestProcessV1QueuesGet(t *testing.T) {
 }
 
 func TestProcessV1QueuesIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -262,13 +255,23 @@ func TestProcessV1QueuesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().Get(gomock.Any(), tt.id).Return(&queue.Queue{}, nil)
 
@@ -285,16 +288,6 @@ func TestProcessV1QueuesIDGet(t *testing.T) {
 }
 
 func TestProcessV1QueuesIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -322,13 +315,23 @@ func TestProcessV1QueuesIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseQueue, nil)
 
@@ -345,16 +348,6 @@ func TestProcessV1QueuesIDDelete(t *testing.T) {
 }
 
 func TestProcessV1QueuesIDPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -387,13 +380,23 @@ func TestProcessV1QueuesIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"66f7d436-5f6c-11ec-9298-677df04a59c2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"66f7d436-5f6c-11ec-9298-677df04a59c2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.queueName, tt.detail).Return(tt.responseQueue, nil)
 
@@ -410,16 +413,6 @@ func TestProcessV1QueuesIDPut(t *testing.T) {
 }
 
 func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -465,6 +458,16 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().Join(gomock.Any(), tt.id, tt.referenceType, tt.referenceID, tt.refereceActiveflowID, tt.exitActionID).Return(tt.queuecall, nil)
 
@@ -481,16 +484,6 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 }
 
 func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -523,7 +516,7 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"4c898be8-5f6d-11ec-b701-a7ba1509a629","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"4c898be8-5f6d-11ec-b701-a7ba1509a629","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -547,13 +540,23 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1c0938ae-6019-11ec-8a5d-ab6c7909948a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1c0938ae-6019-11ec-8a5d-ab6c7909948a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().UpdateTagIDs(gomock.Any(), tt.id, tt.tagIDs).Return(tt.responseQueue, nil)
 
@@ -570,16 +573,6 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 }
 
 func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -610,13 +603,23 @@ func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"89b402a8-6019-11ec-8f65-cb5c282f0024","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"89b402a8-6019-11ec-8f65-cb5c282f0024","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().UpdateRoutingMethod(gomock.Any(), tt.id, tt.routingMethod).Return(tt.responseQueue, nil)
 
@@ -633,16 +636,6 @@ func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
 }
 
 func TestProcessV1QueuesIDWaitActionsPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueue := queuehandler.NewMockQueueHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		queueHandler: mockQueue,
-	}
 
 	tests := []struct {
 		name string
@@ -682,13 +675,23 @@ func TestProcessV1QueuesIDWaitActionsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e4d05ee8-6019-11ec-ac25-1bd30b213fe2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"e4d05ee8-6019-11ec-ac25-1bd30b213fe2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
 
 			mockQueue.EXPECT().UpdateWaitActionsAndTimeouts(gomock.Any(), tt.id, tt.waitActions, tt.waitTimeout, tt.serviceTimeout).Return(tt.responseQueue, nil)
 
@@ -754,6 +757,65 @@ func Test_processV1QueuesIDAgentsGet(t *testing.T) {
 			}
 
 			mockQueue.EXPECT().GetAgents(gomock.Any(), tt.id, tt.status).Return(tt.responseQueue, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1QueuesIDExecutePost(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		id uuid.UUID
+
+		responseQueue []amagent.Agent
+		expectRes     *rabbitmqhandler.Response
+	}{
+		{
+			"available",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queues/c58d96e0-d1a7-11ec-a088-07232a972294/execute",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("c58d96e0-d1a7-11ec-a088-07232a972294"),
+
+			[]amagent.Agent{
+				{
+					ID: uuid.FromStringOrNil("2e5b56a2-b49e-11ec-a643-5b72b632781f"),
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
+
+			mockQueue.EXPECT().Execute(gomock.Any(), tt.id)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

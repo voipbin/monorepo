@@ -23,7 +23,8 @@ import (
 
 // List of default values
 const (
-	defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+	// defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+	defaultExecuteDelay = 1000 // 1000 ms(1 sec)
 )
 
 // QueueHandler interface
@@ -40,6 +41,7 @@ type QueueHandler interface {
 		serviceTimeout int,
 	) (*queue.Queue, error)
 	Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
+	Execute(ctx context.Context, id uuid.UUID)
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error)
 	Join(

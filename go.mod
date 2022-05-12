@@ -15,7 +15,7 @@ require (
 	github.com/ttacon/libphonenumber v1.2.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220413020856-9bff29d04032
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220507202633-555941ab36b4
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220507193002-9c88b102e8bb
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220512021310-2eff81500b56
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220507222414-792d02472ee6
 )
 

@@ -11,6 +11,7 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new queue.
@@ -53,6 +54,8 @@ func (h *queueHandler) Create(
 		RoutingMethod: routingMethod,
 		TagIDs:        tagIDs,
 
+		Execute: queue.ExecuteStop,
+
 		WaitActions:         waitActions,
 		WaitQueueCallIDs:    []uuid.UUID{},
 		WaitTimeout:         waitTimeout,
@@ -66,8 +69,8 @@ func (h *queueHandler) Create(
 		TotalServiceDuration: 0,
 
 		TMCreate: getCurTime(),
-		TMUpdate: defaultTimeStamp,
-		TMDelete: defaultTimeStamp,
+		TMUpdate: dbhandler.DefaultTimeStamp,
+		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	if err := h.db.QueueCreate(ctx, a); err != nil {

@@ -26,6 +26,8 @@ const (
 		routing_method,
 		tag_ids,
 
+		execute,
+
 		wait_actions,
 		coalesce(wait_queue_call_ids, "[]"),
 		wait_timeout,
@@ -64,6 +66,8 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 
 		&res.RoutingMethod,
 		&tagIDs,
+
+		&res.Execute,
 
 		&waitActions,
 		&waitQueuecallIDs,
@@ -127,6 +131,8 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 		routing_method,
 		tag_ids,
 
+		execute,
+
 		wait_actions,
 		wait_queue_call_ids,
 		wait_timeout,
@@ -146,6 +152,7 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 		?, ?,
 		?, ?,
 		?, ?,
+		?,
 		?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?,
 		?, ?, ?
@@ -178,6 +185,8 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 
 		a.RoutingMethod,
 		tagIDs,
+
+		a.Execute,
 
 		waitActions,
 		waitQueueCallIDs,
@@ -400,6 +409,29 @@ func (h *handler) QueueSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 	_, err = h.db.Exec(q, t, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueSetTagIDs. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queueUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// QueueSetExecute sets the queue's execute.
+func (h *handler) QueueSetExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) error {
+	// prepare
+	q := `
+	update
+		queues
+	set
+		execute = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	_, err := h.db.Exec(q, execute, GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueueSetExecute. err: %v", err)
 	}
 
 	// update the cache

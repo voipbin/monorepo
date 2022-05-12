@@ -13,6 +13,9 @@ create table queues(
   routing_method  varchar(16),
   tag_ids         json,
 
+  -- execute
+  execute varchar(255),
+
   -- wait/service info
   wait_actions            json,
   wait_queue_call_ids     json,

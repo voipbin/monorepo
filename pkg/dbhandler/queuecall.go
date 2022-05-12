@@ -268,14 +268,14 @@ func (h *handler) QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Qu
 	return res, nil
 }
 
-// QueuecallGets returns QueueCalls.
-func (h *handler) QueuecallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
+// QueuecallGetsByCustomerID returns QueueCalls.
+func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
 	// prepare
 	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", queueCallSelect)
 
 	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. QueuecallGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. QueuecallGetsByCustomerID. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -283,7 +283,7 @@ func (h *handler) QueuecallGets(ctx context.Context, customerID uuid.UUID, size 
 	for rows.Next() {
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGets. err: %v", err)
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGetsByCustomerID. err: %v", err)
 		}
 
 		res = append(res, u)
@@ -308,6 +308,30 @@ func (h *handler) QueuecallGetsByReferenceID(ctx context.Context, referenceID uu
 		u, err := h.queuecallGetFromRow(rows)
 		if err != nil {
 			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGetsByReferenceID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// QueuecallGetsByQueueIDAndStatus returns QueueCalls.
+func (h *handler) QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error) {
+	// prepare
+	q := fmt.Sprintf("%s where queue_id = ? and status = ? and tm_create < ? order by tm_create asc limit ?", queueCallSelect)
+
+	rows, err := h.db.Query(q, queueID.Bytes(), status, token, size)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. QueuecallGetsByQueueIDAndStatus. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*queuecall.Queuecall
+	for rows.Next() {
+		u, err := h.queuecallGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueuecallGetsByQueueIDAndStatus. err: %v", err)
 		}
 
 		res = append(res, u)
