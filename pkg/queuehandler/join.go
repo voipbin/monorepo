@@ -115,7 +115,17 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		log.Errorf("Could not get deleted queue. err: %v", err)
 		return nil, err
 	}
+
+	if tmp.Execute == queue.ExecuteStop {
+		tmp, err = h.UpdateExecute(ctx, tmp.ID, queue.ExecuteRun)
+		if err != nil {
+			log.Errorf("Could not update the queue execute. err: %v", err)
+		}
+	}
 	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, tmp)
+
+	// send queue execute
+	h.reqHandler.QMV1QueueExecute(ctx, tmp.ID, 100)
 
 	return res, nil
 }

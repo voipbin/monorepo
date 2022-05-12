@@ -153,3 +153,27 @@ func (h *queueHandler) UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid
 
 	return res, nil
 }
+
+// UpdateExecute updates the queue's execute.
+func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "UpdateExecute",
+		"queue_id": id,
+		"execute":  execute,
+	})
+	log.Debug("Updating the queue's execute.")
+
+	if err := h.db.QueueSetExecute(ctx, id, execute); err != nil {
+		log.Errorf("Could not set the execute. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queue. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
+
+	return res, nil
+}

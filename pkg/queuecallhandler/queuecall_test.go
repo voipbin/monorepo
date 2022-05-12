@@ -18,20 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
-func TestGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &queuecallHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyhandler: mockNotify,
-	}
-
+func Test_GetsByCustomerID(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -66,11 +53,24 @@ func TestGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGets(gomock.Any(), tt.customerID, tt.size, tt.token).Return(tt.response, nil)
+			mockDB.EXPECT().QueuecallGetsByCustomerID(gomock.Any(), tt.customerID, tt.size, tt.token).Return(tt.response, nil)
 
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -82,20 +82,73 @@ func TestGets(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_GetsByQueueIDAndStatus(t *testing.T) {
+	tests := []struct {
+		name string
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		queueID uuid.UUID
+		status  queuecall.Status
+		size    uint64
+		token   string
 
-	h := &queuecallHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyhandler: mockNotify,
+		response []*queuecall.Queuecall
+
+		expectRes []*queuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("14faed80-d140-11ec-9255-8f61c2013693"),
+			queuecall.StatusWaiting,
+			1000,
+			"2021-04-18 03:22:17.994000",
+
+			[]*queuecall.Queuecall{
+				{
+					ID: uuid.FromStringOrNil("15816982-d140-11ec-9736-4f2812aeda51"),
+				},
+			},
+
+			[]*queuecall.Queuecall{
+				{
+					ID: uuid.FromStringOrNil("15816982-d140-11ec-9736-4f2812aeda51"),
+				},
+			},
+		},
 	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallGetsByQueueIDAndStatus(gomock.Any(), tt.queueID, tt.status, tt.size, tt.token).Return(tt.response, nil)
+
+			res, err := h.GetsByQueueIDAndStatus(ctx, tt.queueID, tt.status, tt.size, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_Get(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -124,6 +177,19 @@ func TestGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.queuecallID).Return(tt.response, nil)
@@ -140,22 +206,7 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestGetByReferenceID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
-
-	h := &queuecallHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyhandler: mockNotify,
-
-		queuecallReferenceHandler: mockQueuecallReference,
-	}
+func Test_GetByReferenceID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -189,6 +240,22 @@ func TestGetByReferenceID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+
+				queuecallReferenceHandler: mockQueuecallReference,
+			}
+
 			ctx := context.Background()
 
 			mockQueuecallReference.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.responseQueuecallReference, nil)
@@ -206,19 +273,7 @@ func TestGetByReferenceID(t *testing.T) {
 	}
 }
 
-func TestCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &queuecallHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyhandler: mockNotify,
-	}
+func Test_Create(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -287,6 +342,19 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueuecallCreate(gomock.Any(), gomock.Any()).Return(nil)

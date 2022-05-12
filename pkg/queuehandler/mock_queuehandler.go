@@ -69,6 +69,18 @@ func (mr *MockQueueHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockQueueHandler)(nil).Delete), ctx, id)
 }
 
+// Execute mocks base method.
+func (m *MockQueueHandler) Execute(ctx context.Context, id uuid.UUID) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Execute", ctx, id)
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockQueueHandlerMockRecorder) Execute(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueueHandler)(nil).Execute), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockQueueHandler) Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error) {
 	m.ctrl.T.Helper()

@@ -51,12 +51,11 @@ var (
 	reqV1QueuesIDQueuecalls    = regexp.MustCompile("/v1/queues/" + regUUID + "/queuecalls$")
 	reqV1QueuesIDWaitActions   = regexp.MustCompile("/v1/queues/" + regUUID + "/wait_actions$")
 	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents\?`)
+	reqV1QueuesIDExecute       = regexp.MustCompile("/v1/queues/" + regUUID + "/execute$")
 
 	// queuecalls
 	regV1QueuecallsGet              = regexp.MustCompile(`/v1/queuecalls\?` + regAny + "$")
 	regV1QueuecallsID               = regexp.MustCompile("/v1/queuecalls/" + regUUID + "$")
-	regV1QueuecallsIDExecute        = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/execute$")
-	regV1QueuecallsIDSearchAgent    = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/search_agent$")
 	regV1QueuecallsIDTimeoutWait    = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_wait$")
 	regV1QueuecallsIDTimeoutService = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_service$")
 
@@ -229,6 +228,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuesIDAgentsGet(ctx, m)
 		requestType = "/v1/queues/<queue-id>/agents"
 
+	// POST /queues/<queue-id>/execute
+	case reqV1QueuesIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1QueuesIDExecutePost(ctx, m)
+		requestType = "/v1/queues/<queue-id>/execute"
+
 	/////////////
 	// queuecalls
 	/////////////
@@ -246,16 +250,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// DELETE /queuecalls/<queuecall-id>
 	case regV1QueuecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1QueuecallsIDDelete(ctx, m)
-		requestType = "/v1/queuecalls"
-
-	// POST /queuecalls/<queuecall-id>/execute
-	case regV1QueuecallsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1QueuecallsIDExecutePost(ctx, m)
-		requestType = "/v1/queuecalls"
-
-	// POST /queuecalls/<queuecall-id>/search_agent
-	case regV1QueuecallsIDSearchAgent.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1QueuecallsIDSearchAgentPost(ctx, m)
 		requestType = "/v1/queuecalls"
 
 	// POST /queuecalls/<queuecall-id>/timeout_wait

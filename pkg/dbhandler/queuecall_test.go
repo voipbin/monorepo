@@ -165,7 +165,7 @@ func TestQueuecallCreate(t *testing.T) {
 	}
 }
 
-func TestQueuecallGets(t *testing.T) {
+func TestQueuecallGetsByCustomerID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -235,7 +235,7 @@ func TestQueuecallGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueuecallGets(ctx, tt.customerID, tt.size, GetCurTime())
+			res, err := h.QueuecallGetsByCustomerID(ctx, tt.customerID, tt.size, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
@@ -348,6 +348,99 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 			}
 
 			res, err := h.QueuecallGetsByReferenceID(ctx, tt.callID)
+			if err != nil {
+				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+			}
+		})
+	}
+}
+
+func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := NewHandler(dbTest, mockCache)
+
+	tests := []struct {
+		name string
+
+		queueID uuid.UUID
+		status  queuecall.Status
+
+		data      []*queuecall.Queuecall
+		size      uint64
+		expectRes []*queuecall.Queuecall
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
+			queuecall.StatusWaiting,
+
+			[]*queuecall.Queuecall{
+				{
+					ID:            uuid.FromStringOrNil("91f4affe-d13d-11ec-999d-1b5c2c4dfa2b"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					QueueID:       uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
+					Status:        queuecall.StatusWaiting,
+					ReferenceType: queuecall.ReferenceTypeCall,
+					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
+					TMCreate:      "2020-04-18T03:22:17.995000",
+				},
+				{
+					ID:            uuid.FromStringOrNil("9221109e-d13d-11ec-99e7-d7ab2832c12b"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					QueueID:       uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
+					Status:        queuecall.StatusWaiting,
+					ReferenceType: queuecall.ReferenceTypeCall,
+					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
+					TMCreate:      "2020-04-18T03:22:17.994000",
+				},
+			},
+			2,
+			[]*queuecall.Queuecall{
+				{
+					ID:            uuid.FromStringOrNil("9221109e-d13d-11ec-99e7-d7ab2832c12b"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					QueueID:       uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
+					Status:        queuecall.StatusWaiting,
+					ReferenceType: queuecall.ReferenceTypeCall,
+					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
+					Source:        cmaddress.Address{},
+					TagIDs:        []uuid.UUID{},
+					TMCreate:      "2020-04-18T03:22:17.994000",
+				},
+				{
+					ID:            uuid.FromStringOrNil("91f4affe-d13d-11ec-999d-1b5c2c4dfa2b"),
+					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
+					QueueID:       uuid.FromStringOrNil("76b0275a-d13d-11ec-9526-5f024469545f"),
+					Status:        queuecall.StatusWaiting,
+					ReferenceType: queuecall.ReferenceTypeCall,
+					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
+					Source:        cmaddress.Address{},
+					TagIDs:        []uuid.UUID{},
+					TMCreate:      "2020-04-18T03:22:17.995000",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			for _, u := range tt.data {
+				if err := h.QueuecallCreate(ctx, u); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			res, err := h.QueuecallGetsByQueueIDAndStatus(ctx, tt.queueID, tt.status, tt.size, GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

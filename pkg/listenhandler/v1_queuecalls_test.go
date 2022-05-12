@@ -13,17 +13,6 @@ import (
 )
 
 func Test_processV1QueuecallsGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock: mockSock,
-
-		queuecallHandler: mockQueuecall,
-	}
 
 	tests := []struct {
 		name string
@@ -88,8 +77,19 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockQueuecall.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.queuecalls, nil)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				queuecallHandler: mockQueuecall,
+			}
+
+			mockQueuecall.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.queuecalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -104,18 +104,6 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 }
 
 func Test_processV1QueuecallsIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock: mockSock,
-
-		queuecallHandler: mockQueuecall,
-	}
-
 	tests := []struct {
 		name string
 
@@ -148,6 +136,17 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				queuecallHandler: mockQueuecall,
+			}
 
 			mockQueuecall.EXPECT().Get(gomock.Any(), tt.id).Return(tt.queuecall, nil)
 			res, err := h.processRequest(tt.request)
@@ -164,16 +163,6 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 }
 
 func Test_processV1QueuescallsIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:       mockSock,
-		queuecallHandler: mockQueuecall,
-	}
 
 	tests := []struct {
 		name string
@@ -208,126 +197,18 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				queuecallHandler: mockQueuecall,
+			}
 
 			mockQueuecall.EXPECT().Kick(gomock.Any(), tt.queuecallID).Return(tt.responseQueuecall, nil)
-
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_processV1QueuescallsIDExecutePost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:       mockSock,
-		queuecallHandler: mockQueuecall,
-	}
-
-	tests := []struct {
-		name string
-
-		request *rabbitmqhandler.Request
-
-		queuecallID uuid.UUID
-		searchDelay int
-
-		responseQueuecall *queuecall.Queuecall
-		expectRes         *rabbitmqhandler.Response
-	}{
-		{
-			"normal",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls/7265381e-60a6-11ec-89ed-57111ee53375/execute",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"search_delay":1000}`),
-			},
-
-			uuid.FromStringOrNil("7265381e-60a6-11ec-89ed-57111ee53375"),
-			1000,
-
-			&queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("7265381e-60a6-11ec-89ed-57111ee53375"),
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"7265381e-60a6-11ec-89ed-57111ee53375","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			mockQueuecall.EXPECT().Execute(gomock.Any(), tt.queuecallID, tt.searchDelay).Return(tt.responseQueuecall, nil)
-
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func TestProcessV1QueuescallsIDSearchAgent(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:       mockSock,
-		queuecallHandler: mockQueuecall,
-	}
-
-	tests := []struct {
-		name string
-
-		request *rabbitmqhandler.Request
-
-		queuecallID uuid.UUID
-
-		expectRes *rabbitmqhandler.Response
-	}{
-		{
-			"normal",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls/7265381e-60a6-11ec-89ed-57111ee53375/search_agent",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: "application/json",
-			},
-
-			uuid.FromStringOrNil("7265381e-60a6-11ec-89ed-57111ee53375"),
-
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			mockQueuecall.EXPECT().SearchAgent(gomock.Any(), tt.queuecallID).AnyTimes()
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

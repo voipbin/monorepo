@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -42,20 +43,22 @@ type QueuecallHandler interface {
 		timeoutWait int,
 		timeoutService int,
 	) (*queuecall.Queuecall, error)
-	Execute(ctx context.Context, queuecallID uuid.UUID, delay int) (*queuecall.Queuecall, error)
+	Execute(ctx context.Context, qc *queuecall.Queuecall, agent *amagent.Agent) (*queuecall.Queuecall, error)
 	Hungup(ctx context.Context, referenceID uuid.UUID)
 	Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error)
 	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	Leaved(ctx context.Context, referenceID, confbridgeID uuid.UUID)
 	Joined(ctx context.Context, referenceID, confbridgeID uuid.UUID)
-	SearchAgent(ctx context.Context, queuecallID uuid.UUID)
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)
 	TimeoutWait(ctx context.Context, queuecallID uuid.UUID)
 
 	Get(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error)
+	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error)
+	GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
+
+	UpdateStatusConnecting(ctx context.Context, id uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error)
 }
 
 // queuecallHandler define

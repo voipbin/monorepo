@@ -18,6 +18,9 @@ type Queue struct {
 	RoutingMethod RoutingMethod `json:"routing_method"` // queue's routing method
 	TagIDs        []uuid.UUID   `json:"tag_ids"`        // queue's tag ids
 
+	// execute
+	Execute Execute `json:"execute"`
+
 	// wait/service info
 	WaitActions    []fmaction.Action `json:"wait_actions"`    // actions for queue waiting
 	WaitTimeout    int               `json:"wait_timeout"`    // wait queue timeout.(ms)
@@ -45,4 +48,13 @@ type RoutingMethod string
 const (
 	RoutingMethodNone   RoutingMethod = ""
 	RoutingMethodRandom RoutingMethod = "random"
+)
+
+// Execute defines
+type Execute string
+
+// list of executes
+const (
+	ExecuteRun  Execute = "run"
+	ExecuteStop Execute = "stop"
 )
