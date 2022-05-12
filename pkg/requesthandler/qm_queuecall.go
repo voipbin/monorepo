@@ -144,3 +144,26 @@ func (r *requestHandler) QMV1QueuecallTimeoutService(ctx context.Context, queuec
 	}
 	return nil
 }
+
+// QMV1QueuecallUpdateStatusWaiting sends the request for update the queuecall status to waiting.
+func (r *requestHandler) QMV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+	uri := fmt.Sprintf("/v1/queuecalls/%s/status_waiting", queuecallID)
+
+	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res qmqueuecall.Queuecall
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
