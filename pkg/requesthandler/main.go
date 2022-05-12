@@ -490,8 +490,6 @@ type RequestHandler interface {
 	QMV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QMV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QMV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error)
-	QMV1QueuecallExecute(ctx context.Context, queuecallID uuid.UUID, searchDelay int) (*qmqueuecall.Queuecall, error)
-	QMV1QueuecallSearchAgent(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QMV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QMV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error
 
