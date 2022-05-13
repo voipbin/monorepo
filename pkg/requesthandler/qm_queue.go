@@ -319,16 +319,16 @@ func (r *requestHandler) QMV1QueueCreateQueuecall(
 }
 
 // QMV1QueueExecute sends the request to execute the queue.
+// executeDelay: ms
 func (r *requestHandler) QMV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
 	uri := fmt.Sprintf("/v1/queues/%s/execute_run", queueID)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueues, requestTimeoutDefault, executeDelay, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
 	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
+		return nil
 	case tmp.StatusCode > 299:
 		return fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
