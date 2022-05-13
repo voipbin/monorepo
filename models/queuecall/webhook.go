@@ -15,6 +15,9 @@ type WebhookMessage struct {
 	Status         string    `json:"status"`
 	ServiceAgentID uuid.UUID `json:"service_agent_id"`
 
+	DurationWaiting int `json:"duration_waiting"` // duration for waiting(ms)
+	DurationService int `json:"duration_service"` // duration for service(ms)
+
 	TMCreate  string `json:"tm_create"`
 	TMService string `json:"tm_service"`
 	TMUpdate  string `json:"tm_update"`
@@ -30,6 +33,9 @@ func (h *Queuecall) ConvertWebhookMessage() *WebhookMessage {
 
 		Status:         string(h.Status),
 		ServiceAgentID: h.ServiceAgentID,
+
+		DurationWaiting: h.DurationWaiting,
+		DurationService: h.DurationService,
 
 		TMCreate:  h.TMCreate,
 		TMService: h.TMService,

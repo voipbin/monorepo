@@ -38,6 +38,9 @@ const (
 		timeout_wait,
 		timeout_service,
 
+		duration_waiting,
+		duration_service,
+
 		tm_create,
 		tm_service,
 		tm_update,
@@ -77,6 +80,9 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 
 		&res.TimeoutWait,
 		&res.TimeoutService,
+
+		&res.DurationWaiting,
+		&res.DurationService,
 
 		&res.TMCreate,
 		&res.TMService,
@@ -126,6 +132,9 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		timeout_wait,
 		timeout_service,
 
+		duration_waiting,
+		duration_service,
+
 		tm_create,
 		tm_service,
 		tm_update,
@@ -135,6 +144,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?,
+		?, ?,
 		?, ?,
 		?, ?,
 		?, ?, ?, ?
@@ -174,6 +184,9 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 
 		a.TimeoutWait,
 		a.TimeoutService,
+
+		a.DurationWaiting,
+		a.DurationService,
 
 		a.TMCreate,
 		a.TMService,
@@ -341,7 +354,7 @@ func (h *handler) QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID u
 }
 
 // QueuecallDelete deletes the queuecall.
-func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error {
+func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status, timestamp string) error {
 	// prepare
 	q := `
 	update
@@ -354,8 +367,7 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queu
 		id = ?
 	`
 
-	t := GetCurTime()
-	_, err := h.db.Exec(q, status, t, t, id.Bytes())
+	_, err := h.db.Exec(q, status, timestamp, timestamp, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallDelete. err: %v", err)
 	}
@@ -416,7 +428,7 @@ func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID
 }
 
 // QueuecallSetStatusService sets the QueueCall's status to the service.
-func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID) error {
+func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, timestamp string) error {
 	// prepare
 	q := `
 	update
@@ -428,8 +440,8 @@ func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID) e
 	where
 		id = ?
 	`
-	t := GetCurTime()
-	_, err := h.db.Exec(q, queuecall.StatusService, t, t, id.Bytes())
+
+	_, err := h.db.Exec(q, queuecall.StatusService, timestamp, timestamp, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetStatusService. err: %v", err)
 	}
@@ -455,6 +467,52 @@ func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) e
 	_, err := h.db.Exec(q, queuecall.StatusKicking, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetStatusKicking. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// QueuecallSetDurationWaiting sets the QueueCall's duration_waiting.
+func (h *handler) QueuecallSetDurationWaiting(ctx context.Context, id uuid.UUID, duration int) error {
+	// prepare
+	q := `
+	update
+		queuecalls
+	set
+		duration_waiting = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	_, err := h.db.Exec(q, duration, GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetDurationWaiting. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// QueuecallSetDurationService sets the QueueCall's duration_service.
+func (h *handler) QueuecallSetDurationService(ctx context.Context, id uuid.UUID, duration int) error {
+	// prepare
+	q := `
+	update
+		queuecalls
+	set
+		duration_service = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	_, err := h.db.Exec(q, duration, GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetDurationService. err: %v", err)
 	}
 
 	// update the cache

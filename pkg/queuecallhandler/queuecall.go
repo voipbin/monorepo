@@ -144,6 +144,9 @@ func (h *queuecallHandler) Create(
 		TimeoutWait:    timeoutWait,
 		TimeoutService: timeoutService,
 
+		DurationWaiting: 0,
+		DurationService: 0,
+
 		TMCreate:  dbhandler.GetCurTime(),
 		TMService: dbhandler.DefaultTimeStamp,
 		TMUpdate:  dbhandler.DefaultTimeStamp,

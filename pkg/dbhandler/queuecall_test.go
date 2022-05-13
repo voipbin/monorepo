@@ -456,12 +456,13 @@ func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
 	}
 }
 
-func TestQueuecallDelete(t *testing.T) {
+func Test_QueuecallDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		queuecallID uuid.UUID
+		timestamp   string
 
 		data *queuecall.Queuecall
 
@@ -471,16 +472,19 @@ func TestQueuecallDelete(t *testing.T) {
 			"test normal",
 
 			uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
+			"2021-04-18 03:22:17.994000",
 
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
 			},
 
 			&queuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
-				Source: cmaddress.Address{},
-				TagIDs: []uuid.UUID{},
-				Status: queuecall.StatusDone,
+				ID:       uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
+				Source:   cmaddress.Address{},
+				TagIDs:   []uuid.UUID{},
+				Status:   queuecall.StatusDone,
+				TMUpdate: "2021-04-18 03:22:17.994000",
+				TMDelete: "2021-04-18 03:22:17.994000",
 			},
 		},
 	}
@@ -501,12 +505,12 @@ func TestQueuecallDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallDelete(ctx, tt.id, queuecall.StatusDone)
+			err := h.QueuecallDelete(ctx, tt.queuecallID, queuecall.StatusDone, tt.timestamp)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.QueuecallGet(ctx, tt.id)
+			res, err := h.QueuecallGet(ctx, tt.queuecallID)
 			if err != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
 			}
@@ -515,8 +519,6 @@ func TestQueuecallDelete(t *testing.T) {
 			}
 
 			res.TMCreate = ""
-			tt.expectRes.TMUpdate = res.TMUpdate
-			tt.expectRes.TMDelete = res.TMDelete
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -591,12 +593,13 @@ func TestQueuecallSetStatusConnecting(t *testing.T) {
 	}
 }
 
-func TestQueuecallSetStatusService(t *testing.T) {
+func Test_QueuecallSetStatusService(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		id        uuid.UUID
+		timestamp string
 
 		data *queuecall.Queuecall
 
@@ -606,16 +609,19 @@ func TestQueuecallSetStatusService(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
+			"2021-04-18 03:22:17.994000",
 
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
 			},
 
 			&queuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
-				Status: queuecall.StatusService,
-				Source: cmaddress.Address{},
-				TagIDs: []uuid.UUID{},
+				ID:        uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
+				Status:    queuecall.StatusService,
+				Source:    cmaddress.Address{},
+				TagIDs:    []uuid.UUID{},
+				TMUpdate:  "2021-04-18 03:22:17.994000",
+				TMService: "2021-04-18 03:22:17.994000",
 			},
 		},
 	}
@@ -636,7 +642,7 @@ func TestQueuecallSetStatusService(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallSetStatusService(ctx, tt.id)
+			err := h.QueuecallSetStatusService(ctx, tt.id, tt.timestamp)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -649,8 +655,6 @@ func TestQueuecallSetStatusService(t *testing.T) {
 				t.Errorf("Wrong match. expect: not empty, got: empty")
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
-			tt.expectRes.TMService = res.TMService
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

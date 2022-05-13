@@ -23,6 +23,9 @@ create table queuecalls(
   timeout_wait      integer,  --
   timeout_service   integer,  --
 
+  duration_waiting  integer,
+  duration_service  integer,
+
   tm_create   datetime(6),
   tm_service  datetime(6),
   tm_update   datetime(6),

@@ -32,6 +32,9 @@ type Queuecall struct {
 	TimeoutWait    int `json:"timeout_wait"`    // timeout for wait.(ms)
 	TimeoutService int `json:"timeout_service"` // timeout for service.(ms)
 
+	DurationWaiting int `json:"duration_waiting"` // duration for waiting(ms)
+	DurationService int `json:"duration_service"` // duration for service(ms)
+
 	TMCreate  string `json:"tm_create"`  // Created timestamp.
 	TMService string `json:"tm_service"` // Serviced timestamp.
 	TMUpdate  string `json:"tm_update"`  // Updated timestamp.

@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
 // Joined handle the situation when the queuecall joined to the the queue's confbridge.
@@ -42,8 +43,17 @@ func (h *queuecallHandler) Joined(ctx context.Context, referenceID, confbridgeID
 		return
 	}
 
+	// calculate the duration and set the duration_service
+	curTime := dbhandler.GetCurTime()
+	duration := getDuration(ctx, qc.TMCreate, curTime)
+	log.Debug("Calculated duration. duration: %ld", duration.Milliseconds())
+	if err := h.db.QueuecallSetDurationWaiting(ctx, qc.ID, int(duration.Milliseconds())); err != nil {
+		log.Errorf("Could not update queuecall's duration_waiting. err: %v", err)
+		return
+	}
+
 	// set queuecall's status to the service
-	if errSet := h.db.QueuecallSetStatusService(ctx, qc.ID); errSet != nil {
+	if errSet := h.db.QueuecallSetStatusService(ctx, qc.ID, curTime); errSet != nil {
 		log.WithField("queuecall", qc).Debugf("Could not update the queuecall's status. err: %v", errSet)
 		return
 	}
@@ -57,7 +67,9 @@ func (h *queuecallHandler) Joined(ctx context.Context, referenceID, confbridgeID
 
 	// get wait duration and increase the serviced count
 	waitDuration := getDuration(ctx, qc.TMCreate, qc.TMService)
-	if err := h.db.QueueIncreaseTotalServicedCount(ctx, qc.QueueID, qc.ID, waitDuration); err != nil {
+	log.Debugf("Serviced queuecall's detail. waiting_time: %d", waitDuration.Milliseconds())
+
+	if err := h.db.QueueIncreaseTotalServicedCount(ctx, qc.QueueID, qc.ID); err != nil {
 		log.Errorf("Could not increase the total serviced count. wait_duration: %d, err: %v", waitDuration.Milliseconds(), err)
 	}
 

@@ -28,11 +28,9 @@ type WebhookMessage struct {
 	WaitQueueCallIDs    []uuid.UUID `json:"wait_queue_call_ids"`    // waiting queue call ids.
 	ServiceQueueCallIDs []uuid.UUID `json:"service_queue_call_ids"` // service queue call ids(ms).
 
-	TotalIncomingCount   int `json:"total_incoming_count"`   // total incoming call count
-	TotalServicedCount   int `json:"total_serviced_count"`   // total serviced call count
-	TotalAbandonedCount  int `json:"total_abandoned_count"`  // total abandoned call count
-	TotalWaitDuration    int `json:"total_waittime"`         // total wait time(ms)
-	TotalServiceDuration int `json:"total_service_duration"` // total service duration(ms)
+	TotalIncomingCount  int `json:"total_incoming_count"`  // total incoming call count
+	TotalServicedCount  int `json:"total_serviced_count"`  // total serviced call count
+	TotalAbandonedCount int `json:"total_abandoned_count"` // total abandoned call count
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.
@@ -55,11 +53,9 @@ func (h *Queue) ConvertWebhookMessage() *WebhookMessage {
 		WaitQueueCallIDs:    h.WaitQueueCallIDs,
 		ServiceQueueCallIDs: h.ServiceQueueCallIDs,
 
-		TotalIncomingCount:   h.TotalIncomingCount,
-		TotalServicedCount:   h.TotalServicedCount,
-		TotalAbandonedCount:  h.TotalAbandonedCount,
-		TotalWaitDuration:    h.TotalWaitDuration,
-		TotalServiceDuration: h.TotalServiceDuration,
+		TotalIncomingCount:  h.TotalIncomingCount,
+		TotalServicedCount:  h.TotalServicedCount,
+		TotalAbandonedCount: h.TotalAbandonedCount,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

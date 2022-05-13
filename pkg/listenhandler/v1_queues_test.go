@@ -88,7 +88,6 @@ func Test_processV1QueuesPost(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TotalWaitDuration:   0,
 				TMCreate:            "2021-04-18 03:22:17.994000",
 				TMUpdate:            dbhandler.DefaultTimeStamp,
 				TMDelete:            dbhandler.DefaultTimeStamp,
@@ -97,7 +96,7 @@ func Test_processV1QueuesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"442f5d62-7f55-11ec-a2c0-0bcd3814d515","name":"name","detail":"detail","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"execute":"stop","wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"442f5d62-7f55-11ec-a2c0-0bcd3814d515","name":"name","detail":"detail","routing_method":"random","tag_ids":["a4d0c36c-5f35-11ec-bf02-3b945ceab651"],"execute":"stop","wait_actions":[{"id":"8299402a-5f36-11ec-bd2a-b75b037f00f2","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"wait_timeout":60000,"service_timeout":600000,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2021-04-18 03:22:17.994000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -173,7 +172,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"570b5094-7f55-11ec-b5cd-1b925f9028af","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"570b5094-7f55-11ec-b5cd-1b925f9028af","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -198,7 +197,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -255,7 +254,7 @@ func Test_processV1QueuesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -315,7 +314,7 @@ func Test_processV1QueuesIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -380,7 +379,7 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"66f7d436-5f6c-11ec-9298-677df04a59c2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"66f7d436-5f6c-11ec-9298-677df04a59c2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -451,7 +450,7 @@ func Test_processV1QueuesIDQueuecallsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a7261c56-5f6d-11ec-8d91-ff8f64486712","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a7261c56-5f6d-11ec-8d91-ff8f64486712","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -516,7 +515,7 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"4c898be8-5f6d-11ec-b701-a7ba1509a629","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"4c898be8-5f6d-11ec-b701-a7ba1509a629","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -540,7 +539,7 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1c0938ae-6019-11ec-8a5d-ab6c7909948a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1c0938ae-6019-11ec-8a5d-ab6c7909948a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -603,7 +602,7 @@ func Test_processV1QueuesIDRoutingMethodPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"89b402a8-6019-11ec-8f65-cb5c282f0024","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"89b402a8-6019-11ec-8f65-cb5c282f0024","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -675,7 +674,7 @@ func Test_processV1QueuesIDWaitActionsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e4d05ee8-6019-11ec-ac25-1bd30b213fe2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"e4d05ee8-6019-11ec-ac25-1bd30b213fe2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -854,7 +853,7 @@ func Test_processV1QueuesIDExecutePut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e5e9af02-d1d7-11ec-b5e1-0782d8999acb","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"e5e9af02-d1d7-11ec-b5e1-0782d8999acb","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

@@ -6,7 +6,6 @@ import (
 	context "context"
 	"database/sql"
 	"errors"
-	"strings"
 	"time"
 
 	uuid "github.com/gofrs/uuid"
@@ -30,9 +29,9 @@ type DBHandler interface {
 	QueueDelete(ctx context.Context, id uuid.UUID) error
 	QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	QueueGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error)
-	QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID, waittime time.Duration) error
-	QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID, waittime time.Duration) error
-	QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID, serviceTime time.Duration) error
+	QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID) error
+	QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID) error
+	QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	QueueSetRoutingMethod(ctx context.Context, id uuid.UUID, routingMethod queue.RoutingMethod) error
 	QueueSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error
@@ -44,11 +43,13 @@ type DBHandler interface {
 	QueuecallGetsByReferenceID(ctx context.Context, referenceID uuid.UUID) ([]*queuecall.Queuecall, error)
 	QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
-	QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error
+	QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status, timestamp string) error
 	QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
-	QueuecallSetStatusService(ctx context.Context, id uuid.UUID) error
+	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, timestamp string) error
 	QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
+	QueuecallSetDurationService(ctx context.Context, id uuid.UUID, duration int) error
+	QueuecallSetDurationWaiting(ctx context.Context, id uuid.UUID, duration int) error
 
 	QueuecallReferenceCreate(ctx context.Context, a *queuecallreference.QueuecallReference) error
 	QueuecallReferenceDelete(ctx context.Context, id uuid.UUID) error
@@ -79,7 +80,6 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 // GetCurTime return current utc time string
 func GetCurTime() string {
 	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
 
-	return res
+	return now[:len("2006-01-02 15:04:05.999999")]
 }
