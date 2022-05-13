@@ -71,6 +71,7 @@ func Test_Join(t *testing.T) {
 			&queue.Queue{
 				ID:         uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
 				CustomerID: uuid.FromStringOrNil("706be58e-7f56-11ec-9a12-7770b5d4d038"),
+				Execute:    queue.ExecuteRun,
 			},
 			&cmcall.Call{
 				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
@@ -98,7 +99,8 @@ func Test_Join(t *testing.T) {
 			},
 
 			&queue.Queue{
-				ID: uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
+				ID:      uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
+				Execute: queue.ExecuteRun,
 			},
 			&queuecall.Queuecall{
 				ID:      uuid.FromStringOrNil("20e2616a-60ec-11ec-912a-978318aa1f5e"),
@@ -147,10 +149,14 @@ func Test_Join(t *testing.T) {
 				tt.queue.ServiceTimeout,
 			).Return(tt.queuecall, nil)
 
-			mockQueuecallReference.EXPECT().SetCurrentQueuecallID(gomock.Any(), tt.referenceID, tt.referenceType, tt.queuecall.ID).Return(nil)
-			mockDB.EXPECT().QueueAddQueueCallID(gomock.Any(), tt.queuecall.QueueID, tt.queuecall.ID).Return(nil)
-			mockDB.EXPECT().QueueGet(gomock.Any(), tt.queueID).Return(tt.responseQueue, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), queue.EventTypeQueueUpdated, tt.responseQueue)
+			mockQueuecallReference.EXPECT().SetCurrentQueuecallID(ctx, tt.referenceID, tt.referenceType, tt.queuecall.ID).Return(nil)
+			mockDB.EXPECT().QueueAddQueueCallID(ctx, tt.queuecall.QueueID, tt.queuecall.ID).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
+			if tt.responseQueue.Execute == queue.ExecuteStop {
+				mockDB.EXPECT().QueueSetExecute(ctx, tt.queueID, queue.ExecuteRun).Return(tt.responseQueue, nil)
+				mockReq.EXPECT().QMV1QueueExecute(ctx, tt.responseQueue.ID, 100)
+			}
 
 			res, err := h.Join(ctx, tt.queueID, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, tt.exitActionID)
 			if err != nil {

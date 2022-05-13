@@ -44,6 +44,11 @@ func (h *queueHandler) Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, 
 	})
 	log.Debug("Deleting the queue info.")
 
+	if err := h.db.QueueSetExecute(ctx, id, queue.ExecuteStop); err != nil {
+		log.Errorf("Could not update the queue execute to stop. err: %v", err)
+		return nil, err
+	}
+
 	if err := h.db.QueueDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the queue. err: %v", err)
 		return nil, err
@@ -109,14 +114,14 @@ func (h *queueHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []
 }
 
 // UpdateRoutingMethod updates the queue's routing method.
-func (h *queueHandler) UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error) {
+func (h *queueHandler) UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMethod queue.RoutingMethod) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "UpdateRoutingMethod",
 		"queue_id": id,
 	})
 	log.Debug("Updating the queue's routing method.")
 
-	if err := h.db.QueueSetRoutingMethod(ctx, id, routingMEthod); err != nil {
+	if err := h.db.QueueSetRoutingMethod(ctx, id, routingMethod); err != nil {
 		log.Errorf("Could not set the addresses. err: %v", err)
 		return nil, err
 	}
@@ -163,6 +168,17 @@ func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute 
 	})
 	log.Debug("Updating the queue's execute.")
 
+	q, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get queue info. err: %v", err)
+		return nil, err
+	}
+
+	if q.Execute == execute {
+		// already same execute. nothing to do.
+		return q, nil
+	}
+
 	if err := h.db.QueueSetExecute(ctx, id, execute); err != nil {
 		log.Errorf("Could not set the execute. err: %v", err)
 		return nil, err
@@ -174,6 +190,11 @@ func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute 
 		return nil, err
 	}
 	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
+
+	if execute == queue.ExecuteRun && q.Execute == queue.ExecuteStop {
+		log.Debugf("The queue execute need to be run.")
+		_ = h.reqHandler.QMV1QueueExecute(ctx, id, 100)
+	}
 
 	return res, nil
 }

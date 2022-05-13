@@ -15,12 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/cachehandler"
 )
 
-func TestQueuecallCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
+func Test_QueuecallCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -144,6 +139,12 @@ func TestQueuecallCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -166,11 +167,6 @@ func TestQueuecallCreate(t *testing.T) {
 }
 
 func TestQueuecallGetsByCustomerID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name       string
@@ -226,6 +222,12 @@ func TestQueuecallGetsByCustomerID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -248,11 +250,6 @@ func TestQueuecallGetsByCustomerID(t *testing.T) {
 }
 
 func TestQueuecallGetsByReferenceID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name      string
@@ -338,6 +335,12 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -360,11 +363,6 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 }
 
 func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name string
@@ -431,6 +429,12 @@ func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -453,10 +457,6 @@ func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
 }
 
 func TestQueuecallDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	tests := []struct {
 		name string
@@ -487,9 +487,13 @@ func TestQueuecallDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
 
 			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
@@ -521,10 +525,6 @@ func TestQueuecallDelete(t *testing.T) {
 }
 
 func TestQueuecallSetStatusConnecting(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	tests := []struct {
 		name string
@@ -558,9 +558,13 @@ func TestQueuecallSetStatusConnecting(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
 
 			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
@@ -588,10 +592,6 @@ func TestQueuecallSetStatusConnecting(t *testing.T) {
 }
 
 func TestQueuecallSetStatusService(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	tests := []struct {
 		name string
@@ -622,9 +622,13 @@ func TestQueuecallSetStatusService(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
 
 			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
@@ -655,11 +659,6 @@ func TestQueuecallSetStatusService(t *testing.T) {
 }
 
 func TestQueuecallSetStatusKicking(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
 	tests := []struct {
 		name string
 
@@ -689,9 +688,13 @@ func TestQueuecallSetStatusKicking(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
 
 			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
@@ -705,6 +708,69 @@ func TestQueuecallSetStatusKicking(t *testing.T) {
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
+			}
+
+			tt.expectRes.TMUpdate = res.TMUpdate
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_QueuecallSetStatusWaiting(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+
+		data *queuecall.Queuecall
+
+		expectRes *queuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("6f83cec0-d1d1-11ec-9aa4-1764ad2da6d5"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("6f83cec0-d1d1-11ec-9aa4-1764ad2da6d5"),
+			},
+
+			&queuecall.Queuecall{
+				ID:     uuid.FromStringOrNil("6f83cec0-d1d1-11ec-9aa4-1764ad2da6d5"),
+				Status: queuecall.StatusWaiting,
+				Source: cmaddress.Address{},
+				TagIDs: []uuid.UUID{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			err := h.QueuecallSetStatusWaiting(ctx, tt.queuecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res, err := h.QueuecallGet(ctx, tt.queuecallID)
 			if err != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
 			}

@@ -233,3 +233,18 @@ func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusConnecting(ctx, id, agen
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusConnecting", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusConnecting), ctx, id, agentID)
 }
+
+// UpdateStatusWaiting mocks base method.
+func (m *MockQueuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatusWaiting", ctx, id)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatusWaiting indicates an expected call of UpdateStatusWaiting.
+func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusWaiting(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusWaiting", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusWaiting), ctx, id)
+}

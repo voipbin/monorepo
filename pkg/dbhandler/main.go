@@ -45,6 +45,7 @@ type DBHandler interface {
 	QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error
+	QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
 	QueuecallSetStatusService(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error

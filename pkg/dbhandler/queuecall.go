@@ -366,6 +366,30 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queu
 	return nil
 }
 
+// QueuecallSetStatusWaiting sets the QueueCall's status to the waiting.
+func (h *handler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		queuecalls
+	set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, queuecall.StatusWaiting, GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusWaiting. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // QueuecallSetStatusConnecting sets the QueueCall's status to the connecting.
 func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error {
 	// prepare

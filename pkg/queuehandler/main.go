@@ -56,6 +56,7 @@ type QueueHandler interface {
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error)
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error)
 	UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error)
+	UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error)
 
 	GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]agent.Agent, error)
 }

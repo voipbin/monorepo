@@ -17,21 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
-func TestJoined(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockQueuecallReferenceHandler := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
-
-	h := &queuecallHandler{
-		db:                        mockDB,
-		reqHandler:                mockReq,
-		notifyhandler:             mockNotify,
-		queuecallReferenceHandler: mockQueuecallReferenceHandler,
-	}
+func Test_Joined(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -101,6 +87,21 @@ func TestJoined(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueuecallReferenceHandler := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
+
+			h := &queuecallHandler{
+				db:                        mockDB,
+				reqHandler:                mockReq,
+				notifyhandler:             mockNotify,
+				queuecallReferenceHandler: mockQueuecallReferenceHandler,
+			}
+
 			ctx := context.Background()
 
 			mockQueuecallReferenceHandler.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.queuecallReference, nil)

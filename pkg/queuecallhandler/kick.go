@@ -47,7 +47,7 @@ func (h *queuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*qu
 		log.Errorf("Could not get updated queucall. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallCreated, res)
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallKicking, res)
 
 	return res, nil
 }

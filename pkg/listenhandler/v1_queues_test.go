@@ -140,7 +140,7 @@ func Test_processV1QueuesPost(t *testing.T) {
 	}
 }
 
-func TestProcessV1QueuesGet(t *testing.T) {
+func Test_processV1QueuesGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -231,7 +231,7 @@ func TestProcessV1QueuesGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1QueuesIDGet(t *testing.T) {
+func Test_processV1QueuesIDGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -287,7 +287,7 @@ func TestProcessV1QueuesIDGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1QueuesIDDelete(t *testing.T) {
+func Test_processV1QueuesIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -347,7 +347,7 @@ func TestProcessV1QueuesIDDelete(t *testing.T) {
 	}
 }
 
-func TestProcessV1QueuesIDPut(t *testing.T) {
+func Test_processV1QueuesIDPut(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -412,7 +412,7 @@ func TestProcessV1QueuesIDPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
+func Test_processV1QueuesIDQueuecallsPost(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -483,7 +483,7 @@ func TestProcessV1QueuesIDQueuecallsPost(t *testing.T) {
 	}
 }
 
-func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
+func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -572,7 +572,7 @@ func TestProcessV1QueuesIDTagIDsPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
+func Test_processV1QueuesIDRoutingMethodPut(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -635,7 +635,7 @@ func TestProcessV1QueuesIDRoutingMethodPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1QueuesIDWaitActionsPut(t *testing.T) {
+func Test_processV1QueuesIDWaitActionsPut(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -769,7 +769,7 @@ func Test_processV1QueuesIDAgentsGet(t *testing.T) {
 	}
 }
 
-func Test_processV1QueuesIDExecutePost(t *testing.T) {
+func Test_processV1QueuesIDExecuteRunPost(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -777,24 +777,18 @@ func Test_processV1QueuesIDExecutePost(t *testing.T) {
 
 		id uuid.UUID
 
-		responseQueue []amagent.Agent
-		expectRes     *rabbitmqhandler.Response
+		expectRes *rabbitmqhandler.Response
 	}{
 		{
 			"available",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queues/c58d96e0-d1a7-11ec-a088-07232a972294/execute",
+				URI:      "/v1/queues/c58d96e0-d1a7-11ec-a088-07232a972294/execute_run",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 			},
 
 			uuid.FromStringOrNil("c58d96e0-d1a7-11ec-a088-07232a972294"),
 
-			[]amagent.Agent{
-				{
-					ID: uuid.FromStringOrNil("2e5b56a2-b49e-11ec-a643-5b72b632781f"),
-				},
-			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -816,6 +810,69 @@ func Test_processV1QueuesIDExecutePost(t *testing.T) {
 			}
 
 			mockQueue.EXPECT().Execute(gomock.Any(), tt.id)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1QueuesIDExecutePut(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		queueID uuid.UUID
+		execute queue.Execute
+
+		responseQueue *queue.Queue
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"available",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queues/e5e9af02-d1d7-11ec-b5e1-0782d8999acb/execute",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"execute":"run"}`),
+			},
+
+			uuid.FromStringOrNil("e5e9af02-d1d7-11ec-b5e1-0782d8999acb"),
+			queue.ExecuteRun,
+
+			&queue.Queue{
+				ID: uuid.FromStringOrNil("e5e9af02-d1d7-11ec-b5e1-0782d8999acb"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e5e9af02-d1d7-11ec-b5e1-0782d8999acb","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":null,"execute":"","wait_actions":null,"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":null,"service_queue_call_ids":null,"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"total_waittime":0,"total_service_duration":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				queueHandler: mockQueue,
+			}
+
+			mockQueue.EXPECT().UpdateExecute(gomock.Any(), tt.queueID, tt.execute).Return(tt.responseQueue, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
