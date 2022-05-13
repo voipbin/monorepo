@@ -319,8 +319,8 @@ func (r *requestHandler) QMV1QueueCreateQueuecall(
 }
 
 // QMV1QueueExecute sends the request to execute the queue.
-func (r *requestHandler) QMV1QueueExecute(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
-	uri := fmt.Sprintf("/v1/queues/%s/execute", queueID)
+func (r *requestHandler) QMV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
+	uri := fmt.Sprintf("/v1/queues/%s/execute_run", queueID)
 
 	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
@@ -334,4 +334,36 @@ func (r *requestHandler) QMV1QueueExecute(ctx context.Context, queueID uuid.UUID
 	}
 
 	return nil
+}
+
+// QMV1QueueExecute sends the request to execute the queue.
+func (r *requestHandler) QMV1QueueUpdateExecute(ctx context.Context, queueID uuid.UUID, execute qmqueue.Execute) (*qmqueue.Queue, error) {
+	uri := fmt.Sprintf("/v1/queues/%s/execute", queueID)
+
+	data := &qmrequest.V1DataQueuesIDExecutePut{
+		Execute: execute,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPut, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var c qmqueue.Queue
+	if err := json.Unmarshal([]byte(tmp.Data), &c); err != nil {
+		return nil, err
+	}
+
+	return &c, nil
 }
