@@ -392,3 +392,109 @@ func Test_Create(t *testing.T) {
 		})
 	}
 }
+
+func Test_UpdateStatusConnecting(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+		agentID     uuid.UUID
+
+		responseQueuecall *queuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("ca971d82-d1ca-11ec-9291-ebaa2b055c3a"),
+			uuid.FromStringOrNil("cad009da-d1ca-11ec-ae58-b780e0d24f05"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("ca971d82-d1ca-11ec-9291-ebaa2b055c3a"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.queuecallID, tt.agentID).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+
+			res, err := h.UpdateStatusConnecting(ctx, tt.queuecallID, tt.agentID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueuecall, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateStatusWaiting(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+
+		responseQueuecall *queuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1713ed3e-d1cb-11ec-b70b-3f756e5181f3"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("1713ed3e-d1cb-11ec-b70b-3f756e5181f3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallSetStatusWaiting(ctx, tt.queuecallID).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+
+			res, err := h.UpdateStatusWaiting(ctx, tt.queuecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueuecall, res)
+			}
+		})
+	}
+}

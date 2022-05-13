@@ -3,6 +3,8 @@ package request
 import (
 	"github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
 
 // V1DataQueuesPost is
@@ -61,4 +63,11 @@ type V1DataQueuesIDWaitActionsPut struct {
 	WaitActions    []fmaction.Action `json:"wait_actions"`
 	WaitTimeout    int               `json:"wait_timeout"`
 	ServiceTimeout int               `json:"service_timeout"`
+}
+
+// V1DataQueuesIDExecutePut is
+// v1 data type request struct for
+// /v1/queues/<queue-id>/execute PUT
+type V1DataQueuesIDExecutePut struct {
+	Execute queue.Execute `json:"execute"`
 }

@@ -19,11 +19,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
-// List of default values
-const (
-	defaultDelaySearchAgent = 1000 // 1000 ms(1 sec)
-)
-
 // QueuecallHandler interface
 type QueuecallHandler interface {
 	Create(
@@ -59,6 +54,7 @@ type QueuecallHandler interface {
 	GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
 
 	UpdateStatusConnecting(ctx context.Context, id uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error)
+	UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 }
 
 // queuecallHandler define

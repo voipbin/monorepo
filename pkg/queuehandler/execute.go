@@ -31,10 +31,9 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 		return
 	}
 
-	// check the queue has deleted
-	if q.TMDelete < dbhandler.GetCurTime() {
-		log.Infof("The queue deleted. Stopping the queue execution. queue_id: %s", id)
-		_, _ = h.UpdateExecute(ctx, id, queue.ExecuteStop)
+	// check the queue execute status
+	if q.Execute == queue.ExecuteStop {
+		log.Infof("The queue execution stopped. queue_id: %s", id)
 		return
 	}
 
@@ -54,6 +53,7 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 		return
 	}
 
+	// pick target queuecall
 	qc := qcs[0]
 	log.WithField("queuecall", qc).Debugf("Found target queuecall. queuecall_id: %s", qc.ID)
 

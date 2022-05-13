@@ -51,6 +51,7 @@ type Status string
 
 // list of status
 const (
+	StatusInitiating Status = "initiating" // queue call is initiating.
 	StatusWaiting    Status = "waiting"    // queue call is waiting in the wait actions.
 	StatusConnecting Status = "connecting" // queue call is connecting to the agent.
 	StatusKicking    Status = "kicking"    // queue call is being kick from the queue

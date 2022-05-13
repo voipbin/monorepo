@@ -52,12 +52,14 @@ var (
 	reqV1QueuesIDWaitActions   = regexp.MustCompile("/v1/queues/" + regUUID + "/wait_actions$")
 	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents\?`)
 	reqV1QueuesIDExecute       = regexp.MustCompile("/v1/queues/" + regUUID + "/execute$")
+	reqV1QueuesIDExecuteRun    = regexp.MustCompile("/v1/queues/" + regUUID + "/execute_run$")
 
 	// queuecalls
 	regV1QueuecallsGet              = regexp.MustCompile(`/v1/queuecalls\?` + regAny + "$")
 	regV1QueuecallsID               = regexp.MustCompile("/v1/queuecalls/" + regUUID + "$")
 	regV1QueuecallsIDTimeoutWait    = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_wait$")
 	regV1QueuecallsIDTimeoutService = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_service$")
+	regV1QueuecallsIDStatusWaiting  = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/status_waiting$")
 
 	// queuecallreferences
 	regV1QueuecallreferencesID = regexp.MustCompile("/v1/queuecallreferences/" + regUUID + "$")
@@ -228,10 +230,15 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuesIDAgentsGet(ctx, m)
 		requestType = "/v1/queues/<queue-id>/agents"
 
-	// POST /queues/<queue-id>/execute
-	case reqV1QueuesIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1QueuesIDExecutePost(ctx, m)
+	// PUT /queues/<queue-id>/execute
+	case reqV1QueuesIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1QueuesIDExecutePut(ctx, m)
 		requestType = "/v1/queues/<queue-id>/execute"
+
+	// POST /queues/<queue-id>/execute_run
+	case reqV1QueuesIDExecuteRun.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1QueuesIDExecuteRunPost(ctx, m)
+		requestType = "/v1/queues/<queue-id>/execute_run"
 
 	/////////////
 	// queuecalls
@@ -255,12 +262,17 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// POST /queuecalls/<queuecall-id>/timeout_wait
 	case regV1QueuecallsIDTimeoutWait.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDTimeoutWaitPost(ctx, m)
-		requestType = "/v1/queuecalls"
+		requestType = "/v1/queuecalls/<queuecall-id>/timeout_wait"
 
 	// POST /queuecalls/<queuecall-id>/timeout_service
 	case regV1QueuecallsIDTimeoutService.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDTimeoutServicePost(ctx, m)
-		requestType = "/v1/queuecalls"
+		requestType = "/v1/queuecalls/<queuecall-id>/timeout_service"
+
+	// POST /queuecalls/queuecall-id>/status_waiting
+	case regV1QueuecallsIDStatusWaiting.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1QueuecallsIDStatusWaitingPost(ctx, m)
+		requestType = "/v1/queuecalls/<queuecall-id>/status_waiting"
 
 	//////////////////////
 	// queuecallreferences

@@ -175,12 +175,6 @@ func (h *queueHandler) getForwardActionID(ctx context.Context, f *fmflow.Flow) (
 		},
 	)
 
-	// f, err := h.reqHandler.FMV1FlowGet(ctx, flowID)
-	// if err != nil {
-	// 	log.Errorf("Could not get flow. err: %v", err)
-	// 	return uuid.Nil, err
-	// }
-
 	res := uuid.Nil
 	for _, act := range f.Actions {
 		if act.Type == fmaction.TypeConfbridgeJoin {

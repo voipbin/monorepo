@@ -17,19 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
-func TestCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &queueHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyhandler: mockNotify,
-	}
+func Test_Create(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -84,10 +72,23 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queueHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().QueueGet(gomock.Any(), gomock.Any()).Return(&queue.Queue{}, nil)
+			mockDB.EXPECT().QueueCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, gomock.Any()).Return(&queue.Queue{}, nil)
 
 			res, err := h.Create(
 				ctx,
@@ -112,18 +113,6 @@ func TestCreate(t *testing.T) {
 }
 
 func Test_createQueueFlow(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &queueHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyhandler: mockNotify,
-	}
 
 	tests := []struct {
 		name string
@@ -176,9 +165,22 @@ func Test_createQueueFlow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queueHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customerID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", tt.flowActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.customerID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", tt.flowActions, false).Return(tt.responseFlow, nil)
 
 			res, err := h.createQueueFlow(ctx, tt.customerID, tt.queueID, tt.confbridgeID, tt.waitActions)
 			if err != nil {
@@ -193,18 +195,6 @@ func Test_createQueueFlow(t *testing.T) {
 }
 
 func Test_createQueueFlowActions(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &queueHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyhandler: mockNotify,
-	}
 
 	tests := []struct {
 		name string
@@ -274,6 +264,18 @@ func Test_createQueueFlowActions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queueHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
 
 			res, err := h.createQueueFlowActions(tt.waitActions, tt.confbridgeID)
 			if err != nil {
@@ -287,24 +289,11 @@ func Test_createQueueFlowActions(t *testing.T) {
 	}
 }
 
-func TestGetForwardActionID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &queueHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyhandler: mockNotify,
-	}
+func Test_getForwardActionID(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		// flowID       uuid.UUID
 		flow *fmflow.Flow
 
 		expectRes uuid.UUID
@@ -332,9 +321,20 @@ func TestGetForwardActionID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			// mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.responseFlow, nil)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queueHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
+			ctx := context.Background()
 
 			res, err := h.getForwardActionID(ctx, tt.flow)
 			if err != nil {

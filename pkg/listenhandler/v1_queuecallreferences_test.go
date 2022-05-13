@@ -14,20 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
-func TestProcessV1QueuescallreferencesIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-	mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:                mockSock,
-		queuecallHandler:          mockQueuecall,
-		queuecallReferenceHandler: mockQueuecallReference,
-	}
+func Test_processV1QueuescallreferencesIDGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -63,6 +50,19 @@ func TestProcessV1QueuescallreferencesIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+			mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:                mockSock,
+				queuecallHandler:          mockQueuecall,
+				queuecallReferenceHandler: mockQueuecallReference,
+			}
 
 			mockQueuecallReference.EXPECT().Get(gomock.Any(), tt.queuecallReferenceID).Return(tt.queuecallReference, nil)
 
@@ -79,17 +79,6 @@ func TestProcessV1QueuescallreferencesIDGet(t *testing.T) {
 }
 
 func Test_processV1QueuescallreferencesIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:       mockSock,
-		queuecallHandler: mockQueuecall,
-	}
 
 	tests := []struct {
 		name string
@@ -125,6 +114,17 @@ func Test_processV1QueuescallreferencesIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				queuecallHandler: mockQueuecall,
+			}
 
 			mockQueuecall.EXPECT().KickByReferenceID(gomock.Any(), tt.queuecallID).Return(tt.responseQueuecall, nil)
 

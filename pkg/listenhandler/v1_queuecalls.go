@@ -178,3 +178,40 @@ func (h *listenHandler) processV1QueuecallsIDTimeoutServicePost(ctx context.Cont
 
 	return res, nil
 }
+
+// processV1QueuecallsIDStatusWaitingPost handles Post /v1/queuecalls/<queuecall-id>/status_waiting request
+func (h *listenHandler) processV1QueuecallsIDStatusWaitingPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":         "processV1QueuecallsIDStatusWaitingPost",
+			"queuecall_id": id,
+		})
+	log.Debug("Executing processV1QueuecallsIDStatusWaitingPost.")
+
+	tmp, err := h.queuecallHandler.UpdateStatusWaiting(ctx, id)
+	if err != nil {
+		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

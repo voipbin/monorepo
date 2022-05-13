@@ -461,8 +461,8 @@ func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *rabbi
 	return res, nil
 }
 
-// processV1QueuesIDExecutePost handles Post /v1/queues/<queue-id>/execute request
-func (h *listenHandler) processV1QueuesIDExecutePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1QueuesIDExecuteRunPost handles Post /v1/queues/<queue-id>/execute_run request
+func (h *listenHandler) processV1QueuesIDExecuteRunPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -471,16 +471,60 @@ func (h *listenHandler) processV1QueuesIDExecutePost(ctx context.Context, m *rab
 	id := uuid.FromStringOrNil(uriItems[3])
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":     "processV1QueuesIDExecutePost",
+			"func":     "processV1QueuesIDExecuteRunPost",
 			"queue_id": id,
 		})
-	log.Debug("Executing processV1QueuesIDExecutePost.")
+	log.Debug("Executing processV1QueuesIDExecuteRunPost.")
 
 	h.queueHandler.Execute(ctx, id)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// processV1QueuesIDExecutePut handles Put /v1/queues/<queue-id>/execute request
+func (h *listenHandler) processV1QueuesIDExecutePut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":     "processV1QueuesIDExecutePut",
+			"queue_id": id,
+		})
+	log.Debug("Executing processV1QueuesIDExecutePut.")
+
+	var req request.V1DataQueuesIDExecutePut
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	log.WithField("request", req).Debug("Updating the queue's execute info.")
+
+	tmp, err := h.queueHandler.UpdateExecute(ctx, id, req.Execute)
+	if err != nil {
+		log.Errorf("Could not get agents. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

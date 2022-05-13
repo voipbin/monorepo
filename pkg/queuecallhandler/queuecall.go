@@ -138,7 +138,7 @@ func (h *queuecallHandler) Create(
 		RoutingMethod: routingMethod,
 		TagIDs:        tagIDs,
 
-		Status:         queuecall.StatusWaiting,
+		Status:         queuecall.StatusInitiating,
 		ServiceAgentID: uuid.Nil,
 
 		TimeoutWait:    timeoutWait,
@@ -184,6 +184,28 @@ func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.U
 	log.Debug("Creating a new queuecall.")
 
 	if err := h.db.QueuecallSetStatusConnecting(ctx, id, agentID); err != nil {
+		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.QueuecallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queuecall. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateStatusConnecting updates the queuecall's status to the waiting.
+func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateStatusConnecting",
+		"queuecall_id": id,
+	})
+	log.Debug("Updating queuecall status to waiting.")
+
+	if err := h.db.QueuecallSetStatusWaiting(ctx, id); err != nil {
 		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
 		return nil, err
 	}

@@ -410,3 +410,17 @@ func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusService(ctx, id interface
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusService", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusService), ctx, id)
 }
+
+// QueuecallSetStatusWaiting mocks base method.
+func (m *MockDBHandler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallSetStatusWaiting", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueuecallSetStatusWaiting indicates an expected call of QueuecallSetStatusWaiting.
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusWaiting(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusWaiting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusWaiting), ctx, id)
+}
