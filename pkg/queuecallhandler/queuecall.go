@@ -193,6 +193,7 @@ func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.U
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
 	}
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallConnecting, res)
 
 	return res, nil
 }
@@ -215,6 +216,12 @@ func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
 	}
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallWaiting, res)
+
+	// send queue execute update request
+	go func() {
+		_, _ = h.reqHandler.QMV1QueueUpdateExecute(context.Background(), res.QueueID, queue.ExecuteRun)
+	}()
 
 	return res, nil
 }

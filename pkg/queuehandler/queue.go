@@ -193,7 +193,7 @@ func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute 
 
 	if execute == queue.ExecuteRun && q.Execute == queue.ExecuteStop {
 		log.Debugf("The queue execute need to be run.")
-		_ = h.reqHandler.QMV1QueueExecute(ctx, id, 100)
+		_ = h.reqHandler.QMV1QueueExecuteRun(ctx, id, 100)
 	}
 
 	return res, nil

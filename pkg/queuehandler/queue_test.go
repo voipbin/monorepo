@@ -490,7 +490,7 @@ func Test_UpdateExecute(t *testing.T) {
 				mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
 				if tt.execute == queue.ExecuteRun && tt.responseQueue.Execute == queue.ExecuteStop {
-					mockReq.EXPECT().QMV1QueueExecute(ctx, tt.queueID, 100)
+					mockReq.EXPECT().QMV1QueueExecuteRun(ctx, tt.queueID, 100)
 				}
 			}
 

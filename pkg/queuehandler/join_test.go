@@ -155,7 +155,7 @@ func Test_Join(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 			if tt.responseQueue.Execute == queue.ExecuteStop {
 				mockDB.EXPECT().QueueSetExecute(ctx, tt.queueID, queue.ExecuteRun).Return(tt.responseQueue, nil)
-				mockReq.EXPECT().QMV1QueueExecute(ctx, tt.responseQueue.ID, 100)
+				mockReq.EXPECT().QMV1QueueExecuteRun(ctx, tt.responseQueue.ID, 100)
 			}
 
 			res, err := h.Join(ctx, tt.queueID, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, tt.exitActionID)
