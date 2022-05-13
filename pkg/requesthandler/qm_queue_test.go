@@ -735,7 +735,7 @@ func Test_QMV1QueueCreateQueuecall(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueExecute(t *testing.T) {
+func Test_QMV1QueueExecuteRun(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -755,7 +755,7 @@ func Test_QMV1QueueExecute(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queues/4ab73968-d197-11ec-ab6a-17c76533c5d6/execute",
+				URI:      "/v1/queues/4ab73968-d197-11ec-ab6a-17c76533c5d6/execute_run",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 			},
@@ -779,8 +779,72 @@ func Test_QMV1QueueExecute(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.QMV1QueueExecute(ctx, tt.id, tt.executeDelay); err != nil {
+			if err := reqHandler.QMV1QueueExecuteRun(ctx, tt.id, tt.executeDelay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_QMV1QueueUpdateExecute(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id      uuid.UUID
+		execute qmqueue.Execute
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectRes *qmqueue.Queue
+	}{
+		{
+			"run",
+
+			uuid.FromStringOrNil("7f72fd14-d263-11ec-8a58-ef9e846046ae"),
+			qmqueue.ExecuteRun,
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queues/7f72fd14-d263-11ec-8a58-ef9e846046ae/execute",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"execute":"run"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"7f72fd14-d263-11ec-8a58-ef9e846046ae"}`),
+			},
+
+			&qmqueue.Queue{
+				ID: uuid.FromStringOrNil("7f72fd14-d263-11ec-8a58-ef9e846046ae"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.QMV1QueueUpdateExecute(ctx, tt.id, tt.execute)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}

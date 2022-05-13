@@ -2121,18 +2121,18 @@ func (mr *MockRequestHandlerMockRecorder) QMV1QueueDelete(ctx, queueID interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueDelete", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueDelete), ctx, queueID)
 }
 
-// QMV1QueueExecute mocks base method.
-func (m *MockRequestHandler) QMV1QueueExecute(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
+// QMV1QueueExecuteRun mocks base method.
+func (m *MockRequestHandler) QMV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QMV1QueueExecute", ctx, queueID, executeDelay)
+	ret := m.ctrl.Call(m, "QMV1QueueExecuteRun", ctx, queueID, executeDelay)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// QMV1QueueExecute indicates an expected call of QMV1QueueExecute.
-func (mr *MockRequestHandlerMockRecorder) QMV1QueueExecute(ctx, queueID, executeDelay interface{}) *gomock.Call {
+// QMV1QueueExecuteRun indicates an expected call of QMV1QueueExecuteRun.
+func (mr *MockRequestHandlerMockRecorder) QMV1QueueExecuteRun(ctx, queueID, executeDelay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueExecute", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueExecute), ctx, queueID, executeDelay)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueExecuteRun", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueExecuteRun), ctx, queueID, executeDelay)
 }
 
 // QMV1QueueGet mocks base method.
@@ -2208,6 +2208,21 @@ func (m *MockRequestHandler) QMV1QueueUpdateActions(ctx context.Context, queueID
 func (mr *MockRequestHandlerMockRecorder) QMV1QueueUpdateActions(ctx, queueID, waitActions, timeoutWait, timeoutService interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueUpdateActions", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueUpdateActions), ctx, queueID, waitActions, timeoutWait, timeoutService)
+}
+
+// QMV1QueueUpdateExecute mocks base method.
+func (m *MockRequestHandler) QMV1QueueUpdateExecute(ctx context.Context, queueID uuid.UUID, execute queue.Execute) (*queue.Queue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QMV1QueueUpdateExecute", ctx, queueID, execute)
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QMV1QueueUpdateExecute indicates an expected call of QMV1QueueUpdateExecute.
+func (mr *MockRequestHandlerMockRecorder) QMV1QueueUpdateExecute(ctx, queueID, execute interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QMV1QueueUpdateExecute", reflect.TypeOf((*MockRequestHandler)(nil).QMV1QueueUpdateExecute), ctx, queueID, execute)
 }
 
 // QMV1QueueUpdateRoutingMethod mocks base method.
