@@ -574,14 +574,6 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	queueID := opt.QueueID
 	log = log.WithField("queue_id", queueID)
 
-	// get queue info
-	q, err := h.reqHandler.QMV1QueueGet(ctx, queueID)
-	if err != nil {
-		log.Errorf("Could not get queue info. err: %v", err)
-		return err
-	}
-	log.WithField("queue", q).Debug("Found queue info.")
-
 	// get exit action id
 	// because we will update the active flow's actions, we need to getting the exit action id before.
 	exitActionID, err := h.getExitActionID(af.Actions, act.ID)
@@ -592,7 +584,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	log.Debugf("Found exit action id. action_id: %s", exitActionID)
 
 	// send the queue join request
-	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, q.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitActionID)
+	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, queueID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitActionID)
 	if err != nil {
 		log.WithField("exit_action_id", exitActionID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
 		errForward := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, af.ReferenceID, exitActionID, true)
@@ -603,33 +595,33 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	log.WithField("queuecall", qc).Debug("Created the queuecall.")
 
 	// get flow's action
-	patchedActions, err := h.getActionsFromFlow(ctx, qc.FlowID, q.CustomerID)
+	fetchedActions, err := h.getActionsFromFlow(ctx, qc.FlowID, qc.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get queue flow's actions. err: %v", err)
 		return err
 	}
+	log.WithField("fetched_actions", fetchedActions).Debugf("Fetched actions detail.")
 
 	// replace the patched actions to the active flow
-	if err := replaceActions(af, act.ID, patchedActions); err != nil {
+	if err := replaceActions(af, act.ID, fetchedActions); err != nil {
 		log.Errorf("Could not replace new action. err: %v", err)
 		return fmt.Errorf("could not replace new action. err: %v", err)
 	}
 
 	// set active flow
 	af.TMUpdate = dbhandler.GetCurTime()
-	af.ForwardActionID = patchedActions[0].ID
+	af.ForwardActionID = fetchedActions[0].ID
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after replace the patched actions. err: %v", err)
 		return err
 	}
 
-	// send the queuecall excute request
-	tmp, err := h.reqHandler.QMV1QueuecallExecute(ctx, qc.ID, 1000)
+	tmp, err := h.reqHandler.QMV1QueuecallUpdateStatusWaiting(ctx, qc.ID)
 	if err != nil {
-		log.Errorf("Could not send the execute request. err: %v", err)
+		log.Errorf("Could not update the queuecall status to waiting. err: %v", err)
 		return err
 	}
-	log.WithField("queuecall", tmp).Debug("Queuecall executed.")
+	log.WithField("queuecall", tmp).Debugf("Updated queuecall status waiting. activeflow_id: %s, queuecall_id: %s", af.ID, tmp.ID)
 
 	return nil
 }

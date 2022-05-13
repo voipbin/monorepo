@@ -625,12 +625,11 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
-			mockReq.EXPECT().QMV1QueueCreateQueuecall(gomock.Any(), tt.queue.ID, gomock.Any(), tt.activeflow.ReferenceID, tt.activeflow.ID, tt.exitActionID).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QMV1QueueCreateQueuecall(ctx, tt.queue.ID, gomock.Any(), tt.activeflow.ReferenceID, tt.activeflow.ID, tt.exitActionID).Return(tt.responseQueuecall, nil)
 			mockReq.EXPECT().FMV1FlowGet(ctx, tt.responseQueuecall.FlowID).Return(tt.queueFlow, nil)
 
-			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectActiveFlow).Return(nil)
-			mockReq.EXPECT().QMV1QueuecallExecute(gomock.Any(), tt.responseQueuecall.ID, 1000).Return(&qmqueuecall.Queuecall{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveFlow).Return(nil)
+			mockReq.EXPECT().QMV1QueuecallUpdateStatusWaiting(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
 			if err := h.actionHandleQueueJoin(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
