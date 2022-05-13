@@ -46,7 +46,6 @@ func (h *queuecallHandler) Execute(ctx context.Context, qc *queuecall.Queuecall,
 		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallConnecting, res)
 
 	// forward the action.
 	log.Debugf("Setting the forward action id. forward_action_id: %s", qc.ForwardActionID)

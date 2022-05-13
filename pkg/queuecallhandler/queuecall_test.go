@@ -434,6 +434,7 @@ func Test_UpdateStatusConnecting(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.queuecallID, tt.agentID).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.responseQueuecall)
 
 			res, err := h.UpdateStatusConnecting(ctx, tt.queuecallID, tt.agentID)
 			if err != nil {
@@ -486,6 +487,8 @@ func Test_UpdateStatusWaiting(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallSetStatusWaiting(ctx, tt.queuecallID).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallWaiting, tt.responseQueuecall)
+			mockReq.EXPECT().QMV1QueueUpdateExecute(ctx, tt.responseQueuecall.QueueID, queue.ExecuteRun).Return(&queue.Queue{}, nil).AnyTimes()
 
 			res, err := h.UpdateStatusWaiting(ctx, tt.queuecallID)
 			if err != nil {
