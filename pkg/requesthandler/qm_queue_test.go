@@ -777,7 +777,12 @@ func Test_QMV1QueueExecuteRun(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if tt.executeDelay == DelayNow {
+				mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			} else {
+				mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.executeDelay).Return(nil)
+			}
 
 			if err := reqHandler.QMV1QueueExecuteRun(ctx, tt.id, tt.executeDelay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

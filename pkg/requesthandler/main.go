@@ -59,7 +59,7 @@ var (
 	AsteriskIDConference = "conference" // asterisk-conference
 )
 
-const requestTimeoutDefault int = 5000 // default request timeout(5 sec)
+const requestTimeoutDefault int = 3000 // default request timeout(3 sec)
 
 // delay units
 const (
