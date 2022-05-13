@@ -48,7 +48,6 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TotalWaitDuration:   0,
 			},
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
@@ -69,7 +68,6 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TotalWaitDuration:   0,
 			},
 		},
 		{
@@ -95,7 +93,6 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TotalWaitDuration:   0,
 			},
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("731e523e-59e1-11ec-9156-abd8ba26f843"),
@@ -118,7 +115,6 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TotalWaitDuration:   0,
 			},
 		},
 		{
@@ -147,7 +143,6 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TotalWaitDuration:   0,
 			},
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("2c4c233c-5f67-11ec-8eea-bbf4408ec1d8"),
@@ -173,7 +168,6 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TotalWaitDuration:   0,
 			},
 		},
 	}

@@ -14,9 +14,9 @@ require (
 	github.com/smotes/purse v1.0.1
 	github.com/ttacon/libphonenumber v1.2.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220413020856-9bff29d04032
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220507202633-555941ab36b4
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220513055439-d323991dea8b
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220513052432-5b1338f2286a
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220507222414-792d02472ee6
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220513055435-7779b42aba3a
 )
 
 require (

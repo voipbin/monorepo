@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
 // Leaved handle the situation when the queuecall left from the queue's confbridge.
@@ -49,24 +50,31 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		return
 	}
 
-	if err := h.db.QueuecallDelete(ctx, qc.ID, queuecall.StatusDone); err != nil {
+	// calculate the duration and set the duration_service
+	curTime := dbhandler.GetCurTime()
+	duration := getDuration(ctx, qc.TMCreate, curTime)
+	log.Debug("Calculated duration. duration: %ld", duration.Milliseconds())
+
+	if err := h.db.QueuecallSetDurationService(ctx, qc.ID, int(duration.Milliseconds())); err != nil {
+		log.Errorf("Could not update queuecall's duration_waiting. err: %v", err)
+		return
+	}
+
+	if err := h.db.QueuecallDelete(ctx, qc.ID, queuecall.StatusDone, curTime); err != nil {
 		log.Errorf("Could not delete the queuecall. err: %v", err)
 		return
 	}
 
 	// get updated queuecall and notify.
-	tmp, err := h.db.QueuecallGet(ctx, qm.CurrentQueuecallID)
+	tmp, err := h.db.QueuecallGet(ctx, qc.ID)
 	if err != nil {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallDone, tmp)
 
-	// calculate the duration and increase the serviced count
-	duration := getDuration(ctx, tmp.TMService, tmp.TMDelete)
-	if err := h.db.QueueRemoveServiceQueueCall(ctx, tmp.QueueID, tmp.ID, duration); err != nil {
+	if err := h.db.QueueRemoveServiceQueueCall(ctx, tmp.QueueID, tmp.ID); err != nil {
 		log.Errorf("Could not remove the queuecall from the service queuecall. service_duration: %d, err: %v", duration.Milliseconds(), err)
 		return
 	}
-
 }

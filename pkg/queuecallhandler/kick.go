@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
 // Kick kicks the queuecall from the queue
@@ -37,17 +38,34 @@ func (h *queuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*qu
 		return nil, err
 	}
 
-	if errStatus := h.db.QueuecallSetStatusKicking(ctx, queuecallID); errStatus != nil {
-		log.Errorf("Could not update the queuecall status. err: %v", errStatus)
+	if qc.Status == queuecall.StatusService {
+		// nothing to do here.
+		// the call-manager's confbridge_leaved message event subscribe will handle it.
+		return qc, nil
+	}
+
+	// calculate the duration and set the duration_service
+	curTime := dbhandler.GetCurTime()
+	duration := getDuration(ctx, qc.TMCreate, curTime)
+	log.Debug("Calculated duration. duration: %ld", duration.Milliseconds())
+
+	if err := h.db.QueuecallSetDurationWaiting(ctx, qc.ID, int(duration.Milliseconds())); err != nil {
+		log.Errorf("Could not update queuecall's duration_waiting. err: %v", err)
 		return nil, err
 	}
 
-	res, err := h.db.QueuecallGet(ctx, queuecallID)
-	if err != nil {
-		log.Errorf("Could not get updated queucall. err: %v", err)
+	if err := h.db.QueuecallDelete(ctx, qc.ID, queuecall.StatusAbandoned, curTime); err != nil {
+		log.Errorf("Could not delete the queuecall. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallKicking, res)
+
+	// get updated queuecall and notify.
+	res, err := h.db.QueuecallGet(ctx, qc.ID)
+	if err != nil {
+		log.Errorf("Could not get updated queuecall. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallAbandoned, res)
 
 	return res, nil
 }

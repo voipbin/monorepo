@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
 // Hungup handles reference's hungup.
@@ -45,7 +46,15 @@ func (h *queuecallHandler) Hungup(ctx context.Context, referenceID uuid.UUID) {
 		return
 	}
 
-	if err := h.db.QueuecallDelete(ctx, qc.ID, queuecall.StatusAbandoned); err != nil {
+	curTime := dbhandler.GetCurTime()
+	duration := getDuration(ctx, qc.TMCreate, curTime)
+	log.Debug("Calculated duration. duration: %ld", duration.Milliseconds())
+	if err := h.db.QueuecallSetDurationWaiting(ctx, qc.ID, int(duration.Milliseconds())); err != nil {
+		log.Errorf("Could not update queuecall's duration_waiting. err: %v", err)
+		return
+	}
+
+	if err := h.db.QueuecallDelete(ctx, qc.ID, queuecall.StatusAbandoned, curTime); err != nil {
 		log.Errorf("Could not delete the queuecall. err: %v", err)
 		return
 	}
@@ -58,9 +67,7 @@ func (h *queuecallHandler) Hungup(ctx context.Context, referenceID uuid.UUID) {
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, tmp.CustomerID, queuecall.EventTypeQueuecallAbandoned, tmp)
 
-	// calculate the duration and increase the abandoned count
-	duration := getDuration(ctx, tmp.TMCreate, tmp.TMDelete)
-	if err := h.db.QueueIncreaseTotalAbandonedCount(ctx, tmp.QueueID, tmp.ID, duration); err != nil {
+	if err := h.db.QueueIncreaseTotalAbandonedCount(ctx, tmp.QueueID, tmp.ID); err != nil {
 		log.Errorf("Could not increase the total abandoned count. err: %v", err)
 		return
 	}

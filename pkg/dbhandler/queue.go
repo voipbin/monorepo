@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -37,8 +36,6 @@ const (
 		total_incoming_count,
 		total_serviced_count,
 		total_abandoned_count,
-		total_wait_duration,
-		total_service_duration,
 
 		tm_create,
 		tm_update,
@@ -78,8 +75,6 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 		&res.TotalIncomingCount,
 		&res.TotalServicedCount,
 		&res.TotalAbandonedCount,
-		&res.TotalWaitDuration,
-		&res.TotalServiceDuration,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -142,8 +137,6 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 		total_incoming_count,
 		total_serviced_count,
 		total_abandoned_count,
-		total_wait_duration,
-		total_service_duration,
 
 		tm_create,
 		tm_update,
@@ -154,7 +147,7 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 		?, ?,
 		?,
 		?, ?, ?, ?, ?,
-		?, ?, ?, ?, ?,
+		?, ?, ?,
 		?, ?, ?
 		)
 	`
@@ -197,8 +190,6 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 		a.TotalIncomingCount,
 		a.TotalServicedCount,
 		a.TotalAbandonedCount,
-		a.TotalWaitDuration,
-		a.TotalServiceDuration,
 
 		a.TMCreate,
 		a.TMUpdate,
@@ -501,8 +492,7 @@ func (h *handler) QueueAddQueueCallID(ctx context.Context, id, queueCallID uuid.
 
 // QueueIncreaseTotalServicedCount increases total_serviced_count.
 // It also removes the given queueCallID from the queue_call_ids.
-// It also add the waittime to the total_wait_duration.
-func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID, waittime time.Duration) error {
+func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
 	update queues set
@@ -523,13 +513,12 @@ func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queue
 			'$',
 			?
 		),
-		total_wait_duration = total_wait_duration + ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), queueCallID.String(), waittime.Milliseconds(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), queueCallID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueIncreaseTotalServicedCount. err: %v", err)
 	}
@@ -542,8 +531,7 @@ func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queue
 
 // QueueIncreaseTotalAbandonedCount increases total_abandoned_count.
 // It also removes the given queueCallID from the queue_call_ids.
-// It also add the waittime to the total_waittime.
-func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID, waittime time.Duration) error {
+func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
 	update queues set
@@ -559,13 +547,12 @@ func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queu
 				''
 			)
 		),
-		total_wait_duration = total_wait_duration + ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), waittime.Milliseconds(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueIncreaseTotalAbandonedCount. err: %v", err)
 	}
@@ -577,8 +564,7 @@ func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queu
 }
 
 // QueueRemoveServiceQueueCall removes queuecall from the service_queue_call_ids.
-// It also add the serviceTime to the total_service_duration.
-func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID, serviceTime time.Duration) error {
+func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
 	update queues set
@@ -594,13 +580,12 @@ func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCall
 				''
 			)
 		),
-		total_service_duration = total_service_duration + ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), serviceTime.Milliseconds(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueRemoveServiceQueueCall. err: %v", err)
 	}

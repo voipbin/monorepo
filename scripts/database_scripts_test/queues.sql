@@ -26,8 +26,6 @@ create table queues(
   total_incoming_count    integer,  -- total incoming count
   total_serviced_count    integer,  -- total serviced count
   total_abandoned_count   integer,  -- total abandoned count
-  total_wait_duration     integer,  -- total wait duration(ms)
-  total_service_duration  integer,  -- total service duration(ms)
 
   tm_create datetime(6),
   tm_update datetime(6),

@@ -62,11 +62,9 @@ func (h *queueHandler) Create(
 		ServiceQueueCallIDs: []uuid.UUID{},
 		ServiceTimeout:      serviceTimeout,
 
-		TotalIncomingCount:   0,
-		TotalServicedCount:   0,
-		TotalAbandonedCount:  0,
-		TotalWaitDuration:    0,
-		TotalServiceDuration: 0,
+		TotalIncomingCount:  0,
+		TotalServicedCount:  0,
+		TotalAbandonedCount: 0,
 
 		TMCreate: getCurTime(),
 		TMUpdate: dbhandler.DefaultTimeStamp,
