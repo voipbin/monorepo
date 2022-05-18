@@ -95,7 +95,7 @@ func (h *listenHandler) v1ActiveflowsIDNextGet(ctx context.Context, req *rabbitm
 		return nil, err
 	}
 
-	resAction, err := h.activeflowHandler.GetNextAction(ctx, id, reqData.CurrentActionID)
+	resAction, err := h.activeflowHandler.ExecuteNextAction(ctx, id, reqData.CurrentActionID)
 	if err != nil {
 		return nil, err
 	}

@@ -37,6 +37,13 @@ var (
 	IDFinish uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002") // reserved action id for finish
 )
 
+// list of pre-defined actions.
+var (
+	ActionFinish Action = Action{
+		ID: IDFinish,
+	}
+)
+
 // Type type
 type Type string
 

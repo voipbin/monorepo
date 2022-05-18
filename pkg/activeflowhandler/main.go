@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/stackhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
@@ -28,6 +29,7 @@ type activeflowHandler struct {
 
 	actionHandler   actionhandler.ActionHandler
 	variableHandler variablehandler.VariableHandler
+	stackHandler    stackhandler.StackHandler
 }
 
 // ActiveflowHandler defines
@@ -35,10 +37,10 @@ type ActiveflowHandler interface {
 	Create(ctx context.Context, id uuid.UUID, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error)
 	Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 
-	GetNextAction(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
 	SetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
 
 	Execute(ctx context.Context, id uuid.UUID) error
+	ExecuteNextAction(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
 }
 
 // NewActiveflowHandler returns new ActiveflowHandler
@@ -50,11 +52,15 @@ func NewActiveflowHandler(
 	variableHandler variablehandler.VariableHandler,
 ) ActiveflowHandler {
 
+	stackHandler := stackhandler.NewStackHandler()
+
 	return &activeflowHandler{
-		db:              db,
-		reqHandler:      reqHandler,
-		notifyHandler:   notifyHandler,
+		db:            db,
+		reqHandler:    reqHandler,
+		notifyHandler: notifyHandler,
+
 		actionHandler:   actionHandler,
 		variableHandler: variableHandler,
+		stackHandler:    stackHandler,
 	}
 }

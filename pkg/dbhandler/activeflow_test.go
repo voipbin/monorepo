@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
 )
 
@@ -30,19 +31,37 @@ func Test_ActiveflowCreate(t *testing.T) {
 
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("27dcddf4-ace3-11ec-90e8-63edc2ed04c7"),
-				CurrentAction: action.Action{
-					ID: action.IDEmpty,
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("99e1dab2-d588-11ec-abff-93cc8e1d3e49"),
+								Type: action.TypeAnswer,
+							},
+						},
+					},
 				},
-				ExecuteCount:    0,
-				ForwardActionID: uuid.Nil,
-				Actions: []action.Action{
+
+				CurrentStackID: stack.IDMain,
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("99e1dab2-d588-11ec-abff-93cc8e1d3e49"),
+					Type: action.TypeAnswer,
+				},
+
+				ForwardStackID:  uuid.FromStringOrNil("9852ca58-d588-11ec-93cb-d7c113ec56d7"),
+				ForwardActionID: uuid.FromStringOrNil("99be3620-d588-11ec-9239-439980b8dcd2"),
+
+				ExecuteCount: 3,
+				ExecutedActions: []action.Action{
 					{
-						ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
+						ID:   uuid.FromStringOrNil("9a1524d0-d588-11ec-9bdc-73a17f559ad8"),
 						Type: action.TypeAnswer,
 					},
 				},
-				ExecutedActions: []action.Action{},
-				TMCreate:        "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
 			},
 		},
 	}
@@ -85,12 +104,12 @@ func Test_ActiveflowUpdate(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		af               *activeflow.Activeflow
+		activeflow       *activeflow.Activeflow
 		updateActiveflow *activeflow.Activeflow
 	}{
 		{
-			"normal",
-			&activeflow.Activeflow{
+			name: "normal",
+			activeflow: &activeflow.Activeflow{
 				ID: uuid.FromStringOrNil("7b55d582-ace6-11ec-a6de-b7dda3562854"),
 
 				CustomerID: uuid.FromStringOrNil("27803e46-ace3-11ec-bad1-2fd1981d5580"),
@@ -98,46 +117,81 @@ func Test_ActiveflowUpdate(t *testing.T) {
 
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("27dcddf4-ace3-11ec-90e8-63edc2ed04c7"),
-				CurrentAction: action.Action{
-					ID: action.IDEmpty,
-				},
-				ExecuteCount:    0,
-				ForwardActionID: uuid.Nil,
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
-						Type: action.TypeAnswer,
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("a5567ece-d589-11ec-a7ed-f7c002ca2172"),
+								Type: action.TypeAnswer,
+							},
+						},
 					},
 				},
-				ExecutedActions: []action.Action{},
-				TMCreate:        "2020-04-18 03:22:17.995000",
-			},
-			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("7b55d582-ace6-11ec-a6de-b7dda3562854"),
 
-				CustomerID: uuid.FromStringOrNil("27803e46-ace3-11ec-bad1-2fd1981d5580"),
-				FlowID:     uuid.FromStringOrNil("27b0d6c8-ace3-11ec-a47f-7bce91046e73"),
-
-				ReferenceType: activeflow.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("27dcddf4-ace3-11ec-90e8-63edc2ed04c7"),
+				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
-					ID:   uuid.FromStringOrNil("791c55d4-ace6-11ec-9fd6-032afea377bc"),
+					ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
 					Type: action.TypeAnswer,
 				},
-				ExecuteCount:    1,
-				ForwardActionID: uuid.FromStringOrNil("7b08f758-ace6-11ec-a13c-5b27004a9376"),
-				Actions: []action.Action{
+
+				ForwardStackID:  stack.IDEmpty,
+				ForwardActionID: action.IDEmpty,
+
+				ExecuteCount:    0,
+				ExecutedActions: []action.Action{},
+
+				TMCreate: "2020-04-18 03:22:17.995000",
+			},
+			updateActiveflow: &activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("7b55d582-ace6-11ec-a6de-b7dda3562854"),
+
+				CustomerID: uuid.FromStringOrNil("27803e46-ace3-11ec-bad1-2fd1981d5580"),
+				FlowID:     uuid.FromStringOrNil("27b0d6c8-ace3-11ec-a47f-7bce91046e73"),
+
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("27dcddf4-ace3-11ec-90e8-63edc2ed04c7"),
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("a5567ece-d589-11ec-a7ed-f7c002ca2172"),
+								Type: action.TypeAnswer,
+							},
+						},
+					},
+				},
+
+				CurrentStackID: stack.IDMain,
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("a5567ece-d589-11ec-a7ed-f7c002ca2172"),
+					Type: action.TypeAnswer,
+				},
+
+				ForwardStackID:  stack.IDEmpty,
+				ForwardActionID: action.IDEmpty,
+
+				ExecuteCount: 1,
+				ExecutedActions: []action.Action{
 					{
 						ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
 						Type: action.TypeAnswer,
 					},
-					{
-						ID:   uuid.FromStringOrNil("7b2e5e1c-ace6-11ec-b3e3-c71fd637fde9"),
-						Type: action.TypeAnswer,
-					},
 				},
-				ExecutedActions: []action.Action{},
-				TMCreate:        "2020-04-18 03:22:17.995000",
+
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:18.995000",
 			},
 		},
 	}
@@ -156,7 +210,7 @@ func Test_ActiveflowUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
-			if err := h.ActiveflowCreate(ctx, tt.af); err != nil {
+			if err := h.ActiveflowCreate(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -165,16 +219,16 @@ func Test_ActiveflowUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ActiveflowGet(gomock.Any(), tt.af.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ActiveflowGet(gomock.Any(), tt.activeflow.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any()).Return(nil)
-			res, err := h.ActiveflowGet(ctx, tt.af.ID)
+			res, err := h.ActiveflowGet(ctx, tt.activeflow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			tt.updateActiveflow.TMUpdate = res.TMUpdate
 			if reflect.DeepEqual(tt.updateActiveflow, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.af, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.activeflow, res)
 			}
 		})
 	}
@@ -197,22 +251,31 @@ func Test_ActiveflowDelete(t *testing.T) {
 
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("56fed452-aced-11ec-8281-73c867112f40"),
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("7b2e5e1c-ace6-11ec-b3e3-c71fd637fde9"),
+								Type: action.TypeAnswer,
+							},
+						},
+					},
+				},
+
+				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("791c55d4-ace6-11ec-9fd6-032afea377bc"),
 					Type: action.TypeAnswer,
 				},
-				ExecuteCount:    1,
+				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("7b08f758-ace6-11ec-a13c-5b27004a9376"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("672dc130-ace3-11ec-95a8-677bb46055a9"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("7b2e5e1c-ace6-11ec-b3e3-c71fd637fde9"),
-						Type: action.TypeAnswer,
-					},
-				},
+				ExecuteCount:    1,
 				ExecutedActions: []action.Action{},
 				TMCreate:        "2020-04-18 03:22:17.995000",
 			},

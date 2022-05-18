@@ -13,49 +13,126 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/stackhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
-func Test_ActiveFlowCreate(t *testing.T) {
+func Test_ActiveFlowCreate_with_activeflowid(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		responseFlow *flow.Flow
+
+		id           uuid.UUID
+		refereceType activeflow.ReferenceType
+		referenceID  uuid.UUID
+
+		expectActiveflow *activeflow.Activeflow
+	}{
+		{
+			name: "normal",
+			responseFlow: &flow.Flow{
+				ID:         uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				CustomerID: uuid.FromStringOrNil("86e9108a-d699-11ec-8b3f-bf3d574b538b"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("770e7166-d692-11ec-b2e7-37e6f0fdd5ea"),
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+
+			id:           uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
+			refereceType: activeflow.ReferenceTypeCall,
+			referenceID:  uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
+
+			expectActiveflow: &activeflow.Activeflow{
+				ID:            uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
+				CustomerID:    uuid.FromStringOrNil("86e9108a-d699-11ec-8b3f-bf3d574b538b"),
+				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
+
+				CurrentStackID: stack.IDMain,
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("770e7166-d692-11ec-b2e7-37e6f0fdd5ea"),
+								Type: action.TypeAnswer,
+							},
+						},
+					},
+				},
+
+				ForwardStackID:  stack.IDEmpty,
+				ForwardActionID: action.IDEmpty,
+
+				ExecuteCount:    0,
+				ExecutedActions: []action.Action{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
+
+			h := &activeflowHandler{
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				variableHandler: mockVariableHandler,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().FlowGet(ctx, tt.responseFlow.ID).Return(tt.responseFlow, nil)
+
+			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectActiveflow).Return(nil)
+			mockVariableHandler.EXPECT().Create(ctx, gomock.Any(), map[string]string{}).Return(&variable.Variable{}, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any()).Return(tt.expectActiveflow, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectActiveflow.CustomerID, activeflow.EventTypeActiveflowCreated, tt.expectActiveflow)
+
+			res, err := h.Create(ctx, tt.id, tt.refereceType, tt.referenceID, tt.responseFlow.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectActiveflow) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectActiveflow, res)
+			}
+		})
+	}
+}
+
+func Test_ActiveFlowCreate_without_activeflowid(t *testing.T) {
 
 	tests := []struct {
 		name string
 		flow *flow.Flow
 
-		id           uuid.UUID
-		refereceType activeflow.ReferenceType
-		referenceID  uuid.UUID
-		expectActive *activeflow.Activeflow
-		flowID       uuid.UUID
+		id                 uuid.UUID
+		refereceType       activeflow.ReferenceType
+		referenceID        uuid.UUID
+		responseActiveflow *activeflow.Activeflow
+		flowID             uuid.UUID
 	}{
-		{
-			"normal",
-			&flow.Flow{
-				ID:      uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
-				Actions: []action.Action{},
-			},
 
-			uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
-			activeflow.ReferenceTypeCall,
-			uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
-			&activeflow.Activeflow{
-				ID:            uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
-				ReferenceType: activeflow.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
-				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
-				CurrentAction: action.Action{
-					ID: action.IDStart,
-				},
-				ExecuteCount:    0,
-				ForwardActionID: action.IDEmpty,
-				Actions:         []action.Action{},
-				ExecutedActions: []action.Action{},
-			},
-			uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
-		},
 		{
 			"nil id",
 			&flow.Flow{
@@ -76,7 +153,6 @@ func Test_ActiveFlowCreate(t *testing.T) {
 				},
 				ExecuteCount:    0,
 				ForwardActionID: action.IDEmpty,
-				Actions:         []action.Action{},
 				ExecutedActions: []action.Action{},
 			},
 			uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
@@ -101,18 +177,19 @@ func Test_ActiveFlowCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().FlowGet(ctx, tt.flow.ID).Return(tt.flow, nil)
+
 			mockDB.EXPECT().ActiveflowCreate(ctx, gomock.Any()).Return(nil)
 			mockVariableHandler.EXPECT().Create(ctx, gomock.Any(), map[string]string{}).Return(&variable.Variable{}, nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any()).Return(tt.expectActive, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectActive.CustomerID, activeflow.EventTypeActiveflowCreated, tt.expectActive)
+			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowCreated, tt.responseActiveflow)
 
 			res, err := h.Create(ctx, tt.id, tt.refereceType, tt.referenceID, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectActive) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectActive, res)
+			if reflect.DeepEqual(res, tt.responseActiveflow) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseActiveflow, res)
 			}
 		})
 	}
@@ -121,137 +198,51 @@ func Test_ActiveFlowCreate(t *testing.T) {
 func Test_ActiveFlowUpdateCurrentAction(t *testing.T) {
 
 	tests := []struct {
-		name   string
-		callID uuid.UUID
-		act    *action.Action
+		name string
+
+		activeflowID uuid.UUID
+		stackID      uuid.UUID
+		act          *action.Action
+
+		responseActiveflow *activeflow.Activeflow
+		responseDBCurTime  string
+
+		expectActiveflowUpdate *activeflow.Activeflow
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
+			uuid.FromStringOrNil("e70a8fac-d4b4-11ec-adc8-bfe8cdd29a31"),
 			&action.Action{
 				ID:   uuid.FromStringOrNil("f916a6a2-06ae-11eb-a239-53802c6fbb36"),
 				Type: action.TypeAnswer,
 			},
-		},
-	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &activeflowHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-
-			ctx := context.Background()
-			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&activeflow.Activeflow{}, nil)
-			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&activeflow.Activeflow{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), activeflow.EventTypeActiveflowUpdated, gomock.Any())
-			_, err := h.updateCurrentAction(ctx, tt.callID, tt.act)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_GetNextAction(t *testing.T) {
-
-	tests := []struct {
-		name         string
-		id           uuid.UUID
-		actionID     uuid.UUID
-		af           *activeflow.Activeflow
-		expectAction action.Action
-	}{
-		{
-			"normal",
-			uuid.FromStringOrNil("0d276266-0737-11eb-808f-8f2856d44e29"),
-			uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
 			&activeflow.Activeflow{
+				ID:              uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
+				ExecutedActions: []action.Action{},
 				CurrentAction: action.Action{
-					ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
+					ID:   uuid.FromStringOrNil("b08981ee-d4ba-11ec-93bf-93a97d1a142f"),
 					Type: action.TypeAnswer,
 				},
-				ForwardActionID: action.IDEmpty,
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("05e2c40a-0737-11eb-9134-5f9b578a4179"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("c9fffcf4-0737-11eb-a28f-2bc0bae5eeaf"),
-						Type: action.TypeAnswer,
-					},
-				},
 			},
-			action.Action{
-				ID:   uuid.FromStringOrNil("c9fffcf4-0737-11eb-a28f-2bc0bae5eeaf"),
-				Type: action.TypeAnswer,
-			},
-		},
-		{
-			"current id start",
-			uuid.FromStringOrNil("950c810c-08a4-11eb-af93-93115c7f9c55"),
-			action.IDStart,
+			"2022-04-18 03:22:17.995000",
+
 			&activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
+				ExecutedActions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("b08981ee-d4ba-11ec-93bf-93a97d1a142f"),
+						Type: action.TypeAnswer,
+					},
+				},
+				CurrentStackID: uuid.FromStringOrNil("e70a8fac-d4b4-11ec-adc8-bfe8cdd29a31"),
 				CurrentAction: action.Action{
-					ID: action.IDStart,
+					ID:   uuid.FromStringOrNil("f916a6a2-06ae-11eb-a239-53802c6fbb36"),
+					Type: action.TypeAnswer,
 				},
-				ForwardActionID: action.IDEmpty,
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("a9b365ee-08a4-11eb-87c5-e7b9e9ea9de3"),
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			action.Action{
-				ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
-				Type: action.TypeAnswer,
-			},
-		},
-		{
-			"move action id has set",
-			uuid.FromStringOrNil("6ed30c30-794c-11ec-98dc-237ea83d2fcb"),
-			uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
-			&activeflow.Activeflow{
-				CurrentAction: action.Action{
-					ID: uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
-				},
-				ForwardActionID: uuid.FromStringOrNil("ab88bd9a-5733-11ec-9fa5-df017a802cfc"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("97f96f9c-08a4-11eb-8ea0-57d38a96eca3"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("ab88bd9a-5733-11ec-9fa5-df017a802cfc"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("bf5e3b10-5733-11ec-a0c6-879d0d048e2d"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("bfec567a-5733-11ec-846c-efcfc0955605"),
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			action.Action{
-				ID:   uuid.FromStringOrNil("ab88bd9a-5733-11ec-9fa5-df017a802cfc"),
-				Type: action.TypeAnswer,
+				ExecuteCount: 1,
+				TMUpdate:     "2022-04-18 03:22:17.995000",
 			},
 		},
 	}
@@ -263,263 +254,23 @@ func Test_GetNextAction(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockAction := actionhandler.NewMockActionHandler(mc)
 
 			h := &activeflowHandler{
 				db:            mockDB,
 				notifyHandler: mockNotify,
-				actionHandler: mockAction,
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.id).Return(tt.af, nil).AnyTimes()
 
-			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), gomock.Any()).Return(nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.af.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.af)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().GetCurTime().Return(tt.responseDBCurTime)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflowUpdate).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
-			act, err := h.GetNextAction(ctx, tt.id, tt.actionID)
+			_, err := h.updateCurrentAction(ctx, tt.activeflowID, tt.stackID, tt.act)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if act.ID != tt.expectAction.ID || act.Type != tt.expectAction.Type {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectAction, act)
-			}
-		})
-	}
-}
-
-func Test_GetNextActionError(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		id       uuid.UUID
-		actionID uuid.UUID
-		af       *activeflow.Activeflow
-	}{
-		{
-			"empty actions",
-			uuid.FromStringOrNil("085f48fc-08a4-11eb-8ef3-675e25cbc25c"),
-			action.IDStart,
-			&activeflow.Activeflow{
-				CurrentAction: action.Action{
-					ID: action.IDStart,
-				},
-				ForwardActionID: action.IDEmpty,
-				Actions:         []action.Action{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockAction := actionhandler.NewMockActionHandler(mc)
-
-			h := &activeflowHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				actionHandler: mockAction,
-			}
-
-			ctx := context.Background()
-			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.id).Return(tt.af, nil)
-
-			if len(tt.af.Actions) == 0 {
-				mockDB.EXPECT().ActiveflowDelete(ctx, tt.id).Return(nil)
-				mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.af, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.af.CustomerID, activeflow.EventTypeActiveflowDeleted, tt.af)
-			}
-
-			_, err := h.GetNextAction(ctx, tt.id, tt.actionID)
-			if err == nil {
-				t.Error("Wrong match. expect: err, got: ok")
-			}
-		})
-	}
-}
-
-func Test_getNextAction(t *testing.T) {
-
-	tests := []struct {
-		name         string
-		callID       uuid.UUID
-		af           activeflow.Activeflow
-		expectAction action.Action
-	}{
-		{
-			"next action echo",
-			uuid.FromStringOrNil("f96b5730-0c24-11eb-89ff-af22fc6e8dce"),
-			activeflow.Activeflow{
-				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
-				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("005a71ac-0c25-11eb-b9ba-ffa78e01ffc9"),
-					Type:   action.TypeConnect,
-					Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
-				},
-				ForwardActionID: action.IDEmpty,
-				Actions: []action.Action{
-					{
-						ID:     uuid.FromStringOrNil("005a71ac-0c25-11eb-b9ba-ffa78e01ffc9"),
-						Type:   action.TypeConnect,
-						Option: []byte(`{"from":"+123456789", "destinations": [{"type": "tel", "name": "", "target": "+987654321"}]}`),
-					},
-					{
-						ID:   uuid.FromStringOrNil("686ece64-0c25-11eb-a025-ffd0ed1b73d2"),
-						Type: action.TypeEcho,
-					},
-				},
-			},
-			action.Action{
-				ID:   uuid.FromStringOrNil("686ece64-0c25-11eb-a025-ffd0ed1b73d2"),
-				Type: action.TypeEcho,
-			},
-		},
-		{
-			"forwrad action id has set",
-			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
-			activeflow.Activeflow{
-				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
-				CurrentAction: action.Action{
-					ID: uuid.FromStringOrNil("15d7d942-574d-11ec-9e99-2fa8e28a2590"),
-				},
-
-				ForwardActionID: uuid.FromStringOrNil("055eaece-574d-11ec-a54a-8fe3a5c78c8b"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("055eaece-574d-11ec-a54a-8fe3a5c78c8b"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("15d7d942-574d-11ec-9e99-2fa8e28a2590"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("15f911a2-574d-11ec-ba14-2fabebacf4bb"),
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			action.Action{
-				ID:   uuid.FromStringOrNil("055eaece-574d-11ec-a54a-8fe3a5c78c8b"),
-				Type: action.TypeAnswer,
-			},
-		},
-		{
-			"next id has set",
-			uuid.FromStringOrNil("e83a9588-9851-11ec-b987-07ce29329c80"),
-			activeflow.Activeflow{
-				ForwardActionID: action.IDEmpty,
-				CustomerID:      uuid.FromStringOrNil("e869c452-9851-11ec-aa4c-fbddf1193904"),
-				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("e89463c4-9851-11ec-bc37-5ff5ed0bf091"),
-					NextID: uuid.FromStringOrNil("0763d50a-9852-11ec-92d1-4b6db72a5ee8"),
-				},
-
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("e89463c4-9851-11ec-bc37-5ff5ed0bf091"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("e8c79686-9851-11ec-af4a-234fea2ae8da"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("0763d50a-9852-11ec-92d1-4b6db72a5ee8"),
-						Type: action.TypeAnswer,
-					},
-				},
-			},
-			action.Action{
-				ID:   uuid.FromStringOrNil("0763d50a-9852-11ec-92d1-4b6db72a5ee8"),
-				Type: action.TypeAnswer,
-			},
-		}}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAction := actionhandler.NewMockActionHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-
-				actionHandler: mockAction,
-			}
-
-			ctx := context.Background()
-			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-
-			act, err := h.getNextAction(ctx, tt.callID, tt.af.CurrentAction.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(act, &tt.expectAction) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectAction, act)
-			}
-		})
-	}
-}
-
-func Test_getNextActionError(t *testing.T) {
-
-	tests := []struct {
-		name         string
-		callID       uuid.UUID
-		af           activeflow.Activeflow
-		expectAction action.Action
-	}{
-		{
-			"empty actions",
-			uuid.FromStringOrNil("44413184-0c26-11eb-83a9-974d19b06d35"),
-			activeflow.Activeflow{
-				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
-				CurrentAction: action.Action{
-					ID: action.IDStart,
-				},
-				ForwardActionID: action.IDEmpty,
-			},
-			action.Action{
-				ID:     action.IDFinish,
-				Type:   action.TypeHangup,
-				Option: []byte(`{}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockAction := actionhandler.NewMockActionHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-
-				actionHandler: mockAction,
-			}
-
-			ctx := context.Background()
-			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.callID).Return(&tt.af, nil)
-
-			_, err := h.getNextAction(ctx, tt.callID, tt.af.CurrentAction.ID)
-			if err == nil {
-				t.Errorf("Wrong match. expect: error, got: ok")
 			}
 		})
 	}
@@ -534,97 +285,148 @@ func Test_SetForwardActionID(t *testing.T) {
 		actionID   uuid.UUID
 		forwardNow bool
 
+		responseStackID uuid.UUID
+		responseAction  *action.Action
+
 		af                     *activeflow.Activeflow
 		expectUpdateActiveflow *activeflow.Activeflow
 	}{
 		{
-			"reference type call forward now true",
+			name: "reference type call forward now true",
 
-			uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
-			uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
-			true,
+			id:         uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
+			actionID:   uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+			forwardNow: true,
 
-			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
-				CustomerID: uuid.FromStringOrNil("fcc49e18-af6c-11ec-9857-8bc5d3558dc9"),
+			responseStackID: stack.IDMain,
+			responseAction: &action.Action{
+				ID:   uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+				Type: action.TypeAnswer,
+			},
+
+			af: &activeflow.Activeflow{
+				ID:             uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
+				CustomerID:     uuid.FromStringOrNil("fcc49e18-af6c-11ec-9857-8bc5d3558dc9"),
+				ReferenceType:  activeflow.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("fa923116-d67f-11ec-b2b7-83b4ced11267"),
+				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
 					Type: action.TypeAnswer,
 				},
+
+				ForwardStackID:  stack.IDEmpty,
 				ForwardActionID: action.IDEmpty,
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
-						Type: action.TypeAnswer,
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+								Type: action.TypeAnswer,
+							},
+						},
 					},
 				},
 			},
-			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
-				CustomerID: uuid.FromStringOrNil("fcc49e18-af6c-11ec-9857-8bc5d3558dc9"),
+			expectUpdateActiveflow: &activeflow.Activeflow{
+				ID:             uuid.FromStringOrNil("1bd514f0-af6c-11ec-bddc-db11051293e5"),
+				CustomerID:     uuid.FromStringOrNil("fcc49e18-af6c-11ec-9857-8bc5d3558dc9"),
+				ReferenceType:  activeflow.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("fa923116-d67f-11ec-b2b7-83b4ced11267"),
+				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
 					Type: action.TypeAnswer,
 				},
+
+				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
-						Type: action.TypeAnswer,
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("1cc5a9e2-af6c-11ec-ad49-db6eee64a325"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("1c998542-af6c-11ec-b385-c7a45742f1a1"),
+								Type: action.TypeAnswer,
+							},
+						},
 					},
 				},
 			},
 		},
 		{
-			"reference type call forward now false",
+			name: "reference type call forward now false",
 
-			uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
-			uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
-			false,
+			id:         uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
+			actionID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+			forwardNow: false,
 
-			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
-				CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+			responseStackID: stack.IDMain,
+			responseAction: &action.Action{
+				ID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+				Type: action.TypeAnswer,
+			},
+
+			af: &activeflow.Activeflow{
+				ID:             uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
+				CustomerID:     uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
 					Type: action.TypeAnswer,
 				},
+				ForwardStackID:  stack.IDEmpty,
 				ForwardActionID: action.IDEmpty,
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
-						Type: action.TypeAnswer,
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+								Type: action.TypeAnswer,
+							},
+						},
 					},
 				},
 			},
-			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
-				CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+			expectUpdateActiveflow: &activeflow.Activeflow{
+				ID:             uuid.FromStringOrNil("1bc62ef8-af6d-11ec-a2d2-d36eb561e845"),
+				CustomerID:     uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
 					Type: action.TypeAnswer,
 				},
+				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
-						Type: action.TypeAnswer,
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("1bedaa5a-af6d-11ec-99f4-3b55921b1b50"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("1c19a9f2-af6d-11ec-afe0-4bb7a2667649"),
+								Type: action.TypeAnswer,
+							},
+						},
 					},
 				},
 			},
@@ -636,41 +438,65 @@ func Test_SetForwardActionID(t *testing.T) {
 			uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
 			true,
 
+			stack.IDMain,
+			&action.Action{
+				ID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+				Type: action.TypeAnswer,
+			},
+
 			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
 				CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+
+				ReferenceType:  activeflow.ReferenceTypeMessage,
+				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
 					Type: action.TypeAnswer,
 				},
+				ForwardStackID:  stack.IDEmpty,
 				ForwardActionID: action.IDEmpty,
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
-						Type: action.TypeAnswer,
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+								Type: action.TypeAnswer,
+							},
+						},
 					},
 				},
 			},
 			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
-				CustomerID: uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+				ID:             uuid.FromStringOrNil("91875644-af6d-11ec-bf11-5fa477b94be1"),
+				CustomerID:     uuid.FromStringOrNil("fc989a84-af6c-11ec-8bb9-23ec42502bfa"),
+				ReferenceType:  activeflow.ReferenceTypeMessage,
+				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
 					ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
 					Type: action.TypeAnswer,
 				},
+				ForwardStackID:  stack.IDMain,
 				ForwardActionID: uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
-						Type: action.TypeAnswer,
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("91b048a6-af6d-11ec-ba12-1f7793a35ea0"),
+								Type: action.TypeAnswer,
+							},
+							{
+								ID:   uuid.FromStringOrNil("91d53d96-af6d-11ec-8b73-27eb3b54c06f"),
+								Type: action.TypeAnswer,
+							},
+						},
 					},
 				},
 			},
@@ -685,16 +511,19 @@ func Test_SetForwardActionID(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockStack := stackhandler.NewMockStackHandler(mc)
 
 			h := &activeflowHandler{
 				db:         mockDB,
 				reqHandler: mockReq,
 
 				actionHandler: mockAction,
+				stackHandler:  mockStack,
 			}
 
 			ctx := context.Background()
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.af, nil)
+			mockStack.EXPECT().GetAction(ctx, tt.af.StackMap, tt.af.CurrentStackID, tt.actionID, false).Return(tt.responseStackID, tt.responseAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if tt.forwardNow && tt.af.ReferenceType == activeflow.ReferenceTypeCall {

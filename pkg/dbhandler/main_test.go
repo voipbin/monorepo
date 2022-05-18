@@ -1,15 +1,13 @@
 package dbhandler
 
 import (
+	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"database/sql"
-
-	log "github.com/sirupsen/logrus"
-
 	_ "github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
 	"github.com/smotes/purse"
 )
 

@@ -9,14 +9,15 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 )
 
-// Create creates a active flow
-func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
+// Create creates a new activeflow
+func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
-		"id":             id,
+		"id":             activeflowID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"flow_id":        flowID,
@@ -30,16 +31,16 @@ func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, referenceT
 	}
 
 	// check id is valid
-	if id == uuid.Nil {
-		id = uuid.Must(uuid.NewV4())
-		log.Infof("The id is not valid. Created a new id. id: %s", id)
-		log = log.WithField("id", id)
+	if activeflowID == uuid.Nil {
+		activeflowID = uuid.Must(uuid.NewV4())
+		log.Infof("The id is not valid. Created a new id. id: %s", activeflowID)
+		log = log.WithField("id", activeflowID)
 	}
 
 	// create activeflow
 	curTime := dbhandler.GetCurTime()
 	tmpAF := &activeflow.Activeflow{
-		ID: id,
+		ID: activeflowID,
 
 		CustomerID: f.CustomerID,
 		FlowID:     flowID,
@@ -47,13 +48,24 @@ func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, referenceT
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
+		StackMap: map[uuid.UUID]*stack.Stack{
+			stack.IDMain: {
+				ID:             stack.IDMain,
+				Actions:        f.Actions,
+				ReturnStackID:  stack.IDEmpty,
+				ReturnActionID: action.IDEmpty,
+			},
+		},
+
+		CurrentStackID: stack.IDMain,
 		CurrentAction: action.Action{
 			ID: action.IDStart,
 		},
-		ExecuteCount:    0,
+
+		ForwardStackID:  stack.IDEmpty,
 		ForwardActionID: action.IDEmpty,
 
-		Actions:         f.Actions,
+		ExecuteCount:    0,
 		ExecutedActions: []action.Action{},
 
 		TMCreate: curTime,
@@ -66,7 +78,7 @@ func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, referenceT
 	}
 
 	// create a new v
-	v, err := h.variableHandler.Create(ctx, id, map[string]string{})
+	v, err := h.variableHandler.Create(ctx, activeflowID, map[string]string{})
 	if err != nil {
 		log.Errorf("Could not create variable. err: %v", err)
 		return nil, err
@@ -74,7 +86,7 @@ func (h *activeflowHandler) Create(ctx context.Context, id uuid.UUID, referenceT
 	log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
 
 	// get created active flow
-	af, err := h.db.ActiveflowGet(ctx, id)
+	af, err := h.db.ActiveflowGet(ctx, activeflowID)
 	if err != nil {
 		log.Errorf("Could not get created active flow. err: %v", err)
 		return nil, err
@@ -101,21 +113,16 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	}
 	log.WithField("active_flow", af).Debug("Found active flow.")
 
-	// check the action ID exists in the actions.
-	found := false
-	for _, a := range af.Actions {
-		if a.ID == actionID {
-			found = true
-			break
-		}
-	}
-	if !found {
-		log.Errorf("Could not find foward action id in the actions.")
-		return fmt.Errorf("foward action id not found")
+	// get target action
+	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, actionID, false)
+	if err != nil {
+		log.Errorf("Could not find forward action in the stacks.")
+		return fmt.Errorf("forward action not found")
 	}
 
 	// update active flow
-	af.ForwardActionID = actionID
+	af.ForwardStackID = targetStackID
+	af.ForwardActionID = targetAction.ID
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow.")
 		return err
@@ -137,42 +144,14 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	return nil
 }
 
-// GetNextAction returns next action from the active-flow
-// It sets next action to current action.
-func (h *activeflowHandler) GetNextAction(ctx context.Context, id uuid.UUID, caID uuid.UUID) (*action.Action, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":              "GetNextAction",
-		"id":                id,
-		"current_action_id": caID,
-	})
-
-	// get next action from the active
-	nextAction, err := h.getNextAction(ctx, id, caID)
-	if err != nil {
-		log.Errorf("Could not get next action. Deleting activeflow. err: %v", err)
-		_, _ = h.Delete(ctx, id)
-		return nil, err
-	}
-	log.WithField("action", nextAction).Debug("Found next action.")
-
-	// execute the active action
-	res, err := h.executeAction(ctx, id, nextAction)
-	if err != nil {
-		log.Errorf("Could not execute the active action. Deleting activeflow. err: %v", err)
-		_, _ = h.Delete(ctx, id)
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // updateCurrentAction updates the current action in active-flow.
 // returns updated active flow
-func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUID, act *action.Action) (*activeflow.Activeflow, error) {
+func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUID, stackID uuid.UUID, act *action.Action) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":      "activeFlowUpdateCurrentAction",
+			"func":      "updateCurrentAction",
 			"id":        id,
+			"stack_id":  stackID,
 			"action_id": act,
 		},
 	)
@@ -186,10 +165,12 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 
 	// update active flow
 	af.ExecutedActions = append(af.ExecutedActions, af.CurrentAction)
+	af.CurrentStackID = stackID
 	af.CurrentAction = *act
+	af.ForwardStackID = stack.IDEmpty
 	af.ForwardActionID = action.IDEmpty
-	af.TMUpdate = dbhandler.GetCurTime()
 	af.ExecuteCount++
+	af.TMUpdate = h.db.GetCurTime()
 
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active-flow's current action. err: %v", err)

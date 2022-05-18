@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
 )
 
 // Activeflow struct
@@ -19,11 +20,19 @@ type Activeflow struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 
-	CurrentAction   action.Action `json:"current_action"`
-	ExecuteCount    uint64        `json:"execute_count"`
-	ForwardActionID uuid.UUID     `json:"forward_action_id"`
+	// stack
+	StackMap map[uuid.UUID]*stack.Stack `json:"stack_map"`
 
-	Actions         []action.Action `json:"actions"`
+	// current info
+	CurrentStackID uuid.UUID     `json:"current_stack_id"`
+	CurrentAction  action.Action `json:"current_action"`
+
+	// forward info
+	ForwardStackID  uuid.UUID `json:"forward_stack_id"`
+	ForwardActionID uuid.UUID `json:"forward_action_id"`
+
+	// execute
+	ExecuteCount    uint64          `json:"execute_count"`
 	ExecutedActions []action.Action `json:"executed_actions"` // list of executed actions
 
 	TMCreate string `json:"tm_create"`

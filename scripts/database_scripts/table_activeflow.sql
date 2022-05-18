@@ -1,17 +1,22 @@
 create table activeflows(
   -- identity
   id          binary(16),
+
   customer_id binary(16),
   flow_id     binary(16),
 
   reference_type  varchar(255),
   reference_id    binary(16),
 
-  current_action        json,
-  execute_count         integer,
-  forward_action_id     binary(16),
+  stack_map json,
 
-  actions           json,
+  current_stack_id  binary(16),
+  current_action    json,
+
+  forward_stack_id    binary(16),
+  forward_action_id   binary(16),
+
+  execute_count     integer,
   executed_actions  json,
 
   -- timestamps
