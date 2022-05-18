@@ -12,16 +12,14 @@ import (
 type WebhookMessage struct {
 	ID uuid.UUID `json:"id"`
 
-	FlowID     uuid.UUID `json:"flow_id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	FlowID uuid.UUID `json:"flow_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 
-	CurrentAction   action.Action `json:"current_action"`
-	ForwardActionID uuid.UUID     `json:"forward_action_id"`
+	CurrentAction action.Action `json:"current_action"`
 
-	Actions []action.Action `json:"actions"`
+	ForwardActionID uuid.UUID `json:"forward_action_id"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -38,10 +36,9 @@ func (h *Activeflow) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
-		CurrentAction:   h.CurrentAction,
-		ForwardActionID: h.ForwardActionID,
+		CurrentAction: h.CurrentAction,
 
-		Actions: h.Actions,
+		ForwardActionID: h.ForwardActionID,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

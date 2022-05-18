@@ -15,15 +15,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 )
 
 // actionHandleGotoLoop handles goto action's loop condition.
 // it updates the loop_count.
-func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *activeflow.Activeflow, act *action.Action, opt *action.OptionGoto) error {
 	log := logrus.New().WithFields(
 		logrus.Fields{
-			"func":              "activeFlowHandleActionGotoLoop",
+			"func":              "actionHandleGotoLoop",
 			"activeflow_id":     af.ID,
 			"reference_type":    af.ReferenceType,
 			"reference_id":      af.ReferenceID,
@@ -31,26 +30,17 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 		},
 	)
 
+	// find action
+	_, orgAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, act.ID, false)
+	if err != nil {
+		log.Errorf("Could not get original action. err: %v", err)
+		return err
+	}
+
 	// find goto action
-	idx := 0
-	var act action.Action
-	found := false
-	for i, a := range af.Actions {
-		if a.ID == af.CurrentAction.ID {
-			idx = i
-			act = a
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("current action not found")
-	}
-
-	var opt action.OptionGoto
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
-		log.Errorf("Could not unmarshal the goto option. err: %v", err)
+	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.TargetID, false)
+	if err != nil {
+		log.Errorf("Could not find loop target action. err: %v", err)
 		return err
 	}
 
@@ -60,9 +50,10 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 		log.Errorf("Could not marshal the goto option. err: %v", err)
 		return err
 	}
-	af.Actions[idx].Option = raw
 
-	af.ForwardActionID = opt.TargetID
+	orgAction.Option = raw
+	af.ForwardStackID = targetStackID
+	af.ForwardActionID = targetAction.ID
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
@@ -73,7 +64,7 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 
 // actionHandleFetch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "actionHandleFetch",
 		"activeflow_id":     af.ID,
@@ -81,24 +72,25 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
 	})
-	act := &af.CurrentAction
 
 	// patch the actions from the remote
-	patchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
+	fetchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not patch the actions from the remote. err: %v", err)
+		log.Errorf("Could not fetch the actions from the remote. err: %v", err)
 		return err
 	}
 
-	// replace the patched actions to the active flow
-	if err := replaceActions(af, act.ID, patchedActions); err != nil {
-		log.Errorf("Could not append new action. err: %v", err)
-		return fmt.Errorf("could not append new action. err: %v", err)
+	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, fetchedActions, af.CurrentStackID, af.CurrentAction.ID)
+	if err != nil {
+		log.Errorf("Could not push the actions. err: %s", err)
+		return err
 	}
-	af.TMUpdate = dbhandler.GetCurTime()
 
-	// set active flow
-	af.ForwardActionID = patchedActions[0].ID
+	// update forward actions
+	af.ForwardStackID = resStackID
+	af.ForwardActionID = resAction.ID
+
+	// update active flow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
@@ -126,21 +118,23 @@ func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activ
 	}
 
 	// patch the actions from the remote
-	patchedActions, err := h.getActionsFromFlow(ctx, option.FlowID, af.CustomerID)
+	fetchedActions, err := h.getActionsFromFlow(ctx, option.FlowID, af.CustomerID)
 	if err != nil {
 		log.Errorf("Could not patch the actions from the remote. err: %v", err)
 		return err
 	}
 
-	// replace the patched actions to the active flow
-	if err := replaceActions(af, act.ID, patchedActions); err != nil {
-		log.Errorf("Could not append new action. err: %v", err)
-		return fmt.Errorf("could not append new action. err: %v", err)
+	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, fetchedActions, af.CurrentStackID, af.CurrentAction.ID)
+	if err != nil {
+		log.Errorf("Could not push the actions. err: %s", err)
+		return err
 	}
-	af.TMUpdate = dbhandler.GetCurTime()
 
-	// set active flow
-	af.ForwardActionID = patchedActions[0].ID
+	// update forward actions
+	af.ForwardStackID = resStackID
+	af.ForwardActionID = resAction.ID
+
+	// update active flow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
@@ -185,9 +179,16 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 		return nil
 	}
 
+	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
+	if err != nil {
+		log.Errorf("Could not find false target action. err: %v", err)
+		return err
+	}
+
 	// failed
 	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
-	af.ForwardActionID = opt.FalseTargetID
+	af.ForwardStackID = targetStackID
+	af.ForwardActionID = targetAction.ID
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
@@ -229,9 +230,16 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 		return nil
 	}
 
+	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
+	if err != nil {
+		log.Errorf("Could not find false target action. err: %v", err)
+		return err
+	}
+	log.Debugf("Could not match the condition. Forward to the false target. target_stack_id:%s, target_action_id: %s", targetStackID, targetAction.ID)
+
 	// failed
-	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
-	af.ForwardActionID = opt.FalseTargetID
+	af.ForwardStackID = targetStackID
+	af.ForwardActionID = targetAction.ID
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
@@ -279,15 +287,17 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 		return err
 	}
 
-	// replace the patched actions to the active flow
-	if err := replaceActions(af, act.ID, f.Actions); err != nil {
-		log.Errorf("Could not append new action. err: %v", err)
-		return fmt.Errorf("could not append new action. err: %v", err)
+	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, f.Actions, af.CurrentStackID, af.CurrentAction.ID)
+	if err != nil {
+		log.Errorf("Could not push the actions. err: %s", err)
+		return err
 	}
-	af.TMUpdate = dbhandler.GetCurTime()
 
-	// set active flow
-	af.ForwardActionID = f.Actions[0].ID
+	// update forward actions
+	af.ForwardStackID = resStackID
+	af.ForwardActionID = resAction.ID
+
+	// update active flow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
@@ -363,18 +373,23 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	log.WithField("calls", resCall).Debugf("Created outgoing call for connect without master call id. count: %d", len(resCall))
 
 	// put original call into the created conference
-	resAction := action.Action{
-		ID:     uuid.Must(uuid.NewV4()),
-		Type:   action.TypeConferenceJoin,
-		Option: optString,
+	tmpActions := []action.Action{
+		{
+			ID:     uuid.Must(uuid.NewV4()),
+			Type:   action.TypeConferenceJoin,
+			Option: optString,
+		},
 	}
 
-	// append the created action to the given action id.
-	if err := appendActions(af, act.ID, []action.Action{resAction}); err != nil {
-		log.Errorf("Could not append new action. err: %v", err)
-		return fmt.Errorf("could not append new action. err: %v", err)
+	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, tmpActions, af.CurrentStackID, af.CurrentAction.ID)
+	if err != nil {
+		log.Errorf("Could not push the actions. err: %s", err)
+		return err
 	}
-	af.TMUpdate = dbhandler.GetCurTime()
+
+	// update forward actions
+	af.ForwardStackID = resStackID
+	af.ForwardActionID = resAction.ID
 
 	// update active flow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
@@ -386,7 +401,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 }
 
 // actionHandleGoto handles action goto with active flow.
-func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow.Activeflow) error {
+func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow.Activeflow, act *action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionGoto",
 		"activeflow_id":     af.ID,
@@ -394,7 +409,6 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
 	})
-	act := &af.CurrentAction
 	log.WithField("action", act).Debug("Handle action goto.")
 
 	var opt action.OptionGoto
@@ -408,7 +422,7 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow
 		return nil
 	}
 
-	if err := h.actionHandleGotoLoop(ctx, af); err != nil {
+	if err := h.actionHandleGotoLoop(ctx, af, act, &opt); err != nil {
 		log.Errorf("Could not update the active flow for action goto. err: %v", err)
 		return err
 	}
@@ -472,7 +486,7 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 // actionHandleAgentCall handles action agent_call with active flow.
 func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionAgentCall",
+		"func":              "actionHandleAgentCall",
 		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
@@ -533,18 +547,23 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 		return fmt.Errorf("could not marshal the conference join option. err: %v", err)
 	}
 
-	resAction := action.Action{
-		ID:     uuid.Must(uuid.NewV4()),
-		Type:   action.TypeConferenceJoin,
-		Option: optString,
+	tmpActions := []action.Action{
+		{
+			ID:     uuid.Must(uuid.NewV4()),
+			Type:   action.TypeConferenceJoin,
+			Option: optString,
+		},
 	}
 
-	// append the created action to the given action id.
-	if err := appendActions(af, act.ID, []action.Action{resAction}); err != nil {
-		log.Errorf("Could not append new action. err: %v", err)
-		return fmt.Errorf("could not append new action. err: %v", err)
+	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, tmpActions, af.CurrentStackID, af.CurrentAction.ID)
+	if err != nil {
+		log.Errorf("Could not push the actions. err: %s", err)
+		return err
 	}
-	af.TMUpdate = dbhandler.GetCurTime()
+
+	// update forward actions
+	af.ForwardStackID = resStackID
+	af.ForwardActionID = resAction.ID
 
 	// update active flow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
@@ -574,20 +593,14 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	queueID := opt.QueueID
 	log = log.WithField("queue_id", queueID)
 
-	// get exit action id
-	// because we will update the active flow's actions, we need to getting the exit action id before.
-	exitActionID, err := h.getExitActionID(af.Actions, act.ID)
-	if err != nil {
-		log.Errorf("Could not get exit action id. err: %v", err)
-		return err
-	}
-	log.Debugf("Found exit action id. action_id: %s", exitActionID)
+	exitStackID, exitAction := h.stackHandler.GetNextAction(ctx, af.StackMap, af.CurrentStackID, &af.CurrentAction, false)
+	log.WithField("exit_action", exitAction).Debugf("Found exit action info. stack_id: %s, action_id: %s", exitStackID, exitAction.ID)
 
 	// send the queue join request
-	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, queueID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitActionID)
+	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, queueID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitAction.ID)
 	if err != nil {
-		log.WithField("exit_action_id", exitActionID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
-		errForward := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, af.ReferenceID, exitActionID, true)
+		log.WithField("exit_action_id", exitAction.ID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
+		errForward := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, af.ReferenceID, exitAction.ID, true)
 		if errForward != nil {
 			log.Errorf("Could not forward the active flow. err: %v", errForward)
 		}
@@ -602,17 +615,19 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	}
 	log.WithField("fetched_actions", fetchedActions).Debugf("Fetched actions detail.")
 
-	// replace the patched actions to the active flow
-	if err := replaceActions(af, act.ID, fetchedActions); err != nil {
-		log.Errorf("Could not replace new action. err: %v", err)
-		return fmt.Errorf("could not replace new action. err: %v", err)
+	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, fetchedActions, af.CurrentStackID, af.CurrentAction.ID)
+	if err != nil {
+		log.Errorf("Could not push the actions. err: %s", err)
+		return err
 	}
 
-	// set active flow
-	af.TMUpdate = dbhandler.GetCurTime()
-	af.ForwardActionID = fetchedActions[0].ID
+	// update forward actions
+	af.ForwardStackID = resStackID
+	af.ForwardActionID = resAction.ID
+
+	// update active flow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after replace the patched actions. err: %v", err)
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
 	}
 
@@ -663,7 +678,14 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 		log.Debugf("Input digit is not listed in the branch. digit: %s, default_target_id: %s", digits, targetID)
 	}
 
-	af.ForwardActionID = targetID
+	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, targetID, false)
+	if err != nil {
+		log.Errorf("Could not get target action. err: %v", err)
+		return err
+	}
+
+	af.ForwardStackID = targetStackID
+	af.ForwardActionID = targetAction.ID
 	if errSet := h.db.ActiveflowUpdate(ctx, af); errSet != nil {
 		log.Errorf("Could not update the active flow. err: %v", errSet)
 		return err

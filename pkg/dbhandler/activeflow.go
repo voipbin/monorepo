@@ -23,11 +23,15 @@ const (
 		reference_type,
 		reference_id,
 
+		stack_map,
+
+		current_stack_id,
 		current_action,
-		execute_count,
+
+		forward_stack_id,
 		forward_action_id,
 
-		actions,
+		execute_count,
 		executed_actions,
 
 		tm_create,
@@ -41,7 +45,7 @@ const (
 // activeflowGetFromRow gets the activeflow from the row.
 func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, error) {
 	var currentAction string
-	var actions string
+	var stackMap string
 	var executedActions string
 
 	res := &activeflow.Activeflow{}
@@ -54,11 +58,15 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 		&res.ReferenceType,
 		&res.ReferenceID,
 
+		&stackMap,
+
+		&res.CurrentStackID,
 		&currentAction,
-		&res.ExecuteCount,
+
+		&res.ForwardStackID,
 		&res.ForwardActionID,
 
-		&actions,
+		&res.ExecuteCount,
 		&executedActions,
 
 		&res.TMCreate,
@@ -71,11 +79,11 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 	if err := json.Unmarshal([]byte(currentAction), &res.CurrentAction); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the CurrentAction. activeflowGetFromRow. err: %v", err)
 	}
-	if err := json.Unmarshal([]byte(actions), &res.Actions); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the Actions. activeflowGetFromRow. err: %v", err)
-	}
 	if err := json.Unmarshal([]byte(executedActions), &res.ExecutedActions); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the ExecutedActions. activeflowGetFromRow. err: %v", err)
+	}
+	if err := json.Unmarshal([]byte(stackMap), &res.StackMap); err != nil {
+		return nil, fmt.Errorf("could not unmarshal the StackMap. activeflowGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -86,26 +94,34 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 
 	q := `insert into activeflows(
 		id,
+
 		customer_id,
 		flow_id,
 
 		reference_type,
 		reference_id,
 
+		stack_map,
+
+		current_stack_id,
 		current_action,
-		execute_count,
+
+		forward_stack_id,
 		forward_action_id,
 
-		actions,
+		execute_count,
 		executed_actions,
 
 		tm_create,
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?,
+		?,
 		?, ?,
-		?, ?, ?,
+		?, ?,
+		?,
+		?, ?,
+		?, ?,
 		?, ?,
 		?, ?, ?
 		)`
@@ -120,29 +136,34 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 		return fmt.Errorf("could not marshal current_actions. ActiveflowCreate. err: %v", err)
 	}
 
-	tmpActions, err := json.Marshal(f.Actions)
-	if err != nil {
-		return fmt.Errorf("could not marshal actions. ActiveflowCreate. err: %v", err)
-	}
-
 	tmpExecutedActions, err := json.Marshal(f.ExecutedActions)
 	if err != nil {
 		return fmt.Errorf("could not marshal executed_actions. ActiveflowCreate. err: %v", err)
 	}
 
+	tmpStackMap, err := json.Marshal(f.StackMap)
+	if err != nil {
+		return fmt.Errorf("could not marshal stack_map. ActiveflowCreate. err: %v", err)
+	}
+
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
+
 		f.CustomerID.Bytes(),
 		f.FlowID.Bytes(),
 
 		f.ReferenceType,
 		f.ReferenceID.Bytes(),
 
+		tmpStackMap,
+
+		f.CurrentStackID.Bytes(),
 		tmpCurrentAction,
-		f.ExecuteCount,
+
+		f.ForwardStackID.Bytes(),
 		f.ForwardActionID.Bytes(),
 
-		tmpActions,
+		f.ExecuteCount,
 		tmpExecutedActions,
 
 		f.TMCreate,
@@ -282,12 +303,17 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflo
 
 	q := `
 	update activeflows set
+		current_stack_id = ?,
 		current_action = ?,
-		execute_count = ?,
+
+		forward_stack_id = ?,
 		forward_action_id = ?,
 
-		actions = ?,
+		stack_map = ?,
+
+		execute_count = ?,
 		executed_actions = ?,
+
 		tm_update = ?
 	where
 		id = ?
@@ -297,16 +323,16 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflo
 	if err != nil {
 		return fmt.Errorf("could not marshal current_action. ActiveflowUpdateActionInfo. err: %v", err)
 	}
-	tmpActions, err := json.Marshal(af.Actions)
+	tmpStackMap, err := json.Marshal(af.StackMap)
 	if err != nil {
-		return fmt.Errorf("could not marshal actions. ActiveflowUpdateActionInfo. err: %v", err)
+		return fmt.Errorf("could not marshal stack_map. ActiveflowUpdateActionInfo. err: %v", err)
 	}
 	tmpExecutedActions, err := json.Marshal(af.ExecutedActions)
 	if err != nil {
 		return fmt.Errorf("could not marshal executed_actions. ActiveflowUpdateActionInfo. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, tmpCurrentAction, af.ExecuteCount, af.ForwardActionID.Bytes(), tmpActions, tmpExecutedActions, GetCurTime(), af.ID.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, af.CurrentStackID.Bytes(), tmpCurrentAction, af.ForwardStackID.Bytes(), af.ForwardActionID.Bytes(), tmpStackMap, af.ExecuteCount, tmpExecutedActions, GetCurTime(), af.ID.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ActiveflowUpdateActionInfo. err: %v", err)
 	}
 

@@ -226,6 +226,20 @@ func (mr *MockDBHandlerMockRecorder) FlowUpdateActions(ctx, id, actions interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdateActions", reflect.TypeOf((*MockDBHandler)(nil).FlowUpdateActions), ctx, id, actions)
 }
 
+// GetCurTime mocks base method.
+func (m *MockDBHandler) GetCurTime() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurTime")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetCurTime indicates an expected call of GetCurTime.
+func (mr *MockDBHandlerMockRecorder) GetCurTime() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurTime", reflect.TypeOf((*MockDBHandler)(nil).GetCurTime))
+}
+
 // VariableCreate mocks base method.
 func (m *MockDBHandler) VariableCreate(ctx context.Context, t *variable.Variable) error {
 	m.ctrl.T.Helper()

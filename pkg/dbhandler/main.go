@@ -20,6 +20,9 @@ import (
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
+	// common
+	GetCurTime() string
+
 	// activeflow
 	ActiveflowCreate(ctx context.Context, af *activeflow.Activeflow) error
 	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
@@ -65,6 +68,10 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 		cache: cache,
 	}
 	return h
+}
+
+func (h *handler) GetCurTime() string {
+	return GetCurTime()
 }
 
 // GetCurTime return current utc time string
