@@ -9,7 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -227,7 +227,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 		name      string
 		id        uuid.UUID
 		request   *rabbitmqhandler.Request
-		action    *action.Action
+		action    *fmaction.Action
 		expectRes *rabbitmqhandler.Response
 	}
 
@@ -241,9 +241,9 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809"}`),
 			},
-			&action.Action{
+			&fmaction.Action{
 				ID:        uuid.FromStringOrNil("ec4c8192-994b-11ea-ab64-9b63b984b7c4"),
-				Type:      action.TypeEcho,
+				Type:      fmaction.TypeEcho,
 				TMExecute: "2020-05-03T21:35:02.809",
 			},
 			&rabbitmqhandler.Response{

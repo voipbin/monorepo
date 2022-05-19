@@ -9,7 +9,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -929,7 +929,7 @@ func TestCallSetAction(t *testing.T) {
 	type test struct {
 		name   string
 		call   *call.Call
-		action *action.Action
+		action *fmaction.Action
 
 		expectCall *call.Call
 	}
@@ -952,9 +952,9 @@ func TestCallSetAction(t *testing.T) {
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
-			&action.Action{
+			&fmaction.Action{
 				ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
-				Type:   action.TypeEcho,
+				Type:   fmaction.TypeEcho,
 				Option: []byte(`{"duration":180}`),
 			},
 
@@ -971,9 +971,9 @@ func TestCallSetAction(t *testing.T) {
 				Source:      address.Address{},
 				Destination: address.Address{},
 
-				Action: action.Action{
+				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
-					Type:   action.TypeEcho,
+					Type:   fmaction.TypeEcho,
 					Option: []byte(`{"duration":180}`),
 				},
 				Status:    call.StatusRinging,
@@ -1000,9 +1000,9 @@ func TestCallSetAction(t *testing.T) {
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
-			&action.Action{
+			&fmaction.Action{
 				ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),
-				Type: action.TypeEcho,
+				Type: fmaction.TypeEcho,
 			},
 
 			&call.Call{
@@ -1018,9 +1018,9 @@ func TestCallSetAction(t *testing.T) {
 				Source:      address.Address{},
 				Destination: address.Address{},
 
-				Action: action.Action{
+				Action: fmaction.Action{
 					ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),
-					Type: action.TypeEcho,
+					Type: fmaction.TypeEcho,
 				},
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,

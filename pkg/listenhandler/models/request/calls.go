@@ -2,7 +2,7 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
@@ -43,9 +43,9 @@ type V1DataCallsIDHealthPost struct {
 // v1 data type for CallsIDActionTimeout
 // /v1/calls/<id>/action-timeout POST
 type V1DataCallsIDActionTimeoutPost struct {
-	ActionID   uuid.UUID   `json:"action_id"`
-	ActionType action.Type `json:"action_type"`
-	TMExecute  string      `json:"tm_execute"` // represent when this action has executed.
+	ActionID   uuid.UUID     `json:"action_id"`
+	ActionType fmaction.Type `json:"action_type"`
+	TMExecute  string        `json:"tm_execute"` // represent when this action has executed.
 }
 
 // V1DataCallsIDChainedCallIDsPost is

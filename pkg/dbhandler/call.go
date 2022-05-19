@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 )
@@ -550,7 +550,7 @@ func (h *handler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid
 }
 
 // CallSetAction sets the call status
-func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error {
+func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *fmaction.Action) error {
 
 	// prepare
 	q := `

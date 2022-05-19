@@ -17,21 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestJoined(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := confbridgeHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		cache:         mockCache,
-		notifyHandler: mockNotify,
-	}
+func Test_Joined(t *testing.T) {
 
 	tests := []struct {
 		name         string
@@ -69,14 +55,29 @@ func TestJoined(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := confbridgeHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeAddChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID, tt.callID).Return(nil)
-			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.callID, tt.confbridgeID).Return(nil)
-
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), confbridge.EventTypeConfbridgeJoined, gomock.Any())
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+			mockDB.EXPECT().ConfbridgeAddChannelCallID(ctx, tt.confbridgeID, tt.channel.ID, tt.callID).Return(nil)
+			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.callID, tt.confbridgeID).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridgeID).Return(tt.confbridge, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(&call.Call{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
 			if err := h.Joined(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

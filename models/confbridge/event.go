@@ -10,8 +10,14 @@ const (
 	EventTypeConfbridgeLeaved  string = "confbridge_leaved"  // the call has left from the confbridge
 )
 
-// EventConfbridgeJoinedLeaved event struct for confbridge joined
-type EventConfbridgeJoinedLeaved struct {
-	ID     uuid.UUID `json:"id"`      // confbridge id
-	CallID uuid.UUID `json:"call_id"` // call id.
+// EventConfbridgeLeaved event struct for confbridge leaved
+type EventConfbridgeLeaved struct {
+	Confbridge
+	LeavedCallID uuid.UUID `json:"leaved_call_id"`
+}
+
+// EventConfbridgeJoined event struct for confbridge joined
+type EventConfbridgeJoined struct {
+	Confbridge
+	JoinedCallID uuid.UUID `json:"joined_call_id"`
 }

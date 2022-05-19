@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 )
@@ -12,9 +12,9 @@ import (
 // WebhookMessage defines
 type WebhookMessage struct {
 	// identity
-	ID           uuid.UUID `json:"id"`
-	FlowID       uuid.UUID `json:"flow_id"`       // flow id
-	Type         Type      `json:"type"`          // call type
+	ID     uuid.UUID `json:"id"`
+	FlowID uuid.UUID `json:"flow_id"` // flow id
+	Type   Type      `json:"type"`    // call type
 
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
@@ -27,11 +27,11 @@ type WebhookMessage struct {
 	Destination address.Address `json:"destination"`
 
 	// info
-	Status       Status        `json:"status"`
-	Action       action.Action `json:"action"`
-	Direction    Direction     `json:"direction"`
-	HangupBy     HangupBy      `json:"hangup_by"`
-	HangupReason HangupReason  `json:"hangup_reason"`
+	Status       Status          `json:"status"`
+	Action       fmaction.Action `json:"action"`
+	Direction    Direction       `json:"direction"`
+	HangupBy     HangupBy        `json:"hangup_by"`
+	HangupReason HangupReason    `json:"hangup_reason"`
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -45,9 +45,9 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:           h.ID,
-		FlowID:       h.FlowID,
-		Type:         h.Type,
+		ID:     h.ID,
+		FlowID: h.FlowID,
+		Type:   h.Type,
 
 		MasterCallID:   h.MasterCallID,
 		ChainedCallIDs: h.ChainedCallIDs,

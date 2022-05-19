@@ -11,7 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -54,7 +54,7 @@ type CallHandler interface {
 
 	ActionNext(ctx context.Context, c *call.Call) error
 	ActionNextForce(ctx context.Context, c *call.Call) error
-	ActionTimeout(ctx context.Context, callID uuid.UUID, a *action.Action) error
+	ActionTimeout(ctx context.Context, callID uuid.UUID, a *fmaction.Action) error
 
 	ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
 	ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)

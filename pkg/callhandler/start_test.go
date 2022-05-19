@@ -401,7 +401,6 @@ func Test_TypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 		channel      *channel.Channel
 		data         map[string]string
 		call         *call.Call
-		activeFlow   *fmactiveflow.Activeflow
 		expectAction *fmaction.Action
 	}{
 		{
@@ -425,13 +424,6 @@ func Test_TypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 				Direction:  call.DirectionIncoming,
 				Destination: address.Address{
 					Target: string(fmaction.TypeConfbridgeJoin),
-				},
-			},
-			&fmactiveflow.Activeflow{
-				Actions: []fmaction.Action{
-					{
-						Type: "confbridge_join",
-					},
 				},
 			},
 			&fmaction.Action{

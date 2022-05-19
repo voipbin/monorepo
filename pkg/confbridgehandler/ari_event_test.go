@@ -19,20 +19,6 @@ import (
 )
 
 func Test_ARIStasisStartTypeConference(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	h := &confbridgeHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		cache:         mockCache,
-	}
 
 	tests := []struct {
 		name       string
@@ -66,6 +52,21 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &confbridgeHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				cache:         mockCache,
+			}
+
 			ctx := context.Background()
 
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
@@ -83,20 +84,6 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 }
 
 func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	h := &confbridgeHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		cache:         mockCache,
-	}
 
 	tests := []struct {
 		name    string
@@ -130,9 +117,26 @@ func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNoRouteDestination, 0).Return(nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			if err := h.ARIStasisStart(context.Background(), tt.channel, tt.data); err == nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &confbridgeHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				cache:         mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNoRouteDestination, 0).Return(nil)
+
+			if err := h.ARIStasisStart(ctx, tt.channel, tt.data); err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
 		})
@@ -140,20 +144,6 @@ func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
 }
 
 func Test_ARIStasisStartTypeConnect(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	h := &confbridgeHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		cache:         mockCache,
-	}
 
 	tests := []struct {
 		name       string
@@ -189,6 +179,21 @@ func Test_ARIStasisStartTypeConnect(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &confbridgeHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				cache:         mockCache,
+			}
+
 			ctx := context.Background()
 
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
@@ -211,32 +216,15 @@ func Test_ARIStasisStartTypeConnect(t *testing.T) {
 	}
 }
 
-func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_ARIChannelLeftBridge(t *testing.T) {
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	h := &confbridgeHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-		reqHandler:    mockReq,
-		cache:         mockCache,
-	}
-
-	type test struct {
+	tests := []struct {
 		name         string
 		confbridgeID uuid.UUID
 		callID       uuid.UUID
 		channel      *channel.Channel
 		bridge       *bridge.Bridge
-		event        *confbridge.EventConfbridgeJoinedLeaved
-	}
-
-	tests := []test{
+	}{
 		{
 			"confbridge left",
 			uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
@@ -256,23 +244,38 @@ func TestARIChannelLeftBridgeConfbridge(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 			},
-			&confbridge.EventConfbridgeJoinedLeaved{
-				ID:     uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
-				CallID: uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
-			},
 		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(gomock.Any(), tt.confbridgeID, tt.channel.ID)
-			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.callID, uuid.Nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), confbridge.EventTypeConfbridgeLeaved, tt.event)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.callID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			err := h.ARIChannelLeftBridge(context.Background(), tt.channel, tt.bridge)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &confbridgeHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+				cache:         mockCache,
+			}
+
+			ctx := context.Background()
+
+			// Leaved
+			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.confbridgeID, tt.channel.ID)
+			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.callID, uuid.Nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridgeID).Return(&confbridge.Confbridge{}, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(&call.Call{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+
+			err := h.ARIChannelLeftBridge(ctx, tt.channel, tt.bridge)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

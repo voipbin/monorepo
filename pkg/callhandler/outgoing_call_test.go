@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 
@@ -59,8 +59,8 @@ func Test_CreateCallOutgoing(t *testing.T) {
 			},
 
 			&fmactiveflow.Activeflow{
-				CurrentAction: action.Action{
-					ID: action.IDStart,
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
 				},
 			},
 			&call.Call{
@@ -81,8 +81,8 @@ func Test_CreateCallOutgoing(t *testing.T) {
 					Target:     "testoutgoing@test.com",
 					TargetName: "test target",
 				},
-				Action: action.Action{
-					ID: action.IDStart,
+				Action: fmaction.Action{
+					ID: fmaction.IDStart,
 				},
 			},
 			"pjsip/call-out/sip:testoutgoing@test.com",
@@ -112,8 +112,8 @@ func Test_CreateCallOutgoing(t *testing.T) {
 			},
 
 			&fmactiveflow.Activeflow{
-				CurrentAction: action.Action{
-					ID: action.IDStart,
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
 				},
 			},
 			&call.Call{
@@ -134,8 +134,8 @@ func Test_CreateCallOutgoing(t *testing.T) {
 					Target:     "+123456789",
 					TargetName: "test target",
 				},
-				Action: action.Action{
-					ID: action.IDStart,
+				Action: fmaction.Action{
+					ID: fmaction.IDStart,
 				},
 			},
 			"pjsip/call-out/sip:+123456789@sip.telnyx.com;transport=udp",

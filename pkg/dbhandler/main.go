@@ -10,7 +10,7 @@ import (
 	"time"
 
 	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -50,7 +50,7 @@ type DBHandler interface {
 	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error)
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
-	CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error
+	CallSetAction(ctx context.Context, id uuid.UUID, action *fmaction.Action) error
 	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
 	CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error

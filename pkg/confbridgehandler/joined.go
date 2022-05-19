@@ -44,10 +44,16 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 		return err
 	}
 
+	cf, err := h.Get(ctx, confbridgeID)
+	if err != nil {
+		log.Errorf("Could not get confbridge info. err: %v", err)
+		return err
+	}
+
 	// Publish the event
-	evt := &confbridge.EventConfbridgeJoinedLeaved{
-		ID:     confbridgeID,
-		CallID: callID,
+	evt := &confbridge.EventConfbridgeJoined{
+		Confbridge:   *cf,
+		JoinedCallID: callID,
 	}
 	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, evt)
 
