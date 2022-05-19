@@ -21,18 +21,6 @@ import (
 )
 
 func TestActionExecuteConfbridgeJoin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
-
-	h := &callHandler{
-		reqHandler:        mockReq,
-		db:                mockDB,
-		confbridgeHandler: mockConfbridge,
-	}
 
 	tests := []struct {
 		name               string
@@ -55,6 +43,18 @@ func TestActionExecuteConfbridgeJoin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &callHandler{
+				reqHandler:        mockReq,
+				db:                mockDB,
+				confbridgeHandler: mockConfbridge,
+			}
 
 			ctx := context.Background()
 
@@ -68,24 +68,12 @@ func TestActionExecuteConfbridgeJoin(t *testing.T) {
 }
 
 func TestActionExecuteStreamEcho(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name   string
 		call   *call.Call
 		action *fmaction.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"empty option",
 			&call.Call{},
@@ -98,11 +86,23 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().AstChannelContinue(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
-			mockReq.EXPECT().CMV1CallActionTimeout(gomock.Any(), tt.call.ID, gomock.Any(), tt.action).Return(nil)
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockReq.EXPECT().AstChannelContinue(ctx, tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
+			mockReq.EXPECT().CMV1CallActionTimeout(ctx, tt.call.ID, gomock.Any(), tt.action).Return(nil)
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -110,25 +110,13 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 }
 
 func TestActionExecuteAnswer(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name         string
 		call         *call.Call
 		action       *fmaction.Action
 		expectAction *fmaction.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"empty option",
 			&call.Call{
@@ -150,11 +138,23 @@ func TestActionExecuteAnswer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.expectAction).Return(nil)
-			mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.expectAction).Return(nil)
+			mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -162,25 +162,13 @@ func TestActionExecuteAnswer(t *testing.T) {
 }
 
 func TestActionTimeoutNext(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		call    *call.Call
 		action  *fmaction.Action
 		channel *channel.Channel
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&call.Call{
@@ -210,12 +198,24 @@ func TestActionTimeoutNext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			if err := h.ActionTimeout(context.Background(), tt.call.ID, tt.action); err != nil {
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockDB.EXPECT().ChannelGet(ctx, tt.call.ChannelID).Return(tt.channel, nil)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+
+			if err := h.ActionTimeout(ctx, tt.call.ID, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -223,18 +223,8 @@ func TestActionTimeoutNext(t *testing.T) {
 }
 
 func TestActionExecuteTalk(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		call           *call.Call
@@ -244,9 +234,7 @@ func TestActionExecuteTalk(t *testing.T) {
 		expectLanguage string
 		filename       string
 		expectURI      []string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -271,6 +259,17 @@ func TestActionExecuteTalk(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
@@ -288,24 +287,12 @@ func TestActionExecuteTalk(t *testing.T) {
 }
 
 func TestActionExecuteRecordingStart(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name   string
 		call   *call.Call
 		action *fmaction.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"default",
 			&call.Call{
@@ -322,6 +309,17 @@ func TestActionExecuteRecordingStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().RecordingCreate(ctx, gomock.Any()).Return(nil)
@@ -337,25 +335,13 @@ func TestActionExecuteRecordingStart(t *testing.T) {
 }
 
 func TestActionExecuteRecordingStop(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name   string
 		call   *call.Call
 		action *fmaction.Action
 		record *recording.Recording
-	}
-
-	tests := []test{
+	}{
 		{
 			"default",
 			&call.Call{
@@ -378,12 +364,25 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.call.RecordingID).Return(tt.record, nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.call.RecordingID).Return(tt.record, nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -391,25 +390,13 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 }
 
 func TestActionExecuteDTMFReceive(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		call     *call.Call
 		duration int
 		action   *fmaction.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&call.Call{
@@ -442,11 +429,24 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return("", nil)
-			mockReq.EXPECT().CMV1CallActionTimeout(gomock.Any(), tt.call.ID, tt.duration, tt.action).Return(nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().CallDTMFGet(ctx, tt.call.ID).Return("", nil)
+			mockReq.EXPECT().CMV1CallActionTimeout(ctx, tt.call.ID, tt.duration, tt.action).Return(nil)
+
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -454,25 +454,13 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 }
 
 func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name        string
 		call        *call.Call
 		storedDTMFs string
 		action      *fmaction.Action
-	}
-
-	tests := []test{
+	}{
 		{
 			"max number key qualified",
 			&call.Call{
@@ -519,11 +507,24 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return(tt.storedDTMFs, nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().CallDTMFGet(ctx, tt.call.ID).Return(tt.storedDTMFs, nil)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -531,18 +532,8 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 }
 
 func TestActionExecuteDigitsSend(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name           string
 		call           *call.Call
 		action         *fmaction.Action
@@ -550,9 +541,7 @@ func TestActionExecuteDigitsSend(t *testing.T) {
 		expectDuration int
 		expectInterval int
 		expectTimeout  int
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&call.Call{
@@ -591,11 +580,24 @@ func TestActionExecuteDigitsSend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().AstChannelDTMF(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, tt.expectDigits, tt.expectDuration, 0, tt.expectInterval, 0)
-			mockReq.EXPECT().CMV1CallActionTimeout(gomock.Any(), tt.call.ID, tt.expectTimeout, tt.action)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockReq.EXPECT().AstChannelDTMF(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.expectDigits, tt.expectDuration, 0, tt.expectInterval, 0)
+			mockReq.EXPECT().CMV1CallActionTimeout(ctx, tt.call.ID, tt.expectTimeout, tt.action)
+
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -603,18 +605,8 @@ func TestActionExecuteDigitsSend(t *testing.T) {
 }
 
 func TestActionExecuteExternalMediaStart(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name   string
 		call   *call.Call
 		action *fmaction.Action
@@ -625,9 +617,7 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 		expectConnectionType string
 		expectFormat         string
 		expectDirection      string
-	}
-
-	tests := []test{
+	}{
 		{
 			"default",
 			&call.Call{
@@ -651,15 +641,28 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(nil, nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
-			mockReq.EXPECT().AstChannelExternalMedia(gomock.Any(), tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-			mockDB.EXPECT().ExternalMediaSet(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.call.ID).Return(nil, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockReq.EXPECT().AstBridgeCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, tt.call.ID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -667,25 +670,13 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 }
 
 func TestActionExecuteExternalMediaStop(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		call     *call.Call
 		action   *fmaction.Action
 		extMedia *externalmedia.ExternalMedia
-	}
-
-	tests := []test{
+	}{
 		{
 			"default",
 			&call.Call{
@@ -715,12 +706,25 @@ func TestActionExecuteExternalMediaStop(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(tt.extMedia, nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0)
-			mockDB.EXPECT().ExternalMediaDelete(gomock.Any(), tt.extMedia.CallID).Return(nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.call.ID).Return(tt.extMedia, nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0)
+			mockDB.EXPECT().ExternalMediaDelete(ctx, tt.extMedia.CallID).Return(nil)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -728,26 +732,14 @@ func TestActionExecuteExternalMediaStop(t *testing.T) {
 }
 
 func TestActionExecuteAMD(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name   string
 		call   *call.Call
 		action *fmaction.Action
 
 		expectAMD *callapplication.AMD
-	}
-
-	tests := []test{
+	}{
 		{
 			"sync false",
 			&call.Call{
@@ -787,14 +779,27 @@ func TestActionExecuteAMD(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
-			mockDB.EXPECT().CallApplicationAMDSet(gomock.Any(), gomock.Any(), tt.expectAMD).Return(nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockDB.EXPECT().CallApplicationAMDSet(ctx, gomock.Any(), tt.expectAMD).Return(nil)
 
 			if tt.expectAMD.Async == true {
-				mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
+				mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 			}
-			if err := h.ActionExecute(context.Background(), tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -802,18 +807,6 @@ func TestActionExecuteAMD(t *testing.T) {
 }
 
 func TestCleanCurrentAction(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
-
-	h := &callHandler{
-		reqHandler:        mockReq,
-		db:                mockDB,
-		confbridgeHandler: mockConf,
-	}
 
 	tests := []struct {
 		name      string
@@ -869,6 +862,19 @@ func TestCleanCurrentAction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &callHandler{
+				reqHandler:        mockReq,
+				db:                mockDB,
+				confbridgeHandler: mockConf,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
@@ -893,16 +899,6 @@ func TestCleanCurrentAction(t *testing.T) {
 }
 
 func TestActionNext(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
 
 	tests := []struct {
 		name    string
@@ -937,6 +933,17 @@ func TestActionNext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
@@ -951,17 +958,6 @@ func TestActionNext(t *testing.T) {
 }
 
 func TestActionNextForce(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
 
 	tests := []struct {
 		name    string
@@ -996,6 +992,18 @@ func TestActionNextForce(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)

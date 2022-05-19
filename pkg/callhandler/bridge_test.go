@@ -17,18 +17,6 @@ import (
 )
 
 func TestBridgeLeftJoin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
 
 	tests := []struct {
 		name    string
@@ -60,13 +48,28 @@ func TestBridgeLeftJoin(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
-			mockDB.EXPECT().CallSetConfbridgeID(gomock.Any(), tt.bridge.ReferenceID, uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.bridge.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			if err := h.bridgeLeftJoin(context.Background(), tt.channel, tt.bridge); err != nil {
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.bridge.ReferenceID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.bridge.ReferenceID).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+
+			if err := h.bridgeLeftJoin(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -74,24 +77,12 @@ func TestBridgeLeftJoin(t *testing.T) {
 }
 
 func TestBridgeLeftExternal(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name    string
 		channel *channel.Channel
 		bridge  *bridge.Bridge
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal external channel leftbridge",
 			&channel.Channel{
@@ -129,17 +120,30 @@ func TestBridgeLeftExternal(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 
 			if len(tt.bridge.ChannelIDs) == 0 {
-				mockReq.EXPECT().AstBridgeDelete(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID)
+				mockReq.EXPECT().AstBridgeDelete(ctx, tt.bridge.AsteriskID, tt.bridge.ID)
 			} else {
 				for _, channelID := range tt.bridge.ChannelIDs {
-					mockReq.EXPECT().AstBridgeRemoveChannel(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID, channelID).Return(nil)
+					mockReq.EXPECT().AstBridgeRemoveChannel(ctx, tt.bridge.AsteriskID, tt.bridge.ID, channelID).Return(nil)
 				}
 			}
 
-			if err := h.bridgeLeftExternal(context.Background(), tt.channel, tt.bridge); err != nil {
+			if err := h.bridgeLeftExternal(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -147,23 +151,11 @@ func TestBridgeLeftExternal(t *testing.T) {
 }
 
 func TestRemoveAllChannelsInBridge(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name   string
 		bridge *bridge.Bridge
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&bridge.Bridge{
@@ -179,10 +171,23 @@ func TestRemoveAllChannelsInBridge(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			for _, channelID := range tt.bridge.ChannelIDs {
-				mockReq.EXPECT().AstBridgeRemoveChannel(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID, channelID)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
-			h.removeAllChannelsInBridge(context.Background(), tt.bridge)
+
+			ctx := context.Background()
+
+			for _, channelID := range tt.bridge.ChannelIDs {
+				mockReq.EXPECT().AstBridgeRemoveChannel(ctx, tt.bridge.AsteriskID, tt.bridge.ID, channelID)
+			}
+			h.removeAllChannelsInBridge(ctx, tt.bridge)
 		})
 	}
 }

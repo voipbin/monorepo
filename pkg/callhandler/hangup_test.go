@@ -18,18 +18,6 @@ import (
 )
 
 func Test_Hangup(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotfiy,
-	}
 
 	tests := []struct {
 		name    string
@@ -79,13 +67,27 @@ func Test_Hangup(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstBridgeDelete(gomock.Any(), tt.call.AsteriskID, tt.call.BridgeID).Return(nil)
-			mockDB.EXPECT().CallSetHangup(gomock.Any(), tt.call.ID, call.HangupReasonNormal, call.HangupByRemote, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallHungup, gomock.Any())
-			mockReq.EXPECT().FMV1ActiveflowDelete(gomock.Any(), tt.call.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotfiy,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.call, nil)
+			mockReq.EXPECT().AstBridgeDelete(ctx, tt.call.AsteriskID, tt.call.BridgeID).Return(nil)
+			mockDB.EXPECT().CallSetHangup(ctx, tt.call.ID, call.HangupReasonNormal, call.HangupByRemote, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallHungup, gomock.Any())
+			mockReq.EXPECT().FMV1ActiveflowDelete(ctx, tt.call.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
 
 			for _, chainedCallID := range tt.call.ChainedCallIDs {
 				tmpCall := &call.Call{
@@ -95,11 +97,11 @@ func Test_Hangup(t *testing.T) {
 					Status:     call.StatusProgressing,
 				}
 
-				mockDB.EXPECT().CallGet(gomock.Any(), chainedCallID).Return(tmpCall, nil)
-				mockDB.EXPECT().CallSetStatus(gomock.Any(), tmpCall.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-				mockReq.EXPECT().AstChannelHangup(gomock.Any(), tmpCall.AsteriskID, tmpCall.ChannelID, ari.ChannelCauseNormalClearing, 0)
+				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
+				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating, gomock.Any()).Return(nil)
+				mockReq.EXPECT().AstChannelHangup(ctx, tmpCall.AsteriskID, tmpCall.ChannelID, ari.ChannelCauseNormalClearing, 0)
 			}
-			if err := h.Hangup(context.Background(), tt.channel); err != nil {
+			if err := h.Hangup(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -107,18 +109,6 @@ func Test_Hangup(t *testing.T) {
 }
 
 func TestHangupWithReason(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotfiy,
-	}
 
 	tests := []struct {
 		name     string
@@ -145,12 +135,26 @@ func TestHangupWithReason(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB.EXPECT().CallSetHangup(gomock.Any(), tt.call.ID, tt.reason, tt.hangupBy, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallHungup, tt.call)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 
-			if err := h.HangupWithReason(context.Background(), tt.call, tt.reason, tt.hangupBy, dbhandler.GetCurTime()); err != nil {
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotfiy,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetHangup(ctx, tt.call.ID, tt.reason, tt.hangupBy, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallHungup, tt.call)
+
+			if err := h.HangupWithReason(ctx, tt.call, tt.reason, tt.hangupBy, dbhandler.GetCurTime()); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

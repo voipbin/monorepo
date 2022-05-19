@@ -17,16 +17,6 @@ import (
 )
 
 func TestExternalMediaStart(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -71,11 +61,24 @@ func TestExternalMediaStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
-			mockReq.EXPECT().AstChannelExternalMedia(gomock.Any(), tt.call.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-			_, err := h.ExternalMediaStart(context.Background(), tt.call.ID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockReq.EXPECT().AstBridgeCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.call.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			_, err := h.ExternalMediaStart(ctx, tt.call.ID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -84,16 +87,6 @@ func TestExternalMediaStart(t *testing.T) {
 }
 
 func TestExternalMediaStop(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
 
 	tests := []struct {
 		name     string
@@ -134,14 +127,26 @@ func TestExternalMediaStop(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB.EXPECT().ExternalMediaGet(gomock.Any(), tt.call.ID).Return(tt.extMedia, nil)
-			if tt.extMedia != nil {
-				mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
-				mockDB.EXPECT().ExternalMediaDelete(gomock.Any(), tt.call.ID).Return(nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
 
-			if err := h.ExternalMediaStop(context.Background(), tt.call.ID); err != nil {
+			ctx := context.Background()
+
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.call.ID).Return(tt.extMedia, nil)
+			if tt.extMedia != nil {
+				mockReq.EXPECT().AstChannelHangup(ctx, tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+				mockDB.EXPECT().ExternalMediaDelete(ctx, tt.call.ID).Return(nil)
+			}
+
+			if err := h.ExternalMediaStop(ctx, tt.call.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
