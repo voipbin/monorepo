@@ -16,29 +16,15 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestCreateEndpointTarget(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_createEndpointTarget(t *testing.T) {
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	h := confbridgeHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-		cache:      mockCache,
-	}
-
-	type test struct {
+	tests := []struct {
 		name            string
 		asteriskAddress string
 		confbridge      *confbridge.Confbridge
 		bridge          *bridge.Bridge
 		expectEndpoint  string
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			"10.10.10.10",
@@ -57,11 +43,25 @@ func TestCreateEndpointTarget(t *testing.T) {
 	for _, tt := range tests {
 
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.confbridge.BridgeID).Return(tt.bridge, nil)
-			mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridge.AsteriskID).Return(tt.asteriskAddress, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
-			res, err := h.createEndpointTarget(context.Background(), tt.confbridge)
+			h := confbridgeHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+				cache:      mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().BridgeGet(ctx, tt.confbridge.BridgeID).Return(tt.bridge, nil)
+			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.bridge.AsteriskID).Return(tt.asteriskAddress, nil)
+
+			res, err := h.createEndpointTarget(ctx, tt.confbridge)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -73,23 +73,9 @@ func TestCreateEndpointTarget(t *testing.T) {
 	}
 }
 
-func TestJoin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_Join(t *testing.T) {
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := confbridgeHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		cache:         mockCache,
-		notifyHandler: mockNotify,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		confbridge *confbridge.Confbridge
 		call       *call.Call
@@ -97,9 +83,7 @@ func TestJoin(t *testing.T) {
 		bridge *bridge.Bridge
 
 		expectReqVariables map[string]string
-	}
-
-	tests := []test{
+	}{
 		{
 			"has bridge id",
 			&confbridge.Confbridge{
@@ -172,28 +156,43 @@ func TestJoin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := confbridgeHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridge.ID).Return(tt.confbridge, nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 
 			if tt.call.Status == call.StatusRinging {
-				mockReq.EXPECT().AstChannelAnswer(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+				mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			}
 			if tt.confbridge.BridgeID != "" {
-				mockDB.EXPECT().BridgeGet(gomock.Any(), tt.confbridge.BridgeID).Return(tt.bridge, nil)
-				mockReq.EXPECT().AstBridgeGet(gomock.Any(), tt.bridge.AsteriskID, tt.bridge.ID).Return(tt.bridge, nil)
+				mockDB.EXPECT().BridgeGet(ctx, tt.confbridge.BridgeID).Return(tt.bridge, nil)
+				mockReq.EXPECT().AstBridgeGet(ctx, tt.bridge.AsteriskID, tt.bridge.ID).Return(tt.bridge, nil)
 			} else {
 				// todo: check bridge creation
-				mockReq.EXPECT().AstBridgeCreate(gomock.Any(), requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(nil)
+				mockReq.EXPECT().AstBridgeCreate(ctx, requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(nil)
 				mockDB.EXPECT().BridgeGetUntilTimeout(gomock.Any(), gomock.Any()).Return(tt.bridge, nil)
-				mockDB.EXPECT().ConfbridgeSetBridgeID(gomock.Any(), gomock.Any(), tt.bridge.ID).Return(nil)
-				mockDB.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridge.ID).Return(tt.confbridge, nil)
+				mockDB.EXPECT().ConfbridgeSetBridgeID(ctx, gomock.Any(), tt.bridge.ID).Return(nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
 			}
-			mockDB.EXPECT().BridgeGet(gomock.Any(), gomock.Any()).Return(tt.bridge, nil)
-			mockCache.EXPECT().AsteriskAddressInternalGet(gomock.Any(), tt.bridge.AsteriskID).Return("test.com", nil)
+			mockDB.EXPECT().BridgeGet(ctx, gomock.Any()).Return(tt.bridge, nil)
+			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.bridge.AsteriskID).Return("test.com", nil)
 
-			mockReq.EXPECT().AstChannelCreate(gomock.Any(), tt.call.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", "", tt.expectReqVariables).Return(nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", "", tt.expectReqVariables).Return(nil)
 
 			if err := h.Join(ctx, tt.confbridge.ID, tt.call.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

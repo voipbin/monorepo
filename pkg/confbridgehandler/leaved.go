@@ -41,10 +41,28 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		return err
 	}
 
+	// get confbridge
+	cf, err := h.Get(ctx, confbridgeID)
+	if err != nil {
+		log.Errorf("Could not get confbridge. err: %v", err)
+		return err
+	}
+
+	// check the confbridge type
+	if cf.Type == confbridge.TypeConnect && len(cf.ChannelCallIDs) == 1 {
+		// kick the other channel
+		for _, joinedCallID := range cf.ChannelCallIDs {
+			log.Debugf("Kicking out the call from the confbridge. call_id: %s", joinedCallID)
+			if errKick := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ID, joinedCallID); errKick != nil {
+				log.Errorf("Could not kick the call from the confbridge. err: %v", errKick)
+			}
+		}
+	}
+
 	// Publish the event
-	evt := &confbridge.EventConfbridgeJoinedLeaved{
-		ID:     confbridgeID,
-		CallID: callID,
+	evt := &confbridge.EventConfbridgeLeaved{
+		Confbridge:   *cf,
+		LeavedCallID: callID,
 	}
 	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, evt)
 

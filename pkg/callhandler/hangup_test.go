@@ -8,7 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -48,8 +48,8 @@ func Test_Hangup(t *testing.T) {
 				ChannelID:  "70271162-1772-11ec-a941-fb10a2f9c2e7",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Status:     call.StatusProgressing,
-				Action: action.Action{
-					Type: action.TypeEcho,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
 				},
 			},
 		},
@@ -65,8 +65,8 @@ func Test_Hangup(t *testing.T) {
 				ChannelID:  "e3c68930-1778-11ec-8c04-0bcef8a75b4f",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Status:     call.StatusProgressing,
-				Action: action.Action{
-					Type: action.TypeEcho,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
 				},
 				ChainedCallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("f8913c7a-1778-11ec-bcca-dbdc63ee1e38"),
@@ -133,8 +133,8 @@ func TestHangupWithReason(t *testing.T) {
 				ChannelID:  "70271162-1772-11ec-a941-fb10a2f9c2e7",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Status:     call.StatusProgressing,
-				Action: action.Action{
-					Type: action.TypeEcho,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
 				},
 			},
 			call.HangupReasonNormal,
@@ -172,8 +172,8 @@ func TestHanginUp(t *testing.T) {
 				ChannelID:  "7877dce8-1777-11ec-b4ea-3bb953ca2fe7",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Status:     call.StatusProgressing,
-				Action: action.Action{
-					Type: action.TypeEcho,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
 				},
 			},
 			call.StatusTerminating,
@@ -187,8 +187,8 @@ func TestHanginUp(t *testing.T) {
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Status:     call.StatusDialing,
 				Direction:  call.DirectionOutgoing,
-				Action: action.Action{
-					Type: action.TypeEcho,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
 				},
 			},
 			call.StatusCanceling,

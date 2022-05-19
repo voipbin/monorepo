@@ -9,7 +9,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -642,42 +642,42 @@ func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Chann
 }
 
 // getSipServiceAction returns sip-service action handler by the call's destination.
-func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn *channel.Channel) (*action.Action, error) {
+func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn *channel.Channel) (*fmaction.Action, error) {
 	logrus.Debugf("Executing action for sip-service. call: %s, channel: %s, destination: %s", c.ID, cn.ID, cn.DestinationNumber)
 
-	var resAct *action.Action
+	var resAct *fmaction.Action
 	switch c.Destination.Target {
 
 	// answer
-	case string(action.TypeAnswer):
+	case string(fmaction.TypeAnswer):
 		// create an option for action answer
-		option := action.OptionAnswer{}
+		option := fmaction.OptionAnswer{}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", action.TypeAnswer, err)
+			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", fmaction.TypeAnswer, err)
 		}
 
 		// create an action
-		resAct = &action.Action{
-			ID:     action.IDStart,
-			Type:   action.TypeAnswer,
+		resAct = &fmaction.Action{
+			ID:     fmaction.IDStart,
+			Type:   fmaction.TypeAnswer,
 			Option: opt,
 		}
 
 	// confbridge_join
-	case string(action.TypeConfbridgeJoin):
-		option := action.OptionConfbridgeJoin{
+	case string(fmaction.TypeConfbridgeJoin):
+		option := fmaction.OptionConfbridgeJoin{
 			ConfbridgeID: uuid.FromStringOrNil(DefaultSipServiceOptionConfbridgeID),
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", action.TypeConferenceJoin, err)
+			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", fmaction.TypeConferenceJoin, err)
 		}
 
 		// create an action
-		resAct = &action.Action{
-			ID:     action.IDStart,
-			Type:   action.TypeConfbridgeJoin,
+		resAct = &fmaction.Action{
+			ID:     fmaction.IDStart,
+			Type:   fmaction.TypeConfbridgeJoin,
 			Option: opt,
 		}
 
@@ -687,59 +687,59 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		fallthrough
 
 	// echo
-	case string(action.TypeEcho):
+	case string(fmaction.TypeEcho):
 		// create default option for echo
-		option := action.OptionEcho{
+		option := fmaction.OptionEcho{
 			Duration: 180 * 1000, // duration 180 sec
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option echo. action: %s, err: %v", action.TypeEcho, err)
+			return nil, fmt.Errorf("could not marshal the option echo. action: %s, err: %v", fmaction.TypeEcho, err)
 		}
 
 		// create an action
-		resAct = &action.Action{
-			ID:     action.IDStart,
-			Type:   action.TypeEcho,
+		resAct = &fmaction.Action{
+			ID:     fmaction.IDStart,
+			Type:   fmaction.TypeEcho,
 			Option: opt,
 		}
 
 	// play
-	case string(action.TypePlay):
+	case string(fmaction.TypePlay):
 		// answer the call first
 		if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
 			return nil, fmt.Errorf("could not answer the call. err: %v", err)
 		}
 
-		option := action.OptionPlay{
+		option := fmaction.OptionPlay{
 			StreamURLs: []string{"https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", action.TypePlay, err)
+			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", fmaction.TypePlay, err)
 		}
 
 		// create an action
-		resAct = &action.Action{
-			ID:     action.IDStart,
-			Type:   action.TypePlay,
+		resAct = &fmaction.Action{
+			ID:     fmaction.IDStart,
+			Type:   fmaction.TypePlay,
 			Option: opt,
 		}
 
 	// stream_echo
-	case string(action.TypeStreamEcho):
-		option := action.OptionStreamEcho{
+	case string(fmaction.TypeStreamEcho):
+		option := fmaction.OptionStreamEcho{
 			Duration: 180 * 1000,
 		}
 		opt, err := json.Marshal(option)
 		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", action.TypeStreamEcho, err)
+			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", fmaction.TypeStreamEcho, err)
 		}
 
 		// create an action
-		resAct = &action.Action{
-			ID:     action.IDStart,
-			Type:   action.TypeStreamEcho,
+		resAct = &fmaction.Action{
+			ID:     fmaction.IDStart,
+			Type:   fmaction.TypeStreamEcho,
 			Option: opt,
 		}
 

@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -38,7 +38,7 @@ type Call struct {
 	// info
 	Status       Status            `json:"status"`
 	Data         map[string]string `json:"data"`
-	Action       action.Action     `json:"action"`
+	Action       fmaction.Action   `json:"action"`
 	Direction    Direction         `json:"direction"`
 	HangupBy     HangupBy          `json:"hangup_by"`
 	HangupReason HangupReason      `json:"hangup_reason"`

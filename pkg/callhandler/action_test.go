@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -37,7 +37,7 @@ func TestActionExecuteConfbridgeJoin(t *testing.T) {
 	tests := []struct {
 		name               string
 		call               *call.Call
-		action             *action.Action
+		action             *fmaction.Action
 		expectConfbridgeID uuid.UUID
 	}{
 		{
@@ -45,8 +45,8 @@ func TestActionExecuteConfbridgeJoin(t *testing.T) {
 			&call.Call{
 				ID: uuid.FromStringOrNil("ed1620aa-3e6e-11ec-902b-170b2849173a"),
 			},
-			&action.Action{
-				Type:   action.TypeConfbridgeJoin,
+			&fmaction.Action{
+				Type:   fmaction.TypeConfbridgeJoin,
 				Option: []byte(`{"confbridge_id":"3f5ff42c-3e6e-11ec-8c17-039eb294368c"}`),
 			},
 			uuid.FromStringOrNil("3f5ff42c-3e6e-11ec-8c17-039eb294368c"),
@@ -82,15 +82,15 @@ func TestActionExecuteStreamEcho(t *testing.T) {
 	type test struct {
 		name   string
 		call   *call.Call
-		action *action.Action
+		action *fmaction.Action
 	}
 
 	tests := []test{
 		{
 			"empty option",
 			&call.Call{},
-			&action.Action{
-				Type:   action.TypeStreamEcho,
+			&fmaction.Action{
+				Type:   fmaction.TypeStreamEcho,
 				Option: []byte(`{}`),
 			},
 		},
@@ -124,8 +124,8 @@ func TestActionExecuteAnswer(t *testing.T) {
 	type test struct {
 		name         string
 		call         *call.Call
-		action       *action.Action
-		expectAction *action.Action
+		action       *fmaction.Action
+		expectAction *fmaction.Action
 	}
 
 	tests := []test{
@@ -136,12 +136,12 @@ func TestActionExecuteAnswer(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "5b21353a-df48-11ea-8207-6fc0fa36a3fe",
 			},
-			&action.Action{
-				Type:   action.TypeAnswer,
+			&fmaction.Action{
+				Type:   fmaction.TypeAnswer,
 				Option: []byte(`{}`),
 			},
-			&action.Action{
-				Type:   action.TypeAnswer,
+			&fmaction.Action{
+				Type:   fmaction.TypeAnswer,
 				ID:     uuid.Nil,
 				Option: []byte(`{}`),
 			},
@@ -176,7 +176,7 @@ func TestActionTimeoutNext(t *testing.T) {
 	type test struct {
 		name    string
 		call    *call.Call
-		action  *action.Action
+		action  *fmaction.Action
 		channel *channel.Channel
 	}
 
@@ -187,14 +187,14 @@ func TestActionTimeoutNext(t *testing.T) {
 				ID:         uuid.FromStringOrNil("66e039c6-e3fc-11ea-ae6f-53584373e7c9"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "12a05228-e3fd-11ea-b55f-afd68e7aa755",
-				Action: action.Action{
+				Action: fmaction.Action{
 					ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
 					TMExecute: "2020-04-18T03:22:17.995000",
 				},
 			},
-			&action.Action{
+			&fmaction.Action{
 				ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
-				Type:      action.TypeAnswer,
+				Type:      fmaction.TypeAnswer,
 				Option:    []byte(`{}`),
 				TMExecute: "2020-04-18T03:22:17.995000",
 			},
@@ -238,7 +238,7 @@ func TestActionExecuteTalk(t *testing.T) {
 		name string
 
 		call           *call.Call
-		action         *action.Action
+		action         *fmaction.Action
 		expectSSML     string
 		expectGender   string
 		expectLanguage string
@@ -255,8 +255,8 @@ func TestActionExecuteTalk(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "61a1345a-2188-11eb-ba52-af82c1239d8f",
 			},
-			&action.Action{
-				Type: action.TypeTalk,
+			&fmaction.Action{
+				Type: fmaction.TypeTalk,
 				ID:   uuid.FromStringOrNil("5c9cd6be-2195-11eb-a9c9-bfc91ac88411"),
 
 				Option: []byte(`{"text":"hello world","gender":"male","language":"en-US"}`),
@@ -302,7 +302,7 @@ func TestActionExecuteRecordingStart(t *testing.T) {
 	type test struct {
 		name   string
 		call   *call.Call
-		action *action.Action
+		action *fmaction.Action
 	}
 
 	tests := []test{
@@ -313,8 +313,8 @@ func TestActionExecuteRecordingStart(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "bfd0e668-2a77-11eb-9993-e72b323b1801",
 			},
-			&action.Action{
-				Type: action.TypeRecordingStart,
+			&fmaction.Action{
+				Type: fmaction.TypeRecordingStart,
 				ID:   uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
 			},
 		},
@@ -351,7 +351,7 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 	type test struct {
 		name   string
 		call   *call.Call
-		action *action.Action
+		action *fmaction.Action
 		record *recording.Recording
 	}
 
@@ -364,8 +364,8 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 				ChannelID:   "5293419a-2b9e-11eb-bfa6-97a4312177f2",
 				RecordingID: uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
 			},
-			&action.Action{
-				Type: action.TypeRecordingStop,
+			&fmaction.Action{
+				Type: fmaction.TypeRecordingStop,
 				ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
 			},
 			&recording.Recording{
@@ -406,7 +406,7 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 		name     string
 		call     *call.Call
 		duration int
-		action   *action.Action
+		action   *fmaction.Action
 	}
 
 	tests := []test{
@@ -418,8 +418,8 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
 			1000,
-			&action.Action{
-				Type:   action.TypeDigitsReceive,
+			&fmaction.Action{
+				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
 				Option: []byte(`{"duration":1000, "length": 3}`),
 			},
@@ -432,8 +432,8 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
 			1000,
-			&action.Action{
-				Type:   action.TypeDigitsReceive,
+			&fmaction.Action{
+				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
 				Option: []byte(`{"duration":1000, "length": 3, "key": "1234567"}`),
 			},
@@ -469,7 +469,7 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 		name        string
 		call        *call.Call
 		storedDTMFs string
-		action      *action.Action
+		action      *fmaction.Action
 	}
 
 	tests := []test{
@@ -481,8 +481,8 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
 			"123",
-			&action.Action{
-				Type:   action.TypeDigitsReceive,
+			&fmaction.Action{
+				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
 				Option: []byte(`{"duration":1000, "max_number_key": 3}`),
 			},
@@ -495,8 +495,8 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
 			"#",
-			&action.Action{
-				Type:   action.TypeDigitsReceive,
+			&fmaction.Action{
+				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
 				Option: []byte(`{"duration":1000, "length": 3, "key": "#"}`),
 			},
@@ -509,8 +509,8 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
 			"*",
-			&action.Action{
-				Type:   action.TypeDigitsReceive,
+			&fmaction.Action{
+				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
 				Option: []byte(`{"duration":1000, "length": 3, "key": "1234567*"}`),
 			},
@@ -545,7 +545,7 @@ func TestActionExecuteDigitsSend(t *testing.T) {
 	type test struct {
 		name           string
 		call           *call.Call
-		action         *action.Action
+		action         *fmaction.Action
 		expectDigits   string
 		expectDuration int
 		expectInterval int
@@ -560,8 +560,8 @@ func TestActionExecuteDigitsSend(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "5daefc0e-69bf-11eb-9e3a-b7d9a5988373",
 			},
-			&action.Action{
-				Type:   action.TypeDigitsSend,
+			&fmaction.Action{
+				Type:   fmaction.TypeDigitsSend,
 				ID:     uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
 				Option: []byte(`{"digits":"12345", "duration": 500, "interval": 500}`),
 			},
@@ -577,8 +577,8 @@ func TestActionExecuteDigitsSend(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "49e625de-69c0-11eb-891d-db5407ae4982",
 			},
-			&action.Action{
-				Type:   action.TypeDigitsSend,
+			&fmaction.Action{
+				Type:   fmaction.TypeDigitsSend,
 				ID:     uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
 				Option: []byte(`{"digits":"1", "duration": 500, "interval": 500}`),
 			},
@@ -617,7 +617,7 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 	type test struct {
 		name   string
 		call   *call.Call
-		action *action.Action
+		action *fmaction.Action
 
 		expectHost           string
 		expectEncapsulation  string
@@ -635,8 +635,8 @@ func TestActionExecuteExternalMediaStart(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "4455e2f4-02f8-11ec-acf9-43a391fce607",
 			},
-			&action.Action{
-				Type:   action.TypeExternalMediaStart,
+			&fmaction.Action{
+				Type:   fmaction.TypeExternalMediaStart,
 				ID:     uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
 				Option: []byte(`{"external_host":"example.com","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both","data":""}`),
 			},
@@ -681,7 +681,7 @@ func TestActionExecuteExternalMediaStop(t *testing.T) {
 	type test struct {
 		name     string
 		call     *call.Call
-		action   *action.Action
+		action   *fmaction.Action
 		extMedia *externalmedia.ExternalMedia
 	}
 
@@ -693,8 +693,8 @@ func TestActionExecuteExternalMediaStop(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "4455e2f4-02f8-11ec-acf9-43a391fce607",
 			},
-			&action.Action{
-				Type: action.TypeExternalMediaStop,
+			&fmaction.Action{
+				Type: fmaction.TypeExternalMediaStop,
 				ID:   uuid.FromStringOrNil("50ff55d4-1aa5-11ec-8d4e-7fc834754547"),
 			},
 			&externalmedia.ExternalMedia{
@@ -742,7 +742,7 @@ func TestActionExecuteAMD(t *testing.T) {
 	type test struct {
 		name   string
 		call   *call.Call
-		action *action.Action
+		action *fmaction.Action
 
 		expectAMD *callapplication.AMD
 	}
@@ -755,8 +755,8 @@ func TestActionExecuteAMD(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 			},
-			&action.Action{
-				Type:   action.TypeAMD,
+			&fmaction.Action{
+				Type:   fmaction.TypeAMD,
 				ID:     uuid.FromStringOrNil("f681c108-19b6-11ec-bc57-635de4310a4b"),
 				Option: []byte(`{"machine_handle":"hangup"}`),
 			},
@@ -772,8 +772,8 @@ func TestActionExecuteAMD(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "7da1b4fc-19b9-11ec-948e-7f9ca90957a1",
 			},
-			&action.Action{
-				Type:   action.TypeAMD,
+			&fmaction.Action{
+				Type:   fmaction.TypeAMD,
 				ID:     uuid.FromStringOrNil("7dba7df2-19b9-11ec-b426-17e356fbf5e3"),
 				Option: []byte(`{"machine_handle":"hangup","sync":true}`),
 			},
@@ -855,8 +855,8 @@ func TestCleanCurrentAction(t *testing.T) {
 				ID:         uuid.FromStringOrNil("0d074aee-8c1a-11ec-b499-c33db4145901"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
-				Action: action.Action{
-					Type: action.TypeSleep,
+				Action: fmaction.Action{
+					Type: fmaction.TypeSleep,
 				},
 			},
 			&channel.Channel{
@@ -908,7 +908,7 @@ func TestActionNext(t *testing.T) {
 		name    string
 		call    *call.Call
 		channel *channel.Channel
-		act     *action.Action
+		act     *fmaction.Action
 	}{
 		{
 			"normal",
@@ -919,9 +919,9 @@ func TestActionNext(t *testing.T) {
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
 				ActiveFlowID: uuid.FromStringOrNil("01603928-a7bb-11ec-86d6-57ce9c598437"),
-				Action: action.Action{
+				Action: fmaction.Action{
 					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
-					Type: action.TypeAnswer,
+					Type: fmaction.TypeAnswer,
 				},
 			},
 			&channel.Channel{
@@ -929,7 +929,7 @@ func TestActionNext(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
 			},
-			&action.Action{
+			&fmaction.Action{
 				ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
 			},
 		},
@@ -967,7 +967,7 @@ func TestActionNextForce(t *testing.T) {
 		name    string
 		call    *call.Call
 		channel *channel.Channel
-		act     *action.Action
+		act     *fmaction.Action
 	}{
 		{
 			"normal",
@@ -978,9 +978,9 @@ func TestActionNextForce(t *testing.T) {
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
 				ActiveFlowID: uuid.FromStringOrNil("10bf10ce-a7bb-11ec-8327-3f6d5d146557"),
-				Action: action.Action{
+				Action: fmaction.Action{
 					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
-					Type: action.TypeAnswer,
+					Type: fmaction.TypeAnswer,
 				},
 			},
 			&channel.Channel{
@@ -988,7 +988,7 @@ func TestActionNextForce(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:00:05",
 				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
 			},
-			&action.Action{
+			&fmaction.Action{
 				ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
 			},
 		},

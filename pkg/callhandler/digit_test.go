@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -45,8 +45,8 @@ func TestDTMFReceivedNotActionDTMFReceived(t *testing.T) {
 				ID:         uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
 				ChannelID:  "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
 				AsteriskID: "80:fa:5b:5e:da:81",
-				Action: action.Action{
-					Type: action.TypeEcho,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
 				},
 			},
 			"4",
@@ -99,8 +99,8 @@ func TestDTMFReceivedContinue(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				AsteriskID: "80:fa:5b:5e:da:81",
-				Action: action.Action{
-					Type:   action.TypeDigitsReceive,
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3}`),
 				},
 			},
@@ -118,8 +118,8 @@ func TestDTMFReceivedContinue(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				AsteriskID: "80:fa:5b:5e:da:81",
-				Action: action.Action{
-					Type:   action.TypeDigitsReceive,
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3}`),
 				},
 			},
@@ -175,8 +175,8 @@ func TestDTMFReceivedStop(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				AsteriskID: "80:fa:5b:5e:da:81",
-				Action: action.Action{
-					Type:   action.TypeDigitsReceive,
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3, "key": "#*"}`),
 				},
 			},
@@ -194,8 +194,8 @@ func TestDTMFReceivedStop(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				AsteriskID: "80:fa:5b:5e:da:81",
-				Action: action.Action{
-					Type:   action.TypeDigitsReceive,
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3, "key": "#*"}`),
 				},
 			},
@@ -213,8 +213,8 @@ func TestDTMFReceivedStop(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				AsteriskID: "80:fa:5b:5e:da:81",
-				Action: action.Action{
-					Type:   action.TypeDigitsReceive,
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 2}`),
 				},
 			},

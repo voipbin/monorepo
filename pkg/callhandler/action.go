@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -66,7 +66,7 @@ func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) (boo
 }
 
 // setAction sets the action to the call
-func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
+func (h *callHandler) setAction(c *call.Call, a *fmaction.Action) error {
 	// set action
 	if err := h.db.CallSetAction(context.Background(), c.ID, a); err != nil {
 		return fmt.Errorf("could not set the action for call. call: %s, err: %v", c.ID, err)
@@ -77,7 +77,7 @@ func (h *callHandler) setAction(c *call.Call, a *action.Action) error {
 }
 
 // ActionExecute execute the action withe the call
-func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *action.Action) error {
+func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call":   c.ID,
 		"action": a,
@@ -96,53 +96,58 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *action
 		return h.reqHandler.CMV1CallActionNext(ctx, c.ID, false)
 	}
 
+	if a.ID == fmaction.IDFinish {
+		log.Infof("The action_id is finish. Hangup the call. action_id: %s", a.ID)
+		a.Type = fmaction.TypeHangup
+	}
+
 	switch a.Type {
-	case action.TypeAMD:
+	case fmaction.TypeAMD:
 		err = h.actionExecuteAMD(ctx, c, a)
 
-	case action.TypeAnswer:
+	case fmaction.TypeAnswer:
 		err = h.actionExecuteAnswer(ctx, c, a)
 
-	case action.TypeBeep:
+	case fmaction.TypeBeep:
 		err = h.actionExecuteBeep(ctx, c, a)
 
-	case action.TypeConfbridgeJoin:
+	case fmaction.TypeConfbridgeJoin:
 		err = h.actionExecuteConfbridgeJoin(ctx, c, a)
 
-	case action.TypeDigitsReceive:
+	case fmaction.TypeDigitsReceive:
 		err = h.actionExecuteDigitsReceive(ctx, c, a)
 
-	case action.TypeDigitsSend:
+	case fmaction.TypeDigitsSend:
 		err = h.actionExecuteDigitsSend(ctx, c, a)
 
-	case action.TypeEcho:
+	case fmaction.TypeEcho:
 		err = h.actionExecuteEcho(ctx, c, a)
 
-	case action.TypeExternalMediaStart:
+	case fmaction.TypeExternalMediaStart:
 		err = h.actionExecuteExternalMediaStart(ctx, c, a)
 
-	case action.TypeExternalMediaStop:
+	case fmaction.TypeExternalMediaStop:
 		err = h.actionExecuteExternalMediaStop(ctx, c, a)
 
-	case action.TypeHangup:
+	case fmaction.TypeHangup:
 		err = h.actionExecuteHangup(ctx, c, a)
 
-	case action.TypePlay:
+	case fmaction.TypePlay:
 		err = h.actionExecutePlay(ctx, c, a)
 
-	case action.TypeRecordingStart:
+	case fmaction.TypeRecordingStart:
 		err = h.actionExecuteRecordingStart(ctx, c, a)
 
-	case action.TypeRecordingStop:
+	case fmaction.TypeRecordingStop:
 		err = h.actionExecuteRecordingStop(ctx, c, a)
 
-	case action.TypeSleep:
+	case fmaction.TypeSleep:
 		err = h.actionExecuteSleep(ctx, c, a)
 
-	case action.TypeStreamEcho:
+	case fmaction.TypeStreamEcho:
 		err = h.actionExecuteStreamEcho(ctx, c, a)
 
-	case action.TypeTalk:
+	case fmaction.TypeTalk:
 		err = h.actionExecuteTalk(ctx, c, a)
 
 	default:
@@ -230,7 +235,7 @@ func (h *callHandler) ActionNextForce(ctx context.Context, c *call.Call) error {
 }
 
 // ActionTimeout handles action's timeout
-func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *action.Action) error {
+func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     callID,
 		"action_id":   a.ID,
@@ -273,7 +278,7 @@ func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *ac
 }
 
 // actionExecuteAnswer executes the action type answer
-func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call, a *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   a.ID,
@@ -281,7 +286,7 @@ func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call, a *
 		"func":        "actionExecuteAnswer",
 	})
 
-	var option action.OptionAnswer
+	var option fmaction.OptionAnswer
 	if a.Option != nil {
 		if err := json.Unmarshal(a.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -302,7 +307,7 @@ func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call, a *
 }
 
 // actionExecuteBeep executes the action type beep
-func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call, a *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   a.ID,
@@ -310,7 +315,7 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call, a *ac
 		"func":        "actionExecuteBeep",
 	})
 
-	var option action.OptionBeep
+	var option fmaction.OptionBeep
 	if a.Option != nil {
 		if err := json.Unmarshal(a.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -338,7 +343,7 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call, a *ac
 }
 
 // actionExecuteEcho executes the action type echo
-func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call, a *action.Action) error {
+func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call, a *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   a.ID,
@@ -346,7 +351,7 @@ func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call, a *ac
 		"func":        "actionExecuteEcho",
 	})
 
-	var option action.OptionEcho
+	var option fmaction.OptionEcho
 	if err := json.Unmarshal(a.Option, &option); err != nil {
 		log.Errorf("could not parse the option. err: %v", err)
 		return fmt.Errorf("could not parse the option. action: %v, err: %v", a, err)
@@ -371,7 +376,7 @@ func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call, a *ac
 }
 
 // actionExecuteConfbridgeJoin executes the action type ConferenceEnter
-func (h *callHandler) actionExecuteConfbridgeJoin(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteConfbridgeJoin(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -379,7 +384,7 @@ func (h *callHandler) actionExecuteConfbridgeJoin(ctx context.Context, c *call.C
 		"func":        "actionExecuteConfbridgeJoin",
 	})
 
-	var option action.OptionConfbridgeJoin
+	var option fmaction.OptionConfbridgeJoin
 	if err := json.Unmarshal(act.Option, &option); err != nil {
 		log.Errorf("could not parse the option. err: %v", err)
 		return err
@@ -395,7 +400,7 @@ func (h *callHandler) actionExecuteConfbridgeJoin(ctx context.Context, c *call.C
 }
 
 // actionExecutePlay executes the action type play
-func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -403,7 +408,7 @@ func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call, act *
 		"func":        "actionExecutePlay",
 	})
 
-	var option action.OptionPlay
+	var option fmaction.OptionPlay
 	if err := json.Unmarshal(act.Option, &option); err != nil {
 		log.Errorf("could not parse the option. err: %v", err)
 		return fmt.Errorf("could not parse the option. action: %v, err: %v", act, err)
@@ -433,7 +438,7 @@ func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call, act *
 // actionExecuteStreamEcho executes the action type stream_echo
 // stream_echo does not support timeout and it's blocking action.
 // need to set the channel timeout before call this action.
-func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -442,7 +447,7 @@ func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call,
 	})
 	log.Debug("Executing action.")
 
-	var option action.OptionStreamEcho
+	var option fmaction.OptionStreamEcho
 	if err := json.Unmarshal(act.Option, &option); err != nil {
 		log.Errorf("could not parse the option. err: %v", err)
 		return fmt.Errorf("could not parse the option. action: %v, err: %v", act, err)
@@ -468,7 +473,7 @@ func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call,
 }
 
 // actionExecuteHangup executes the action type hangup
-func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -476,7 +481,7 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call, act
 		"func":        "actionExecuteHangup",
 	})
 
-	var option action.OptionHangup
+	var option fmaction.OptionHangup
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -492,7 +497,7 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call, act
 }
 
 // actionExecuteTalk executes the action type talk
-func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -501,7 +506,7 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, act *
 	})
 	log.WithField("call", c).Debugf("Executing talk.")
 
-	var option action.OptionTalk
+	var option fmaction.OptionTalk
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -541,7 +546,7 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call, act *
 
 // actionExecuteRecordingStart executes the action type recording_start.
 // It starts recording.
-func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -549,7 +554,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		"func":        "actionExecuteRecordingStart",
 	})
 
-	var option action.OptionRecordingStart
+	var option fmaction.OptionRecordingStart
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -634,7 +639,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 
 // actionExecuteRecordingStop executes the action type recording_stop.
 // It stops recording.
-func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -642,7 +647,7 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 		"func":        "actionExecuteRecordingStop",
 	})
 
-	var option action.OptionRecordingStop
+	var option fmaction.OptionRecordingStop
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -675,7 +680,7 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 
 // actionExecuteDigitsReceive executes the action type dtmf_receive.
 // It collects the dtmfs within duration.
-func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -683,7 +688,7 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 		"func":        "actionExecuteDTMFReceive",
 	})
 
-	var option action.OptionDigitsReceive
+	var option fmaction.OptionDigitsReceive
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -714,7 +719,7 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 
 // actionExecuteDigitsSend executes the action type dtmf_send.
 // It sends the DTMFs to the call.
-func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -722,7 +727,7 @@ func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call,
 		"func":        "actionExecuteDigitsSend",
 	})
 
-	var option action.OptionDigitsSend
+	var option fmaction.OptionDigitsSend
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -751,7 +756,7 @@ func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call,
 }
 
 // actionExecuteExternalMediaStart executes the action type external_media_start.
-func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -766,7 +771,7 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 		return h.reqHandler.CMV1CallActionNext(ctx, c.ID, false)
 	}
 
-	var option action.OptionExternalMediaStart
+	var option fmaction.OptionExternalMediaStart
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -786,7 +791,7 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 }
 
 // actionExecuteExternalMediaStop executes the action type external_media_stop.
-func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":     c.ID,
 		"action_id":   act.ID,
@@ -806,14 +811,14 @@ func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *cal
 }
 
 // actionExecuteAMD executes the action type external_media_start.
-func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":   c.ID,
 		"action_id": act.ID,
 		"func":      "actionExecuteAMD",
 	})
 
-	var option action.OptionAMD
+	var option fmaction.OptionAMD
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)
@@ -858,14 +863,14 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, act *a
 }
 
 // actionExecuteSleep executes the action type sleep.
-func (h *callHandler) actionExecuteSleep(ctx context.Context, c *call.Call, act *action.Action) error {
+func (h *callHandler) actionExecuteSleep(ctx context.Context, c *call.Call, act *fmaction.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"call_id":   c.ID,
 		"action_id": act.ID,
 		"func":      "actionExecuteSleep",
 	})
 
-	var option action.OptionSleep
+	var option fmaction.OptionSleep
 	if act.Option != nil {
 		if err := json.Unmarshal(act.Option, &option); err != nil {
 			log.Errorf("could not parse the option. err: %v", err)

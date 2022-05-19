@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -37,7 +37,7 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 		},
 	)
 
-	if c.Action.Type != action.TypeDigitsReceive {
+	if c.Action.Type != fmaction.TypeDigitsReceive {
 		// overwrite dtmf receive cache.
 		log.WithField("action_type", c.Action.Type).Debug("The current action is not dtmf receive.")
 
@@ -52,7 +52,7 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 		return nil
 	}
 
-	var option action.OptionDigitsReceive
+	var option fmaction.OptionDigitsReceive
 	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
 		log.WithField("action", c.Action).Errorf("could not parse the option. err: %v", err)
 		return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
