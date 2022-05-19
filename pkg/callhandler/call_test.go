@@ -15,27 +15,13 @@ import (
 )
 
 func Test_create(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-
-	type test struct {
+	tests := []struct {
 		name          string
 		call          *call.Call
 		expectReqCall *call.Call
 		expectRes     *call.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&call.Call{
@@ -64,6 +50,19 @@ func Test_create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallCreate(ctx, tt.expectReqCall).Return(nil)
@@ -84,20 +83,8 @@ func Test_create(t *testing.T) {
 }
 
 func Test_Gets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -106,9 +93,7 @@ func Test_Gets(t *testing.T) {
 
 		responseGets []*call.Call
 		expectRes    []*call.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -131,6 +116,19 @@ func Test_Gets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGets(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseGets, nil)

@@ -15,28 +15,14 @@ import (
 )
 
 func TestChainedCallIDAdd(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 		call *call.Call
 
 		id           uuid.UUID
 		chaindCallID uuid.UUID
-	}
-
-	tests := []test{
+	}{
 		{
 			"call status progressing",
 			&call.Call{
@@ -71,18 +57,33 @@ func TestChainedCallIDAdd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
 			mockDB.EXPECT().CallTXStart(tt.call.ID).Return(nil, tt.call, nil)
 			mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.call.ID, tt.chaindCallID).Return(nil)
-			mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.chaindCallID, tt.call.ID).Return(nil)
+			mockDB.EXPECT().CallSetMasterCallID(ctx, tt.chaindCallID, tt.call.ID).Return(nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.chaindCallID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.chaindCallID).Return(&call.Call{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
-			res, err := h.ChainedCallIDAdd(context.Background(), tt.id, tt.chaindCallID)
+			res, err := h.ChainedCallIDAdd(ctx, tt.id, tt.chaindCallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -96,24 +97,12 @@ func TestChainedCallIDAdd(t *testing.T) {
 }
 
 func TestChainedCallIDAddFailStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name         string
 		call         *call.Call
 		chaindCallID uuid.UUID
-	}
-
-	tests := []test{
+	}{
 		{
 			"call status terminating",
 			&call.Call{
@@ -145,10 +134,23 @@ func TestChainedCallIDAddFailStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
+			ctx := context.Background()
+
 			mockDB.EXPECT().CallTXStart(tt.call.ID).Return(nil, tt.call, nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), false)
 
-			_, err := h.ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chaindCallID)
+			_, err := h.ChainedCallIDAdd(ctx, tt.call.ID, tt.chaindCallID)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
@@ -157,28 +159,14 @@ func TestChainedCallIDAddFailStatus(t *testing.T) {
 }
 
 func TestChainedCallIDRemove(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &callHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 		call *call.Call
 
 		id           uuid.UUID
 		chaindCallID uuid.UUID
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&call.Call{
@@ -192,18 +180,33 @@ func TestChainedCallIDRemove(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
 			mockDB.EXPECT().CallTXStart(tt.call.ID).Return(nil, tt.call, nil)
 			mockDB.EXPECT().CallTXRemoveChainedCallID(gomock.Any(), tt.call.ID, tt.chaindCallID).Return(nil)
-			mockDB.EXPECT().CallSetMasterCallID(gomock.Any(), tt.chaindCallID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallSetMasterCallID(ctx, tt.chaindCallID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
 
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.chaindCallID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.chaindCallID).Return(&call.Call{}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
-			res, err := h.ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chaindCallID)
+			res, err := h.ChainedCallIDRemove(ctx, tt.call.ID, tt.chaindCallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

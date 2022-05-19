@@ -16,17 +16,6 @@ import (
 )
 
 func Test_startServiceFromAMD(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
 	tests := []struct {
 		name    string
 		channel *channel.Channel
@@ -87,6 +76,17 @@ func Test_startServiceFromAMD(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channel.ID).Return(tt.responseAMD, nil)

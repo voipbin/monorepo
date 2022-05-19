@@ -15,26 +15,14 @@ import (
 )
 
 func TestDTMFReceivedNotActionDTMFReceived(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		channel  *channel.Channel
 		call     *call.Call
 		digit    string
 		duration int
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&channel.Channel{
@@ -56,6 +44,16 @@ func TestDTMFReceivedNotActionDTMFReceived(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallDTMFSet(gomock.Any(), tt.call.ID, tt.digit).Return(nil)
@@ -68,27 +66,15 @@ func TestDTMFReceivedNotActionDTMFReceived(t *testing.T) {
 }
 
 func TestDTMFReceivedContinue(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &callHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		channel    *channel.Channel
 		call       *call.Call
 		digit      string
 		duration   int
 		savedDTMFs string
-	}
-
-	tests := []test{
+	}{
 		{
 			"max num is 3, got 1",
 			&channel.Channel{
@@ -131,6 +117,16 @@ func TestDTMFReceivedContinue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallDTMFGet(gomock.Any(), tt.call.ID).Return(tt.savedDTMFs, nil)
