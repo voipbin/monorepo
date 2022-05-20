@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=19.2.0
+ARG ASTERISK_VERSION=19.4.1
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 
 RUN apt-get update
@@ -24,7 +24,8 @@ RUN apt-get install -y \
     subversion \
     procps \
     iputils-ping \
-    cron
+    cron \
+    systemctl
 
 # Install required apt dependencies
 RUN apt-get install -y \
@@ -58,8 +59,8 @@ RUN apt-get install -y \
     fuse
 
 # Install gcsfuse
-RUN curl -L -O https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v0.32.0/gcsfuse_0.32.0_amd64.deb
-RUN dpkg --install gcsfuse_0.32.0_amd64.deb
+RUN curl -L -O https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v0.41.1/gcsfuse_0.41.1_amd64.deb
+RUN dpkg --install gcsfuse_0.41.1_amd64.deb
 
 # Download Asterisk source
 RUN git clone https://gerrit.asterisk.org/asterisk ${ASTERISK_SOURCE_DIRECTORY}
