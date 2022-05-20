@@ -83,13 +83,13 @@
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="domain.html">Domain</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
 <li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
@@ -170,7 +170,7 @@
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
 <p>The flow is a set of instructions you can use to tell VoIPBIN what to do when you receive an incoming call.</p>
 <div class="section" id="how-the-flow-works">
-<h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Permalink to this headline">¶</a></h2>
+<span id="flow-overview-actions"></span><h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Permalink to this headline">¶</a></h2>
 <p>When someone makes a call to one of your VoIPBIN numbers or destinations, VoIPBIN looks up the URL associated with that phone number and sends it a request.
 VoIPBIN then reads the Flow instructions to determine what to do, whether it’s recording the call, playing a message for the caller, or prompting the caller to press digits on their keypad.</p>
 <p>At its core, Flow is an array of json objects with special tags defined by VoIPBIN to help you build your Programmable Voice application.</p>
@@ -179,6 +179,16 @@ VoIPBIN then reads the Flow instructions to determine what to do, whether it’s
 <h2>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Permalink to this headline">¶</a></h2>
 <p>The VoIPBIN’s flow provides Non-linear type of action execution. The user can customize their own actions in linear or non-linear way.</p>
 <img alt="_images/flow_overview_non_linear.png" src="_images/flow_overview_non_linear.png" />
+</div>
+<div class="section" id="flow-fork">
+<h2>Flow fork<a class="headerlink" href="#flow-fork" title="Permalink to this headline">¶</a></h2>
+<p>Some flow actions(fetch, fetch_flow, queue_join, …) fork the flow.</p>
+<p>The execution cursor moves to the forked flow once the flow is forked. And starts to execute the actions. Then when it reaches the end of the forked flow, the execution cursor moves back to the following action of the forking action.</p>
+<img alt="_images/flow_overview_fork.png" src="_images/flow_overview_fork.png" />
+</div>
+<div class="section" id="actions">
+<h2>Actions<a class="headerlink" href="#actions" title="Permalink to this headline">¶</a></h2>
+<p>In the VoIPBIN, the users. The action tells VoIPBIN what should take on a given flow such as making a call or speaking sound or talk etc…</p>
 </div>
 </div>
 

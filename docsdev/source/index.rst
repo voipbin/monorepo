@@ -12,13 +12,13 @@ Welcome to voipbin's documentation!
    glossary
    intro
    api
+   flow
    call
    message
    agent
    conference
    domain
    extension
-   flow
    number
    queue
    recording
