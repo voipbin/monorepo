@@ -44,7 +44,8 @@ crontab -l | { cat; echo "* * * * * /cron_recording_move.sh"; } | crontab -
 service cron start
 
 # Start http server for local file get
-cd /mnt && python3 -m http.server 8000 &
+cd /mnt
+/python_http.sh &
 
 # Start asterisk-exporter
 /asterisk-exporter -web_listen_address ":2112" &
