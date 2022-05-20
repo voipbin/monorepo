@@ -3976,16 +3976,8 @@ var doc = `{
                     "description": "total incoming call count",
                     "type": "integer"
                 },
-                "total_service_duration": {
-                    "description": "total service duration(ms)",
-                    "type": "integer"
-                },
                 "total_serviced_count": {
                     "description": "total serviced call count",
-                    "type": "integer"
-                },
-                "total_waittime": {
-                    "description": "total wait time(ms)",
                     "type": "integer"
                 },
                 "wait_actions": {
