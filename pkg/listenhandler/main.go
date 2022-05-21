@@ -39,6 +39,9 @@ var (
 	// v1
 	// webhooks
 	regV1Webhooks = regexp.MustCompile("/v1/webhooks")
+
+	// webhook_destinations
+	regV1WebhookDestinations = regexp.MustCompile("/v1/webhook_destinations")
 )
 
 var (
@@ -155,6 +158,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Webhooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1WebhooksPost(m)
 		requestType = "/v1/webhooks"
+
+	////////////////////
+	// webhooks_customs
+	////////////////////
+	// POST /webhook_customs
+	case regV1WebhookDestinations.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1WebhookDestinationsPost(m)
+		requestType = "/v1/webhook_customs"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

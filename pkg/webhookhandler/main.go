@@ -15,7 +15,8 @@ import (
 
 // WebhookHandler is interface for webhook handle
 type WebhookHandler interface {
-	SendWebhook(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error
+	SendWebhookToCustomer(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error
+	SendWebhookToURI(ctx context.Context, customerID uuid.UUID, uri string, method webhook.MethodType, dataType webhook.DataType, data json.RawMessage) error
 }
 
 // webhookHandler structure for service handle
