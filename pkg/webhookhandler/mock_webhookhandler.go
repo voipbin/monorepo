@@ -37,16 +37,30 @@ func (m *MockWebhookHandler) EXPECT() *MockWebhookHandlerMockRecorder {
 	return m.recorder
 }
 
-// SendWebhook mocks base method.
-func (m *MockWebhookHandler) SendWebhook(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error {
+// SendWebhookToCustomer mocks base method.
+func (m *MockWebhookHandler) SendWebhookToCustomer(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendWebhook", ctx, customerID, dataType, data)
+	ret := m.ctrl.Call(m, "SendWebhookToCustomer", ctx, customerID, dataType, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// SendWebhook indicates an expected call of SendWebhook.
-func (mr *MockWebhookHandlerMockRecorder) SendWebhook(ctx, customerID, dataType, data interface{}) *gomock.Call {
+// SendWebhookToCustomer indicates an expected call of SendWebhookToCustomer.
+func (mr *MockWebhookHandlerMockRecorder) SendWebhookToCustomer(ctx, customerID, dataType, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendWebhook", reflect.TypeOf((*MockWebhookHandler)(nil).SendWebhook), ctx, customerID, dataType, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendWebhookToCustomer", reflect.TypeOf((*MockWebhookHandler)(nil).SendWebhookToCustomer), ctx, customerID, dataType, data)
+}
+
+// SendWebhookToURI mocks base method.
+func (m *MockWebhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.UUID, uri string, method webhook.MethodType, dataType webhook.DataType, data json.RawMessage) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendWebhookToURI", ctx, customerID, uri, method, dataType, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendWebhookToURI indicates an expected call of SendWebhookToURI.
+func (mr *MockWebhookHandlerMockRecorder) SendWebhookToURI(ctx, customerID, uri, method, dataType, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendWebhookToURI", reflect.TypeOf((*MockWebhookHandler)(nil).SendWebhookToURI), ctx, customerID, uri, method, dataType, data)
 }

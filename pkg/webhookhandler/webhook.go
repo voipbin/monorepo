@@ -11,9 +11,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
 
-// SendWebhook sends the webhook to the given uri with the given method and data.
-// func (h *webhookHandler) SendWebhook(w *webhook.Webhook) error {
-func (h *webhookHandler) SendWebhook(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error {
+// SendWebhookToCustomer sends the webhook to the given customerID with the given method and data.
+func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, data json.RawMessage) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"customer_id": customerID,
@@ -45,6 +44,32 @@ func (h *webhookHandler) SendWebhook(ctx context.Context, customerID uuid.UUID, 
 		}
 		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", m.WebhookMethod, m.WebhookURI, res.StatusCode)
 
+	}()
+
+	return nil
+}
+
+// SendWebhookToURI sends the webhook to the given uri with the given method and data.
+func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.UUID, uri string, method webhook.MethodType, dataType webhook.DataType, data json.RawMessage) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"customer_id": customerID,
+			"uri":         uri,
+		},
+	)
+	log.WithFields(logrus.Fields{
+		"data_type": dataType,
+		"data":      data,
+	}).Debugf("Sending an webhook. customer_id: %s", customerID)
+
+	// send message
+	go func() {
+		res, err := h.sendMessage(uri, string(method), string(dataType), data)
+		if err != nil {
+			log.Errorf("Could not send a request. err: %v", err)
+			return
+		}
+		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", method, uri, res.StatusCode)
 	}()
 
 	return nil
