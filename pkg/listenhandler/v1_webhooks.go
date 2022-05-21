@@ -68,18 +68,18 @@ func (h *listenHandler) processV1WebhookDestinationsPost(m *rabbitmqhandler.Requ
 
 	var req request.V1DataWebhookDestinationsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	d, err := json.Marshal(req.Data)
 	if err != nil {
-		logrus.Errorf("Could not marshal the message. message: %v, err: %v", req.Data, err)
+		log.Errorf("Could not marshal the message. message: %v, err: %v", req.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	if err := h.whHandler.SendWebhookToURI(ctx, req.CustomerID, req.URI, req.Method, req.DataType, d); err != nil {
-		logrus.Debugf("Could not send the webhook correctly. err: %v", err)
+		log.Debugf("Could not send the webhook correctly. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

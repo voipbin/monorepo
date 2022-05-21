@@ -162,10 +162,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 	// webhooks_customs
 	////////////////////
-	// POST /webhook_customs
+	// POST /webhook_destinations
 	case regV1WebhookDestinations.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1WebhookDestinationsPost(m)
-		requestType = "/v1/webhook_customs"
+		requestType = "/v1/webhook_destinations"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

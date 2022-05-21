@@ -1,16 +1,11 @@
 package webhook
 
-import (
-	"encoding/json"
+import "encoding/json"
 
-	"github.com/gofrs/uuid"
-)
-
-// Webhook struct
-type Webhook struct {
-	CustomerID uuid.UUID       `json:"customer_id"`
-	DataType   DataType        `json:"data_type"`
-	Data       json.RawMessage `json:"data"`
+// Data defines common webhook data type.
+type Data struct {
+	Type string          `json:"type"` // message type
+	Data json.RawMessage `json:"data"` // data
 }
 
 // MethodType defines http method
