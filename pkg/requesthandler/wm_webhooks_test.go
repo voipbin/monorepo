@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -23,7 +24,7 @@ func TestWMV1WebhookSend(t *testing.T) {
 		name string
 
 		customerID  uuid.UUID
-		dataType    string
+		dataType    wmwebhook.DataType
 		messageType string
 		messageData []byte
 
@@ -35,7 +36,7 @@ func TestWMV1WebhookSend(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("d2c2ffe8-825c-11ec-8688-2bebcc3d0013"),
-			"application/json",
+			wmwebhook.DataTypeJSON,
 			"application/json",
 			[]byte(`{}`),
 

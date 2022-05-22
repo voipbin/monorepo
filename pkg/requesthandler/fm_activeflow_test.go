@@ -59,7 +59,6 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 				CurrentAction: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
-				Actions: []fmaction.Action{},
 			},
 		},
 		{
@@ -92,7 +91,6 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 				CurrentAction: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
-				Actions: []fmaction.Action{},
 			},
 		},
 		{
@@ -125,7 +123,6 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 				CurrentAction: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
-				Actions: []fmaction.Action{},
 			},
 		},
 	}
