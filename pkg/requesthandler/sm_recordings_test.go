@@ -12,16 +12,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestSMRecordingGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_SMRecordingGet(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id uuid.UUID
@@ -31,9 +24,7 @@ func TestSMRecordingGet(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult *smbucketrecording.BucketRecording
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("c7878bdc-93bd-11eb-ab3a-a7388c5862f4"),
@@ -57,6 +48,14 @@ func TestSMRecordingGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 

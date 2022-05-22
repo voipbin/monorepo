@@ -12,16 +12,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestAstBridgeGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_AstBridgeGet(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		asteriskID string
 		bridgeID   string
@@ -30,9 +23,7 @@ func TestAstBridgeGet(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectBridge  *cmbridge.Bridge
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			"00:11:22:33:44:55",
@@ -78,6 +69,14 @@ func TestAstBridgeGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			res, err := reqHandler.AstBridgeGet(context.Background(), tt.asteriskID, tt.bridgeID)

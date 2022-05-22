@@ -41,8 +41,8 @@ func (r *requestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UU
 	return nil
 }
 
-// WMV1WebhookDestinationSend sends the webhook to the given destination.
-func (r *requestHandler) WMV1WebhookDestinationSend(ctx context.Context, customerID uuid.UUID, destination string, method wmwebhook.MethodType, dataType wmwebhook.DataType, messageType string, messageData []byte) error {
+// WMV1WebhookSendToDestination sends the webhook to the given destination.
+func (r *requestHandler) WMV1WebhookSendToDestination(ctx context.Context, customerID uuid.UUID, destination string, method wmwebhook.MethodType, dataType wmwebhook.DataType, messageData []byte) error {
 
 	uri := "/v1/webhook_destinations"
 

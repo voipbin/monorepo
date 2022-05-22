@@ -539,8 +539,8 @@ type RequestHandler interface {
 	UMV1UserUpdatePermission(ctx context.Context, userID uint64, permission umuser.Permission) error
 
 	// webhook-manager webhooks
-	// WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType, messageType string, messageData []byte) error
 	WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error
+	WMV1WebhookSendToDestination(ctx context.Context, customerID uuid.UUID, destination string, method wmwebhook.MethodType, dataType wmwebhook.DataType, messageData []byte) error
 }
 
 type requestHandler struct {

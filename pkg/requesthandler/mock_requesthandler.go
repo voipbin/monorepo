@@ -2757,3 +2757,17 @@ func (mr *MockRequestHandlerMockRecorder) WMV1WebhookSend(ctx, customerID, dataT
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMV1WebhookSend", reflect.TypeOf((*MockRequestHandler)(nil).WMV1WebhookSend), ctx, customerID, dataType, messageType, messageData)
 }
+
+// WMV1WebhookSendToDestination mocks base method.
+func (m *MockRequestHandler) WMV1WebhookSendToDestination(ctx context.Context, customerID uuid.UUID, destination string, method webhook.MethodType, dataType webhook.DataType, messageData []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WMV1WebhookSendToDestination", ctx, customerID, destination, method, dataType, messageData)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WMV1WebhookSendToDestination indicates an expected call of WMV1WebhookSendToDestination.
+func (mr *MockRequestHandlerMockRecorder) WMV1WebhookSendToDestination(ctx, customerID, destination, method, dataType, messageData interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WMV1WebhookSendToDestination", reflect.TypeOf((*MockRequestHandler)(nil).WMV1WebhookSendToDestination), ctx, customerID, destination, method, dataType, messageData)
+}

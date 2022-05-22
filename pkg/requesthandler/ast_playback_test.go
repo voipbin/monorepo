@@ -5,17 +5,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestAstPlaybackStop(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_AstPlaybackStop(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -52,6 +46,14 @@ func TestAstPlaybackStop(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.AstPlaybackStop(context.Background(), tt.asteriskID, tt.playbackID)
