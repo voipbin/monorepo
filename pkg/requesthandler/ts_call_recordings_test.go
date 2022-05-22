@@ -12,16 +12,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestTSV1CallRecordingCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_TSV1CallRecordingCreate(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -35,9 +28,7 @@ func TestTSV1CallRecordingCreate(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult []tstranscribe.Transcribe
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -69,6 +60,14 @@ func TestTSV1CallRecordingCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 

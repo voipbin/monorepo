@@ -11,14 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestUMV1UserGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_UMV1UserGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -78,6 +71,14 @@ func TestUMV1UserGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -94,15 +95,7 @@ func TestUMV1UserGets(t *testing.T) {
 	}
 }
 
-func TestUMV1UserGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
+func Test_UMV1UserGet(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -146,6 +139,14 @@ func TestUMV1UserGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -162,14 +163,7 @@ func TestUMV1UserGet(t *testing.T) {
 	}
 }
 
-func TestUMV1UserDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_UMV1UserDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -200,6 +194,14 @@ func TestUMV1UserDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -211,14 +213,7 @@ func TestUMV1UserDelete(t *testing.T) {
 	}
 }
 
-func TestUMV1UserCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_UMV1UserCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -272,6 +267,14 @@ func TestUMV1UserCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -288,14 +291,7 @@ func TestUMV1UserCreate(t *testing.T) {
 	}
 }
 
-func TestUMV1UserLogin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_UMV1UserLogin(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -343,6 +339,14 @@ func TestUMV1UserLogin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -359,14 +363,7 @@ func TestUMV1UserLogin(t *testing.T) {
 	}
 }
 
-func TestUMV1UserUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_UMV1UserUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -402,6 +399,14 @@ func TestUMV1UserUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -413,14 +418,7 @@ func TestUMV1UserUpdate(t *testing.T) {
 	}
 }
 
-func TestUMV1UserUpdatePassword(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_UMV1UserUpdatePassword(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -454,6 +452,14 @@ func TestUMV1UserUpdatePassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -465,14 +471,7 @@ func TestUMV1UserUpdatePassword(t *testing.T) {
 	}
 }
 
-func TestUMV1UserUpdatePermission(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_UMV1UserUpdatePermission(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -506,6 +505,14 @@ func TestUMV1UserUpdatePermission(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)

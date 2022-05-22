@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestFMV1ActiveflowCreate(t *testing.T) {
+func Test_FMV1ActiveflowCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -153,14 +153,7 @@ func TestFMV1ActiveflowCreate(t *testing.T) {
 	}
 }
 
-func TestFMV1ActiveflowGetNextAction(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_FMV1ActiveflowGetNextAction(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -202,6 +195,14 @@ func TestFMV1ActiveflowGetNextAction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FMV1ActiveflowGetNextAction(context.Background(), tt.callID, tt.currentActionID)
@@ -217,14 +218,7 @@ func TestFMV1ActiveflowGetNextAction(t *testing.T) {
 	}
 }
 
-func TestFMV1ActiveflowUpdateForwardActionID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_FMV1ActiveflowUpdateForwardActionID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -282,6 +276,14 @@ func TestFMV1ActiveflowUpdateForwardActionID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FMV1ActiveflowUpdateForwardActionID(context.Background(), tt.callID, tt.forwardActionID, tt.forwardNow); err != nil {
@@ -293,13 +295,6 @@ func TestFMV1ActiveflowUpdateForwardActionID(t *testing.T) {
 }
 
 func Test_FMV1ActiveflowExecute(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
 
 	tests := []struct {
 		name string
@@ -332,6 +327,14 @@ func Test_FMV1ActiveflowExecute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.FMV1ActiveflowExecute(context.Background(), tt.id); err != nil {
@@ -343,13 +346,6 @@ func Test_FMV1ActiveflowExecute(t *testing.T) {
 }
 
 func Test_FMV1ActiveflowDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
 
 	tests := []struct {
 		name string
@@ -387,6 +383,14 @@ func Test_FMV1ActiveflowDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.FMV1ActiveflowDelete(context.Background(), tt.id)

@@ -14,16 +14,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestRMExtensionCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMExtensionCreate(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID    uuid.UUID
@@ -38,9 +31,7 @@ func TestRMExtensionCreate(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult *rmextension.Extension
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -78,6 +69,14 @@ func TestRMExtensionCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -93,16 +92,9 @@ func TestRMExtensionCreate(t *testing.T) {
 	}
 }
 
-func TestRMExtensionUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMExtensionUpdate(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id            uuid.UUID
@@ -115,9 +107,7 @@ func TestRMExtensionUpdate(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *rmextension.Extension
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -150,6 +140,14 @@ func TestRMExtensionUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -165,16 +163,9 @@ func TestRMExtensionUpdate(t *testing.T) {
 	}
 }
 
-func TestRMExtensionGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMExtensionGet(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		extensionID uuid.UUID
@@ -184,9 +175,7 @@ func TestRMExtensionGet(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *rmextension.Extension
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -220,6 +209,14 @@ func TestRMExtensionGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -235,16 +232,9 @@ func TestRMExtensionGet(t *testing.T) {
 	}
 }
 
-func TestRMExtensionDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMExtensionDelete(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		extesnionID uuid.UUID
@@ -254,9 +244,7 @@ func TestRMExtensionDelete(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectRes     *rmextension.Extension
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -281,6 +269,14 @@ func TestRMExtensionDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -296,16 +292,9 @@ func TestRMExtensionDelete(t *testing.T) {
 	}
 }
 
-func TestRMExtensionsGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMExtensionsGets(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		domainID  uuid.UUID
@@ -317,9 +306,7 @@ func TestRMExtensionsGets(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  []rmextension.Extension
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -358,6 +345,14 @@ func TestRMExtensionsGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 

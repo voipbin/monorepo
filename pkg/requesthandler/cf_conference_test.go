@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestCFV1ConferenceGet(t *testing.T) {
+func Test_CFV1ConferenceGet(t *testing.T) {
 
 	type test struct {
 		name         string
@@ -74,25 +74,16 @@ func TestCFV1ConferenceGet(t *testing.T) {
 	}
 }
 
-func TestCFV1ConferenceDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_CFV1ConferenceDelete(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		conferenceID  uuid.UUID
 		response      *rabbitmqhandler.Response
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("2d9227a4-3d17-11ec-ab43-cfdad30eccdf"),
@@ -111,6 +102,14 @@ func TestCFV1ConferenceDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -121,25 +120,16 @@ func TestCFV1ConferenceDelete(t *testing.T) {
 	}
 }
 
-func TestCFV1ConferenceCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_CFV1ConferenceCreate(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		response         *rabbitmqhandler.Response
 		expectTarget     string
 		expectRequest    *rabbitmqhandler.Request
 		expectConference *cfconference.Conference
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&rabbitmqhandler.Response{
@@ -167,6 +157,14 @@ func TestCFV1ConferenceCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 

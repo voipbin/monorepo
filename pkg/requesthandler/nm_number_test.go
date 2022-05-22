@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestNMV1NumberFlowDelete(t *testing.T) {
+func Test_NMV1NumberFlowDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -65,7 +65,7 @@ func TestNMV1NumberFlowDelete(t *testing.T) {
 	}
 }
 
-func TestNMV1NumberCreate(t *testing.T) {
+func Test_NMV1NumberCreate(t *testing.T) {
 
 	tests := []struct {
 		name string

@@ -10,14 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestTMV1SpeecheCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_TMV1SpeecheCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -59,6 +52,13 @@ func TestTMV1SpeecheCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.tts-manager.request", tt.expectRequest).Return(tt.response, nil)
 

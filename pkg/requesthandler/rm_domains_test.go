@@ -14,16 +14,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestRMV1DomainCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMV1DomainCreate(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID      uuid.UUID
@@ -36,9 +29,7 @@ func TestRMV1DomainCreate(t *testing.T) {
 		response      *rabbitmqhandler.Response
 
 		expectResult *rmdomain.Domain
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -72,6 +63,14 @@ func TestRMV1DomainCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -87,16 +86,9 @@ func TestRMV1DomainCreate(t *testing.T) {
 	}
 }
 
-func TestRMV1DomainUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMV1DomainUpdate(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id      uuid.UUID
@@ -108,9 +100,7 @@ func TestRMV1DomainUpdate(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *rmdomain.Domain
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -146,6 +136,14 @@ func TestRMV1DomainUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -161,16 +159,9 @@ func TestRMV1DomainUpdate(t *testing.T) {
 	}
 }
 
-func TestRMV1DomainGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMV1DomainGet(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		domainID uuid.UUID
@@ -180,9 +171,7 @@ func TestRMV1DomainGet(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  *rmdomain.Domain
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -214,6 +203,14 @@ func TestRMV1DomainGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -229,16 +226,9 @@ func TestRMV1DomainGet(t *testing.T) {
 	}
 }
 
-func TestRMV1DomainDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMV1DomainDelete(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		domainID uuid.UUID
@@ -248,9 +238,7 @@ func TestRMV1DomainDelete(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectRes     *rmdomain.Domain
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -275,6 +263,14 @@ func TestRMV1DomainDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
@@ -290,16 +286,9 @@ func TestRMV1DomainDelete(t *testing.T) {
 	}
 }
 
-func TestRMV1DomainsGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_RMV1DomainsGets(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -311,9 +300,7 @@ func TestRMV1DomainsGets(t *testing.T) {
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
 		expectResult  []rmdomain.Domain
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -350,6 +337,14 @@ func TestRMV1DomainsGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 

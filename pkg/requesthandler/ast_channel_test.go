@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestAstChannelAnswer(t *testing.T) {
+func Test_AstChannelAnswer(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -64,7 +64,7 @@ func TestAstChannelAnswer(t *testing.T) {
 	}
 }
 
-func TestAstChannelContinue(t *testing.T) {
+func Test_AstChannelContinue(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -139,7 +139,7 @@ func TestAstChannelContinue(t *testing.T) {
 	}
 }
 
-func TestChannelAstChannelVariableGet(t *testing.T) {
+func Test_ChannelAstChannelVariableGet(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -225,7 +225,7 @@ func TestChannelAstChannelVariableGet(t *testing.T) {
 	}
 }
 
-func TestChannelAstChannelVariableSet(t *testing.T) {
+func Test_ChannelAstChannelVariableSet(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -295,7 +295,7 @@ func TestChannelAstChannelVariableSet(t *testing.T) {
 	}
 }
 
-func TestChannelAstChannelHangup(t *testing.T) {
+func Test_ChannelAstChannelHangup(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -378,7 +378,7 @@ func TestChannelAstChannelHangup(t *testing.T) {
 	}
 }
 
-func TestChannelAstChannelCreateSnoop(t *testing.T) {
+func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -467,7 +467,7 @@ func TestChannelAstChannelCreateSnoop(t *testing.T) {
 	}
 }
 
-func TestAstChannelGet(t *testing.T) {
+func Test_AstChannelGet(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -540,7 +540,7 @@ func TestAstChannelGet(t *testing.T) {
 
 }
 
-func TestAstChannelDTMF(t *testing.T) {
+func Test_AstChannelDTMF(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -620,7 +620,7 @@ func TestAstChannelDTMF(t *testing.T) {
 	}
 }
 
-func TestAstChannelCreate(t *testing.T) {
+func Test_AstChannelCreate(t *testing.T) {
 
 	tests := []struct {
 		name           string
@@ -702,7 +702,7 @@ func TestAstChannelCreate(t *testing.T) {
 	}
 }
 
-func TestAstChannelDial(t *testing.T) {
+func Test_AstChannelDial(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -755,7 +755,7 @@ func TestAstChannelDial(t *testing.T) {
 	}
 }
 
-func TestAstChannelPlay(t *testing.T) {
+func Test_AstChannelPlay(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -826,7 +826,7 @@ func TestAstChannelPlay(t *testing.T) {
 	}
 }
 
-func TestAstChannelRecord(t *testing.T) {
+func Test_AstChannelRecord(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -891,7 +891,7 @@ func TestAstChannelRecord(t *testing.T) {
 	}
 }
 
-func TestAstChannelExternalMedia(t *testing.T) {
+func Test_AstChannelExternalMedia(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -978,7 +978,7 @@ func TestAstChannelExternalMedia(t *testing.T) {
 	}
 }
 
-func TestAstChannelRing(t *testing.T) {
+func Test_AstChannelRing(t *testing.T) {
 
 	tests := []struct {
 		name       string

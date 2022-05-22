@@ -11,14 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func TestWMV1WebhookSend(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
+func Test_WMV1WebhookSend(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -56,11 +49,79 @@ func TestWMV1WebhookSend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			err := reqHandler.WMV1WebhookSend(ctx, tt.customerID, tt.dataType, tt.messageType, tt.messageData)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_WMV1WebhookDestinationSend(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID  uuid.UUID
+		destination string
+		method      wmwebhook.MethodType
+		dataType    wmwebhook.DataType
+		data        []byte
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			name: "normal",
+
+			customerID:  uuid.FromStringOrNil("d2c2ffe8-825c-11ec-8688-2bebcc3d0013"),
+			destination: "test.com",
+			method:      wmwebhook.MethodTypePOST,
+			dataType:    wmwebhook.DataTypeJSON,
+			data:        []byte(`{"test_key": "test value"}`),
+
+			expectTarget: "bin-manager.webhook-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/webhook_destinations",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"d2c2ffe8-825c-11ec-8688-2bebcc3d0013","uri":"test.com","method":"POST","data_type":"application/json","data":{"test_key":"test value"}}`),
+			},
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.WMV1WebhookSendToDestination(ctx, tt.customerID, tt.destination, tt.method, tt.dataType, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
