@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -28,7 +29,7 @@ func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid
 	go h.PublishWebhook(ctx, customerID, eventType, data)
 }
 
-// PublishWebhook publishes the webhook to the given destination.
+// PublishWebhook publishes the webhook to the given customer.
 func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -51,7 +52,7 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 		return
 	}
 
-	if err := h.reqHandler.WMV1WebhookSend(ctx, customerID, dataTypeJSON, string(eventType), m); err != nil {
+	if err := h.reqHandler.WMV1WebhookSend(ctx, customerID, wmwebhook.DataTypeJSON, eventType, m); err != nil {
 		log.Errorf("Could not publish the webhook. err: %v", err)
 		return
 	}
@@ -73,7 +74,7 @@ func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data
 		return
 	}
 
-	if err := h.publishEvent(string(eventType), dataTypeJSON, m, requestTimeoutDefault, 0); err != nil {
+	if err := h.publishEvent(string(eventType), string(wmwebhook.DataTypeJSON), m, requestTimeoutDefault, 0); err != nil {
 		log.Errorf("Could not publish the call event. err: %v", err)
 		return
 	}

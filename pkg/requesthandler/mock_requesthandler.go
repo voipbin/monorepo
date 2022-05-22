@@ -45,6 +45,7 @@ import (
 	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	user "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
+	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
 
 // MockRequestHandler is a mock of RequestHandler interface.
@@ -2744,7 +2745,7 @@ func (mr *MockRequestHandlerMockRecorder) UMV1UserUpdatePermission(ctx, userID, 
 }
 
 // WMV1WebhookSend mocks base method.
-func (m *MockRequestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType, messageType string, messageData []byte) error {
+func (m *MockRequestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType webhook.DataType, messageType string, messageData []byte) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WMV1WebhookSend", ctx, customerID, dataType, messageType, messageData)
 	ret0, _ := ret[0].(error)

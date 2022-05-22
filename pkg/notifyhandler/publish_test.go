@@ -8,27 +8,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
-func TestPublishWebhookEvent(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	exchangeDelay := ""
-	exchangeNotify := "bin-manager.notify-manager.event"
-
-	h := &notifyHandler{
-		sock:           mockSock,
-		reqHandler:     mockReq,
-		exchangeDelay:  exchangeDelay,
-		exchangeNotify: exchangeNotify,
-		publisher:      testPublisher,
-	}
+func Test_PublishWebhookEvent(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -73,12 +59,28 @@ func TestPublishWebhookEvent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			exchangeDelay := ""
+			exchangeNotify := "bin-manager.notify-manager.event"
+
+			h := &notifyHandler{
+				sock:           mockSock,
+				reqHandler:     mockReq,
+				exchangeDelay:  exchangeDelay,
+				exchangeNotify: exchangeNotify,
+				publisher:      testPublisher,
+			}
+
 			ctx := context.Background()
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
 			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
 			if tt.customerID != uuid.Nil {
-				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), tt.customerID, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
+				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), tt.customerID, wmwebhook.DataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
 
 			h.PublishWebhookEvent(ctx, tt.customerID, tt.eventType, tt.event)
@@ -89,21 +91,6 @@ func TestPublishWebhookEvent(t *testing.T) {
 }
 
 func TestPublishWebhook(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	exchangeDelay := ""
-	exchangeNotify := "bin-manager.call-manager.event"
-
-	h := &notifyHandler{
-		sock:           mockSock,
-		reqHandler:     mockReq,
-		exchangeDelay:  exchangeDelay,
-		exchangeNotify: exchangeNotify,
-		publisher:      testPublisher,
-	}
 
 	tests := []struct {
 		name       string
@@ -149,11 +136,27 @@ func TestPublishWebhook(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			exchangeDelay := ""
+			exchangeNotify := "bin-manager.call-manager.event"
+
+			h := &notifyHandler{
+				sock:           mockSock,
+				reqHandler:     mockReq,
+				exchangeDelay:  exchangeDelay,
+				exchangeNotify: exchangeNotify,
+				publisher:      testPublisher,
+			}
+
 			ctx := context.Background()
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
 			if tt.customerID != uuid.Nil {
-				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), tt.customerID, dataTypeJSON, string(tt.eventType), tt.expectWebhook)
+				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), tt.customerID, wmwebhook.DataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
 			h.PublishWebhook(ctx, tt.customerID, tt.eventType, tt.event)
 
