@@ -198,3 +198,12 @@ type OptionVariableSet struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
+
+// OptionWebhookSend defines action TypeWebhookSend's option.
+type OptionWebhookSend struct {
+	Sync     bool   `json:"sync"`
+	URI      string `json:"uri"`
+	Method   string `json:"method"`    // POST/GET/PUT/DELETE
+	DataType string `json:"data_type"` // application/json
+	Data     string `json:"data"`
+}

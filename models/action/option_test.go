@@ -436,3 +436,43 @@ func Test_marshalOptionVariableSet(t *testing.T) {
 		})
 	}
 }
+
+func Test_OptionWebhookSend(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionWebhookSend
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			[]byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"test com"}`),
+
+			OptionWebhookSend{
+				Sync:     false,
+				URI:      "test.com",
+				Method:   "POST",
+				DataType: "application/json",
+				Data:     "test com",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionWebhookSend{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

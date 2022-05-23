@@ -81,6 +81,7 @@ const (
 	TypeTranscribeStop      Type = "transcribe_stop"       // transcribe-manager. stop transcribe the call
 	TypeTranscribeRecording Type = "transcribe_recording"  // transcribe-manager. transcribe the recording and send it to webhook.
 	TypeVariableSet         Type = "variable_set"          // flow-manager: sets the variable
+	TypeWebhookSend         Type = "webhook_send"          // webhook-manageR: send a webhook.
 )
 
 // TypeList list of type array
@@ -117,4 +118,5 @@ var TypeList []Type = []Type{
 	TypeTranscribeStop,
 	TypeTranscribeRecording,
 	TypeVariableSet,
+	TypeWebhookSend,
 }

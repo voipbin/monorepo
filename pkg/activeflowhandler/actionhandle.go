@@ -11,6 +11,7 @@ import (
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -64,7 +65,7 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 
 // actionHandleFetch handles action patch with active flow.
 // it downloads the actions from the given action(patch) and append it to the active flow.
-func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow, act *action.Action) error {
+func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "actionHandleFetch",
 		"activeflow_id":     af.ID,
@@ -72,6 +73,8 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
 	})
+
+	act := &af.CurrentAction
 
 	// patch the actions from the remote
 	fetchedActions, err := h.actionHandler.ActionFetchGet(act, af.ID, af.ReferenceID)
@@ -401,7 +404,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 }
 
 // actionHandleGoto handles action goto with active flow.
-func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow.Activeflow, act *action.Action) error {
+func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "activeFlowHandleActionGoto",
 		"activeflow_id":     af.ID,
@@ -409,7 +412,9 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
 	})
-	log.WithField("action", act).Debug("Handle action goto.")
+	log.WithField("action", af.CurrentAction).Debug("Handle action goto.")
+
+	act := &af.CurrentAction
 
 	var opt action.OptionGoto
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
@@ -430,14 +435,16 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow
 }
 
 // actionHandleTranscribeRecording handles transcribe_recording
-func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context, af *activeflow.Activeflow, act *action.Action) error {
+func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "activeFlowHandleActionTranscribeRecording",
 		"activeflow_id":  af.ID,
 		"reference_type": af.ReferenceType,
 		"reference_id":   af.ReferenceID,
-		"action_id":      act.ID,
+		"action_id":      af.CurrentAction.ID,
 	})
+
+	act := &af.CurrentAction
 
 	var optRecordingToText action.OptionTranscribeRecording
 	if err := json.Unmarshal(act.Option, &optRecordingToText); err != nil {
@@ -457,14 +464,16 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 }
 
 // actionHandleTranscribeStart handles transcribe_start
-func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af *activeflow.Activeflow, act *action.Action) error {
+func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "activeFlowHandleActionTranscribeStart",
 		"activeflow_id":  af.ID,
 		"reference_type": af.ReferenceType,
 		"reference_id":   af.ReferenceID,
-		"action_id":      act.ID,
+		"action_id":      af.CurrentAction.ID,
 	})
+
+	act := &af.CurrentAction
 
 	var opt action.OptionTranscribeStart
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
@@ -650,7 +659,7 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
 	})
-	act := af.CurrentAction
+	act := &af.CurrentAction
 
 	var opt action.OptionBranch
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
@@ -703,7 +712,7 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 		"reference_id":      af.ReferenceID,
 		"current_action_id": af.CurrentAction.ID,
 	})
-	act := af.CurrentAction
+	act := &af.CurrentAction
 
 	var opt action.OptionMessageSend
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
@@ -789,6 +798,46 @@ func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *act
 
 	if errVariable := h.variableHandler.SetVariable(ctx, af.ID, opt.Key, opt.Value); errVariable != nil {
 		return fmt.Errorf("could not set varialbe. err: %v", errVariable)
+	}
+
+	return nil
+}
+
+// actionHandleVariableSet handles action variable_set with active flow.
+func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleWebhookSend",
+		"activeflow_id":     af.ID,
+		"reference_type":    af.ReferenceType,
+		"reference_id":      af.ReferenceID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	log.Debugf("Executing the action webhook_send. reference_id: %s", af.ReferenceID)
+
+	act := &af.CurrentAction
+
+	var opt action.OptionWebhookSend
+	if errUnmarshal := json.Unmarshal(act.Option, &opt); errUnmarshal != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", errUnmarshal)
+		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
+	}
+
+	// substitue the variables
+	variables, err := h.variableHandler.Get(ctx, af.ID)
+	if err == nil {
+		opt.Data = h.variableSubstitue(ctx, string(opt.Data), variables.Variables)
+	}
+
+	if opt.Sync {
+		if errSend := h.reqHandler.WMV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
+			log.Errorf("Could not send the webhook correctly on sync mode. err: %v", errSend)
+		}
+	} else {
+		go func() {
+			if errSend := h.reqHandler.WMV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
+				log.Errorf("Could not send the webhook correctlyon async mode. err: %v", errSend)
+			}
+		}()
 	}
 
 	return nil
