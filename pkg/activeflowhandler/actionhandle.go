@@ -828,6 +828,8 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 		opt.Data = h.variableSubstitue(ctx, string(opt.Data), variables.Variables)
 	}
 
+	log.Debugf("Sending webhook message. message: %s", opt.Data)
+
 	if opt.Sync {
 		if errSend := h.reqHandler.WMV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
 			log.Errorf("Could not send the webhook correctly on sync mode. err: %v", errSend)
