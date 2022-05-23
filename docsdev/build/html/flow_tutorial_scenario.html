@@ -1,65 +1,29 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Tutorial scenario &mdash; voipbin  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> voipbin
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -67,18 +31,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
@@ -101,75 +54,34 @@
 <li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">voipbin</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Tutorial scenario</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="_sources/flow_tutorial_scenario.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="tutorial-scenario">
-<span id="flow-tutorial-scenario"></span><h1>Tutorial scenario<a class="headerlink" href="#tutorial-scenario" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="simple-voicemail">
-<span id="flow-tutorial-scenario-simple-voicemail"></span><h2>Simple voicemail<a class="headerlink" href="#simple-voicemail" title="Permalink to this headline">¶</a></h2>
+             
+  <section id="tutorial-scenario">
+<span id="flow-tutorial-scenario"></span><h1>Tutorial scenario<a class="headerlink" href="#tutorial-scenario" title="Permalink to this headline"></a></h1>
+<section id="simple-voicemail">
+<span id="flow-tutorial-scenario-simple-voicemail"></span><h2>Simple voicemail<a class="headerlink" href="#simple-voicemail" title="Permalink to this headline"></a></h2>
 <p>Making a outgoing call for forwarding. If call not answered, leave a voicemail.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>               <span class="n">Start</span>
                  <span class="o">|</span>
@@ -271,9 +183,9 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="simple-branch">
-<span id="flow-tutorial-scenario-simple-branch"></span><h2>Simple branch<a class="headerlink" href="#simple-branch" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="simple-branch">
+<span id="flow-tutorial-scenario-simple-branch"></span><h2>Simple branch<a class="headerlink" href="#simple-branch" title="Permalink to this headline"></a></h2>
 <p>It will get the digits from the call and will execute the branch.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              <span class="n">Start</span>
                 <span class="o">|</span>
@@ -402,9 +314,9 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="simple-message-send">
-<span id="flow-tutorial-scenario-simple-message-send"></span><h2>Simple message send<a class="headerlink" href="#simple-message-send" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="simple-message-send">
+<span id="flow-tutorial-scenario-simple-message-send"></span><h2>Simple message send<a class="headerlink" href="#simple-message-send" title="Permalink to this headline"></a></h2>
 <p>Send the message to the multiple destinations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span>
   <span class="o">|</span>
@@ -445,9 +357,9 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="simple-message-send-and-make-a-new-outbound-call">
-<span id="flow-tutorial-scenario-simple-message-send-and-make-a-new-outbound-call"></span><h2>Simple message send and make a new outbound call<a class="headerlink" href="#simple-message-send-and-make-a-new-outbound-call" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="simple-message-send-and-make-a-new-outbound-call">
+<span id="flow-tutorial-scenario-simple-message-send-and-make-a-new-outbound-call"></span><h2>Simple message send and make a new outbound call<a class="headerlink" href="#simple-message-send-and-make-a-new-outbound-call" title="Permalink to this headline"></a></h2>
 <p>Send the message to the destination and start a new outbound call with talk action.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span>
   <span class="o">|</span>
@@ -511,51 +423,35 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2020, Sungtae Kim.
-
-    </p>
+    <p>&#169; Copyright 2020, Sungtae Kim.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

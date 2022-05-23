@@ -1,65 +1,29 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Overview &mdash; voipbin  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> voipbin
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -67,18 +31,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
@@ -101,139 +54,82 @@
 <li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">voipbin</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Overview</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="_sources/flow_overview.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
 <p>The flow is a set of instructions you can use to tell VoIPBIN what to do when you receive an incoming call.</p>
-<div class="section" id="how-the-flow-works">
-<span id="flow-overview-actions"></span><h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Permalink to this headline">¶</a></h2>
+<section id="how-the-flow-works">
+<span id="flow-overview-actions"></span><h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Permalink to this headline"></a></h2>
 <p>When someone makes a call to one of your VoIPBIN numbers or destinations, VoIPBIN looks up the URL associated with that phone number and sends it a request.
 VoIPBIN then reads the Flow instructions to determine what to do, whether it’s recording the call, playing a message for the caller, or prompting the caller to press digits on their keypad.</p>
 <p>At its core, Flow is an array of json objects with special tags defined by VoIPBIN to help you build your Programmable Voice application.</p>
-</div>
-<div class="section" id="non-linear-action-execution">
-<h2>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="non-linear-action-execution">
+<h2>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Permalink to this headline"></a></h2>
 <p>The VoIPBIN’s flow provides Non-linear type of action execution. The user can customize their own actions in linear or non-linear way.</p>
 <img alt="_images/flow_overview_non_linear.png" src="_images/flow_overview_non_linear.png" />
-</div>
-<div class="section" id="flow-fork">
-<h2>Flow fork<a class="headerlink" href="#flow-fork" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="flow-fork">
+<h2>Flow fork<a class="headerlink" href="#flow-fork" title="Permalink to this headline"></a></h2>
 <p>Some flow actions(fetch, fetch_flow, queue_join, …) fork the flow.</p>
 <p>The execution cursor moves to the forked flow once the flow is forked. And starts to execute the actions. Then when it reaches the end of the forked flow, the execution cursor moves back to the following action of the forking action.</p>
 <img alt="_images/flow_overview_fork.png" src="_images/flow_overview_fork.png" />
-</div>
-<div class="section" id="actions">
-<h2>Actions<a class="headerlink" href="#actions" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="actions">
+<h2>Actions<a class="headerlink" href="#actions" title="Permalink to this headline"></a></h2>
 <p>In the VoIPBIN, the users. The action tells VoIPBIN what should take on a given flow such as making a call or speaking sound or talk etc…</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2020, Sungtae Kim.
-
-    </p>
+    <p>&#169; Copyright 2020, Sungtae Kim.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
