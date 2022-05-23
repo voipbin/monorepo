@@ -65,6 +65,7 @@ transcribe_start        Start transcribe the call
 transcribe_stop         Stop transcribe the call
 transcribe_recording    Transcribe the recording and send it to webhook.
 variable_set            Sets the variable.
+webhook_send            Send a webhook.
 ======================= ==================
 
 .. _flow-struct-action-agent_call:
@@ -1033,8 +1034,8 @@ Parameters
     {
         "type": "variable_set"
         "option": {
-            "key": "key 1",
-            "value": "value 1"
+            "key": "<string>",
+            "value": "<string>"
         }
     }
 
@@ -1046,10 +1047,53 @@ Example
 .. code::
 
     {
-        "type": "transcribe_stop"
+        "type": "variable_set"
         "option": {
             "key": "Provider name",
             "value": "voipbin"
         }
     }
+
+.. _flow-struct-action-webhook_send:
+
+Webhook send
+------------
+Send a webhook.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "webhook_send"
+        "option": {
+            "sync": boolean,
+            "uri": "<string>",
+            "method": "<string>",
+            "data_type": "<string>",
+            "data": "<string>"
+        }
+    }
+
+* sync: If this set to true, waits until this action done.
+* uri: Destination uri.
+* method: Send method. POST/GET/PUST/DELETE/...
+* data_type: Data's type. application/json, ...
+* data: Data string. Variable can be used.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "webhook_send",
+        "option": {
+            "sync": true,
+            "uri": "https://test.com",
+            "method": "POST",
+            "data_type": "application/json",
+            "data": "{\"destination_number\": \"${voipbin.call.destination.target}\", \"source_number\": \"${voipbin.call.source.target}\"}"
+        }
+    }
+
 
