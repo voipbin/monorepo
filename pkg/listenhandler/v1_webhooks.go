@@ -68,7 +68,7 @@ func (h *listenHandler) processV1WebhookDestinationsPost(m *rabbitmqhandler.Requ
 
 	var req request.V1DataWebhookDestinationsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Errorf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 
