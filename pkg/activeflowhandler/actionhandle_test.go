@@ -3,6 +3,7 @@ package activeflowhandler
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -15,11 +16,13 @@ import (
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/stackhandler"
@@ -399,7 +402,6 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 		name string
 
 		callID   uuid.UUID
-		act      *action.Action
 		targetID uuid.UUID
 
 		activeFlow       *activeflow.Activeflow
@@ -411,13 +413,8 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 		responseTargetAction  *action.Action
 	}{
 		{
-			name:   "normal",
-			callID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			act: &action.Action{
-				ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-				Type:   action.TypeGoto,
-				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799","loop_count":3}`),
-			},
+			name:     "normal",
+			callID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 			targetID: uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
 
 			activeFlow: &activeflow.Activeflow{
@@ -500,11 +497,11 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockStack.EXPECT().GetAction(ctx, tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.act.ID, false).Return(tt.responseOrgStackID, tt.responseOrgAction, nil)
+			mockStack.EXPECT().GetAction(ctx, tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID, false).Return(tt.responseOrgStackID, tt.responseOrgAction, nil)
 			mockStack.EXPECT().GetAction(ctx, tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.targetID, false).Return(tt.responseTargetStackID, tt.responseTargetAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.updateActiveFlow).Return(nil)
 
-			if err := h.actionHandleGoto(ctx, tt.activeFlow, tt.act); err != nil {
+			if err := h.actionHandleGoto(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -517,7 +514,6 @@ func Test_actionHandleGotoLoopOver(t *testing.T) {
 		name string
 
 		callID uuid.UUID
-		act    *action.Action
 
 		activeFlow *activeflow.Activeflow
 
@@ -526,11 +522,6 @@ func Test_actionHandleGotoLoopOver(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			&action.Action{
-				ID:     uuid.FromStringOrNil("2d099c6e-55a3-11ec-85b0-db3612865f6e"),
-				Type:   action.TypeGoto,
-				Option: []byte(`{"target_id":"7dbc6998-410d-11ec-91b8-d722b27bb799"}`),
-			},
 			&activeflow.Activeflow{
 				CurrentStackID: stack.IDMain,
 				CurrentAction: action.Action{
@@ -608,7 +599,7 @@ func Test_actionHandleGotoLoopOver(t *testing.T) {
 
 			ctx := context.Background()
 
-			if err := h.actionHandleGoto(ctx, tt.activeFlow, tt.act); err != nil {
+			if err := h.actionHandleGoto(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -865,7 +856,6 @@ func Test_actionHandleFetch(t *testing.T) {
 		name string
 
 		activeFlow *activeflow.Activeflow
-		action     *action.Action
 
 		responseFetch []action.Action
 
@@ -903,10 +893,6 @@ func Test_actionHandleFetch(t *testing.T) {
 						},
 					},
 				},
-			},
-			action: &action.Action{
-				ID:   uuid.FromStringOrNil("c1c76320-d4df-11ec-acdf-8304c3ca8c1f"),
-				Type: action.TypeFetch,
 			},
 
 			responseFetch: []action.Action{
@@ -972,11 +958,11 @@ func Test_actionHandleFetch(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockAction.EXPECT().ActionFetchGet(tt.action, tt.activeFlow.ID, tt.activeFlow.ReferenceID).Return(tt.responseFetch, nil)
+			mockAction.EXPECT().ActionFetchGet(&tt.activeFlow.CurrentAction, tt.activeFlow.ID, tt.activeFlow.ReferenceID).Return(tt.responseFetch, nil)
 			mockStack.EXPECT().Push(ctx, tt.activeFlow.StackMap, tt.responseFetch, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
-			if err := h.actionHandleFetch(ctx, tt.activeFlow, tt.action); err != nil {
+			if err := h.actionHandleFetch(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -2251,7 +2237,6 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 		callID     uuid.UUID
 		customerID uuid.UUID
 		language   string
-		act        *action.Action
 	}
 
 	tests := []test{
@@ -2261,16 +2246,16 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 			&activeflow.Activeflow{
 				CustomerID:  uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
 				ReferenceID: uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
+					Type:   action.TypeTranscribeRecording,
+					Option: []byte(`{"language":"en-US"}`),
+				},
 			},
 
 			uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
 			uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
 			"en-US",
-			&action.Action{
-				ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
-				Type:   action.TypeTranscribeRecording,
-				Option: []byte(`{"language":"en-US"}`),
-			},
 		},
 	}
 
@@ -2289,7 +2274,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 
 			ctx := context.Background()
 			mockReq.EXPECT().TSV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, 120000, 30).Return([]tstranscribe.Transcribe{}, nil)
-			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow, tt.act); err != nil {
+			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -2306,7 +2291,6 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 		referenceID   uuid.UUID
 		referenceType tstranscribe.Type
 		language      string
-		act           *action.Action
 
 		response *tstranscribe.Transcribe
 	}
@@ -2317,17 +2301,17 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 			&activeflow.Activeflow{
 				CustomerID:  uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
 				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
+					Type:   action.TypeTranscribeStart,
+					Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
+				},
 			},
 
 			uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 			tstranscribe.TypeCall,
 			"en-US",
-			&action.Action{
-				ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
-				Type:   action.TypeTranscribeStart,
-				Option: []byte(`{"language":"en-US","webhook_uri":"http://test.com/webhook","webhook_method":"POST"}`),
-			},
 
 			&tstranscribe.Transcribe{
 				ID:          uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
@@ -2354,7 +2338,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 
 			ctx := context.Background()
 			mockReq.EXPECT().TSV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language).Return(tt.response, nil)
-			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow, tt.act); err != nil {
+			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -2793,6 +2777,133 @@ func Test_actionHandleVariableSet(t *testing.T) {
 			if errCall := h.actionHandleVariableSet(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)
 			}
+		})
+	}
+}
+
+func Test_actionHandleWebhookSend(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		af *activeflow.Activeflow
+
+		responseVariable *variable.Variable
+
+		expectSync     bool
+		expectURI      string
+		expectMethod   webhook.MethodType
+		expectDataType webhook.DataType
+		expectData     []byte
+	}{
+		{
+			"normal",
+
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("284a82d4-d9eb-11ec-aa89-3fb4df202ec8"),
+				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
+					Type:   action.TypeWebhookSend,
+					Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"variable test ${voipbin.test.name}."}`),
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
+								Type:   action.TypeWebhookSend,
+								Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"variable test ${voipbin.test.name}."}`),
+							},
+						},
+					},
+				},
+			},
+
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("284a82d4-d9eb-11ec-aa89-3fb4df202ec8"),
+				Variables: map[string]string{
+					"voipbin.test.name": "test name",
+				},
+			},
+
+			true,
+			"test.com",
+			webhook.MethodTypePOST,
+			webhook.DataTypeJSON,
+			[]byte(`variable test test name.`),
+		},
+		{
+			"variable does not exist",
+
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("2751d836-da32-11ec-8ebb-df5c61605fec"),
+				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
+					Type:   action.TypeWebhookSend,
+					Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"variable test ${voipbin.test.name} and non-exist variable ${voipbin.test.non-exist}."}`),
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
+								Type:   action.TypeWebhookSend,
+								Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"variable test ${voipbin.test.name} and non-exist variable ${voipbin.test.non-exist}."}`),
+							},
+						},
+					},
+				},
+			},
+
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("2751d836-da32-11ec-8ebb-df5c61605fec"),
+				Variables: map[string]string{
+					"voipbin.test.name": "test name",
+				},
+			},
+
+			true,
+			"test.com",
+			webhook.MethodTypePOST,
+			webhook.DataTypeJSON,
+			[]byte(`variable test test name and non-exist variable .`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockVariable := variablehandler.NewMockVariableHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler:   mockAction,
+				variableHandler: mockVariable,
+			}
+
+			ctx := context.Background()
+
+			mockVariable.EXPECT().Get(ctx, tt.af.ID).Return(tt.responseVariable, nil)
+			mockReq.EXPECT().WMV1WebhookSendToDestination(ctx, tt.af.CustomerID, tt.expectURI, tt.expectMethod, tt.expectDataType, tt.expectData).Return(nil)
+
+			if errCall := h.actionHandleWebhookSend(ctx, tt.af); errCall != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
+			}
+
+			time.Sleep(500 * time.Millisecond)
 		})
 	}
 }
