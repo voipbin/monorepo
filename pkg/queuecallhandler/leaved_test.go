@@ -83,14 +83,16 @@ func Test_Leaved(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockQueuecallMasterHandler.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.responseQueuecallReference, nil)
-			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.responseQueuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
+			mockQueuecallMasterHandler.EXPECT().Get(ctx, tt.referenceID).Return(tt.responseQueuecallReference, nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
 			mockDB.EXPECT().QueuecallSetDurationService(ctx, tt.responseQueuecall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().QueuecallDelete(gomock.Any(), tt.responseQueuecall.ID, queuecall.StatusDone, gomock.Any()).Return(nil)
-			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.responseQueuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)
+			mockDB.EXPECT().QueuecallDelete(ctx, tt.responseQueuecall.ID, queuecall.StatusDone, gomock.Any()).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)
 
-			mockDB.EXPECT().QueueRemoveServiceQueueCall(gomock.Any(), tt.responseQueuecall.QueueID, tt.responseQueuecall.ID)
+			mockDB.EXPECT().QueueRemoveServiceQueueCall(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID)
+
+			mockReq.EXPECT().FMV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			h.Leaved(ctx, tt.referenceID, tt.confbridgeID)
 		})

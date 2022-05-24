@@ -9,14 +9,14 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	github.com/ttacon/libphonenumber v1.2.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220413020856-9bff29d04032
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220513055439-d323991dea8b
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220513052432-5b1338f2286a
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220513055435-7779b42aba3a
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220519040342-6b58674ba59c
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220524085918-748ff02c7fb8
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220524074609-c5c8ecfa5ad5
 )
 
 require (
@@ -42,8 +42,8 @@ require (
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220412183503-21306796da28 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220412175449-ec3a017dbd18 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
-	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220424150533-fe085c6dfa83 // indirect
-	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
-	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3 // indirect
+	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220523054649-bd614f2bc35a // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	google.golang.org/genproto v0.0.0-20220524023933-508584e28198 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )

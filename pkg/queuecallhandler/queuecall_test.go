@@ -278,8 +278,7 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		queueID    uuid.UUID
+		queue *queue.Queue
 
 		referenceType         queuecall.ReferenceType
 		referenceID           uuid.UUID
@@ -290,12 +289,7 @@ func Test_Create(t *testing.T) {
 		exitActionID    uuid.UUID
 		confbridgeID    uuid.UUID
 
-		source        cmaddress.Address
-		routingMethod queue.RoutingMethod
-		tagIDs        []uuid.UUID
-
-		timeoutWait    int
-		timeoutService int
+		source cmaddress.Address
 
 		queuecall *queuecall.Queuecall
 
@@ -304,8 +298,18 @@ func Test_Create(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
-			uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
+			&queue.Queue{
+				ID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
+				CustomerID: uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
+
+				RoutingMethod: queue.RoutingMethodRandom,
+				TagIDs: []uuid.UUID{
+					uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
+				},
+
+				WaitTimeout:    100000,
+				ServiceTimeout: 1000000,
+			},
 
 			queuecall.ReferenceTypeCall,
 			uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
@@ -320,12 +324,6 @@ func Test_Create(t *testing.T) {
 				Type:   cmaddress.TypeTel,
 				Target: "+821021656521",
 			},
-			queue.RoutingMethodRandom,
-			[]uuid.UUID{
-				uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
-			},
-			100000,
-			1000000,
 
 			&queuecall.Queuecall{
 				Source:      cmaddress.Address{},
@@ -361,14 +359,16 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(tt.queuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.queuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.queuecall)
 
-			if tt.timeoutWait > 0 {
-				mockReq.EXPECT().QMV1QueuecallTimeoutWait(gomock.Any(), gomock.Any(), tt.timeoutWait).Return(nil)
+			// setVariables
+			mockReq.EXPECT().FMV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+			if tt.queue.WaitTimeout > 0 {
+				mockReq.EXPECT().QMV1QueuecallTimeoutWait(gomock.Any(), gomock.Any(), tt.queue.WaitTimeout).Return(nil)
 			}
 
 			res, err := h.Create(
 				ctx,
-				tt.customerID,
-				tt.queueID,
+				tt.queue,
 				tt.referenceType,
 				tt.referenceID,
 				tt.referenceActiveflowID,
@@ -377,10 +377,6 @@ func Test_Create(t *testing.T) {
 				tt.exitActionID,
 				tt.confbridgeID,
 				tt.source,
-				tt.routingMethod,
-				tt.tagIDs,
-				tt.timeoutWait,
-				tt.timeoutService,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

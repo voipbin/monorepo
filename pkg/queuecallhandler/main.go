@@ -23,20 +23,15 @@ import (
 type QueuecallHandler interface {
 	Create(
 		ctx context.Context,
-		customerID uuid.UUID,
-		queueID uuid.UUID,
+		q *queue.Queue,
 		referenceType queuecall.ReferenceType,
 		referenceID uuid.UUID,
 		referenceActiveflowID uuid.UUID,
 		flowID uuid.UUID,
-		exitActionID uuid.UUID,
 		forwardActionID uuid.UUID,
+		exitActionID uuid.UUID,
 		confbridgeID uuid.UUID,
 		source cmaddress.Address,
-		routingMethod queue.RoutingMethod,
-		tagIDs []uuid.UUID,
-		timeoutWait int,
-		timeoutService int,
 	) (*queuecall.Queuecall, error)
 	Execute(ctx context.Context, qc *queuecall.Queuecall, agent *amagent.Agent) (*queuecall.Queuecall, error)
 	Hungup(ctx context.Context, referenceID uuid.UUID)

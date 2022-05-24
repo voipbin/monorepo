@@ -67,6 +67,10 @@ func (h *queuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*qu
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallAbandoned, res)
 
+	if errVariables := h.deleteVariables(ctx, res); errVariables != nil {
+		log.Errorf("Could not delete variables. err: %v", errVariables)
+	}
+
 	return res, nil
 }
 

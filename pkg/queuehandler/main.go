@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -58,7 +57,7 @@ type QueueHandler interface {
 	UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error)
 	UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error)
 
-	GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]agent.Agent, error)
+	GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
 }
 
 type queueHandler struct {

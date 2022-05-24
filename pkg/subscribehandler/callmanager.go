@@ -21,13 +21,13 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(m *rabbitmqhandler.Eve
 	)
 	log.Debugf("Received call event. event: %s", m.Type)
 
-	e := &cmconfbridge.EventConfbridgeJoinedLeaved{}
+	e := &cmconfbridge.EventConfbridgeJoined{}
 	if err := json.Unmarshal([]byte(m.Data), &e); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
 	}
 
-	h.queuecallHandler.Joined(ctx, e.CallID, e.ID)
+	h.queuecallHandler.Joined(ctx, e.JoinedCallID, e.ID)
 
 	return nil
 }
@@ -43,13 +43,13 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(m *rabbitmqhandler.Eve
 	)
 	log.Debugf("Received call event. event: %s", m.Type)
 
-	e := &cmconfbridge.EventConfbridgeJoinedLeaved{}
+	e := &cmconfbridge.EventConfbridgeLeaved{}
 	if err := json.Unmarshal([]byte(m.Data), &e); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
 	}
 
-	h.queuecallHandler.Leaved(ctx, e.CallID, e.ID)
+	h.queuecallHandler.Leaved(ctx, e.LeavedCallID, e.ID)
 
 	return nil
 }

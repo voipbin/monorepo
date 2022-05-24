@@ -23,22 +23,6 @@ import (
 )
 
 func Test_Join(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-	mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
-
-	h := &queueHandler{
-		db:                        mockDB,
-		reqHandler:                mockReq,
-		notifyhandler:             mockNotify,
-		queuecallHandler:          mockQueuecall,
-		queuecallReferenceHandler: mockQueuecallReference,
-	}
 
 	tests := []struct {
 		name string
@@ -111,6 +95,23 @@ func Test_Join(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+			mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
+
+			h := &queueHandler{
+				db:                        mockDB,
+				reqHandler:                mockReq,
+				notifyhandler:             mockNotify,
+				queuecallHandler:          mockQueuecall,
+				queuecallReferenceHandler: mockQueuecallReference,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
@@ -133,8 +134,7 @@ func Test_Join(t *testing.T) {
 
 			mockQueuecall.EXPECT().Create(
 				gomock.Any(),
-				tt.queue.CustomerID,
-				tt.queue.ID,
+				tt.queue,
 				tt.referenceType,
 				tt.referenceID,
 				tt.referenceActiveflowID,
@@ -143,10 +143,6 @@ func Test_Join(t *testing.T) {
 				tt.exitActionID,
 				tt.responseConfbridge.ID,
 				source,
-				tt.queue.RoutingMethod,
-				tt.queue.TagIDs,
-				tt.queue.WaitTimeout,
-				tt.queue.ServiceTimeout,
 			).Return(tt.queuecall, nil)
 
 			mockQueuecallReference.EXPECT().SetCurrentQueuecallID(ctx, tt.referenceID, tt.referenceType, tt.queuecall.ID).Return(nil)
@@ -171,23 +167,6 @@ func Test_Join(t *testing.T) {
 }
 
 func TestGetSource(t *testing.T) {
-
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
-	mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
-
-	h := &queueHandler{
-		db:                        mockDB,
-		reqHandler:                mockReq,
-		notifyhandler:             mockNotify,
-		queuecallHandler:          mockQueuecall,
-		queuecallReferenceHandler: mockQueuecallReference,
-	}
 
 	tests := []struct {
 		name string
@@ -276,6 +255,22 @@ func TestGetSource(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+			mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
+
+			h := &queueHandler{
+				db:                        mockDB,
+				reqHandler:                mockReq,
+				notifyhandler:             mockNotify,
+				queuecallHandler:          mockQueuecall,
+				queuecallReferenceHandler: mockQueuecallReference,
+			}
 
 			res := h.getSource(tt.call)
 
