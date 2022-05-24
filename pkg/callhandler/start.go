@@ -681,11 +681,6 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 			Option: opt,
 		}
 
-	// default
-	default:
-		logrus.Warnf("Could not find correct sip-service handler. Use default handler. target: %s", c.Destination.Target)
-		fallthrough
-
 	// echo
 	case string(fmaction.TypeEcho):
 		// create default option for echo
@@ -740,6 +735,25 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		resAct = &fmaction.Action{
 			ID:     fmaction.IDStart,
 			Type:   fmaction.TypeStreamEcho,
+			Option: opt,
+		}
+
+	// default
+	default:
+		logrus.Warnf("could not find correct sip-service handler. Use default handler. target: %s", c.Destination.Target)
+		// create default option for echo
+		option := fmaction.OptionEcho{
+			Duration: 180 * 1000, // duration 180 sec
+		}
+		opt, err := json.Marshal(option)
+		if err != nil {
+			return nil, fmt.Errorf("could not marshal the option echo. action: %s, err: %v", fmaction.TypeEcho, err)
+		}
+
+		// create an action
+		resAct = &fmaction.Action{
+			ID:     fmaction.IDStart,
+			Type:   fmaction.TypeEcho,
 			Option: opt,
 		}
 

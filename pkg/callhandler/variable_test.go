@@ -59,19 +59,30 @@ func Test_setVariables(t *testing.T) {
 
 			ctx := context.Background()
 
-			// source
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.source.name", tt.call.Source.Name).Return(nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.source.detail", tt.call.Source.Detail).Return(nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.source.target", tt.call.Source.Target).Return(nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.source.target_name", tt.call.Source.TargetName).Return(nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.source.type", string(tt.call.Source.Type)).Return(nil)
+			variables := map[string]string{
 
-			// destination
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.destination.name", tt.call.Destination.Name).Return(nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.destination.detail", tt.call.Destination.Detail).Return(nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.destination.target", tt.call.Destination.Target).Return(nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.destination.target_name", tt.call.Destination.TargetName).Return(nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, "voipbin.call.destination.type", string(tt.call.Destination.Type)).Return(nil)
+				// source
+				"voipbin.call.source.name":        tt.call.Source.Name,
+				"voipbin.call.source.detail":      tt.call.Source.Detail,
+				"voipbin.call.source.target":      tt.call.Source.Target,
+				"voipbin.call.source.target_name": tt.call.Source.Target,
+				"voipbin.call.source.type":        string(tt.call.Source.Type),
+
+				// destination
+				"voipbin.call.destination.name":        tt.call.Destination.Name,
+				"voipbin.call.destination.detail":      tt.call.Destination.Detail,
+				"voipbin.call.destination.target":      tt.call.Destination.Target,
+				"voipbin.call.destination.target_name": tt.call.Destination.TargetName,
+				"voipbin.call.destination.type":        string(tt.call.Destination.Type),
+
+				// others
+				"voipbin.call.direction":      string(tt.call.Direction),
+				"voipbin.call.master_call_id": tt.call.MasterCallID.String(),
+			}
+
+			for k, v := range variables {
+				mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, k, v).Return(nil)
+			}
 
 			if err := h.setVariables(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
