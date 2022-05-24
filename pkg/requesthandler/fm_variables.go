@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/gofrs/uuid"
 	fmvariable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
@@ -36,7 +37,7 @@ func (r *requestHandler) FMV1VariableGet(ctx context.Context, variableID uuid.UU
 
 // FMV1VariableSetVariable sends a request to flow-manager
 // to set the detail variable info.
-// it returns updated variable info if it succeed.
+// it returns error if it failed.
 func (r *requestHandler) FMV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key string, value string) error {
 	uri := fmt.Sprintf("/v1/variables/%s/variables", variableID)
 
@@ -51,6 +52,25 @@ func (r *requestHandler) FMV1VariableSetVariable(ctx context.Context, variableID
 	}
 
 	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFMVariables, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// FMV1VariableDeleteVariable sends a request to flow-manager
+// to delete the variable info.
+func (r *requestHandler) FMV1VariableDeleteVariable(ctx context.Context, variableID uuid.UUID, key string) error {
+	uri := fmt.Sprintf("/v1/variables/%s/variables/%s", variableID, url.QueryEscape(key))
+
+	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodDelete, resourceFMVariables, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

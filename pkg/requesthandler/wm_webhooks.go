@@ -29,7 +29,7 @@ func (r *requestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UU
 		return err
 	}
 
-	res, err := r.sendRequestWM(uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWM(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (r *requestHandler) WMV1WebhookSendToDestination(ctx context.Context, custo
 		return err
 	}
 
-	res, err := r.sendRequestWM(uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWM(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

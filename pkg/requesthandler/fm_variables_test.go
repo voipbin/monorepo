@@ -132,3 +132,75 @@ func Test_FMV1VariableSetVariable(t *testing.T) {
 		})
 	}
 }
+
+func Test_FMV1VariableDeleteVariable(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		variableID uuid.UUID
+		key        string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("290c673e-db33-11ec-a4d9-bb00659a2a19"),
+			"key1",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/variables/290c673e-db33-11ec-a4d9-bb00659a2a19/variables/key1",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+			},
+		},
+		{
+			"key has a space",
+
+			uuid.FromStringOrNil("290c673e-db33-11ec-a4d9-bb00659a2a19"),
+			"key 1",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/variables/290c673e-db33-11ec-a4d9-bb00659a2a19/variables/key+1",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.FMV1VariableDeleteVariable(ctx, tt.variableID, tt.key); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+		})
+	}
+}
