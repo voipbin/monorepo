@@ -29,6 +29,7 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 			"call_id":  referenceID,
 		},
 	)
+	log.Debugf("Creating a new queuecall. queue_id: %s activeflow_id: %s, reference_type: %s, reference_id: %s", queueID, referenceActiveflowID, referenceType, referenceID)
 
 	// get queue
 	q, err := h.Get(ctx, queueID)
@@ -79,8 +80,7 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 	// create a new queuecall
 	res, err := h.queuecallHandler.Create(
 		ctx,
-		q.CustomerID,
-		q.ID,
+		q,
 		referenceType,
 		referenceID,
 		referenceActiveflowID,
@@ -89,10 +89,6 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 		exitActionID,
 		cb.ID,
 		source,
-		q.RoutingMethod,
-		q.TagIDs,
-		q.WaitTimeout,
-		q.ServiceTimeout,
 	)
 	if err != nil {
 		log.Errorf("Could not create the queuecall. err: %v", err)

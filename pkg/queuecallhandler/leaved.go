@@ -77,4 +77,8 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		log.Errorf("Could not remove the queuecall from the service queuecall. service_duration: %d, err: %v", duration.Milliseconds(), err)
 		return
 	}
+
+	if errVariables := h.deleteVariables(ctx, tmp); errVariables != nil {
+		log.Errorf("Could not delete variables. err: %v", errVariables)
+	}
 }

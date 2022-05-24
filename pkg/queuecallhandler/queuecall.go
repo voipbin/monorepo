@@ -92,8 +92,7 @@ func (h *queuecallHandler) GetByReferenceID(ctx context.Context, referenceID uui
 // QueueCreate creates a new queue.
 func (h *queuecallHandler) Create(
 	ctx context.Context,
-	customerID uuid.UUID,
-	queueID uuid.UUID,
+	q *queue.Queue,
 	referenceType queuecall.ReferenceType,
 	referenceID uuid.UUID,
 	referenceActiveflowID uuid.UUID,
@@ -102,14 +101,10 @@ func (h *queuecallHandler) Create(
 	exitActionID uuid.UUID,
 	confbridgeID uuid.UUID,
 	source cmaddress.Address,
-	routingMethod queue.RoutingMethod,
-	tagIDs []uuid.UUID,
-	timeoutWait int,
-	timeoutService int,
 ) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                    "Create",
-		"queue_id":                queueID,
+		"queue_id":                q.ID,
 		"reference_type":          referenceType,
 		"reference_id":            referenceID,
 		"reference_activeflow_id": referenceActiveflowID,
@@ -122,8 +117,8 @@ func (h *queuecallHandler) Create(
 
 	c := &queuecall.Queuecall{
 		ID:         id,
-		CustomerID: customerID,
-		QueueID:    queueID,
+		CustomerID: q.CustomerID,
+		QueueID:    q.ID,
 
 		ReferenceType:         referenceType,
 		ReferenceID:           referenceID,
@@ -135,14 +130,14 @@ func (h *queuecallHandler) Create(
 		ConfbridgeID:    confbridgeID,
 
 		Source:        source,
-		RoutingMethod: routingMethod,
-		TagIDs:        tagIDs,
+		RoutingMethod: q.RoutingMethod,
+		TagIDs:        q.TagIDs,
 
 		Status:         queuecall.StatusInitiating,
 		ServiceAgentID: uuid.Nil,
 
-		TimeoutWait:    timeoutWait,
-		TimeoutService: timeoutService,
+		TimeoutWait:    q.WaitTimeout,
+		TimeoutService: q.ServiceTimeout,
 
 		DurationWaiting: 0,
 		DurationService: 0,
@@ -166,6 +161,10 @@ func (h *queuecallHandler) Create(
 		return nil, err
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallCreated, res)
+
+	if errSet := h.setVariables(ctx, q, res); errSet != nil {
+		log.Errorf("Could not set variables. err: %v", errSet)
+	}
 
 	// send the queuecall timeout-wait
 	if res.TimeoutWait > 0 {

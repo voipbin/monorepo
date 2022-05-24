@@ -111,6 +111,9 @@ func Test_Kick(t *testing.T) {
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
 			}
 
+			// deleteVariables
+			mockReq.EXPECT().FMV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
 			res, err := h.Kick(ctx, tt.queuecallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -194,6 +197,9 @@ func Test_KickByReferenceID(t *testing.T) {
 			mockDB.EXPECT().QueuecallDelete(ctx, tt.responseQueuecall.ID, queuecall.StatusAbandoned, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
+
+			// deleteVariables
+			mockReq.EXPECT().FMV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			res, err := h.KickByReferenceID(ctx, tt.referenceID)
 			if err != nil {
