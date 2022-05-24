@@ -213,8 +213,8 @@ gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f0
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3/go.mod h1:nKjcs4JbVMdYWpX/HLcx2P/xPdH0/amdxfv4ih9lRcY=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220413021200-204155e694ef h1:lFQCPpK428WcdFF/LnH+wbZ5hgPPEgVDbqGkl4UmxZ8=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220413021200-204155e694ef/go.mod h1:XoC3e3vlzfeHscR50xn7F83V1rDxE2wTCZgBcwKnrws=
-gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220518172250-b200942b2fe6 h1:0iNoFFxhbXo5HnqovCnfOObufLJzDyjMV5rtclyK5TE=
-gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220518172250-b200942b2fe6/go.mod h1:NoEBzvVf9nq14DviIAE9zbYHVnS64E/gWPPDzLJKFSc=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220524074609-c5c8ecfa5ad5 h1:VrvK8EJo66KIOa5d+QPJRcov9FtEfo4qmryV0LwCzsM=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220524074609-c5c8ecfa5ad5/go.mod h1:5H3n3JeNpoyQOirCaFR3fPzvnJx4Z/tARbK2AYcvYB8=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220412180021-aa7216424a33 h1:G90vWUNUA29A8nRmFUn2FTOmABPUsJs4bwwqvGJHi0s=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220412180021-aa7216424a33/go.mod h1:FCdMN7qOv7w+E5ACzU7emsPo9L5p1iBEDGSVB+94LBY=
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220413021508-2a83dea8ea6c h1:VUO9esuXuSSG5XLojvrFQ0KZ92X3qUBrIWR034MBjEI=
@@ -235,8 +235,8 @@ gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220412175449-ec3a017dbd1
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220412175449-ec3a017dbd18/go.mod h1:6Wwo+DhW7kjAYqdD4U8CiWwzSMuksdmylRIb60ZyUGA=
 gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 h1:ti87QfvFKnGwwuQZroaLlYZnTq6q7WrxQ+2uR4I3cxM=
 gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0/go.mod h1:halzSanfMvCY67OsxG+1D5PZHc6mwK/ClOZ1VEJGTxM=
-gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220521190834-439765c7f55e h1:RLd0v5y7vUG+6kIGZiYtoSMVXJqtC4E4FkLFmoNvWR0=
-gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220521190834-439765c7f55e/go.mod h1:csMYZ0OguYUacBVISHQByfpxWe8feav/Mz/YbU7FF3o=
+gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220523054649-bd614f2bc35a h1:5V9KavMks15+zom1J1XX3ijJXLLJnUmrCcYZAZz4gzE=
+gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220523054649-bd614f2bc35a/go.mod h1:AsuZPveOdB4roNgFYLLd69JJp6X6ZJCFyGpkaMEo9p0=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

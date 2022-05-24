@@ -177,6 +177,8 @@ const (
 	resourceTTSSpeeches resource = "tts/speeches"
 
 	resourceUMUsers resource = "um/users"
+
+	resourceWebhookWebhooks resource = "webhook-manager/webhooks"
 )
 
 func initPrometheus(namespace string) {

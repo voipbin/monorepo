@@ -91,14 +91,13 @@ func Test_WMV1WebhookDestinationSend(t *testing.T) {
 			destination: "test.com",
 			method:      wmwebhook.MethodTypePOST,
 			dataType:    wmwebhook.DataTypeJSON,
-			data:        []byte(`{"test_key": "test value"}`),
 
 			expectTarget: "bin-manager.webhook-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/webhook_destinations",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"d2c2ffe8-825c-11ec-8688-2bebcc3d0013","uri":"test.com","method":"POST","data_type":"application/json","data":{"test_key":"test value"}}`),
+				Data:     []byte(`{"customer_id":"d2c2ffe8-825c-11ec-8688-2bebcc3d0013","uri":"test.com","method":"POST","data_type":"application/json","data":"test webhook."}`),
 			},
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -121,7 +120,8 @@ func Test_WMV1WebhookDestinationSend(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.WMV1WebhookSendToDestination(ctx, tt.customerID, tt.destination, tt.method, tt.dataType, tt.data)
+			a := []byte(`"test webhook."`)
+			err := reqHandler.WMV1WebhookSendToDestination(ctx, tt.customerID, tt.destination, tt.method, tt.dataType, a)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
