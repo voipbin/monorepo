@@ -173,3 +173,61 @@ func Test_SetVariable(t *testing.T) {
 		})
 	}
 }
+
+func Test_DeleteVariable(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id  uuid.UUID
+		key string
+
+		responseVariable *variable.Variable
+
+		expectupdateVariable *variable.Variable
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("588f8bc6-db2e-11ec-a327-5374999e8287"),
+			"key 1",
+
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("588f8bc6-db2e-11ec-a327-5374999e8287"),
+				Variables: map[string]string{
+					"key 1": "value 1",
+					"key 2": "value 2",
+				},
+			},
+
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("588f8bc6-db2e-11ec-a327-5374999e8287"),
+				Variables: map[string]string{
+					"key 2": "value 2",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &variableHandler{
+				db: mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().VariableGet(ctx, tt.id).Return(tt.responseVariable, nil)
+			mockDB.EXPECT().VariableUpdate(ctx, tt.expectupdateVariable).Return(nil)
+
+			if err := h.DeleteVariable(ctx, tt.id, tt.key); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+		})
+	}
+}
