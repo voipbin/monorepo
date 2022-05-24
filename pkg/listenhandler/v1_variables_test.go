@@ -162,7 +162,7 @@ func Test_v1VariablesIDVariablesKeyDelete(t *testing.T) {
 		{
 			"key has a space",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/variables/52905588-db2f-11ec-9813-73dc3a5d302d/variables/key%201",
+				URI:      "/v1/variables/52905588-db2f-11ec-9813-73dc3a5d302d/variables/key+1",
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: "application/json",
 			},

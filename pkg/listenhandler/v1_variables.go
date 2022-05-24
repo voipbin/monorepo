@@ -106,7 +106,10 @@ func (h *listenHandler) v1VariablesIDVariablesKeyDelete(ctx context.Context, m *
 	// "/v1/variables/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/variables/key1"
 	tmpVals := strings.Split(u.Path, "/")
 	variableID := uuid.FromStringOrNil(tmpVals[3])
-	variableKey := tmpVals[5]
+	variableKey, err := url.QueryUnescape(tmpVals[5])
+	if err != nil {
+		log.Errorf("Could not parse the variable key. err: %v", err)
+	}
 
 	if err := h.variableHandler.DeleteVariable(ctx, variableID, variableKey); err != nil {
 		log.Errorf("Could not delete variable info. variable_id: %s, key: %s, err: %v", variableID, variableKey, err)
