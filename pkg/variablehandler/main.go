@@ -23,6 +23,7 @@ type VariableHandler interface {
 	Set(ctx context.Context, t *variable.Variable) error
 
 	SetVariable(ctx context.Context, id uuid.UUID, key string, value string) error
+	DeleteVariable(ctx context.Context, id uuid.UUID, key string) error
 }
 
 // NewVariableHandler return VariableHandler

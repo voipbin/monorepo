@@ -89,3 +89,28 @@ func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, key str
 
 	return nil
 }
+
+// DeleteVariable deletes the variable
+func (h *variableHandler) DeleteVariable(ctx context.Context, id uuid.UUID, key string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "DeleteVariable",
+		"variable_id": id,
+		"key":         key,
+	})
+	log.Debugf("Deleting a variable.")
+
+	// get variable
+	v, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get variable. err: %v", err)
+		return err
+	}
+
+	delete(v.Variables, key)
+	if err := h.Set(ctx, v); err != nil {
+		log.Errorf("Could not set variable. err: %v", err)
+		return err
+	}
+
+	return nil
+}

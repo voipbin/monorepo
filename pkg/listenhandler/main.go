@@ -38,6 +38,7 @@ type listenHandler struct {
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+	regAny  = ".*"
 
 	// activeflows
 	regV1Activeflows                  = regexp.MustCompile("/v1/activeflows$")
@@ -54,8 +55,9 @@ var (
 	regV1FlowsIDActionsID = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
 
 	// variables
-	regV1VariablesID          = regexp.MustCompile("/v1/variables/" + regUUID + "$")
-	regV1VariablesIDVariables = regexp.MustCompile("/v1/variables/" + regUUID + "/variables$")
+	regV1VariablesID             = regexp.MustCompile("/v1/variables/" + regUUID + "$")
+	regV1VariablesIDVariables    = regexp.MustCompile("/v1/variables/" + regUUID + "/variables$")
+	regV1VariablesIDVariablesKey = regexp.MustCompile("/v1/variables/" + regUUID + "/variables/" + regAny + "$")
 )
 
 var (
@@ -228,6 +230,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1VariablesIDVariables.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/variables/<variable-id>/variables"
 		response, err = h.v1VariablesIDVariablesPost(ctx, m)
+
+	// variables/<variable-id>/variables/key
+	case regV1VariablesIDVariablesKey.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/variables/<variable-id>/variables/key"
+		response, err = h.v1VariablesIDVariablesKeyDelete(ctx, m)
 
 	default:
 		logrus.WithFields(

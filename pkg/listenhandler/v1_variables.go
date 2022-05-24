@@ -88,3 +88,35 @@ func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *rabbi
 
 	return res, nil
 }
+
+// v1VariablesIDVariablesKeyDelete handles /v1/variables/{id}/variables/{key} POST request
+func (h *listenHandler) v1VariablesIDVariablesKeyDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "v1VariablesIDVariablesKeyDelete",
+		},
+	)
+	log.WithField("request", m).Debug("Received request.")
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/variables/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/variables/key1"
+	tmpVals := strings.Split(u.Path, "/")
+	variableID := uuid.FromStringOrNil(tmpVals[3])
+	variableKey := tmpVals[5]
+
+	if err := h.variableHandler.DeleteVariable(ctx, variableID, variableKey); err != nil {
+		log.Errorf("Could not delete variable info. variable_id: %s, key: %s, err: %v", variableID, variableKey, err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}

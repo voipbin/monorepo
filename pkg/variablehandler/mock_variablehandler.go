@@ -51,6 +51,20 @@ func (mr *MockVariableHandlerMockRecorder) Create(ctx, activeflowID, variables i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockVariableHandler)(nil).Create), ctx, activeflowID, variables)
 }
 
+// DeleteVariable mocks base method.
+func (m *MockVariableHandler) DeleteVariable(ctx context.Context, id uuid.UUID, key string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteVariable", ctx, id, key)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVariable indicates an expected call of DeleteVariable.
+func (mr *MockVariableHandlerMockRecorder) DeleteVariable(ctx, id, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVariable", reflect.TypeOf((*MockVariableHandler)(nil).DeleteVariable), ctx, id, key)
+}
+
 // Get mocks base method.
 func (m *MockVariableHandler) Get(ctx context.Context, id uuid.UUID) (*variable.Variable, error) {
 	m.ctrl.T.Helper()
