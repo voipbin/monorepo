@@ -413,6 +413,7 @@ type RequestHandler interface {
 
 	// flow-manager variables
 	FMV1VariableGet(ctx context.Context, variableID uuid.UUID) (*fmvariable.Variable, error)
+	FMV1VariableDeleteVariable(ctx context.Context, variableID uuid.UUID, key string) error
 	FMV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key string, value string) error
 
 	// message-manager hook

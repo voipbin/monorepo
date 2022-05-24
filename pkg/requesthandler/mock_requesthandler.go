@@ -1630,6 +1630,20 @@ func (mr *MockRequestHandlerMockRecorder) FMV1FlowUpdateActions(ctx, flowID, act
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1FlowUpdateActions", reflect.TypeOf((*MockRequestHandler)(nil).FMV1FlowUpdateActions), ctx, flowID, actions)
 }
 
+// FMV1VariableDeleteVariable mocks base method.
+func (m *MockRequestHandler) FMV1VariableDeleteVariable(ctx context.Context, variableID uuid.UUID, key string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FMV1VariableDeleteVariable", ctx, variableID, key)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FMV1VariableDeleteVariable indicates an expected call of FMV1VariableDeleteVariable.
+func (mr *MockRequestHandlerMockRecorder) FMV1VariableDeleteVariable(ctx, variableID, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FMV1VariableDeleteVariable", reflect.TypeOf((*MockRequestHandler)(nil).FMV1VariableDeleteVariable), ctx, variableID, key)
+}
+
 // FMV1VariableGet mocks base method.
 func (m *MockRequestHandler) FMV1VariableGet(ctx context.Context, variableID uuid.UUID) (*variable.Variable, error) {
 	m.ctrl.T.Helper()
