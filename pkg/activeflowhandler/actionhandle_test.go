@@ -2112,7 +2112,6 @@ func Test_actionHandleMessageSend(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID     uuid.UUID
 		activeFlow *activeflow.Activeflow
 
 		expectCustomerID   uuid.UUID
@@ -2120,18 +2119,20 @@ func Test_actionHandleMessageSend(t *testing.T) {
 		expectDestinations []cmaddress.Address
 		expectText         string
 
+		responseVariable    *variable.Variable
 		responseCall        *cmcall.Call
 		expectReqActiveFlow *activeflow.Activeflow
 	}{
 		{
-			"normal",
-			uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
-			&activeflow.Activeflow{
+			name: "normal",
+
+			activeFlow: &activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("9332ed50-dc86-11ec-ba14-8b96908d546b"),
 				CustomerID: uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
 					Type:   action.TypeMessageSend,
-					Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello world"}`),
+					Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "${test.destination}"}], "text": "hello world. test variable: ${test.variable}"}`),
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -2141,7 +2142,7 @@ func Test_actionHandleMessageSend(t *testing.T) {
 							{
 								ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
 								Type:   action.TypeMessageSend,
-								Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello world"}`),
+								Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "${test.destination}"}], "text": "hello world. test variable: ${test.variable}"}`),
 							},
 							{
 								ID:   uuid.FromStringOrNil("9c06bcfa-a2ce-11ec-bcc6-5bc0b10cd014"),
@@ -2156,24 +2157,35 @@ func Test_actionHandleMessageSend(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
-			&cmaddress.Address{
+			expectCustomerID: uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
+			expectSource: &cmaddress.Address{
 				Type:   cmaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			expectDestinations: []cmaddress.Address{
 				{
 					Type:   cmaddress.TypeTel,
 					Target: "+821100000002",
 				},
+				{
+					Type:   cmaddress.TypeTel,
+					Target: "+821100000003",
+				},
 			},
-			"hello world",
+			expectText: "hello world. test variable: ttteeesssttt",
 
-			&cmcall.Call{
+			responseVariable: &variable.Variable{
+				ID: uuid.FromStringOrNil("9332ed50-dc86-11ec-ba14-8b96908d546b"),
+				Variables: map[string]string{
+					"test.variable":    "ttteeesssttt",
+					"test.destination": "+821100000003",
+				},
+			},
+			responseCall: &cmcall.Call{
 				ID:     uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
 				Status: cmcall.StatusProgressing,
 			},
-			&activeflow.Activeflow{
+			expectReqActiveFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
 					Type:   action.TypeMessageSend,
@@ -2211,14 +2223,17 @@ func Test_actionHandleMessageSend(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				variableHandler: mockVar,
 			}
 
 			ctx := context.Background()
 
+			mockVar.EXPECT().Get(ctx, tt.activeFlow.ID).Return(tt.responseVariable, nil)
 			mockReq.EXPECT().MMV1MessageSend(ctx, tt.expectCustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(&mmmessage.Message{}, nil)
 
 			if err := h.actionHandleMessageSend(ctx, tt.activeFlow); err != nil {
@@ -2348,9 +2363,8 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 func Test_actionHandleCall(t *testing.T) {
 
 	tests := []struct {
-		name         string
-		activeflowID uuid.UUID
-		af           *activeflow.Activeflow
+		name string
+		af   *activeflow.Activeflow
 
 		source       *cmaddress.Address
 		destinations []cmaddress.Address
@@ -2358,12 +2372,12 @@ func Test_actionHandleCall(t *testing.T) {
 		actions      []action.Action
 		masterCallID uuid.UUID
 
-		responseFlow *flow.Flow
-		responseCall []cmcall.Call
+		responseFlow     *flow.Flow
+		responseVariable *variable.Variable
+		responseCall     []cmcall.Call
 	}{
 		{
 			"single destination with flow id",
-			uuid.FromStringOrNil("7fb0af78-a942-11ec-8c60-67384864d90a"),
 			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("7fb0af78-a942-11ec-8c60-67384864d90a"),
 				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
@@ -2402,6 +2416,7 @@ func Test_actionHandleCall(t *testing.T) {
 			uuid.Nil,
 
 			&flow.Flow{},
+			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("a49dda82-a941-11ec-b5a9-9baf180541e9"),
@@ -2410,7 +2425,6 @@ func Test_actionHandleCall(t *testing.T) {
 		},
 		{
 			"2 destinations with flow id",
-			uuid.FromStringOrNil("fe7b3838-a941-11ec-b3d6-5337e9635d88"),
 			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("fe7b3838-a941-11ec-b3d6-5337e9635d88"),
 				CustomerID: uuid.FromStringOrNil("fea0d30e-a941-11ec-a38a-478b19a5dfd2"),
@@ -2453,6 +2467,7 @@ func Test_actionHandleCall(t *testing.T) {
 			uuid.Nil,
 
 			&flow.Flow{},
+			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("ff16e1f2-a941-11ec-b2c1-c3aa4ce144a0"),
@@ -2464,7 +2479,6 @@ func Test_actionHandleCall(t *testing.T) {
 		},
 		{
 			"single destination with actions",
-			uuid.FromStringOrNil("38a78fec-a943-11ec-b279-c7b264a9d36a"),
 			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("38a78fec-a943-11ec-b279-c7b264a9d36a"),
 				CustomerID: uuid.FromStringOrNil("38d87102-a943-11ec-99aa-5fc910add207"),
@@ -2513,6 +2527,7 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("3936013c-a943-11ec-bdf1-af72361eecf4"),
 			},
+			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("39691e00-a943-11ec-a69c-7f0e69becb70"),
@@ -2521,7 +2536,6 @@ func Test_actionHandleCall(t *testing.T) {
 		},
 		{
 			"2 destinations with actions",
-			uuid.FromStringOrNil("f3ddb5ca-a943-11ec-be88-ebdd9b1c7f1b"),
 			&activeflow.Activeflow{
 				ID:         uuid.FromStringOrNil("f3ddb5ca-a943-11ec-be88-ebdd9b1c7f1b"),
 				CustomerID: uuid.FromStringOrNil("f40e389e-a943-11ec-83a7-7f90e0c22e96"),
@@ -2570,6 +2584,7 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("f46f3e96-a943-11ec-b4e1-2bfce6b84c2b"),
 			},
+			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("f4a90298-a943-11ec-b31a-bf1f552ced44"),
@@ -2581,7 +2596,6 @@ func Test_actionHandleCall(t *testing.T) {
 		},
 		{
 			"single destination with flow id and chained",
-			uuid.FromStringOrNil("ec55367a-a993-11ec-9eaf-3bd79ecebfdb"),
 			&activeflow.Activeflow{
 				ID:            uuid.FromStringOrNil("ec55367a-a993-11ec-9eaf-3bd79ecebfdb"),
 				CustomerID:    uuid.FromStringOrNil("ec7e7e4a-a993-11ec-85a1-2f8c41cac00e"),
@@ -2622,6 +2636,7 @@ func Test_actionHandleCall(t *testing.T) {
 			uuid.FromStringOrNil("3f0cd396-a994-11ec-95db-e73c30df842c"),
 
 			&flow.Flow{},
+			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("2aafe7e4-a994-11ec-8bae-338c6a067225"),
@@ -2630,7 +2645,6 @@ func Test_actionHandleCall(t *testing.T) {
 		},
 		{
 			"single destination with flow id and chained but reference type is message",
-			uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
 			&activeflow.Activeflow{
 				ID:            uuid.FromStringOrNil("87a4f032-a996-11ec-b260-4b6f3f52e1c9"),
 				CustomerID:    uuid.FromStringOrNil("87ede80a-a996-11ec-9086-d77d045a5f03"),
@@ -2671,6 +2685,7 @@ func Test_actionHandleCall(t *testing.T) {
 			uuid.Nil,
 
 			&flow.Flow{},
+			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("8873be9e-a996-11ec-993b-438622bb78da"),
@@ -2687,12 +2702,14 @@ func Test_actionHandleCall(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
 				db:         mockDB,
 				reqHandler: mockReq,
 
-				actionHandler: mockAction,
+				actionHandler:   mockAction,
+				variableHandler: mockVar,
 			}
 
 			ctx := context.Background()
@@ -2702,6 +2719,8 @@ func Test_actionHandleCall(t *testing.T) {
 				mockReq.EXPECT().FMV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.actions, false).Return(tt.responseFlow, nil)
 				flowID = tt.responseFlow.ID
 			}
+
+			mockVar.EXPECT().Get(ctx, tt.af.ID).Return(tt.responseVariable, nil)
 			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations).Return(tt.responseCall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {

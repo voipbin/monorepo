@@ -720,6 +720,22 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 		return err
 	}
 
+	// substitue the variables
+	variables, err := h.variableHandler.Get(ctx, af.ID)
+	if err != nil {
+		log.Errorf("Could not get variables. err: %v", err)
+		return err
+	}
+
+	// update variables
+	h.variableSubstitueAddress(ctx, opt.Source, variables.Variables)
+	for i := range opt.Destinations {
+		h.variableSubstitueAddress(ctx, &opt.Destinations[i], variables.Variables)
+	}
+	h.variableSubstitueAddress(ctx, opt.Source, variables.Variables)
+	opt.Text = h.variableSubstitue(ctx, opt.Text, variables.Variables)
+
+	// send message
 	tmp, err := h.reqHandler.MMV1MessageSend(ctx, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
@@ -766,6 +782,20 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 	if opt.Chained && af.ReferenceType == activeflow.ReferenceTypeCall {
 		masterCallID = af.ReferenceID
 	}
+
+	// substitue the variables
+	variables, err := h.variableHandler.Get(ctx, af.ID)
+	if err != nil {
+		log.Errorf("Could not get variables. err: %v", err)
+		return err
+	}
+
+	// update variables
+	h.variableSubstitueAddress(ctx, opt.Source, variables.Variables)
+	for i := range opt.Destinations {
+		h.variableSubstitueAddress(ctx, &opt.Destinations[i], variables.Variables)
+	}
+	h.variableSubstitueAddress(ctx, opt.Source, variables.Variables)
 
 	resCalls, err := h.reqHandler.CMV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations)
 	if err != nil {
