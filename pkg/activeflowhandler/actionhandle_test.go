@@ -2132,7 +2132,7 @@ func Test_actionHandleMessageSend(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
 					Type:   action.TypeMessageSend,
-					Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "${test.destination}"}], "text": "hello world. test variable: ${test.variable}"}`),
+					Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "+821100000003"}], "text": "hello world. test variable: ttteeesssttt"}`),
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -2142,7 +2142,7 @@ func Test_actionHandleMessageSend(t *testing.T) {
 							{
 								ID:     uuid.FromStringOrNil("4dcd7b64-a2ce-11ec-8711-6f247c91aa5d"),
 								Type:   action.TypeMessageSend,
-								Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "${test.destination}"}], "text": "hello world. test variable: ${test.variable}"}`),
+								Option: []byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"},{"type": "tel", "target": "+821100000003"}], "text": "hello world. test variable: ttteeesssttt"}`),
 							},
 							{
 								ID:   uuid.FromStringOrNil("9c06bcfa-a2ce-11ec-bcc6-5bc0b10cd014"),
@@ -2234,6 +2234,18 @@ func Test_actionHandleMessageSend(t *testing.T) {
 			ctx := context.Background()
 
 			mockVar.EXPECT().Get(ctx, tt.activeFlow.ID).Return(tt.responseVariable, nil)
+			mockVar.EXPECT().Substitue(ctx, tt.expectSource.Name, tt.responseVariable).Return(tt.expectSource.Name)
+			mockVar.EXPECT().Substitue(ctx, tt.expectSource.Detail, tt.responseVariable).Return(tt.expectSource.Detail)
+			mockVar.EXPECT().Substitue(ctx, tt.expectSource.Target, tt.responseVariable).Return(tt.expectSource.Target)
+			mockVar.EXPECT().Substitue(ctx, tt.expectSource.TargetName, tt.responseVariable).Return(tt.expectSource.TargetName)
+			for i := range tt.expectDestinations {
+				mockVar.EXPECT().Substitue(ctx, tt.expectDestinations[i].Name, tt.responseVariable).Return(tt.expectDestinations[i].Name)
+				mockVar.EXPECT().Substitue(ctx, tt.expectDestinations[i].Detail, tt.responseVariable).Return(tt.expectDestinations[i].Detail)
+				mockVar.EXPECT().Substitue(ctx, tt.expectDestinations[i].Target, tt.responseVariable).Return(tt.expectDestinations[i].Target)
+				mockVar.EXPECT().Substitue(ctx, tt.expectDestinations[i].TargetName, tt.responseVariable).Return(tt.expectDestinations[i].TargetName)
+			}
+			mockVar.EXPECT().Substitue(ctx, tt.expectText, tt.responseVariable).Return(tt.expectText)
+
 			mockReq.EXPECT().MMV1MessageSend(ctx, tt.expectCustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(&mmmessage.Message{}, nil)
 
 			if err := h.actionHandleMessageSend(ctx, tt.activeFlow); err != nil {
@@ -2721,6 +2733,16 @@ func Test_actionHandleCall(t *testing.T) {
 			}
 
 			mockVar.EXPECT().Get(ctx, tt.af.ID).Return(tt.responseVariable, nil)
+			mockVar.EXPECT().Substitue(ctx, tt.source.Name, tt.responseVariable).Return(tt.source.Name)
+			mockVar.EXPECT().Substitue(ctx, tt.source.Detail, tt.responseVariable).Return(tt.source.Detail)
+			mockVar.EXPECT().Substitue(ctx, tt.source.Target, tt.responseVariable).Return(tt.source.Target)
+			mockVar.EXPECT().Substitue(ctx, tt.source.TargetName, tt.responseVariable).Return(tt.source.TargetName)
+			for i := range tt.destinations {
+				mockVar.EXPECT().Substitue(ctx, tt.destinations[i].Name, tt.responseVariable).Return(tt.destinations[i].Name)
+				mockVar.EXPECT().Substitue(ctx, tt.destinations[i].Detail, tt.responseVariable).Return(tt.destinations[i].Detail)
+				mockVar.EXPECT().Substitue(ctx, tt.destinations[i].Target, tt.responseVariable).Return(tt.destinations[i].Target)
+				mockVar.EXPECT().Substitue(ctx, tt.destinations[i].TargetName, tt.responseVariable).Return(tt.destinations[i].TargetName)
+			}
 			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations).Return(tt.responseCall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {
@@ -2805,7 +2827,8 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 	tests := []struct {
 		name string
 
-		af *activeflow.Activeflow
+		af         *activeflow.Activeflow
+		optionData string
 
 		responseVariable *variable.Variable
 
@@ -2840,6 +2863,7 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 					},
 				},
 			},
+			"variable test ${voipbin.test.name}.",
 
 			&variable.Variable{
 				ID: uuid.FromStringOrNil("284a82d4-d9eb-11ec-aa89-3fb4df202ec8"),
@@ -2879,6 +2903,7 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 					},
 				},
 			},
+			"variable test ${voipbin.test.name} and non-exist variable ${voipbin.test.non-exist}.",
 
 			&variable.Variable{
 				ID: uuid.FromStringOrNil("2751d836-da32-11ec-8ebb-df5c61605fec"),
@@ -2916,6 +2941,7 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 			ctx := context.Background()
 
 			mockVariable.EXPECT().Get(ctx, tt.af.ID).Return(tt.responseVariable, nil)
+			mockVariable.EXPECT().Substitue(ctx, tt.optionData, tt.responseVariable).Return(string(tt.expectData[:]))
 			mockReq.EXPECT().WMV1WebhookSendToDestination(ctx, tt.af.CustomerID, tt.expectURI, tt.expectMethod, tt.expectDataType, tt.expectData).Return(nil)
 
 			if errCall := h.actionHandleWebhookSend(ctx, tt.af); errCall != nil {

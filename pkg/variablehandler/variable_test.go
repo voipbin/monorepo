@@ -149,6 +149,28 @@ func Test_SetVariable(t *testing.T) {
 				},
 			},
 		},
+		{
+			"variable reference a variable",
+
+			uuid.FromStringOrNil("ea7d3a8c-dd55-11ec-81be-6b4cb5e0f3a8"),
+			"key 1",
+			"${test.variable}",
+
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("ea7d3a8c-dd55-11ec-81be-6b4cb5e0f3a8"),
+				Variables: map[string]string{
+					"test.variable": "variable 2",
+				},
+			},
+
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("ea7d3a8c-dd55-11ec-81be-6b4cb5e0f3a8"),
+				Variables: map[string]string{
+					"test.variable": "variable 2",
+					"key 1":         "variable 2",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

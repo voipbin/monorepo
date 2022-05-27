@@ -73,6 +73,7 @@ func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, key str
 		"key":         key,
 		"value":       value,
 	})
+	log.Debug("Setting a variable.")
 
 	// get variable
 	v, err := h.Get(ctx, id)
@@ -81,7 +82,8 @@ func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, key str
 		return err
 	}
 
-	v.Variables[key] = value
+	val := h.Substitue(ctx, value, v)
+	v.Variables[key] = val
 	if err := h.Set(ctx, v); err != nil {
 		log.Errorf("Could not set variable. err: %v", err)
 		return err
