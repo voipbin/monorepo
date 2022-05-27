@@ -720,20 +720,19 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 		return err
 	}
 
-	// substitue the variables
-	variables, err := h.variableHandler.Get(ctx, af.ID)
+	// substitue the v
+	v, err := h.variableHandler.Get(ctx, af.ID)
 	if err != nil {
 		log.Errorf("Could not get variables. err: %v", err)
 		return err
 	}
 
 	// update variables
-	h.variableSubstitueAddress(ctx, opt.Source, variables.Variables)
+	h.variableSubstitueAddress(ctx, opt.Source, v)
 	for i := range opt.Destinations {
-		h.variableSubstitueAddress(ctx, &opt.Destinations[i], variables.Variables)
+		h.variableSubstitueAddress(ctx, &opt.Destinations[i], v)
 	}
-	h.variableSubstitueAddress(ctx, opt.Source, variables.Variables)
-	opt.Text = h.variableSubstitue(ctx, opt.Text, variables.Variables)
+	opt.Text = h.variableHandler.Substitue(ctx, opt.Text, v)
 
 	// send message
 	tmp, err := h.reqHandler.MMV1MessageSend(ctx, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
@@ -783,19 +782,18 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 		masterCallID = af.ReferenceID
 	}
 
-	// substitue the variables
-	variables, err := h.variableHandler.Get(ctx, af.ID)
+	// substitue the v
+	v, err := h.variableHandler.Get(ctx, af.ID)
 	if err != nil {
 		log.Errorf("Could not get variables. err: %v", err)
 		return err
 	}
 
 	// update variables
-	h.variableSubstitueAddress(ctx, opt.Source, variables.Variables)
+	h.variableSubstitueAddress(ctx, opt.Source, v)
 	for i := range opt.Destinations {
-		h.variableSubstitueAddress(ctx, &opt.Destinations[i], variables.Variables)
+		h.variableSubstitueAddress(ctx, &opt.Destinations[i], v)
 	}
-	h.variableSubstitueAddress(ctx, opt.Source, variables.Variables)
 
 	resCalls, err := h.reqHandler.CMV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations)
 	if err != nil {
@@ -852,10 +850,10 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
 	}
 
-	// substitue the variables
-	variables, err := h.variableHandler.Get(ctx, af.ID)
+	// substitue the v
+	v, err := h.variableHandler.Get(ctx, af.ID)
 	if err == nil {
-		opt.Data = h.variableSubstitue(ctx, string(opt.Data), variables.Variables)
+		opt.Data = h.variableHandler.Substitue(ctx, string(opt.Data), v)
 	}
 
 	log.Debugf("Sending webhook message. message: %s", opt.Data)
