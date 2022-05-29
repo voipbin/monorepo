@@ -192,6 +192,7 @@ Example
 Branch
 ------
 Branch the flow.
+It gets the variable from the activeflow and move the activeflow cursor to the selected target id.
 
 Parameters
 ++++++++++
@@ -200,6 +201,7 @@ Parameters
     {
         "type": "branch",
         "option": {
+        "variable": "<string>",
             "default_target_id": "<string>",
             "target_ids": {
                 "<string>": <string>,
@@ -207,6 +209,7 @@ Parameters
         }
     }
 
+* *variable*: Target variable. If this value is empty, default target variable will be selected. Available variables are listed :ref:`here <variable-variable>`. default: voipbin.call.digits
 * default_target_id: action id for default selection. This will be generated automatically by the given default_index.
 * target_ids: set of input digit and target id fair. This will be generated automatically by the given target_indexes.
 
