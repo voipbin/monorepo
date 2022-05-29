@@ -78,13 +78,14 @@ func Test_setVariables(t *testing.T) {
 				// others
 				"voipbin.call.direction":      string(tt.call.Direction),
 				"voipbin.call.master_call_id": tt.call.MasterCallID.String(),
+				variableCallDigits:            "",
 			}
 
 			for k, v := range variables {
 				mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, k, v).Return(nil)
 			}
 
-			if err := h.setVariables(ctx, tt.call); err != nil {
+			if err := h.setVariablesCall(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

@@ -116,35 +116,6 @@ func (mr *MockCacheHandlerMockRecorder) CallAppAMDSet(ctx, channelID, app interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAppAMDSet", reflect.TypeOf((*MockCacheHandler)(nil).CallAppAMDSet), ctx, channelID, app)
 }
 
-// CallDTMFGet mocks base method.
-func (m *MockCacheHandler) CallDTMFGet(ctx context.Context, callID uuid.UUID) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallDTMFGet", ctx, callID)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CallDTMFGet indicates an expected call of CallDTMFGet.
-func (mr *MockCacheHandlerMockRecorder) CallDTMFGet(ctx, callID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallDTMFGet", reflect.TypeOf((*MockCacheHandler)(nil).CallDTMFGet), ctx, callID)
-}
-
-// CallDTMFSet mocks base method.
-func (m *MockCacheHandler) CallDTMFSet(ctx context.Context, callID uuid.UUID, dtmf string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallDTMFSet", ctx, callID, dtmf)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CallDTMFSet indicates an expected call of CallDTMFSet.
-func (mr *MockCacheHandlerMockRecorder) CallDTMFSet(ctx, callID, dtmf interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallDTMFSet", reflect.TypeOf((*MockCacheHandler)(nil).CallDTMFSet), ctx, callID, dtmf)
-}
-
 // CallExternalMediaDelete mocks base method.
 func (m *MockCacheHandler) CallExternalMediaDelete(ctx context.Context, callID uuid.UUID) error {
 	m.ctrl.T.Helper()

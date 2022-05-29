@@ -8,6 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -389,13 +390,15 @@ func TestActionExecuteRecordingStop(t *testing.T) {
 	}
 }
 
-func TestActionExecuteDTMFReceive(t *testing.T) {
+func Test_actionExecuteDigitsReceive(t *testing.T) {
 
 	tests := []struct {
 		name     string
 		call     *call.Call
 		duration int
 		action   *fmaction.Action
+
+		responseVariable *variable.Variable
 	}{
 		{
 			"normal",
@@ -410,6 +413,10 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
 				Option: []byte(`{"duration":1000, "length": 3}`),
 			},
+
+			&variable.Variable{
+				Variables: map[string]string{},
+			},
 		},
 		{
 			"finish on key set but not qualified",
@@ -423,6 +430,10 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
 				Option: []byte(`{"duration":1000, "length": 3, "key": "1234567"}`),
+			},
+
+			&variable.Variable{
+				Variables: map[string]string{},
 			},
 		},
 	}
@@ -443,7 +454,7 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().CallDTMFGet(ctx, tt.call.ID).Return("", nil)
+			mockReq.EXPECT().FMV1VariableGet(ctx, tt.call.ActiveFlowID).Return(tt.responseVariable, nil)
 			mockReq.EXPECT().CMV1CallActionTimeout(ctx, tt.call.ID, tt.duration, tt.action).Return(nil)
 
 			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
@@ -453,36 +464,54 @@ func TestActionExecuteDTMFReceive(t *testing.T) {
 	}
 }
 
-func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
+func Test_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		call        *call.Call
-		storedDTMFs string
-		action      *fmaction.Action
+		name string
+
+		responseCall     *call.Call
+		responseVariable *variable.Variable
+
+		action *fmaction.Action
 	}{
 		{
-			"max number key qualified",
+			"length qualified",
+
 			&call.Call{
-				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				ActiveFlowID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
+				AsteriskID:   "42:01:0a:a4:00:05",
+				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
-			"123",
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
+				Variables: map[string]string{
+					variableCallDigits: "123",
+				},
+			},
+
 			&fmaction.Action{
 				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "max_number_key": 3}`),
+				Option: []byte(`{"duration":1000, "length": 3}`),
 			},
 		},
 		{
 			"finish on key #",
+
 			&call.Call{
-				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				ActiveFlowID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
+				AsteriskID:   "42:01:0a:a4:00:05",
+				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
-			"#",
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
+				Variables: map[string]string{
+					variableCallDigits: "#",
+				},
+			},
+
 			&fmaction.Action{
 				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
@@ -491,12 +520,20 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 		},
 		{
 			"finish on key *",
+
 			&call.Call{
-				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				ActiveFlowID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
+				AsteriskID:   "42:01:0a:a4:00:05",
+				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 			},
-			"*",
+			&variable.Variable{
+				ID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
+				Variables: map[string]string{
+					variableCallDigits: "*",
+				},
+			},
+
 			&fmaction.Action{
 				Type:   fmaction.TypeDigitsReceive,
 				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
@@ -520,18 +557,18 @@ func TestActionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
-			mockDB.EXPECT().CallDTMFGet(ctx, tt.call.ID).Return(tt.storedDTMFs, nil)
-			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			mockDB.EXPECT().CallSetAction(ctx, tt.responseCall.ID, tt.action).Return(nil)
+			mockReq.EXPECT().FMV1VariableGet(ctx, tt.responseCall.ActiveFlowID).Return(tt.responseVariable, nil)
+			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.responseCall.ID, false).Return(nil)
 
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.responseCall, tt.action); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func TestActionExecuteDigitsSend(t *testing.T) {
+func Test_actionExecuteDigitsSend(t *testing.T) {
 
 	tests := []struct {
 		name           string

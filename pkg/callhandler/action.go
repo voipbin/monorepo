@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -685,7 +684,7 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 		"call_id":     c.ID,
 		"action_id":   act.ID,
 		"action_type": act.Type,
-		"func":        "actionExecuteDTMFReceive",
+		"func":        "actionExecuteDigitsReceive",
 	})
 
 	var option fmaction.OptionDigitsReceive
@@ -696,13 +695,14 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 		}
 	}
 
-	// get stored dtmf
-	dtmfs, err := h.db.CallDTMFGet(ctx, c.ID)
+	condition, err := h.checkDigitsCondition(ctx, c.ActiveFlowID, &option)
+	if err != nil {
+		log.Errorf("Could not validate digits condition. err: %v", err)
+		return err
+	}
 
-	// check the dtmf finish condition
-	if err == nil && len(dtmfs) > 0 && (strings.Contains(option.Key, dtmfs) || len(dtmfs) >= option.Length) {
-		// the stored dtmf has already qualified finish condition.
-		log.Debugf("The stored dtmfs are already qualified the finish condition. dtmfs: %s", dtmfs)
+	if condition {
+		log.Debugf("The stored dtmfs are already qualified the finish condition.")
 		if err := h.reqHandler.CMV1CallActionNext(ctx, c.ID, false); err != nil {
 			return fmt.Errorf("could not send the next action request. err: %v", err)
 		}
