@@ -22,6 +22,13 @@ Destination address
 * voipbin.call.destination.target_name: Destination address's target name.
 * voipbin.call.destination.type: Destination address's type.
 
+Others
+++++++
+* voipbin.call.direction: Call's direction.
+* voipbin.call.master_call_id: Call's master call id.
+* voipbin.call.digits: Call;s received digits.
+
+
 Queue
 -----
 

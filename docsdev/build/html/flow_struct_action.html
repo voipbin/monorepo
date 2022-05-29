@@ -340,12 +340,14 @@
 </section>
 <section id="branch">
 <span id="flow-struct-action-branch"></span><h2>Branch<a class="headerlink" href="#branch" title="Permalink to this headline"></a></h2>
-<p>Branch the flow.</p>
+<p>Branch the flow.
+It gets the variable from the activeflow and move the activeflow cursor to the selected target id.</p>
 <section id="id8">
 <h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">,</span>
@@ -355,6 +357,7 @@
 </pre></div>
 </div>
 <ul class="simple">
+<li><p><em>variable</em>: Target variable. If this value is empty, default target variable will be selected. Available variables are listed <a class="reference internal" href="variable_variable.html#variable-variable"><span class="std std-ref">here</span></a>. default: voipbin.call.digits</p></li>
 <li><p>default_target_id: action id for default selection. This will be generated automatically by the given default_index.</p></li>
 <li><p>target_ids: set of input digit and target id fair. This will be generated automatically by the given target_indexes.</p></li>
 </ul>
