@@ -181,9 +181,24 @@ func Test_marshalOptionBranch(t *testing.T) {
 		{
 			"normal",
 
+			[]byte(`{"variable": "voipbin.call.destination", "default_target_id": "fd73c1b4-9841-11ec-bc63-df666ba736e8", "target_ids":{"1": "13fce870-9842-11ec-a83f-970e9052be06", "2": "1428ec22-9842-11ec-92d4-2ff427b3bb21"}}`),
+
+			OptionBranch{
+				Variable:        "voipbin.call.destination",
+				DefaultTargetID: uuid.FromStringOrNil("fd73c1b4-9841-11ec-bc63-df666ba736e8"),
+				TargetIDs: map[string]uuid.UUID{
+					"1": uuid.FromStringOrNil("13fce870-9842-11ec-a83f-970e9052be06"),
+					"2": uuid.FromStringOrNil("1428ec22-9842-11ec-92d4-2ff427b3bb21"),
+				},
+			},
+		},
+		{
+			"has no variable",
+
 			[]byte(`{"default_target_id": "fd73c1b4-9841-11ec-bc63-df666ba736e8", "target_ids":{"1": "13fce870-9842-11ec-a83f-970e9052be06", "2": "1428ec22-9842-11ec-92d4-2ff427b3bb21"}}`),
 
 			OptionBranch{
+				Variable:        "",
 				DefaultTargetID: uuid.FromStringOrNil("fd73c1b4-9841-11ec-bc63-df666ba736e8"),
 				TargetIDs: map[string]uuid.UUID{
 					"1": uuid.FromStringOrNil("13fce870-9842-11ec-a83f-970e9052be06"),

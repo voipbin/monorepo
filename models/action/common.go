@@ -22,3 +22,8 @@ const (
 	OptionConditionCallStatusStatusCanceling   OptionConditionCallStatusStatus = "canceling"   // The call originator is canceling the call.
 	OptionConditionCallStatusStatusHangup      OptionConditionCallStatusStatus = "hangup"      // The call has been completed.
 )
+
+// list of OptionBranch's const
+const (
+	OptionBranchVariableDefault = "voipbin.call.digits" // Default variable for branch option.
+)

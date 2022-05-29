@@ -667,24 +667,31 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 		return err
 	}
 
-	// get received digits
-	digits, err := h.reqHandler.CMV1CallGetDigits(ctx, af.ReferenceID)
+	// get variable
+	v, err := h.variableHandler.Get(ctx, af.ID)
 	if err != nil {
-		log.Errorf("Could not get digits. err: %v", err)
+		log.Errorf("Could not get variable. err: %v", err)
 		return err
 	}
 
-	// send digits reset
-	if errDigits := h.reqHandler.CMV1CallSetDigits(ctx, af.ReferenceID, ""); errDigits != nil {
-		// we got the error here, but this is minor issue.
-		// just write the log.
-		log.Errorf("Could not reset the call digits. err: %v", errDigits)
+	// get target variable
+	tmpVar := opt.Variable
+	if tmpVar == "" {
+		log.Debugf("The option has no variable. Setting a default. variable: %s", action.OptionBranchVariableDefault)
+		tmpVar = action.OptionBranchVariableDefault
+	}
+	targetVar := v.Variables[tmpVar]
+
+	// reset the variable
+	log.Debugf("Resetting a variable. variable: %s", tmpVar)
+	if errVar := h.variableHandler.SetVariable(ctx, af.ID, tmpVar, ""); errVar != nil {
+		log.Errorf("Could not reset the variable. But Keep going the flow. err: %v", err)
 	}
 
-	targetID, ok := opt.TargetIDs[digits]
+	targetID, ok := opt.TargetIDs[targetVar]
 	if !ok {
 		targetID = opt.DefaultTargetID
-		log.Debugf("Input digit is not listed in the branch. digit: %s, default_target_id: %s", digits, targetID)
+		log.Debugf("Input digit is not listed in the branch. variable: %s, variable_value: %s, default_target_id: %s", tmpVar, targetVar, targetID)
 	}
 
 	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, targetID, false)

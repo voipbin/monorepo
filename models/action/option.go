@@ -28,6 +28,7 @@ type OptionBeep struct {
 
 // OptionBranch defines action branch's option.
 type OptionBranch struct {
+	Variable        string               `json:"variable"`
 	DefaultTargetID uuid.UUID            `json:"default_target_id"` // default id for the input dtmf does not match any of branch targets.
 	TargetIDs       map[string]uuid.UUID `json:"target_ids"`        // branch target ids.
 }
