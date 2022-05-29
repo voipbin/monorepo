@@ -38,9 +38,6 @@ type CacheHandler interface {
 	CallAppAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error)
 	CallAppAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error
 
-	CallDTMFGet(ctx context.Context, callID uuid.UUID) (string, error)
-	CallDTMFSet(ctx context.Context, callID uuid.UUID, dtmf string) error
-
 	CallExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error)
 	CallExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error
 	CallExternalMediaDelete(ctx context.Context, callID uuid.UUID) error

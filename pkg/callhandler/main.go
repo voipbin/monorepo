@@ -88,6 +88,25 @@ const (
 	defaultTimeoutCallDuration = 3600000 // default call duration timeout. 1h
 )
 
+// list of variables
+const (
+	variableCallSourceName       = "voipbin.call.source.name"
+	variableCallSourceDetail     = "voipbin.call.source.detail"
+	variableCallSourceTarget     = "voipbin.call.source.target"
+	variableCallSourceTargetName = "voipbin.call.source.target_name"
+	variableCallSourceType       = "voipbin.call.source.type"
+
+	variableCallDestinationName       = "voipbin.call.destination.name"
+	variableCallDestinationDetail     = "voipbin.call.destination.detail"
+	variableCallDestinationTarget     = "voipbin.call.destination.target"
+	variableCallDestinationTargetName = "voipbin.call.destination.target_name"
+	variableCallDestinationType       = "voipbin.call.destination.type"
+
+	variableCallDirection    = "voipbin.call.direction"
+	variableCallMasterCallID = "voipbin.call.master_call_id"
+	variableCallDigits       = "voipbin.call.digits" // digit
+)
+
 var (
 	metricsNamespace = "call_manager"
 

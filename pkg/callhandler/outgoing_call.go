@@ -119,7 +119,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// set variables
-	if errVariables := h.setVariables(ctx, c); errVariables != nil {
+	if errVariables := h.setVariablesCall(ctx, c); errVariables != nil {
 		log.Errorf("Could not set variables. err: %v", errVariables)
 		return nil, errVariables
 	}
