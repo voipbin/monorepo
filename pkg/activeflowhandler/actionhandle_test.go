@@ -1441,9 +1441,11 @@ func Test_actionHandleBranch(t *testing.T) {
 		activeFlow     *activeflow.Activeflow
 		targetActionID uuid.UUID
 
-		responseDigits  string
-		responseStackID uuid.UUID
-		responseAction  *action.Action
+		expectVariable string
+
+		responseVariable *variable.Variable
+		responseStackID  uuid.UUID
+		responseAction   *action.Action
 
 		expectActiveFlow *activeflow.Activeflow
 	}{
@@ -1455,7 +1457,7 @@ func Test_actionHandleBranch(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 					Type:   action.TypeBranch,
-					Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					Option: []byte(`{"variable":"voipbin.call.tmpdigits","default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -1464,7 +1466,7 @@ func Test_actionHandleBranch(t *testing.T) {
 							{
 								ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 								Type:   action.TypeBranch,
-								Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+								Option: []byte(`{"variable":"voipbin.call.tmpdigits","default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 							},
 							{
 								ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1480,7 +1482,13 @@ func Test_actionHandleBranch(t *testing.T) {
 			},
 			targetActionID: uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
 
-			responseDigits:  "1",
+			expectVariable: "voipbin.call.tmpdigits",
+
+			responseVariable: &variable.Variable{
+				Variables: map[string]string{
+					"voipbin.call.tmpdigits": "1",
+				},
+			},
 			responseStackID: stack.IDMain,
 			responseAction: &action.Action{
 				ID:   uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
@@ -1494,7 +1502,7 @@ func Test_actionHandleBranch(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 					Type:   action.TypeBranch,
-					Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+					Option: []byte(`{"variable":"voipbin.call.tmpdigits","default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 				},
 				StackMap: map[uuid.UUID]*stack.Stack{
 					stack.IDMain: {
@@ -1503,7 +1511,7 @@ func Test_actionHandleBranch(t *testing.T) {
 							{
 								ID:     uuid.FromStringOrNil("4d174b14-91a3-11ec-861b-0f6aaeff6362"),
 								Type:   action.TypeBranch,
-								Option: []byte(`{"default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
+								Option: []byte(`{"variable":"voipbin.call.tmpdigits","default_target_id":"59e4a526-91a3-11ec-83a3-7373495be152","target_ids":{"1":"623e8e48-91a4-11ec-aab0-d741c6c9423c"}}`),
 							},
 							{
 								ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1551,7 +1559,13 @@ func Test_actionHandleBranch(t *testing.T) {
 			},
 			targetActionID: uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
 
-			responseDigits:  "",
+			expectVariable: "voipbin.call.digits",
+
+			responseVariable: &variable.Variable{
+				Variables: map[string]string{
+					"voipbin.call.digits": "",
+				},
+			},
 			responseStackID: stack.IDMain,
 			responseAction: &action.Action{
 				ID:   uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
@@ -1599,17 +1613,19 @@ func Test_actionHandleBranch(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockStack := stackhandler.NewMockStackHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
-				db:           mockDB,
-				reqHandler:   mockReq,
-				stackHandler: mockStack,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				stackHandler:    mockStack,
+				variableHandler: mockVar,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CMV1CallGetDigits(ctx, tt.activeFlow.ReferenceID).Return(tt.responseDigits, nil)
-			mockReq.EXPECT().CMV1CallSetDigits(ctx, tt.activeFlow.ReferenceID, "").Return(nil)
+			mockVar.EXPECT().Get(ctx, tt.activeFlow.ID).Return(tt.responseVariable, nil)
+			mockVar.EXPECT().SetVariable(ctx, tt.activeFlow.ID, tt.expectVariable, "").Return(nil)
 			mockStack.EXPECT().GetAction(ctx, tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.targetActionID, false).Return(tt.responseStackID, tt.responseAction, nil)
 
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveFlow).Return(nil)
