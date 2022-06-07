@@ -9,10 +9,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/messagetargethandler"
 )
 
 func Test_SendWebhookToCustomer(t *testing.T) {
@@ -24,7 +24,7 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 		dataType   webhook.DataType
 		data       json.RawMessage
 
-		messageTarget *messagetarget.MessageTarget
+		messageTarget *account.Account
 	}{
 		{
 			"normal",
@@ -32,7 +32,7 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 			"application/json",
 			[]byte(`{"type":"call_updated","data":{"type":"call"}}`),
 
-			&messagetarget.MessageTarget{
+			&account.Account{
 				ID:            uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
@@ -44,7 +44,7 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 			"application/json",
 			[]byte(`{"type":"transcript_created","data":{"message":"안녕하세요!?"}}`),
 
-			&messagetarget.MessageTarget{
+			&account.Account{
 				ID:            uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
@@ -58,7 +58,7 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockMessageTargethandler := messagetargethandler.NewMockMessagetargetHandler(mc)
+			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
 
 			h := &webhookHandler{
 				db:                   mockDB,
@@ -115,7 +115,7 @@ func Test_SendWebhookToURI(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockMessageTargethandler := messagetargethandler.NewMockMessagetargetHandler(mc)
+			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
 
 			h := &webhookHandler{
 				db:                   mockDB,

@@ -8,8 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/messagetargethandler"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
 )
 
 func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
@@ -17,7 +17,7 @@ func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessagetarget := messagetargethandler.NewMockMessagetargetHandler(mc)
+	mockMessagetarget := accounthandler.NewMockAccountHandler(mc)
 
 	h := &subscribeHandler{
 		rabbitSock:           mockSock,
@@ -48,7 +48,7 @@ func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockMessagetarget.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&messagetarget.MessageTarget{}, nil)
+			mockMessagetarget.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&account.Account{}, nil)
 
 			h.processEvent(tt.event)
 
@@ -56,13 +56,12 @@ func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
 	}
 }
 
-
 func TestProcessEventCSCustomerCreatedUpdated(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessagetarget := messagetargethandler.NewMockMessagetargetHandler(mc)
+	mockMessagetarget := accounthandler.NewMockAccountHandler(mc)
 
 	h := &subscribeHandler{
 		rabbitSock:           mockSock,
@@ -93,7 +92,7 @@ func TestProcessEventCSCustomerCreatedUpdated(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockMessagetarget.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&messagetarget.MessageTarget{}, nil)
+			mockMessagetarget.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&account.Account{}, nil)
 
 			h.processEvent(tt.event)
 

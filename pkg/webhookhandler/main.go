@@ -9,8 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/messagetargethandler"
 )
 
 // WebhookHandler is interface for webhook handle
@@ -23,11 +23,11 @@ type WebhookHandler interface {
 type webhookHandler struct {
 	db dbhandler.DBHandler
 
-	messageTargetHandler messagetargethandler.MessagetargetHandler
+	messageTargetHandler accounthandler.AccountHandler
 }
 
 // NewWebhookHandler returns new webhook handler
-func NewWebhookHandler(db dbhandler.DBHandler, messageTargetHandler messagetargethandler.MessagetargetHandler) WebhookHandler {
+func NewWebhookHandler(db dbhandler.DBHandler, messageTargetHandler accounthandler.AccountHandler) WebhookHandler {
 
 	h := &webhookHandler{
 		db:                   db,

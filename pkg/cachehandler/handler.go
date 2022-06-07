@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 )
 
 // getSerialize returns cached serialized info.
@@ -37,9 +37,9 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 	return nil
 }
 
-// AgentDialSet sets the agentdial info into the cache.
-func (h *handler) MessageTargetSet(ctx context.Context, u *messagetarget.MessageTarget) error {
-	key := fmt.Sprintf("messagetarget:%d", u.ID)
+// AccountSet sets the account info into the cache.
+func (h *handler) AccountSet(ctx context.Context, u *account.Account) error {
+	key := fmt.Sprintf("webhook.account:%d", u.ID)
 
 	if err := h.setSerialize(ctx, key, u); err != nil {
 		return err
@@ -48,11 +48,11 @@ func (h *handler) MessageTargetSet(ctx context.Context, u *messagetarget.Message
 	return nil
 }
 
-// AgentCallGet returns cached agentcall info
-func (h *handler) MessageTargetGet(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error) {
-	key := fmt.Sprintf("messagetarget:%d", id)
+// AccountGet returns cached account info
+func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+	key := fmt.Sprintf("webhook.account:%d", id)
 
-	var res messagetarget.MessageTarget
+	var res account.Account
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}

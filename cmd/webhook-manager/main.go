@@ -16,10 +16,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/messagetargethandler"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
 )
 
@@ -145,7 +145,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	messagetargetHandler := messagetargethandler.NewMessageTargetHandler(db, reqHandler)
+	messagetargetHandler := accounthandler.NewAccountHandler(db, reqHandler)
 	whHandler := webhookhandler.NewWebhookHandler(db, messagetargetHandler)
 
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, whHandler)

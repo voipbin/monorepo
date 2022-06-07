@@ -1,4 +1,4 @@
-package messagetargethandler
+package accounthandler
 
 import (
 	"context"
@@ -11,40 +11,30 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
 )
 
-func TestGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	h := messagetargetHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-	}
+func Test_Get(t *testing.T) {
 
 	tests := []struct {
 		name string
 		id   uuid.UUID
 
-		responseGet *messagetarget.MessageTarget
+		responseGet *account.Account
 
-		expectRes *messagetarget.MessageTarget
+		expectRes *account.Account
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("6515992a-833c-11ec-b53e-ff69ef240833"),
-			&messagetarget.MessageTarget{
+			&account.Account{
 				ID:            uuid.FromStringOrNil("6515992a-833c-11ec-b53e-ff69ef240833"),
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 			},
 
-			&messagetarget.MessageTarget{
+			&account.Account{
 				ID:            uuid.FromStringOrNil("6515992a-833c-11ec-b53e-ff69ef240833"),
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
@@ -54,9 +44,20 @@ func TestGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := accountHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageTargetGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -71,17 +72,7 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestGetErrorDB(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	h := messagetargetHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-	}
+func Test_GetErrorDB(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -102,13 +93,24 @@ func TestGetErrorDB(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := accountHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageTargetGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
+			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
 			mockReq.EXPECT().CSV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
 
-			tmp := messagetarget.CreateMessageTargetFromCustomer(tt.responseGet)
-			mockDB.EXPECT().MessageTargetSet(gomock.Any(), tmp).Return(nil)
+			tmp := account.CreateAccountFromCustomer(tt.responseGet)
+			mockDB.EXPECT().AccountSet(gomock.Any(), tmp).Return(nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -123,25 +125,15 @@ func TestGetErrorDB(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	h := messagetargetHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-	}
+func Test_Update(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data *messagetarget.MessageTarget
+		data *account.Account
 	}{
 		{
 			"normal",
-			&messagetarget.MessageTarget{
+			&account.Account{
 				ID:            uuid.FromStringOrNil("6515992a-833c-11ec-b53e-ff69ef240833"),
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
@@ -151,9 +143,20 @@ func TestUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := accountHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageTargetSet(gomock.Any(), tt.data).Return(nil)
+			mockDB.EXPECT().AccountSet(gomock.Any(), tt.data).Return(nil)
 
 			if err := h.Update(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -163,23 +166,13 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestUpdateByCustomer(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	h := messagetargetHandler{
-		db:         mockDB,
-		reqHandler: mockReq,
-	}
+func Test_UpdateByCustomer(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		customerInfo *cscustomer.Customer
-		data         *messagetarget.MessageTarget
+		data         *account.Account
 	}{
 		{
 			"normal",
@@ -188,7 +181,7 @@ func TestUpdateByCustomer(t *testing.T) {
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 			},
-			&messagetarget.MessageTarget{
+			&account.Account{
 				ID:            uuid.FromStringOrNil("51a5325a-833d-11ec-8759-c79414e8a44e"),
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
@@ -198,10 +191,21 @@ func TestUpdateByCustomer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := accountHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+			}
+
 			ctx := context.Background()
 
-			tmp := messagetarget.CreateMessageTargetFromCustomer(tt.customerInfo)
-			mockDB.EXPECT().MessageTargetSet(gomock.Any(), tmp).Return(nil)
+			tmp := account.CreateAccountFromCustomer(tt.customerInfo)
+			mockDB.EXPECT().AccountSet(gomock.Any(), tmp).Return(nil)
 
 			res, err := h.UpdateByCustomer(ctx, tt.customerInfo)
 			if err != nil {

@@ -7,8 +7,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 )
 
 type handler struct {
@@ -23,8 +22,8 @@ type handler struct {
 type CacheHandler interface {
 	Connect() error
 
-	MessageTargetGet(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error)
-	MessageTargetSet(ctx context.Context, u *messagetarget.MessageTarget) error
+	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
+	AccountSet(ctx context.Context, u *account.Account) error
 }
 
 // NewHandler creates DBHandler

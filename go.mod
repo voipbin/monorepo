@@ -13,14 +13,14 @@ require (
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220522082028-c929dfffbcc2
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220524085918-748ff02c7fb8
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
-	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
+	google.golang.org/genproto v0.0.0-20220602131408-e326c6e8e9c8 // indirect
 )
 
 require (
 	github.com/gofrs/uuid v4.2.0+incompatible
-	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220413021200-204155e694ef
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220607052644-b8feae22071c
 )
 
 require (
@@ -32,15 +32,15 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220413020856-9bff29d04032 // indirect
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220519040342-6b58674ba59c // indirect
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220529063622-3bbd0e439fb6 // indirect
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220504180508-9774a534ff22 // indirect
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3 // indirect
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220523013129-53b33b36f924 // indirect
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220529081542-aeb4fd4d7aaf // indirect
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220412180021-aa7216424a33 // indirect
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220413021508-2a83dea8ea6c // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220508083304-215537bdcdaa // indirect
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220429070608-15c06af27519 // indirect
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220513091435-f04c625a01ce // indirect
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220524124918-fc99b31aebd4 // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220424171422-5a3b77610aae // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20220413034054-1271ef0d98c3 // indirect
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220412183503-21306796da28 // indirect
