@@ -7,8 +7,14 @@ create table customers(
 
   name            varchar(255),
   detail          text,
+
+  -- webhook info
   webhook_method  varchar(255),
   webhook_uri     varchar(1023),
+
+  -- line info
+  line_secret text,
+  line_token  text,
 
   permission_ids json,
 

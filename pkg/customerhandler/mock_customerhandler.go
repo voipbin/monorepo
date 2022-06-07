@@ -126,6 +126,21 @@ func (mr *MockCustomerHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateBasicInfo), ctx, id, name, detail, webhookMethod, webhookURI)
 }
 
+// UpdateLineInfo mocks base method.
+func (m *MockCustomerHandler) UpdateLineInfo(ctx context.Context, id uuid.UUID, lineSecret, lineToken string) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLineInfo", ctx, id, lineSecret, lineToken)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateLineInfo indicates an expected call of UpdateLineInfo.
+func (mr *MockCustomerHandlerMockRecorder) UpdateLineInfo(ctx, id, lineSecret, lineToken interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLineInfo", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateLineInfo), ctx, id, lineSecret, lineToken)
+}
+
 // UpdatePassword mocks base method.
 func (m *MockCustomerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

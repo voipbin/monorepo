@@ -12,10 +12,16 @@ type WebhookMessage struct {
 
 	Username string `json:"username"` // Customer's username
 
-	Name          string `json:"name"`           // name
-	Detail        string `json:"detail"`         // detail
+	Name   string `json:"name"`   // name
+	Detail string `json:"detail"` // detail
+
+	// webhook info
 	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
-	WebhookURI    string `json:"webhook_uri"`    // webhook uri
+	WebhookURI    string        `json:"webhook_uri"`    // webhook uri
+
+	// line info
+	LineSecret string `json:"line_secret"` // line's secret
+	LineToken  string `json:"line_token"`  // line's token
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"` // customer's permission ids
 
@@ -29,11 +35,15 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID: h.ID,
 
-		Username:      h.Username,
-		Name:          h.Name,
-		Detail:        h.Detail,
+		Username: h.Username,
+		Name:     h.Name,
+		Detail:   h.Detail,
+
 		WebhookMethod: h.WebhookMethod,
 		WebhookURI:    h.WebhookURI,
+
+		LineSecret: h.LineSecret,
+		LineToken:  h.LineToken,
 
 		PermissionIDs: h.PermissionIDs,
 

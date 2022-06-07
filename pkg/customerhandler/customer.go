@@ -232,3 +232,29 @@ func (h *customerHandler) Login(ctx context.Context, username, password string) 
 
 	return res, nil
 }
+
+// UpdateLineInfo updates the customer's line info.
+func (h *customerHandler) UpdateLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) (*customer.Customer, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "UpdateLineInfo",
+		"user_id": id,
+	})
+	log.Debug("Updating the customer's line info.")
+
+	if err := h.db.CustomerSetLineInfo(ctx, id, lineSecret, lineToken); err != nil {
+		log.Errorf("Could not update the line info. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.CustomerGet(ctx, id)
+	if err != nil {
+		// we couldn't get updated item. but we've updated the customer already, just return the error here.
+		log.Errorf("Could not get updated customer. err: %v", err)
+		return nil, fmt.Errorf("could not get updated customer")
+	}
+
+	// notify
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
+
+	return res, nil
+}

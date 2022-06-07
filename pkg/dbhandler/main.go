@@ -25,6 +25,7 @@ type DBHandler interface {
 	CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error
 	CustomerSetPermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error
 	CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error
+	CustomerSetLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) error
 }
 
 // handler database handler
