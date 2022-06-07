@@ -9,14 +9,14 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
 )
 
 // DBHandler interface for webhook_manager database handle
 type DBHandler interface {
-	MessageTargetGet(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error)
-	MessageTargetSet(ctx context.Context, u *messagetarget.MessageTarget) error
+	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
+	AccountSet(ctx context.Context, u *account.Account) error
 }
 
 // handler database handler

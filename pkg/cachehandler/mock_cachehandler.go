@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	messagetarget "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
+	account "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -36,6 +36,35 @@ func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
 }
 
+// AccountGet mocks base method.
+func (m *MockCacheHandler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountGet", ctx, id)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccountGet indicates an expected call of AccountGet.
+func (mr *MockCacheHandlerMockRecorder) AccountGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGet", reflect.TypeOf((*MockCacheHandler)(nil).AccountGet), ctx, id)
+}
+
+// AccountSet mocks base method.
+func (m *MockCacheHandler) AccountSet(ctx context.Context, u *account.Account) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountSet", ctx, u)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountSet indicates an expected call of AccountSet.
+func (mr *MockCacheHandlerMockRecorder) AccountSet(ctx, u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSet", reflect.TypeOf((*MockCacheHandler)(nil).AccountSet), ctx, u)
+}
+
 // Connect mocks base method.
 func (m *MockCacheHandler) Connect() error {
 	m.ctrl.T.Helper()
@@ -48,33 +77,4 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
-}
-
-// MessageTargetGet mocks base method.
-func (m *MockCacheHandler) MessageTargetGet(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageTargetGet", ctx, id)
-	ret0, _ := ret[0].(*messagetarget.MessageTarget)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// MessageTargetGet indicates an expected call of MessageTargetGet.
-func (mr *MockCacheHandlerMockRecorder) MessageTargetGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageTargetGet", reflect.TypeOf((*MockCacheHandler)(nil).MessageTargetGet), ctx, id)
-}
-
-// MessageTargetSet mocks base method.
-func (m *MockCacheHandler) MessageTargetSet(ctx context.Context, u *messagetarget.MessageTarget) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageTargetSet", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// MessageTargetSet indicates an expected call of MessageTargetSet.
-func (mr *MockCacheHandlerMockRecorder) MessageTargetSet(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageTargetSet", reflect.TypeOf((*MockCacheHandler)(nil).MessageTargetSet), ctx, u)
 }

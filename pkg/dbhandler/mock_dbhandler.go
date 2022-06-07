@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	messagetarget "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/messagetarget"
+	account "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 )
 
 // MockDBHandler is a mock of DBHandler interface.
@@ -36,31 +36,31 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// MessageTargetGet mocks base method.
-func (m *MockDBHandler) MessageTargetGet(ctx context.Context, id uuid.UUID) (*messagetarget.MessageTarget, error) {
+// AccountGet mocks base method.
+func (m *MockDBHandler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageTargetGet", ctx, id)
-	ret0, _ := ret[0].(*messagetarget.MessageTarget)
+	ret := m.ctrl.Call(m, "AccountGet", ctx, id)
+	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MessageTargetGet indicates an expected call of MessageTargetGet.
-func (mr *MockDBHandlerMockRecorder) MessageTargetGet(ctx, id interface{}) *gomock.Call {
+// AccountGet indicates an expected call of AccountGet.
+func (mr *MockDBHandlerMockRecorder) AccountGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageTargetGet", reflect.TypeOf((*MockDBHandler)(nil).MessageTargetGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGet", reflect.TypeOf((*MockDBHandler)(nil).AccountGet), ctx, id)
 }
 
-// MessageTargetSet mocks base method.
-func (m *MockDBHandler) MessageTargetSet(ctx context.Context, u *messagetarget.MessageTarget) error {
+// AccountSet mocks base method.
+func (m *MockDBHandler) AccountSet(ctx context.Context, u *account.Account) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageTargetSet", ctx, u)
+	ret := m.ctrl.Call(m, "AccountSet", ctx, u)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// MessageTargetSet indicates an expected call of MessageTargetSet.
-func (mr *MockDBHandlerMockRecorder) MessageTargetSet(ctx, u interface{}) *gomock.Call {
+// AccountSet indicates an expected call of AccountSet.
+func (mr *MockDBHandlerMockRecorder) AccountSet(ctx, u interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageTargetSet", reflect.TypeOf((*MockDBHandler)(nil).MessageTargetSet), ctx, u)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSet", reflect.TypeOf((*MockDBHandler)(nil).AccountSet), ctx, u)
 }

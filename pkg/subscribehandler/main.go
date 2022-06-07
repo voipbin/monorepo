@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/messagetargethandler"
+	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
 )
 
 // list of publishers
@@ -31,7 +31,7 @@ type subscribeHandler struct {
 	subscribeQueue    string
 	subscribesTargets string
 
-	messagetargetHandler messagetargethandler.MessagetargetHandler
+	messagetargetHandler accounthandler.AccountHandler
 }
 
 var (
@@ -61,7 +61,7 @@ func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
 	subscribeTargets string,
-	messagetargetHandler messagetargethandler.MessagetargetHandler,
+	messagetargetHandler accounthandler.AccountHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
