@@ -14,19 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/customerhandler"
 )
 
-func TestProcessV1CustomersGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:      mockSock,
-		reqHandler:      mockReq,
-		customerHandler: mockCustomer,
-	}
+func Test_processV1CustomersGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -96,6 +84,18 @@ func TestProcessV1CustomersGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
 
 			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token).Return(tt.users, nil)
 
@@ -112,19 +112,7 @@ func TestProcessV1CustomersGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1CustomersPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:      mockSock,
-		reqHandler:      mockReq,
-		customerHandler: mockCustomer,
-	}
+func Test_processV1CustomersPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -183,6 +171,18 @@ func TestProcessV1CustomersPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
 
 			mockCustomer.EXPECT().Create(gomock.Any(), tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.customer, nil)
 
@@ -199,19 +199,7 @@ func TestProcessV1CustomersPost(t *testing.T) {
 	}
 }
 
-func TestProcessV1CustomersIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:      mockSock,
-		reqHandler:      mockReq,
-		customerHandler: mockCustomer,
-	}
+func Test_processV1CustomersIDGet(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -247,6 +235,18 @@ func TestProcessV1CustomersIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
 
 			mockCustomer.EXPECT().Get(gomock.Any(), tt.id).Return(tt.customer, nil)
 
@@ -263,19 +263,7 @@ func TestProcessV1CustomersIDGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1UsersIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:      mockSock,
-		reqHandler:      mockReq,
-		customerHandler: mockCustomer,
-	}
+func Test_processV1UsersIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -309,6 +297,18 @@ func TestProcessV1UsersIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
 
 			mockCustomer.EXPECT().Delete(gomock.Any(), tt.customerID).Return(tt.responseCustomer, nil)
 
@@ -324,19 +324,7 @@ func TestProcessV1UsersIDDelete(t *testing.T) {
 	}
 }
 
-func TestProcessV1UsersIDPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:      mockSock,
-		reqHandler:      mockReq,
-		customerHandler: mockCustomer,
-	}
+func Test_processV1UsersIDPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -380,6 +368,18 @@ func TestProcessV1UsersIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
 
 			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
@@ -395,19 +395,7 @@ func TestProcessV1UsersIDPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1UsersIDPasswordPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:      mockSock,
-		reqHandler:      mockReq,
-		customerHandler: mockCustomer,
-	}
+func Test_processV1UsersIDPasswordPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -444,6 +432,18 @@ func TestProcessV1UsersIDPasswordPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
 
 			mockCustomer.EXPECT().UpdatePassword(gomock.Any(), tt.id, tt.password).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
@@ -459,19 +459,7 @@ func TestProcessV1UsersIDPasswordPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1CustomersIDPermissionIDsPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:      mockSock,
-		reqHandler:      mockReq,
-		customerHandler: mockCustomer,
-	}
+func Test_processV1CustomersIDPermissionIDsPut(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -510,8 +498,85 @@ func TestProcessV1CustomersIDPermissionIDsPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
 
 			mockCustomer.EXPECT().UpdatePermissionIDs(gomock.Any(), tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1CustomersIDLineInfoPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id         uuid.UUID
+		lineSecret string
+		lineToken  string
+
+		responseCustomer *customer.Customer
+		expectRes        *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/customers/e00b4e98-7dd5-11ec-82c1-8b583557f04d/line_info",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"line_secret":"02d819cc-e61a-11ec-afad-83eb2bd7847b", "line_token":"0308b0c8-e61a-11ec-b2ff-1bf8777cc942"}`),
+			},
+
+			uuid.FromStringOrNil("e00b4e98-7dd5-11ec-82c1-8b583557f04d"),
+			"02d819cc-e61a-11ec-afad-83eb2bd7847b",
+			"0308b0c8-e61a-11ec-b2ff-1bf8777cc942",
+
+			&customer.Customer{
+				ID: uuid.FromStringOrNil("e00b4e98-7dd5-11ec-82c1-8b583557f04d"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e00b4e98-7dd5-11ec-82c1-8b583557f04d","username":"","name":"","detail":"","webhook_method":"","webhook_uri":"","permission_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
+
+			mockCustomer.EXPECT().UpdateLineInfo(gomock.Any(), tt.id, tt.lineSecret, tt.lineToken).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

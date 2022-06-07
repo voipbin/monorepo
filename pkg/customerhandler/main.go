@@ -31,6 +31,7 @@ type CustomerHandler interface {
 	Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
 	Login(ctx context.Context, username, password string) (*customer.Customer, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error)
+	UpdateLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) (*customer.Customer, error)
 	UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error)
 	UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error)
 }

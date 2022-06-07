@@ -43,6 +43,7 @@ var (
 	regV1Customers                = regexp.MustCompile("/v1/customers$")
 	regV1CustomersGet             = regexp.MustCompile(`/v1/customers\?(.*)$`)
 	regV1CustomersID              = regexp.MustCompile("/v1/customers/" + regUUID + "$")
+	regV1CustomersIDLineInfo      = regexp.MustCompile("/v1/customers/" + regUUID + "/line_info$")
 	regV1CustomersIDPassword      = regexp.MustCompile("/v1/customers/" + regUUID + "/password$")
 	regV1CustomersIDPermissionIDs = regexp.MustCompile("/v1/customers/" + regUUID + "/permission_ids$")
 
@@ -188,12 +189,17 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// PUT /customers/<customer-id>/password
 	case regV1CustomersIDPassword.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1CustomersIDPasswordPut(ctx, m)
-		requestType = "/v1/customers"
+		requestType = "/v1/customers/<customer_id>/password"
 
 	// PUT /customers/<customer-id>/permission_ids
 	case regV1CustomersIDPermissionIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1CustomersIDPermissionIDsPut(ctx, m)
-		requestType = "/v1/customers"
+		requestType = "/v1/customers/<customer_id>/permission_ids"
+
+	// PUT /customers/<customer-id>/line_info
+	case regV1CustomersIDLineInfo.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1CustomersIDLineInfoPut(ctx, m)
+		requestType = "/v1/customers/<customer_id>/line_info"
 
 	////////////
 	// login

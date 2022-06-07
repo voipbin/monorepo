@@ -21,8 +21,12 @@ const (
 
 		name,
 		detail,
+
 		webhook_method,
 		webhook_uri,
+
+		line_secret,
+		line_token,
 
 		permission_ids,
 
@@ -46,8 +50,12 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 
 		&res.Name,
 		&res.Detail,
+
 		&res.WebhookMethod,
 		&res.WebhookURI,
+
+		&res.LineSecret,
+		&res.LineToken,
 
 		&permissionIDs,
 
@@ -77,8 +85,12 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 
 		name,
 		detail,
+
 		webhook_method,
 		webhook_uri,
+
+		line_secret,
+		line_token,
 
 		permission_ids,
 
@@ -87,7 +99,9 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		tm_delete
 	) values(
 		?, ?, ?,
-		?, ?, ?, ?,
+		?, ?,
+		?, ?,
+		?, ?,
 		?,
 		?, ?, ?
 		)
@@ -108,8 +122,12 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 
 		c.Name,
 		c.Detail,
+
 		c.WebhookMethod,
 		c.WebhookURI,
+
+		c.LineSecret,
+		c.LineToken,
 
 		tmpPermissionIDs,
 
@@ -344,6 +362,30 @@ func (h *handler) CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, pas
 	_, err := h.db.Exec(q, passwordHash, GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerSetPasswordHash. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.customerUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CustomerSetLineInfo sets the customer's line info.
+func (h *handler) CustomerSetLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) error {
+	// prepare
+	q := `
+	update
+		customers
+	set
+		line_secret = ?,
+		line_token = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	_, err := h.db.Exec(q, lineSecret, lineToken, GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CustomerSetLineInfo. err: %v", err)
 	}
 
 	// update the cache

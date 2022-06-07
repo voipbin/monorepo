@@ -51,3 +51,11 @@ type V1DataCustomersIDPasswordPut struct {
 type V1DataCustomersIDPermissionIDsPut struct {
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
 }
+
+// V1DataCustomersIDLineInfoPut is
+// v1 data type request struct for
+// /v1/customers/<customer-id>/line_info PUT
+type V1DataCustomersIDLineInfoPut struct {
+	LineSecret string `json:"line_secret"`
+	LineToken  string `json:"line_token"`
+}

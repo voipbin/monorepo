@@ -9,10 +9,16 @@ type Customer struct {
 	Username     string `json:"username"` // Customer's username
 	PasswordHash string `json:"-"`        // Hashed Password
 
-	Name          string        `json:"name"`           //  name
-	Detail        string        `json:"detail"`         //  detail
+	Name   string `json:"name"`   //  name
+	Detail string `json:"detail"` //  detail
+
+	// webhook info
 	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
 	WebhookURI    string        `json:"webhook_uri"`    // webhook uri
+
+	// line info
+	LineSecret string `json:"line_secret,omitempty"` // line's secret
+	LineToken  string `json:"line_token,omitempty"`  // line's token
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"` // customer's permission ids
 

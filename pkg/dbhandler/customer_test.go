@@ -13,11 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/cachehandler"
 )
 
-func TestCustomerCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CustomerCreate(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -34,6 +30,8 @@ func TestCustomerCreate(t *testing.T) {
 				Detail:        "test detail",
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
+				LineSecret:    "5b8a5776-e613-11ec-b218-ffe0383dd0f2",
+				LineToken:     "5fa39322-e613-11ec-a6e0-fb39c4836722",
 				PermissionIDs: []uuid.UUID{
 					uuid.FromStringOrNil("6a6443a4-7c70-11ec-9635-abbaf773da29"),
 				},
@@ -47,6 +45,8 @@ func TestCustomerCreate(t *testing.T) {
 				Detail:        "test detail",
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
+				LineSecret:    "5b8a5776-e613-11ec-b218-ffe0383dd0f2",
+				LineToken:     "5fa39322-e613-11ec-a6e0-fb39c4836722",
 				PermissionIDs: []uuid.UUID{
 					uuid.FromStringOrNil("6a6443a4-7c70-11ec-9635-abbaf773da29"),
 				},
@@ -57,6 +57,11 @@ func TestCustomerCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).AnyTimes()
@@ -545,6 +550,84 @@ func TestCustomerSetPasswordHash(t *testing.T) {
 
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerSetPasswordHash(ctx, tt.customer.ID, tt.passwordHash); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
+			res, err := h.CustomerGet(ctx, tt.customer.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMUpdate = ""
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CustomerSetLineInfo(t *testing.T) {
+	tests := []struct {
+		name     string
+		customer *customer.Customer
+
+		customerID uuid.UUID
+		lineSecret string
+		lineToken  string
+
+		expectRes *customer.Customer
+	}{
+		{
+			"normal",
+			&customer.Customer{
+				ID:            uuid.FromStringOrNil("9df40078-e616-11ec-97c4-aba60c3dbfba"),
+				Username:      "9df40078-e616-11ec-97c4-aba60c3dbfba",
+				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				Name:          "test6",
+				Detail:        "detail6",
+				LineSecret:    "a58ea6e4-e616-11ec-9fc6-b30ddcefdfae",
+				LineToken:     "a5b2a300-e616-11ec-84e3-2368f0e80458",
+				PermissionIDs: []uuid.UUID{},
+				TMCreate:      "2020-04-18 03:22:17.995000",
+			},
+
+			uuid.FromStringOrNil("9df40078-e616-11ec-97c4-aba60c3dbfba"),
+			"a5d629ba-e616-11ec-a781-d75d16026f0a",
+			"a5f9bb78-e616-11ec-af5c-738f2bd772f2",
+
+			&customer.Customer{
+				ID:            uuid.FromStringOrNil("9df40078-e616-11ec-97c4-aba60c3dbfba"),
+				Username:      "9df40078-e616-11ec-97c4-aba60c3dbfba",
+				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				Name:          "test6",
+				Detail:        "detail6",
+				LineSecret:    "a5d629ba-e616-11ec-a781-d75d16026f0a",
+				LineToken:     "a5f9bb78-e616-11ec-af5c-738f2bd772f2",
+				PermissionIDs: []uuid.UUID{},
+				TMCreate:      "2020-04-18 03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
+			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
+			if err := h.CustomerSetLineInfo(ctx, tt.customer.ID, tt.lineSecret, tt.lineToken); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
