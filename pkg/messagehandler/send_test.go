@@ -17,20 +17,8 @@ import (
 )
 
 func Test_sendMessage(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-	h := &messageHandler{
-		db:                        mockDB,
-		notifyHandler:             mockNotify,
-		messageHandlerMessagebird: mockMessagebird,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id           uuid.UUID
@@ -43,9 +31,7 @@ func Test_sendMessage(t *testing.T) {
 
 		responseGet *message.Message
 		expectRes   *message.Message
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -126,6 +112,19 @@ func Test_sendMessage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+			h := &messageHandler{
+				db:                        mockDB,
+				notifyHandler:             mockNotify,
+				messageHandlerMessagebird: mockMessagebird,
+			}
+
 			ctx := context.Background()
 
 			mockMessagebird.EXPECT().SendMessage(tt.id, tt.customerID, tt.source, tt.destinations, tt.text).Return(tt.responseSend, nil)

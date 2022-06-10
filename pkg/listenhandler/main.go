@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -134,6 +135,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
+	ctx := context.Background()
+
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
 		uri = "could not unescape uri"
@@ -159,22 +162,22 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 	// GET /messages
 	case regV1MessagesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1MessagesGet(m)
+		response, err = h.processV1MessagesGet(ctx, m)
 		requestType = "/v1/messages"
 
 	// POST /messages
 	case regV1Messages.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1MessagesPost(m)
+		response, err = h.processV1MessagesPost(ctx, m)
 		requestType = "/v1/messages"
 
 	// GET /messages/<id>
 	case regV1MessagesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1MessagesIDGet(m)
+		response, err = h.processV1MessagesIDGet(ctx, m)
 		requestType = "/v1/messages"
 
 	// DELETE /messages/<id>
 	case regV1MessagesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1MessagesIDDelete(m)
+		response, err = h.processV1MessagesIDDelete(ctx, m)
 		requestType = "/v1/messages"
 
 	////////////////////
@@ -182,7 +185,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 	// POST /hooks
 	case regV1Hooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1HooksPost(m)
+		response, err = h.processV1HooksPost(ctx, m)
 		requestType = "/v1/hooks"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////

@@ -15,9 +15,7 @@ import (
 )
 
 // processV1MessagesPost handles POST /v1/messages request
-func (h *listenHandler) processV1MessagesGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
+func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -59,9 +57,7 @@ func (h *listenHandler) processV1MessagesGet(m *rabbitmqhandler.Request) (*rabbi
 }
 
 // processV1MessagesPost handles POST /v1/messages request
-func (h *listenHandler) processV1MessagesPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-
+func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	var req request.V1DataMessagesPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
@@ -97,7 +93,7 @@ func (h *listenHandler) processV1MessagesPost(m *rabbitmqhandler.Request) (*rabb
 }
 
 // processV1MessagesIDGet handles GET /v1/messages/<id> request
-func (h *listenHandler) processV1MessagesIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(req.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -110,7 +106,6 @@ func (h *listenHandler) processV1MessagesIDGet(req *rabbitmqhandler.Request) (*r
 		})
 	log.Debugf("Executing processV1MessagesIDGet. message_id: %s", id)
 
-	ctx := context.Background()
 	tmp, err := h.messageHandler.Get(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a message. message_id: %s, err: %v", id, err)
@@ -133,7 +128,7 @@ func (h *listenHandler) processV1MessagesIDGet(req *rabbitmqhandler.Request) (*r
 }
 
 // processV1MessagesIDDelete handles DELETE /v1/messages/<id> request
-func (h *listenHandler) processV1MessagesIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1MessagesIDDelete(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(req.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -146,7 +141,6 @@ func (h *listenHandler) processV1MessagesIDDelete(req *rabbitmqhandler.Request) 
 		})
 	log.Debugf("Executing processV1MessagesIDDelete. message_id: %s", id)
 
-	ctx := context.Background()
 	tmp, err := h.messageHandler.Delete(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a message. message_id: %s, err: %v", id, err)

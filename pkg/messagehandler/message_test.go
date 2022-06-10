@@ -17,28 +17,13 @@ import (
 )
 
 func Test_Create(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-	h := &messageHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-
-		messageHandlerMessagebird: mockMessagebird,
-	}
-
-	type test struct {
+	tests := []struct {
 		name        string
 		message     *message.Message
 		responseGet *message.Message
 		expectRes   *message.Message
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&message.Message{
@@ -55,6 +40,20 @@ func Test_Create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+
+				messageHandlerMessagebird: mockMessagebird,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().MessageCreate(ctx, tt.message).Return(nil)
@@ -75,20 +74,8 @@ func Test_Create(t *testing.T) {
 }
 
 func Test_UpdateTargets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-	h := &messageHandler{
-		db:                        mockDB,
-		notifyHandler:             mockNotify,
-		messageHandlerMessagebird: mockMessagebird,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id      uuid.UUID
@@ -96,9 +83,7 @@ func Test_UpdateTargets(t *testing.T) {
 
 		responseGet *message.Message
 		expectRes   *message.Message
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -124,6 +109,19 @@ func Test_UpdateTargets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+			h := &messageHandler{
+				db:                        mockDB,
+				notifyHandler:             mockNotify,
+				messageHandlerMessagebird: mockMessagebird,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, tt.targets).Return(nil)
@@ -143,27 +141,15 @@ func Test_UpdateTargets(t *testing.T) {
 }
 
 func Test_Get(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-	h := &messageHandler{
-		db:                        mockDB,
-		messageHandlerMessagebird: mockMessagebird,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id uuid.UUID
 
 		responseGet *message.Message
 		expectRes   *message.Message
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -180,6 +166,17 @@ func Test_Get(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+			h := &messageHandler{
+				db:                        mockDB,
+				messageHandlerMessagebird: mockMessagebird,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
@@ -197,18 +194,8 @@ func Test_Get(t *testing.T) {
 }
 
 func Test_Gets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-	h := &messageHandler{
-		db:                        mockDB,
-		messageHandlerMessagebird: mockMessagebird,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customerID uuid.UUID
@@ -217,9 +204,7 @@ func Test_Gets(t *testing.T) {
 
 		responseGets []*message.Message
 		expectRes    []*message.Message
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -242,6 +227,17 @@ func Test_Gets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+			h := &messageHandler{
+				db:                        mockDB,
+				messageHandlerMessagebird: mockMessagebird,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().MessageGets(ctx, tt.customerID, tt.pageSize, tt.pageToken).Return(tt.responseGets, nil)
@@ -259,29 +255,15 @@ func Test_Gets(t *testing.T) {
 }
 
 func Test_Delete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-	h := &messageHandler{
-		db:                        mockDB,
-		notifyHandler:             mockNotify,
-		messageHandlerMessagebird: mockMessagebird,
-	}
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		id uuid.UUID
 
 		responseGet *message.Message
 		expectRes   *message.Message
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 
@@ -298,6 +280,19 @@ func Test_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+			h := &messageHandler{
+				db:                        mockDB,
+				notifyHandler:             mockNotify,
+				messageHandlerMessagebird: mockMessagebird,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().MessageDelete(ctx, tt.id).Return(nil)
