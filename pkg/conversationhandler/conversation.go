@@ -1,0 +1,86 @@
+package conversationhandler
+
+import (
+	"context"
+
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/participant"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
+)
+
+// Get returns conversation
+func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
+	return h.db.ConversationGet(ctx, id)
+}
+
+// GetByReferenceInfo returns conversation
+func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
+	return h.db.ConversationGetByReferenceInfo(ctx, referenceType, referenceID)
+}
+
+// GetsByCustomerID returns list of conversations
+func (h *conversationHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*conversation.Conversation, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "GetsByCustomerID",
+			"customer_id": customerID,
+		},
+	)
+	log.Debugf("Getting a list of conversations. customer_id: %s", customerID)
+
+	res, err := h.db.ConversationGetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	if err != nil {
+		log.Errorf("Could not get conversations. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// Create creates a new conversation and return a created conversation.
+func (h *conversationHandler) Create(
+	ctx context.Context,
+	customerID uuid.UUID,
+	name string,
+	detail string,
+	referenceType conversation.ReferenceType,
+	referenceID string,
+	participants []participant.Participant,
+) (*conversation.Conversation, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Create",
+		},
+	)
+
+	id := uuid.Must(uuid.NewV4())
+	tmp := &conversation.Conversation{
+		ID:            id,
+		CustomerID:    customerID,
+		Name:          name,
+		Detail:        detail,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+		Participants:  participants,
+		TMCreate:      dbhandler.GetCurTime(),
+		TMUpdate:      dbhandler.GetCurTime(),
+		TMDelete:      dbhandler.DefaultTimeStamp,
+	}
+
+	if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {
+		log.Errorf("Could not create conversation. err: %v", errCreate)
+		return nil, errCreate
+	}
+
+	res, err := h.db.ConversationGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get created conversation. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationCreated, res)
+
+	return res, nil
+}

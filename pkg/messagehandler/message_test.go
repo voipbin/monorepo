@@ -1,0 +1,140 @@
+package messagehandler
+
+import (
+	"context"
+	reflect "reflect"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
+)
+
+func Test_Create(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		conversationID uuid.UUID
+		status         message.Status
+		referenceType  conversation.ReferenceType
+		referenceID    string
+		sourceID       string
+		messageType    message.Type
+		messageData    []byte
+
+		responseMessage *message.Message
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+			uuid.FromStringOrNil("8e0e1dce-e86e-11ec-9537-77df0d80af26"),
+			message.StatusSent,
+			conversation.ReferenceTypeLine,
+			"Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+			"Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+			message.TypeText,
+			[]byte(`Hello world`),
+
+			&message.Message{
+				ID:         uuid.FromStringOrNil("03b6a572-e870-11ec-a4a7-0bf92e5d8985"),
+				CustomerID: uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				lineHandler:   mockLine,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
+			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.status, tt.referenceType, tt.referenceID, tt.sourceID, tt.messageType, tt.messageData)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseMessage) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessage, res)
+			}
+
+		})
+	}
+}
+
+func Test_GetsByConversationID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conversationID uuid.UUID
+		pageToken      string
+		pageSize       uint64
+
+		responseMessages []*message.Message
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
+			"2022-04-18 03:22:17.995000",
+			100,
+
+			[]*message.Message{
+				{
+					ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				lineHandler:   mockLine,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessageGetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
+
+			res, err := h.GetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseMessages) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessages, res)
+			}
+
+		})
+	}
+}
