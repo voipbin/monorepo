@@ -81,6 +81,7 @@ func (h *flowHandler) FlowCreate(
 		log.Errorf("Could not get created flow. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, flow.EventTypeFlowCreated, res)
 
 	return res, nil
 }
