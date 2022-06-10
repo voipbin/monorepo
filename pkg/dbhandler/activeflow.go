@@ -210,7 +210,7 @@ func (h *handler) activeflowGetFromDB(ctx context.Context, id uuid.UUID) (*activ
 	return res, nil
 }
 
-// activeflowUpdateToCache gets the flow from the DB and update the cache.
+// activeflowUpdateToCache gets the activeflow from the DB and update the cache.
 func (h *handler) activeflowUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 	res, err := h.activeflowGetFromDB(ctx, id)
@@ -225,7 +225,7 @@ func (h *handler) activeflowUpdateToCache(ctx context.Context, id uuid.UUID) err
 	return nil
 }
 
-// activeFlowSetToCache sets the given callflow to the cache
+// activeFlowSetToCache sets the given activeflow to the cache
 func (h *handler) activeflowSetToCache(ctx context.Context, flow *activeflow.Activeflow) error {
 	if err := h.cache.ActiveflowSet(ctx, flow); err != nil {
 		return err
@@ -234,7 +234,7 @@ func (h *handler) activeflowSetToCache(ctx context.Context, flow *activeflow.Act
 	return nil
 }
 
-// activeflowGetFromCache returns flow from the cache if possible.
+// activeflowGetFromCache returns activeflow from the cache.
 func (h *handler) activeflowGetFromCache(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
 
 	// get from cache

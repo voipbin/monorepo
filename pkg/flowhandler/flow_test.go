@@ -27,6 +27,8 @@ func Test_FlowCreate(t *testing.T) {
 		detail     string
 		persist    bool
 		actions    []action.Action
+
+		responseFlow *flow.Flow
 	}{
 		{
 			"normal",
@@ -41,6 +43,11 @@ func Test_FlowCreate(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 			},
+
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("8b7c353e-e6e6-11ec-af5a-e70eb001a48b"),
+				CustomerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			},
 		},
 		{
 			"test empty",
@@ -50,6 +57,11 @@ func Test_FlowCreate(t *testing.T) {
 			"test detail",
 			true,
 			[]action.Action{},
+
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("976d8e2e-e6e6-11ec-8da0-ef008343ebac"),
+				CustomerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			},
 		},
 		{
 			"test empty with persist false",
@@ -59,6 +71,11 @@ func Test_FlowCreate(t *testing.T) {
 			"test detail",
 			false,
 			[]action.Action{},
+
+			&flow.Flow{
+				ID:         uuid.FromStringOrNil("97440572-e6e6-11ec-bcc6-73d296fdfdb7"),
+				CustomerID: uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			},
 		},
 	}
 
@@ -69,9 +86,11 @@ func Test_FlowCreate(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			h := &flowHandler{
 				db:            mockDB,
 				actionHandler: mockAction,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
@@ -79,11 +98,12 @@ func Test_FlowCreate(t *testing.T) {
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 			if tt.persist == true {
 				mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
-				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
+				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 			} else {
 				mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
-				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(&flow.Flow{}, nil)
+				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 			}
+			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, tt.responseFlow)
 
 			_, err := h.FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions)
 			if err != nil {
