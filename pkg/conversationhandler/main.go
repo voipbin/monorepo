@@ -1,0 +1,46 @@
+package conversationhandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package conversationhandler -destination ./mock_conversationhandler.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+
+	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
+)
+
+// ConversationHandler defines
+type ConversationHandler interface {
+	Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
+	GetByReferenceInfo(ctx context.Context, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error)
+	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*conversation.Conversation, error)
+
+	Hook(ctx context.Context, uri string, data []byte) error
+
+	Setup(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType) error
+}
+
+// conversationHandler defines
+type conversationHandler struct {
+	db            dbhandler.DBHandler
+	notifyHandler notifyhandler.NotifyHandler
+
+	messageHandler messagehandler.MessageHandler
+	lineHandler    linehandler.LineHandler
+}
+
+// NewConversationHandler returns a new ConversationHandler
+func NewConversationHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageHandler messagehandler.MessageHandler, lineHandler linehandler.LineHandler) ConversationHandler {
+	return &conversationHandler{
+		db:             db,
+		notifyHandler:  notifyHandler,
+		messageHandler: messageHandler,
+
+		lineHandler: lineHandler,
+	}
+}

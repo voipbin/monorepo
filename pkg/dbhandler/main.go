@@ -1,0 +1,73 @@
+package dbhandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"strings"
+	"time"
+
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/cachehandler"
+)
+
+// DBHandler interface for call_manager database handle
+type DBHandler interface {
+	// common
+	GetCurTime() string
+
+	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
+	AccountSet(ctx context.Context, u *account.Account) error
+
+	ConversationCreate(ctx context.Context, cv *conversation.Conversation) error
+	ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
+	ConversationGetByReferenceInfo(ctx context.Context, ReferenceType conversation.ReferenceType, ReferenceID string) (*conversation.Conversation, error)
+	ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*conversation.Conversation, error)
+
+	MessageCreate(ctx context.Context, m *message.Message) error
+	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
+	MessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, token string, limit uint64) ([]*message.Message, error)
+}
+
+// handler database handler
+type handler struct {
+	db    *sql.DB
+	cache cachehandler.CacheHandler
+}
+
+// handler errors
+var (
+	ErrNotFound = errors.New("record not found")
+)
+
+// list of default values
+const (
+	DefaultTimeStamp = "9999-01-01 00:00:000"
+)
+
+// NewHandler creates DBHandler
+func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
+	h := &handler{
+		db:    db,
+		cache: cache,
+	}
+	return h
+}
+
+func (h *handler) GetCurTime() string {
+	return GetCurTime()
+}
+
+// GetCurTime return current utc time string
+func GetCurTime() string {
+	now := time.Now().UTC().String()
+	res := strings.TrimSuffix(now, " +0000 UTC")
+
+	return res
+}
