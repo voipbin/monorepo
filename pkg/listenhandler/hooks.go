@@ -11,8 +11,7 @@ import (
 )
 
 // processV1HooksPost handles POST /v1/hooks request
-func (h *listenHandler) processV1HooksPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1HooksPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	var req request.V1DataHooksPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {

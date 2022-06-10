@@ -16,12 +16,6 @@ import (
 )
 
 func Test_MessageCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
-
 	tests := []struct {
 		name      string
 		message   *message.Message
@@ -86,6 +80,12 @@ func Test_MessageCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
@@ -108,11 +108,6 @@ func Test_MessageCreate(t *testing.T) {
 }
 
 func Test_MessageDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name      string
@@ -178,6 +173,12 @@ func Test_MessageDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
@@ -208,11 +209,6 @@ func Test_MessageDelete(t *testing.T) {
 }
 
 func Test_MessageUpdateTargets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name string
@@ -291,6 +287,12 @@ func Test_MessageUpdateTargets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
@@ -319,11 +321,6 @@ func Test_MessageUpdateTargets(t *testing.T) {
 }
 
 func Test_MessageGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name string
@@ -357,6 +354,11 @@ func Test_MessageGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
 
 			// creates messages for test
 			for i := 0; i < len(tt.messages); i++ {

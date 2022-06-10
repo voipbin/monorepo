@@ -18,22 +18,6 @@ import (
 )
 
 func Test_Hook(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-	h := &messageHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-		reqHandler:    mockReq,
-
-		messageHandlerMessagebird: mockMessagebird,
-	}
 
 	tests := []struct {
 		name string
@@ -111,6 +95,23 @@ func Test_Hook(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+
+				messageHandlerMessagebird: mockMessagebird,
+			}
+
 			ctx := context.Background()
 
 			mockReq.EXPECT().NMV1NumberGetByNumber(ctx, tt.expectToNum).Return(tt.responseNumber, nil)
@@ -127,22 +128,6 @@ func Test_Hook(t *testing.T) {
 }
 
 func Test_executeMessageFlow(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-
-	mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-	h := &messageHandler{
-		db:            mockDB,
-		notifyHandler: mockNotify,
-		reqHandler:    mockReq,
-
-		messageHandlerMessagebird: mockMessagebird,
-	}
 
 	tests := []struct {
 		name string
@@ -171,9 +156,26 @@ func Test_executeMessageFlow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
+
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+
+				messageHandlerMessagebird: mockMessagebird,
+			}
+
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.m.ID).Return(tt.expectRes, nil)
+			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, uuid.Nil, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.m.ID).Return(tt.expectRes, nil)
 			mockReq.EXPECT().FMV1ActiveflowExecute(ctx, tt.expectRes.ID).Return(nil)
 
 			res, err := h.executeMessageFlow(ctx, tt.m, tt.num)

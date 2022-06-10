@@ -13,16 +13,6 @@ import (
 )
 
 func Test_processV1HooksPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:     mockSock,
-		messageHandler: mockMessageHandler,
-	}
 
 	tests := []struct {
 		name string
@@ -108,6 +98,16 @@ func Test_processV1HooksPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				messageHandler: mockMessageHandler,
+			}
 
 			mockMessageHandler.EXPECT().Hook(gomock.Any(), tt.uri, tt.data).Return(nil)
 

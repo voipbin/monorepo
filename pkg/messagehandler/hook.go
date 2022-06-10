@@ -117,7 +117,7 @@ func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Mess
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
+	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, uuid.Nil, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)
 		return nil, err

@@ -14,16 +14,6 @@ import (
 )
 
 func Test_processV1MessagesGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessage := messagehandler.NewMockMessageHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:     mockSock,
-		messageHandler: mockMessage,
-	}
 
 	tests := []struct {
 		name string
@@ -88,6 +78,16 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				messageHandler: mockMessage,
+			}
 
 			mockMessage.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
@@ -103,16 +103,6 @@ func Test_processV1MessagesGet(t *testing.T) {
 }
 
 func Test_processV1MessagesPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:     mockSock,
-		messageHandler: mockMessageHandler,
-	}
 
 	tests := []struct {
 		name string
@@ -163,6 +153,16 @@ func Test_processV1MessagesPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockMessageHandler := messagehandler.NewMockMessageHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				messageHandler: mockMessageHandler,
+			}
 
 			mockMessageHandler.EXPECT().Send(gomock.Any(), tt.customerID, tt.source, tt.destinations, tt.Text).Return(tt.responseSend, nil)
 
@@ -179,27 +179,15 @@ func Test_processV1MessagesPost(t *testing.T) {
 }
 
 func Test_processV1MessagesIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessage := messagehandler.NewMockMessageHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:     mockSock,
-		messageHandler: mockMessage,
-	}
-
-	type test struct {
+	tests := []struct {
 		name       string
 		id         uuid.UUID
 		resultData *message.Message
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"1 number",
 			uuid.FromStringOrNil("73071e00-a29a-11ec-a43a-079fe08ce740"),
@@ -220,6 +208,16 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				messageHandler: mockMessage,
+			}
 
 			mockMessage.EXPECT().Get(gomock.Any(), tt.id).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
@@ -236,27 +234,15 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 }
 
 func Test_processV1MessagesIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessage := messagehandler.NewMockMessageHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:     mockSock,
-		messageHandler: mockMessage,
-	}
-
-	type test struct {
+	tests := []struct {
 		name           string
 		id             uuid.UUID
 		responseDelete *message.Message
 
 		request  *rabbitmqhandler.Request
 		response *rabbitmqhandler.Response
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("63772a08-a2ee-11ec-8c6d-9714fb1cc108"),
@@ -277,6 +263,16 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				messageHandler: mockMessage,
+			}
 
 			mockMessage.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseDelete, nil)
 			res, err := h.processRequest(tt.request)

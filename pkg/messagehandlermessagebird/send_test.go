@@ -18,19 +18,6 @@ import (
 
 func Test_marshal(t *testing.T) {
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockExternalReq := requestexternal.NewMockRequestExternal(mc)
-
-	h := &messageHandlerMessagebird{
-		reqHandler:      mockReq,
-		db:              mockDB,
-		requestExternal: mockExternalReq,
-	}
-
 	tests := []struct {
 		name string
 
@@ -139,6 +126,18 @@ func Test_marshal(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockExternalReq := requestexternal.NewMockRequestExternal(mc)
+
+			h := &messageHandlerMessagebird{
+				reqHandler:      mockReq,
+				db:              mockDB,
+				requestExternal: mockExternalReq,
+			}
 
 			mockExternalReq.EXPECT().MessagebirdSendMessage(tt.expectSender, tt.expectReceivers, tt.text).Return(tt.responseSend, nil)
 
