@@ -7,10 +7,10 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	carequest "gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/listenhandler/models/request"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -20,7 +20,7 @@ func (r *requestHandler) CAV1OutplanCreate(
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	source *cmaddress.Address,
+	source *address.Address,
 	dialTimeout int,
 	tryInterval int,
 	maxTryCount0 int,
@@ -183,7 +183,7 @@ func (r *requestHandler) CAV1OutplanUpdateBasicInfo(ctx context.Context, id uuid
 func (r *requestHandler) CAV1OutplanUpdateDialInfo(
 	ctx context.Context,
 	id uuid.UUID,
-	source *cmaddress.Address,
+	source *address.Address,
 	dialTimeout int,
 	tryInterval int,
 	maxTryCount0 int,
