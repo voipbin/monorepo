@@ -7,12 +7,12 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -100,7 +100,7 @@ func (r *requestHandler) CMV1CallActionNext(ctx context.Context, callID uuid.UUI
 // CMV1CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address) ([]cmcall.Call, error) {
+func (r *requestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address) ([]cmcall.Call, error) {
 	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsPost{
@@ -138,7 +138,7 @@ func (r *requestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID
 // CMV1CallCreateWithID sends a request to call-manager
 // to creating a call with the given id.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *cmaddress.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
 	data := &cmrequest.V1DataCallsIDPost{

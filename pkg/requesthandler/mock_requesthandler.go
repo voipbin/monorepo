@@ -1100,7 +1100,7 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallAddExternalMedia(ctx, callID, 
 }
 
 // CMV1CallCreateWithID mocks base method.
-func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
+func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address0.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
@@ -1218,7 +1218,7 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallSetDigits(ctx, callID, digits 
 }
 
 // CMV1CallsCreate mocks base method.
-func (m *MockRequestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destination []address.Address) ([]call.Call, error) {
+func (m *MockRequestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address0.Address, destination []address0.Address) ([]call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMV1CallsCreate", ctx, customerID, flowID, masterCallID, source, destination)
 	ret0, _ := ret[0].([]call.Call)
