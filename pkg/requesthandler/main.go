@@ -309,7 +309,7 @@ type RequestHandler interface {
 		customerID uuid.UUID,
 		name string,
 		detail string,
-		source *cmaddress.Address,
+		source *address.Address,
 		dialTimeout int,
 		tryInterval int,
 		maxTryCount0 int,
@@ -325,7 +325,7 @@ type RequestHandler interface {
 	CAV1OutplanUpdateDialInfo(
 		ctx context.Context,
 		id uuid.UUID,
-		source *cmaddress.Address,
+		source *address.Address,
 		dialTimeout int,
 		tryInterval int,
 		maxTryCount0 int,
