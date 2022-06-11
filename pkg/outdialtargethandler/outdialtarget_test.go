@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -23,11 +23,11 @@ func Test_Create(t *testing.T) {
 		outdialName  string
 		detail       string
 		data         string
-		destination0 *cmaddress.Address
-		destination1 *cmaddress.Address
-		destination2 *cmaddress.Address
-		destination3 *cmaddress.Address
-		destination4 *cmaddress.Address
+		destination0 *commonaddress.Address
+		destination1 *commonaddress.Address
+		destination2 *commonaddress.Address
+		destination3 *commonaddress.Address
+		destination4 *commonaddress.Address
 	}{
 		{
 			"normal",
@@ -36,7 +36,7 @@ func Test_Create(t *testing.T) {
 			"test name",
 			"test detail",
 			"test data",
-			&cmaddress.Address{},
+			&commonaddress.Address{},
 			nil,
 			nil,
 			nil,

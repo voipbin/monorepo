@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtargetcall"
 	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/cachehandler"
@@ -75,8 +75,8 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 
 				Status: outdialtargetcall.StatusProgressing,
 
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				DestinationIndex: 0,
@@ -95,8 +95,8 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 
 				Status: outdialtargetcall.StatusProgressing,
 
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				DestinationIndex: 0,

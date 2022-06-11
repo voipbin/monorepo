@@ -2,7 +2,7 @@ package outdialtargetcall
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // OutdialTargetCall defines
@@ -19,9 +19,9 @@ type OutdialTargetCall struct {
 
 	Status Status `json:"status"`
 
-	Destination      *cmaddress.Address `json:"destination"`
-	DestinationIndex int                `json:"destination_index"`
-	TryCount         int                `json:"try_count"`
+	Destination      *commonaddress.Address `json:"destination"`
+	DestinationIndex int                    `json:"destination_index"`
+	TryCount         int                    `json:"try_count"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
