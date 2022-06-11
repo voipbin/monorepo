@@ -1988,7 +1988,7 @@ func (mr *MockRequestHandlerMockRecorder) OMV1OutdialUpdateData(ctx, outdialID, 
 }
 
 // OMV1OutdialtargetCreate mocks base method.
-func (m *MockRequestHandler) OMV1OutdialtargetCreate(ctx context.Context, outdialID uuid.UUID, name, detail, data string, destination0, destination1, destination2, destination3, destination4 *address.Address) (*outdialtarget.OutdialTarget, error) {
+func (m *MockRequestHandler) OMV1OutdialtargetCreate(ctx context.Context, outdialID uuid.UUID, name, detail, data string, destination0, destination1, destination2, destination3, destination4 *address0.Address) (*outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OMV1OutdialtargetCreate", ctx, outdialID, name, detail, data, destination0, destination1, destination2, destination3, destination4)
 	ret0, _ := ret[0].(*outdialtarget.OutdialTarget)
