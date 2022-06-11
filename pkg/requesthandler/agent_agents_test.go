@@ -11,6 +11,7 @@ import (
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -27,7 +28,7 @@ func Test_AMV1AgentCreate(t *testing.T) {
 		ringMethod amagent.RingMethod
 		permission amagent.Permission
 		tagIDs     []uuid.UUID
-		addresses  []cmaddress.Address
+		addresses  []address.Address
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -47,9 +48,9 @@ func Test_AMV1AgentCreate(t *testing.T) {
 			[]uuid.UUID{
 				uuid.FromStringOrNil("ce0c4b4a-4e76-11ec-b6fe-9b57b172471a"),
 			},
-			[]cmaddress.Address{
+			[]address.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   address.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -591,7 +592,7 @@ func Test_AMV1AgentUpdateAddresses(t *testing.T) {
 		name string
 
 		id        uuid.UUID
-		addresses []cmaddress.Address
+		addresses []address.Address
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -603,9 +604,9 @@ func Test_AMV1AgentUpdateAddresses(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
-			[]cmaddress.Address{
+			[]address.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   address.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -923,7 +924,7 @@ func Test_AMV1AgentDial(t *testing.T) {
 		name string
 
 		id           uuid.UUID
-		source       *cmaddress.Address
+		source       *address.Address
 		flowID       uuid.UUID
 		masterCallID uuid.UUID
 
@@ -937,8 +938,8 @@ func Test_AMV1AgentDial(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821021656521",
 			},
 			uuid.FromStringOrNil("719c27a8-4e7c-11ec-bbc9-3b81de0e9e0a"),

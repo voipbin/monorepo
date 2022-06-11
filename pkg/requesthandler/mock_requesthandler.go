@@ -24,6 +24,7 @@ import (
 	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	address0 "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -72,7 +73,7 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // AMV1AgentCreate mocks base method.
-func (m *MockRequestHandler) AMV1AgentCreate(ctx context.Context, timeout int, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentCreate(ctx context.Context, timeout int, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address0.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1AgentCreate", ctx, timeout, customerID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
@@ -102,7 +103,7 @@ func (mr *MockRequestHandlerMockRecorder) AMV1AgentDelete(ctx, id interface{}) *
 }
 
 // AMV1AgentDial mocks base method.
-func (m *MockRequestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
+func (m *MockRequestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *address0.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1AgentDial", ctx, id, source, flowID, masterCallID)
 	ret0, _ := ret[0].(*agentdial.AgentDial)
@@ -207,7 +208,7 @@ func (mr *MockRequestHandlerMockRecorder) AMV1AgentUpdate(ctx, id, name, detail,
 }
 
 // AMV1AgentUpdateAddresses mocks base method.
-func (m *MockRequestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address0.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1AgentUpdateAddresses", ctx, id, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
