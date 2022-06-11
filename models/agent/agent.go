@@ -2,7 +2,7 @@ package agent
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // Agent data model
@@ -17,10 +17,10 @@ type Agent struct {
 
 	RingMethod RingMethod `json:"ring_method"` // agent's ring method
 
-	Status     Status              `json:"status"`     // agent's status
-	Permission Permission          `json:"permission"` // agent's permission.
-	TagIDs     []uuid.UUID         `json:"tag_ids"`    // agent's tag ids
-	Addresses  []cmaddress.Address `json:"addresses"`  // agent's endpoint addresses
+	Status     Status                  `json:"status"`     // agent's status
+	Permission Permission              `json:"permission"` // agent's permission.
+	TagIDs     []uuid.UUID             `json:"tag_ids"`    // agent's tag ids
+	Addresses  []commonaddress.Address `json:"addresses"`  // agent's endpoint addresses
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.

@@ -16,16 +16,6 @@ import (
 )
 
 func TestAgentCallAnswered(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &agentHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -76,6 +66,17 @@ func TestAgentCallAnswered(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &agentHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentCallGet(gomock.Any(), tt.call.ID).Return(tt.agentCall, nil)

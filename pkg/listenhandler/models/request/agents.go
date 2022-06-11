@@ -2,22 +2,22 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // V1DataAgentsPost is
 // v1 data type request struct for
 // /v1/agents POST
 type V1DataAgentsPost struct {
-	CustomerID uuid.UUID           `json:"customer_id"`
-	Username   string              `json:"username"`
-	Password   string              `json:"password"`
-	Name       string              `json:"name"`
-	Detail     string              `json:"detail"`
-	RingMethod string              `json:"ring_method"`
-	Permission uint64              `json:"permission"`
-	TagIDs     []uuid.UUID         `json:"tag_ids"`
-	Addresses  []cmaddress.Address `json:"addresses"`
+	CustomerID uuid.UUID               `json:"customer_id"`
+	Username   string                  `json:"username"`
+	Password   string                  `json:"password"`
+	Name       string                  `json:"name"`
+	Detail     string                  `json:"detail"`
+	RingMethod string                  `json:"ring_method"`
+	Permission uint64                  `json:"permission"`
+	TagIDs     []uuid.UUID             `json:"tag_ids"`
+	Addresses  []commonaddress.Address `json:"addresses"`
 }
 
 // V1DataAgentsUsernameLoginPost is
@@ -41,7 +41,7 @@ type V1DataAgentsIDPut struct {
 // v1 data type request struct for
 // /v1/agents/<agent-id>/addresses PUT
 type V1DataAgentsIDAddressesPut struct {
-	Addresses []cmaddress.Address `json:"addresses"`
+	Addresses []commonaddress.Address `json:"addresses"`
 }
 
 // V1DataAgentsIDPasswordPut is
@@ -76,7 +76,7 @@ type V1DataAgentsIDStatusPut struct {
 // v1 data type request struct for
 // /v1/agents/<agent-id>/dial PUT
 type V1DataAgentsIDDialPost struct {
-	Source       cmaddress.Address `json:"source"`
-	FlowID       uuid.UUID         `json:"flow_id"`
-	MasterCallID uuid.UUID         `json:"master_call_id"`
+	Source       commonaddress.Address `json:"source"`
+	FlowID       uuid.UUID             `json:"flow_id"`
+	MasterCallID uuid.UUID             `json:"master_call_id"`
 }

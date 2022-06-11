@@ -13,17 +13,6 @@ import (
 )
 
 func TestProcessV1TagsGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockTag := taghandler.NewMockTagHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock: mockSock,
-
-		tagHandler: mockTag,
-	}
 
 	tests := []struct {
 		name    string
@@ -107,6 +96,17 @@ func TestProcessV1TagsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				tagHandler: mockTag,
+			}
 
 			mockTag.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.tags, nil)
 
@@ -124,18 +124,6 @@ func TestProcessV1TagsGet(t *testing.T) {
 }
 
 func TestProcessV1TagsPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-
-	mockTag := taghandler.NewMockTagHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock: mockSock,
-
-		tagHandler: mockTag,
-	}
 
 	tests := []struct {
 		name    string
@@ -180,6 +168,18 @@ func TestProcessV1TagsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				tagHandler: mockTag,
+			}
 
 			mockTag.EXPECT().Create(gomock.Any(), tt.customerID, tt.tagName, tt.detail).Return(tt.tag, nil)
 
@@ -197,18 +197,6 @@ func TestProcessV1TagsPost(t *testing.T) {
 }
 
 func TestProcessV1TagsIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-
-	mockTag := taghandler.NewMockTagHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock: mockSock,
-
-		tagHandler: mockTag,
-	}
 
 	tests := []struct {
 		name    string
@@ -248,6 +236,18 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				tagHandler: mockTag,
+			}
 
 			mockTag.EXPECT().Get(gomock.Any(), tt.id).Return(tt.tag, nil)
 
@@ -265,16 +265,6 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 }
 
 func TestProcessV1TagsIDPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockTag := taghandler.NewMockTagHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock: mockSock,
-		tagHandler: mockTag,
-	}
 
 	tests := []struct {
 		name    string
@@ -313,6 +303,16 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+				tagHandler: mockTag,
+			}
 
 			mockTag.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.tagName, tt.detail).Return(tt.resonseTag, nil)
 			res, err := h.processRequest(tt.request)
@@ -329,16 +329,6 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 }
 
 func TestProcessV1TagsIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockTag := taghandler.NewMockTagHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock: mockSock,
-		tagHandler: mockTag,
-	}
 
 	tests := []struct {
 		name    string
@@ -372,6 +362,16 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+				tagHandler: mockTag,
+			}
 
 			mockTag.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTag, nil)
 

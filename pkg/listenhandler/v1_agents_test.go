@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
@@ -15,16 +15,6 @@ import (
 )
 
 func TestProcessV1AgentsGetNormal(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -61,9 +51,9 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 					Status:       agent.StatusOffline,
 					Permission:   1,
 					TagIDs:       []uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
-					Addresses: []cmaddress.Address{
+					Addresses: []commonaddress.Address{
 						{
-							Type:   cmaddress.TypeTel,
+							Type:   commonaddress.TypeTel,
 							Target: "+821021656521",
 						},
 					},
@@ -82,6 +72,16 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.agents, nil)
 
@@ -99,16 +99,6 @@ func TestProcessV1AgentsGetNormal(t *testing.T) {
 }
 
 func TestProcessV1AgentsGetTagIDs(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -145,9 +135,9 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 					Status:       agent.StatusOffline,
 					Permission:   1,
 					TagIDs:       []uuid.UUID{uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a")},
-					Addresses: []cmaddress.Address{
+					Addresses: []commonaddress.Address{
 						{
-							Type:   cmaddress.TypeTel,
+							Type:   commonaddress.TypeTel,
 							Target: "+821021656521",
 						},
 					},
@@ -188,9 +178,9 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 					Status:       agent.StatusOffline,
 					Permission:   1,
 					TagIDs:       []uuid.UUID{uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a")},
-					Addresses: []cmaddress.Address{
+					Addresses: []commonaddress.Address{
 						{
-							Type:   cmaddress.TypeTel,
+							Type:   commonaddress.TypeTel,
 							Target: "+821021656521",
 						},
 					},
@@ -209,9 +199,9 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 					Status:       agent.StatusOffline,
 					Permission:   1,
 					TagIDs:       []uuid.UUID{uuid.FromStringOrNil("2e5705ea-4d90-11ec-9352-6326ee2dce20")},
-					Addresses: []cmaddress.Address{
+					Addresses: []commonaddress.Address{
 						{
-							Type:   cmaddress.TypeTel,
+							Type:   commonaddress.TypeTel,
 							Target: "+821021656521",
 						},
 					},
@@ -230,6 +220,16 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentGetsByTagIDs(gomock.Any(), tt.customerID, tt.tagIDs).Return(tt.agents, nil)
 
@@ -247,16 +247,6 @@ func TestProcessV1AgentsGetTagIDs(t *testing.T) {
 }
 
 func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -295,9 +285,9 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 					Status:       agent.StatusAvailable,
 					Permission:   1,
 					TagIDs:       []uuid.UUID{uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a")},
-					Addresses: []cmaddress.Address{
+					Addresses: []commonaddress.Address{
 						{
-							Type:   cmaddress.TypeTel,
+							Type:   commonaddress.TypeTel,
 							Target: "+821021656521",
 						},
 					},
@@ -339,9 +329,9 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 					Status:       agent.StatusAvailable,
 					Permission:   1,
 					TagIDs:       []uuid.UUID{uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a")},
-					Addresses: []cmaddress.Address{
+					Addresses: []commonaddress.Address{
 						{
-							Type:   cmaddress.TypeTel,
+							Type:   commonaddress.TypeTel,
 							Target: "+821021656521",
 						},
 					},
@@ -360,9 +350,9 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 					Status:       agent.StatusAvailable,
 					Permission:   1,
 					TagIDs:       []uuid.UUID{uuid.FromStringOrNil("2e5705ea-4d90-11ec-9352-6326ee2dce20")},
-					Addresses: []cmaddress.Address{
+					Addresses: []commonaddress.Address{
 						{
-							Type:   cmaddress.TypeTel,
+							Type:   commonaddress.TypeTel,
 							Target: "+821021656521",
 						},
 					},
@@ -381,6 +371,16 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentGetsByTagIDsAndStatus(gomock.Any(), tt.customerID, tt.tagIDs, tt.status).Return(tt.agents, nil)
 
@@ -398,16 +398,6 @@ func TestProcessV1AgentsGetTagIDsAndStatus(t *testing.T) {
 }
 
 func TestProcessV1AgentsPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -421,7 +411,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 		ringMethod string
 		permission uint64
 		tagIDs     []uuid.UUID
-		addresses  []cmaddress.Address
+		addresses  []commonaddress.Address
 
 		agent     *agent.Agent
 		expectRes *rabbitmqhandler.Response
@@ -443,9 +433,9 @@ func TestProcessV1AgentsPost(t *testing.T) {
 			"ringall",
 			1,
 			[]uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -461,9 +451,9 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				Status:       agent.StatusOffline,
 				Permission:   1,
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 					},
 				},
@@ -497,9 +487,9 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				uuid.FromStringOrNil("159623f0-4d8c-11ec-85da-432863b96d60"),
 				uuid.FromStringOrNil("15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"),
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -518,9 +508,9 @@ func TestProcessV1AgentsPost(t *testing.T) {
 					uuid.FromStringOrNil("159623f0-4d8c-11ec-85da-432863b96d60"),
 					uuid.FromStringOrNil("15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"),
 				},
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 					},
 				},
@@ -554,13 +544,13 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				uuid.FromStringOrNil("e7b166ec-4d8c-11ec-8c61-0b9e85603e10"),
 				uuid.FromStringOrNil("e82a311c-4d8c-11ec-9411-3382b1284325"),
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656522",
 				},
 			},
@@ -579,13 +569,13 @@ func TestProcessV1AgentsPost(t *testing.T) {
 					uuid.FromStringOrNil("e7b166ec-4d8c-11ec-8c61-0b9e85603e10"),
 					uuid.FromStringOrNil("e82a311c-4d8c-11ec-9411-3382b1284325"),
 				},
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 					},
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656522",
 					},
 				},
@@ -603,6 +593,16 @@ func TestProcessV1AgentsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentCreate(gomock.Any(), tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, agent.RingMethod(tt.ringMethod), agent.Permission(tt.permission), tt.tagIDs, tt.addresses).Return(tt.agent, nil)
 
@@ -620,16 +620,6 @@ func TestProcessV1AgentsPost(t *testing.T) {
 }
 
 func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -666,9 +656,9 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 				Status:       agent.StatusAvailable,
 				Permission:   1,
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a")},
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 					},
 				},
@@ -686,6 +676,16 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentLogin(gomock.Any(), tt.customerID, tt.username, tt.password).Return(tt.agent, nil)
 
@@ -703,16 +703,6 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 }
 
 func TestProcessV1AgentsIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -747,6 +737,16 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentGet(gomock.Any(), tt.id).Return(tt.agent, nil)
 
@@ -764,16 +764,6 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 }
 
 func TestProcessV1AgentsIDPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -814,6 +804,16 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentUpdateBasicInfo(gomock.Any(), tt.id, tt.agentName, tt.detail, tt.ringMethod).Return(tt.resonseAgent, nil)
 			res, err := h.processRequest(tt.request)
@@ -830,23 +830,13 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 }
 
 func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
 		request *rabbitmqhandler.Request
 
 		id        uuid.UUID
-		addresses []cmaddress.Address
+		addresses []commonaddress.Address
 
 		responseAgent *agent.Agent
 		expectRes     *rabbitmqhandler.Response
@@ -861,9 +851,9 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -881,6 +871,16 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentUpdateAddresses(gomock.Any(), tt.id, tt.addresses).Return(tt.responseAgent, nil)
 			res, err := h.processRequest(tt.request)
@@ -897,16 +897,6 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 }
 
 func TestProcessV1AgentsIDStatusPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -943,6 +933,16 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentUpdateStatus(gomock.Any(), tt.id, tt.status).Return(tt.resonseAgent, nil)
 
@@ -960,16 +960,6 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 }
 
 func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -1006,6 +996,16 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentUpdatePassword(gomock.Any(), tt.id, tt.password).Return(tt.responseAgent, nil)
 			res, err := h.processRequest(tt.request)
@@ -1022,16 +1022,6 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 }
 
 func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -1070,6 +1060,16 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentUpdateTagIDs(gomock.Any(), tt.id, tt.tagIDs).Return(tt.responseAgent, nil)
 			res, err := h.processRequest(tt.request)
@@ -1086,23 +1086,13 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 }
 
 func TestProcessV1AgentsIDDialPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
 		request *rabbitmqhandler.Request
 
 		id           uuid.UUID
-		source       *cmaddress.Address
+		source       *commonaddress.Address
 		flowID       uuid.UUID
 		masterCallID uuid.UUID
 
@@ -1119,8 +1109,8 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821021656521",
 			},
 			uuid.FromStringOrNil("4a089d94-4da9-11ec-bac9-07c16f06b600"),
@@ -1139,6 +1129,16 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentDial(gomock.Any(), tt.id, tt.source, tt.flowID, tt.masterCallID).Return(tt.responseAgentDial, nil)
 
@@ -1156,16 +1156,6 @@ func TestProcessV1AgentsIDDialPost(t *testing.T) {
 }
 
 func TestProcessV1AgentsIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:   mockSock,
-		agentHandler: mockAgent,
-	}
 
 	tests := []struct {
 		name    string
@@ -1199,6 +1189,16 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:   mockSock,
+				agentHandler: mockAgent,
+			}
 
 			mockAgent.EXPECT().AgentDelete(gomock.Any(), tt.id).Return(tt.responseAgent, nil)
 

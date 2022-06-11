@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
@@ -28,7 +28,7 @@ type DBHandler interface {
 	AgentGetByUsername(ctx context.Context, customerID uuid.UUID, username string) (*agent.Agent, error)
 	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
 	AgentSetToCache(ctx context.Context, u *agent.Agent) error
-	AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error
+	AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) error
 	AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error
 	AgentSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error
 	AgentSetPermission(ctx context.Context, id uuid.UUID, permission agent.Permission) error

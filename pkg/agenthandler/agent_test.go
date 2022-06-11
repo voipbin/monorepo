@@ -8,8 +8,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -17,19 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 )
 
-func TestAgentGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &agentHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_AgentGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -50,6 +38,19 @@ func TestAgentGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, tt.size, tt.token).Return(tt.result, nil)
@@ -62,19 +63,7 @@ func TestAgentGets(t *testing.T) {
 	}
 }
 
-func TestAgentGetsByTags(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &agentHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_AgentGetsByTags(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -211,6 +200,18 @@ func TestAgentGetsByTags(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
@@ -226,19 +227,7 @@ func TestAgentGetsByTags(t *testing.T) {
 	}
 }
 
-func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &agentHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_AgentGetsByTagIDsAndStatus(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -419,6 +408,19 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
@@ -434,19 +436,7 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 	}
 }
 
-func TestAgentCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &agentHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_AgentCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -459,7 +449,7 @@ func TestAgentCreate(t *testing.T) {
 		ringMethod agent.RingMethod
 		permission agent.Permission
 		tags       []uuid.UUID
-		addresses  []cmaddress.Address
+		addresses  []commonaddress.Address
 
 		expectRes *agent.Agent
 	}{
@@ -474,7 +464,7 @@ func TestAgentCreate(t *testing.T) {
 			agent.RingMethodRingAll,
 			agent.PermissionNone,
 			[]uuid.UUID{},
-			[]cmaddress.Address{},
+			[]commonaddress.Address{},
 
 			&agent.Agent{
 				ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
@@ -484,13 +474,26 @@ func TestAgentCreate(t *testing.T) {
 				Detail:     "test1 detail",
 				Permission: agent.PermissionNone,
 				TagIDs:     []uuid.UUID{},
-				Addresses:  []cmaddress.Address{},
+				Addresses:  []commonaddress.Address{},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGetByUsername(gomock.Any(), tt.customerID, tt.username).Return(nil, fmt.Errorf("not found"))
@@ -516,19 +519,7 @@ func TestAgentCreate(t *testing.T) {
 	}
 }
 
-func TestAgentDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &agentHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_AgentDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -549,13 +540,26 @@ func TestAgentDelete(t *testing.T) {
 				Detail:     "test2 detail",
 				Permission: agent.PermissionNone,
 				TagIDs:     []uuid.UUID{},
-				Addresses:  []cmaddress.Address{},
+				Addresses:  []commonaddress.Address{},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentDelete(ctx, tt.id).Return(nil)
@@ -570,19 +574,7 @@ func TestAgentDelete(t *testing.T) {
 	}
 }
 
-func TestAgentUpdateStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &agentHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_AgentUpdateStatus(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -606,13 +598,26 @@ func TestAgentUpdateStatus(t *testing.T) {
 				Status:     agent.StatusAvailable,
 				Permission: agent.PermissionNone,
 				TagIDs:     []uuid.UUID{},
-				Addresses:  []cmaddress.Address{},
+				Addresses:  []commonaddress.Address{},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentSetStatus(ctx, tt.id, tt.status).Return(nil)
@@ -627,23 +632,13 @@ func TestAgentUpdateStatus(t *testing.T) {
 	}
 }
 
-func TestAgentDial(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &agentHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
+func Test_AgentDial(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		id           uuid.UUID
-		source       *cmaddress.Address
+		source       *commonaddress.Address
 		flowID       uuid.UUID
 		masterCallID uuid.UUID
 
@@ -655,7 +650,7 @@ func TestAgentDial(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("9b608bde-53df-11ec-9437-ab8a0e581104"),
-			&cmaddress.Address{},
+			&commonaddress.Address{},
 			uuid.FromStringOrNil("54f65714-53df-11ec-9327-470dfe854f0d"),
 			uuid.FromStringOrNil("f5b217cc-8c21-11ec-9571-c7a1180c3fdb"),
 
@@ -668,9 +663,9 @@ func TestAgentDial(t *testing.T) {
 				Status:     agent.StatusAvailable,
 				Permission: agent.PermissionNone,
 				TagIDs:     []uuid.UUID{},
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 					},
 				},
@@ -684,13 +679,24 @@ func TestAgentDial(t *testing.T) {
 				Detail:     "test1 detail",
 				Permission: agent.PermissionNone,
 				TagIDs:     []uuid.UUID{},
-				Addresses:  []cmaddress.Address{},
+				Addresses:  []commonaddress.Address{},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &agentHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGet(gomock.Any(), tt.id).Return(tt.agent, nil)
@@ -703,7 +709,7 @@ func TestAgentDial(t *testing.T) {
 			mockDB.EXPECT().AgentDialCreate(gomock.Any(), gomock.Any()).Return(nil)
 			for _, addr := range tt.agent.Addresses {
 				callID := uuid.Must(uuid.NewV4())
-				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.flowID, tt.masterCallID, tt.source, &addr).Return(&call.Call{ID: callID}, nil)
+				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, &addr).Return(&call.Call{ID: callID}, nil)
 			}
 
 			_, err := h.AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID)
