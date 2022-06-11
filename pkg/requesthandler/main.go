@@ -455,11 +455,11 @@ type RequestHandler interface {
 		name string,
 		detail string,
 		data string,
-		destination0 *cmaddress.Address,
-		destination1 *cmaddress.Address,
-		destination2 *cmaddress.Address,
-		destination3 *cmaddress.Address,
-		destination4 *cmaddress.Address,
+		destination0 *address.Address,
+		destination1 *address.Address,
+		destination2 *address.Address,
+		destination3 *address.Address,
+		destination4 *address.Address,
 	) (*omoutdialtarget.OutdialTarget, error)
 	OMV1OutdialtargetDelete(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error)
 	OMV1OutdialtargetGet(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error)

@@ -12,6 +12,7 @@ import (
 	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -25,11 +26,11 @@ func Test_OMV1OutdialtargetCreate(t *testing.T) {
 		detail            string
 		data              string
 
-		destination0 *cmaddress.Address
-		destination1 *cmaddress.Address
-		destination2 *cmaddress.Address
-		destination3 *cmaddress.Address
-		destination4 *cmaddress.Address
+		destination0 *address.Address
+		destination1 *address.Address
+		destination2 *address.Address
+		destination3 *address.Address
+		destination4 *address.Address
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -44,24 +45,24 @@ func Test_OMV1OutdialtargetCreate(t *testing.T) {
 			"test detail",
 			"test data",
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000002",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000003",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000004",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000005",
 			},
 
@@ -86,18 +87,18 @@ func Test_OMV1OutdialtargetCreate(t *testing.T) {
 			"test detail",
 			"test data",
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000002",
 			},
 			nil,
 			nil,
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000005",
 			},
 
