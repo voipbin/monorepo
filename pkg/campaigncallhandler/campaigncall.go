@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
@@ -27,8 +27,8 @@ func (h *campaigncallHandler) Create(
 
 	referenceType campaigncall.ReferenceType,
 	referenceID uuid.UUID,
-	source *cmaddress.Address,
-	destination *cmaddress.Address,
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
 	destinationIndex int,
 	tryCount int,
 ) (*campaigncall.Campaigncall, error) {

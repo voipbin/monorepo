@@ -5,13 +5,13 @@ import (
 	reflect "reflect"
 	"testing"
 
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
-	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 )
@@ -33,8 +33,8 @@ func Test_Create(t *testing.T) {
 
 		referenceType    campaigncall.ReferenceType
 		referenceID      uuid.UUID
-		source           *cmaddress.Address
-		destination      *cmaddress.Address
+		source           *commonaddress.Address
+		destination      *commonaddress.Address
 		destinationIndex int
 		tryCount         int
 	}{
@@ -53,12 +53,12 @@ func Test_Create(t *testing.T) {
 
 			campaigncall.ReferenceTypeCall,
 			uuid.FromStringOrNil("448ffc1f-b599-4c77-8f18-058a39189b97"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
 			1,

@@ -2,7 +2,7 @@ package outplan
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // Outplan defines
@@ -15,7 +15,7 @@ type Outplan struct {
 	Detail string `json:"detail"`
 
 	// source settings
-	Source *cmaddress.Address `json:"source"` // caller id
+	Source *commonaddress.Address `json:"source"` // caller id
 
 	// plan dial settings
 	DialTimeout int `json:"dial_timeout"` // milliseconds

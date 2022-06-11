@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
@@ -201,7 +201,7 @@ func (h *campaignHandler) executeCall(
 	c *campaign.Campaign,
 	p *outplan.Outplan,
 	target *omoutdialtarget.OutdialTarget,
-	destination *cmaddress.Address,
+	destination *commonaddress.Address,
 	destinationIndex int,
 	tryCount int,
 ) (*campaigncall.Campaigncall, error) {
@@ -262,7 +262,7 @@ func (h *campaignHandler) executeFlow(
 	c *campaign.Campaign,
 	p *outplan.Outplan,
 	target *omoutdialtarget.OutdialTarget,
-	destination *cmaddress.Address,
+	destination *commonaddress.Address,
 	destinationIndex int,
 	tryCount int,
 ) (*campaigncall.Campaigncall, error) {
@@ -374,7 +374,7 @@ func (h *campaignHandler) isDialable(ctx context.Context, campaignID, queueID uu
 }
 
 // getTargetDestination returns target destination
-func (h *campaignHandler) getTargetDestination(ctx context.Context, target *omoutdialtarget.OutdialTarget, plan *outplan.Outplan) (*cmaddress.Address, int, int) {
+func (h *campaignHandler) getTargetDestination(ctx context.Context, target *omoutdialtarget.OutdialTarget, plan *outplan.Outplan) (*commonaddress.Address, int, int) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":           "getTargetDestination",
@@ -398,7 +398,7 @@ func (h *campaignHandler) getTargetDestination(ctx context.Context, target *omou
 		target.TryCount4,
 	}
 
-	destinations := []*cmaddress.Address{
+	destinations := []*commonaddress.Address{
 		target.Destination0,
 		target.Destination1,
 		target.Destination2,

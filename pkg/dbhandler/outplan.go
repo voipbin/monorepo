@@ -6,9 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
-
 	"github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 )
@@ -24,7 +23,7 @@ const (
 		detail,
 
 		source,
-		
+
 		dial_timeout,
 		try_interval,
 
@@ -106,7 +105,7 @@ func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
 	) values(
 		?, ?,
 		?, ?,
-		?, 
+		?,
 		?, ?,
 		?, ?, ?, ?, ?,
 		?, ?, ?
@@ -318,7 +317,7 @@ func (h *handler) OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 func (h *handler) OutplanUpdateDialInfo(
 	ctx context.Context,
 	id uuid.UUID,
-	source *cmaddress.Address,
+	source *commonaddress.Address,
 	dialTimeout int,
 	tryInterval int,
 	maxTryCount0 int,

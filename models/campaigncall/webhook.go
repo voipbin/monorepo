@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // WebhookMessage defines
@@ -25,10 +25,10 @@ type WebhookMessage struct {
 	Status Status `json:"status"`
 	Result Result `json:"result"`
 
-	Source           *cmaddress.Address `json:"source"`
-	Destination      *cmaddress.Address `json:"destination"`
-	DestinationIndex int                `json:"destination_index"`
-	TryCount         int                `json:"try_count"`
+	Source           *commonaddress.Address `json:"source"`
+	Destination      *commonaddress.Address `json:"destination"`
+	DestinationIndex int                    `json:"destination_index"`
+	TryCount         int                    `json:"try_count"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

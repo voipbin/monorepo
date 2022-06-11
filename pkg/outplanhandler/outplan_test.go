@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -22,7 +22,7 @@ func Test_Create(t *testing.T) {
 		customerID   uuid.UUID
 		outplanName  string
 		detail       string
-		source       *cmaddress.Address
+		source       *commonaddress.Address
 		DialTimeout  int
 		tryInterval  int
 		maxTryCount0 int
@@ -37,8 +37,8 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("bccbd45a-b3d8-11ec-a518-b79a1b2fe501"),
 			"test name",
 			"test detail",
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
 
@@ -225,7 +225,7 @@ func Test_UpdateDialInfo(t *testing.T) {
 		name string
 
 		id           uuid.UUID
-		source       *cmaddress.Address
+		source       *commonaddress.Address
 		dialTimeout  int
 		tyrInterval  int
 		maxTryCount0 int
@@ -238,8 +238,8 @@ func Test_UpdateDialInfo(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("1f7003d0-b3dc-11ec-906b-33094783cdd2"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
 			30000,

@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -35,7 +35,7 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 		responseCampaigncall    *campaigncall.Campaigncall
 		responseActiveflow      *activeflow.Activeflow
 
-		expectDestination      *cmaddress.Address
+		expectDestination      *commonaddress.Address
 		expectDestinationIndex int
 		expectTryCount         int
 	}{
@@ -60,8 +60,8 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 			[]omoutdialtarget.OutdialTarget{
 				{
 					ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination0: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
 					TryCount0: 0,
@@ -75,8 +75,8 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				ID: uuid.FromStringOrNil("6bab615a-c402-11ec-931f-df3080b6bcef"),
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
 			0,
@@ -183,8 +183,8 @@ func Test_getTarget(t *testing.T) {
 			[]omoutdialtarget.OutdialTarget{
 				{
 					ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
-					Destination0: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination0: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
 					TryCount0: 0,
@@ -193,8 +193,8 @@ func Test_getTarget(t *testing.T) {
 
 			&omoutdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
@@ -281,8 +281,8 @@ func Test_isDialableTarget(t *testing.T) {
 
 			&omoutdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
@@ -298,8 +298,8 @@ func Test_isDialableTarget(t *testing.T) {
 
 			&omoutdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
@@ -315,8 +315,8 @@ func Test_isDialableTarget(t *testing.T) {
 
 			&omoutdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
@@ -365,7 +365,7 @@ func Test_getTargetDestination(t *testing.T) {
 		target *omoutdialtarget.OutdialTarget
 		plan   *outplan.Outplan
 
-		expectResDestination      *cmaddress.Address
+		expectResDestination      *commonaddress.Address
 		expectResDestinationIndex int
 		expectResTryCount         int
 	}{
@@ -373,8 +373,8 @@ func Test_getTargetDestination(t *testing.T) {
 			"normal",
 
 			&omoutdialtarget.OutdialTarget{
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
@@ -383,8 +383,8 @@ func Test_getTargetDestination(t *testing.T) {
 				MaxTryCount0: 3,
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
 			0,
@@ -394,12 +394,12 @@ func Test_getTargetDestination(t *testing.T) {
 			"destination 0,1 given but selected 1",
 
 			&omoutdialtarget.OutdialTarget{
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination1: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination1: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				TryCount0: 3,
@@ -410,8 +410,8 @@ func Test_getTargetDestination(t *testing.T) {
 				MaxTryCount1: 1,
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
 			1,
@@ -463,8 +463,8 @@ func Test_getTargetDestinationError(t *testing.T) {
 			"normal",
 
 			&omoutdialtarget.OutdialTarget{
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				TryCount0: 3,

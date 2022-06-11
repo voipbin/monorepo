@@ -10,8 +10,8 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // MockOutplanHandler is a mock of OutplanHandler interface.
