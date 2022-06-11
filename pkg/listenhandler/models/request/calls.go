@@ -4,30 +4,30 @@ import (
 	"github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // V1DataCallsPost is
 // v1 data type request struct for
 // /v1/calls POST
 type V1DataCallsPost struct {
-	FlowID       uuid.UUID         `json:"flow_id"`
-	CustomerID   uuid.UUID         `json:"customer_id"`
-	MasterCallID uuid.UUID         `json:"master_call_id"`
-	Source       address.Address   `json:"source"`
-	Destinations []address.Address `json:"destinations"`
+	FlowID       uuid.UUID               `json:"flow_id"`
+	CustomerID   uuid.UUID               `json:"customer_id"`
+	MasterCallID uuid.UUID               `json:"master_call_id"`
+	Source       commonaddress.Address   `json:"source"`
+	Destinations []commonaddress.Address `json:"destinations"`
 }
 
 // V1DataCallsIDPost is
 // v1 data type request struct for
 // /v1/calls/<id> POST
 type V1DataCallsIDPost struct {
-	FlowID       uuid.UUID       `json:"flow_id"`
-	ActiveflosID uuid.UUID       `json:"activeflow_id"`
-	CustomerID   uuid.UUID       `json:"customer_id"`
-	MasterCallID uuid.UUID       `json:"master_call_id"`
-	Source       address.Address `json:"source"`
-	Destination  address.Address `json:"destination"`
+	FlowID       uuid.UUID             `json:"flow_id"`
+	ActiveflosID uuid.UUID             `json:"activeflow_id"`
+	CustomerID   uuid.UUID             `json:"customer_id"`
+	MasterCallID uuid.UUID             `json:"master_call_id"`
+	Source       commonaddress.Address `json:"source"`
+	Destination  commonaddress.Address `json:"destination"`
 }
 
 // V1DataCallsIDHealthPost is

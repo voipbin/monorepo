@@ -14,9 +14,10 @@ import (
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	// address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 func Test_CreateCallOutgoing(t *testing.T) {
@@ -30,8 +31,8 @@ func Test_CreateCallOutgoing(t *testing.T) {
 		activeflowID uuid.UUID
 		masterCallID uuid.UUID
 
-		source      address.Address
-		destination address.Address
+		source      commonaddress.Address
+		destination commonaddress.Address
 
 		af                *fmactiveflow.Activeflow
 		expectCall        *call.Call
@@ -47,13 +48,13 @@ func Test_CreateCallOutgoing(t *testing.T) {
 			uuid.FromStringOrNil("679f0eb2-8c21-41a6-876d-9d778b1b0167"),
 			uuid.FromStringOrNil("5935ff8a-8c8f-11ec-b26a-3fee169eaf45"),
 
-			address.Address{
-				Type:       address.TypeSIP,
+			commonaddress.Address{
+				Type:       commonaddress.TypeSIP,
 				Target:     "testsrc@test.com",
 				TargetName: "test",
 			},
-			address.Address{
-				Type:       address.TypeSIP,
+			commonaddress.Address{
+				Type:       commonaddress.TypeSIP,
 				Target:     "testoutgoing@test.com",
 				TargetName: "test target",
 			},
@@ -71,13 +72,13 @@ func Test_CreateCallOutgoing(t *testing.T) {
 				Type:       call.TypeFlow,
 				Status:     call.StatusDialing,
 				Direction:  call.DirectionOutgoing,
-				Source: address.Address{
-					Type:       address.TypeSIP,
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeSIP,
 					Target:     "testsrc@test.com",
 					TargetName: "test",
 				},
-				Destination: address.Address{
-					Type:       address.TypeSIP,
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeSIP,
 					Target:     "testoutgoing@test.com",
 					TargetName: "test target",
 				},
@@ -100,13 +101,13 @@ func Test_CreateCallOutgoing(t *testing.T) {
 			uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
 			uuid.FromStringOrNil("61c0fe66-8c8f-11ec-873a-ff90a846a02f"),
 
-			address.Address{
-				Type:       address.TypeTel,
+			commonaddress.Address{
+				Type:       commonaddress.TypeTel,
 				Target:     "+99999888",
 				TargetName: "test",
 			},
-			address.Address{
-				Type:       address.TypeTel,
+			commonaddress.Address{
+				Type:       commonaddress.TypeTel,
 				Target:     "+123456789",
 				TargetName: "test target",
 			},
@@ -124,13 +125,13 @@ func Test_CreateCallOutgoing(t *testing.T) {
 				Type:       call.TypeFlow,
 				Status:     call.StatusDialing,
 				Direction:  call.DirectionOutgoing,
-				Source: address.Address{
-					Type:       address.TypeTel,
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
 					Target:     "+99999888",
 					TargetName: "test",
 				},
-				Destination: address.Address{
-					Type:       address.TypeTel,
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
 					Target:     "+123456789",
 					TargetName: "test target",
 				},
@@ -202,13 +203,13 @@ func Test_GetEndpointDestinationTypeTel(t *testing.T) {
 
 	tests := []struct {
 		name               string
-		destination        *address.Address
+		destination        *commonaddress.Address
 		expectEndpointDest string
 	}{
 		{
 			"normal",
-			&address.Address{
-				Type:   address.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+1234567890",
 			},
 			"pjsip/call-out/sip:+1234567890@sip.telnyx.com;transport=udp",
@@ -246,13 +247,13 @@ func Test_GetEndpointDestinationTypeSIP(t *testing.T) {
 
 	tests := []struct {
 		name               string
-		destination        *address.Address
+		destination        *commonaddress.Address
 		expectEndpointDest string
 	}{
 		{
 			"normal",
-			&address.Address{
-				Type:   address.TypeSIP,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
 				Target: "test@test.com",
 			},
 			"pjsip/call-out/sip:test@test.com",
@@ -290,13 +291,13 @@ func Test_GetDialingURISIP(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		destination *address.Address
+		destination *commonaddress.Address
 		expectRes   string
 	}{
 		{
 			"normal",
-			&address.Address{
-				Type:   address.TypeSIP,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
 				Target: "test@test.com",
 			},
 			"pjsip/call-out/sip:test@test.com",
@@ -335,13 +336,13 @@ func Test_GetDialingURITel(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		destination *address.Address
+		destination *commonaddress.Address
 		expectRes   string
 	}{
 		{
 			"normal",
-			&address.Address{
-				Type:   address.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
 			"pjsip/call-out/sip:+821100000001@sip.telnyx.com;transport=udp",
@@ -380,14 +381,14 @@ func Test_GetDialURIExtension(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		destination *address.Address
+		destination *commonaddress.Address
 		contacts    []*astcontact.AstContact
 		expectRes   string
 	}{
 		{
 			"normal",
-			&address.Address{
-				Type:   address.TypeEndpoint,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -413,8 +414,8 @@ func Test_GetDialURIExtension(t *testing.T) {
 		},
 		{
 			"2 contacts",
-			&address.Address{
-				Type:   address.TypeEndpoint,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -457,8 +458,8 @@ func Test_GetDialURIExtension(t *testing.T) {
 		},
 		{
 			"transport ws",
-			&address.Address{
-				Type:   address.TypeEndpoint,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -484,8 +485,8 @@ func Test_GetDialURIExtension(t *testing.T) {
 		},
 		{
 			"transport wss",
-			&address.Address{
-				Type:   address.TypeEndpoint,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{
@@ -544,13 +545,13 @@ func Test_GetDialURIEndpointError(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		destination *address.Address
+		destination *commonaddress.Address
 		contacts    []*astcontact.AstContact
 	}{
 		{
 			"no contact",
-			&address.Address{
-				Type:   address.TypeEndpoint,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
 			},
 			[]*astcontact.AstContact{},

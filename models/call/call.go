@@ -7,9 +7,9 @@ import (
 	uuid "github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // Call struct represent asterisk's channel information
@@ -32,8 +32,8 @@ type Call struct {
 	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // recording ids
 
 	// source/destination
-	Source      address.Address `json:"source"`
-	Destination address.Address `json:"destination"`
+	Source      commonaddress.Address `json:"source"`
+	Destination commonaddress.Address `json:"destination"`
 
 	// info
 	Status       Status            `json:"status"`
@@ -144,8 +144,8 @@ func NewCall(
 	flowID uuid.UUID,
 	cType Type,
 
-	source *address.Address,
-	destination *address.Address,
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
 
 	status Status,
 	data map[string]string,
@@ -181,8 +181,8 @@ func NewCall(
 // NewCallByChannel creates a Call and return it.
 func NewCallByChannel(cn *channel.Channel, customerID uuid.UUID, cType Type, direction Direction, data map[string]string) *Call {
 	// create a call
-	source := address.CreateAddressByChannelSource(cn)
-	destination := address.CreateAddressByChannelDestination(cn)
+	source := commonaddress.CreateAddressByChannelSource(cn)
+	destination := commonaddress.CreateAddressByChannelDestination(cn)
 	status := GetStatusByChannelState(cn.State)
 
 	c := &Call{

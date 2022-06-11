@@ -10,12 +10,12 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 

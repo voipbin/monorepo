@@ -6,9 +6,9 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 func TestIsUpdatableStatus(t *testing.T) {
@@ -188,8 +188,8 @@ func TestNewCallByChannel(t *testing.T) {
 			}
 
 			c.ID = uuid.Nil
-			c.Source = address.Address{}
-			c.Destination = address.Address{}
+			c.Source = commonaddress.Address{}
+			c.Destination = commonaddress.Address{}
 			c.Data = nil
 
 			if reflect.DeepEqual(*c, *tt.expectCall) != true {
