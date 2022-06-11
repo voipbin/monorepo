@@ -114,5 +114,3 @@ func (r *requestHandler) MMV1MessageDelete(ctx context.Context, id uuid.UUID) (*
 
 	return &res, nil
 }
-
-
