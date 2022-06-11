@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -208,8 +208,8 @@ func Test_CMV1CallsCreate(t *testing.T) {
 		customerID   uuid.UUID
 		flowID       uuid.UUID
 		masterCallID uuid.UUID
-		source       *cmaddress.Address
-		destinations []cmaddress.Address
+		source       *address.Address
+		destinations []address.Address
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -222,13 +222,13 @@ func Test_CMV1CallsCreate(t *testing.T) {
 			uuid.FromStringOrNil("3a09efda-7f52-11ec-a775-cfd868cdc292"),
 			uuid.FromStringOrNil("0783c168-4c70-11ec-a613-bfcd98aaa6da"),
 			uuid.FromStringOrNil("ecd7b104-8c97-11ec-895d-67294ed5a4d0"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821021656521",
 			},
-			[]cmaddress.Address{
+			[]address.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   address.TypeTel,
 					Target: "+821021656522",
 				},
 			},
@@ -289,8 +289,8 @@ func Test_CMV1CallCreateWithID(t *testing.T) {
 		activeflowID uuid.UUID
 		masterCallID uuid.UUID
 
-		source      *cmaddress.Address
-		destination *cmaddress.Address
+		source      *address.Address
+		destination *address.Address
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -306,12 +306,12 @@ func Test_CMV1CallCreateWithID(t *testing.T) {
 			uuid.FromStringOrNil("0a5273c9-73ac-4590-87de-4c7f33da7614"),
 			uuid.FromStringOrNil("f993c284-8c97-11ec-aaa3-a76b1106d031"),
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821021656521",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821021656522",
 			},
 
@@ -672,8 +672,8 @@ func Test_CMCallHangup(t *testing.T) {
 				ID:          uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
 				CustomerID:  uuid.FromStringOrNil("a789f1d6-7f52-11ec-b563-e3d43178d814"),
 				FlowID:      uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
-				Source:      cmaddress.Address{},
-				Destination: cmaddress.Address{},
+				Source:      address.Address{},
+				Destination: address.Address{},
 			},
 		},
 	}
