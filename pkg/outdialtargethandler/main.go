@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -29,11 +29,11 @@ type OutdialTargetHandler interface {
 		name string,
 		detail string,
 		data string,
-		destination0 *cmaddress.Address,
-		destination1 *cmaddress.Address,
-		destination2 *cmaddress.Address,
-		destination3 *cmaddress.Address,
-		destination4 *cmaddress.Address,
+		destination0 *commonaddress.Address,
+		destination1 *commonaddress.Address,
+		destination2 *commonaddress.Address,
+		destination3 *commonaddress.Address,
+		destination4 *commonaddress.Address,
 	) (*outdialtarget.OutdialTarget, error)
 	Delete(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error)
 

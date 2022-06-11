@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 )
@@ -482,11 +482,11 @@ func (h *handler) OutdialTargetGetsByOutdialID(ctx context.Context, outdialID uu
 func (h *handler) OutdialTargetUpdateDestinations(
 	ctx context.Context,
 	id uuid.UUID,
-	destination0 *cmaddress.Address,
-	destination1 *cmaddress.Address,
-	destination2 *cmaddress.Address,
-	destination3 *cmaddress.Address,
-	destination4 *cmaddress.Address,
+	destination0 *commonaddress.Address,
+	destination1 *commonaddress.Address,
+	destination2 *commonaddress.Address,
+	destination3 *commonaddress.Address,
+	destination4 *commonaddress.Address,
 ) error {
 	q := `
 	update outdialtargets set

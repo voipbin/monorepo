@@ -2,7 +2,7 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // V1DataOutdialsPost is
@@ -47,9 +47,9 @@ type V1DataOutdialsIDTargetsPost struct {
 	Detail string `json:"detail"` // detail
 	Data   string `json:"data"`
 
-	Destination0 *cmaddress.Address `json:"destination_0,omitempty"`
-	Destination1 *cmaddress.Address `json:"destination_1,omitempty"`
-	Destination2 *cmaddress.Address `json:"destination_2,omitempty"`
-	Destination3 *cmaddress.Address `json:"destination_3,omitempty"`
-	Destination4 *cmaddress.Address `json:"destination_4,omitempty"`
+	Destination0 *commonaddress.Address `json:"destination_0,omitempty"`
+	Destination1 *commonaddress.Address `json:"destination_1,omitempty"`
+	Destination2 *commonaddress.Address `json:"destination_2,omitempty"`
+	Destination3 *commonaddress.Address `json:"destination_3,omitempty"`
+	Destination4 *commonaddress.Address `json:"destination_4,omitempty"`
 }

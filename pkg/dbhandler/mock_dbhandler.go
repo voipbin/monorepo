@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	outdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	outdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	outdialtargetcall "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtargetcall"

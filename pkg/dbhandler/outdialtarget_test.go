@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	"gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/cachehandler"
@@ -41,8 +41,8 @@ func Test_OutdialTargetCreate(t *testing.T) {
 				Data:   "test uuid data string",
 				Status: outdialtarget.StatusIdle,
 
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 
@@ -58,8 +58,8 @@ func Test_OutdialTargetCreate(t *testing.T) {
 				Data:   "test uuid data string",
 				Status: outdialtarget.StatusIdle,
 
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 
@@ -182,11 +182,11 @@ func Test_OutdialTargetUpdateDestinations(t *testing.T) {
 		name          string
 		outdialTarget *outdialtarget.OutdialTarget
 
-		destination0 *cmaddress.Address
-		destination1 *cmaddress.Address
-		destination2 *cmaddress.Address
-		destination3 *cmaddress.Address
-		destination4 *cmaddress.Address
+		destination0 *commonaddress.Address
+		destination1 *commonaddress.Address
+		destination2 *commonaddress.Address
+		destination3 *commonaddress.Address
+		destination4 *commonaddress.Address
 
 		expectRes *outdialtarget.OutdialTarget
 	}{
@@ -196,8 +196,8 @@ func Test_OutdialTargetUpdateDestinations(t *testing.T) {
 				ID: uuid.FromStringOrNil("026169e4-b01e-11ec-a313-bf2c237db05c"),
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
 			nil,
@@ -208,8 +208,8 @@ func Test_OutdialTargetUpdateDestinations(t *testing.T) {
 			&outdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("026169e4-b01e-11ec-a313-bf2c237db05c"),
 
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 			},
@@ -220,12 +220,12 @@ func Test_OutdialTargetUpdateDestinations(t *testing.T) {
 				ID: uuid.FromStringOrNil("49c10130-b133-11ec-9f36-63a041749f9a"),
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
 
@@ -236,12 +236,12 @@ func Test_OutdialTargetUpdateDestinations(t *testing.T) {
 			&outdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("49c10130-b133-11ec-9f36-63a041749f9a"),
 
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination1: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination1: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 			},
@@ -252,48 +252,48 @@ func Test_OutdialTargetUpdateDestinations(t *testing.T) {
 				ID: uuid.FromStringOrNil("6f352e6e-b133-11ec-a3df-377e1b8025fd"),
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000003",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000004",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000005",
 			},
 
 			&outdialtarget.OutdialTarget{
 				ID: uuid.FromStringOrNil("6f352e6e-b133-11ec-a3df-377e1b8025fd"),
 
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination1: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination1: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
-				Destination2: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination2: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000003",
 				},
-				Destination3: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination3: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000004",
 				},
-				Destination4: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination4: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000005",
 				},
 			},
