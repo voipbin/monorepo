@@ -14,7 +14,7 @@ import (
 	agentcall "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
 	agentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
-	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // MockDBHandler is a mock of DBHandler interface.

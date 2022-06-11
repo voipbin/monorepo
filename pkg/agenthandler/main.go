@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"golang.org/x/crypto/bcrypt"
@@ -30,15 +30,15 @@ const (
 
 // AgentHandler interface
 type AgentHandler interface {
-	AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error)
+	AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	AgentDelete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
-	AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, confbridgeID, masterCallID uuid.UUID) (*agentdial.AgentDial, error)
+	AgentDial(ctx context.Context, id uuid.UUID, source *commonaddress.Address, confbridgeID, masterCallID uuid.UUID) (*agentdial.AgentDial, error)
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
 	AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error)
 	AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error)
 	AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error)
-	AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error)
+	AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error)
 	AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error)
 	AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error)

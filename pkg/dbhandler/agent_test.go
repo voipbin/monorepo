@@ -8,18 +8,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
 )
 
 func TestAgentCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name      string
@@ -39,7 +34,7 @@ func TestAgentCreate(t *testing.T) {
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
-				Addresses:    []cmaddress.Address{},
+				Addresses:    []commonaddress.Address{},
 				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
 		},
@@ -49,9 +44,9 @@ func TestAgentCreate(t *testing.T) {
 				ID:           uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 						Name:   "",
 					},
@@ -63,9 +58,9 @@ func TestAgentCreate(t *testing.T) {
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 						Name:   "",
 					},
@@ -79,14 +74,14 @@ func TestAgentCreate(t *testing.T) {
 				ID:           uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 						Name:   "",
 					},
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656522",
 						Name:   "",
 					},
@@ -98,14 +93,14 @@ func TestAgentCreate(t *testing.T) {
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 						Name:   "",
 					},
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656522",
 						Name:   "",
 					},
@@ -129,7 +124,7 @@ func TestAgentCreate(t *testing.T) {
 				Username:     "test4",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
-				Addresses:    []cmaddress.Address{},
+				Addresses:    []commonaddress.Address{},
 				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
 		},
@@ -137,6 +132,12 @@ func TestAgentCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
@@ -159,11 +160,6 @@ func TestAgentCreate(t *testing.T) {
 }
 
 func TestAgentDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name      string
@@ -183,7 +179,7 @@ func TestAgentDelete(t *testing.T) {
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
-				Addresses:    []cmaddress.Address{},
+				Addresses:    []commonaddress.Address{},
 				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
 		},
@@ -191,6 +187,12 @@ func TestAgentDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().AgentGet(gomock.Any(), tt.ag.ID).Return(nil, fmt.Errorf("")).AnyTimes()
@@ -219,11 +221,6 @@ func TestAgentDelete(t *testing.T) {
 }
 
 func TestAgentGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
 
 	tests := []struct {
 		name       string
@@ -259,7 +256,7 @@ func TestAgentGets(t *testing.T) {
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
-					Addresses:    []cmaddress.Address{},
+					Addresses:    []commonaddress.Address{},
 					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
 				{
@@ -268,7 +265,7 @@ func TestAgentGets(t *testing.T) {
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
-					Addresses:    []cmaddress.Address{},
+					Addresses:    []commonaddress.Address{},
 					TMCreate:     "2020-04-18T03:22:17.994000",
 				},
 			},
@@ -277,6 +274,12 @@ func TestAgentGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -299,17 +302,11 @@ func TestAgentGets(t *testing.T) {
 }
 
 func TestAgentSetAddresses(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
-
 	tests := []struct {
 		name string
 
 		id        uuid.UUID
-		addresses []cmaddress.Address
+		addresses []commonaddress.Address
 
 		agents []*agent.Agent
 
@@ -319,9 +316,9 @@ func TestAgentSetAddresses(t *testing.T) {
 			"test normal",
 
 			uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -337,7 +334,7 @@ func TestAgentSetAddresses(t *testing.T) {
 					RingMethod:   agent.RingMethodRingAll,
 					Permission:   0,
 					TagIDs:       []uuid.UUID{},
-					Addresses:    []cmaddress.Address{},
+					Addresses:    []commonaddress.Address{},
 					TMCreate:     "",
 					TMUpdate:     "",
 					TMDelete:     "",
@@ -354,9 +351,9 @@ func TestAgentSetAddresses(t *testing.T) {
 				RingMethod:   agent.RingMethodRingAll,
 				Permission:   0,
 				TagIDs:       []uuid.UUID{},
-				Addresses: []cmaddress.Address{
+				Addresses: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821021656521",
 					},
 				},
@@ -366,6 +363,12 @@ func TestAgentSetAddresses(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			for _, u := range tt.agents {

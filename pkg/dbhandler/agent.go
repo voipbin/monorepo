@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
@@ -80,7 +80,7 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 		return nil, fmt.Errorf("could not unmarshal the endpoints. agentGetFromRow. err: %v", err)
 	}
 	if res.Addresses == nil {
-		res.Addresses = []cmaddress.Address{}
+		res.Addresses = []commonaddress.Address{}
 	}
 
 	return res, nil
@@ -427,7 +427,7 @@ func (h *handler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 }
 
 // AgentSetAddresses sets the agent addresses.
-func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) error {
+func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) error {
 	// prepare
 	q := `
 	update

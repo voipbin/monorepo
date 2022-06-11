@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
@@ -90,7 +90,7 @@ func (h *agentHandler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent
 }
 
 // AgentCreate creates a new agent.
-func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
+func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentCreate",
 		"customer_id": customerID,
@@ -303,7 +303,7 @@ func (h *agentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags
 }
 
 // AgentUpdateAddresses updates the agent's addresses.
-func (h *agentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []cmaddress.Address) (*agent.Agent, error) {
+func (h *agentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "AgentUpdateAddresses",
 		"agent_id": id,
@@ -349,7 +349,7 @@ func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, stat
 }
 
 // AgentDial dials to the agent.
-func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmaddress.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
+func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *commonaddress.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "AgentDial",
 		"agent_id":       id,
@@ -418,7 +418,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *cmad
 
 	// dial
 	for i, address := range ag.Addresses {
-		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, flowID, masterCallID, source, &address)
+		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, flowID, uuid.Nil, masterCallID, source, &address)
 		if err != nil {
 			log.Errorf("Could not create a call. err: %v", err)
 			continue

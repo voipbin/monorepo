@@ -12,8 +12,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	agentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
-	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // MockAgentHandler is a mock of AgentHandler interface.
