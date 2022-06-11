@@ -12,8 +12,8 @@ require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220611204443-d1d8fc36e40a
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220611210108-c29db7b880c5
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220611211540-aca4fc4de5a8
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220611213413-d500b8c06a8d
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 )
 
