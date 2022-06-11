@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
@@ -34,12 +34,12 @@ func Test_CampaigncallCreate(t *testing.T) {
 				ReferenceType:   campaigncall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 				Status:          campaigncall.StatusProgressing,
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				DestinationIndex: 0,
@@ -101,12 +101,12 @@ func Test_CampaigncallGetByReferenceID(t *testing.T) {
 				ReferenceType:   campaigncall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("033d0d0b-1ce1-4c9a-94cf-e205db00cd39"),
 				Status:          campaigncall.StatusProgressing,
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				DestinationIndex: 0,
@@ -166,12 +166,12 @@ func Test_CampaigncallGetByActiveflowID(t *testing.T) {
 				ReferenceType:   campaigncall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("1da2d1f6-8ea2-4274-9bc3-225fee645cb8"),
 				Status:          campaigncall.StatusProgressing,
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				DestinationIndex: 0,
@@ -236,12 +236,12 @@ func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusProgressing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -270,12 +270,12 @@ func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusProgressing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -295,12 +295,12 @@ func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusProgressing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -373,12 +373,12 @@ func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusProgressing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -408,12 +408,12 @@ func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusProgressing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -433,12 +433,12 @@ func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusProgressing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -511,12 +511,12 @@ func Test_CampaigncallGetsOngoingByCampaignID(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusProgressing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -545,12 +545,12 @@ func Test_CampaigncallGetsOngoingByCampaignID(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusProgressing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -570,12 +570,12 @@ func Test_CampaigncallGetsOngoingByCampaignID(t *testing.T) {
 					ReferenceType:   campaigncall.ReferenceTypeCall,
 					ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 					Status:          campaigncall.StatusDialing,
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
-					Destination: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					DestinationIndex: 0,
@@ -646,12 +646,12 @@ func Test_CampaigncallUpdateStatus(t *testing.T) {
 				ReferenceType:   campaigncall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 				Status:          campaigncall.StatusProgressing,
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				DestinationIndex: 0,
@@ -674,12 +674,12 @@ func Test_CampaigncallUpdateStatus(t *testing.T) {
 				ReferenceType:   campaigncall.ReferenceTypeCall,
 				ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 				Status:          campaigncall.StatusDone,
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				DestinationIndex: 0,
@@ -753,12 +753,12 @@ func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
 				ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 				Status:          campaigncall.StatusProgressing,
 				Result:          campaigncall.ResultNone,
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				DestinationIndex: 0,
@@ -783,12 +783,12 @@ func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
 				ReferenceID:     uuid.FromStringOrNil("606cda84-b4fe-11ec-8791-afef3711acc8"),
 				Status:          campaigncall.StatusDone,
 				Result:          campaigncall.ResultSuccess,
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				DestinationIndex: 0,

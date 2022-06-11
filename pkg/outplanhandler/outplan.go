@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
@@ -18,7 +18,7 @@ func (h *outplanHandler) Create(
 	name string,
 	detail string,
 
-	source *cmaddress.Address,
+	source *commonaddress.Address,
 	dialTimeout int,
 	tryInterval int,
 
@@ -163,7 +163,7 @@ func (h *outplanHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 func (h *outplanHandler) UpdateDialInfo(
 	ctx context.Context,
 	id uuid.UUID,
-	source *cmaddress.Address,
+	source *commonaddress.Address,
 	dialTimeout int,
 	tryInterval int,
 	maxTryCount0 int,

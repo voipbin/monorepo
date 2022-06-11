@@ -6,8 +6,8 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -39,8 +39,8 @@ type CampaigncallHandler interface {
 
 		referenceType campaigncall.ReferenceType,
 		referenceID uuid.UUID,
-		source *cmaddress.Address,
-		destination *cmaddress.Address,
+		source *commonaddress.Address,
+		destination *commonaddress.Address,
 		destinationIndex int,
 		tryCount int,
 	) (*campaigncall.Campaigncall, error)

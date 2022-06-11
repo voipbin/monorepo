@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
@@ -28,13 +28,13 @@ func Test_OutplanCreate(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 
-				DialTimeout:  30000,
-				TryInterval:  600000,
+				DialTimeout: 30000,
+				TryInterval: 600000,
 
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
@@ -51,13 +51,13 @@ func Test_OutplanCreate(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 
-				DialTimeout:  30000,
-				TryInterval:  600000,
+				DialTimeout: 30000,
+				TryInterval: 600000,
 
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
@@ -116,16 +116,16 @@ func Test_OutplanDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("9a72c25e-b47f-11ec-8c84-fbce9a6f9ddf"),
 				CustomerID: uuid.FromStringOrNil("9aa97862-b47f-11ec-a611-5379cfa62666"),
 
-				Name:       "test name",
-				Detail:     "test detail",
+				Name:   "test name",
+				Detail: "test detail",
 
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 
-				DialTimeout:  30000,
-				TryInterval:  600000,
+				DialTimeout: 30000,
+				TryInterval: 600000,
 
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
@@ -133,9 +133,9 @@ func Test_OutplanDelete(t *testing.T) {
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
 
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
-				TMDelete:     DefaultTimeStamp,
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -190,16 +190,16 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("0b2e5afe-b3b7-11ec-90fb-0f96dcc8665c"),
 					CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
 
-					Name:       "test name",
-					Detail:     "test detail",
+					Name:   "test name",
+					Detail: "test detail",
 
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
 
-					DialTimeout:  30000,
-					TryInterval:  600000,
+					DialTimeout: 30000,
+					TryInterval: 600000,
 
 					MaxTryCount0: 3,
 					MaxTryCount1: 3,
@@ -207,9 +207,9 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
 
-					TMCreate:     "2020-04-18 03:22:17.995000",
-					TMUpdate:     "2020-04-18 03:22:17.995000",
-					TMDelete:     DefaultTimeStamp,
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: "2020-04-18 03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 
@@ -226,13 +226,13 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					Name:       "test name",
 					Detail:     "test detail",
 
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
 
-					DialTimeout:  30000,
-					TryInterval:  600000,
+					DialTimeout: 30000,
+					TryInterval: 600000,
 
 					MaxTryCount0: 3,
 					MaxTryCount1: 3,
@@ -240,9 +240,9 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
 
-					TMCreate:     "2020-04-18 03:22:18.995000",
-					TMUpdate:     "2020-04-18 03:22:17.995000",
-					TMDelete:     DefaultTimeStamp,
+					TMCreate: "2020-04-18 03:22:18.995000",
+					TMUpdate: "2020-04-18 03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("3792fa72-b3b8-11ec-94f5-ff4b74330ee9"),
@@ -250,13 +250,13 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					Name:       "test name",
 					Detail:     "test detail",
 
-					Source: &cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
 
-					DialTimeout:  30000,
-					TryInterval:  600000,
+					DialTimeout: 30000,
+					TryInterval: 600000,
 
 					MaxTryCount0: 3,
 					MaxTryCount1: 3,
@@ -264,9 +264,9 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
 
-					TMCreate:     "2020-04-18 03:22:17.995000",
-					TMUpdate:     "2020-04-18 03:22:17.995000",
-					TMDelete:     DefaultTimeStamp,
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: "2020-04-18 03:22:17.995000",
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 
@@ -327,13 +327,13 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 
-				DialTimeout:  30000,
-				TryInterval:  600000,
+				DialTimeout: 30000,
+				TryInterval: 600000,
 
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
@@ -341,9 +341,9 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
 
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
-				TMDelete:     DefaultTimeStamp,
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 
 			"update name",
@@ -355,14 +355,14 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				Name:       "update name",
 				Detail:     "update detail",
 
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 
-				DialTimeout:  30000,
-				TryInterval:  600000,
-				
+				DialTimeout: 30000,
+				TryInterval: 600000,
+
 				MaxTryCount0: 3,
 				MaxTryCount1: 3,
 				MaxTryCount2: 3,
@@ -418,7 +418,7 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 		name    string
 		outplan *outplan.Outplan
 
-		source       *cmaddress.Address
+		source       *commonaddress.Address
 		dialTimeout  int
 		tryInterval  int
 		maxTryCount0 int
@@ -436,8 +436,8 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				DialTimeout:  30000,
@@ -452,8 +452,8 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				TMDelete:     DefaultTimeStamp,
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
 			60000,
@@ -469,8 +469,8 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
 				Name:       "test name",
 				Detail:     "test detail",
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				DialTimeout:  60000,

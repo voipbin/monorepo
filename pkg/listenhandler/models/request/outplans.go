@@ -2,7 +2,7 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // V1DataOutplansPost is
@@ -14,7 +14,7 @@ type V1DataOutplansPost struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
-	Source *cmaddress.Address `json:"source"`
+	Source *commonaddress.Address `json:"source"`
 
 	DialTimeout int `json:"dial_timeout"`
 	TryInterval int `json:"try_interval"`
@@ -38,7 +38,7 @@ type V1DataOutplansIDPut struct {
 // v1 data type request struct for
 // /v1/outplans/<outplan_id>/dials PUT
 type V1DataOutplansIDDialsPut struct {
-	Source *cmaddress.Address `json:"source"`
+	Source *commonaddress.Address `json:"source"`
 
 	DialTimeout int `json:"dial_timeout"`
 	TryInterval int `json:"try_interval"`

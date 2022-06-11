@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -28,7 +28,7 @@ type OutplanHandler interface {
 		customerID uuid.UUID,
 		name string,
 		detail string,
-		source *cmaddress.Address,
+		source *commonaddress.Address,
 		dialTimeout int,
 		tryInterval int,
 		maxTryCount0 int,
@@ -41,7 +41,7 @@ type OutplanHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*outplan.Outplan, error)
-	UpdateDialInfo(ctx context.Context, id uuid.UUID, source *cmaddress.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error)
+	UpdateDialInfo(ctx context.Context, id uuid.UUID, source *commonaddress.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error)
 }
 
 // NewOutplanHandler return OutplanHandler
