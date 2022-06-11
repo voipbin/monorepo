@@ -7,10 +7,10 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	omrequest "gitlab.com/voipbin/bin-manager/outdial-manager.git/pkg/listenhandler/models/request"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -22,11 +22,11 @@ func (r *requestHandler) OMV1OutdialtargetCreate(
 	name string,
 	detail string,
 	data string,
-	destination0 *cmaddress.Address,
-	destination1 *cmaddress.Address,
-	destination2 *cmaddress.Address,
-	destination3 *cmaddress.Address,
-	destination4 *cmaddress.Address,
+	destination0 *address.Address,
+	destination1 *address.Address,
+	destination2 *address.Address,
+	destination3 *address.Address,
+	destination4 *address.Address,
 ) (*omoutdialtarget.OutdialTarget, error) {
 
 	uri := fmt.Sprintf("/v1/outdials/%s/targets", outdialID)
