@@ -10,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -24,7 +24,7 @@ const (
 )
 
 // CreateCallsOutgoing creates multiple outgoing calls.
-func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source address.Address, destinations []address.Address) ([]*call.Call, error) {
+func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destinations []commonaddress.Address) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CreateCallsOutgoing",
 		"customer_id": customerID,
@@ -38,7 +38,7 @@ func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowI
 		log.WithField("destination", destination).Debugf("Creating an outgoing call. call_id: %s, destination_type: %s, destination_target: %s", callID, destination.Type, destination.Target)
 
 		switch destination.Type {
-		case address.TypeSIP, address.TypeTel:
+		case commonaddress.TypeSIP, commonaddress.TypeTel:
 			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination)
 			if err != nil {
 				log.Errorf("Could not create an outgoing call. err: %v", err)
@@ -48,7 +48,7 @@ func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowI
 
 			res = append(res, c)
 
-		case address.TypeAgent:
+		case commonaddress.TypeAgent:
 			calls, err := h.createCallOutgoingAgent(ctx, customerID, flowID, masterCallID, source, destination)
 			if err != nil {
 				log.Errorf("Could not create an outgoing call to the agent. err: %v", err)
@@ -64,7 +64,7 @@ func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowI
 }
 
 // CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source address.Address, destination address.Address) (*call.Call, error) {
+func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":          "CreateCallOutgoing",
 		"id":             id,
@@ -78,7 +78,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	log.Debug("Creating a call for outgoing.")
 
 	// check destination type
-	if destination.Type != address.TypeSIP && destination.Type != address.TypeTel {
+	if destination.Type != commonaddress.TypeSIP && destination.Type != commonaddress.TypeTel {
 		return nil, fmt.Errorf("the destination type must be sip or tel")
 	}
 
@@ -152,7 +152,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 
 	// create a source endpoint
 	var endpointSrc string
-	if source.Type == address.TypeTel {
+	if source.Type == commonaddress.TypeTel {
 		endpointSrc = source.Target
 	} else {
 		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", source.TargetName, source.Target)
@@ -181,13 +181,13 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 }
 
 // getDialURITel returns dial uri of the given tel type destination.
-func (h *callHandler) getDialURITel(ctx context.Context, destination address.Address) (string, error) {
+func (h *callHandler) getDialURITel(ctx context.Context, destination commonaddress.Address) (string, error) {
 	res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx, constTransportUDP)
 	return res, nil
 }
 
 // getDialURISIP returns dial uri of the given sip type destination.
-func (h *callHandler) getDialURISIP(ctx context.Context, destination address.Address) (string, error) {
+func (h *callHandler) getDialURISIP(ctx context.Context, destination commonaddress.Address) (string, error) {
 	endpoint := destination.Target
 	if !strings.HasPrefix(destination.Target, "sip:") && !strings.HasPrefix(destination.Target, "sips:") {
 		endpoint = "sip:" + endpoint
@@ -198,7 +198,7 @@ func (h *callHandler) getDialURISIP(ctx context.Context, destination address.Add
 }
 
 // getDialURIEndpoint returns dial uri of the given extension type destination.
-func (h *callHandler) getDialURIEndpoint(ctx context.Context, destination address.Address) (string, error) {
+func (h *callHandler) getDialURIEndpoint(ctx context.Context, destination commonaddress.Address) (string, error) {
 
 	// get contacts
 	contacts, err := h.reqHandler.RMV1ContactGets(ctx, destination.Target)
@@ -218,16 +218,16 @@ func (h *callHandler) getDialURIEndpoint(ctx context.Context, destination addres
 }
 
 // getDialURI returns the given destination address's dial URI for Asterisk's dialing
-func (h *callHandler) getDialURI(ctx context.Context, destination address.Address) (string, error) {
+func (h *callHandler) getDialURI(ctx context.Context, destination commonaddress.Address) (string, error) {
 
 	switch destination.Type {
-	case address.TypeTel:
+	case commonaddress.TypeTel:
 		return h.getDialURITel(ctx, destination)
 
-	case address.TypeEndpoint:
+	case commonaddress.TypeEndpoint:
 		return h.getDialURIEndpoint(ctx, destination)
 
-	case address.TypeSIP:
+	case commonaddress.TypeSIP:
 		return h.getDialURISIP(ctx, destination)
 
 	default:
@@ -247,7 +247,7 @@ func (h *callHandler) getEndpointSDPTransport(endpointDestination string) string
 }
 
 // CreateCallOutgoingAgent creates an outgoing call to the agent
-func (h *callHandler) createCallOutgoingAgent(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source address.Address, destination address.Address) ([]*call.Call, error) {
+func (h *callHandler) createCallOutgoingAgent(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) ([]*call.Call, error) {
 
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CreateCallOutgoingAgent",

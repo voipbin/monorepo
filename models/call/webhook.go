@@ -6,7 +6,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // WebhookMessage defines
@@ -23,8 +23,8 @@ type WebhookMessage struct {
 	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // recording ids
 
 	// source/destination
-	Source      address.Address `json:"source"`
-	Destination address.Address `json:"destination"`
+	Source      commonaddress.Address `json:"source"`
+	Destination commonaddress.Address `json:"destination"`
 
 	// info
 	Status       Status          `json:"status"`

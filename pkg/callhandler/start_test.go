@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
@@ -14,7 +15,6 @@ import (
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -261,7 +261,7 @@ func Test_TypeSipServiceStartSvcAnswer(t *testing.T) {
 				ChannelID:  "48a5446a-e3b1-11ea-b837-83239d9eb45f",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: address.Address{
+				Destination: commonaddress.Address{
 					Target: string(fmaction.TypeAnswer),
 				},
 			},
@@ -345,7 +345,7 @@ func Test_TypeSipServiceStartSvcStreamEcho(t *testing.T) {
 				ChannelID:  "b1d1bf90-d2b3-11ea-8a02-035ed6a04322",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: address.Address{
+				Destination: commonaddress.Address{
 					Target: string(fmaction.TypeStreamEcho),
 				},
 			},
@@ -422,7 +422,7 @@ func Test_TypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 				FlowID:     uuid.FromStringOrNil("20a32e9c-4129-11ec-b2b4-9735b724208a"),
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: address.Address{
+				Destination: commonaddress.Address{
 					Target: string(fmaction.TypeConfbridgeJoin),
 				},
 			},
@@ -501,7 +501,7 @@ func Test_TypeSipServiceStartSvcPlay(t *testing.T) {
 				ChannelID:  "b6721d82-e71d-11ea-a38d-5fa75c625072",
 				Type:       call.TypeSipService,
 				Direction:  call.DirectionIncoming,
-				Destination: address.Address{
+				Destination: commonaddress.Address{
 					Target: string(fmaction.TypePlay),
 				},
 			},
@@ -595,8 +595,8 @@ func Test_TypeFlowStart(t *testing.T) {
 				ActiveFlowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
 				Type:         call.TypeSipService,
 				Direction:    call.DirectionIncoming,
-				Destination: address.Address{
-					Type:   address.TypeTel,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+123456789",
 				},
 				Action: fmaction.Action{
@@ -638,8 +638,8 @@ func Test_TypeFlowStart(t *testing.T) {
 				ActiveFlowID: uuid.FromStringOrNil("540e43b0-a7b9-11ec-af05-43bcbf20d46b"),
 				Type:         call.TypeSipService,
 				Direction:    call.DirectionIncoming,
-				Destination: address.Address{
-					Type:   address.TypeTel,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+123456789",
 				},
 				Action: fmaction.Action{

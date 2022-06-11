@@ -6,10 +6,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -25,15 +25,15 @@ func Test_setVariables(t *testing.T) {
 			&call.Call{
 				ID:           uuid.FromStringOrNil("5c08dbec-ce3e-11ec-92a8-03d5ad313332"),
 				ActiveFlowID: uuid.FromStringOrNil("5c08dbec-ce3e-11ec-92a8-03d5ad313332"),
-				Source: address.Address{
-					Type:       address.TypeTel,
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
 					Target:     "+821100000001",
 					TargetName: "test source target name",
 					Name:       "test source name",
 					Detail:     "test source detail",
 				},
-				Destination: address.Address{
-					Type:       address.TypeTel,
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
 					Target:     "+821100000002",
 					TargetName: "test destination target name",
 					Name:       "test destination name",
