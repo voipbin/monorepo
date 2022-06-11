@@ -10,7 +10,6 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	amrequest "gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -35,12 +34,6 @@ func (r *requestHandler) AMV1AgentCreate(
 ) (*amagent.Agent, error) {
 	uri := "/v1/agents"
 
-	var tmpAddresses []cmaddress.Address
-	for _, addr := range addresses {
-		tmp := address.ConvertToCMAddress(&addr)
-		tmpAddresses = append(tmpAddresses, *tmp)
-	}
-
 	data := &amrequest.V1DataAgentsPost{
 		CustomerID: customerID,
 		Username:   username,
@@ -51,7 +44,7 @@ func (r *requestHandler) AMV1AgentCreate(
 		RingMethod: string(ringMethod),
 		Permission: uint64(permission),
 		TagIDs:     tagIDs,
-		Addresses:  tmpAddresses,
+		Addresses:  addresses,
 	}
 
 	m, err := json.Marshal(data)
@@ -265,14 +258,8 @@ func (r *requestHandler) AMV1AgentLogin(ctx context.Context, timeout int, custom
 func (r *requestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/addresses", id)
 
-	var tmpAddresses []cmaddress.Address
-	for _, addr := range addresses {
-		tmp := address.ConvertToCMAddress(&addr)
-		tmpAddresses = append(tmpAddresses, *tmp)
-	}
-
 	data := &amrequest.V1DataAgentsIDAddressesPut{
-		Addresses: tmpAddresses,
+		Addresses: addresses,
 	}
 
 	m, err := json.Marshal(data)
@@ -444,10 +431,8 @@ func (r *requestHandler) AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID
 func (r *requestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, flowID, masterCallID uuid.UUID) (*amagentdial.AgentDial, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/dial", id)
 
-	tmpSource := address.ConvertToCMAddress(source)
-
 	data := &amrequest.V1DataAgentsIDDialPost{
-		Source:       *tmpSource,
+		Source:       *source,
 		FlowID:       flowID,
 		MasterCallID: masterCallID,
 	}

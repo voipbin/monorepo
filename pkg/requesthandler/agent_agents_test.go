@@ -9,7 +9,6 @@ import (
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -79,9 +78,9 @@ func Test_AMV1AgentCreate(t *testing.T) {
 				Status:       amagent.StatusOffline,
 				Permission:   1,
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
-				Addresses: []cmaddress.Address{
+				Addresses: []address.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   address.TypeTel,
 						Target: "+821021656521",
 					},
 				},
