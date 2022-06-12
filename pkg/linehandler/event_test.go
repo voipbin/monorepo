@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/participant"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 )
 
@@ -59,15 +59,13 @@ func Test_Event(t *testing.T) {
 
 			expectResMessages: []*message.Message{
 				{
-					ID:             [16]byte{},
-					CustomerID:     uuid.FromStringOrNil("8c9be70a-e7a6-11ec-8686-abd2812afa1e"),
-					ConversationID: [16]byte{},
-					Status:         message.StatusReceived,
-					ReferenceType:  conversation.ReferenceTypeLine,
-					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					SourceID:       "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Type:           message.TypeText,
-					Data:           []byte(`Hello`),
+					CustomerID:    uuid.FromStringOrNil("8c9be70a-e7a6-11ec-8686-abd2812afa1e"),
+					Status:        message.StatusReceived,
+					ReferenceType: conversation.ReferenceTypeLine,
+					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					SourceTarget:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					Type:          message.TypeText,
+					Data:          []byte(`Hello`),
 				},
 			},
 		},
@@ -111,10 +109,11 @@ func Test_Event(t *testing.T) {
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 
-					Participants: []participant.Participant{
+					Participants: []commonaddress.Address{
 						{
-							ID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-							Name: "Sungtae Kim",
+							Type:       commonaddress.TypeLine,
+							Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+							TargetName: "Sungtae Kim",
 						},
 					},
 				},
@@ -179,10 +178,11 @@ func Test_Event(t *testing.T) {
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 
-					Participants: []participant.Participant{
+					Participants: []commonaddress.Address{
 						{
-							ID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-							Name: "Sungtae Kim",
+							Type:       commonaddress.TypeLine,
+							Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+							TargetName: "Sungtae Kim",
 						},
 					},
 				},
@@ -195,7 +195,7 @@ func Test_Event(t *testing.T) {
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					SourceID:       "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					SourceTarget:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					Type:           message.TypeText,
 					Data:           []byte(`Hello`),
 				},
@@ -245,7 +245,7 @@ func Test_getParticipant(t *testing.T) {
 
 		responseAccount *account.Account
 
-		expectRes *participant.Participant
+		expectRes *commonaddress.Address
 	}{
 		{
 			name: "normal",
@@ -259,9 +259,10 @@ func Test_getParticipant(t *testing.T) {
 				LineToken:  "tsfIiDB/2cGI5sHRMIop7S3SS4KsbElJ/ukQKs6LpHY1XoG2pTMHqdiyLNu8aMda2pi3vTXscCKp8XGEvfl6dmIT1nfTTdMkmY84iRLIOIAl85iG/XZueI1WBRvchfV8TlZwDmECbSSzL+Wuv+jO+gdB04t89/1O/w1cDnyilFU=",
 			},
 
-			expectRes: &participant.Participant{
-				ID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				Name: "Sungtae Kim",
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeLine,
+				Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+				TargetName: "Sungtae Kim",
 			},
 		},
 	}

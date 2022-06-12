@@ -23,7 +23,7 @@ type MessageHandler interface {
 		status message.Status,
 		referenceType conversation.ReferenceType,
 		referenceID string,
-		sourceID string,
+		sourceTarget string,
 		messageType message.Type,
 		messageData []byte,
 	) (*message.Message, error)

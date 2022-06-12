@@ -19,7 +19,7 @@ func (h *messageHandler) Create(
 	status message.Status,
 	referenceType conversation.ReferenceType,
 	referenceID string,
-	sourceID string,
+	sourceTarget string,
 	messageType message.Type,
 	messageData []byte,
 ) (*message.Message, error) {
@@ -31,7 +31,7 @@ func (h *messageHandler) Create(
 			"reference_id":    referenceID,
 		},
 	)
-	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s, source_id: %s", referenceType, referenceID, sourceID)
+	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s, source_target: %s", referenceType, referenceID, sourceTarget)
 
 	// create a message
 	m := &message.Message{
@@ -41,7 +41,7 @@ func (h *messageHandler) Create(
 		Status:         status,
 		ReferenceType:  referenceType,
 		ReferenceID:    referenceID,
-		SourceID:       sourceID,
+		SourceTarget:   sourceTarget,
 
 		Type: messageType,
 		Data: messageData,

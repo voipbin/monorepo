@@ -24,7 +24,7 @@ const (
 		reference_type,
 		reference_id,
 
-		source_id,
+		source_target,
 
 		data,
 
@@ -51,7 +51,7 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		&res.ReferenceType,
 		&res.ReferenceID,
 
-		&res.SourceID,
+		&res.SourceTarget,
 
 		&res.Data,
 
@@ -79,7 +79,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		reference_type,
 		reference_id,
 
-		source_id,
+		source_target,
 
 		data,
 
@@ -112,7 +112,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		m.ReferenceType,
 		m.ReferenceID,
 
-		m.SourceID,
+		m.SourceTarget,
 
 		m.Data,
 

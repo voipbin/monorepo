@@ -2,8 +2,7 @@ package conversation
 
 import (
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/participant"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // Conversation defines
@@ -17,7 +16,7 @@ type Conversation struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   string        `json:"reference_id"`
 
-	Participants []participant.Participant `json:"participants"`
+	Participants []commonaddress.Address `json:"participants"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

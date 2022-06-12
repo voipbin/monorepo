@@ -20,7 +20,7 @@ type Message struct {
 	ReferenceType conversation.ReferenceType `json:"reference_type"` // used for find a conversation info(source info: group/room/user)
 	ReferenceID   string                     `json:"reference_id"`   // used for find a conversation info(source info: group_id, room_id, user_id)
 
-	SourceID string `json:"source_id"` // message source id. always user_id
+	SourceTarget string `json:"source_target"` // message source target.
 
 	Type Type   `json:"type"`
 	Data []byte `json:"message"`

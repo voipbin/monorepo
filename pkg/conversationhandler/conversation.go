@@ -5,9 +5,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/participant"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 )
 
@@ -48,7 +48,7 @@ func (h *conversationHandler) Create(
 	detail string,
 	referenceType conversation.ReferenceType,
 	referenceID string,
-	participants []participant.Participant,
+	participants []commonaddress.Address,
 ) (*conversation.Conversation, error) {
 	log := logrus.WithFields(
 		logrus.Fields{

@@ -8,9 +8,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/participant"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/cachehandler"
 )
 
@@ -31,10 +31,11 @@ func Test_ConversationCreate(t *testing.T) {
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				Participants: []participant.Participant{
+				Participants: []commonaddress.Address{
 					{
-						ID:   "e9d6a222-e42a-11ec-a678-57ec5f8add13",
-						Name: "test user",
+						Type:       commonaddress.TypeLine,
+						Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
+						TargetName: "test user",
 					},
 				},
 				TMCreate: "2022-04-18 03:22:17.995000",
@@ -95,7 +96,7 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "612435d0-e429-11ec-845d-bba00000504b",
-				Participants:  []participant.Participant{},
+				Participants:  []commonaddress.Address{},
 				TMCreate:      "2022-04-18 03:22:17.995000",
 				TMUpdate:      "2022-04-18 03:22:17.995000",
 				TMDelete:      DefaultTimeStamp,
@@ -157,7 +158,7 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 					Detail:        "conversation detail",
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
-					Participants:  []participant.Participant{},
+					Participants:  []commonaddress.Address{},
 					TMCreate:      "2022-04-18 03:22:17.995000",
 					TMUpdate:      "2022-04-18 03:22:17.995000",
 					TMDelete:      DefaultTimeStamp,
@@ -169,7 +170,7 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 					Detail:        "conversation detail",
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "387f1afe-e42a-11ec-ad8f-1340414f9a51",
-					Participants:  []participant.Participant{},
+					Participants:  []commonaddress.Address{},
 					TMCreate:      "2022-04-18 03:22:17.995000",
 					TMUpdate:      "2022-04-18 03:22:17.995000",
 					TMDelete:      DefaultTimeStamp,
