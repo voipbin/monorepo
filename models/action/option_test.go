@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 func Test_marshalOptionAgentCall(t *testing.T) {
@@ -239,17 +239,17 @@ func Test_marshalOptionCall(t *testing.T) {
 			[]byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "flow_id": "5ba29abc-a93b-11ec-ae94-6b77822f1a16"}`),
 
 			OptionCall{
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destinations: []cmaddress.Address{
+				Destinations: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000003",
 					},
 				},
@@ -262,17 +262,17 @@ func Test_marshalOptionCall(t *testing.T) {
 			[]byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "actions": [{"type": "answer"}, {"type": "talk", "option": {"text": "hello world"}}]}`),
 
 			OptionCall{
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destinations: []cmaddress.Address{
+				Destinations: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000003",
 					},
 				},

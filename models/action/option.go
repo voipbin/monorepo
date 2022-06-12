@@ -2,7 +2,7 @@ package action
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // OptionAgentCall defines action agent_call's option.
@@ -35,11 +35,11 @@ type OptionBranch struct {
 
 // OptionCall defines action call's option.
 type OptionCall struct {
-	Source       *cmaddress.Address  `json:"source"`
-	Destinations []cmaddress.Address `json:"destinations"`
-	FlowID       uuid.UUID           `json:"flow_id"`
-	Actions      []Action            `json:"actions"`
-	Chained      bool                `json:"chained"` // If it sets to true, created calls will be hungup when the master call is hangup. Default false.
+	Source       *commonaddress.Address  `json:"source"`
+	Destinations []commonaddress.Address `json:"destinations"`
+	FlowID       uuid.UUID               `json:"flow_id"`
+	Actions      []Action                `json:"actions"`
+	Chained      bool                    `json:"chained"` // If it sets to true, created calls will be hungup when the master call is hangup. Default false.
 }
 
 // OptionConfbridgeJoin defines action confbridge_join's option.
@@ -69,9 +69,9 @@ type OptionConferenceJoin struct {
 
 // OptionConnect defines action connect's optoin.
 type OptionConnect struct {
-	Source       cmaddress.Address   `json:"source"`       // source infromation.
-	Destinations []cmaddress.Address `json:"destinations"` // target destinations.
-	Unchained    bool                `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
+	Source       commonaddress.Address   `json:"source"`       // source infromation.
+	Destinations []commonaddress.Address `json:"destinations"` // target destinations.
+	Unchained    bool                    `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 }
 
 // OptionDigitsReceive defines action dtmf_receive's option.
@@ -133,9 +133,9 @@ type OptionHangup struct {
 
 // OptionMessageSend defines action message_send's option.
 type OptionMessageSend struct {
-	Source       *cmaddress.Address  `json:"source"`
-	Destinations []cmaddress.Address `json:"destinations"`
-	Text         string              `json:"text"`
+	Source       *commonaddress.Address  `json:"source"`
+	Destinations []commonaddress.Address `json:"destinations"`
+	Text         string                  `json:"text"`
 }
 
 // OptionPlay defines action play's option.
