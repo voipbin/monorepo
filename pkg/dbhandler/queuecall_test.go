@@ -8,7 +8,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -35,8 +35,8 @@ func Test_QueuecallCreate(t *testing.T) {
 				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 				RoutingMethod: queue.RoutingMethodRandom,
@@ -61,8 +61,8 @@ func Test_QueuecallCreate(t *testing.T) {
 				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 				RoutingMethod: queue.RoutingMethodRandom,
@@ -91,8 +91,8 @@ func Test_QueuecallCreate(t *testing.T) {
 				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 				RoutingMethod: queue.RoutingMethodRandom,
@@ -118,8 +118,8 @@ func Test_QueuecallCreate(t *testing.T) {
 				ExitActionID:    uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:    uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 				RoutingMethod: queue.RoutingMethodRandom,
@@ -201,7 +201,7 @@ func TestQueuecallGetsByCustomerID(t *testing.T) {
 					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
-					Source:        cmaddress.Address{},
+					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
 
 					TMCreate: "2020-04-18T03:22:17.995000",
@@ -211,7 +211,7 @@ func TestQueuecallGetsByCustomerID(t *testing.T) {
 					CustomerID:    uuid.FromStringOrNil("ae49986c-7f54-11ec-9a36-3ff9622d2952"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
-					Source:        cmaddress.Address{},
+					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
 
 					TMCreate: "2020-04-18T03:22:17.994000",
@@ -284,7 +284,7 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("66bb474c-5ab6-11ec-9636-0b7539c651ac"),
-					Source:        cmaddress.Address{},
+					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
 					TMCreate:      "2020-04-18T03:22:17.995000",
 				},
@@ -316,7 +316,7 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
-					Source:        cmaddress.Address{},
+					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
 					TMCreate:      "2020-04-18T03:22:17.995000",
 				},
@@ -325,7 +325,7 @@ func TestQueuecallGetsByReferenceID(t *testing.T) {
 					CustomerID:    uuid.FromStringOrNil("c4002036-7f54-11ec-a49e-2fcd8498a049"),
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("2690cc32-5ab6-11ec-b445-27ad1e0a543a"),
-					Source:        cmaddress.Address{},
+					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
 					TMCreate:      "2020-04-18T03:22:17.994000",
 				},
@@ -408,7 +408,7 @@ func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
 					Status:        queuecall.StatusWaiting,
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
-					Source:        cmaddress.Address{},
+					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
 					TMCreate:      "2020-04-18T03:22:17.994000",
 				},
@@ -419,7 +419,7 @@ func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
 					Status:        queuecall.StatusWaiting,
 					ReferenceType: queuecall.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("c77f9fbe-5a7b-11ec-9191-97cb390509e2"),
-					Source:        cmaddress.Address{},
+					Source:        commonaddress.Address{},
 					TagIDs:        []uuid.UUID{},
 					TMCreate:      "2020-04-18T03:22:17.995000",
 				},
@@ -480,7 +480,7 @@ func Test_QueuecallDelete(t *testing.T) {
 
 			&queuecall.Queuecall{
 				ID:       uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
-				Source:   cmaddress.Address{},
+				Source:   commonaddress.Address{},
 				TagIDs:   []uuid.UUID{},
 				Status:   queuecall.StatusDone,
 				TMUpdate: "2021-04-18 03:22:17.994000",
@@ -551,7 +551,7 @@ func TestQueuecallSetStatusConnecting(t *testing.T) {
 			&queuecall.Queuecall{
 				ID:             uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
 				Status:         queuecall.StatusConnecting,
-				Source:         cmaddress.Address{},
+				Source:         commonaddress.Address{},
 				TagIDs:         []uuid.UUID{},
 				ServiceAgentID: uuid.FromStringOrNil("85b89f08-5ab8-11ec-94ea-5bed0069b7e9"),
 			},
@@ -618,7 +618,7 @@ func Test_QueuecallSetStatusService(t *testing.T) {
 			&queuecall.Queuecall{
 				ID:        uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
 				Status:    queuecall.StatusService,
-				Source:    cmaddress.Address{},
+				Source:    commonaddress.Address{},
 				TagIDs:    []uuid.UUID{},
 				TMUpdate:  "2021-04-18 03:22:17.994000",
 				TMService: "2021-04-18 03:22:17.994000",
@@ -684,7 +684,7 @@ func TestQueuecallSetStatusKicking(t *testing.T) {
 			&queuecall.Queuecall{
 				ID:     uuid.FromStringOrNil("97222dd6-8a15-11ec-9cb1-eba575c6b180"),
 				Status: queuecall.StatusKicking,
-				Source: cmaddress.Address{},
+				Source: commonaddress.Address{},
 				TagIDs: []uuid.UUID{},
 			},
 		},
@@ -747,7 +747,7 @@ func Test_QueuecallSetStatusWaiting(t *testing.T) {
 			&queuecall.Queuecall{
 				ID:     uuid.FromStringOrNil("6f83cec0-d1d1-11ec-9aa4-1764ad2da6d5"),
 				Status: queuecall.StatusWaiting,
-				Source: cmaddress.Address{},
+				Source: commonaddress.Address{},
 				TagIDs: []uuid.UUID{},
 			},
 		},

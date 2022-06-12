@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
@@ -60,8 +60,8 @@ func Test_Join(t *testing.T) {
 			&cmcall.Call{
 				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
 				Direction: cmcall.DirectionIncoming,
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -120,7 +120,7 @@ func Test_Join(t *testing.T) {
 			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any(), cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.CustomerID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(tt.responseFlow, nil)
 
-			var source cmaddress.Address
+			var source commonaddress.Address
 			if tt.call.Direction == cmcall.DirectionIncoming {
 				source = tt.call.Source
 			} else {
@@ -173,7 +173,7 @@ func TestGetSource(t *testing.T) {
 
 		call *cmcall.Call
 
-		expectRes cmaddress.Address
+		expectRes commonaddress.Address
 	}{
 		{
 			"incoming tel type",
@@ -181,13 +181,13 @@ func TestGetSource(t *testing.T) {
 			&cmcall.Call{
 				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
 				Direction: cmcall.DirectionIncoming,
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656522",
 				},
 			},
-			cmaddress.Address{
-				Type:       cmaddress.TypeTel,
+			commonaddress.Address{
+				Type:       commonaddress.TypeTel,
 				Target:     "+821021656522",
 				TargetName: "",
 				Name:       "",
@@ -200,12 +200,12 @@ func TestGetSource(t *testing.T) {
 			&cmcall.Call{
 				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
 				Direction: cmcall.DirectionIncoming,
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeSIP,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
 					Target: "test@voipbin.net",
 				},
 			},
-			cmaddress.Address{
+			commonaddress.Address{
 				Type:       defaultSourceType,
 				Target:     defaultSourceTarget,
 				TargetName: "",
@@ -219,13 +219,13 @@ func TestGetSource(t *testing.T) {
 			&cmcall.Call{
 				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
 				Direction: cmcall.DirectionOutgoing,
-				Destination: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656522",
 				},
 			},
-			cmaddress.Address{
-				Type:       cmaddress.TypeTel,
+			commonaddress.Address{
+				Type:       commonaddress.TypeTel,
 				Target:     "+821021656522",
 				TargetName: "",
 				Name:       "",
@@ -238,12 +238,12 @@ func TestGetSource(t *testing.T) {
 			&cmcall.Call{
 				ID:        uuid.FromStringOrNil("8efbb17c-60e9-11ec-8d51-2f2d74388fff"),
 				Direction: cmcall.DirectionOutgoing,
-				Destination: cmaddress.Address{
-					Type:   cmaddress.TypeSIP,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
 					Target: "test@voipbin.net",
 				},
 			},
-			cmaddress.Address{
+			commonaddress.Address{
 				Type:       defaultSourceType,
 				Target:     defaultSourceTarget,
 				TargetName: "",

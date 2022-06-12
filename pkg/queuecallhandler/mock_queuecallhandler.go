@@ -11,7 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )

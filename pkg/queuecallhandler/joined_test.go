@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -49,8 +49,8 @@ func Test_Joined(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
 				ConfbridgeID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 				RoutingMethod: queue.RoutingMethodRandom,

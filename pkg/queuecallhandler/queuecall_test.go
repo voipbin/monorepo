@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -289,7 +289,7 @@ func Test_Create(t *testing.T) {
 		exitActionID    uuid.UUID
 		confbridgeID    uuid.UUID
 
-		source cmaddress.Address
+		source commonaddress.Address
 
 		queuecall *queuecall.Queuecall
 
@@ -320,18 +320,18 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 			uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
 
-			cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821021656521",
 			},
 
 			&queuecall.Queuecall{
-				Source:      cmaddress.Address{},
+				Source:      commonaddress.Address{},
 				TagIDs:      []uuid.UUID{},
 				TimeoutWait: 100000,
 			},
 			&queuecall.Queuecall{
-				Source:      cmaddress.Address{},
+				Source:      commonaddress.Address{},
 				TagIDs:      []uuid.UUID{},
 				TimeoutWait: 100000,
 			},
