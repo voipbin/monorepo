@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -72,7 +72,7 @@ func (h *serviceHandler) MessageGets(u *cscustomer.Customer, size uint64, token 
 // MessageSend handles message send request.
 // It sends a request to the message-manager to create(send) a new message.
 // it returns created message information if it succeed.
-func (h *serviceHandler) MessageSend(u *cscustomer.Customer, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageSend(u *cscustomer.Customer, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageSend",

@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
@@ -38,7 +38,7 @@ func TestAgentCreate(t *testing.T) {
 		ringMethod    amagent.RingMethod
 		permission    amagent.Permission
 		tagIDs        []uuid.UUID
-		addresses     []cmaddress.Address
+		addresses     []commonaddress.Address
 
 		response  *amagent.Agent
 		expectRes *amagent.WebhookMessage
@@ -57,7 +57,7 @@ func TestAgentCreate(t *testing.T) {
 			"ringall",
 			0,
 			[]uuid.UUID{},
-			[]cmaddress.Address{},
+			[]commonaddress.Address{},
 
 			&amagent.Agent{
 				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
@@ -80,7 +80,7 @@ func TestAgentCreate(t *testing.T) {
 			"ringall",
 			0,
 			[]uuid.UUID{},
-			[]cmaddress.Address{},
+			[]commonaddress.Address{},
 
 			&amagent.Agent{
 				ID: uuid.FromStringOrNil("3d39a6c2-79ae-11ec-8f44-6bc6091af769"),
@@ -609,7 +609,7 @@ func TestAgentUpdateAddresses(t *testing.T) {
 
 		customer  *cscustomer.Customer
 		agentID   uuid.UUID
-		addresses []cmaddress.Address
+		addresses []commonaddress.Address
 
 		resAgentGet *amagent.Agent
 	}{
@@ -619,9 +619,9 @@ func TestAgentUpdateAddresses(t *testing.T) {
 				ID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},

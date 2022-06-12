@@ -2,7 +2,7 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // BodyOutdialsPOST is rquest body define for POST /outdials
@@ -39,11 +39,11 @@ type BodyOutdialsIDTargetsPOST struct {
 	Name         string             `json:"name"`
 	Detail       string             `json:"detail"`
 	Data         string             `json:"data"`
-	Destination0 *cmaddress.Address `json:"destination_0"`
-	Destination1 *cmaddress.Address `json:"destination_1"`
-	Destination2 *cmaddress.Address `json:"destination_2"`
-	Destination3 *cmaddress.Address `json:"destination_3"`
-	Destination4 *cmaddress.Address `json:"destination_4"`
+	Destination0 *commonaddress.Address `json:"destination_0"`
+	Destination1 *commonaddress.Address `json:"destination_1"`
+	Destination2 *commonaddress.Address `json:"destination_2"`
+	Destination3 *commonaddress.Address `json:"destination_3"`
+	Destination4 *commonaddress.Address `json:"destination_4"`
 }
 
 // ParamOutdialsIDTargetsGET is rquest param define for GET /outdials/{id}/targets

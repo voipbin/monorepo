@@ -1,12 +1,12 @@
 package request
 
-import cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+import commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 // BodyOutplansPOST is rquest body define for POST /outplans
 type BodyOutplansPOST struct {
 	Name         string             `json:"name"`
 	Detail       string             `json:"detail"`
-	Source       *cmaddress.Address `json:"source"`
+	Source       *commonaddress.Address `json:"source"`
 	DialTimeout  int                `json:"dial_timeout"`
 	TryInterval  int                `json:"try_interval"`
 	MaxTryCount0 int                `json:"max_try_count_0"`
@@ -29,7 +29,7 @@ type BodyOutplansIDPUT struct {
 
 // BodyOutplansIDDialInfoPUT is rquest body define for PUT /outplans/{id}/dial_info
 type BodyOutplansIDDialInfoPUT struct {
-	Source       *cmaddress.Address `json:"source"`
+	Source       *commonaddress.Address `json:"source"`
 	DialTimeout  int                `json:"dial_timeout"`
 	TryInterval  int                `json:"try_interval"`
 	MaxTryCount0 int                `json:"max_try_count_0"`

@@ -9,12 +9,12 @@ import (
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -50,14 +50,14 @@ type ServiceHandler interface {
 		ringMethod amagent.RingMethod,
 		permission amagent.Permission,
 		tagIDs []uuid.UUID,
-		addresses []cmaddress.Address,
+		addresses []commonaddress.Address,
 	) (*amagent.WebhookMessage, error)
 	AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
 	AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error)
 	AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
 	AgentLogin(customerID uuid.UUID, username, password string) (string, error)
 	AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
-	AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []cmaddress.Address) (*amagent.WebhookMessage, error)
+	AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error)
 	AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error)
 	AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error)
 
@@ -68,7 +68,7 @@ type ServiceHandler interface {
 	AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
 
 	// call handlers
-	CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, destinations []cmaddress.Address) ([]*cmcall.WebhookMessage, error)
+	CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, error)
 	CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallGets(u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(u *cscustomer.Customer, callID uuid.UUID) error
@@ -143,7 +143,7 @@ type ServiceHandler interface {
 	MessageDelete(u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
 	MessageGets(u *cscustomer.Customer, size uint64, token string) ([]*mmmessage.WebhookMessage, error)
 	MessageGet(u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
-	MessageSend(u *cscustomer.Customer, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*mmmessage.WebhookMessage, error)
+	MessageSend(u *cscustomer.Customer, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error)
 
 	// order numbers handler
 	NumberCreate(u *cscustomer.Customer, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
@@ -170,11 +170,11 @@ type ServiceHandler interface {
 		name string,
 		detail string,
 		data string,
-		destination0 *cmaddress.Address,
-		destination1 *cmaddress.Address,
-		destination2 *cmaddress.Address,
-		destination3 *cmaddress.Address,
-		destination4 *cmaddress.Address,
+		destination0 *commonaddress.Address,
+		destination1 *commonaddress.Address,
+		destination2 *commonaddress.Address,
+		destination3 *commonaddress.Address,
+		destination4 *commonaddress.Address,
 	) (*omoutdialtarget.WebhookMessage, error)
 	OutdialtargetGet(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
 	OutdialtargetDelete(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
@@ -183,7 +183,7 @@ type ServiceHandler interface {
 		u *cscustomer.Customer,
 		name string,
 		detail string,
-		source *cmaddress.Address,
+		source *commonaddress.Address,
 		dialTimeout int,
 		tryInterval int,
 		maxTryCount0 int,
@@ -199,7 +199,7 @@ type ServiceHandler interface {
 	OutplanUpdateDialInfo(
 		u *cscustomer.Customer,
 		id uuid.UUID,
-		source *cmaddress.Address,
+		source *commonaddress.Address,
 		dialTimeout int,
 		tryInterval int,
 		maxTryCount0 int,

@@ -11,7 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -45,7 +45,7 @@ func TestAgentsPOST(t *testing.T) {
 		ringMethod amagent.RingMethod
 		permission amagent.Permission
 		tagIDs     []uuid.UUID
-		addresses  []cmaddress.Address
+		addresses  []commonaddress.Address
 
 		res *amagent.WebhookMessage
 	}
@@ -64,7 +64,7 @@ func TestAgentsPOST(t *testing.T) {
 				RingMethod: "ringall",
 				Permission: 0,
 				TagIDs:     []uuid.UUID{},
-				Addresses:  []cmaddress.Address{},
+				Addresses:  []commonaddress.Address{},
 			},
 
 			"test1",
@@ -74,7 +74,7 @@ func TestAgentsPOST(t *testing.T) {
 			amagent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
-			[]cmaddress.Address{},
+			[]commonaddress.Address{},
 
 			&amagent.WebhookMessage{
 				ID: uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
@@ -93,7 +93,7 @@ func TestAgentsPOST(t *testing.T) {
 				RingMethod: "ringall",
 				Permission: 0,
 				TagIDs:     []uuid.UUID{},
-				Addresses:  []cmaddress.Address{},
+				Addresses:  []commonaddress.Address{},
 			},
 
 			"test1",
@@ -103,7 +103,7 @@ func TestAgentsPOST(t *testing.T) {
 			amagent.RingMethodRingAll,
 			0,
 			[]uuid.UUID{},
-			[]cmaddress.Address{},
+			[]commonaddress.Address{},
 
 			&amagent.WebhookMessage{
 				ID: uuid.FromStringOrNil("3071bee2-79af-11ec-9f30-83b56e9d88b5"),
