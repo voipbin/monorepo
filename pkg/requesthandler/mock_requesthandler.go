@@ -1452,6 +1452,20 @@ func (mr *MockRequestHandlerMockRecorder) CSV1Login(ctx, timeout, username, pass
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1Login", reflect.TypeOf((*MockRequestHandler)(nil).CSV1Login), ctx, timeout, username, password)
 }
 
+// ConversationV1Hook mocks base method.
+func (m *MockRequestHandler) ConversationV1Hook(ctx context.Context, hm *hook.Hook) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1Hook", ctx, hm)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConversationV1Hook indicates an expected call of ConversationV1Hook.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1Hook(ctx, hm interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1Hook", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1Hook), ctx, hm)
+}
+
 // FMV1ActionGet mocks base method.
 func (m *MockRequestHandler) FMV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()

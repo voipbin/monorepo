@@ -75,23 +75,24 @@ const (
 const (
 	exchangeDelay = "bin-manager.delay"
 
-	queueAgent      = "bin-manager.agent-manager.request"
-	queueAPI        = "bin-manager.api-manager.request"
-	queueCall       = "bin-manager.call-manager.request"
-	queueCampaign   = "bin-manager.campaign-manager.request"
-	queueConference = "bin-manager.conference-manager.request"
-	queueCustomer   = "bin-manager.customer-manager.request"
-	queueFlow       = "bin-manager.flow-manager.request"
-	queueMessage    = "bin-manager.message-manager.request"
-	queueNumber     = "bin-manager.number-manager.request"
-	queueOutdial    = "bin-manager.outdial-manager.request"
-	queueQueue      = "bin-manager.queue-manager.request"
-	queueRegistrar  = "bin-manager.registrar-manager.request"
-	queueStorage    = "bin-manager.storage-manager.request"
-	queueTranscribe = "bin-manager.transcribe-manager.request"
-	queueTTS        = "bin-manager.tts-manager.request"
-	queueUser       = "bin-manager.user-manager.request"
-	queueWebhook    = "bin-manager.webhook-manager.request"
+	queueAgent        = "bin-manager.agent-manager.request"
+	queueAPI          = "bin-manager.api-manager.request"
+	queueCall         = "bin-manager.call-manager.request"
+	queueCampaign     = "bin-manager.campaign-manager.request"
+	queueConference   = "bin-manager.conference-manager.request"
+	queueConversation = "bin-manager.conversation-manager.request"
+	queueCustomer     = "bin-manager.customer-manager.request"
+	queueFlow         = "bin-manager.flow-manager.request"
+	queueMessage      = "bin-manager.message-manager.request"
+	queueNumber       = "bin-manager.number-manager.request"
+	queueOutdial      = "bin-manager.outdial-manager.request"
+	queueQueue        = "bin-manager.queue-manager.request"
+	queueRegistrar    = "bin-manager.registrar-manager.request"
+	queueStorage      = "bin-manager.storage-manager.request"
+	queueTranscribe   = "bin-manager.transcribe-manager.request"
+	queueTTS          = "bin-manager.tts-manager.request"
+	queueUser         = "bin-manager.user-manager.request"
+	queueWebhook      = "bin-manager.webhook-manager.request"
 )
 
 // default stasis application name.
@@ -392,6 +393,9 @@ type RequestHandler interface {
 	CFV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error
 	CFV1ConferenceKick(ctx context.Context, conferenceID, callID uuid.UUID) error
 	CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
+
+	// conversation-manager hook
+	ConversationV1Hook(ctx context.Context, hm *hmhook.Hook) error
 
 	// flow-manager action
 	FMV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*fmaction.Action, error)
