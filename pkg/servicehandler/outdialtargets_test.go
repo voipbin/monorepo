@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
@@ -27,11 +27,11 @@ func Test_OutdialtargetCreate(t *testing.T) {
 		detail            string
 		data              string
 
-		destination0 *cmaddress.Address
-		destination1 *cmaddress.Address
-		destination2 *cmaddress.Address
-		destination3 *cmaddress.Address
-		destination4 *cmaddress.Address
+		destination0 *commonaddress.Address
+		destination1 *commonaddress.Address
+		destination2 *commonaddress.Address
+		destination3 *commonaddress.Address
+		destination4 *commonaddress.Address
 
 		responseOutdial *omoutdial.Outdial
 		response        *omoutdialtarget.OutdialTarget
@@ -48,24 +48,24 @@ func Test_OutdialtargetCreate(t *testing.T) {
 			"test detail",
 			"test data",
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000003",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000004",
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000005",
 			},
 
@@ -91,8 +91,8 @@ func Test_OutdialtargetCreate(t *testing.T) {
 			"test detail",
 			"test data",
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
 			nil,

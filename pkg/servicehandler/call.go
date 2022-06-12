@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
@@ -16,7 +16,7 @@ import (
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *cmaddress.Address, destinations []cmaddress.Address) ([]*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallCreate",

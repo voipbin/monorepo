@@ -1,6 +1,6 @@
 package request
 
-import cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+import commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 // ParamMessagesGET is request param define for GET /messages
 type ParamMessagesGET struct {
@@ -9,7 +9,7 @@ type ParamMessagesGET struct {
 
 // BodyMessagesPOST is request param define for POST /messages
 type BodyMessagesPOST struct {
-	Source       *cmaddress.Address  `json:"source"`
-	Destinations []cmaddress.Address `json:"destinations"`
+	Source       *commonaddress.Address  `json:"source"`
+	Destinations []commonaddress.Address `json:"destinations"`
 	Text         string              `json:"text"`
 }

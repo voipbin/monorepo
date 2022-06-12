@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
@@ -20,11 +20,11 @@ func (h *serviceHandler) OutdialtargetCreate(
 	name string,
 	detail string,
 	data string,
-	destination0 *cmaddress.Address,
-	destination1 *cmaddress.Address,
-	destination2 *cmaddress.Address,
-	destination3 *cmaddress.Address,
-	destination4 *cmaddress.Address,
+	destination0 *commonaddress.Address,
+	destination1 *commonaddress.Address,
+	destination2 *commonaddress.Address,
+	destination3 *commonaddress.Address,
+	destination4 *commonaddress.Address,
 ) (*omoutdialtarget.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
