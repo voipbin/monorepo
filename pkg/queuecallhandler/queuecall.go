@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -100,7 +100,7 @@ func (h *queuecallHandler) Create(
 	forwardActionID uuid.UUID,
 	exitActionID uuid.UUID,
 	confbridgeID uuid.UUID,
-	source cmaddress.Address,
+	source commonaddress.Address,
 ) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                    "Create",

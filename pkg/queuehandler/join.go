@@ -7,16 +7,16 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/ttacon/libphonenumber"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
 const (
-	defaultSourceType   = cmaddress.TypeTel
+	defaultSourceType   = commonaddress.TypeTel
 	defaultSourceTarget = "+821021656521"
 )
 
@@ -116,11 +116,11 @@ func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceTyp
 	return res, nil
 }
 
-// getSource returns cmaddress for source.
-func (h *queueHandler) getSource(c *cmcall.Call) cmaddress.Address {
+// getSource returns commonaddress for source.
+func (h *queueHandler) getSource(c *cmcall.Call) commonaddress.Address {
 	log := logrus.WithField("call_id", c.ID)
 
-	var res cmaddress.Address
+	var res commonaddress.Address
 	if c.Direction == cmcall.DirectionIncoming {
 		res = c.Source
 	} else {
@@ -128,7 +128,7 @@ func (h *queueHandler) getSource(c *cmcall.Call) cmaddress.Address {
 	}
 
 	valid := true
-	if res.Type == cmaddress.TypeTel {
+	if res.Type == commonaddress.TypeTel {
 		num, err := libphonenumber.Parse(res.Target, "US")
 		if err != nil {
 			log.Debugf("Could not parse the number. err: %v", err)

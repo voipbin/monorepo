@@ -9,7 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -31,7 +31,7 @@ type QueuecallHandler interface {
 		forwardActionID uuid.UUID,
 		exitActionID uuid.UUID,
 		confbridgeID uuid.UUID,
-		source cmaddress.Address,
+		source commonaddress.Address,
 	) (*queuecall.Queuecall, error)
 	Execute(ctx context.Context, qc *queuecall.Queuecall, agent *amagent.Agent) (*queuecall.Queuecall, error)
 	Hungup(ctx context.Context, referenceID uuid.UUID)

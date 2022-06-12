@@ -2,7 +2,7 @@ package queuecall
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
@@ -22,9 +22,9 @@ type Queuecall struct {
 	ExitActionID    uuid.UUID `json:"exit_action_id"`    // action id for queue exit. When the queuecall has ended, the queuemanager will send the request forward to this action id.
 	ConfbridgeID    uuid.UUID `json:"confbridge_id"`     // confbridge id
 
-	Source        cmaddress.Address   `json:"source"`         // source address for calling to the agent.
-	RoutingMethod queue.RoutingMethod `json:"routing_method"` // queue's routing method
-	TagIDs        []uuid.UUID         `json:"tag_ids"`        // queue's tags
+	Source        commonaddress.Address `json:"source"`         // source address for calling to the agent.
+	RoutingMethod queue.RoutingMethod   `json:"routing_method"` // queue's routing method
+	TagIDs        []uuid.UUID           `json:"tag_ids"`        // queue's tags
 
 	Status         Status    `json:"status"`
 	ServiceAgentID uuid.UUID `json:"service_agent_id"`
