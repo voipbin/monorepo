@@ -1,7 +1,6 @@
 package address
 
 import (
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
@@ -66,26 +65,4 @@ func NewAddressByDialplan(e *ari.DialplanCEP) *Address {
 	}
 
 	return r
-}
-
-// ConvertFromCMAddress convert the *cmaddrees.Address to the *Address
-func ConvertFromCMAddress(addr *cmaddress.Address) *Address {
-	return &Address{
-		Type:       Type(addr.Type),
-		Target:     addr.Target,
-		TargetName: addr.TargetName,
-		Name:       addr.Name,
-		Detail:     addr.Detail,
-	}
-}
-
-// ConvertToCMAddress converts the *Address to the *cmaddress.Address
-func ConvertToCMAddress(addr *Address) *cmaddress.Address {
-	return &cmaddress.Address{
-		Type:       cmaddress.Type(addr.Type),
-		Target:     addr.Target,
-		TargetName: addr.TargetName,
-		Name:       addr.Name,
-		Detail:     addr.Detail,
-	}
 }
