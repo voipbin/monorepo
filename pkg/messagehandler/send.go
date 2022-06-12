@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
@@ -13,7 +13,7 @@ import (
 )
 
 // Send sends the message.
-func (h *messageHandler) Send(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error) {
+func (h *messageHandler) Send(ctx context.Context, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Send",
 		"customer_id": customerID,
@@ -70,7 +70,7 @@ func (h *messageHandler) Send(ctx context.Context, customerID uuid.UUID, source 
 }
 
 // sendMessage sends the message to the destinations
-func (h *messageHandler) sendMessage(ctx context.Context, id, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error) {
+func (h *messageHandler) sendMessage(ctx context.Context, id, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "sendMessage",
 		"customer_id": customerID,

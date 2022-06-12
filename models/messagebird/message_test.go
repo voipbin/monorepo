@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
@@ -57,22 +57,22 @@ func Test_ConvertMessage(t *testing.T) {
 				ID:         uuid.FromStringOrNil("82a1c5b4-a064-11ec-bad7-ebff9efa798e"),
 				CustomerID: uuid.FromStringOrNil("82d16b7a-a064-11ec-9ce8-777e6052475b"),
 				Type:       message.TypeSMS,
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 				Targets: []target.Target{
 					{
-						Destination: cmaddress.Address{
-							Type:   cmaddress.TypeTel,
+						Destination: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
 							Target: "+31616818985",
 						},
 						Status: target.StatusSent,
 						Parts:  1,
 					},
 					{
-						Destination: cmaddress.Address{
-							Type:   cmaddress.TypeTel,
+						Destination: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
 							Target: "+821021656521",
 						},
 						Status: target.StatusSent,

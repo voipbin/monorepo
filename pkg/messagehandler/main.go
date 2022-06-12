@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -29,7 +29,7 @@ type MessageHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error)
 
-	Send(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error)
+	Send(ctx context.Context, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)
 
 	Hook(ctx context.Context, uri string, m []byte) error
 }

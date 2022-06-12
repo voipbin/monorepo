@@ -5,7 +5,7 @@ package messagehandlermessagebird
 import (
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -15,7 +15,7 @@ import (
 
 // MessageHandlerMessagebird is interface for service handle
 type MessageHandlerMessagebird interface {
-	SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error)
+	SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)
 }
 
 // messageHandlerMessagebird structure for service handle

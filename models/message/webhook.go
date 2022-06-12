@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 )
@@ -15,8 +15,8 @@ type WebhookMessage struct {
 	Type Type      `json:"type"`
 
 	// from/to info
-	Source  *cmaddress.Address `json:"source"`
-	Targets []target.Target    `json:"targets"`
+	Source  *commonaddress.Address `json:"source"`
+	Targets []target.Target        `json:"targets"`
 
 	// message info
 	Text      string    `json:"text"` // Text delivered in the body of the message.

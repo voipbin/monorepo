@@ -1,15 +1,15 @@
 package target
 
 import (
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // Target defines
 type Target struct {
-	Destination cmaddress.Address `json:"destination"`
-	Status      Status            `json:"status"`
-	Parts       int               `json:"parts"` // number of messages
-	TMUpdate    string            `json:"tm_update"`
+	Destination commonaddress.Address `json:"destination"`
+	Status      Status                `json:"status"`
+	Parts       int                   `json:"parts"` // number of messages
+	TMUpdate    string                `json:"tm_update"`
 }
 
 // Status defines

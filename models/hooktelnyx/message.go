@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	mmtarget "gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
@@ -88,10 +88,10 @@ type FromTo struct {
 	Status      string `json:"status"`
 }
 
-// ConvertAddress returns converted cmaddress.Address
-func (h *FromTo) ConvertAddress() *cmaddress.Address {
-	return &cmaddress.Address{
-		Type:   cmaddress.TypeTel,
+// ConvertAddress returns converted commonaddress.Address
+func (h *FromTo) ConvertAddress() *commonaddress.Address {
+	return &commonaddress.Address{
+		Type:   commonaddress.TypeTel,
 		Target: h.PhoneNumber,
 	}
 }

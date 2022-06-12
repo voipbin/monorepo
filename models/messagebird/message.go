@@ -2,7 +2,7 @@ package messagebird
 
 import (
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
@@ -45,8 +45,8 @@ func (h *Message) ConvertMessage(id uuid.UUID, customerID uuid.UUID) *message.Me
 		ID:         id,
 		CustomerID: customerID,
 		Type:       message.Type(h.Type),
-		Source: &cmaddress.Address{
-			Type:   cmaddress.TypeTel,
+		Source: &commonaddress.Address{
+			Type:   commonaddress.TypeTel,
 			Target: h.Originator,
 		},
 		Targets:             []target.Target{},

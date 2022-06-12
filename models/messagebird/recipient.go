@@ -3,7 +3,7 @@ package messagebird
 import (
 	"strconv"
 
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
@@ -20,8 +20,8 @@ type Recipient struct {
 // ConvertTartget converts to the target.Target
 func (h *Recipient) ConvertTartget() *target.Target {
 	return &target.Target{
-		Destination: cmaddress.Address{
-			Type:   cmaddress.TypeTel,
+		Destination: commonaddress.Address{
+			Type:   commonaddress.TypeTel,
 			Target: "+" + strconv.Itoa(h.Recipient),
 		},
 		Status:   target.Status(h.Status),
