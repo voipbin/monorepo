@@ -10,7 +10,7 @@ create table conversation_messages(
   reference_type  varchar(255),
   reference_id    varchar(255),
 
-  source_id   varchar(255),
+  source_target   varchar(255),
 
   data  binary(4096),
 

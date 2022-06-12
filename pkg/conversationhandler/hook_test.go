@@ -205,7 +205,7 @@ func Test_hookLine(t *testing.T) {
 					message.StatusReceived,
 					tt.responseConversation.ReferenceType,
 					tt.responseConversation.ReferenceID,
-					tmp.SourceID,
+					tmp.SourceTarget,
 					tmp.Type,
 					tmp.Data,
 				).Return(&message.Message{}, nil)

@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/participant"
 )
 
 // Hook handles hooked event
@@ -80,7 +80,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 			log.Debugf("Could not find conversation. Create a new conversation.")
 
 			// create a new conversation
-			cv, err = h.Create(ctx, tmp.CustomerID, "conversation", "conversation detail", conversation.ReferenceTypeLine, tmp.ReferenceID, []participant.Participant{})
+			cv, err = h.Create(ctx, tmp.CustomerID, "conversation", "conversation detail", conversation.ReferenceTypeLine, tmp.ReferenceID, []commonaddress.Address{})
 			if err != nil {
 				log.Errorf("Could not create a new conversation. err: %v", err)
 				continue
@@ -88,7 +88,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 		}
 
 		// create a message
-		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, tmp.SourceID, tmp.Type, tmp.Data)
+		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, tmp.SourceTarget, tmp.Type, tmp.Data)
 		if err != nil {
 			log.Errorf("Could not create a message. err: %v", err)
 			continue

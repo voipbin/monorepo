@@ -25,7 +25,7 @@ func Test_Create(t *testing.T) {
 		status         message.Status
 		referenceType  conversation.ReferenceType
 		referenceID    string
-		sourceID       string
+		sourceTarget   string
 		messageType    message.Type
 		messageData    []byte
 
@@ -69,7 +69,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
-			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.status, tt.referenceType, tt.referenceID, tt.sourceID, tt.messageType, tt.messageData)
+			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.status, tt.referenceType, tt.referenceID, tt.sourceTarget, tt.messageType, tt.messageData)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

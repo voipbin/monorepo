@@ -8,10 +8,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/participant"
 )
 
 // Event handles received line message
@@ -56,7 +56,7 @@ func (h *lineHandler) Event(ctx context.Context, customerID uuid.UUID, data []by
 func (h *lineHandler) handleEvent(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*conversation.Conversation, *message.Message, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "parseMessage",
+			"func": "handleEvent",
 		},
 	)
 
@@ -110,11 +110,11 @@ func (h *lineHandler) eventHandleFollow(ctx context.Context, customerID uuid.UUI
 	res := &conversation.Conversation{
 		ID:            uuid.Nil,
 		CustomerID:    customerID,
-		Name:          p.Name,
-		Detail:        "Conversation with " + p.Name,
+		Name:          p.TargetName,
+		Detail:        "Conversation with " + p.TargetName,
 		ReferenceType: conversation.ReferenceTypeLine,
 		ReferenceID:   referenceID,
-		Participants: []participant.Participant{
+		Participants: []commonaddress.Address{
 			*p,
 		},
 	}
@@ -162,7 +162,7 @@ func (h *lineHandler) eventHandleMessage(ctx context.Context, customerID uuid.UU
 		ReferenceType: conversation.ReferenceTypeLine,
 		ReferenceID:   referenceID,
 
-		SourceID: e.Source.UserID,
+		SourceTarget: e.Source.UserID,
 
 		Type: dataType,
 		Data: data,
@@ -188,7 +188,7 @@ func (h *lineHandler) getReferenceID(e *linebot.Event) string {
 }
 
 // getParticipant returns a participant
-func (h *lineHandler) getParticipant(ctx context.Context, customerID uuid.UUID, id string) (*participant.Participant, error) {
+func (h *lineHandler) getParticipant(ctx context.Context, customerID uuid.UUID, id string) (*commonaddress.Address, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "getParticipant",
@@ -214,9 +214,10 @@ func (h *lineHandler) getParticipant(ctx context.Context, customerID uuid.UUID, 
 		return nil, err
 	}
 
-	res := &participant.Participant{
-		ID:   id,
-		Name: tmp.DisplayName,
+	res := &commonaddress.Address{
+		Type:       commonaddress.TypeLine,
+		Target:     id,
+		TargetName: tmp.DisplayName,
 	}
 
 	return res, nil

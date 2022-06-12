@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/participant"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
 )
@@ -125,7 +125,7 @@ func Test_Create(t *testing.T) {
 		detail           string
 		referenceType    conversation.ReferenceType
 		referenceID      string
-		participants     []participant.Participant
+		participants     []commonaddress.Address
 
 		responseConversation *conversation.Conversation
 	}{
@@ -137,10 +137,11 @@ func Test_Create(t *testing.T) {
 			"test detail",
 			conversation.ReferenceTypeLine,
 			"3dc385f8-e6e7-11ec-9250-5f6c3097570f",
-			[]participant.Participant{
+			[]commonaddress.Address{
 				{
-					ID:   "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
-					Name: "test participant",
+					Type:       commonaddress.TypeLine,
+					Target:     "46bc98c0-e6e7-11ec-a93f-479cd0ec28a9",
+					TargetName: "test participant",
 				},
 			},
 
