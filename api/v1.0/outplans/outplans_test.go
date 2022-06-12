@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
@@ -47,8 +47,8 @@ func Test_outplansPOST(t *testing.T) {
 			request.BodyOutplansPOST{
 				Name:   "test name",
 				Detail: "test detail",
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				DialTimeout:  30000,
@@ -387,8 +387,8 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 			},
 			uuid.FromStringOrNil("d94e07e8-c64c-11ec-9e9d-8b700336c5ef"),
 			request.BodyOutplansIDDialInfoPUT{
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				DialTimeout:  30000,

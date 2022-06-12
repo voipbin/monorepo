@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
@@ -53,7 +53,7 @@ func (h *serviceHandler) AgentCreate(
 	ringMethod amagent.RingMethod,
 	permission amagent.Permission,
 	tagIDs []uuid.UUID,
-	addresses []cmaddress.Address,
+	addresses []commonaddress.Address,
 ) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
@@ -230,7 +230,7 @@ func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, 
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent's addresses info.
-func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []cmaddress.Address) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateAddresses",

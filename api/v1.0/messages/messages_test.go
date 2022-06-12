@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -218,13 +218,13 @@ func Test_messagesPOST(t *testing.T) {
 			},
 			"/v1.0/messages",
 			request.BodyMessagesPOST{
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destinations: []cmaddress.Address{
+				Destinations: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeTel,
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
 				},
