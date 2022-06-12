@@ -8,8 +8,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -39,8 +39,8 @@ func Test_actionHandleConnect(t *testing.T) {
 		responseConference *cfconference.Conference
 		responseFlow       *flow.Flow
 
-		expectCallSource       *cmaddress.Address
-		expectCallDestinations []cmaddress.Address
+		expectCallSource       *commonaddress.Address
+		expectCallDestinations []commonaddress.Address
 		expectCallMasterCallID uuid.UUID
 
 		responsePushStackID uuid.UUID
@@ -84,13 +84,13 @@ func Test_actionHandleConnect(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 			},
 
-			expectCallSource: &cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			expectCallSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+123456789",
 			},
-			expectCallDestinations: []cmaddress.Address{
+			expectCallDestinations: []commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+987654321",
 				},
 			},
@@ -170,17 +170,17 @@ func Test_actionHandleConnect(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
 
-			expectCallSource: &cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			expectCallSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+123456789",
 			},
-			expectCallDestinations: []cmaddress.Address{
+			expectCallDestinations: []commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+987654321",
 				},
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+9876543210",
 				},
 			},
@@ -260,17 +260,17 @@ func Test_actionHandleConnect(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
 
-			expectCallSource: &cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			expectCallSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+123456789",
 			},
-			expectCallDestinations: []cmaddress.Address{
+			expectCallDestinations: []commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+987654321",
 				},
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+9876543210",
 				},
 			},
@@ -1349,8 +1349,8 @@ func Test_actionHandleAgentCall(t *testing.T) {
 			},
 			call: &cmcall.Call{
 				ID: uuid.FromStringOrNil("edee9f1c-53fd-11ec-a387-cb7cbdc7d345"),
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
 				},
 			},
@@ -2131,8 +2131,8 @@ func Test_actionHandleMessageSend(t *testing.T) {
 		activeFlow *activeflow.Activeflow
 
 		expectCustomerID   uuid.UUID
-		expectSource       *cmaddress.Address
-		expectDestinations []cmaddress.Address
+		expectSource       *commonaddress.Address
+		expectDestinations []commonaddress.Address
 		expectText         string
 
 		responseVariable    *variable.Variable
@@ -2174,17 +2174,17 @@ func Test_actionHandleMessageSend(t *testing.T) {
 			},
 
 			expectCustomerID: uuid.FromStringOrNil("184d60ac-a2cf-11ec-a800-fb524059f338"),
-			expectSource: &cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			expectSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			expectDestinations: []cmaddress.Address{
+			expectDestinations: []commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000003",
 				},
 			},
@@ -2394,8 +2394,8 @@ func Test_actionHandleCall(t *testing.T) {
 		name string
 		af   *activeflow.Activeflow
 
-		source       *cmaddress.Address
-		destinations []cmaddress.Address
+		source       *commonaddress.Address
+		destinations []commonaddress.Address
 		flowID       uuid.UUID
 		actions      []action.Action
 		masterCallID uuid.UUID
@@ -2429,13 +2429,13 @@ func Test_actionHandleCall(t *testing.T) {
 				},
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 			},
@@ -2476,17 +2476,17 @@ func Test_actionHandleCall(t *testing.T) {
 				},
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000003",
 				},
 			},
@@ -2530,13 +2530,13 @@ func Test_actionHandleCall(t *testing.T) {
 				},
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 			},
@@ -2587,13 +2587,13 @@ func Test_actionHandleCall(t *testing.T) {
 				},
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 			},
@@ -2649,13 +2649,13 @@ func Test_actionHandleCall(t *testing.T) {
 				},
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 			},
@@ -2698,13 +2698,13 @@ func Test_actionHandleCall(t *testing.T) {
 				},
 			},
 
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 			},

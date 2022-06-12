@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
@@ -18,7 +18,7 @@ func Test_variableSubstitueAddress(t *testing.T) {
 	tests := []struct {
 		name string
 
-		address *cmaddress.Address
+		address *commonaddress.Address
 		v       *variable.Variable
 
 		responseSubName       string
@@ -26,13 +26,13 @@ func Test_variableSubstitueAddress(t *testing.T) {
 		responseSubTarget     string
 		responseSubTargetName string
 
-		expectRes *cmaddress.Address
+		expectRes *commonaddress.Address
 	}{
 		{
 			name: "normal",
 
-			address: &cmaddress.Address{
-				Type:       cmaddress.TypeTel,
+			address: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
 				Target:     "${test_target}",
 				TargetName: "${test_target_name}",
 				Name:       "${test_name}",
@@ -45,8 +45,8 @@ func Test_variableSubstitueAddress(t *testing.T) {
 			responseSubName:       "variable name",
 			responseSubDetail:     "variable detail",
 
-			expectRes: &cmaddress.Address{
-				Type:       cmaddress.TypeTel,
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
 				Target:     "+821100000001",
 				TargetName: "variable target name",
 				Name:       "variable name",
