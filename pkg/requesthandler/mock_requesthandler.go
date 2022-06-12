@@ -13,7 +13,6 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	agentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
-	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -24,7 +23,7 @@ import (
 	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
-	address0 "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -73,7 +72,7 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // AMV1AgentCreate mocks base method.
-func (m *MockRequestHandler) AMV1AgentCreate(ctx context.Context, timeout int, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address0.Address) (*agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentCreate(ctx context.Context, timeout int, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1AgentCreate", ctx, timeout, customerID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
@@ -103,7 +102,7 @@ func (mr *MockRequestHandlerMockRecorder) AMV1AgentDelete(ctx, id interface{}) *
 }
 
 // AMV1AgentDial mocks base method.
-func (m *MockRequestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *address0.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
+func (m *MockRequestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1AgentDial", ctx, id, source, flowID, masterCallID)
 	ret0, _ := ret[0].(*agentdial.AgentDial)
@@ -208,7 +207,7 @@ func (mr *MockRequestHandlerMockRecorder) AMV1AgentUpdate(ctx, id, name, detail,
 }
 
 // AMV1AgentUpdateAddresses mocks base method.
-func (m *MockRequestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address0.Address) (*agent.Agent, error) {
+func (m *MockRequestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AMV1AgentUpdateAddresses", ctx, id, addresses)
 	ret0, _ := ret[0].(*agent.Agent)
@@ -850,7 +849,7 @@ func (mr *MockRequestHandlerMockRecorder) CAV1CampaigncallGetsByCampaignID(ctx, 
 }
 
 // CAV1OutplanCreate mocks base method.
-func (m *MockRequestHandler) CAV1OutplanCreate(ctx context.Context, customerID uuid.UUID, name, detail string, source *address0.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+func (m *MockRequestHandler) CAV1OutplanCreate(ctx context.Context, customerID uuid.UUID, name, detail string, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CAV1OutplanCreate", ctx, customerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(*outplan.Outplan)
@@ -925,7 +924,7 @@ func (mr *MockRequestHandlerMockRecorder) CAV1OutplanUpdateBasicInfo(ctx, id, na
 }
 
 // CAV1OutplanUpdateDialInfo mocks base method.
-func (m *MockRequestHandler) CAV1OutplanUpdateDialInfo(ctx context.Context, id uuid.UUID, source *address0.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+func (m *MockRequestHandler) CAV1OutplanUpdateDialInfo(ctx context.Context, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CAV1OutplanUpdateDialInfo", ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(*outplan.Outplan)
@@ -1100,7 +1099,7 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallAddExternalMedia(ctx, callID, 
 }
 
 // CMV1CallCreateWithID mocks base method.
-func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address0.Address) (*call.Call, error) {
+func (m *MockRequestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination)
 	ret0, _ := ret[0].(*call.Call)
@@ -1218,7 +1217,7 @@ func (mr *MockRequestHandlerMockRecorder) CMV1CallSetDigits(ctx, callID, digits 
 }
 
 // CMV1CallsCreate mocks base method.
-func (m *MockRequestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address0.Address, destination []address0.Address) ([]call.Call, error) {
+func (m *MockRequestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destination []address.Address) ([]call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CMV1CallsCreate", ctx, customerID, flowID, masterCallID, source, destination)
 	ret0, _ := ret[0].([]call.Call)
@@ -1988,7 +1987,7 @@ func (mr *MockRequestHandlerMockRecorder) OMV1OutdialUpdateData(ctx, outdialID, 
 }
 
 // OMV1OutdialtargetCreate mocks base method.
-func (m *MockRequestHandler) OMV1OutdialtargetCreate(ctx context.Context, outdialID uuid.UUID, name, detail, data string, destination0, destination1, destination2, destination3, destination4 *address0.Address) (*outdialtarget.OutdialTarget, error) {
+func (m *MockRequestHandler) OMV1OutdialtargetCreate(ctx context.Context, outdialID uuid.UUID, name, detail, data string, destination0, destination1, destination2, destination3, destination4 *address.Address) (*outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OMV1OutdialtargetCreate", ctx, outdialID, name, detail, data, destination0, destination1, destination2, destination3, destination4)
 	ret0, _ := ret[0].(*outdialtarget.OutdialTarget)

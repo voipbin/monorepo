@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -229,8 +229,8 @@ func Test_MMV1MessageSend(t *testing.T) {
 		name string
 
 		customerID   uuid.UUID
-		source       *cmaddress.Address
-		destinations []cmaddress.Address
+		source       *address.Address
+		destinations []address.Address
 		text         string
 
 		expectTarget  string
@@ -242,13 +242,13 @@ func Test_MMV1MessageSend(t *testing.T) {
 			"1 destination",
 
 			uuid.FromStringOrNil("96ed3008-a2b2-11ec-b585-bf3e19b7355a"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]address.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   address.TypeTel,
 					Target: "+821100000002",
 				},
 			},
@@ -274,17 +274,17 @@ func Test_MMV1MessageSend(t *testing.T) {
 			"2 destinations",
 
 			uuid.FromStringOrNil("333d1508-a2c3-11ec-872d-8796fdc672b5"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&address.Address{
+				Type:   address.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]address.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   address.TypeTel,
 					Target: "+821100000002",
 				},
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   address.TypeTel,
 					Target: "+821100000003",
 				},
 			},

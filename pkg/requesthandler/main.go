@@ -11,7 +11,6 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -424,7 +423,7 @@ type RequestHandler interface {
 	MMV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error)
 	MMV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MMV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
-	MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*mmmessage.Message, error)
+	MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error)
 
 	// number-manager available-number
 	NMV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)

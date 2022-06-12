@@ -7,15 +7,15 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	mmrequest "gitlab.com/voipbin/bin-manager/message-manager.git/pkg/listenhandler/models/request"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // MMV1MessageSend sends a message
-func (r *requestHandler) MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*mmmessage.Message, error) {
+func (r *requestHandler) MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error) {
 
 	uri := "/v1/messages"
 
