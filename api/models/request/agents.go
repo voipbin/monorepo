@@ -3,7 +3,7 @@ package request
 import (
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // ParamAgentsGET is rquest param define for GET /calls
@@ -23,7 +23,7 @@ type BodyAgentsPOST struct {
 
 	Permission amagent.Permission  `json:"permission"`
 	TagIDs     []uuid.UUID         `json:"tag_ids"`
-	Addresses  []cmaddress.Address `json:"addresses"`
+	Addresses  []commonaddress.Address `json:"addresses"`
 }
 
 // BodyAgentsIDPUT is rquest body define for PUT /agents/<agent-id>
@@ -35,7 +35,7 @@ type BodyAgentsIDPUT struct {
 
 // BodyAgentsIDAddressesPUT is rquest body define for PUT /agents/<agent-id>/addresses
 type BodyAgentsIDAddressesPUT struct {
-	Addresses []cmaddress.Address `json:"addresses" binding:"required"`
+	Addresses []commonaddress.Address `json:"addresses" binding:"required"`
 }
 
 // BodyAgentsIDTagIDsPUT is rquest body define for PUT /agents/<agent-id>/tag_ids

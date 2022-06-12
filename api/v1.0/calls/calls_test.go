@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -52,13 +52,13 @@ func TestCallsPOST(t *testing.T) {
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			request.BodyCallsPOST{
-				Source: cmaddress.Address{
-					Type:   cmaddress.TypeSIP,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
 					Target: "source@test.voipbin.net",
 				},
-				Destinations: []cmaddress.Address{
+				Destinations: []commonaddress.Address{
 					{
-						Type:   cmaddress.TypeSIP,
+						Type:   commonaddress.TypeSIP,
 						Target: "destination@test.voipbin.net",
 					},
 				},

@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -28,8 +28,8 @@ func TestCallCreate(t *testing.T) {
 		customer     *cscustomer.Customer
 		flowID       uuid.UUID
 		actions      []fmaction.Action
-		source       *cmaddress.Address
-		destinations []cmaddress.Address
+		source       *commonaddress.Address
+		destinations []commonaddress.Address
 
 		responseCall []cmcall.Call
 		expectRes    []*cmcall.WebhookMessage
@@ -43,13 +43,13 @@ func TestCallCreate(t *testing.T) {
 			},
 			uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
 			[]fmaction.Action{},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeSIP,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeSIP,
+					Type:   commonaddress.TypeSIP,
 					Target: "testdestination@test.com",
 				},
 			},
@@ -75,13 +75,13 @@ func TestCallCreate(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeSIP,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeSIP,
+					Type:   commonaddress.TypeSIP,
 					Target: "testdestination@test.com",
 				},
 			},
@@ -107,13 +107,13 @@ func TestCallCreate(t *testing.T) {
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			&cmaddress.Address{
-				Type:   cmaddress.TypeSIP,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeSIP,
+					Type:   commonaddress.TypeSIP,
 					Target: "testdestination@test.com",
 				},
 			},

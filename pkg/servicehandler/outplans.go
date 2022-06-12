@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
@@ -17,7 +17,7 @@ func (h *serviceHandler) OutplanCreate(
 	u *cscustomer.Customer,
 	name string,
 	detail string,
-	source *cmaddress.Address,
+	source *commonaddress.Address,
 	dialTimeout int,
 	tryInterval int,
 	maxTryCount0 int,
@@ -178,7 +178,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(u *cscustomer.Customer, id uuid.
 func (h *serviceHandler) OutplanUpdateDialInfo(
 	u *cscustomer.Customer,
 	id uuid.UUID,
-	source *cmaddress.Address,
+	source *commonaddress.Address,
 	dialTimeout int,
 	tryInterval int,
 	maxTryCount0 int,

@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
@@ -495,24 +495,24 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 				Data:   "test data",
-				Destination0: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination0: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
-				Destination1: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination1: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
-				Destination2: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination2: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000003",
 				},
-				Destination3: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination3: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000004",
 				},
-				Destination4: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination4: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000005",
 				},
 			},
