@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -90,8 +90,8 @@ func Test_UpdateTargets(t *testing.T) {
 			uuid.FromStringOrNil("ca37640c-a225-11ec-8cbf-fbf3ceb420d5"),
 			[]target.Target{
 				{
-					Destination: cmaddress.Address{
-						Type:   cmaddress.TypeTel,
+					Destination: commonaddress.Address{
+						Type:   commonaddress.TypeTel,
 						Target: "+821100000001",
 					},
 					Status: target.StatusSent,

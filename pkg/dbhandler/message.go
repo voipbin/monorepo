@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
@@ -73,7 +73,7 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		return nil, fmt.Errorf("could not unmarshal the source. messageGetFromRow. err: %v", err)
 	}
 	if res.Source == nil {
-		res.Source = &cmaddress.Address{}
+		res.Source = &commonaddress.Address{}
 	}
 
 	if err := json.Unmarshal([]byte(targets), &res.Targets); err != nil {

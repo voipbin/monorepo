@@ -10,7 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	target "gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 )

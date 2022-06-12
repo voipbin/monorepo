@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -23,8 +23,8 @@ func Test_sendMessage(t *testing.T) {
 
 		id           uuid.UUID
 		customerID   uuid.UUID
-		source       *cmaddress.Address
-		destinations []cmaddress.Address
+		source       *commonaddress.Address
+		destinations []commonaddress.Address
 		text         string
 
 		responseSend *message.Message
@@ -37,13 +37,13 @@ func Test_sendMessage(t *testing.T) {
 
 			uuid.FromStringOrNil("f9eaa2ba-a2d7-11ec-a29e-cf6eefb11b42"),
 			uuid.FromStringOrNil("fa365854-a2d7-11ec-8fe6-3b93248d4ab9"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 			},
@@ -52,14 +52,14 @@ func Test_sendMessage(t *testing.T) {
 			&message.Message{
 				ID:         uuid.FromStringOrNil("f9eaa2ba-a2d7-11ec-a29e-cf6eefb11b42"),
 				CustomerID: uuid.FromStringOrNil("fa365854-a2d7-11ec-8fe6-3b93248d4ab9"),
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				Targets: []target.Target{
 					{
-						Destination: cmaddress.Address{
-							Type:   cmaddress.TypeTel,
+						Destination: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
 							Target: "+821100000002",
 						},
 						Status:   target.StatusSent,
@@ -72,14 +72,14 @@ func Test_sendMessage(t *testing.T) {
 			&message.Message{
 				ID:         uuid.FromStringOrNil("f9eaa2ba-a2d7-11ec-a29e-cf6eefb11b42"),
 				CustomerID: uuid.FromStringOrNil("fa365854-a2d7-11ec-8fe6-3b93248d4ab9"),
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				Targets: []target.Target{
 					{
-						Destination: cmaddress.Address{
-							Type:   cmaddress.TypeTel,
+						Destination: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
 							Target: "+821100000002",
 						},
 						Status:   target.StatusSent,
@@ -91,14 +91,14 @@ func Test_sendMessage(t *testing.T) {
 			&message.Message{
 				ID:         uuid.FromStringOrNil("f9eaa2ba-a2d7-11ec-a29e-cf6eefb11b42"),
 				CustomerID: uuid.FromStringOrNil("fa365854-a2d7-11ec-8fe6-3b93248d4ab9"),
-				Source: &cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 				Targets: []target.Target{
 					{
-						Destination: cmaddress.Address{
-							Type:   cmaddress.TypeTel,
+						Destination: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
 							Target: "+821100000002",
 						},
 						Status:   target.StatusSent,

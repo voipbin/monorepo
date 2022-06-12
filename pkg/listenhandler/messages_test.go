@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -108,8 +108,8 @@ func Test_processV1MessagesPost(t *testing.T) {
 		name string
 
 		customerID   uuid.UUID
-		source       *cmaddress.Address
-		destinations []cmaddress.Address
+		source       *commonaddress.Address
+		destinations []commonaddress.Address
 		Text         string
 
 		responseSend *message.Message
@@ -121,13 +121,13 @@ func Test_processV1MessagesPost(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("fdca8fb4-a22b-11ec-8894-7bfd708fa894"),
-			&cmaddress.Address{
-				Type:   cmaddress.TypeTel,
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			[]cmaddress.Address{
+			[]commonaddress.Address{
 				{
-					Type:   cmaddress.TypeTel,
+					Type:   commonaddress.TypeTel,
 					Target: "+821100000002",
 				},
 			},

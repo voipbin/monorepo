@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 )
@@ -29,8 +29,8 @@ func Test_ConvertTartget(t *testing.T) {
 				MessagePartCount: 1,
 			},
 			&target.Target{
-				Destination: cmaddress.Address{
-					Type:   cmaddress.TypeTel,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
 					Target: "+31616818985",
 				},
 				Status: target.StatusSent,

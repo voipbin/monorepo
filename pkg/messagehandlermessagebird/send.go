@@ -3,13 +3,13 @@ package messagehandlermessagebird
 import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmaddress "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 )
 
 // SendMessage sends the message.
-func (h *messageHandlerMessagebird) SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *cmaddress.Address, destinations []cmaddress.Address, text string) (*message.Message, error) {
+func (h *messageHandlerMessagebird) SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "SendMessage",
