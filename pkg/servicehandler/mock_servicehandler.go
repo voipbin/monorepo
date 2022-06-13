@@ -34,6 +34,20 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 	return m.recorder
 }
 
+// Conversation mocks base method.
+func (m_2 *MockServiceHandler) Conversation(ctx context.Context, uri string, m []byte) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "Conversation", ctx, uri, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Conversation indicates an expected call of Conversation.
+func (mr *MockServiceHandlerMockRecorder) Conversation(ctx, uri, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conversation", reflect.TypeOf((*MockServiceHandler)(nil).Conversation), ctx, uri, m)
+}
+
 // Message mocks base method.
 func (m_2 *MockServiceHandler) Message(ctx context.Context, uri string, m []byte) error {
 	m_2.ctrl.T.Helper()
