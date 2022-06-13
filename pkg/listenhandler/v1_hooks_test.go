@@ -64,6 +64,27 @@ func Test_processV1HooksPost(t *testing.T) {
 				DataType:   "application/json",
 			},
 		},
+		{
+			"normal",
+
+			"https://hook.voipbin.net/v1.0/conversation/customers/a92e60ea-e85b-11ec-a173-0b1cf8c9d3e9/line",
+			[]byte(`{"destination":"U11298214116e3afbad432b5794a6d3a0","events":[]}`),
+
+			&message.Message{
+				ID: uuid.FromStringOrNil("abed7ae4-a22b-11ec-8b95-efa78516ed55"),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/hooks",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"received_uri":"https://hook.voipbin.net/v1.0/conversation/customers/a92e60ea-e85b-11ec-a173-0b1cf8c9d3e9/line","received_data":"eyJkZXN0aW5hdGlvbiI6IlUxMTI5ODIxNDExNmUzYWZiYWQ0MzJiNTc5NGE2ZDNhMCIsImV2ZW50cyI6W119"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
 	}
 
 	for _, tt := range tests {

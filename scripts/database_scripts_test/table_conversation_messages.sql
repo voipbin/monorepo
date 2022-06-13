@@ -12,7 +12,7 @@ create table conversation_messages(
 
   source_target   varchar(255),
 
-  data  binary(4096),
+  data  blob,
 
   -- timestamps
   tm_create   datetime(6),  --

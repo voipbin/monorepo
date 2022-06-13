@@ -2,6 +2,7 @@ package conversationhandler
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -30,6 +31,11 @@ func (h *conversationHandler) Hook(ctx context.Context, uri string, data []byte)
 
 	// /v1.0/conversation/customers/<customer_id>/line
 	tmpVals := strings.Split(u.Path, "/")
+	if len(tmpVals) < 6 {
+		log.Debugf("Wrong hook request. Could not get customerID.")
+		return fmt.Errorf("no customer info found")
+	}
+
 	customerID := uuid.FromStringOrNil(tmpVals[4])
 	referenceType := tmpVals[5]
 	log.Debugf("Parsed data. customer_id: %s, provider: %s", customerID, referenceType)
@@ -68,7 +74,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 			log.Errorf("Could not create a new conversation. err: %v", err)
 			break
 		}
-		log.Debugf("Created a new conversation. conversation_id: %s", cv.ID)
+		log.WithField("conversation", cv).Debugf("Created a new conversation. conversation_id: %s", cv.ID)
 	}
 
 	// messages
@@ -85,6 +91,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 				log.Errorf("Could not create a new conversation. err: %v", err)
 				continue
 			}
+			log.WithField("conversation", cv).Debugf("Created a new conversation. conversation_id: %s", cv.ID)
 		}
 
 		// create a message
