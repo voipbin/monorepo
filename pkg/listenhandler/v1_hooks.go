@@ -23,6 +23,7 @@ func (h *listenHandler) processV1HooksPost(ctx context.Context, m *rabbitmqhandl
 			"func": "processV1MessagesPost",
 		},
 	)
+	log.WithField("request", req).Debugf("Received hook request. request_uri: %s", req.ReceviedURI)
 
 	if errHook := h.conversationHandler.Hook(ctx, req.ReceviedURI, req.ReceivedData); errHook != nil {
 		log.Errorf("Could not hook the message correctly. err: %v", errHook)

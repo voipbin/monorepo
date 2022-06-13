@@ -3,8 +3,8 @@ create table conversation_conversations(
   id            binary(16),     -- id
   customer_id   binary(16),     -- customer id
 
-  name varchar(255),
-  detail text,
+  name    varchar(255),
+  detail  text,
 
   reference_type  varchar(255),
   reference_id    varchar(255),

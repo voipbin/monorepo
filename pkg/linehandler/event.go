@@ -129,7 +129,7 @@ func (h *lineHandler) eventHandleMessage(ctx context.Context, customerID uuid.UU
 			"func": "eventHandleMessage",
 		},
 	)
-	log.Debugf("Handleing the Line message.")
+	log.WithField("event", e).Debugf("Handleing the Line message.")
 
 	// get reference id
 	referenceID := h.getReferenceID(e)
