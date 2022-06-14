@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 )
@@ -64,8 +65,8 @@ func Test_Event(t *testing.T) {
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					SourceTarget:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Type:          message.TypeText,
-					Data:          []byte(`Hello`),
+					Text:          "Hello",
+					Medias:        []media.Media{},
 				},
 			},
 		},
@@ -196,8 +197,8 @@ func Test_Event(t *testing.T) {
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					SourceTarget:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Type:           message.TypeText,
-					Data:           []byte(`Hello`),
+					Text:           "Hello",
+					Medias:         []media.Media{},
 				},
 			},
 		},

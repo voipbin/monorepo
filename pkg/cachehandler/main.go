@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
@@ -30,6 +31,9 @@ type CacheHandler interface {
 
 	ConversationSet(ctx context.Context, cv *conversation.Conversation) error
 	ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
+
+	MediaSet(ctx context.Context, m *media.Media) error
+	MediaGet(ctx context.Context, id uuid.UUID) (*media.Media, error)
 
 	MessageSet(ctx context.Context, cv *message.Message) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)

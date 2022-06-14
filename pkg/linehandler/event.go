@@ -11,6 +11,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
@@ -139,13 +140,12 @@ func (h *lineHandler) eventHandleMessage(ctx context.Context, customerID uuid.UU
 	}
 
 	// get datatype and data
-	var dataType message.Type
-	var data []byte
+	text := ""
+	medias := []media.Media{}
 
 	switch m := e.Message.(type) {
 	case *linebot.TextMessage:
-		dataType = message.TypeText
-		data = []byte(m.Text)
+		text = m.Text
 
 	default:
 		log.Errorf("Unsupported messate type. message_type: %s", e.Message.Type())
@@ -164,8 +164,8 @@ func (h *lineHandler) eventHandleMessage(ctx context.Context, customerID uuid.UU
 
 		SourceTarget: e.Source.UserID,
 
-		Type: dataType,
-		Data: data,
+		Text:   text,
+		Medias: medias,
 	}
 
 	return m, nil

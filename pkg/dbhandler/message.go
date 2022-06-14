@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -26,7 +27,8 @@ const (
 
 		source_target,
 
-		data,
+		text,
+		medias,
 
 		tm_create,
 		tm_update,
@@ -38,6 +40,7 @@ const (
 
 // conversationGetFromRow gets the conversation from the row.
 func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
+	medias := ""
 
 	res := &message.Message{}
 	if err := row.Scan(
@@ -53,13 +56,18 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 
 		&res.SourceTarget,
 
-		&res.Data,
+		&res.Text,
+		&medias,
 
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
+	}
+
+	if errMedias := json.Unmarshal([]byte(medias), &res.Medias); errMedias != nil {
+		return nil, fmt.Errorf("could not unmarshal the Medias. messageGetFromRow. err: %v", errMedias)
 	}
 
 	return res, nil
@@ -81,7 +89,8 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 
 		source_target,
 
-		data,
+		text,
+		medias,
 
 		tm_create,
 		tm_update,
@@ -92,7 +101,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		?,
 		?, ?,
 		?,
-		?,
+		?, ?,
 		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -100,6 +109,11 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		return fmt.Errorf("could not prepare. MessageCreate. err: %v", err)
 	}
 	defer stmt.Close()
+
+	medias, err := json.Marshal(m.Medias)
+	if err != nil {
+		return fmt.Errorf("could not marshal the medias. err: %v", err)
+	}
 
 	_, err = stmt.ExecContext(ctx,
 		m.ID.Bytes(),
@@ -114,7 +128,8 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 
 		m.SourceTarget,
 
-		m.Data,
+		m.Text,
+		medias,
 
 		m.TMCreate,
 		m.TMUpdate,

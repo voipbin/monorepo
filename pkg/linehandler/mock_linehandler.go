@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
@@ -54,17 +55,17 @@ func (mr *MockLineHandlerMockRecorder) Event(ctx, customerID, data interface{}) 
 }
 
 // Send mocks base method.
-func (m *MockLineHandler) Send(ctx context.Context, customerID uuid.UUID, destination string, messageType message.Type, messageData []byte) error {
+func (m *MockLineHandler) Send(ctx context.Context, customerID uuid.UUID, destination, text string, medias []media.Media) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, customerID, destination, messageType, messageData)
+	ret := m.ctrl.Call(m, "Send", ctx, customerID, destination, text, medias)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockLineHandlerMockRecorder) Send(ctx, customerID, destination, messageType, messageData interface{}) *gomock.Call {
+func (mr *MockLineHandlerMockRecorder) Send(ctx, customerID, destination, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockLineHandler)(nil).Send), ctx, customerID, destination, messageType, messageData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockLineHandler)(nil).Send), ctx, customerID, destination, text, medias)
 }
 
 // Setup mocks base method.

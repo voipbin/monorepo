@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
@@ -22,8 +23,8 @@ func Test_MessageSend(t *testing.T) {
 		name string
 
 		conversationID uuid.UUID
-		messageType    message.Type
-		messageData    []byte
+		text           string
+		medias         []media.Media
 
 		responseConversation *conversation.Conversation
 		responseMessage      *message.Message
@@ -32,8 +33,8 @@ func Test_MessageSend(t *testing.T) {
 			"line text type",
 
 			uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
-			message.TypeText,
-			[]byte(`"hello, this is test message."`),
+			"hello, this is test message.",
+			[]media.Media{},
 
 			&conversation.Conversation{
 				ID:            uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
@@ -67,8 +68,8 @@ func Test_MessageSend(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
-			mockMessage.EXPECT().SendToConversation(ctx, tt.responseConversation, tt.messageType, tt.messageData).Return(tt.responseMessage, nil)
-			res, err := h.MessageSend(ctx, tt.conversationID, tt.messageType, tt.messageData)
+			mockMessage.EXPECT().SendToConversation(ctx, tt.responseConversation,  tt.text, tt.medias).Return(tt.responseMessage, nil)
+			res, err := h.MessageSend(ctx, tt.conversationID, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 )
 
 // Message defines
@@ -22,8 +23,8 @@ type Message struct {
 
 	SourceTarget string `json:"source_target"` // message source target.
 
-	Type Type   `json:"type"`
-	Data []byte `json:"message"`
+	Text   string        `json:"text"`
+	Medias []media.Media `json:"medias"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -41,22 +42,22 @@ const (
 	StatusReceived Status = "received"
 )
 
-// Type defines
-type Type string
+// // Type defines
+// type Type string
 
-// list of types
-const (
-	TypeText     Type = "text"
-	TypeImage    Type = "image"
-	TypeVideo    Type = "video"
-	TypeAudio    Type = "audio"
-	TypeFile     Type = "file"
-	TypeLocation Type = "location"
-	TypeSticker  Type = "sticker"
-	TypeTemplate Type = "template"
-	TypeImagemap Type = "imagemap"
-	TypeFlex     Type = "flex"
-)
+// // list of types
+// const (
+// 	TypeText     Type = "text"
+// 	TypeImage    Type = "image"
+// 	TypeVideo    Type = "video"
+// 	TypeAudio    Type = "audio"
+// 	TypeFile     Type = "file"
+// 	TypeLocation Type = "location"
+// 	TypeSticker  Type = "sticker"
+// 	TypeTemplate Type = "template"
+// 	TypeImagemap Type = "imagemap"
+// 	TypeFlex     Type = "flex"
+// )
 
 // Matches return true if the given items are the same
 func (h *Message) Matches(x interface{}) bool {

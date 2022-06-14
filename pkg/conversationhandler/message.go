@@ -6,11 +6,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
 // MessageSend sends the message
-func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uuid.UUID, messageType message.Type, messageData []byte) (*message.Message, error) {
+func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "MessageSend",
@@ -25,7 +26,7 @@ func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uu
 		return nil, err
 	}
 
-	m, err := h.messageHandler.SendToConversation(ctx, cv, messageType, messageData)
+	m, err := h.messageHandler.SendToConversation(ctx, cv, text, medias)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
 		return nil, err

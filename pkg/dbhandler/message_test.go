@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/cachehandler"
 )
@@ -32,7 +33,8 @@ func Test_MessageCreate(t *testing.T) {
 				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				SourceTarget:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				Data:           []byte(`{"type":"message","message":{"type":"text","id":"16179377757574","text":"Hi"},"webhookEventId":"01G4C3RCEBKMDJWAQ5B6Z627V3","deliveryContext":{"isRedelivery":false},"timestamp":1653969007017,"source":{"type":"user","userId":"Ud871bcaf7c3ad13d2a0b0d78a42a287f"},"replyToken":"365b72b47e374bd489f9a9207115dd34","mode":"active"}`),
+				Text:           "Hello world",
+				Medias:         []media.Media{},
 				TMCreate:       "2022-04-18 03:22:17.995000",
 				TMUpdate:       "2022-04-18 03:22:17.995000",
 				TMDelete:       DefaultTimeStamp,
@@ -96,7 +98,8 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					SourceTarget:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Data:           []byte(`{"type":"message","message":{"type":"text","id":"16179377757574","text":"Hi"},"webhookEventId":"01G4C3RCEBKMDJWAQ5B6Z627V3","deliveryContext":{"isRedelivery":false},"timestamp":1653969007017,"source":{"type":"user","userId":"Ud871bcaf7c3ad13d2a0b0d78a42a287f"},"replyToken":"365b72b47e374bd489f9a9207115dd34","mode":"active"}`),
+					Text:           "hello world",
+					Medias:         []media.Media{},
 					TMCreate:       "2022-04-18 03:22:17.995000",
 					TMUpdate:       "2022-04-18 03:22:17.995000",
 					TMDelete:       DefaultTimeStamp,
@@ -109,7 +112,8 @@ func Test_MessageGetsByConversationID(t *testing.T) {
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 					SourceTarget:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Data:           []byte(`{"type":"message","message":{"type":"text","id":"16179377757574","text":"Hi"},"webhookEventId":"01G4C3RCEBKMDJWAQ5B6Z627V3","deliveryContext":{"isRedelivery":false},"timestamp":1653969007017,"source":{"type":"user","userId":"Ud871bcaf7c3ad13d2a0b0d78a42a287f"},"replyToken":"365b72b47e374bd489f9a9207115dd34","mode":"active"}`),
+					Text:           "This is test",
+					Medias:         []media.Media{},
 					TMCreate:       "2022-04-18 02:22:17.995000",
 					TMUpdate:       "2022-04-18 02:22:17.995000",
 					TMDelete:       DefaultTimeStamp,

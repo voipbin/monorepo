@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
@@ -38,18 +39,18 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockMessageHandler) Create(ctx context.Context, customerID, conversationID uuid.UUID, status message.Status, referenceType conversation.ReferenceType, referenceID, sourceTarget string, messageType message.Type, messageData []byte) (*message.Message, error) {
+func (m *MockMessageHandler) Create(ctx context.Context, customerID, conversationID uuid.UUID, status message.Status, referenceType conversation.ReferenceType, referenceID, sourceTarget, text string, medias []media.Media) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, conversationID, status, referenceType, referenceID, sourceTarget, messageType, messageData)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, conversationID, status, referenceType, referenceID, sourceTarget, text, medias)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockMessageHandlerMockRecorder) Create(ctx, customerID, conversationID, status, referenceType, referenceID, sourceTarget, messageType, messageData interface{}) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Create(ctx, customerID, conversationID, status, referenceType, referenceID, sourceTarget, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, customerID, conversationID, status, referenceType, referenceID, sourceTarget, messageType, messageData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, customerID, conversationID, status, referenceType, referenceID, sourceTarget, text, medias)
 }
 
 // GetsByConversationID mocks base method.
@@ -68,16 +69,16 @@ func (mr *MockMessageHandlerMockRecorder) GetsByConversationID(ctx, conversation
 }
 
 // SendToConversation mocks base method.
-func (m *MockMessageHandler) SendToConversation(ctx context.Context, cv *conversation.Conversation, messageType message.Type, messageData []byte) (*message.Message, error) {
+func (m *MockMessageHandler) SendToConversation(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendToConversation", ctx, cv, messageType, messageData)
+	ret := m.ctrl.Call(m, "SendToConversation", ctx, cv, text, medias)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SendToConversation indicates an expected call of SendToConversation.
-func (mr *MockMessageHandlerMockRecorder) SendToConversation(ctx, cv, messageType, messageData interface{}) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) SendToConversation(ctx, cv, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendToConversation", reflect.TypeOf((*MockMessageHandler)(nil).SendToConversation), ctx, cv, messageType, messageData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendToConversation", reflect.TypeOf((*MockMessageHandler)(nil).SendToConversation), ctx, cv, text, medias)
 }
