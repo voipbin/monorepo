@@ -12,6 +12,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
@@ -138,6 +139,35 @@ func (m *MockDBHandler) GetCurTime() string {
 func (mr *MockDBHandlerMockRecorder) GetCurTime() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurTime", reflect.TypeOf((*MockDBHandler)(nil).GetCurTime))
+}
+
+// MediaCreate mocks base method.
+func (m_2 *MockDBHandler) MediaCreate(ctx context.Context, m *media.Media) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "MediaCreate", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MediaCreate indicates an expected call of MediaCreate.
+func (mr *MockDBHandlerMockRecorder) MediaCreate(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MediaCreate", reflect.TypeOf((*MockDBHandler)(nil).MediaCreate), ctx, m)
+}
+
+// MediaGet mocks base method.
+func (m *MockDBHandler) MediaGet(ctx context.Context, id uuid.UUID) (*media.Media, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MediaGet", ctx, id)
+	ret0, _ := ret[0].(*media.Media)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MediaGet indicates an expected call of MediaGet.
+func (mr *MockDBHandlerMockRecorder) MediaGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MediaGet", reflect.TypeOf((*MockDBHandler)(nil).MediaGet), ctx, id)
 }
 
 // MessageCreate mocks base method.

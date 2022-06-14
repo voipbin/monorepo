@@ -12,7 +12,8 @@ create table conversation_messages(
 
   source_target   varchar(255),
 
-  data  blob,
+  text    text,
+  medias  json,
 
   -- timestamps
   tm_create   datetime(6),  --

@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
@@ -24,12 +25,12 @@ type MessageHandler interface {
 		referenceType conversation.ReferenceType,
 		referenceID string,
 		sourceTarget string,
-		messageType message.Type,
-		messageData []byte,
+		text string,
+		medias []media.Media,
 	) (*message.Message, error)
 	GetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]*message.Message, error)
 
-	SendToConversation(ctx context.Context, cv *conversation.Conversation, messageType message.Type, messageData []byte) (*message.Message, error)
+	SendToConversation(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error)
 }
 
 type messageHandler struct {

@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 )
@@ -15,7 +16,7 @@ import (
 // LineHandler defines
 type LineHandler interface {
 	Setup(ctx context.Context, customerID uuid.UUID) error
-	Send(ctx context.Context, customerID uuid.UUID, destination string, messageType message.Type, messageData []byte) error
+	Send(ctx context.Context, customerID uuid.UUID, destination string, text string, medias []media.Media) error
 	Event(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error)
 }
 

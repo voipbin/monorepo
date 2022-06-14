@@ -95,7 +95,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 		}
 
 		// create a message
-		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, tmp.SourceTarget, tmp.Type, tmp.Data)
+		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, tmp.SourceTarget, tmp.Text, tmp.Medias)
 		if err != nil {
 			log.Errorf("Could not create a message. err: %v", err)
 			continue

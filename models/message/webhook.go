@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 )
 
 // WebhookMessage defines
@@ -20,8 +21,8 @@ type WebhookMessage struct {
 
 	SourceTarget string `json:"source_target"`
 
-	Type Type   `json:"type"`
-	Data []byte `json:"message"`
+	Text   string        `json:"text"`
+	Medias []media.Media `json:"medias"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -41,8 +42,8 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 
 		SourceTarget: h.SourceTarget,
 
-		Type: h.Type,
-		Data: h.Data,
+		Text:   h.Text,
+		Medias: h.Medias,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

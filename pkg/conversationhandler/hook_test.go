@@ -206,8 +206,8 @@ func Test_hookLine(t *testing.T) {
 					tt.responseConversation.ReferenceType,
 					tt.responseConversation.ReferenceID,
 					tmp.SourceTarget,
-					tmp.Type,
-					tmp.Data,
+					tmp.Text,
+					tmp.Medias,
 				).Return(&message.Message{}, nil)
 			}
 

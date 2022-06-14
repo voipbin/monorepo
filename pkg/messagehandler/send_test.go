@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
@@ -21,8 +22,8 @@ func Test_SendToConversation(t *testing.T) {
 		name string
 
 		conversation *conversation.Conversation
-		messageType  message.Type
-		messageData  []byte
+		text         string
+		medias       []media.Media
 
 		responseMessage *message.Message
 	}{
@@ -35,8 +36,8 @@ func Test_SendToConversation(t *testing.T) {
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
 			},
-			message.TypeText,
-			[]byte(`"hello, this is test message."`),
+			"hello, this is test message.",
+			[]media.Media{},
 
 			&message.Message{},
 		},
@@ -58,12 +59,12 @@ func Test_SendToConversation(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockLine.EXPECT().Send(ctx, tt.conversation.CustomerID, tt.conversation.ReferenceID, tt.messageType, tt.messageData).Return(nil)
+			mockLine.EXPECT().Send(ctx, tt.conversation.CustomerID, tt.conversation.ReferenceID, tt.text, tt.medias).Return(nil)
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), message.EventTypeMessageCreated, gomock.Any())
 
-			res, err := h.SendToConversation(ctx, tt.conversation, tt.messageType, tt.messageData)
+			res, err := h.SendToConversation(ctx, tt.conversation, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

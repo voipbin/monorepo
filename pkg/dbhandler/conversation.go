@@ -134,14 +134,14 @@ func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*con
 
 	stmt, err := h.db.PrepareContext(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. activeflowGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not prepare. conversationGetFromDB. err: %v", err)
 	}
 	defer stmt.Close()
 
 	// query
 	row, err := stmt.QueryContext(ctx, id.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("could not query. activeflowGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. conversationGetFromDB. err: %v", err)
 	}
 	defer row.Close()
 

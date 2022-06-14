@@ -12,6 +12,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
@@ -108,6 +109,35 @@ func (m *MockCacheHandler) ConversationSet(ctx context.Context, cv *conversation
 func (mr *MockCacheHandlerMockRecorder) ConversationSet(ctx, cv interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationSet", reflect.TypeOf((*MockCacheHandler)(nil).ConversationSet), ctx, cv)
+}
+
+// MediaGet mocks base method.
+func (m *MockCacheHandler) MediaGet(ctx context.Context, id uuid.UUID) (*media.Media, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MediaGet", ctx, id)
+	ret0, _ := ret[0].(*media.Media)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MediaGet indicates an expected call of MediaGet.
+func (mr *MockCacheHandlerMockRecorder) MediaGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MediaGet", reflect.TypeOf((*MockCacheHandler)(nil).MediaGet), ctx, id)
+}
+
+// MediaSet mocks base method.
+func (m_2 *MockCacheHandler) MediaSet(ctx context.Context, m *media.Media) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "MediaSet", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MediaSet indicates an expected call of MediaSet.
+func (mr *MockCacheHandlerMockRecorder) MediaSet(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MediaSet", reflect.TypeOf((*MockCacheHandler)(nil).MediaSet), ctx, m)
 }
 
 // MessageGet mocks base method.

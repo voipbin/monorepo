@@ -10,7 +10,7 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 )
 
@@ -75,8 +75,8 @@ func Test_Send(t *testing.T) {
 
 		customerID  uuid.UUID
 		destination string
-		messageType message.Type
-		messageData []byte
+		text        string
+		medias      []media.Media
 
 		responseAccount *account.Account
 	}{
@@ -85,8 +85,8 @@ func Test_Send(t *testing.T) {
 
 			uuid.FromStringOrNil("792c0222-e4a9-11ec-af5e-679fe5991907"),
 			"Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-			message.TypeText,
-			[]byte("hi there, This is a test message. :)"),
+			"hi there, This is a test message. :)",
+			[]media.Media{},
 
 			&account.Account{
 				ID:         uuid.FromStringOrNil("792c0222-e4a9-11ec-af5e-679fe5991907"),
@@ -111,7 +111,7 @@ func Test_Send(t *testing.T) {
 
 			mockAccount.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
 
-			if err := h.Send(ctx, tt.customerID, tt.destination, tt.messageType, tt.messageData); err != nil {
+			if err := h.Send(ctx, tt.customerID, tt.destination, tt.text, tt.medias); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

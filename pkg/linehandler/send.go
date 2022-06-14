@@ -2,17 +2,16 @@ package linehandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 )
 
 // Send sends the message to the destination
-func (h *lineHandler) Send(ctx context.Context, customerID uuid.UUID, destination string, messageType message.Type, messageData []byte) error {
+func (h *lineHandler) Send(ctx context.Context, customerID uuid.UUID, destination string, text string, medias []media.Media) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "Send",
@@ -27,25 +26,25 @@ func (h *lineHandler) Send(ctx context.Context, customerID uuid.UUID, destinatio
 		return err
 	}
 
-	var m linebot.SendingMessage
-	switch messageType {
-	case message.TypeText:
-		m = linebot.NewTextMessage(string(messageData[:]))
+	var messages []linebot.SendingMessage
 
-	default:
-		// currently, only text type supported.
-		log.Errorf("Unsupported messate type. message_type: %s", messageType)
-		return fmt.Errorf("unsupported message type. message_type: %s", messageType)
+	if text != "" {
+		messages = append(messages, linebot.NewTextMessage(text))
 	}
 
-	// send a message to the destination
-	tmp, err := c.PushMessage(destination, m).Do()
-	if err != nil {
-		log.Errorf("Could not send the message. err: %v", err)
-		return err
+	for _, tmp := range medias {
+		log.Debugf("We've got media send request, but it's not support yet. media_type: %s", tmp.Type)
 	}
 
-	log.Debugf("Sent the message correctly. request_id: %s", tmp.RequestID)
+	for _, tmp := range messages {
+		// send a message to the destination
+		res, err := c.PushMessage(destination, tmp).Do()
+		if err != nil {
+			log.Errorf("Could not send the message. err: %v", err)
+			return err
+		}
+		log.WithField("message", res).Debugf("Sent a message request. request_id: %s", res.RequestID)
+	}
 
 	return nil
 }

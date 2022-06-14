@@ -13,6 +13,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/cachehandler"
 )
@@ -29,6 +30,9 @@ type DBHandler interface {
 	ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
 	ConversationGetByReferenceInfo(ctx context.Context, ReferenceType conversation.ReferenceType, ReferenceID string) (*conversation.Conversation, error)
 	ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*conversation.Conversation, error)
+
+	MediaCreate(ctx context.Context, m *media.Media) error
+	MediaGet(ctx context.Context, id uuid.UUID) (*media.Media, error)
 
 	MessageCreate(ctx context.Context, m *message.Message) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)

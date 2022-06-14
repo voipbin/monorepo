@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 )
@@ -20,8 +21,8 @@ func (h *messageHandler) Create(
 	referenceType conversation.ReferenceType,
 	referenceID string,
 	sourceTarget string,
-	messageType message.Type,
-	messageData []byte,
+	text string,
+	medias []media.Media,
 ) (*message.Message, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -43,8 +44,8 @@ func (h *messageHandler) Create(
 		ReferenceID:    referenceID,
 		SourceTarget:   sourceTarget,
 
-		Type: messageType,
-		Data: messageData,
+		Text:   text,
+		Medias: medias,
 
 		TMCreate: dbhandler.GetCurTime(),
 		TMUpdate: dbhandler.GetCurTime(),
