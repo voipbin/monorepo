@@ -9,6 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/conversationhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
@@ -250,6 +251,70 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 			}
 
 			mockMessage.EXPECT().GetsByConversationID(gomock.Any(), tt.expectConversationID, tt.expectPageToken, tt.expectPageSize).Return(tt.responseMessages, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.response, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		expectReqConversationID uuid.UUID
+		expectReqText           string
+		expectReqMedia          []media.Media
+
+		responseMessage *message.Message
+
+		request  *rabbitmqhandler.Request
+		response *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("00933876-ec56-11ec-a551-1f012848b901"),
+			"hello world",
+			[]media.Media{},
+
+			&message.Message{
+				ID: uuid.FromStringOrNil("bb509f64-ec56-11ec-aa8b-374ae78e9b98"),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conversations/00933876-ec56-11ec-a551-1f012848b901/messages",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"text":"hello world", "medias":[]}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"bb509f64-ec56-11ec-aa8b-374ae78e9b98","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","source_target":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockConversation := conversationhandler.NewMockConversationHandler(mc)
+
+			h := &listenHandler{
+				conversationHandler: mockConversation,
+			}
+
+			mockConversation.EXPECT().MessageSend(gomock.Any(), tt.expectReqConversationID, tt.expectReqText, tt.expectReqMedia).Return(tt.responseMessage, nil)
+
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

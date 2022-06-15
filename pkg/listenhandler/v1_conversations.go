@@ -10,6 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/listenhandler/models/request"
 )
 
 // processV1ConversationsGet handles
@@ -121,6 +123,53 @@ func (h *listenHandler) processV1ConversationsIDMessagesGet(ctx context.Context,
 	tmp, err := h.messageHandler.GetsByConversationID(ctx, conversationID, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not get conversation message. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConversationsIDMessagesPost handles
+// /v1/conversations/{id}/messages POST
+func (h *listenHandler) processV1ConversationsIDMessagesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1ConversationsIDMessagesGet",
+		},
+	)
+	log.WithField("request", m).Debug("Received request.")
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// get conversation id
+	tmpVals := strings.Split(u.Path, "/")
+	conversationID := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataConversationIDMessagePost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.conversationHandler.MessageSend(ctx, conversationID, req.Text, req.Medias)
+	if err != nil {
+		log.Errorf("Could not send the message correctly. err: %v", err)
 		return nil, err
 	}
 

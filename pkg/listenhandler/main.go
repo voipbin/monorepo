@@ -39,6 +39,7 @@ var (
 	regV1ConversationsGet           = regexp.MustCompile(`/v1/conversations\?`)
 	regV1ConversationsID            = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
 	regV1ConversationsIDMessagesGet = regexp.MustCompile("/v1/conversations/" + regUUID + `/messages\?`)
+	regV1ConversationsIDMessages    = regexp.MustCompile("/v1/conversations/" + regUUID + "/messages$")
 
 	// hooks
 	regV1Hooks = regexp.MustCompile(`/v1/hooks$`)
@@ -183,6 +184,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// GET /conversations/<conversation-id>/messages
 	case regV1ConversationsIDMessagesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ConversationsIDMessagesGet(ctx, m)
+		requestType = "/v1/conversations/<conversation-id>/messages"
+
+	// POST /conversations/<conversation-id>/messages
+	case regV1ConversationsIDMessages.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConversationsIDMessagesPost(ctx, m)
 		requestType = "/v1/conversations/<conversation-id>/messages"
 
 	////////////////////
