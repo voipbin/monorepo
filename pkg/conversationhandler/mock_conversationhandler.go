@@ -11,6 +11,8 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
 // MockConversationHandler is a mock of ConversationHandler interface.
@@ -93,6 +95,21 @@ func (m *MockConversationHandler) Hook(ctx context.Context, uri string, data []b
 func (mr *MockConversationHandlerMockRecorder) Hook(ctx, uri, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockConversationHandler)(nil).Hook), ctx, uri, data)
+}
+
+// MessageSend mocks base method.
+func (m *MockConversationHandler) MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageSend", ctx, conversationID, text, medias)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageSend indicates an expected call of MessageSend.
+func (mr *MockConversationHandlerMockRecorder) MessageSend(ctx, conversationID, text, medias interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSend", reflect.TypeOf((*MockConversationHandler)(nil).MessageSend), ctx, conversationID, text, medias)
 }
 
 // Setup mocks base method.
