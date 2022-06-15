@@ -161,7 +161,7 @@ func (h *listenHandler) processV1ConversationsIDMessagesPost(ctx context.Context
 	tmpVals := strings.Split(u.Path, "/")
 	conversationID := uuid.FromStringOrNil(tmpVals[3])
 
-	var req request.V1DataConversationIDMessagePost
+	var req request.V1DataConversationsIDMessagesPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
