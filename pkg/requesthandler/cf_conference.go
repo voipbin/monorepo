@@ -19,21 +19,21 @@ func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uui
 
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID.String())
 
-	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.StatusCode >= 299 {
+	if tmp.StatusCode >= 299 {
 		return nil, fmt.Errorf("could not find action")
 	}
 
-	var resData cfconference.Conference
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	return &res, nil
 }
 
 // CFV1ConferenceGets sends a request to conference-manager
@@ -42,23 +42,23 @@ func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uui
 func (r *requestHandler) CFV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, conferenceType)
 
-	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var confs []cfconference.Conference
-	if err := json.Unmarshal([]byte(res.Data), &confs); err != nil {
+	var res []cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return confs, nil
+	return res, nil
 }
 
 // CFV1ConferenceDelete sends a request to conference-manager

@@ -74,6 +74,79 @@ func Test_CFV1ConferenceGet(t *testing.T) {
 	}
 }
 
+func Test_CFV1ConferenceGets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID     uuid.UUID
+		pageToken      string
+		pageSize       uint64
+		conferenceType cfconference.Type
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectRes []cfconference.Conference
+	}{
+		{
+			"normal conference",
+
+			uuid.FromStringOrNil("a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd"),
+			"2021-03-02 03:23:20.995000",
+			10,
+			cfconference.TypeConference,
+
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd&type=conference",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: ContentTypeJSON,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"281c89f0-ec61-11ec-a18d-a7389bd741ca"},{"id":"2886cafe-ec61-11ec-b982-5b047f4851d6"}]`),
+			},
+
+			[]cfconference.Conference{
+				{
+					ID: uuid.FromStringOrNil("281c89f0-ec61-11ec-a18d-a7389bd741ca"),
+				},
+				{
+					ID: uuid.FromStringOrNil("2886cafe-ec61-11ec-b982-5b047f4851d6"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CFV1ConferenceGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, string(tt.conferenceType))
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_CFV1ConferenceDelete(t *testing.T) {
 
 	tests := []struct {

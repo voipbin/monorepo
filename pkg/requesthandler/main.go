@@ -22,6 +22,9 @@ import (
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -149,6 +152,9 @@ const (
 	resourceCSCustomers resource = "cs/customers"
 
 	resourceCSLogin resource = "cs/login"
+
+	resourceConversationConversations           resource = "conversation/conversations"
+	resourceConversationConversationsIDMessages resource = "conversation/conversations/<conversation-id>/messages"
 
 	resourceFlowsActions  resource = "flows/actions"
 	resourceFMFlows       resource = "fm/flows"
@@ -393,6 +399,12 @@ type RequestHandler interface {
 	CFV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error
 	CFV1ConferenceKick(ctx context.Context, conferenceID, callID uuid.UUID) error
 	CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
+
+	// conversation-manager conversation
+	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
+	ConversationV1ConversationGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cvconversation.Conversation, error)
+	ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []cvmedia.Media) (*cvmessage.Message, error)
+	ConversationV1ConversationMessageGets(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]cvmessage.Message, error)
 
 	// conversation-manager hook
 	ConversationV1Hook(ctx context.Context, hm *hmhook.Hook) error
