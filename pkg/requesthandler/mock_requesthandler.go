@@ -25,13 +25,16 @@ import (
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	variable "gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	hook "gitlab.com/voipbin/bin-manager/hook-manager.git/models/hook"
-	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	message0 "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	outdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
@@ -1452,6 +1455,51 @@ func (mr *MockRequestHandlerMockRecorder) CSV1Login(ctx, timeout, username, pass
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1Login", reflect.TypeOf((*MockRequestHandler)(nil).CSV1Login), ctx, timeout, username, password)
 }
 
+// ConversationV1ConversationGet mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1ConversationGet", ctx, conversationID)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1ConversationGet indicates an expected call of ConversationV1ConversationGet.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGet(ctx, conversationID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGet), ctx, conversationID)
+}
+
+// ConversationV1ConversationGets mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1ConversationGets", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1ConversationGets indicates an expected call of ConversationV1ConversationGets.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGets), ctx, customerID, pageToken, pageSize)
+}
+
+// ConversationV1ConversationMessageGets mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationMessageGets(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1ConversationMessageGets", ctx, conversationID, pageToken, pageSize)
+	ret0, _ := ret[0].([]message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1ConversationMessageGets indicates an expected call of ConversationV1ConversationMessageGets.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationMessageGets(ctx, conversationID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationMessageGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationMessageGets), ctx, conversationID, pageToken, pageSize)
+}
+
 // ConversationV1Hook mocks base method.
 func (m *MockRequestHandler) ConversationV1Hook(ctx context.Context, hm *hook.Hook) error {
 	m.ctrl.T.Helper()
@@ -1464,6 +1512,21 @@ func (m *MockRequestHandler) ConversationV1Hook(ctx context.Context, hm *hook.Ho
 func (mr *MockRequestHandlerMockRecorder) ConversationV1Hook(ctx, hm interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1Hook", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1Hook), ctx, hm)
+}
+
+// ConversationV1MessageSend mocks base method.
+func (m *MockRequestHandler) ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1MessageSend", ctx, conversationID, text, medias)
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1MessageSend indicates an expected call of ConversationV1MessageSend.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageSend(ctx, conversationID, text, medias interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageSend), ctx, conversationID, text, medias)
 }
 
 // FMV1ActionGet mocks base method.
@@ -1702,10 +1765,10 @@ func (mr *MockRequestHandlerMockRecorder) MMV1Hook(ctx, hm interface{}) *gomock.
 }
 
 // MMV1MessageDelete mocks base method.
-func (m *MockRequestHandler) MMV1MessageDelete(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+func (m *MockRequestHandler) MMV1MessageDelete(ctx context.Context, id uuid.UUID) (*message0.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MMV1MessageDelete", ctx, id)
-	ret0, _ := ret[0].(*message.Message)
+	ret0, _ := ret[0].(*message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1717,10 +1780,10 @@ func (mr *MockRequestHandlerMockRecorder) MMV1MessageDelete(ctx, id interface{})
 }
 
 // MMV1MessageGet mocks base method.
-func (m *MockRequestHandler) MMV1MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+func (m *MockRequestHandler) MMV1MessageGet(ctx context.Context, id uuid.UUID) (*message0.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MMV1MessageGet", ctx, id)
-	ret0, _ := ret[0].(*message.Message)
+	ret0, _ := ret[0].(*message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1732,10 +1795,10 @@ func (mr *MockRequestHandlerMockRecorder) MMV1MessageGet(ctx, id interface{}) *g
 }
 
 // MMV1MessageGets mocks base method.
-func (m *MockRequestHandler) MMV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]message.Message, error) {
+func (m *MockRequestHandler) MMV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]message0.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MMV1MessageGets", ctx, customerID, pageToken, pageSize)
-	ret0, _ := ret[0].([]message.Message)
+	ret0, _ := ret[0].([]message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1747,10 +1810,10 @@ func (mr *MockRequestHandlerMockRecorder) MMV1MessageGets(ctx, customerID, pageT
 }
 
 // MMV1MessageSend mocks base method.
-func (m *MockRequestHandler) MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message.Message, error) {
+func (m *MockRequestHandler) MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message0.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MMV1MessageSend", ctx, customerID, source, destinations, text)
-	ret0, _ := ret[0].(*message.Message)
+	ret0, _ := ret[0].(*message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
