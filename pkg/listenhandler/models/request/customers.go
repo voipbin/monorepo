@@ -13,10 +13,14 @@ type V1DataCustomersPost struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 
-	Name          string                 `json:"name"`
-	Detail        string                 `json:"detail"`
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
 	WebhookMethod customer.WebhookMethod `json:"webhook_method"`
 	WebhookURI    string                 `json:"webhook_uri"`
+
+	LineSecret string `json:"line_secret"`
+	LineToken  string `json:"line_token"`
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
 }

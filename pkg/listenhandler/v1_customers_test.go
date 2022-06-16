@@ -124,6 +124,8 @@ func Test_processV1CustomersPost(t *testing.T) {
 		detail        string
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
+		lineSecret    string
+		lineToken     string
 		permissionIDs []uuid.UUID
 
 		customer  *customer.Customer
@@ -135,7 +137,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"username": "test", "password": "password", "name": "name test", "detail": "detail test", "webhook_method": "POST", "webhook_uri": "test.com", "permission_ids": ["03796e14-7cb4-11ec-9dba-e72023efd1c6"]}`),
+				Data:     []byte(`{"username": "test", "password": "password", "name": "name test", "detail": "detail test", "webhook_method": "POST", "webhook_uri": "test.com", "line_secret": "335671d0-ed3f-11ec-95d5-bb7d97d73379", "line_token": "339c9ebc-ed3f-11ec-bb15-4f3b18e06796", "permission_ids": ["03796e14-7cb4-11ec-9dba-e72023efd1c6"]}`),
 			},
 
 			"test",
@@ -144,6 +146,8 @@ func Test_processV1CustomersPost(t *testing.T) {
 			"detail test",
 			customer.WebhookMethodPost,
 			"test.com",
+			"335671d0-ed3f-11ec-95d5-bb7d97d73379",
+			"339c9ebc-ed3f-11ec-bb15-4f3b18e06796",
 			[]uuid.UUID{
 				permission.PermissionAdmin.ID,
 			},
@@ -156,6 +160,8 @@ func Test_processV1CustomersPost(t *testing.T) {
 				Detail:        "detail test",
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
+				LineSecret:    "335671d0-ed3f-11ec-95d5-bb7d97d73379",
+				LineToken:     "339c9ebc-ed3f-11ec-bb15-4f3b18e06796",
 
 				PermissionIDs: []uuid.UUID{
 					permission.PermissionAdmin.ID,
@@ -164,7 +170,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","username":"test","name":"name test","detail":"detail test","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","username":"test","name":"name test","detail":"detail test","webhook_method":"POST","webhook_uri":"test.com","line_secret":"335671d0-ed3f-11ec-95d5-bb7d97d73379","line_token":"339c9ebc-ed3f-11ec-bb15-4f3b18e06796","permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -184,7 +190,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().Create(gomock.Any(), tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.customer, nil)
+			mockCustomer.EXPECT().Create(gomock.Any(), tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lineToken, tt.permissionIDs).Return(tt.customer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
