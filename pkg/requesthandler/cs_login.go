@@ -28,7 +28,7 @@ func (r *requestHandler) CSV1Login(ctx context.Context, timeout int, username, p
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodPost, resourceCSLogin, timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodPost, resourceCSLogin, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

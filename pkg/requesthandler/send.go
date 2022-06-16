@@ -182,10 +182,10 @@ func (r *requestHandler) sendRequestQM(uri string, method rabbitmqhandler.Reques
 	return r.sendRequest(queueQueue, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestCS send a request to the customer-manager and return the response
+// sendRequestCustomer send a request to the customer-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestCS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestCustomer(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueCustomer, uri, method, resource, timeout, delayed, dataType, data)
 }
