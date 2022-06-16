@@ -1485,19 +1485,19 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGetsByCustom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGetsByCustomerID), ctx, customerID, pageToken, pageSize)
 }
 
-// ConversationV1ConversationMessageGets mocks base method.
-func (m *MockRequestHandler) ConversationV1ConversationMessageGets(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]message.Message, error) {
+// ConversationV1ConversationMessageGetsByConversationID mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1ConversationMessageGets", ctx, conversationID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "ConversationV1ConversationMessageGetsByConversationID", ctx, conversationID, pageToken, pageSize)
 	ret0, _ := ret[0].([]message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConversationV1ConversationMessageGets indicates an expected call of ConversationV1ConversationMessageGets.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationMessageGets(ctx, conversationID, pageToken, pageSize interface{}) *gomock.Call {
+// ConversationV1ConversationMessageGetsByConversationID indicates an expected call of ConversationV1ConversationMessageGetsByConversationID.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationMessageGetsByConversationID(ctx, conversationID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationMessageGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationMessageGets), ctx, conversationID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationMessageGetsByConversationID", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationMessageGetsByConversationID), ctx, conversationID, pageToken, pageSize)
 }
 
 // ConversationV1Hook mocks base method.

@@ -214,7 +214,7 @@ func Test_ConversationV1MessageSend(t *testing.T) {
 	}
 }
 
-func Test_ConversationV1ConversationMessageGets(t *testing.T) {
+func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -273,7 +273,7 @@ func Test_ConversationV1ConversationMessageGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1ConversationMessageGets(ctx, tt.conversationID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ConversationV1ConversationMessageGetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
