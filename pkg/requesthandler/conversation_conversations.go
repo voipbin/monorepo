@@ -37,10 +37,10 @@ func (r *requestHandler) ConversationV1ConversationGet(ctx context.Context, conv
 	return &res, nil
 }
 
-// ConversationV1ConversationGets sends a request to conversation-manager
+// ConversationV1ConversationGetsByCustomerID sends a request to conversation-manager
 // to getting a list of conversation info.
 // it returns detail list of conversation info if it succeed.
-func (r *requestHandler) ConversationV1ConversationGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cvconversation.Conversation, error) {
+func (r *requestHandler) ConversationV1ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cvconversation.Conversation, error) {
 	uri := fmt.Sprintf("/v1/conversations?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestConversation(uri, rabbitmqhandler.RequestMethodGet, resourceConversationConversations, 30000, 0, ContentTypeJSON, nil)

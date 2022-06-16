@@ -1470,19 +1470,19 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGet(ctx, con
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGet), ctx, conversationID)
 }
 
-// ConversationV1ConversationGets mocks base method.
-func (m *MockRequestHandler) ConversationV1ConversationGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]conversation.Conversation, error) {
+// ConversationV1ConversationGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1ConversationGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "ConversationV1ConversationGetsByCustomerID", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConversationV1ConversationGets indicates an expected call of ConversationV1ConversationGets.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+// ConversationV1ConversationGetsByCustomerID indicates an expected call of ConversationV1ConversationGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGetsByCustomerID), ctx, customerID, pageToken, pageSize)
 }
 
 // ConversationV1ConversationMessageGets mocks base method.

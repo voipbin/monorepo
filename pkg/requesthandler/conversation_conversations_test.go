@@ -77,7 +77,7 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 	}
 }
 
-func Test_ConversationV1ConversationGets(t *testing.T) {
+func Test_ConversationV1ConversationGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -136,7 +136,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1ConversationGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.ConversationV1ConversationGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
