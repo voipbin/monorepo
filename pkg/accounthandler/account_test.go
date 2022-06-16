@@ -2,6 +2,7 @@ package accounthandler
 
 import (
 	"context"
+	"fmt"
 	reflect "reflect"
 	"testing"
 
@@ -20,13 +21,41 @@ func Test_Get(t *testing.T) {
 		name       string
 		customerID uuid.UUID
 
-		responseGet *account.Account
+		responseGet      *account.Account
+		responseCustomer *cscustomer.Customer
+
+		expectRes *account.Account
 	}{
 		{
-			"normal",
+			"has a cache",
 			uuid.FromStringOrNil("3b24255a-e60b-11ec-9815-5f679b51ac4d"),
+
 			&account.Account{
 				ID:         uuid.FromStringOrNil("3b24255a-e60b-11ec-9815-5f679b51ac4d"),
+				LineSecret: "36d4fc54-e60b-11ec-bd30-ef0549a549a1",
+				LineToken:  "371d4e64-e60b-11ec-aea1-f3e59c17f7c3",
+			},
+			nil,
+
+			&account.Account{
+				ID:         uuid.FromStringOrNil("3b24255a-e60b-11ec-9815-5f679b51ac4d"),
+				LineSecret: "36d4fc54-e60b-11ec-bd30-ef0549a549a1",
+				LineToken:  "371d4e64-e60b-11ec-aea1-f3e59c17f7c3",
+			},
+		},
+		{
+			"has no cache",
+			uuid.FromStringOrNil("3b24255a-e60b-11ec-9815-5f679b51ac4d"),
+
+			nil,
+			&cscustomer.Customer{
+				ID:         uuid.FromStringOrNil("dd20b7a2-ed3a-11ec-af5c-d70968df34d7"),
+				LineSecret: "36d4fc54-e60b-11ec-bd30-ef0549a549a1",
+				LineToken:  "371d4e64-e60b-11ec-aea1-f3e59c17f7c3",
+			},
+
+			&account.Account{
+				ID:         uuid.FromStringOrNil("dd20b7a2-ed3a-11ec-af5c-d70968df34d7"),
 				LineSecret: "36d4fc54-e60b-11ec-bd30-ef0549a549a1",
 				LineToken:  "371d4e64-e60b-11ec-aea1-f3e59c17f7c3",
 			},
@@ -48,15 +77,21 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGet(gomock.Any(), tt.customerID).Return(tt.responseGet, nil)
+			if tt.responseGet != nil {
+				mockDB.EXPECT().AccountGet(ctx, tt.customerID).Return(tt.responseGet, nil)
+			} else {
+				mockDB.EXPECT().AccountGet(ctx, tt.customerID).Return(nil, fmt.Errorf(""))
+				mockReq.EXPECT().CSV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+				mockDB.EXPECT().AccountSet(ctx, gomock.Any()).Return(nil)
+			}
 
 			res, err := h.Get(ctx, tt.customerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.responseGet) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseGet, res)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 
 		})

@@ -19,9 +19,21 @@ func (h *accountHandler) Get(ctx context.Context, customerID uuid.UUID) (*accoun
 	)
 
 	res, err := h.db.AccountGet(ctx, customerID)
+	if err == nil {
+		return res, nil
+	}
+
+	tmp, err := h.reqHandler.CSV1CustomerGet(ctx, customerID)
 	if err != nil {
-		log.Errorf("Could not get account. err: %v", err)
+		log.Errorf("Could not get customer info. err: %v", err)
 		return nil, err
+	}
+
+	// create and update the account
+	res = account.CreateAccountFromCustomer(tmp)
+	if errUpdate := h.Set(ctx, res); errUpdate != nil {
+		// we couldn't update the account, but keep going because we've got customer info
+		log.Errorf("Could not update the account. err: %v", errUpdate)
 	}
 
 	return res, nil
@@ -59,8 +71,10 @@ func (h *accountHandler) UpdateByCustomer(ctx context.Context, m *cscustomer.Cus
 
 	res, err := h.Get(ctx, m.ID)
 	if err != nil {
-		log.Errorf("Could no")
+		log.Errorf("Could not get updated account info. err: %v", err)
+		return nil, err
 	}
+	log.WithField("account", res).Debugf("Updated account info. account_id: %s", res.ID)
 
 	return res, nil
 }
