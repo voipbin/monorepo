@@ -27,19 +27,19 @@ func (r *requestHandler) TMV1SpeecheCreate(ctx context.Context, callID uuid.UUID
 		return "", err
 	}
 
-	res, err := r.sendRequestTTS(uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTTS(uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, timeout, 0, ContentTypeJSON, m)
 	if err != nil {
 		return "", err
 	}
 
-	if res.StatusCode >= 299 {
-		return "", fmt.Errorf("could not find action")
+	if tmp.StatusCode >= 299 {
+		return "", fmt.Errorf("could not create stt. status: %d", tmp.StatusCode)
 	}
 
-	var resData response.V1ResponseSpeechesPost
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res response.V1ResponseSpeechesPost
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return "", err
 	}
 
-	return resData.Filename, nil
+	return res.Filename, nil
 }

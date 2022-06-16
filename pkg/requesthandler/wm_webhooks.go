@@ -35,7 +35,7 @@ func (r *requestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UU
 	}
 
 	if res.StatusCode >= 299 {
-		return fmt.Errorf("could not find action")
+		return fmt.Errorf("could not send an webhook. status: %d", res.StatusCode)
 	}
 
 	return nil
@@ -63,7 +63,7 @@ func (r *requestHandler) WMV1WebhookSendToDestination(ctx context.Context, custo
 	}
 
 	if res.StatusCode >= 299 {
-		return fmt.Errorf("could not find action")
+		return fmt.Errorf("could not send the webhook. status: %d", res.StatusCode)
 	}
 
 	return nil

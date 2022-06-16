@@ -59,7 +59,7 @@ func (r *requestHandler) CAV1CampaignCreate(
 	}
 
 	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not find action")
+		return nil, fmt.Errorf("could not create a campaign. status: %d", tmp.StatusCode)
 	}
 
 	var res cacampaign.Campaign

@@ -18,21 +18,21 @@ func (r *requestHandler) NMV1NumberGetByNumber(ctx context.Context, num string) 
 
 	uri := fmt.Sprintf("/v1/numbers/%s", url.QueryEscape(num))
 
-	res, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestNM(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not find action")
+	if tmp.StatusCode >= 299 {
+		return nil, fmt.Errorf("could not get number .status: %d", tmp.StatusCode)
 	}
 
-	tmpRes := nmnumber.Number{}
-	if err := json.Unmarshal([]byte(res.Data), &tmpRes); err != nil {
+	res := nmnumber.Number{}
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &tmpRes, nil
+	return &res, nil
 }
 
 // NMV1NumberGet sends a request to number-manager

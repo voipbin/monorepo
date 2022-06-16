@@ -25,7 +25,7 @@ func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uui
 	}
 
 	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not find action")
+		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
 	}
 
 	var res cfconference.Conference
