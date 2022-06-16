@@ -669,33 +669,13 @@ definitions:
       type:
         type: string
     type: object
-  message.Message:
+  media.Media:
     properties:
       customer_id:
         type: string
-      direction:
+      filename:
         type: string
       id:
-        type: string
-      medias:
-        items:
-          type: string
-        type: array
-      provider_name:
-        description: provider info
-        type: string
-      provider_reference_id:
-        type: string
-      source:
-        $ref: '#/definitions/address.Address'
-        description: from/to info
-        type: object
-      targets:
-        items:
-          $ref: '#/definitions/target.Target'
-        type: array
-      text:
-        description: message info
         type: string
       tm_create:
         type: string
@@ -704,6 +684,38 @@ definitions:
       tm_update:
         type: string
       type:
+        type: string
+    type: object
+  message.Message:
+    properties:
+      conversation_id:
+        type: string
+      customer_id:
+        type: string
+      id:
+        type: string
+      medias:
+        items:
+          $ref: '#/definitions/media.Media'
+        type: array
+      reference_id:
+        description: 'used for find a conversation info(source info: group_id, room_id, user_id)'
+        type: string
+      reference_type:
+        description: 'used for find a conversation info(source info: group/room/user)'
+        type: string
+      source_target:
+        description: message source target.
+        type: string
+      status:
+        type: string
+      text:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
         type: string
     type: object
   message.WebhookMessage:
@@ -1177,6 +1189,10 @@ definitions:
     properties:
       detail:
         type: string
+      line_secret:
+        type: string
+      line_token:
+        type: string
       name:
         type: string
       password:
@@ -1401,6 +1417,11 @@ definitions:
   request.ParamConversationsIDMessagesPOST:
     properties:
       text:
+        type: string
+    type: object
+  request.ParamConversationsSetupPOST:
+    properties:
+      referenceType:
         type: string
     type: object
   response.BodyAgentsGET:
@@ -2330,7 +2351,7 @@ paths:
         name: message
         required: true
         schema:
-          $ref: '#/definitions/request.ParamConversationsIDMessagesPOST'
+          $ref: '#/definitions/request.ParamConversationsSetupPOST'
       produces:
       - application/json
       responses:
@@ -2410,6 +2431,17 @@ paths:
           schema:
             $ref: '#/definitions/customer.Customer'
       summary: Update a customer.
+  /v1.0/customers/{id}/line_info:
+    put:
+      description: Update a customer's line info.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/customer.Customer'
+      summary: Update a customer's line info.
   /v1.0/customers/{id}/password:
     put:
       description: Update a customer's password.

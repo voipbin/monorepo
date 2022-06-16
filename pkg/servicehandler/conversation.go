@@ -173,3 +173,22 @@ func (h *serviceHandler) ConversationMessageSend(
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
+
+// ConversationSetup initiates the conversation of given reference type.
+func (h *serviceHandler) ConversationSetup(ctx context.Context, u *cscustomer.Customer, referenceType cvconversation.ReferenceType) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":           "ConversationSetup",
+			"customer_id":    u.ID,
+			"reference_type": referenceType,
+		},
+	)
+
+	// send request
+	if err := h.reqHandler.ConversationV1Setup(ctx, u.ID, referenceType); err != nil {
+		log.Errorf("Could not get the conversation info. err: %v", err)
+		return err
+	}
+
+	return nil
+}
