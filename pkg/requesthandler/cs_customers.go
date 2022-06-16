@@ -19,7 +19,7 @@ import (
 func (r *requestHandler) CSV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", customerID)
 
-	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodGet, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodGet, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -44,7 +44,7 @@ func (r *requestHandler) CSV1CustomerGet(ctx context.Context, customerID uuid.UU
 func (r *requestHandler) CSV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64) ([]cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodGet, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodGet, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -65,7 +65,19 @@ func (r *requestHandler) CSV1CustomerGets(ctx context.Context, pageToken string,
 
 // CSV1CustomerCreate sends the request to create the customer
 // requestTimeout: milliseconds
-func (r *requestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.Customer, error) {
+func (r *requestHandler) CSV1CustomerCreate(
+	ctx context.Context,
+	requestTimeout int,
+	username string,
+	password string,
+	name string,
+	detail string,
+	webhookMethod cscustomer.WebhookMethod,
+	webhookURI string,
+	lineSecret string,
+	lineToken string,
+	permissionIDs []uuid.UUID,
+) (*cscustomer.Customer, error) {
 	uri := "/v1/customers"
 
 	reqData := csrequest.V1DataCustomersPost{
@@ -75,6 +87,8 @@ func (r *requestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout 
 		Detail:        detail,
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
+		LineSecret:    lineSecret,
+		LineToken:     lineToken,
 		PermissionIDs: permissionIDs,
 	}
 
@@ -83,7 +97,7 @@ func (r *requestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout 
 		return nil, err
 	}
 
-	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodPost, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodPost, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -105,7 +119,7 @@ func (r *requestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout 
 func (r *requestHandler) CSV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 
-	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodDelete, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodDelete, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -140,7 +154,7 @@ func (r *requestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUID, n
 		return nil, err
 	}
 
-	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -173,7 +187,7 @@ func (r *requestHandler) CSV1CustomerUpdatePassword(ctx context.Context, request
 		return nil, err
 	}
 
-	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeout, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -205,7 +219,40 @@ func (r *requestHandler) CSV1CustomerUpdatePermissionIDs(ctx context.Context, id
 		return nil, err
 	}
 
-	res, err := r.sendRequestCS(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData cscustomer.Customer
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+}
+
+// CSV1CustomerUpdate sends a request to customer-manager
+// to update the detail customer info.
+func (r *requestHandler) CSV1CustomerUpdateLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) (*cscustomer.Customer, error) {
+	uri := fmt.Sprintf("/v1/customers/%s/line_info", id)
+
+	data := &csrequest.V1DataCustomersIDLineInfoPut{
+		LineSecret: lineSecret,
+		LineToken:  lineToken,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodPut, resourceCSCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

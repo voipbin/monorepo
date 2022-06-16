@@ -1336,18 +1336,18 @@ func (mr *MockRequestHandlerMockRecorder) CMV1RecordingGets(ctx, customerID, siz
 }
 
 // CSV1CustomerCreate mocks base method.
-func (m *MockRequestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+func (m *MockRequestHandler) CSV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI, lineSecret, lineToken string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CSV1CustomerCreate", ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
+	ret := m.ctrl.Call(m, "CSV1CustomerCreate", ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
 	ret0, _ := ret[0].(*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CSV1CustomerCreate indicates an expected call of CSV1CustomerCreate.
-func (mr *MockRequestHandlerMockRecorder) CSV1CustomerCreate(ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerCreate(ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerCreate", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerCreate), ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerCreate", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerCreate), ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
 }
 
 // CSV1CustomerDelete mocks base method.
@@ -1408,6 +1408,21 @@ func (m *MockRequestHandler) CSV1CustomerUpdate(ctx context.Context, id uuid.UUI
 func (mr *MockRequestHandlerMockRecorder) CSV1CustomerUpdate(ctx, id, name, detail, webhookMethod, webhookURI interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerUpdate", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerUpdate), ctx, id, name, detail, webhookMethod, webhookURI)
+}
+
+// CSV1CustomerUpdateLineInfo mocks base method.
+func (m *MockRequestHandler) CSV1CustomerUpdateLineInfo(ctx context.Context, id uuid.UUID, lineSecret, lineToken string) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CSV1CustomerUpdateLineInfo", ctx, id, lineSecret, lineToken)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CSV1CustomerUpdateLineInfo indicates an expected call of CSV1CustomerUpdateLineInfo.
+func (mr *MockRequestHandlerMockRecorder) CSV1CustomerUpdateLineInfo(ctx, id, lineSecret, lineToken interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1CustomerUpdateLineInfo", reflect.TypeOf((*MockRequestHandler)(nil).CSV1CustomerUpdateLineInfo), ctx, id, lineSecret, lineToken)
 }
 
 // CSV1CustomerUpdatePassword mocks base method.
