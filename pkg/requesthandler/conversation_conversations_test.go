@@ -52,19 +52,21 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1ConversationGet(context.Background(), tt.conversationID)
+			res, err := reqHandler.ConversationV1ConversationGet(ctx, tt.conversationID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

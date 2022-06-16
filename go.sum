@@ -213,6 +213,8 @@ gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f0
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3/go.mod h1:nKjcs4JbVMdYWpX/HLcx2P/xPdH0/amdxfv4ih9lRcY=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220615034904-e210fee3a562 h1:iOWbTu/8T/3y1qCrJZEARI/tFm01zlxbSoWLjQMxIK4=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220615034904-e210fee3a562/go.mod h1:tKJTg1+Sife+PczE5JdZNmVV8Q5/LMkJcRSnBncEgts=
+gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220616115806-edae879ccf5c h1:APqUYxyH6D2PjKirD+JbLS4twUzk+1SVVVPoVaw8Yag=
+gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220616115806-edae879ccf5c/go.mod h1:b/2jj1VLt57GCXHZyip7PSwNG8djB4bPhXZsPmHkAac=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5 h1:l2PNnUrTq8qZNqqi9eu2b6EaQKNz/oar9P9/H0d+6hU=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5/go.mod h1:Hp6+pKVvlY+qZ4qUH44Ebx0FDvZwgNLcAKCo+LB+Uko=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220612142532-ec997f4d5316 h1:UoyHiJ9Q7DLHrzQ+LuWFg6MgdTJ2J63nsfNV5wFrdcA=
@@ -280,6 +282,7 @@ golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee/go.mod h1:QqPTAvyqsEbceGzB
 golang.org/x/mod v0.1.1-0.20191107180719-034126e5016b/go.mod h1:QqPTAvyqsEbceGzBzNggFXnrqF1CaUcvgkdR5Ot7KZg=
 golang.org/x/mod v0.2.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/mod v0.3.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
+golang.org/x/mod v0.4.2 h1:Gz96sIWK3OalVv/I/qNygP42zyoKp3xptRVCWRFEBvo=
 golang.org/x/mod v0.4.2/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180826012351-8a410e7b638d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
@@ -426,6 +429,7 @@ golang.org/x/tools v0.0.0-20200729194436-6467de6f59a7/go.mod h1:njjCfa9FT2d7l9Bc
 golang.org/x/tools v0.0.0-20200804011535-6c149bb5ef0d/go.mod h1:njjCfa9FT2d7l9Bc6FUM5FLjQPp3cFF28FI3qnDFljA=
 golang.org/x/tools v0.0.0-20200825202427-b303f430e36d/go.mod h1:njjCfa9FT2d7l9Bc6FUM5FLjQPp3cFF28FI3qnDFljA=
 golang.org/x/tools v0.1.1/go.mod h1:o0xws9oXOQQZyjljx8fwUC0k7L1pTE6eaCbjGeHmOkk=
+golang.org/x/tools v0.1.11 h1:loJ25fNOEhSXfHrpoGj91eCUThwdNX6u24rO1xnNteY=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
