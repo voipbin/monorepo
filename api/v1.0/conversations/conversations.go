@@ -261,3 +261,57 @@ func conversationsIDMessagesPost(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// conversationsSetupPost handles POST /conversations/setup request.
+// It initiates the given reference type's conversation
+// @Summary Send a message and returns detail sent message info.
+// @Description Send a message and returns a sent message info.
+// @Produce json
+// @Param message body request.ParamConversationsSetupPOST true "message info."
+// @Success 200 {object} message.WebhookMessage
+// @Router /v1.0/conversations/{id}/messages [post]
+func conversationsSetupPost(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conversationsSetupPost",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	var req request.ParamConversationsSetupPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing flowsPOST.")
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("target_id", id)
+	log.Debug("Executing customersIDGET.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.ConversationSetup(c.Request.Context(), &u, req.ReferenceType); err != nil {
+		log.Errorf("Could not create a customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}

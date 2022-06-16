@@ -8,6 +8,8 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	conversations.GET("", conversationsGet)
 
+	conversations.POST("/setup", conversationsSetupPost)
+
 	conversations.GET("/:id", conversationsIDGet)
 
 	conversations.GET("/:id/messages", conversationsIDMessagesGet)

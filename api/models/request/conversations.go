@@ -1,5 +1,9 @@
 package request
 
+import (
+	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+)
+
 // ParamConversationsGET is request param define for GET /conversations
 type ParamConversationsGET struct {
 	Pagination
@@ -13,4 +17,9 @@ type ParamConversationsIDMessagesGET struct {
 // ParamConversationsIDMessagesPOST is request param define for POST /conversations/<conversation-id>/messages
 type ParamConversationsIDMessagesPOST struct {
 	Text string
+}
+
+// ParamConversationsSetupPOST is request param define for POST /conversations/setup
+type ParamConversationsSetupPOST struct {
+	ReferenceType cvconversation.ReferenceType
 }
