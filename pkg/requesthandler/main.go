@@ -419,6 +419,7 @@ type RequestHandler interface {
 	ConversationV1ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cvconversation.Conversation, error)
 	ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []cvmedia.Media) (*cvmessage.Message, error)
 	ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]cvmessage.Message, error)
+	ConversationV1Setup(ctx context.Context, customerID uuid.UUID, ReferenceType cvconversation.ReferenceType) error
 
 	// conversation-manager hook
 	ConversationV1Hook(ctx context.Context, hm *hmhook.Hook) error

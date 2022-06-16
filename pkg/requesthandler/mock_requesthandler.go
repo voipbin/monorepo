@@ -1544,6 +1544,20 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageSend(ctx, convers
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageSend), ctx, conversationID, text, medias)
 }
 
+// ConversationV1Setup mocks base method.
+func (m *MockRequestHandler) ConversationV1Setup(ctx context.Context, customerID uuid.UUID, ReferenceType conversation.ReferenceType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1Setup", ctx, customerID, ReferenceType)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConversationV1Setup indicates an expected call of ConversationV1Setup.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1Setup(ctx, customerID, ReferenceType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1Setup", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1Setup), ctx, customerID, ReferenceType)
+}
+
 // FMV1ActionGet mocks base method.
 func (m *MockRequestHandler) FMV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*action.Action, error) {
 	m.ctrl.T.Helper()
