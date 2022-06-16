@@ -611,6 +611,20 @@ func (mr *MockServiceHandlerMockRecorder) ConversationMessageSend(ctx, u, conver
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationMessageSend", reflect.TypeOf((*MockServiceHandler)(nil).ConversationMessageSend), ctx, u, conversationID, text, medias)
 }
 
+// ConversationSetup mocks base method.
+func (m *MockServiceHandler) ConversationSetup(ctx context.Context, u *customer.Customer, referenceType conversation.ReferenceType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationSetup", ctx, u, referenceType)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConversationSetup indicates an expected call of ConversationSetup.
+func (mr *MockServiceHandlerMockRecorder) ConversationSetup(ctx, u, referenceType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationSetup", reflect.TypeOf((*MockServiceHandler)(nil).ConversationSetup), ctx, u, referenceType)
+}
+
 // CustomerCreate mocks base method.
 func (m *MockServiceHandler) CustomerCreate(ctx context.Context, u *customer.Customer, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI, lineSecret, lineToken string, permissionIDs []uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()

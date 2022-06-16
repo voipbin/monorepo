@@ -131,6 +131,7 @@ type ServiceHandler interface {
 		text string,
 		medias []cvmedia.Media,
 	) (*cvmessage.WebhookMessage, error)
+	ConversationSetup(ctx context.Context, u *cscustomer.Customer, referenceType cvconversation.ReferenceType) error
 
 	// customer handlers
 	CustomerCreate(

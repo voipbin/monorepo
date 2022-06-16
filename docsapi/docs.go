@@ -1010,7 +1010,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.ParamConversationsIDMessagesPOST"
+                            "$ref": "#/definitions/request.ParamConversationsSetupPOST"
                         }
                     }
                 ],
@@ -1129,6 +1129,23 @@ var doc = `{
                 "summary": "Delete a existing customer.",
                 "responses": {
                     "200": {}
+                }
+            }
+        },
+        "/v1.0/customers/{id}/line_info": {
+            "put": {
+                "description": "Update a customer's line info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a customer's line info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/customer.Customer"
+                        }
+                    }
                 }
             }
         },
@@ -3667,44 +3684,16 @@ var doc = `{
                 }
             }
         },
-        "message.Message": {
+        "media.Media": {
             "type": "object",
             "properties": {
                 "customer_id": {
                     "type": "string"
                 },
-                "direction": {
+                "filename": {
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
-                },
-                "medias": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "provider_name": {
-                    "description": "provider info",
-                    "type": "string"
-                },
-                "provider_reference_id": {
-                    "type": "string"
-                },
-                "source": {
-                    "description": "from/to info",
-                    "type": "object",
-                    "$ref": "#/definitions/address.Address"
-                },
-                "targets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/target.Target"
-                    }
-                },
-                "text": {
-                    "description": "message info",
                     "type": "string"
                 },
                 "tm_create": {
@@ -3717,6 +3706,53 @@ var doc = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "message.Message": {
+            "type": "object",
+            "properties": {
+                "conversation_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/media.Media"
+                    }
+                },
+                "reference_id": {
+                    "description": "used for find a conversation info(source info: group_id, room_id, user_id)",
+                    "type": "string"
+                },
+                "reference_type": {
+                    "description": "used for find a conversation info(source info: group/room/user)",
+                    "type": "string"
+                },
+                "source_target": {
+                    "description": "message source target.",
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
                     "type": "string"
                 }
             }
@@ -4418,6 +4454,12 @@ var doc = `{
                 "detail": {
                     "type": "string"
                 },
+                "line_secret": {
+                    "type": "string"
+                },
+                "line_token": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -4762,6 +4804,14 @@ var doc = `{
             "type": "object",
             "properties": {
                 "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.ParamConversationsSetupPOST": {
+            "type": "object",
+            "properties": {
+                "referenceType": {
                     "type": "string"
                 }
             }
