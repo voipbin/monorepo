@@ -26,7 +26,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestCustomersPOST(t *testing.T) {
+func Test_customersPOST(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -117,7 +117,7 @@ func TestCustomersPOST(t *testing.T) {
 	}
 }
 
-func TestCustomersGet(t *testing.T) {
+func Test_customersGet(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -199,7 +199,7 @@ func TestCustomersGet(t *testing.T) {
 	}
 }
 
-func TestCustomersIDGet(t *testing.T) {
+func Test_customersIDGet(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -271,7 +271,7 @@ func TestCustomersIDGet(t *testing.T) {
 	}
 }
 
-func TestCustomersIDPut(t *testing.T) {
+func Test_customersIDPut(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -339,7 +339,7 @@ func TestCustomersIDPut(t *testing.T) {
 	}
 }
 
-func TestCustomersIDDelete(t *testing.T) {
+func Test_customersIDDelete(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -396,7 +396,7 @@ func TestCustomersIDDelete(t *testing.T) {
 	}
 }
 
-func TestCustomersIDPermissionIDsPut(t *testing.T) {
+func Test_customersIDPermissionIDsPut(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)
@@ -465,7 +465,7 @@ func TestCustomersIDPermissionIDsPut(t *testing.T) {
 	}
 }
 
-func TestCustomersIDPasswordPut(t *testing.T) {
+func Test_customersIDPasswordPut(t *testing.T) {
 
 	// create mock
 	mc := gomock.NewController(t)

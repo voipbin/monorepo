@@ -27,13 +27,7 @@ func setupServer(app *gin.Engine) {
 
 func TestAgentsPOST(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		req      request.BodyAgentsPOST
@@ -48,9 +42,7 @@ func TestAgentsPOST(t *testing.T) {
 		addresses  []commonaddress.Address
 
 		res *amagent.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -112,6 +104,11 @@ func TestAgentsPOST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -129,10 +126,9 @@ func TestAgentsPOST(t *testing.T) {
 			}
 
 			req, _ := http.NewRequest("POST", "/v1.0/agents", bytes.NewBuffer(body))
-
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentCreate(&tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
+			mockSvc.EXPECT().AgentCreate(req.Context(), &tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.res, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -144,13 +140,7 @@ func TestAgentsPOST(t *testing.T) {
 
 func TestAgentsGET(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		reqQuery string
@@ -161,9 +151,7 @@ func TestAgentsGET(t *testing.T) {
 		status    amagent.Status
 
 		resAgents []*amagent.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -232,6 +220,11 @@ func TestAgentsGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -242,9 +235,10 @@ func TestAgentsGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().AgentGets(&tt.customer, tt.pageSize, tt.pageToken, tt.tagIDs, tt.status).Return(tt.resAgents, nil)
-
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+
+			mockSvc.EXPECT().AgentGets(req.Context(), &tt.customer, tt.pageSize, tt.pageToken, tt.tagIDs, tt.status).Return(tt.resAgents, nil)
+
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -255,13 +249,7 @@ func TestAgentsGET(t *testing.T) {
 
 func TestAgentsIDStatusPUT(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		customer cscustomer.Customer
@@ -270,9 +258,7 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 
 		agentID uuid.UUID
 		status  amagent.Status
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -288,6 +274,11 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -298,9 +289,10 @@ func TestAgentsIDStatusPUT(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().AgentUpdateStatus(&tt.customer, tt.agentID, tt.status).Return(&amagent.WebhookMessage{}, nil)
-
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+
+			mockSvc.EXPECT().AgentUpdateStatus(req.Context(), &tt.customer, tt.agentID, tt.status).Return(&amagent.WebhookMessage{}, nil)
+
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

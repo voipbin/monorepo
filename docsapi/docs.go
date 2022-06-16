@@ -967,6 +967,63 @@ var doc = `{
                 }
             }
         },
+        "/v1.0/conversations/{id}/messages": {
+            "get": {
+                "description": "Gets a list of conversation messages",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of conversation messages.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyConversationsIDMessagesGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Send a message and returns a sent message info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Send a message and returns detail sent message info.",
+                "parameters": [
+                    {
+                        "description": "message info.",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ParamConversationsIDMessagesPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/message.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/customers": {
             "get": {
                 "description": "Gets a list of customers",
@@ -1010,7 +1067,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.BodyFlowsPOST"
+                            "$ref": "#/definitions/request.BodyCustomersPOST"
                         }
                     }
                 ],
@@ -3293,6 +3350,41 @@ var doc = `{
                 }
             }
         },
+        "conversation.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "participants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
         "customer.Customer": {
             "type": "object",
             "properties": {
@@ -3302,6 +3394,14 @@ var doc = `{
                 },
                 "id": {
                     "description": "Customer's ID",
+                    "type": "string"
+                },
+                "line_secret": {
+                    "description": "line info",
+                    "type": "string"
+                },
+                "line_token": {
+                    "description": "line's token",
                     "type": "string"
                 },
                 "name": {
@@ -3332,7 +3432,7 @@ var doc = `{
                     "type": "string"
                 },
                 "webhook_method": {
-                    "description": "webhook method",
+                    "description": "webhook info",
                     "type": "string"
                 },
                 "webhook_uri": {
@@ -3352,6 +3452,14 @@ var doc = `{
                     "description": "Customer's ID",
                     "type": "string"
                 },
+                "line_secret": {
+                    "description": "line info",
+                    "type": "string"
+                },
+                "line_token": {
+                    "description": "line's token",
+                    "type": "string"
+                },
                 "name": {
                     "description": "name",
                     "type": "string"
@@ -3380,7 +3488,7 @@ var doc = `{
                     "type": "string"
                 },
                 "webhook_method": {
-                    "description": "webhook method",
+                    "description": "webhook info",
                     "type": "string"
                 },
                 "webhook_uri": {
@@ -4304,6 +4412,35 @@ var doc = `{
                 }
             }
         },
+        "request.BodyCustomersPOST": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "permission_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "username": {
+                    "type": "string"
+                },
+                "webhook_method": {
+                    "type": "string"
+                },
+                "webhook_uri": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyExtensionsIDPUT": {
             "type": "object",
             "properties": {
@@ -4621,6 +4758,14 @@ var doc = `{
                 }
             }
         },
+        "request.ParamConversationsIDMessagesPOST": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "response.BodyAgentsGET": {
             "type": "object",
             "properties": {
@@ -4684,6 +4829,34 @@ var doc = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/campaigncall.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyConversationsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/conversation.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyConversationsIDMessagesGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/message.WebhookMessage"
                     }
                 }
             }

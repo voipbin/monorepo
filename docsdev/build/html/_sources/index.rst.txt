@@ -17,6 +17,7 @@ Welcome to voipbin's documentation!
    message
    agent
    conference
+   conversation
    domain
    extension
    number

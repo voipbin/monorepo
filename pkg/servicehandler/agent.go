@@ -45,6 +45,7 @@ func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, i
 // to creating an agent.
 // it returns created agent info if it succeed.
 func (h *serviceHandler) AgentCreate(
+	ctx context.Context,
 	u *cscustomer.Customer,
 	username string,
 	password string,
@@ -55,7 +56,6 @@ func (h *serviceHandler) AgentCreate(
 	tagIDs []uuid.UUID,
 	addresses []commonaddress.Address,
 ) (*amagent.WebhookMessage, error) {
-	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentCreate",
 		"customer_id": u.ID,
@@ -77,8 +77,7 @@ func (h *serviceHandler) AgentCreate(
 
 // AgentGet sends a request to agent-manager
 // to getting an agent.
-func (h *serviceHandler) AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AgentGet(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentGet",
 		"customer_id": u.ID,
@@ -99,8 +98,7 @@ func (h *serviceHandler) AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*a
 // AgentGet sends a request to agent-manager
 // to getting a list of agents.
 // it returns agent info if it succeed.
-func (h *serviceHandler) AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AgentGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentGets",
 		"customer_id": u.ID,
@@ -140,8 +138,7 @@ func (h *serviceHandler) AgentGets(u *cscustomer.Customer, size uint64, token st
 
 // AgentDelete sends a request to call-manager
 // to delete the agent.
-func (h *serviceHandler) AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AgentDelete(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentDelete",
 		"customer_id": u.ID,
@@ -168,8 +165,7 @@ func (h *serviceHandler) AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) 
 
 // AgentDelete sends a request to call-manager
 // to delete the agent.
-func (h *serviceHandler) AgentLogin(customerID uuid.UUID, username, password string) (string, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentLogin",
 		"customer_id": customerID,
@@ -202,8 +198,7 @@ func (h *serviceHandler) AgentLogin(customerID uuid.UUID, username, password str
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent info.
-func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AgentUpdate(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdate",
 		"customer_id": u.ID,
@@ -230,8 +225,7 @@ func (h *serviceHandler) AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, 
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent's addresses info.
-func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AgentUpdateAddresses(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateAddresses",
 		"customer_id": u.ID,
@@ -258,8 +252,7 @@ func (h *serviceHandler) AgentUpdateAddresses(u *cscustomer.Customer, agentID uu
 
 // AgentUpdateTagIDs sends a request to agent-manager
 // to update the agent's tag_ids info.
-func (h *serviceHandler) AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateTagIDs",
 		"customer_id": u.ID,
@@ -286,8 +279,7 @@ func (h *serviceHandler) AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.
 
 // AgentUpdateStatus sends a request to agent-manager
 // to update the agent status info.
-func (h *serviceHandler) AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateStatus",
 		"customer_id": u.ID,

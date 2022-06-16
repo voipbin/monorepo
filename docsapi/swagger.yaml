@@ -452,6 +452,29 @@ definitions:
       type:
         type: string
     type: object
+  conversation.WebhookMessage:
+    properties:
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      participants:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
   customer.Customer:
     properties:
       detail:
@@ -459,6 +482,12 @@ definitions:
         type: string
       id:
         description: Customer's ID
+        type: string
+      line_secret:
+        description: line info
+        type: string
+      line_token:
+        description: line's token
         type: string
       name:
         description: name
@@ -481,7 +510,7 @@ definitions:
         description: Customer's username
         type: string
       webhook_method:
-        description: webhook method
+        description: webhook info
         type: string
       webhook_uri:
         description: webhook uri
@@ -495,6 +524,12 @@ definitions:
       id:
         description: Customer's ID
         type: string
+      line_secret:
+        description: line info
+        type: string
+      line_token:
+        description: line's token
+        type: string
       name:
         description: name
         type: string
@@ -516,7 +551,7 @@ definitions:
         description: Customer's username
         type: string
       webhook_method:
-        description: webhook method
+        description: webhook info
         type: string
       webhook_uri:
         description: webhook uri
@@ -1138,6 +1173,25 @@ definitions:
     required:
     - type
     type: object
+  request.BodyCustomersPOST:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      permission_ids:
+        items:
+          type: string
+        type: array
+      username:
+        type: string
+      webhook_method:
+        type: string
+      webhook_uri:
+        type: string
+    type: object
   request.BodyExtensionsIDPUT:
     properties:
       detail:
@@ -1344,6 +1398,11 @@ definitions:
       recording_id:
         type: string
     type: object
+  request.ParamConversationsIDMessagesPOST:
+    properties:
+      text:
+        type: string
+    type: object
   response.BodyAgentsGET:
     properties:
       next_page_token:
@@ -1385,6 +1444,24 @@ definitions:
       result:
         items:
           $ref: '#/definitions/campaigncall.WebhookMessage'
+        type: array
+    type: object
+  response.BodyConversationsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/conversation.WebhookMessage'
+        type: array
+    type: object
+  response.BodyConversationsIDMessagesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/message.WebhookMessage'
         type: array
     type: object
   response.BodyCustomersGET:
@@ -2225,6 +2302,43 @@ paths:
       responses:
         "200": {}
       summary: Kick the call from the conference.
+  /v1.0/conversations/{id}/messages:
+    get:
+      description: Gets a list of conversation messages
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyConversationsIDMessagesGET'
+      summary: Gets a list of conversation messages.
+    post:
+      description: Send a message and returns a sent message info.
+      parameters:
+      - description: message info.
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/request.ParamConversationsIDMessagesPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/message.WebhookMessage'
+      summary: Send a message and returns detail sent message info.
   /v1.0/customers:
     get:
       description: Gets a list of customers
@@ -2253,7 +2367,7 @@ paths:
         name: customer
         required: true
         schema:
-          $ref: '#/definitions/request.BodyFlowsPOST'
+          $ref: '#/definitions/request.BodyCustomersPOST'
       produces:
       - application/json
       responses:

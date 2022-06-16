@@ -18,7 +18,7 @@ func (h *serviceHandler) campaignGet(ctx context.Context, u *cscustomer.Customer
 		logrus.Fields{
 			"func":        "campaignGet",
 			"customer_id": u.ID,
-			"agent_id":    id,
+			"campaign_id": id,
 		},
 	)
 
