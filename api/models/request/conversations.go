@@ -21,5 +21,5 @@ type ParamConversationsIDMessagesPOST struct {
 
 // ParamConversationsSetupPOST is request param define for POST /conversations/setup
 type ParamConversationsSetupPOST struct {
-	ReferenceType cvconversation.ReferenceType
+	ReferenceType cvconversation.ReferenceType `json:"reference_type"`
 }
