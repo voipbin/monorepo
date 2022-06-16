@@ -38,7 +38,18 @@ func (h *customerHandler) Get(ctx context.Context, id uuid.UUID) (*customer.Cust
 }
 
 // Create creates a new customer.
-func (h *customerHandler) Create(ctx context.Context, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+func (h *customerHandler) Create(
+	ctx context.Context,
+	username string,
+	password string,
+	name string,
+	detail string,
+	webhookMethod customer.WebhookMethod,
+	webhookURI string,
+	lineSecret string,
+	lineToken string,
+	permissionIDs []uuid.UUID,
+) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
 		"username":       username,
@@ -46,6 +57,8 @@ func (h *customerHandler) Create(ctx context.Context, username, password, name, 
 		"detail":         detail,
 		"webhook_method": webhookMethod,
 		"webhook_uri":    webhookURI,
+		"line_secret":    lineSecret,
+		"line_token":     lineToken,
 		"permission_ids": permissionIDs,
 	})
 	log.Debug("Creating a new customer.")
@@ -70,10 +83,14 @@ func (h *customerHandler) Create(ctx context.Context, username, password, name, 
 		Username:     username,
 		PasswordHash: hashPassword,
 
-		Name:          name,
-		Detail:        detail,
+		Name:   name,
+		Detail: detail,
+
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
+
+		LineSecret: lineSecret,
+		LineToken:  lineToken,
 
 		PermissionIDs: permissionIDs,
 

@@ -24,6 +24,8 @@ type CustomerHandler interface {
 		detail string,
 		webhookMethod customer.WebhookMethod,
 		webhookURI string,
+		lineSecret string,
+		lineToken string,
 		permissionIDs []uuid.UUID,
 	) (*customer.Customer, error)
 	Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error)

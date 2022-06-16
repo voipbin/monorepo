@@ -73,7 +73,18 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqh
 	})
 	log.Debug("Creating a customer.")
 
-	tmp, err := h.customerHandler.Create(ctx, reqData.Username, reqData.Password, reqData.Name, reqData.Detail, reqData.WebhookMethod, reqData.WebhookURI, reqData.PermissionIDs)
+	tmp, err := h.customerHandler.Create(
+		ctx,
+		reqData.Username,
+		reqData.Password,
+		reqData.Name,
+		reqData.Detail,
+		reqData.WebhookMethod,
+		reqData.WebhookURI,
+		reqData.LineSecret,
+		reqData.LineToken,
+		reqData.PermissionIDs,
+	)
 	if err != nil {
 		log.Errorf("Could not create the customer info. err: %v", err)
 		return simpleResponse(500), nil
