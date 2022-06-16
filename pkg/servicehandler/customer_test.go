@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -14,16 +15,6 @@ import (
 )
 
 func TestCustomerCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -35,6 +26,8 @@ func TestCustomerCreate(t *testing.T) {
 		detail        string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
+		lineSecret    string
+		lineToken     string
 		permissionIDs []uuid.UUID
 
 		responseCustomer *cscustomer.Customer
@@ -57,6 +50,8 @@ func TestCustomerCreate(t *testing.T) {
 			"test detail",
 			cscustomer.WebhookMethodPost,
 			"test.com",
+			"c5ea6344-ed44-11ec-b5bf-6726d8b17878",
+			"c6511440-ed44-11ec-a3d7-3708bbaa641e",
 			[]uuid.UUID{
 				cspermission.PermissionAdmin.ID,
 			},
@@ -72,10 +67,22 @@ func TestCustomerCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().CSV1CustomerCreate(gomock.Any(), 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			res, err := h.CustomerCreate(tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CSV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lineToken, tt.permissionIDs).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerCreate(ctx, tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lineToken, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -88,16 +95,6 @@ func TestCustomerCreate(t *testing.T) {
 }
 
 func TestCustomerGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -132,10 +129,22 @@ func TestCustomerGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().CSV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomer, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			res, err := h.CustomerGet(tt.customer, tt.id)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CSV1CustomerGet(ctx, tt.id).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerGet(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -148,16 +157,6 @@ func TestCustomerGet(t *testing.T) {
 }
 
 func TestCustomerGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -199,10 +198,22 @@ func TestCustomerGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().CSV1CustomerGets(gomock.Any(), tt.token, tt.size).Return(tt.responseCustomers, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			res, err := h.CustomerGets(tt.customer, tt.size, tt.token)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CSV1CustomerGets(ctx, tt.token, tt.size).Return(tt.responseCustomers, nil)
+
+			res, err := h.CustomerGets(ctx, tt.customer, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -215,16 +226,6 @@ func TestCustomerGets(t *testing.T) {
 }
 
 func TestCustomerUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -267,11 +268,23 @@ func TestCustomerUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().CSV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CSV1CustomerUpdate(gomock.Any(), tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			res, err := h.CustomerUpdate(tt.customer, tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CSV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CSV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
+
+			res, err := h.CustomerUpdate(ctx, tt.customer, tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -284,16 +297,6 @@ func TestCustomerUpdate(t *testing.T) {
 }
 
 func TestCustomerDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -328,11 +331,23 @@ func TestCustomerDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().CSV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CSV1CustomerDelete(gomock.Any(), tt.id).Return(tt.responseCustomers, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			res, err := h.CustomerDelete(tt.customer, tt.id)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CSV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CSV1CustomerDelete(ctx, tt.id).Return(tt.responseCustomers, nil)
+
+			res, err := h.CustomerDelete(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -345,16 +360,6 @@ func TestCustomerDelete(t *testing.T) {
 }
 
 func TestCustomerUpdatePassword(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -391,11 +396,23 @@ func TestCustomerUpdatePassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().CSV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CSV1CustomerUpdatePassword(gomock.Any(), 30000, tt.id, tt.password).Return(tt.responseCustomers, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			res, err := h.CustomerUpdatePassword(tt.customer, tt.id, tt.password)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CSV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CSV1CustomerUpdatePassword(ctx, 30000, tt.id, tt.password).Return(tt.responseCustomers, nil)
+
+			res, err := h.CustomerUpdatePassword(ctx, tt.customer, tt.id, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -408,16 +425,6 @@ func TestCustomerUpdatePassword(t *testing.T) {
 }
 
 func TestCustomerUpdatePermissionIDs(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -456,10 +463,22 @@ func TestCustomerUpdatePermissionIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().CSV1CustomerUpdatePermissionIDs(gomock.Any(), tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
 
-			res, err := h.CustomerUpdatePermissionIDs(tt.customer, tt.id, tt.permissionIDs)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CSV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerUpdatePermissionIDs(ctx, tt.customer, tt.id, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
