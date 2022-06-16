@@ -24,7 +24,7 @@ func (r *requestHandler) FMV1VariableGet(ctx context.Context, variableID uuid.UU
 	}
 
 	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not find action")
+		return nil, fmt.Errorf("could not get variable. status: %d", tmp.StatusCode)
 	}
 
 	var res fmvariable.Variable

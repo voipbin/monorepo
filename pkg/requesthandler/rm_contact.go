@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"net/url"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // RMV1ContactGets sends the /v1/contacts GET request to registrar-manager
@@ -15,26 +16,26 @@ func (r *requestHandler) RMV1ContactGets(ctx context.Context, endpoint string) (
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
-	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	if res.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not find action")
+	if tmp.StatusCode >= 299 {
+		return nil, fmt.Errorf("could not get contact. status: %d", tmp.StatusCode)
 	}
 
 	var tmpContacts []astcontact.AstContact
-	if err := json.Unmarshal([]byte(res.Data), &tmpContacts); err != nil {
+	if err := json.Unmarshal([]byte(tmp.Data), &tmpContacts); err != nil {
 		return nil, err
 	}
 
-	var contacts []*astcontact.AstContact
+	var res []*astcontact.AstContact
 	for _, c := range tmpContacts {
-		contacts = append(contacts, &c)
+		res = append(res, &c)
 	}
 
-	return contacts, nil
+	return res, nil
 }
 
 // RMV1ContactUpdate sends the /v1/contacts PUT request to registrar-manager

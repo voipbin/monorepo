@@ -39,7 +39,7 @@ func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUI
 	}
 
 	if tmp.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not find action")
+		return nil, fmt.Errorf("could not create flow. status: %d", tmp.StatusCode)
 	}
 
 	var res fmflow.Flow

@@ -6,8 +6,9 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // FMV1ActionGet gets the action of the flow.
@@ -21,7 +22,7 @@ func (r *requestHandler) FMV1ActionGet(ctx context.Context, flowID, actionID uui
 	}
 
 	if res.StatusCode >= 299 {
-		return nil, fmt.Errorf("could not find action")
+		return nil, fmt.Errorf("could not get action. status: %d", res.StatusCode)
 	}
 
 	var action action.Action
