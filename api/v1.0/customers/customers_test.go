@@ -28,13 +28,7 @@ func setupServer(app *gin.Engine) {
 
 func Test_customersPOST(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		target   string
@@ -46,12 +40,12 @@ func Test_customersPOST(t *testing.T) {
 		detail        string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
+		lineSecret    string
+		lineToken     string
 		permissionIDs []uuid.UUID
 
 		expectRes *cscustomer.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -66,6 +60,8 @@ func Test_customersPOST(t *testing.T) {
 				Detail:        "test detail",
 				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
+				LineSecret:    "4ba6404c-ed46-11ec-b65f-633777921f81",
+				LineToken:     "4bdc26ee-ed46-11ec-b6e1-a37350901af7",
 				PermissionIDs: []uuid.UUID{
 					cspermission.PermissionAdmin.ID,
 				},
@@ -76,6 +72,8 @@ func Test_customersPOST(t *testing.T) {
 			"test detail",
 			cscustomer.WebhookMethodPost,
 			"test.com",
+			"4ba6404c-ed46-11ec-b65f-633777921f81",
+			"4bdc26ee-ed46-11ec-b6e1-a37350901af7",
 			[]uuid.UUID{
 				cspermission.PermissionAdmin.ID,
 			},
@@ -88,6 +86,11 @@ func Test_customersPOST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -106,7 +109,19 @@ func Test_customersPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerCreate(&tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.expectRes, nil)
+			mockSvc.EXPECT().CustomerCreate(
+				req.Context(),
+				&tt.customer,
+				tt.username,
+				tt.password,
+				tt.customerName,
+				tt.detail,
+				tt.webhookMethod,
+				tt.webhookURI,
+				tt.lineSecret,
+				tt.lineToken,
+				tt.permissionIDs,
+			).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -119,13 +134,7 @@ func Test_customersPOST(t *testing.T) {
 
 func Test_customersGet(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		target   string
@@ -135,9 +144,7 @@ func Test_customersGet(t *testing.T) {
 
 		resCustomers []*cscustomer.WebhookMessage
 		expectRes    *response.BodyCustomersGET
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -165,6 +172,11 @@ func Test_customersGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -180,7 +192,7 @@ func Test_customersGet(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerGets(&tt.customer, tt.size, tt.token).Return(tt.resCustomers, nil)
+			mockSvc.EXPECT().CustomerGets(req.Context(), &tt.customer, tt.size, tt.token).Return(tt.resCustomers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -201,13 +213,7 @@ func Test_customersGet(t *testing.T) {
 
 func Test_customersIDGet(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		target   string
@@ -215,9 +221,7 @@ func Test_customersIDGet(t *testing.T) {
 		id uuid.UUID
 
 		expectRes *cscustomer.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -238,6 +242,11 @@ func Test_customersIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -252,7 +261,7 @@ func Test_customersIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.target, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerGet(&tt.customer, tt.id).Return(tt.expectRes, nil)
+			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.customer, tt.id).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -273,22 +282,14 @@ func Test_customersIDGet(t *testing.T) {
 
 func Test_customersIDPut(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		target   string
 
 		id  uuid.UUID
 		req request.BodyCustomersIDPUT
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -311,6 +312,11 @@ func Test_customersIDPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -329,7 +335,7 @@ func Test_customersIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdate(&tt.customer, tt.id, tt.req.Name, tt.req.Detail, tt.req.WebhookMethod, tt.req.WebhookURI).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.customer, tt.id, tt.req.Name, tt.req.Detail, tt.req.WebhookMethod, tt.req.WebhookURI).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -341,21 +347,13 @@ func Test_customersIDPut(t *testing.T) {
 
 func Test_customersIDDelete(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		target   string
 
 		id uuid.UUID
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -372,6 +370,11 @@ func Test_customersIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -386,7 +389,7 @@ func Test_customersIDDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.target, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerDelete(&tt.customer, tt.id).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerDelete(req.Context(), &tt.customer, tt.id).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -398,13 +401,7 @@ func Test_customersIDDelete(t *testing.T) {
 
 func Test_customersIDPermissionIDsPut(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		target   string
@@ -412,9 +409,7 @@ func Test_customersIDPermissionIDsPut(t *testing.T) {
 		req request.BodyCustomersIDPermissionIDsPUT
 
 		id uuid.UUID
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -437,6 +432,11 @@ func Test_customersIDPermissionIDsPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -455,7 +455,7 @@ func Test_customersIDPermissionIDsPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdatePermissionIDs(&tt.customer, tt.id, tt.req.PermissionIDs).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdatePermissionIDs(req.Context(), &tt.customer, tt.id, tt.req.PermissionIDs).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -467,13 +467,7 @@ func Test_customersIDPermissionIDsPut(t *testing.T) {
 
 func Test_customersIDPasswordPut(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 		target   string
@@ -481,9 +475,7 @@ func Test_customersIDPasswordPut(t *testing.T) {
 		req request.BodyCustomersIDPasswordPUT
 
 		id uuid.UUID
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			cscustomer.Customer{
@@ -504,6 +496,11 @@ func Test_customersIDPasswordPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -522,7 +519,7 @@ func Test_customersIDPasswordPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdatePassword(&tt.customer, tt.id, tt.req.Password).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdatePassword(req.Context(), &tt.customer, tt.id, tt.req.Password).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

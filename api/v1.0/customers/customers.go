@@ -23,7 +23,7 @@ import (
 func customersPost(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":            "flowsPOST",
+			"func":            "customersPost",
 			"request_address": c.ClientIP,
 		},
 	)
@@ -49,11 +49,23 @@ func customersPost(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	log.WithField("request", req).Debug("Executing flowsPOST.")
+	log.WithField("request", req).Debug("Creating a customer.")
 
-	// create a flow
+	// create a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerCreate(&u, req.Username, req.Password, req.Name, req.Detail, req.WebhookMethod, req.WebhookURI, req.PermissionIDs)
+	res, err := serviceHandler.CustomerCreate(
+		c.Request.Context(),
+		&u,
+		req.Username,
+		req.Password,
+		req.Name,
+		req.Detail,
+		req.WebhookMethod,
+		req.WebhookURI,
+		req.LineSecret,
+		req.LineToken,
+		req.PermissionIDs,
+	)
 	if err != nil {
 		log.Errorf("Could not create a customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -114,7 +126,7 @@ func customersGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get customers
-	customers, err := serviceHandler.CustomerGets(&u, pageSize, req.PageToken)
+	customers, err := serviceHandler.CustomerGets(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a customers list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -172,7 +184,7 @@ func customersIDGet(c *gin.Context) {
 	log.Debug("Executing customersIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerGet(&u, id)
+	res, err := serviceHandler.CustomerGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -226,7 +238,7 @@ func customersIDPut(c *gin.Context) {
 
 	// update a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerUpdate(&u, id, req.Name, req.Detail, req.WebhookMethod, req.WebhookURI)
+	res, err := serviceHandler.CustomerUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.WebhookMethod, req.WebhookURI)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -273,7 +285,7 @@ func customersIDDelete(c *gin.Context) {
 
 	// delete a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerDelete(&u, id)
+	res, err := serviceHandler.CustomerDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -326,7 +338,7 @@ func customersIDPermissionIDsPut(c *gin.Context) {
 
 	// update a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerUpdatePermissionIDs(&u, id, req.PermissionIDs)
+	res, err := serviceHandler.CustomerUpdatePermissionIDs(c.Request.Context(), &u, id, req.PermissionIDs)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -379,7 +391,60 @@ func customersIDPasswordPut(c *gin.Context) {
 
 	// update a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerUpdatePassword(&u, id, req.Password)
+	res, err := serviceHandler.CustomerUpdatePassword(c.Request.Context(), &u, id, req.Password)
+	if err != nil {
+		log.Errorf("Could not update the customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// customersIDLineInfoPut handles PUT /customers/{id}/line_info request.
+// It updates a customer's line info.
+// @Summary Update a customer's line info.
+// @Description Update a customer's line info.
+// @Produce json
+// @Success 200 {object} customer.Customer
+// @Router /v1.0/customers/{id}/line_info [put]
+func customersIDLineInfoPut(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "customersIDLineInfoPut",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("target_id", id)
+
+	var req request.BodyCustomersIDLineInfoPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// update a customer
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.CustomerUpdateLineInfo(c.Request.Context(), &u, id, req.LineSecret, req.LineToken)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
