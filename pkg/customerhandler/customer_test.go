@@ -15,19 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
 )
 
-func TestGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &customerHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -45,6 +33,19 @@ func TestGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerGets(gomock.Any(), tt.size, tt.token).Return(tt.result, nil)
@@ -57,19 +58,7 @@ func TestGets(t *testing.T) {
 	}
 }
 
-func TestCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &customerHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_Create(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -80,6 +69,8 @@ func TestCreate(t *testing.T) {
 		detail        string
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
+		lineSecret    string
+		lintToken     string
 		permissionIDs []uuid.UUID
 	}{
 		{
@@ -90,6 +81,8 @@ func TestCreate(t *testing.T) {
 			"detail1",
 			customer.WebhookMethodPost,
 			"test.com",
+			"d8d12020-ed3e-11ec-8651-e3cf0d4ad0d7",
+			"d90b9eda-ed3e-11ec-a271-6f460a099376",
 			[]uuid.UUID{
 				permission.PermissionAdmin.ID,
 			},
@@ -98,6 +91,19 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerGetByUsername(gomock.Any(), tt.username).Return(nil, fmt.Errorf("not found"))
@@ -105,7 +111,7 @@ func TestCreate(t *testing.T) {
 			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
-			_, err := h.Create(ctx, tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
+			_, err := h.Create(ctx, tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lintToken, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
