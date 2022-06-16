@@ -3,6 +3,7 @@ package servicehandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package servicehandler -destination ./mock_servicehandler.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -17,6 +18,9 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -42,6 +46,7 @@ type ServiceHandler interface {
 
 	// agent handlers
 	AgentCreate(
+		ctx context.Context,
 		u *cscustomer.Customer,
 		username string,
 		password string,
@@ -52,14 +57,14 @@ type ServiceHandler interface {
 		tagIDs []uuid.UUID,
 		addresses []commonaddress.Address,
 	) (*amagent.WebhookMessage, error)
-	AgentGet(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
-	AgentGets(u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error)
-	AgentDelete(u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
-	AgentLogin(customerID uuid.UUID, username, password string) (string, error)
-	AgentUpdate(u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
-	AgentUpdateAddresses(u *cscustomer.Customer, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error)
-	AgentUpdateStatus(u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error)
-	AgentUpdateTagIDs(u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error)
+	AgentGet(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
+	AgentGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string, tagIDs []uuid.UUID, status amagent.Status) ([]*amagent.WebhookMessage, error)
+	AgentDelete(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID) (*amagent.WebhookMessage, error)
+	AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (string, error)
+	AgentUpdate(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
+	AgentUpdateAddresses(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error)
+	AgentUpdateStatus(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error)
+	AgentUpdateTagIDs(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error)
 
 	// auth handlers
 	AuthLogin(username, password string) (string, error)
@@ -108,6 +113,24 @@ type ServiceHandler interface {
 	ConferenceGet(u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGets(u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
 	ConferenceKick(u *cscustomer.Customer, confID uuid.UUID, callID uuid.UUID) error
+
+	// conversation handlers
+	ConversationGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cvconversation.WebhookMessage, error)
+	ConversationGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cvconversation.WebhookMessage, error)
+	ConversationMessageGetsByConversationID(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		conversationID uuid.UUID,
+		size uint64,
+		token string,
+	) ([]*cvmessage.WebhookMessage, error)
+	ConversationMessageSend(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		conversationID uuid.UUID,
+		text string,
+		medias []cvmedia.Media,
+	) (*cvmessage.WebhookMessage, error)
 
 	// customer handlers
 	CustomerCreate(u *cscustomer.Customer, username, password, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)

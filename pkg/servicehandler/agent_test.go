@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -15,15 +16,6 @@ import (
 )
 
 func TestAgentCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -93,10 +85,21 @@ func TestAgentCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AMV1AgentCreate(gomock.Any(), 30, tt.customer.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.response, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
-			res, err := h.AgentCreate(tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentCreate(ctx, 30, tt.customer.ID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.response, nil)
+
+			res, err := h.AgentCreate(ctx, tt.customer, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -109,15 +112,6 @@ func TestAgentCreate(t *testing.T) {
 }
 
 func TestAgentGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -147,10 +141,20 @@ func TestAgentGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.response, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
 
-			res, err := h.AgentGet(tt.customer, tt.agentID)
+			mockReq.EXPECT().AMV1AgentGet(ctx, tt.agentID).Return(tt.response, nil)
+
+			res, err := h.AgentGet(ctx, tt.customer, tt.agentID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -163,15 +167,6 @@ func TestAgentGet(t *testing.T) {
 }
 
 func TestAgentGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -238,9 +233,21 @@ func TestAgentGets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1AgentGets(gomock.Any(), tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			res, err := h.AgentGets(tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentGets(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
+
+			res, err := h.AgentGets(ctx, tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -253,15 +260,6 @@ func TestAgentGets(t *testing.T) {
 }
 
 func TestAgentGetsByTagIDs(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -326,10 +324,21 @@ func TestAgentGetsByTagIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AMV1AgentGetsByTagIDs(gomock.Any(), tt.customer.ID, tt.tagIDs).Return(tt.response, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
-			res, err := h.AgentGets(tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentGetsByTagIDs(ctx, tt.customer.ID, tt.tagIDs).Return(tt.response, nil)
+
+			res, err := h.AgentGets(ctx, tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -342,15 +351,6 @@ func TestAgentGetsByTagIDs(t *testing.T) {
 }
 
 func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -415,10 +415,21 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(gomock.Any(), tt.customer.ID, tt.tagIDs, amagent.Status(tt.status)).Return(tt.response, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
-			res, err := h.AgentGets(tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(ctx, tt.customer.ID, tt.tagIDs, amagent.Status(tt.status)).Return(tt.response, nil)
+
+			res, err := h.AgentGets(ctx, tt.customer, tt.size, tt.token, tt.tagIDs, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -431,15 +442,6 @@ func TestAgentGetsByTagIDsAndStatus(t *testing.T) {
 }
 
 func TestAgentDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -466,10 +468,22 @@ func TestAgentDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentDelete(gomock.Any(), tt.agentID).Return(&amagent.Agent{}, nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			_, err := h.AgentDelete(tt.customer, tt.agentID)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentGet(ctx, tt.agentID).Return(tt.resAgentGet, nil)
+			mockReq.EXPECT().AMV1AgentDelete(ctx, tt.agentID).Return(&amagent.Agent{}, nil)
+
+			_, err := h.AgentDelete(ctx, tt.customer, tt.agentID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -479,15 +493,6 @@ func TestAgentDelete(t *testing.T) {
 }
 
 func TestAgentLogin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -515,10 +520,21 @@ func TestAgentLogin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AMV1AgentLogin(gomock.Any(), 30000, tt.customer.ID, tt.username, tt.password).Return(tt.response, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
-			_, err := h.AgentLogin(tt.customer.ID, tt.username, tt.password)
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentLogin(ctx, 30000, tt.customer.ID, tt.username, tt.password).Return(tt.response, nil)
+
+			_, err := h.AgentLogin(ctx, tt.customer.ID, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -527,15 +543,6 @@ func TestAgentLogin(t *testing.T) {
 }
 
 func TestAgentUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -576,11 +583,22 @@ func TestAgentUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentUpdate(gomock.Any(), tt.agentID, tt.agentName, tt.detail, tt.ringMethod).Return(tt.resAgentPut, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
-			res, err := h.AgentUpdate(tt.customer, tt.agentID, tt.agentName, tt.detail, tt.ringMethod)
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentGet(ctx, tt.agentID).Return(tt.resAgentGet, nil)
+			mockReq.EXPECT().AMV1AgentUpdate(ctx, tt.agentID, tt.agentName, tt.detail, tt.ringMethod).Return(tt.resAgentPut, nil)
+
+			res, err := h.AgentUpdate(ctx, tt.customer, tt.agentID, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -594,15 +612,6 @@ func TestAgentUpdate(t *testing.T) {
 }
 
 func TestAgentUpdateAddresses(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -635,11 +644,22 @@ func TestAgentUpdateAddresses(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentUpdateAddresses(gomock.Any(), tt.agentID, tt.addresses).Return(&amagent.Agent{}, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
-			_, err := h.AgentUpdateAddresses(tt.customer, tt.agentID, tt.addresses)
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentGet(ctx, tt.agentID).Return(tt.resAgentGet, nil)
+			mockReq.EXPECT().AMV1AgentUpdateAddresses(ctx, tt.agentID, tt.addresses).Return(&amagent.Agent{}, nil)
+
+			_, err := h.AgentUpdateAddresses(ctx, tt.customer, tt.agentID, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -648,15 +668,6 @@ func TestAgentUpdateAddresses(t *testing.T) {
 }
 
 func TestAgentUpdateTagIDs(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -686,10 +697,22 @@ func TestAgentUpdateTagIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentUpdateTagIDs(gomock.Any(), tt.agentID, tt.tagIDs).Return(&amagent.Agent{}, nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			_, err := h.AgentUpdateTagIDs(tt.customer, tt.agentID, tt.tagIDs)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentGet(ctx, tt.agentID).Return(tt.resAgentGet, nil)
+			mockReq.EXPECT().AMV1AgentUpdateTagIDs(ctx, tt.agentID, tt.tagIDs).Return(&amagent.Agent{}, nil)
+
+			_, err := h.AgentUpdateTagIDs(ctx, tt.customer, tt.agentID, tt.tagIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -698,15 +721,6 @@ func TestAgentUpdateTagIDs(t *testing.T) {
 }
 
 func TestAgentUpdateStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -734,11 +748,22 @@ func TestAgentUpdateStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockReq.EXPECT().AMV1AgentGet(gomock.Any(), tt.agentID).Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AMV1AgentUpdateStatus(gomock.Any(), tt.agentID, amagent.Status(tt.status)).Return(&amagent.Agent{}, nil)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
-			_, err := h.AgentUpdateStatus(tt.customer, tt.agentID, tt.status)
+			ctx := context.Background()
+
+			mockReq.EXPECT().AMV1AgentGet(ctx, tt.agentID).Return(tt.resAgentGet, nil)
+			mockReq.EXPECT().AMV1AgentUpdateStatus(ctx, tt.agentID, amagent.Status(tt.status)).Return(&amagent.Agent{}, nil)
+
+			_, err := h.AgentUpdateStatus(ctx, tt.customer, tt.agentID, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
