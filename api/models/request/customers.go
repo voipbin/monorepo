@@ -5,7 +5,7 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
-// ParamCustomersGET is rquest param define for GET /flows
+// ParamCustomersGET is request param define for GET /customers
 type ParamCustomersGET struct {
 	Pagination
 }
