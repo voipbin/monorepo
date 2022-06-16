@@ -38,8 +38,19 @@ func (h *serviceHandler) customerGet(ctx context.Context, u *cscustomer.Customer
 }
 
 // CustomerCreate validates the customer's ownership and creates a new customer
-func (h *serviceHandler) CustomerCreate(u *cscustomer.Customer, username, password, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CustomerCreate(
+	ctx context.Context,
+	u *cscustomer.Customer,
+	username string,
+	password string,
+	name string,
+	detail string,
+	webhookMethod cscustomer.WebhookMethod,
+	webhookURI string,
+	lineSecret string,
+	lineToken string,
+	permissionIDs []uuid.UUID,
+) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"Username": username,
 		"Name":     name,
@@ -53,7 +64,7 @@ func (h *serviceHandler) CustomerCreate(u *cscustomer.Customer, username, passwo
 		return nil, fmt.Errorf("has no permission")
 	}
 
-	tmp, err := h.reqHandler.CSV1CustomerCreate(ctx, 30000, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
+	tmp, err := h.reqHandler.CSV1CustomerCreate(ctx, 30000, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
 	if err != nil {
 		log.Errorf("Could not create a new customer. err: %v", err)
 		return nil, err
@@ -64,8 +75,7 @@ func (h *serviceHandler) CustomerCreate(u *cscustomer.Customer, username, passwo
 }
 
 // UserGet returns customer info of given customerID.
-func (h *serviceHandler) CustomerGet(u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CustomerGet(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -85,8 +95,7 @@ func (h *serviceHandler) CustomerGet(u *cscustomer.Customer, customerID uuid.UUI
 }
 
 // CustomerGets returns list of all customers
-func (h *serviceHandler) CustomerGets(u *cscustomer.Customer, size uint64, token string) ([]*cscustomer.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CustomerGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "CustomerGets",
 		"size":  size,
@@ -125,8 +134,7 @@ func (h *serviceHandler) CustomerGets(u *cscustomer.Customer, size uint64, token
 
 // CustomerUpdate sends a request to customer-manager
 // to update the customer's basic info.
-func (h *serviceHandler) CustomerUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CustomerUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerUpdate",
 		"customer_id": u.ID,
@@ -151,8 +159,7 @@ func (h *serviceHandler) CustomerUpdate(u *cscustomer.Customer, id uuid.UUID, na
 
 // CustomerDelete sends a request to customer-manager
 // to delete the customer.
-func (h *serviceHandler) CustomerDelete(u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CustomerDelete(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerDelete",
 		"customer_id": u.ID,
@@ -183,8 +190,7 @@ func (h *serviceHandler) CustomerDelete(u *cscustomer.Customer, customerID uuid.
 
 // CustomerUpdatePassword sends a request to customer-manager
 // to update the customer's password.
-func (h *serviceHandler) CustomerUpdatePassword(u *cscustomer.Customer, customerID uuid.UUID, password string) (*cscustomer.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CustomerUpdatePassword(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, password string) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerUpdatePassword",
 		"customer_id": u.ID,
@@ -209,8 +215,7 @@ func (h *serviceHandler) CustomerUpdatePassword(u *cscustomer.Customer, customer
 
 // CustomerUpdatePermissionIDs sends a request to customer-manager
 // to update the customer's permission ids.
-func (h *serviceHandler) CustomerUpdatePermissionIDs(u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CustomerUpdatePermissionIDs(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerUpdatePermissionIDs",
 		"customer_id": u.ID,
@@ -224,6 +229,30 @@ func (h *serviceHandler) CustomerUpdatePermissionIDs(u *cscustomer.Customer, cus
 
 	// send request
 	res, err := h.reqHandler.CSV1CustomerUpdatePermissionIDs(ctx, customerID, permissionIDs)
+	if err != nil {
+		log.Errorf("Could not update the customer's permission. err: %v", err)
+		return nil, err
+	}
+
+	return res.ConvertWebhookMessage(), nil
+}
+
+// CustomerUpdateLineInfo sends a request to customer-manager
+// to update the customer's line info.
+func (h *serviceHandler) CustomerUpdateLineInfo(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, lineSecret string, lineToken string) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerUpdateLineInfo",
+		"customer_id": u.ID,
+		"username":    u.Username,
+	})
+
+	if _, found := Find(u.PermissionIDs, cspermission.PermissionAdmin.ID); !found {
+		log.Warn("The customer has no permission.")
+		return nil, fmt.Errorf("customer has no permission")
+	}
+
+	// send request
+	res, err := h.reqHandler.CSV1CustomerUpdateLineInfo(ctx, customerID, lineSecret, lineToken)
 	if err != nil {
 		log.Errorf("Could not update the customer's permission. err: %v", err)
 		return nil, err
