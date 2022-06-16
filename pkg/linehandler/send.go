@@ -17,7 +17,7 @@ func (h *lineHandler) Send(ctx context.Context, customerID uuid.UUID, destinatio
 			"func": "Send",
 		},
 	)
-	log.Debug("Deleting the flow.")
+	log.Debug("Sending a message.")
 
 	// get clinet
 	c, err := h.getClient(ctx, customerID)

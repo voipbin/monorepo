@@ -25,6 +25,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/subscribehandler"
 )
 
 const serviceName = "conversation-manager"
@@ -36,6 +37,8 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.conversation-manager.request", "rabbitmq queue name for request listen")
+var rabbitQueueSubscribe = flag.String("rabbit_queue_subscribe", "bin-manager.conversation-manager.subscribe", "rabbitmq queue name for request listen")
+var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.customer-manager.event", "comma separated rabbitmq exchange name for subscribe")
 var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.conversation-manager.event", "rabbitmq queue name for event notify") //nolint:deadcode,unused,varcheck // reserved
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
@@ -160,6 +163,12 @@ func run(dbHandler dbhandler.DBHandler) {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
+
+	// run subscribe
+	if errSub := runSubscribe(rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, accountHandler); errSub != nil {
+		log.Errorf("Could not run the subscribe correctly. err: %v", errSub)
+		return
+	}
 }
 
 // runListen runs the listen service
@@ -175,6 +184,29 @@ func runListen(
 	// run the service
 	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)
+	}
+
+	return nil
+}
+
+// runSubscribe runs the subscribed event handler
+func runSubscribe(
+	rabbitSock rabbitmqhandler.Rabbit,
+	subscribeQueue string,
+	subscribeTargets string,
+	accountHandler accounthandler.AccountHandler,
+) error {
+
+	subHandler := subscribehandler.NewSubscribeHandler(
+		rabbitSock,
+		subscribeQueue,
+		subscribeTargets,
+		accountHandler,
+	)
+
+	// run
+	if err := subHandler.Run(); err != nil {
+		return err
 	}
 
 	return nil

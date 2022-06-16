@@ -19,7 +19,7 @@ func CreateAccountFromCustomer(cs *cscustomer.Customer) *Account {
 	return &Account{
 		ID: cs.ID,
 
-		LineSecret: "",
-		LineToken:  "",
+		LineSecret: cs.LineSecret,
+		LineToken:  cs.LineToken,
 	}
 }
