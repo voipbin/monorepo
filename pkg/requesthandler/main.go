@@ -155,6 +155,7 @@ const (
 
 	resourceConversationConversations           resource = "conversation/conversations"
 	resourceConversationConversationsIDMessages resource = "conversation/conversations/<conversation-id>/messages"
+	resourceConversationSetup                   resource = "conversation/setup"
 
 	resourceFlowsActions  resource = "flows/actions"
 	resourceFMFlows       resource = "fm/flows"
