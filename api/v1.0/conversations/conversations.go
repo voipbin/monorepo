@@ -269,7 +269,7 @@ func conversationsIDMessagesPost(c *gin.Context) {
 // @Produce json
 // @Param message body request.ParamConversationsSetupPOST true "message info."
 // @Success 200 {object} message.WebhookMessage
-// @Router /v1.0/conversations/{id}/messages [post]
+// @Router /v1.0/conversations/setup [post]
 func conversationsSetupPost(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -299,16 +299,11 @@ func conversationsSetupPost(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	log.WithField("request", req).Debug("Executing flowsPOST.")
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-	log = log.WithField("target_id", id)
-	log.Debug("Executing customersIDGET.")
+	log.WithField("request", req).Debug("Executing conversationsSetupPost.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	if err := serviceHandler.ConversationSetup(c.Request.Context(), &u, req.ReferenceType); err != nil {
-		log.Errorf("Could not create a customer. err: %v", err)
+		log.Errorf("Could not setup the conversation. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
