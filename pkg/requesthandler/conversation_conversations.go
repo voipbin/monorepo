@@ -97,10 +97,10 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 	return &res, nil
 }
 
-// ConversationV1ConversationMessageGets sends a request to conversation-manager
+// ConversationV1ConversationMessageGetsByConversationID sends a request to conversation-manager
 // to getting a list of conversation's messages.
 // it returns detail list of messages info if it succeed.
-func (r *requestHandler) ConversationV1ConversationMessageGets(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]cvmessage.Message, error) {
+func (r *requestHandler) ConversationV1ConversationMessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]cvmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/conversations/%s/messages?page_token=%s&page_size=%d", conversationID, url.QueryEscape(pageToken), pageSize)
 
 	tmp, err := r.sendRequestConversation(uri, rabbitmqhandler.RequestMethodGet, resourceConversationConversationsIDMessages, 30000, 0, ContentTypeJSON, nil)
