@@ -1,0 +1,263 @@
+package conversations
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
+)
+
+// conversationsGet handles GET /conversations request.
+// It gets a list of conversations with the given info.
+// @Summary Gets a list of conversations.
+// @Description Gets a list of conversations
+// @Produce json
+// @Param page_size query int false "The size of results. Max 100"
+// @Param page_token query string false "The token. tm_create"
+// @Success 200 {object} response.BodyConversationsGET
+// @Router /v1.0/customers [get]
+func conversationsGet(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conversationsGet",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	var req request.ParamConversationsGET
+	if err := c.BindQuery(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// set max page size
+	pageSize := req.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+	log.Debugf("Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// get tmpRes
+	tmpRes, err := serviceHandler.ConversationGetsByCustomerID(c.Request.Context(), &u, pageSize, req.PageToken)
+	if err != nil {
+		log.Errorf("Could not get a conversation list. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(tmpRes) > 0 {
+		nextToken = tmpRes[len(tmpRes)-1].TMCreate
+	}
+	res := response.BodyConversationsGET{
+		Result: tmpRes,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
+	}
+
+	c.JSON(200, res)
+}
+
+// conversationsIDGet handles GET /conversations/{id} request.
+// It returns detail conversation info.
+// @Summary Returns detail conversation info.
+// @Description Returns detail conversation info of the given conversation id.
+// @Produce json
+// @Param id path string true "The ID of the conversation"
+// @Success 200 {object} conversation.WebhookMessage
+// @Router /v1.0/customers/{id} [get]
+func conversationsIDGet(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conversationsIDGet",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("target_id", id)
+	log.Debug("Executing customersIDGET.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ConversationGet(c.Request.Context(), &u, id)
+	if err != nil {
+		log.Errorf("Could not get a customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// conversationsIDMessagesGet handles GET /conversations/{id}/messages request.
+// It gets a list of conversation messages with the given info.
+// @Summary Gets a list of conversation messages.
+// @Description Gets a list of conversation messages
+// @Produce json
+// @Param page_size query int false "The size of results. Max 100"
+// @Param page_token query string false "The token. tm_create"
+// @Success 200 {object} response.BodyConversationsIDMessagesGET
+// @Router /v1.0/conversations/{id}/messages [get]
+func conversationsIDMessagesGet(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conversationsIDMessagesGet",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	var req request.ParamConversationsIDMessagesGET
+	if err := c.BindQuery(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// set max page size
+	pageSize := req.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+	log.Debugf("Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("target_id", id)
+	log.Debug("Executing customersIDGET.")
+
+	// get tmpRes
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	tmpRes, err := serviceHandler.ConversationMessageGetsByConversationID(c.Request.Context(), &u, id, pageSize, req.PageToken)
+	if err != nil {
+		log.Errorf("Could not get a conversation message list. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(tmpRes) > 0 {
+		nextToken = tmpRes[len(tmpRes)-1].TMCreate
+	}
+	res := response.BodyConversationsIDMessagesGET{
+		Result: tmpRes,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
+	}
+
+	c.JSON(200, res)
+}
+
+// conversationsIDMessagesPost handles POST /conversations/<conversation-id>/messages request.
+// It sends a message with the given info and returns sent message info.
+// @Summary Send a message and returns detail sent message info.
+// @Description Send a message and returns a sent message info.
+// @Produce json
+// @Param message body request.ParamConversationsIDMessagesPOST true "message info."
+// @Success 200 {object} message.WebhookMessage
+// @Router /v1.0/conversations/{id}/messages [post]
+func conversationsIDMessagesPost(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conversationsIDMessagesPost",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	var req request.ParamConversationsIDMessagesPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing flowsPOST.")
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("target_id", id)
+	log.Debug("Executing customersIDGET.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ConversationMessageSend(c.Request.Context(), &u, id, req.Text, []cvmedia.Media{})
+	if err != nil {
+		log.Errorf("Could not create a customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

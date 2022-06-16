@@ -56,7 +56,7 @@ func agentsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create
-	res, err := serviceHandler.AgentCreate(&u, req.Username, req.Password, req.Name, req.Detail, req.RingMethod, req.Permission, req.TagIDs, req.Addresses)
+	res, err := serviceHandler.AgentCreate(c.Request.Context(), &u, req.Username, req.Password, req.Name, req.Detail, req.RingMethod, req.Permission, req.TagIDs, req.Addresses)
 	if err != nil {
 		log.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -109,7 +109,7 @@ func agentsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	res, err := serviceHandler.AgentDelete(&u, id)
+	res, err := serviceHandler.AgentDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Infof("Could not get the delete the agent info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -157,7 +157,7 @@ func agentsIDGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	res, err := serviceHandler.AgentGet(&u, id)
+	res, err := serviceHandler.AgentGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Infof("Could not get the agent info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -231,7 +231,7 @@ func agentsGET(c *gin.Context) {
 	}
 
 	// get tmps
-	tmps, err := serviceHandler.AgentGets(&u, pageSize, req.PageToken, tagIDs, req.Status)
+	tmps, err := serviceHandler.AgentGets(c.Request.Context(), &u, pageSize, req.PageToken, tagIDs, req.Status)
 	if err != nil {
 		logrus.Errorf("Could not get agents info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -297,7 +297,7 @@ func agentsIDPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.AgentUpdate(&u, id, req.Name, req.Detail, req.RingMethod)
+	res, err := serviceHandler.AgentUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.RingMethod)
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -352,7 +352,7 @@ func agentsIDAddressesPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.AgentUpdateAddresses(&u, id, req.Addresses)
+	res, err := serviceHandler.AgentUpdateAddresses(c.Request.Context(), &u, id, req.Addresses)
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -406,7 +406,7 @@ func agentsIDTagIDsPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.AgentUpdateTagIDs(&u, id, req.TagIDs)
+	res, err := serviceHandler.AgentUpdateTagIDs(c.Request.Context(), &u, id, req.TagIDs)
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -462,7 +462,7 @@ func agentsIDStatusPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.AgentUpdateStatus(&u, id, req.Status)
+	res, err := serviceHandler.AgentUpdateStatus(c.Request.Context(), &u, id, req.Status)
 	if err != nil {
 		log.Errorf("Could not update the agent's status. err: %v", err)
 		c.AbortWithStatus(400)

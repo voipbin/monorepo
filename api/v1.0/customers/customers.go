@@ -17,7 +17,7 @@ import (
 // @Summary Create a new customer and returns detail created customer info.
 // @Description Create a new customer and returns detail created customer info.
 // @Produce json
-// @Param customer body request.BodyFlowsPOST true "customer info."
+// @Param customer body request.BodyCustomersPOST true "customer info."
 // @Success 200 {object} customer.Customer
 // @Router /v1.0/customers [post]
 func customersPost(c *gin.Context) {
