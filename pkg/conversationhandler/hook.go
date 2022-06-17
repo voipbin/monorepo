@@ -85,8 +85,26 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 		if err != nil {
 			log.Debugf("Could not find conversation. Create a new conversation.")
 
+			// get address
+			// get user info
+			p, err := h.lineHandler.GetParticipant(ctx, customerID, tmp.ReferenceID)
+			if err != nil {
+				log.Errorf("Could not get participant info. err: %v", err)
+				p = &commonaddress.Address{
+					Type:       commonaddress.TypeLine,
+					Target:     tmp.ReferenceID,
+					TargetName: "Unknown",
+				}
+			}
+
+			me := &commonaddress.Address{
+				Type:       commonaddress.TypeLine,
+				Target:     "",
+				TargetName: "me",
+			}
+
 			// create a new conversation
-			cv, err = h.Create(ctx, tmp.CustomerID, "conversation", "conversation detail", conversation.ReferenceTypeLine, tmp.ReferenceID, []commonaddress.Address{})
+			cv, err = h.Create(ctx, tmp.CustomerID, "conversation", "conversation detail", conversation.ReferenceTypeLine, tmp.ReferenceID, []commonaddress.Address{*me, *p})
 			if err != nil {
 				log.Errorf("Could not create a new conversation. err: %v", err)
 				continue
