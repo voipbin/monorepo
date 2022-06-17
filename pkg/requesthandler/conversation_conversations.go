@@ -78,7 +78,7 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestConversation(uri, rabbitmqhandler.RequestMethodPost, resourceConversationConversationsIDMessages, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConversation(uri, rabbitmqhandler.RequestMethodPost, resourceConversationConversationsIDMessages, 30000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
