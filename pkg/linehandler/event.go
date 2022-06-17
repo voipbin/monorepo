@@ -101,10 +101,16 @@ func (h *lineHandler) eventHandleFollow(ctx context.Context, customerID uuid.UUI
 	}
 
 	// get user info
-	p, err := h.getParticipant(ctx, customerID, e.Source.UserID)
+	p, err := h.GetParticipant(ctx, customerID, e.Source.UserID)
 	if err != nil {
 		log.Errorf("Could not get participant info. err: %v", err)
 		return nil, err
+	}
+
+	me := &commonaddress.Address{
+		Type:       commonaddress.TypeLine,
+		Target:     "",
+		TargetName: "Me",
 	}
 
 	// create a conversation
@@ -116,6 +122,7 @@ func (h *lineHandler) eventHandleFollow(ctx context.Context, customerID uuid.UUI
 		ReferenceType: conversation.ReferenceTypeLine,
 		ReferenceID:   referenceID,
 		Participants: []commonaddress.Address{
+			*me,
 			*p,
 		},
 	}
@@ -187,8 +194,8 @@ func (h *lineHandler) getReferenceID(e *linebot.Event) string {
 	return ""
 }
 
-// getParticipant returns a participant
-func (h *lineHandler) getParticipant(ctx context.Context, customerID uuid.UUID, id string) (*commonaddress.Address, error) {
+// GetParticipant returns a participant
+func (h *lineHandler) GetParticipant(ctx context.Context, customerID uuid.UUID, id string) (*commonaddress.Address, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "getParticipant",

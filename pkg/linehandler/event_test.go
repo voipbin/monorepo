@@ -113,6 +113,11 @@ func Test_Event(t *testing.T) {
 					Participants: []commonaddress.Address{
 						{
 							Type:       commonaddress.TypeLine,
+							Target:     "",
+							TargetName: "Me",
+						},
+						{
+							Type:       commonaddress.TypeLine,
 							Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 							TargetName: "Sungtae Kim",
 						},
@@ -180,6 +185,11 @@ func Test_Event(t *testing.T) {
 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 
 					Participants: []commonaddress.Address{
+						{
+							Type:       commonaddress.TypeLine,
+							Target:     "",
+							TargetName: "Me",
+						},
 						{
 							Type:       commonaddress.TypeLine,
 							Target:     "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
@@ -283,7 +293,7 @@ func Test_getParticipant(t *testing.T) {
 
 			mockAccount.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
 
-			res, err := h.getParticipant(ctx, tt.customerID, tt.id)
+			res, err := h.GetParticipant(ctx, tt.customerID, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

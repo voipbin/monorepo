@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -52,6 +53,21 @@ func (m *MockLineHandler) Event(ctx context.Context, customerID uuid.UUID, data 
 func (mr *MockLineHandlerMockRecorder) Event(ctx, customerID, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockLineHandler)(nil).Event), ctx, customerID, data)
+}
+
+// GetParticipant mocks base method.
+func (m *MockLineHandler) GetParticipant(ctx context.Context, customerID uuid.UUID, id string) (*address.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetParticipant", ctx, customerID, id)
+	ret0, _ := ret[0].(*address.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetParticipant indicates an expected call of GetParticipant.
+func (mr *MockLineHandlerMockRecorder) GetParticipant(ctx, customerID, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipant", reflect.TypeOf((*MockLineHandler)(nil).GetParticipant), ctx, customerID, id)
 }
 
 // Send mocks base method.
