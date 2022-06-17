@@ -90,8 +90,11 @@ func Test_TypeSipServiceStartSvcEcho(t *testing.T) {
 				ID:         uuid.FromStringOrNil("6611bf7e-92e4-11ea-b658-8313e9bd28f8"),
 				AsteriskID: "80:fa:5b:5e:da:81",
 				ChannelID:  "f82007c4-92e2-11ea-a3e2-138ed7e90501",
-				Type:       call.TypeSipService,
-				Direction:  call.DirectionIncoming,
+				Destination: commonaddress.Address{
+					Target: "echo",
+				},
+				Type:      call.TypeSipService,
+				Direction: call.DirectionIncoming,
 			},
 			&fmaction.Action{
 				ID:     fmaction.IDStart,
@@ -116,21 +119,23 @@ func Test_TypeSipServiceStartSvcEcho(t *testing.T) {
 				db:            mockDB,
 			}
 
-			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(nil)
+			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
-			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
-			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
-			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
-			mockDB.EXPECT().CallSetAction(gomock.Any(), gomock.Any(), tt.expectAction).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(nil)
 
-			mockReq.EXPECT().AstChannelContinue(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-			mockReq.EXPECT().CMV1CallActionTimeout(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
+			mockDB.EXPECT().CallSetAction(ctx, gomock.Any(), tt.expectAction).Return(nil)
 
-			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
+			mockReq.EXPECT().AstChannelContinue(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().CMV1CallActionTimeout(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+			if err := h.StartCallHandle(ctx, tt.channel, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

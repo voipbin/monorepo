@@ -643,9 +643,14 @@ func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Chann
 
 // getSipServiceAction returns sip-service action handler by the call's destination.
 func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn *channel.Channel) (*fmaction.Action, error) {
-	logrus.Debugf("Executing action for sip-service. call: %s, channel: %s, destination: %s", c.ID, cn.ID, cn.DestinationNumber)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "getSipServiceAction",
+		"call_id":    c.ID,
+		"channel_id": cn.ID,
+	})
+	log.Debugf("Getting an action for sip-service. call_id: %s, channel_id: %s, destination: %s", c.ID, cn.ID, cn.DestinationNumber)
 
-	var resAct *fmaction.Action
+	var res *fmaction.Action
 	switch c.Destination.Target {
 
 	// answer
@@ -658,7 +663,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 
 		// create an action
-		resAct = &fmaction.Action{
+		res = &fmaction.Action{
 			ID:     fmaction.IDStart,
 			Type:   fmaction.TypeAnswer,
 			Option: opt,
@@ -675,7 +680,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 
 		// create an action
-		resAct = &fmaction.Action{
+		res = &fmaction.Action{
 			ID:     fmaction.IDStart,
 			Type:   fmaction.TypeConfbridgeJoin,
 			Option: opt,
@@ -693,7 +698,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 
 		// create an action
-		resAct = &fmaction.Action{
+		res = &fmaction.Action{
 			ID:     fmaction.IDStart,
 			Type:   fmaction.TypeEcho,
 			Option: opt,
@@ -715,7 +720,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 
 		// create an action
-		resAct = &fmaction.Action{
+		res = &fmaction.Action{
 			ID:     fmaction.IDStart,
 			Type:   fmaction.TypePlay,
 			Option: opt,
@@ -732,7 +737,7 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 		}
 
 		// create an action
-		resAct = &fmaction.Action{
+		res = &fmaction.Action{
 			ID:     fmaction.IDStart,
 			Type:   fmaction.TypeStreamEcho,
 			Option: opt,
@@ -740,24 +745,20 @@ func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn 
 
 	// default
 	default:
-		logrus.Warnf("could not find correct sip-service handler. Use default handler. target: %s", c.Destination.Target)
-		// create default option for echo
-		option := fmaction.OptionEcho{
-			Duration: 180 * 1000, // duration 180 sec
-		}
+		log.Errorf("Could not find correct sip-service handler. Hangup the call. call_id: %s, destination: %s", c.ID, c.Destination.Target)
+		option := fmaction.OptionHangup{}
 		opt, err := json.Marshal(option)
 		if err != nil {
 			return nil, fmt.Errorf("could not marshal the option echo. action: %s, err: %v", fmaction.TypeEcho, err)
 		}
 
 		// create an action
-		resAct = &fmaction.Action{
+		res = &fmaction.Action{
 			ID:     fmaction.IDStart,
-			Type:   fmaction.TypeEcho,
+			Type:   fmaction.TypeHangup,
 			Option: opt,
 		}
-
 	}
 
-	return resAct, nil
+	return res, nil
 }
