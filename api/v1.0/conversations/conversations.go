@@ -21,7 +21,7 @@ import (
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
 // @Success 200 {object} response.BodyConversationsGET
-// @Router /v1.0/customers [get]
+// @Router /v1.0/conversations [get]
 func conversationsGet(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -92,7 +92,7 @@ func conversationsGet(c *gin.Context) {
 // @Produce json
 // @Param id path string true "The ID of the conversation"
 // @Success 200 {object} conversation.WebhookMessage
-// @Router /v1.0/customers/{id} [get]
+// @Router /v1.0/conversations/{id} [get]
 func conversationsIDGet(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -244,7 +244,7 @@ func conversationsIDMessagesPost(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	log.WithField("request", req).Debug("Executing flowsPOST.")
+	log.WithField("request", req).Debug("Executing conversationsIDMessagesPost.")
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
