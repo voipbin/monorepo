@@ -2,6 +2,8 @@ package linehandler
 
 import (
 	"context"
+	"net/http"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
@@ -64,7 +66,18 @@ func (h *lineHandler) getClient(ctx context.Context, customerID uuid.UUID) (*lin
 		return nil, err
 	}
 
-	res, err := linebot.New(a.LineSecret, a.LineToken)
+	client := &http.Client{
+		Timeout: 60 * time.Second,
+		Transport: &http.Transport{
+			TLSHandshakeTimeout: 60 * time.Second,
+		},
+	}
+
+	res, err := linebot.New(
+		a.LineSecret,
+		a.LineToken,
+		linebot.WithHTTPClient(client),
+	)
 	if err != nil {
 		log.Errorf("Could not initiate linebot. err: %v", err)
 		return nil, err

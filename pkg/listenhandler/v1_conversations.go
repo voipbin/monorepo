@@ -147,7 +147,7 @@ func (h *listenHandler) processV1ConversationsIDMessagesPost(ctx context.Context
 
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "processV1ConversationsIDMessagesGet",
+			"func": "processV1ConversationsIDMessagesPost",
 		},
 	)
 	log.WithField("request", m).Debug("Received request.")

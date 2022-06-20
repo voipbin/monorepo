@@ -2,12 +2,10 @@ package linehandler
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/line/line-bot-sdk-go/v7/linebot"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
@@ -51,18 +49,9 @@ func Test_getClient(t *testing.T) {
 
 			mockAccount.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
 
-			res, err := h.getClient(ctx, tt.customerID)
+			_, err := h.getClient(ctx, tt.customerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			expectRes, err := linebot.New(tt.responseAccount.LineSecret, tt.responseAccount.LineToken)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expectRes, res)
 			}
 		})
 	}
