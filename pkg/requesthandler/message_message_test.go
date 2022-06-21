@@ -228,6 +228,7 @@ func Test_MMV1MessageSend(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id           uuid.UUID
 		customerID   uuid.UUID
 		source       *address.Address
 		destinations []address.Address
@@ -241,6 +242,7 @@ func Test_MMV1MessageSend(t *testing.T) {
 		{
 			"1 destination",
 
+			uuid.FromStringOrNil("dde92b9a-f179-11ec-adc4-931faecc6a89"),
 			uuid.FromStringOrNil("96ed3008-a2b2-11ec-b585-bf3e19b7355a"),
 			&address.Address{
 				Type:   address.TypeTel,
@@ -259,20 +261,54 @@ func Test_MMV1MessageSend(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
+				Data:     []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"97192a5a-a2b2-11ec-9c73-d3d48323f8a5"}`),
+				Data:       []byte(`{"id":"dde92b9a-f179-11ec-adc4-931faecc6a89"}`),
 			},
 			&mmmessage.Message{
-				ID: uuid.FromStringOrNil("97192a5a-a2b2-11ec-9c73-d3d48323f8a5"),
+				ID: uuid.FromStringOrNil("dde92b9a-f179-11ec-adc4-931faecc6a89"),
+			},
+		},
+		{
+			"has no id",
+
+			uuid.Nil,
+			uuid.FromStringOrNil("96ed3008-a2b2-11ec-b585-bf3e19b7355a"),
+			&address.Address{
+				Type:   address.TypeTel,
+				Target: "+821100000001",
+			},
+			[]address.Address{
+				{
+					Type:   address.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			"hello world",
+
+			"bin-manager.message-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/messages",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"96ed3008-a2b2-11ec-b585-bf3e19b7355a","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""}],"text":"hello world"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"283d6350-f17a-11ec-9277-436d6d821637"}`),
+			},
+			&mmmessage.Message{
+				ID: uuid.FromStringOrNil("283d6350-f17a-11ec-9277-436d6d821637"),
 			},
 		},
 		{
 			"2 destinations",
 
+			uuid.FromStringOrNil("e930839a-f179-11ec-acb5-3f10a4a1c047"),
 			uuid.FromStringOrNil("333d1508-a2c3-11ec-872d-8796fdc672b5"),
 			&address.Address{
 				Type:   address.TypeTel,
@@ -295,7 +331,7 @@ func Test_MMV1MessageSend(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"333d1508-a2c3-11ec-872d-8796fdc672b5","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"text":"hello world"}`),
+				Data:     []byte(`{"id":"e930839a-f179-11ec-acb5-3f10a4a1c047","customer_id":"333d1508-a2c3-11ec-872d-8796fdc672b5","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"text":"hello world"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -321,7 +357,7 @@ func Test_MMV1MessageSend(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.MMV1MessageSend(ctx, tt.customerID, tt.source, tt.destinations, tt.text)
+			res, err := reqHandler.MMV1MessageSend(ctx, tt.id, tt.customerID, tt.source, tt.destinations, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

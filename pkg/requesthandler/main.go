@@ -454,7 +454,7 @@ type RequestHandler interface {
 	MMV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error)
 	MMV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MMV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
-	MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error)
+	MMV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error)
 
 	// number-manager available-number
 	NMV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
