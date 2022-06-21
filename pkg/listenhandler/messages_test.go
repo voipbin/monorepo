@@ -107,6 +107,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id           uuid.UUID
 		customerID   uuid.UUID
 		source       *commonaddress.Address
 		destinations []commonaddress.Address
@@ -120,6 +121,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 		{
 			"normal",
 
+			uuid.FromStringOrNil("5f00c9bc-f176-11ec-bda0-af0b8c9491f5"),
 			uuid.FromStringOrNil("fdca8fb4-a22b-11ec-8894-7bfd708fa894"),
 			&commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -134,19 +136,19 @@ func Test_processV1MessagesPost(t *testing.T) {
 			"hello, world",
 
 			&message.Message{
-				ID: uuid.FromStringOrNil("abed7ae4-a22b-11ec-8b95-efa78516ed55"),
+				ID: uuid.FromStringOrNil("5f00c9bc-f176-11ec-bda0-af0b8c9491f5"),
 			},
 
 			&rabbitmqhandler.Request{
 				URI:      "/v1/messages",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"fdca8fb4-a22b-11ec-8894-7bfd708fa894", "source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello, world"}`),
+				Data:     []byte(`{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","customer_id":"fdca8fb4-a22b-11ec-8894-7bfd708fa894", "source":{"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}], "text": "hello, world"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"abed7ae4-a22b-11ec-8b95-efa78516ed55","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -164,7 +166,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 				messageHandler: mockMessageHandler,
 			}
 
-			mockMessageHandler.EXPECT().Send(gomock.Any(), tt.customerID, tt.source, tt.destinations, tt.Text).Return(tt.responseSend, nil)
+			mockMessageHandler.EXPECT().Send(gomock.Any(), tt.id, tt.customerID, tt.source, tt.destinations, tt.Text).Return(tt.responseSend, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

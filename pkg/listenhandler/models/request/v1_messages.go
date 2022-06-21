@@ -9,6 +9,7 @@ import (
 // v1 data type request struct for
 // /v1/messages POST
 type V1DataMessagesPost struct {
+	ID           uuid.UUID               `json:"id"`
 	CustomerID   uuid.UUID               `json:"customer_id"`
 	Source       *commonaddress.Address  `json:"source"`
 	Destinations []commonaddress.Address `json:"destinations"`

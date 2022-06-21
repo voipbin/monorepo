@@ -13,7 +13,7 @@ import (
 )
 
 // Send sends the message.
-func (h *messageHandler) Send(ctx context.Context, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
+func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Send",
 		"customer_id": customerID,
@@ -30,7 +30,9 @@ func (h *messageHandler) Send(ctx context.Context, customerID uuid.UUID, source 
 		targets = append(targets, t)
 	}
 
-	id := uuid.Must(uuid.NewV4())
+	if id == uuid.Nil {
+		id = uuid.Must(uuid.NewV4())
+	}
 	m := &message.Message{
 		ID:         id,
 		CustomerID: customerID,
