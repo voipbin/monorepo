@@ -15,11 +15,12 @@ import (
 )
 
 // MMV1MessageSend sends a message
-func (r *requestHandler) MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error) {
+func (r *requestHandler) MMV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error) {
 
 	uri := "/v1/messages"
 
 	reqData := &mmrequest.V1DataMessagesPost{
+		ID:           id,
 		CustomerID:   customerID,
 		Source:       source,
 		Destinations: destinations,

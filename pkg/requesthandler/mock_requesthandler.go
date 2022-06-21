@@ -1839,18 +1839,18 @@ func (mr *MockRequestHandlerMockRecorder) MMV1MessageGets(ctx, customerID, pageT
 }
 
 // MMV1MessageSend mocks base method.
-func (m *MockRequestHandler) MMV1MessageSend(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message0.Message, error) {
+func (m *MockRequestHandler) MMV1MessageSend(ctx context.Context, id, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message0.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MMV1MessageSend", ctx, customerID, source, destinations, text)
+	ret := m.ctrl.Call(m, "MMV1MessageSend", ctx, id, customerID, source, destinations, text)
 	ret0, _ := ret[0].(*message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MMV1MessageSend indicates an expected call of MMV1MessageSend.
-func (mr *MockRequestHandlerMockRecorder) MMV1MessageSend(ctx, customerID, source, destinations, text interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) MMV1MessageSend(ctx, id, customerID, source, destinations, text interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MMV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).MMV1MessageSend), ctx, customerID, source, destinations, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MMV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).MMV1MessageSend), ctx, id, customerID, source, destinations, text)
 }
 
 // NMV1AvailableNumberGets mocks base method.
