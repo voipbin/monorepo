@@ -71,7 +71,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *rabbitmqha
 	)
 
 	// send message
-	ms, err := h.messageHandler.Send(ctx, req.CustomerID, req.Source, req.Destinations, req.Text)
+	ms, err := h.messageHandler.Send(ctx, req.ID, req.CustomerID, req.Source, req.Destinations, req.Text)
 	if err != nil {
 		log.Errorf("Could not send a message. err: %v", err)
 		return simpleResponse(500), nil
