@@ -41,8 +41,6 @@ def upgrade():
     op.execute("""alter table conversation_messages drop column data;""")
 
 
-
-
 def downgrade():
     op.execute("""drop table conversation_medias;""")
 
