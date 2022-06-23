@@ -125,6 +125,7 @@ func Test_Create(t *testing.T) {
 		detail           string
 		referenceType    conversation.ReferenceType
 		referenceID      string
+		source           *commonaddress.Address
 		participants     []commonaddress.Address
 
 		responseConversation *conversation.Conversation
@@ -137,6 +138,10 @@ func Test_Create(t *testing.T) {
 			"test detail",
 			conversation.ReferenceTypeLine,
 			"3dc385f8-e6e7-11ec-9250-5f6c3097570f",
+			&commonaddress.Address{
+				Type:   commonaddress.TypeLine,
+				Target: "2fcb542c-f113-11ec-a7de-6335ee489d7b",
+			},
 			[]commonaddress.Address{
 				{
 					Type:       commonaddress.TypeLine,
@@ -170,7 +175,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(tt.responseConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConversation.CustomerID, conversation.EventTypeConversationCreated, tt.responseConversation)
 
-			_, err := h.Create(ctx, tt.customerID, tt.conversationName, tt.detail, tt.referenceType, tt.referenceID, tt.participants)
+			_, err := h.Create(ctx, tt.customerID, tt.conversationName, tt.detail, tt.referenceType, tt.referenceID, tt.source, tt.participants)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

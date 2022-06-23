@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
@@ -19,7 +20,7 @@ type WebhookMessage struct {
 	ReferenceType conversation.ReferenceType `json:"reference_type"`
 	ReferenceID   string                     `json:"reference_id"`
 
-	SourceTarget string `json:"source_target"`
+	Source *commonaddress.Address `json:"source"` // source
 
 	Text   string        `json:"text"`
 	Medias []media.Media `json:"medias"`
@@ -40,7 +41,7 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
-		SourceTarget: h.SourceTarget,
+		Source: h.Source,
 
 		Text:   h.Text,
 		Medias: h.Medias,

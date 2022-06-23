@@ -16,7 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 )
 
-func Test_Event(t *testing.T) {
+func Test_Hook(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -64,9 +64,12 @@ func Test_Event(t *testing.T) {
 					Status:        message.StatusReceived,
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					SourceTarget:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Text:          "Hello",
-					Medias:        []media.Media{},
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeLine,
+						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					},
+					Text:   "Hello",
+					Medias: []media.Media{},
 				},
 			},
 		},
@@ -110,6 +113,11 @@ func Test_Event(t *testing.T) {
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 
+					Source: &commonaddress.Address{
+						Type:       commonaddress.TypeLine,
+						Target:     "",
+						TargetName: "Me",
+					},
 					Participants: []commonaddress.Address{
 						{
 							Type:       commonaddress.TypeLine,
@@ -184,6 +192,11 @@ func Test_Event(t *testing.T) {
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 
+					Source: &commonaddress.Address{
+						Type:       commonaddress.TypeLine,
+						Target:     "",
+						TargetName: "Me",
+					},
 					Participants: []commonaddress.Address{
 						{
 							Type:       commonaddress.TypeLine,
@@ -206,9 +219,12 @@ func Test_Event(t *testing.T) {
 					Status:         message.StatusReceived,
 					ReferenceType:  conversation.ReferenceTypeLine,
 					ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					SourceTarget:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-					Text:           "Hello",
-					Medias:         []media.Media{},
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeLine,
+						Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+					},
+					Text:   "Hello",
+					Medias: []media.Media{},
 				},
 			},
 		},
@@ -231,7 +247,7 @@ func Test_Event(t *testing.T) {
 				mockAccount.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
 			}
 
-			resConversations, resMessages, err := h.Event(ctx, tt.customerID, tt.data)
+			resConversations, resMessages, err := h.Hook(ctx, tt.customerID, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -35,6 +36,9 @@ func Test_SendToConversation(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
+				Source: &commonaddress.Address{
+					Target: "75a20d08-f1de-11ec-8eb1-97f517197fe2",
+				},
 			},
 			"hello, this is test message.",
 			[]media.Media{},
@@ -59,10 +63,17 @@ func Test_SendToConversation(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockLine.EXPECT().Send(ctx, tt.conversation.CustomerID, tt.conversation.ReferenceID, tt.text, tt.medias).Return(nil)
+			// create
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), message.EventTypeMessageCreated, gomock.Any())
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
+
+			mockLine.EXPECT().Send(ctx, tt.conversation, tt.text, tt.medias).Return(nil)
+
+			// update
+			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.responseMessage.ID, message.StatusSent).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.responseMessage.ID).Return(tt.responseMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageUpdated, tt.responseMessage)
 
 			res, err := h.SendToConversation(ctx, tt.conversation, tt.text, tt.medias)
 			if err != nil {

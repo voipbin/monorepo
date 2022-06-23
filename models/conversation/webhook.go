@@ -17,6 +17,7 @@ type WebhookMessage struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   string        `json:"reference_id"`
 
+	Source       *commonaddress.Address  `json:"source"`
 	Participants []commonaddress.Address `json:"participants"`
 
 	TMCreate string `json:"tm_create"`
@@ -35,6 +36,7 @@ func (h *Conversation) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 
+		Source:       h.Source,
 		Participants: h.Participants,
 
 		TMCreate: h.TMCreate,

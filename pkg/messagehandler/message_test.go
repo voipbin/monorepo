@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -26,7 +27,8 @@ func Test_Create(t *testing.T) {
 		status         message.Status
 		referenceType  conversation.ReferenceType
 		referenceID    string
-		sourceTarget   string
+		transactionID  string
+		source         *commonaddress.Address
 		text           string
 		medias         []media.Media
 
@@ -40,7 +42,11 @@ func Test_Create(t *testing.T) {
 			message.StatusSent,
 			conversation.ReferenceTypeLine,
 			"Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-			"Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+			"59946c7c-f1d5-11ec-bdad-2323294b508e",
+			&commonaddress.Address{
+				Type:   commonaddress.TypeLine,
+				Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+			},
 			"Hello world",
 			[]media.Media{},
 
@@ -70,7 +76,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
-			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.status, tt.referenceType, tt.referenceID, tt.sourceTarget, tt.text, tt.medias)
+			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.source, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -79,6 +85,59 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessage, res)
 			}
 
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseMessage *message.Message
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("af7c3310-f1d8-11ec-a2f1-db31b43cade8"),
+
+			&message.Message{
+				ID:         uuid.FromStringOrNil("af7c3310-f1d8-11ec-a2f1-db31b43cade8"),
+				CustomerID: uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				lineHandler:   mockLine,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessageDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageDeleted, tt.responseMessage)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseMessage) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessage, res)
+			}
 		})
 	}
 }
@@ -128,6 +187,63 @@ func Test_GetsByConversationID(t *testing.T) {
 			mockDB.EXPECT().MessageGetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
 
 			res, err := h.GetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseMessages) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessages, res)
+			}
+
+		})
+	}
+}
+
+func Test_GetsByTransactionID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		transactionID string
+		pageToken     string
+		pageSize      uint64
+
+		responseMessages []*message.Message
+	}{
+		{
+			"normal",
+
+			"2c4b24a4-f2ac-11ec-979b-5f7a7f205308",
+			"2022-04-18 03:22:17.995000",
+			100,
+
+			[]*message.Message{
+				{
+					ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				lineHandler:   mockLine,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessageGetsByTransactionID(ctx, tt.transactionID, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
+
+			res, err := h.GetsByTransactionID(ctx, tt.transactionID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

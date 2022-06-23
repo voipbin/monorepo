@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 )
@@ -24,6 +25,7 @@ const (
 		reference_type,
 		reference_id,
 
+		source,
 		participants,
 
 		tm_create,
@@ -36,7 +38,8 @@ const (
 
 // conversationGetFromRow gets the conversation from the row.
 func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversation, error) {
-	participants := ""
+	var source sql.NullString
+	var participants sql.NullString
 
 	res := &conversation.Conversation{}
 	if err := row.Scan(
@@ -49,6 +52,7 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 		&res.ReferenceType,
 		&res.ReferenceID,
 
+		&source,
 		&participants,
 
 		&res.TMCreate,
@@ -58,8 +62,20 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 		return nil, fmt.Errorf("could not scan the row. conversationGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(participants), &res.Participants); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the Participants. conversationGetFromRow. err: %v", err)
+	if !source.Valid {
+		res.Source = &commonaddress.Address{}
+	} else {
+		if err := json.Unmarshal([]byte(source.String), &res.Source); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the Source. conversationGetFromRow. err: %v", err)
+		}
+	}
+
+	if !participants.Valid {
+		res.Participants = []commonaddress.Address{}
+	} else {
+		if err := json.Unmarshal([]byte(participants.String), &res.Participants); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the Participants. conversationGetFromRow. err: %v", err)
+		}
 	}
 
 	return res, nil
@@ -78,6 +94,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		reference_type,
 		reference_id,
 
+		source,
 		participants,
 
 		tm_create,
@@ -87,7 +104,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		?, ?,
 		?, ?,
 		?, ?,
-		?,
+		?, ?,
 		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -95,6 +112,11 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		return fmt.Errorf("could not prepare. ConversationCreate. err: %v", err)
 	}
 	defer stmt.Close()
+
+	source, err := json.Marshal(cv.Source)
+	if err != nil {
+		return fmt.Errorf("could not marshal source. ConversationCreate. err: %v", err)
+	}
 
 	participants, err := json.Marshal(cv.Participants)
 	if err != nil {
@@ -111,6 +133,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		cv.ReferenceType,
 		cv.ReferenceID,
 
+		source,
 		participants,
 
 		cv.TMCreate,

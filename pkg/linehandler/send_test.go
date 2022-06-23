@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 )
@@ -62,18 +63,20 @@ func Test_Send(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID  uuid.UUID
-		destination string
-		text        string
-		medias      []media.Media
+		conversation *conversation.Conversation
+		text         string
+		medias       []media.Media
 
 		responseAccount *account.Account
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("792c0222-e4a9-11ec-af5e-679fe5991907"),
-			"Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+			&conversation.Conversation{
+				ID:          uuid.FromStringOrNil("361e9be2-f134-11ec-961e-9f08635dea9b"),
+				CustomerID:  uuid.FromStringOrNil("792c0222-e4a9-11ec-af5e-679fe5991907"),
+				ReferenceID: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+			},
 			"hi there, This is a test message. :)",
 			[]media.Media{},
 
@@ -98,9 +101,9 @@ func Test_Send(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockAccount.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Get(ctx, tt.conversation.CustomerID).Return(tt.responseAccount, nil)
 
-			if err := h.Send(ctx, tt.customerID, tt.destination, tt.text, tt.medias); err != nil {
+			if err := h.Send(ctx, tt.conversation, tt.text, tt.medias); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

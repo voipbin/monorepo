@@ -17,8 +17,8 @@ import (
 // LineHandler defines
 type LineHandler interface {
 	Setup(ctx context.Context, customerID uuid.UUID) error
-	Send(ctx context.Context, customerID uuid.UUID, destination string, text string, medias []media.Media) error
-	Event(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error)
+	Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) error
+	Hook(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error)
 
 	GetParticipant(ctx context.Context, customerID uuid.UUID, id string) (*commonaddress.Address, error)
 }

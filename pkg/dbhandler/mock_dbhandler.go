@@ -184,6 +184,20 @@ func (mr *MockDBHandlerMockRecorder) MessageCreate(ctx, m interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageCreate", reflect.TypeOf((*MockDBHandler)(nil).MessageCreate), ctx, m)
 }
 
+// MessageDelete mocks base method.
+func (m *MockDBHandler) MessageDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageDelete indicates an expected call of MessageDelete.
+func (mr *MockDBHandlerMockRecorder) MessageDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageDelete", reflect.TypeOf((*MockDBHandler)(nil).MessageDelete), ctx, id)
+}
+
 // MessageGet mocks base method.
 func (m *MockDBHandler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	m.ctrl.T.Helper()
@@ -212,4 +226,33 @@ func (m *MockDBHandler) MessageGetsByConversationID(ctx context.Context, convers
 func (mr *MockDBHandlerMockRecorder) MessageGetsByConversationID(ctx, conversationID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGetsByConversationID", reflect.TypeOf((*MockDBHandler)(nil).MessageGetsByConversationID), ctx, conversationID, token, limit)
+}
+
+// MessageGetsByTransactionID mocks base method.
+func (m *MockDBHandler) MessageGetsByTransactionID(ctx context.Context, transactionID, token string, limit uint64) ([]*message.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageGetsByTransactionID", ctx, transactionID, token, limit)
+	ret0, _ := ret[0].([]*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageGetsByTransactionID indicates an expected call of MessageGetsByTransactionID.
+func (mr *MockDBHandlerMockRecorder) MessageGetsByTransactionID(ctx, transactionID, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGetsByTransactionID", reflect.TypeOf((*MockDBHandler)(nil).MessageGetsByTransactionID), ctx, transactionID, token, limit)
+}
+
+// MessageUpdateStatus mocks base method.
+func (m *MockDBHandler) MessageUpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageUpdateStatus", ctx, id, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageUpdateStatus indicates an expected call of MessageUpdateStatus.
+func (mr *MockDBHandlerMockRecorder) MessageUpdateStatus(ctx, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdateStatus", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdateStatus), ctx, id, status)
 }
