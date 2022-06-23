@@ -25,6 +25,9 @@ func (h *conversationHandler) Setup(ctx context.Context, customerID uuid.UUID, r
 			return errSetup
 		}
 
+	case conversation.ReferenceTypeMessage:
+		log.Debugf("Nothing to do.")
+
 	default:
 		log.Errorf("Unsupported reference type. reference_type: %s", referenceType)
 		return fmt.Errorf("unsupported reference type")

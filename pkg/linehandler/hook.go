@@ -15,11 +15,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
-// Event handles received line message
-func (h *lineHandler) Event(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
+// Hook handles received line message
+func (h *lineHandler) Hook(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "Receive",
+			"func":        "Hook",
+			"customer_id": customerID,
 		},
 	)
 
@@ -37,7 +38,7 @@ func (h *lineHandler) Event(ctx context.Context, customerID uuid.UUID, data []by
 	for _, e := range tmp.Events {
 
 		// parse the message
-		cv, m, err := h.handleEvent(ctx, customerID, e)
+		cv, m, err := h.handleHook(ctx, customerID, e)
 		if err != nil {
 			log.Errorf("Could not parse the message. err: %v", err)
 			continue
@@ -53,8 +54,8 @@ func (h *lineHandler) Event(ctx context.Context, customerID uuid.UUID, data []by
 	return resConversations, resMessages, nil
 }
 
-// handleEvent handles the received message.
-func (h *lineHandler) handleEvent(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*conversation.Conversation, *message.Message, error) {
+// handleHook handles the received message.
+func (h *lineHandler) handleHook(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*conversation.Conversation, *message.Message, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "handleEvent",
@@ -63,7 +64,7 @@ func (h *lineHandler) handleEvent(ctx context.Context, customerID uuid.UUID, e *
 
 	switch e.Type {
 	case linebot.EventTypeFollow:
-		res, err := h.eventHandleFollow(ctx, customerID, e)
+		res, err := h.hookHandleFollow(ctx, customerID, e)
 		if err != nil {
 			log.Errorf("Could not handle the line event follow. err: %v", err)
 			return nil, nil, err
@@ -71,7 +72,7 @@ func (h *lineHandler) handleEvent(ctx context.Context, customerID uuid.UUID, e *
 		return res, nil, nil
 
 	case linebot.EventTypeMessage:
-		res, err := h.eventHandleMessage(ctx, customerID, e)
+		res, err := h.hookHandleMessage(ctx, customerID, e)
 		if err != nil {
 			log.Errorf("Could not handle the line event message. err: %v", err)
 			return nil, nil, err
@@ -84,8 +85,8 @@ func (h *lineHandler) handleEvent(ctx context.Context, customerID uuid.UUID, e *
 	}
 }
 
-// eventHandleFollow handles line's follow event.
-func (h *lineHandler) eventHandleFollow(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*conversation.Conversation, error) {
+// hookHandleFollow handles line's follow event.
+func (h *lineHandler) hookHandleFollow(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*conversation.Conversation, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "eventHandleFollow",
@@ -121,6 +122,8 @@ func (h *lineHandler) eventHandleFollow(ctx context.Context, customerID uuid.UUI
 		Detail:        "Conversation with " + p.TargetName,
 		ReferenceType: conversation.ReferenceTypeLine,
 		ReferenceID:   referenceID,
+
+		Source: me,
 		Participants: []commonaddress.Address{
 			*me,
 			*p,
@@ -130,8 +133,8 @@ func (h *lineHandler) eventHandleFollow(ctx context.Context, customerID uuid.UUI
 	return res, nil
 }
 
-// eventHandleMessage handles line's message type event.
-func (h *lineHandler) eventHandleMessage(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*message.Message, error) {
+// hookHandleMessage handles line's message type event.
+func (h *lineHandler) hookHandleMessage(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*message.Message, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "eventHandleMessage",
@@ -158,6 +161,11 @@ func (h *lineHandler) eventHandleMessage(ctx context.Context, customerID uuid.UU
 		log.Errorf("Unsupported messate type. message_type: %s", e.Message.Type())
 	}
 
+	source := &commonaddress.Address{
+		Type:   commonaddress.TypeLine,
+		Target: e.Source.UserID,
+	}
+
 	// create a message
 	m := &message.Message{
 		ID:         uuid.Nil,
@@ -169,7 +177,7 @@ func (h *lineHandler) eventHandleMessage(ctx context.Context, customerID uuid.UU
 		ReferenceType: conversation.ReferenceTypeLine,
 		ReferenceID:   referenceID,
 
-		SourceTarget: e.Source.UserID,
+		Source: source,
 
 		Text:   text,
 		Medias: medias,

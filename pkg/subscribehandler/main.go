@@ -3,6 +3,7 @@ package subscribehandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package subscribehandler -destination ./mock_subscribehandler.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -11,13 +12,16 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/conversationhandler"
 )
 
 // list of publishers
 const (
 	publisherCustomerManager = "customer-manager"
+	publisherMessageManager  = "message-manager"
 )
 
 // SubscribeHandler interface
@@ -31,7 +35,8 @@ type subscribeHandler struct {
 	subscribeQueue    string
 	subscribesTargets string
 
-	accountHandler accounthandler.AccountHandler
+	accountHandler      accounthandler.AccountHandler
+	conversationHandler conversationhandler.ConversationHandler
 }
 
 var (
@@ -62,6 +67,7 @@ func NewSubscribeHandler(
 	subscribeQueue string,
 	subscribeTargets string,
 	accountHandler accounthandler.AccountHandler,
+	conversationHandler conversationhandler.ConversationHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
@@ -70,6 +76,8 @@ func NewSubscribeHandler(
 		subscribesTargets: subscribeTargets,
 
 		accountHandler: accountHandler,
+
+		conversationHandler: conversationHandler,
 	}
 
 	return h
@@ -126,16 +134,21 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	)
 	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
 
+	ctx := context.Background()
 	var err error
 	start := time.Now()
 	switch {
 
 	// customer-manager
 	case m.Publisher == publisherCustomerManager && (m.Type == string(cscustomer.EventTypeCustomerCreated)):
-		err = h.processEventCSCustomerCreatedUpdated(m)
+		err = h.processEventCSCustomerCreatedUpdated(ctx, m)
 
 	case m.Publisher == publisherCustomerManager && (m.Type == string(cscustomer.EventTypeCustomerUpdated)):
-		err = h.processEventCSCustomerCreatedUpdated(m)
+		err = h.processEventCSCustomerCreatedUpdated(ctx, m)
+
+	// message-manager
+	case m.Publisher == publisherMessageManager && (m.Type == string(mmmessage.EventTypeMessageCreated)):
+		err = h.processEventMMMessageCreated(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

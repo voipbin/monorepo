@@ -39,22 +39,6 @@ func (m *MockLineHandler) EXPECT() *MockLineHandlerMockRecorder {
 	return m.recorder
 }
 
-// Event mocks base method.
-func (m *MockLineHandler) Event(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Event", ctx, customerID, data)
-	ret0, _ := ret[0].([]*conversation.Conversation)
-	ret1, _ := ret[1].([]*message.Message)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// Event indicates an expected call of Event.
-func (mr *MockLineHandlerMockRecorder) Event(ctx, customerID, data interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockLineHandler)(nil).Event), ctx, customerID, data)
-}
-
 // GetParticipant mocks base method.
 func (m *MockLineHandler) GetParticipant(ctx context.Context, customerID uuid.UUID, id string) (*address.Address, error) {
 	m.ctrl.T.Helper()
@@ -70,18 +54,34 @@ func (mr *MockLineHandlerMockRecorder) GetParticipant(ctx, customerID, id interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipant", reflect.TypeOf((*MockLineHandler)(nil).GetParticipant), ctx, customerID, id)
 }
 
-// Send mocks base method.
-func (m *MockLineHandler) Send(ctx context.Context, customerID uuid.UUID, destination, text string, medias []media.Media) error {
+// Hook mocks base method.
+func (m *MockLineHandler) Hook(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, customerID, destination, text, medias)
+	ret := m.ctrl.Call(m, "Hook", ctx, customerID, data)
+	ret0, _ := ret[0].([]*conversation.Conversation)
+	ret1, _ := ret[1].([]*message.Message)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Hook indicates an expected call of Hook.
+func (mr *MockLineHandlerMockRecorder) Hook(ctx, customerID, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockLineHandler)(nil).Hook), ctx, customerID, data)
+}
+
+// Send mocks base method.
+func (m *MockLineHandler) Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Send", ctx, cv, text, medias)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockLineHandlerMockRecorder) Send(ctx, customerID, destination, text, medias interface{}) *gomock.Call {
+func (mr *MockLineHandlerMockRecorder) Send(ctx, cv, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockLineHandler)(nil).Send), ctx, customerID, destination, text, medias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockLineHandler)(nil).Send), ctx, cv, text, medias)
 }
 
 // Setup mocks base method.

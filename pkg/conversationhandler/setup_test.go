@@ -73,12 +73,6 @@ func Test_Setup_error(t *testing.T) {
 			uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
 			conversation.ReferenceTypeNone,
 		},
-		{
-			"reference type message",
-
-			uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
-			conversation.ReferenceTypeMessage,
-		},
 	}
 
 	for _, tt := range tests {

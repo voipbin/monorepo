@@ -43,17 +43,21 @@ func (h *conversationHandler) Hook(ctx context.Context, uri string, data []byte)
 	switch referenceType {
 	case string(conversation.ReferenceTypeLine):
 		// line message
-		if errEvent := h.eventLine(ctx, customerID, data); errEvent != nil {
+		if errEvent := h.hookLine(ctx, customerID, data); errEvent != nil {
 			log.Errorf("Could not handle the event type line. err: %v", errEvent)
 			return errEvent
 		}
+
+	default:
+		log.Errorf("Unsupported reference type. reference_type: %s", referenceType)
+		return fmt.Errorf("unsupported reference type. reference_type: %s", referenceType)
 	}
 
 	return nil
 }
 
-// eventLine handle the line type of hook message
-func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUID, data []byte) error {
+// hookLine handle the line type of hook message
+func (h *conversationHandler) hookLine(ctx context.Context, customerID uuid.UUID, data []byte) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "hookLine",
@@ -61,7 +65,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 	)
 
 	// parse a messages
-	conversations, messages, err := h.lineHandler.Event(ctx, customerID, data)
+	conversations, messages, err := h.lineHandler.Hook(ctx, customerID, data)
 	if err != nil {
 		log.Errorf("Could not parse the message. err: %v", err)
 		return err
@@ -69,7 +73,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 
 	// conversations
 	for _, tmp := range conversations {
-		cv, err := h.Create(ctx, tmp.CustomerID, tmp.Name, tmp.Detail, tmp.ReferenceType, tmp.ReferenceID, tmp.Participants)
+		cv, err := h.Create(ctx, tmp.CustomerID, tmp.Name, tmp.Detail, tmp.ReferenceType, tmp.ReferenceID, tmp.Source, tmp.Participants)
 		if err != nil {
 			log.Errorf("Could not create a new conversation. err: %v", err)
 			break
@@ -104,7 +108,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 			}
 
 			// create a new conversation
-			cv, err = h.Create(ctx, tmp.CustomerID, "conversation", "conversation detail", conversation.ReferenceTypeLine, tmp.ReferenceID, []commonaddress.Address{*me, *p})
+			cv, err = h.Create(ctx, tmp.CustomerID, "conversation", "conversation detail", conversation.ReferenceTypeLine, tmp.ReferenceID, me, []commonaddress.Address{*me, *p})
 			if err != nil {
 				log.Errorf("Could not create a new conversation. err: %v", err)
 				continue
@@ -113,7 +117,7 @@ func (h *conversationHandler) eventLine(ctx context.Context, customerID uuid.UUI
 		}
 
 		// create a message
-		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, tmp.SourceTarget, tmp.Text, tmp.Medias)
+		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, "", tmp.Source, tmp.Text, tmp.Medias)
 		if err != nil {
 			log.Errorf("Could not create a message. err: %v", err)
 			continue

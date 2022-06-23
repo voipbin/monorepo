@@ -48,6 +48,7 @@ func (h *conversationHandler) Create(
 	detail string,
 	referenceType conversation.ReferenceType,
 	referenceID string,
+	source *commonaddress.Address,
 	participants []commonaddress.Address,
 ) (*conversation.Conversation, error) {
 	log := logrus.WithFields(
@@ -64,6 +65,7 @@ func (h *conversationHandler) Create(
 		Detail:        detail,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
+		Source:        source,
 		Participants:  participants,
 		TMCreate:      dbhandler.GetCurTime(),
 		TMUpdate:      dbhandler.GetCurTime(),

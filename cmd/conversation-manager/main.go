@@ -25,6 +25,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/smshandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/subscribehandler"
 )
 
@@ -154,9 +155,10 @@ func run(dbHandler dbhandler.DBHandler) {
 
 	accountHandler := accounthandler.NewAccountHandler(dbHandler, reqHandler)
 	lineHandler := linehandler.NewLineHandler(accountHandler)
+	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 
-	messageHandler := messagehandler.NewMessageHandler(dbHandler, notifyHandler, lineHandler)
-	conversationHandler := conversationhandler.NewConversationHandler(dbHandler, notifyHandler, messageHandler, lineHandler)
+	messageHandler := messagehandler.NewMessageHandler(dbHandler, notifyHandler, lineHandler, smsHandler)
+	conversationHandler := conversationhandler.NewConversationHandler(dbHandler, notifyHandler, messageHandler, lineHandler, smsHandler)
 
 	// run listen
 	if errListen := runListen(rabbitSock, conversationHandler, messageHandler); errListen != nil {
@@ -165,7 +167,7 @@ func run(dbHandler dbhandler.DBHandler) {
 	}
 
 	// run subscribe
-	if errSub := runSubscribe(rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, accountHandler); errSub != nil {
+	if errSub := runSubscribe(rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, accountHandler, conversationHandler); errSub != nil {
 		log.Errorf("Could not run the subscribe correctly. err: %v", errSub)
 		return
 	}
@@ -195,6 +197,7 @@ func runSubscribe(
 	subscribeQueue string,
 	subscribeTargets string,
 	accountHandler accounthandler.AccountHandler,
+	conversationHandler conversationhandler.ConversationHandler,
 ) error {
 
 	subHandler := subscribehandler.NewSubscribeHandler(
@@ -202,6 +205,7 @@ func runSubscribe(
 		subscribeQueue,
 		subscribeTargets,
 		accountHandler,
+		conversationHandler,
 	)
 
 	// run

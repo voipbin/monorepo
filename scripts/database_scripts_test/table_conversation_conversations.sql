@@ -9,6 +9,7 @@ create table conversation_conversations(
   reference_type  varchar(255),
   reference_id    varchar(255),
 
+  source        json,
   participants  json,
 
   -- timestamps

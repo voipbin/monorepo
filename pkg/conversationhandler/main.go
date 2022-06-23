@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/smshandler"
 )
 
 // ConversationHandler defines
@@ -23,6 +24,7 @@ type ConversationHandler interface {
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*conversation.Conversation, error)
 
 	Hook(ctx context.Context, uri string, data []byte) error
+	Event(ctx context.Context, referenceType conversation.ReferenceType, data []byte) error
 
 	Setup(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType) error
 
@@ -36,15 +38,17 @@ type conversationHandler struct {
 
 	messageHandler messagehandler.MessageHandler
 	lineHandler    linehandler.LineHandler
+	smsHandler     smshandler.SMSHandler
 }
 
 // NewConversationHandler returns a new ConversationHandler
-func NewConversationHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageHandler messagehandler.MessageHandler, lineHandler linehandler.LineHandler) ConversationHandler {
+func NewConversationHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageHandler messagehandler.MessageHandler, lineHandler linehandler.LineHandler, smsHandler smshandler.SMSHandler) ConversationHandler {
 	return &conversationHandler{
 		db:             db,
 		notifyHandler:  notifyHandler,
 		messageHandler: messageHandler,
 
 		lineHandler: lineHandler,
+		smsHandler:  smsHandler,
 	}
 }

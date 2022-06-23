@@ -9,11 +9,12 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 )
 
 // Send sends the message to the destination
-func (h *lineHandler) Send(ctx context.Context, customerID uuid.UUID, destination string, text string, medias []media.Media) error {
+func (h *lineHandler) Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "Send",
@@ -22,7 +23,7 @@ func (h *lineHandler) Send(ctx context.Context, customerID uuid.UUID, destinatio
 	log.Debug("Sending a message.")
 
 	// get clinet
-	c, err := h.getClient(ctx, customerID)
+	c, err := h.getClient(ctx, cv.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get client. err: %v", err)
 		return err
@@ -40,7 +41,7 @@ func (h *lineHandler) Send(ctx context.Context, customerID uuid.UUID, destinatio
 
 	for _, tmp := range messages {
 		// send a message to the destination
-		res, err := c.PushMessage(destination, tmp).Do()
+		res, err := c.PushMessage(cv.ReferenceID, tmp).Do()
 		if err != nil {
 			log.Errorf("Could not send the message. err: %v", err)
 			return err

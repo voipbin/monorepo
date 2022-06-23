@@ -16,6 +16,7 @@ type Conversation struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   string        `json:"reference_id"`
 
+	Source       *commonaddress.Address  `json:"source"`
 	Participants []commonaddress.Address `json:"participants"`
 
 	TMCreate string `json:"tm_create"`

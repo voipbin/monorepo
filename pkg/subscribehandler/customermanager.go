@@ -10,8 +10,7 @@ import (
 )
 
 // processEventCSCustomerCreatedUpdated handles the customer-manager's customer_created and customer_updated event.
-func (h *subscribeHandler) processEventCSCustomerCreatedUpdated(m *rabbitmqhandler.Event) error {
-	ctx := context.Background()
+func (h *subscribeHandler) processEventCSCustomerCreatedUpdated(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":  "processEventCSCustomerCreatedUpdated",

@@ -88,7 +88,7 @@ func Test_Hook(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockLine.EXPECT().Event(ctx, tt.expectCustomerID, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
+			mockLine.EXPECT().Hook(ctx, tt.expectCustomerID, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
 
 			// conversations
 			for range tt.responseConversations {
@@ -100,7 +100,7 @@ func Test_Hook(t *testing.T) {
 			// messages
 			for _, tmp := range tt.responseMessages {
 				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.ReferenceType, tmp.ReferenceID).Return(&conversation.Conversation{}, nil)
-				mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), message.StatusReceived, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&message.Message{}, nil)
+				mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), message.StatusReceived, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&message.Message{}, nil)
 			}
 
 			if err := h.Hook(ctx, tt.uri, tt.data); err != nil {
@@ -186,7 +186,7 @@ func Test_hookLine(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockLine.EXPECT().Event(ctx, tt.customerID, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
+			mockLine.EXPECT().Hook(ctx, tt.customerID, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
 
 			// conversations
 			for range tt.responseConversations {
@@ -205,13 +205,14 @@ func Test_hookLine(t *testing.T) {
 					message.StatusReceived,
 					tt.responseConversation.ReferenceType,
 					tt.responseConversation.ReferenceID,
-					tmp.SourceTarget,
+					"",
+					tmp.Source,
 					tmp.Text,
 					tmp.Medias,
 				).Return(&message.Message{}, nil)
 			}
 
-			if err := h.eventLine(ctx, tt.customerID, tt.data); err != nil {
+			if err := h.hookLine(ctx, tt.customerID, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

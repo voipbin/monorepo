@@ -35,8 +35,11 @@ type DBHandler interface {
 	MediaGet(ctx context.Context, id uuid.UUID) (*media.Media, error)
 
 	MessageCreate(ctx context.Context, m *message.Message) error
+	MessageDelete(ctx context.Context, id uuid.UUID) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, token string, limit uint64) ([]*message.Message, error)
+	MessageGetsByTransactionID(ctx context.Context, transactionID string, token string, limit uint64) ([]*message.Message, error)
+	MessageUpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) error
 }
 
 // handler database handler

@@ -7,7 +7,9 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
@@ -25,7 +27,9 @@ const (
 		reference_type,
 		reference_id,
 
-		source_target,
+		transaction_id,
+
+		source,
 
 		text,
 		medias,
@@ -40,7 +44,8 @@ const (
 
 // conversationGetFromRow gets the conversation from the row.
 func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
-	medias := ""
+	var source sql.NullString
+	var medias sql.NullString
 
 	res := &message.Message{}
 	if err := row.Scan(
@@ -54,7 +59,9 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		&res.ReferenceType,
 		&res.ReferenceID,
 
-		&res.SourceTarget,
+		&res.TransactionID,
+
+		&source,
 
 		&res.Text,
 		&medias,
@@ -66,8 +73,20 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
 	}
 
-	if errMedias := json.Unmarshal([]byte(medias), &res.Medias); errMedias != nil {
-		return nil, fmt.Errorf("could not unmarshal the Medias. messageGetFromRow. err: %v", errMedias)
+	if !source.Valid {
+		res.Source = &commonaddress.Address{}
+	} else {
+		if errSource := json.Unmarshal([]byte(source.String), &res.Source); errSource != nil {
+			return nil, fmt.Errorf("could not unmarshal the Source. messageGetFromRow. err: %v", errSource)
+		}
+	}
+
+	if !medias.Valid {
+		res.Medias = []media.Media{}
+	} else {
+		if errMedias := json.Unmarshal([]byte(medias.String), &res.Medias); errMedias != nil {
+			return nil, fmt.Errorf("could not unmarshal the Medias. messageGetFromRow. err: %v", errMedias)
+		}
 	}
 
 	return res, nil
@@ -87,7 +106,9 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		reference_type,
 		reference_id,
 
-		source_target,
+		transaction_id,
+
+		source,
 
 		text,
 		medias,
@@ -101,6 +122,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		?,
 		?, ?,
 		?,
+		?,
 		?, ?,
 		?, ?, ?
 		)`
@@ -109,6 +131,11 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		return fmt.Errorf("could not prepare. MessageCreate. err: %v", err)
 	}
 	defer stmt.Close()
+
+	source, err := json.Marshal(m.Source)
+	if err != nil {
+		return fmt.Errorf("could not marshal the source. err: %v", err)
+	}
 
 	medias, err := json.Marshal(m.Medias)
 	if err != nil {
@@ -126,7 +153,9 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		m.ReferenceType,
 		m.ReferenceID,
 
-		m.SourceTarget,
+		m.TransactionID,
+
+		source,
 
 		m.Text,
 		medias,
@@ -229,6 +258,40 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
+// MessageGetByTransactionID returns message by the transaction_id.
+func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID string, token string, limit uint64) ([]*message.Message, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete >= ?
+			and transaction_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, messageSelect)
+
+	rows, err := h.db.Query(q, DefaultTimeStamp, transactionID, token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. MessageGetsByTransactionID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*message.Message
+	for rows.Next() {
+		u, err := h.messageGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. MessageGetsByTransactionID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // MessageGetsByConversationID returns list of messages.
 func (h *handler) MessageGetsByConversationID(ctx context.Context, conversationID uuid.UUID, token string, limit uint64) ([]*message.Message, error) {
 
@@ -257,10 +320,64 @@ func (h *handler) MessageGetsByConversationID(ctx context.Context, conversationI
 			return nil, fmt.Errorf("dbhandler: Could not scan the row. MessageGetsByConversationID. err: %v", err)
 		}
 
-		_ = fmt.Errorf("test. %v", u)
-
 		res = append(res, u)
 	}
 
 	return res, nil
+}
+
+// MessageUpdateStatus updates the message's status.
+func (h *handler) MessageUpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) error {
+
+	q := `
+	update conversation_messages set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := GetCurTime()
+
+	_, err := h.db.Exec(q,
+		status,
+		ts,
+		id.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. MessageUpdateStatus. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.messageUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// MessageDelete deletes the message.
+func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
+
+	q := `
+	update conversation_messages set
+		tm_update = ?,
+		tm_delete = ?
+	where
+		id = ?
+	`
+
+	ts := GetCurTime()
+
+	_, err := h.db.Exec(q,
+		ts,
+		ts,
+		id.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. MessageDelete. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.messageUpdateToCache(ctx, id)
+
+	return nil
 }

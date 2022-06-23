@@ -10,7 +10,9 @@ create table conversation_messages(
   reference_type  varchar(255),
   reference_id    varchar(255),
 
-  source_target   varchar(255),
+  transaction_id  varchar(255),
+
+  source  json,
 
   text    text,
   medias  json,
@@ -25,3 +27,4 @@ create table conversation_messages(
 
 create index idx_conversation_messages_customerid on conversation_messages(customer_id);
 create index idx_conversation_messages_reference_type_reference_id on conversation_messages(reference_type, reference_id);
+create index idx_conversation_messages_transaction_id on conversation_messages(transaction_id);

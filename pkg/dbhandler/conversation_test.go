@@ -31,6 +31,10 @@ func Test_ConversationCreate(t *testing.T) {
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeLine,
+					Target: "9bf1d18c-f116-11ec-896c-636b8bfbe1a1",
+				},
 				Participants: []commonaddress.Address{
 					{
 						Type:       commonaddress.TypeLine,
@@ -96,6 +100,7 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
 				ReferenceID:   "612435d0-e429-11ec-845d-bba00000504b",
+				Source:        &commonaddress.Address{},
 				Participants:  []commonaddress.Address{},
 				TMCreate:      "2022-04-18 03:22:17.995000",
 				TMUpdate:      "2022-04-18 03:22:17.995000",
@@ -158,6 +163,7 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 					Detail:        "conversation detail",
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
+					Source:        &commonaddress.Address{},
 					Participants:  []commonaddress.Address{},
 					TMCreate:      "2022-04-18 03:22:17.995000",
 					TMUpdate:      "2022-04-18 03:22:17.995000",
@@ -170,6 +176,7 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 					Detail:        "conversation detail",
 					ReferenceType: conversation.ReferenceTypeLine,
 					ReferenceID:   "387f1afe-e42a-11ec-ad8f-1340414f9a51",
+					Source:        &commonaddress.Address{},
 					Participants:  []commonaddress.Address{},
 					TMCreate:      "2022-04-18 03:22:17.995000",
 					TMUpdate:      "2022-04-18 03:22:17.995000",

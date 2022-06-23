@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
@@ -21,7 +22,9 @@ type Message struct {
 	ReferenceType conversation.ReferenceType `json:"reference_type"` // used for find a conversation info(source info: group/room/user)
 	ReferenceID   string                     `json:"reference_id"`   // used for find a conversation info(source info: group_id, room_id, user_id)
 
-	SourceTarget string `json:"source_target"` // message source target.
+	TransactionID string `json:"transaction_id"` // uniq id for message's transaction
+
+	Source *commonaddress.Address `json:"source"` // source
 
 	Text   string        `json:"text"`
 	Medias []media.Media `json:"medias"`

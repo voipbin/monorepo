@@ -50,7 +50,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","name":"","detail":"","reference_type":"","reference_id":"","participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -77,7 +77,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"b7ac843c-e863-11ec-9652-0ff162b38a15","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","name":"","detail":"","reference_type":"","reference_id":"","participants":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"c45aec8c-e863-11ec-9bae-4fcfe883444a","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","name":"","detail":"","reference_type":"","reference_id":"","participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"b7ac843c-e863-11ec-9652-0ff162b38a15","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"c45aec8c-e863-11ec-9bae-4fcfe883444a","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -136,7 +136,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -203,7 +203,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","source_target":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -230,7 +230,7 @@ func Test_processV1ConversationsIDMessagesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"d373f1e8-e866-11ec-91ef-7711453397a7","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","source_target":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"d3a1f9f8-e866-11ec-a403-07ca24d89997","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","source_target":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"d373f1e8-e866-11ec-91ef-7711453397a7","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"d3a1f9f8-e866-11ec-a403-07ca24d89997","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -297,7 +297,7 @@ func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bb509f64-ec56-11ec-aa8b-374ae78e9b98","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","source_target":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bb509f64-ec56-11ec-aa8b-374ae78e9b98","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"","transaction_id":"","source":null,"text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}

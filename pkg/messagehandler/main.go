@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -13,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/smshandler"
 )
 
 // MessageHandler defiens
@@ -24,11 +26,15 @@ type MessageHandler interface {
 		status message.Status,
 		referenceType conversation.ReferenceType,
 		referenceID string,
-		sourceTarget string,
+		transactionID string,
+		source *commonaddress.Address,
 		text string,
 		medias []media.Media,
 	) (*message.Message, error)
+	Delete(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	GetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]*message.Message, error)
+	GetsByTransactionID(ctx context.Context, transactionID string, pageToken string, pageSize uint64) ([]*message.Message, error)
+	UpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) (*message.Message, error)
 
 	SendToConversation(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error)
 }
@@ -38,14 +44,16 @@ type messageHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 
 	lineHandler linehandler.LineHandler
+	smsHandler  smshandler.SMSHandler
 }
 
 // NewMessageHandler returns a new ConversationHandler
-func NewMessageHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, lineHandler linehandler.LineHandler) MessageHandler {
+func NewMessageHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, lineHandler linehandler.LineHandler, smsHandler smshandler.SMSHandler) MessageHandler {
 	return &messageHandler{
 		db:            db,
 		notifyHandler: notifyHandler,
 
 		lineHandler: lineHandler,
+		smsHandler:  smsHandler,
 	}
 }

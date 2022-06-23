@@ -38,6 +38,20 @@ func (m *MockConversationHandler) EXPECT() *MockConversationHandlerMockRecorder 
 	return m.recorder
 }
 
+// Event mocks base method.
+func (m *MockConversationHandler) Event(ctx context.Context, referenceType conversation.ReferenceType, data []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Event", ctx, referenceType, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Event indicates an expected call of Event.
+func (mr *MockConversationHandlerMockRecorder) Event(ctx, referenceType, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockConversationHandler)(nil).Event), ctx, referenceType, data)
+}
+
 // Get mocks base method.
 func (m *MockConversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
