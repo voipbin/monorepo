@@ -45,8 +45,8 @@ Campaigncall
 * reference_id: Reference's ID.
 * *status*: Campaigncall's status. See detail :ref:`here <campaign-struct-campaigncall-status>`.
 * *result*: Campaigncall's result. See detail :ref:`here <campaign-struct-campaigncall-result>`.
-* *source*: Source address info. See detail :ref:`here <call-struct-call-address>`.
-* *destination*: Destination address info. See detail :ref:`here <call-struct-call-address>`.
+* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
+* *destination*: Destination address info. See detail :ref:`here <common-struct-address-address>`.
 * destination_index: Destination's index.
 * try_count: Try count.
 
