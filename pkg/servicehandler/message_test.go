@@ -187,7 +187,7 @@ func Test_MessageSend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockReq.EXPECT().MMV1MessageSend(gomock.Any(), tt.customer.ID, tt.source, tt.destinations, tt.text).Return(tt.response, nil)
+			mockReq.EXPECT().MMV1MessageSend(gomock.Any(), uuid.Nil, tt.customer.ID, tt.source, tt.destinations, tt.text).Return(tt.response, nil)
 			res, err := h.MessageSend(tt.customer, tt.source, tt.destinations, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

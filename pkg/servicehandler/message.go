@@ -86,7 +86,7 @@ func (h *serviceHandler) MessageSend(u *cscustomer.Customer, source *commonaddre
 	}
 
 	// send message
-	tmp, err := h.reqHandler.MMV1MessageSend(ctx, u.ID, source, destinations, text)
+	tmp, err := h.reqHandler.MMV1MessageSend(ctx, uuid.Nil, u.ID, source, destinations, text)
 	if err != nil {
 		log.Infof("Could not get send a message info. err: %v", err)
 		return nil, err
