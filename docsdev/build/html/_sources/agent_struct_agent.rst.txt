@@ -37,7 +37,7 @@ Agent
 * *status*: Agent's status. See detail :ref:`here <agent-struct-agent-status>`.
 * *permission*: Agent's permission.
 * *tag_ids*: List of agent's tags.
-* *addresses*: List of agent's addresses. See detail :ref:`here <call-struct-call-address>`.
+* *addresses*: List of agent's addresses. See detail :ref:`here <common-struct-address-address>`.
 
 .. _agent-struct-agent-ring_method:
 
