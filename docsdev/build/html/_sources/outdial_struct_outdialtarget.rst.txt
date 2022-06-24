@@ -48,11 +48,11 @@ Outdialtarget
 * detail: outdialtarget's detail.
 * data: outdialtarget's data.
 * *status*: outdialtarget's status. See detail :ref:`here <outdial-struct-outdialtarget-status>`.
-* *destination_0*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
-* *destination_1*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
-* *destination_2*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
-* *destination_3*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
-* *destination_4*: outdialtarget's destination. See detail :ref:`here <call-struct-call-address>`.
+* *destination_0*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
+* *destination_1*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
+* *destination_2*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
+* *destination_3*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
+* *destination_4*: outdialtarget's destination. See detail :ref:`here <common-struct-address-address>`.
 * try_count_0: destination 0's try count.
 * try_count_1: destination 1's try count.
 * try_count_2: destination 2's try count.

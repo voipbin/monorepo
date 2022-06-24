@@ -263,8 +263,8 @@ Parameters
         }
     }
 
-* *source*: Source address. See detail :ref:`here <call-struct-call-address-type>`.
-* *destinations*: Array of destination addresses. See detail :ref:`here <call-struct-call-address-type>`.
+* *source*: Source address. See detail :ref:`here <common-struct-address-type>`.
+* *destinations*: Array of destination addresses. See detail :ref:`here <common-struct-address-type>`.
 * flow_id: Call's flow id. If this not set, will use the actions array.
 * actions: Array of actions. If the flow_id not set, the call flow will be created with this actions.
 * chained: If it sets to true, created calls will be hungup when the master call is hangup. Default false.
@@ -443,8 +443,8 @@ Parameters
         }
     }
 
-* *source*: Source address. See detail :ref:`here <call-struct-call-address>`.
-* *destinations*: Array of destination addresses. See detail :ref:`here <call-struct-call-address>`.
+* *source*: Source address. See detail :ref:`here <common-struct-address-address>`.
+* *destinations*: Array of destination addresses. See detail :ref:`here <common-struct-address-address>`.
 * unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 
 Example
@@ -758,8 +758,8 @@ Parameters
         }
     }
 
-* *source*: Source address info. See detail :ref:`here <call-struct-call-address>`.
-* *destinations*: Array of destination addresses. See detail :ref:`here <call-struct-call-address>`.
+* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
+* *destinations*: Array of destination addresses. See detail :ref:`here <common-struct-address-address>`.
 * text: Message's text.
 
 .. _flow-struct-action-play:
