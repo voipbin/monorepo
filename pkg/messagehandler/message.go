@@ -18,6 +18,7 @@ func (h *messageHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
 	conversationID uuid.UUID,
+	direction message.Direction,
 	status message.Status,
 	referenceType conversation.ReferenceType,
 	referenceID string,
@@ -42,6 +43,7 @@ func (h *messageHandler) Create(
 		ID:             uuid.Must(uuid.NewV4()),
 		CustomerID:     customerID,
 		ConversationID: conversationID,
+		Direction:      direction,
 		Status:         status,
 
 		ReferenceType: referenceType,

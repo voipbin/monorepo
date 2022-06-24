@@ -68,11 +68,12 @@ func Test_Event(t *testing.T) {
 			mockMessage.EXPECT().GetsByTransactionID(ctx, tt.responseEvent[0].TransactionID, gomock.Any(), uint64(10)).Return([]*message.Message{}, nil)
 			for _, tmp := range tt.responseEvent {
 
-				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.ReferenceType, gomock.Any()).Return(tt.responseConversation, nil)
+				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, gomock.Any()).Return(tt.responseConversation, nil)
 				mockMessage.EXPECT().Create(
 					ctx,
 					tt.responseConversation.CustomerID,
 					tt.responseConversation.ID,
+					message.DirectionIncoming,
 					message.StatusReceived,
 					conversation.ReferenceTypeMessage,
 					tmp.ReferenceID,
@@ -142,11 +143,12 @@ func Test_eventSMS(t *testing.T) {
 
 			for _, tmp := range tt.responseEvent {
 
-				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.ReferenceType, gomock.Any()).Return(tt.responseConversation, nil)
+				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, gomock.Any()).Return(tt.responseConversation, nil)
 				mockMessage.EXPECT().Create(
 					ctx,
 					tt.responseConversation.CustomerID,
 					tt.responseConversation.ID,
+					message.DirectionIncoming,
 					message.StatusReceived,
 					conversation.ReferenceTypeMessage,
 					tmp.ReferenceID,

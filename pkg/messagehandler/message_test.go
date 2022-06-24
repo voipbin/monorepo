@@ -24,6 +24,7 @@ func Test_Create(t *testing.T) {
 
 		customerID     uuid.UUID
 		conversationID uuid.UUID
+		direction      message.Direction
 		status         message.Status
 		referenceType  conversation.ReferenceType
 		referenceID    string
@@ -39,6 +40,7 @@ func Test_Create(t *testing.T) {
 
 			uuid.FromStringOrNil("8db56df0-e86e-11ec-b6d7-1fa3ca565837"),
 			uuid.FromStringOrNil("8e0e1dce-e86e-11ec-9537-77df0d80af26"),
+			message.DirectionIncoming,
 			message.StatusSent,
 			conversation.ReferenceTypeLine,
 			"Ud871bcaf7c3ad13d2a0b0d78a42a287f",
@@ -76,7 +78,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
-			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.source, tt.text, tt.medias)
+			res, err := h.Create(ctx, tt.customerID, tt.conversationID, tt.direction, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.source, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

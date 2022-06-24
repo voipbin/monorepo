@@ -88,6 +88,7 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 		name         string
 		conversation *conversation.Conversation
 
+		customerID    uuid.UUID
 		referenceType conversation.ReferenceType
 		referenceID   string
 	}{
@@ -107,6 +108,7 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 				TMDelete:      DefaultTimeStamp,
 			},
 
+			uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
 			conversation.ReferenceTypeLine,
 			"612435d0-e429-11ec-845d-bba00000504b",
 		},
@@ -131,7 +133,7 @@ func Test_ConversationGetByReferenceInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.ConversationGetByReferenceInfo(ctx, tt.referenceType, tt.referenceID)
+			res, err := h.ConversationGetByReferenceInfo(ctx, tt.customerID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

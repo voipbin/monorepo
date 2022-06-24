@@ -15,6 +15,7 @@ type WebhookMessage struct {
 	ID uuid.UUID `json:"id"`
 
 	ConversationID uuid.UUID `json:"conversation_id"`
+	Direction      Direction `json:"direction"`
 	Status         Status    `json:"status"`
 
 	ReferenceType conversation.ReferenceType `json:"reference_type"`
@@ -36,6 +37,7 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 		ID: h.ID,
 
 		ConversationID: h.ConversationID,
+		Direction:      h.Direction,
 		Status:         h.Status,
 
 		ReferenceType: h.ReferenceType,

@@ -99,8 +99,8 @@ func Test_Hook(t *testing.T) {
 
 			// messages
 			for _, tmp := range tt.responseMessages {
-				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.ReferenceType, tmp.ReferenceID).Return(&conversation.Conversation{}, nil)
-				mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), message.StatusReceived, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&message.Message{}, nil)
+				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID).Return(&conversation.Conversation{}, nil)
+				mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), message.DirectionIncoming, message.StatusReceived, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&message.Message{}, nil)
 			}
 
 			if err := h.Hook(ctx, tt.uri, tt.data); err != nil {
@@ -197,11 +197,12 @@ func Test_hookLine(t *testing.T) {
 
 			// messages
 			for _, tmp := range tt.responseMessages {
-				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.ReferenceType, tmp.ReferenceID).Return(tt.responseConversation, nil)
+				mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID).Return(tt.responseConversation, nil)
 				mockMessage.EXPECT().Create(
 					ctx,
 					tt.responseConversation.CustomerID,
 					tt.responseConversation.ID,
+					message.DirectionIncoming,
 					message.StatusReceived,
 					tt.responseConversation.ReferenceType,
 					tt.responseConversation.ReferenceID,

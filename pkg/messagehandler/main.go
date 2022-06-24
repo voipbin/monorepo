@@ -23,6 +23,7 @@ type MessageHandler interface {
 		ctx context.Context,
 		customerID uuid.UUID,
 		conversationID uuid.UUID,
+		direction message.Direction,
 		status message.Status,
 		referenceType conversation.ReferenceType,
 		referenceID string,
