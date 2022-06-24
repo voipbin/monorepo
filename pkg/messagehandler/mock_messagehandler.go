@@ -40,18 +40,18 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockMessageHandler) Create(ctx context.Context, customerID, conversationID uuid.UUID, status message.Status, referenceType conversation.ReferenceType, referenceID, transactionID string, source *address.Address, text string, medias []media.Media) (*message.Message, error) {
+func (m *MockMessageHandler) Create(ctx context.Context, customerID, conversationID uuid.UUID, direction message.Direction, status message.Status, referenceType conversation.ReferenceType, referenceID, transactionID string, source *address.Address, text string, medias []media.Media) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, conversationID, status, referenceType, referenceID, transactionID, source, text, medias)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, source, text, medias)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockMessageHandlerMockRecorder) Create(ctx, customerID, conversationID, status, referenceType, referenceID, transactionID, source, text, medias interface{}) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Create(ctx, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, source, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, customerID, conversationID, status, referenceType, referenceID, transactionID, source, text, medias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, source, text, medias)
 }
 
 // Delete mocks base method.

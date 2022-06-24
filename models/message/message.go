@@ -17,6 +17,7 @@ type Message struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 
 	ConversationID uuid.UUID `json:"conversation_id"`
+	Direction      Direction `json:"direction"`
 	Status         Status    `json:"status"`
 
 	ReferenceType conversation.ReferenceType `json:"reference_type"` // used for find a conversation info(source info: group/room/user)
@@ -43,6 +44,16 @@ const (
 	StatusSent     Status = "sent"
 	StatusFailed   Status = "failed"
 	StatusReceived Status = "received"
+)
+
+// Direction message's direction
+type Direction string
+
+// list of Direction defines
+const (
+	DirectionNond     Direction = ""
+	DirectionOutgoing Direction = "outgoing"
+	DirectionIncoming Direction = "incoming"
 )
 
 // // Type defines

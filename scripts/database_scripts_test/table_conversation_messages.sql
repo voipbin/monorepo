@@ -4,8 +4,8 @@ create table conversation_messages(
   customer_id   binary(16),     -- customer id
 
   conversation_id binary(16),
-
-  status varchar(16),
+  direction       varchar(255),
+  status          varchar(16),
 
   reference_type  varchar(255),
   reference_id    varchar(255),

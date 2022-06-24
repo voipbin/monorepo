@@ -21,7 +21,7 @@ const (
 		customer_id,
 
 		conversation_id,
-
+		direction,
 		status,
 
 		reference_type,
@@ -53,7 +53,7 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 		&res.CustomerID,
 
 		&res.ConversationID,
-
+		&res.Direction,
 		&res.Status,
 
 		&res.ReferenceType,
@@ -100,7 +100,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		customer_id,
 
 		conversation_id,
-
+		direction,
 		status,
 
 		reference_type,
@@ -118,8 +118,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		tm_delete
 	) values(
 		?, ?,
-		?,
-		?,
+		?, ?, ?,
 		?, ?,
 		?,
 		?,
@@ -147,7 +146,7 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		m.CustomerID.Bytes(),
 
 		m.ConversationID.Bytes(),
-
+		m.Direction,
 		m.Status,
 
 		m.ReferenceType,

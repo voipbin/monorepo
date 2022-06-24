@@ -69,6 +69,7 @@ func Test_GetByReferenceInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
+		customerID    uuid.UUID
 		referenceType conversation.ReferenceType
 		referenceID   string
 
@@ -77,6 +78,7 @@ func Test_GetByReferenceInfo(t *testing.T) {
 		{
 			"normal",
 
+			uuid.FromStringOrNil("31fb223a-e6e7-11ec-9e22-438ecfd00508"),
 			conversation.ReferenceTypeLine,
 			"a481fe6c-e6e9-11ec-92f7-6366decbd9e8",
 
@@ -101,9 +103,9 @@ func Test_GetByReferenceInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tt.referenceType, tt.referenceID).Return(tt.responseConversation, nil)
+			mockDB.EXPECT().ConversationGetByReferenceInfo(ctx, tt.customerID, tt.referenceType, tt.referenceID).Return(tt.responseConversation, nil)
 
-			res, err := h.GetByReferenceInfo(ctx, tt.referenceType, tt.referenceID)
+			res, err := h.GetByReferenceInfo(ctx, tt.customerID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

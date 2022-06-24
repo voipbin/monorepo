@@ -217,18 +217,19 @@ func (h *handler) conversationGetFromCache(ctx context.Context, id uuid.UUID) (*
 }
 
 // ConversationGetByReferenceInfo returns conversation by the reference.
-func (h *handler) ConversationGetByReferenceInfo(ctx context.Context, ReferenceType conversation.ReferenceType, ReferenceID string) (*conversation.Conversation, error) {
+func (h *handler) ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, ReferenceType conversation.ReferenceType, ReferenceID string) (*conversation.Conversation, error) {
 
 	// prepare
 	q := fmt.Sprintf(`
 		%s
 		where
 			tm_delete >= ?
+			and customer_id = ?
 			and reference_type = ?
 			and reference_id = ?
 	`, conversationSelect)
 
-	row, err := h.db.Query(q, DefaultTimeStamp, ReferenceType, ReferenceID)
+	row, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), ReferenceType, ReferenceID)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConversationGetByReferenceInfo. err: %v", err)
 	}

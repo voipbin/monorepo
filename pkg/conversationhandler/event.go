@@ -64,7 +64,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 
 	for _, tmp := range tmps {
 		// get converstation
-		cv, err := h.GetByReferenceInfo(ctx, tmp.ReferenceType, tmp.ReferenceID)
+		cv, err := h.GetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID)
 		if err != nil {
 			log.Debugf("Could not find conversation. Create a new conversation.")
 
@@ -83,7 +83,7 @@ func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
 		}
 
 		// create a message
-		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.StatusReceived, conversation.ReferenceTypeMessage, tmp.ReferenceID, tmp.ID.String(), tmp.Source, tmp.Text, tmp.Medias)
+		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.DirectionIncoming, message.StatusReceived, conversation.ReferenceTypeMessage, tmp.ReferenceID, tmp.ID.String(), tmp.Source, tmp.Text, tmp.Medias)
 		if err != nil {
 			log.Errorf("Could not create a message. err: %v", err)
 			return err

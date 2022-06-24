@@ -17,8 +17,8 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 }
 
 // GetByReferenceInfo returns conversation
-func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
-	return h.db.ConversationGetByReferenceInfo(ctx, referenceType, referenceID)
+func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error) {
+	return h.db.ConversationGetByReferenceInfo(ctx, customerID, referenceType, referenceID)
 }
 
 // GetsByCustomerID returns list of conversations

@@ -85,7 +85,7 @@ func (h *conversationHandler) hookLine(ctx context.Context, customerID uuid.UUID
 	for _, tmp := range messages {
 
 		// get converstation
-		cv, err := h.GetByReferenceInfo(ctx, tmp.ReferenceType, tmp.ReferenceID)
+		cv, err := h.GetByReferenceInfo(ctx, tmp.CustomerID, tmp.ReferenceType, tmp.ReferenceID)
 		if err != nil {
 			log.Debugf("Could not find conversation. Create a new conversation.")
 
@@ -117,7 +117,7 @@ func (h *conversationHandler) hookLine(ctx context.Context, customerID uuid.UUID
 		}
 
 		// create a message
-		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, "", tmp.Source, tmp.Text, tmp.Medias)
+		m, err := h.messageHandler.Create(ctx, cv.CustomerID, cv.ID, message.DirectionIncoming, message.StatusReceived, conversation.ReferenceTypeLine, tmp.ReferenceID, "", tmp.Source, tmp.Text, tmp.Medias)
 		if err != nil {
 			log.Errorf("Could not create a message. err: %v", err)
 			continue

@@ -30,6 +30,7 @@ func Test_MessageCreate(t *testing.T) {
 				ID:             uuid.FromStringOrNil("19c162d4-e4a2-11ec-a3ce-ef751a8980e7"),
 				CustomerID:     uuid.FromStringOrNil("1a3cf002-e4a2-11ec-855c-9fdc2a6e37d3"),
 				ConversationID: uuid.FromStringOrNil("1a795984-e4a2-11ec-a8b0-37faa9ea3db2"),
+				Direction:      message.DirectionIncoming,
 				Status:         message.StatusReceived,
 				ReferenceType:  conversation.ReferenceTypeLine,
 				ReferenceID:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
