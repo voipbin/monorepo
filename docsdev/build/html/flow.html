@@ -253,6 +253,7 @@
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 <li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
 </ul>
 
         </div>
@@ -716,8 +717,8 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>source</em>: Source address. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destinations</em>: Array of destination addresses. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>source</em>: Source address. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destinations</em>: Array of destination addresses. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>flow_id: Call’s flow id. If this not set, will use the actions array.</p></li>
 <li><p>actions: Array of actions. If the flow_id not set, the call flow will be created with this actions.</p></li>
 <li><p>chained: If it sets to true, created calls will be hungup when the master call is hangup. Default false.</p></li>
@@ -890,8 +891,8 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>source</em>: Source address. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destinations</em>: Array of destination addresses. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>source</em>: Source address. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destinations</em>: Array of destination addresses. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.</p></li>
 </ul>
 </section>
@@ -1193,8 +1194,8 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>destinations</em>: Array of destination addresses. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>destinations</em>: Array of destination addresses. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>text: Message’s text.</p></li>
 </ul>
 </section>

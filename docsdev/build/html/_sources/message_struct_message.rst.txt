@@ -44,9 +44,9 @@ Message struct
 
 * id: Message's ID.
 * *type*: Message's type. See detail :ref:`here <message-struct-message-type>`.
-* *source*: Source address info. See detail :ref:`here <call-struct-call-address>`.
+* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
 * *targets*: List of targets. See detail :ref:`here <message-struct-message-target>`.
-* *destinations*: List of destination addresses info. See detail :ref:`here <call-struct-call-address>`.
+* *destinations*: List of destination addresses info. See detail :ref:`here <common-struct-address-address>`.
 * *targets*: List of targets. See detail :ref:`here <message-struct-message-target>`.
 * text: Message's text.
 * *direction*: Message's direction. See detail :ref:`here <message-struct-message-direction>`.
@@ -72,7 +72,7 @@ Target struct
         "tm_update": "2022-03-13 15:11:06.497184184"
     }
 
-* *destination*: Destination address info. See detail :ref:`here <call-struct-call-address>`.
+* *destination*: Destination address info. See detail :ref:`here <common-struct-address-address>`.
 * status: Message's status for this destination.
 * parts: Number of parted message.
 

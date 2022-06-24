@@ -51,8 +51,8 @@ Call
 * chained_call_ids: List of chained call ids. If the call hangs up, the chained call also will hangup.
 * recording_id: Shows currently recording id.
 * recording_ids: List of recording ids.
-* *source*: Source address info. See detail :ref:`here <call-struct-call-address>`.
-* *destination*: Destination address info. See detail :ref:`here <call-struct-call-address>`.
+* *source*: Source address info. See detail :ref:`here <common-struct-address-address>`.
+* *destination*: Destination address info. See detail :ref:`here <common-struct-address-address>`.
 * *status*: Call's status. See detail :ref:`here <call-struct-call-status>`.
 * *action*: Call's current action. See detail :ref:`here <flow-struct-action>`.
 * *direction*: Call's direction. See detail :ref:`here <call-struct-call-direction>`.
@@ -186,42 +186,5 @@ timeout     Call reached max call duration after it was answered.
 noanswer    Destination didn't answer until destination's timeout.
 dialout     The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
 amd         Hangup caused by the action type amd. The call's amd action result hung up the call.
-=========== ============
-
-.. _call-struct-call-address:
-
-Address
--------
-Defines target(source/destination) address.
-
-.. code::
-
-    {
-        "type": "<string>",
-        "target": "<string>",
-        "target_name": "<string>",
-        "name": "<string>",
-        "detail": "<string>"
-    }
-
-* *type*: Address type. See detail :ref:`here <call-struct-call-address-type>`.
-* target: The address endpoint. Caller's destinatino address.
-* target_name: The address's name. Caller's name.
-* name: Name.
-* detail: Detail description.
-
-.. _call-struct-call-address-type:
-
-Address type
-------------
-Defines types of address.
-
-=========== ============
-Type        Description
-=========== ============
-agent       Used for calling to the agent
-endpoint    Used for calling to endpoint(extension@domain)
-sip         SIP type address.
-tel         Telephone type address.
 =========== ============
 

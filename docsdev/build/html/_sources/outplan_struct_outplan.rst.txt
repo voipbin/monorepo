@@ -33,7 +33,7 @@ Outplan
 * id: Outplan's id.
 * name: Outplan's name.
 * detail: Outplan's detail.
-* *source*: Source address. See detail :ref:`here <call-struct-call-address>`.
+* *source*: Source address. See detail :ref:`here <common-struct-address-address>`.
 * dial_timeout: Timeout for dialing. milliseconds
 * try_interval: Delay time for retry. milliseconds
 * max_try_count_0: Maximum try count for destination 0.
