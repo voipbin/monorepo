@@ -1,50 +1,51 @@
-.. _conversation-struct-conversation:
+.. _conversation-struct-message:
 
-Conversation
+Message
 ===============
 
-.. _conversation-struct-conversation-conversation:
+.. _conversation-struct-message-message:
 
-Conversation
+Message
 ------------
 
 .. code::
 
-
     {
         "id": "<string>",
-        "name": "<string>",
-        "detail": "<string>",
+        "conversation_id": "<string>",
+        "direction": "<string>",
+        "status": "<string>",
         "reference_type": "<string>",
         "reference_id": "<string>",
         "source": {
             ...
         },
-        "participants": [
-            ...
-        ],
+        "text": "<string>",
+        "medias": [],
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
     }
 
-* id: Conversation's ID.
-* name: Conversation's name.
-* detail: Conversation's detail.
+* id: Message's ID.
+* conversation_id: Conversation's ID.
+* direction: Message's direction.
+* status: Message's status.
 * reference_type: Conversation's reference type. See detail :ref:`here <conversation-struct-conversation-reference_type>`.
 * reference_id: Conversation's reference id.
 * source: Conversation's source address.
-* participants: List of participants.
+* text: Message's text.
+* medias: Message's medias.
 
-.. _conversation-struct-conversation-reference_type:
+.. _conversation-struct-message-direction:
 
-Reference type
+Direction
 --------------
-Conversation's reference type.
+Message's direction.
 
 ================ ============
-Reference type   Description
+Direction type   Description
 ================ ============
-message          Message.
-line             Line.
+incoming         Incoming message.
+outgoing         Outgoing message.
 ================ ============
