@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
@@ -586,7 +587,7 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 // actionHandleQueueJoin handles queue_join action type.
 func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionQueueJoin",
+		"func":              "actionHandleQueueJoin",
 		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
@@ -727,22 +728,8 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 		return err
 	}
 
-	// substitue the v
-	v, err := h.variableHandler.Get(ctx, af.ID)
-	if err != nil {
-		log.Errorf("Could not get variables. err: %v", err)
-		return err
-	}
-
-	// update variables
-	h.variableSubstitueAddress(ctx, opt.Source, v)
-	for i := range opt.Destinations {
-		h.variableSubstitueAddress(ctx, &opt.Destinations[i], v)
-	}
-	opt.Text = h.variableHandler.Substitue(ctx, opt.Text, v)
-
 	// send message
-	tmp, err := h.reqHandler.MMV1MessageSend(ctx, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
+	tmp, err := h.reqHandler.MMV1MessageSend(ctx, uuid.Nil, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
 		return err
@@ -787,19 +774,6 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 	masterCallID := uuid.Nil
 	if opt.Chained && af.ReferenceType == activeflow.ReferenceTypeCall {
 		masterCallID = af.ReferenceID
-	}
-
-	// substitue the v
-	v, err := h.variableHandler.Get(ctx, af.ID)
-	if err != nil {
-		log.Errorf("Could not get variables. err: %v", err)
-		return err
-	}
-
-	// update variables
-	h.variableSubstitueAddress(ctx, opt.Source, v)
-	for i := range opt.Destinations {
-		h.variableSubstitueAddress(ctx, &opt.Destinations[i], v)
 	}
 
 	resCalls, err := h.reqHandler.CMV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations)
@@ -856,13 +830,6 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 		log.Errorf("Could not unmarshal the option. err: %v", errUnmarshal)
 		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
 	}
-
-	// substitue the v
-	v, err := h.variableHandler.Get(ctx, af.ID)
-	if err == nil {
-		opt.Data = h.variableHandler.Substitue(ctx, string(opt.Data), v)
-	}
-
 	log.Debugf("Sending webhook message. message: %s", opt.Data)
 
 	if opt.Sync {
@@ -874,6 +841,45 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 			if errSend := h.reqHandler.WMV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
 				log.Errorf("Could not send the webhook correctlyon async mode. err: %v", errSend)
 			}
+		}()
+	}
+
+	return nil
+}
+
+// actionHandleConversationSend handles conversation_send action type.
+func (h *activeflowHandler) actionHandleConversationSend(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleConversationSend",
+		"activeflow_id":     af.ID,
+		"reference_type":    af.ReferenceType,
+		"reference_id":      af.ReferenceID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	act := &af.CurrentAction
+
+	var opt action.OptionConversationSend
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the conversation_send option. err: %v", err)
+		return err
+	}
+
+	// send a request
+	if opt.Sync {
+		res, err := h.reqHandler.ConversationV1MessageSend(ctx, opt.ConversationID, opt.Text, []conversationmedia.Media{})
+		if err != nil {
+			log.Errorf("Could not send the conversation_send request. err: %v", err)
+			return err
+		}
+		log.WithField("message", res).Debugf("Sent the conversation message correctly. message_id: %s", res.ID)
+	} else {
+		go func() {
+			res, err := h.reqHandler.ConversationV1MessageSend(ctx, opt.ConversationID, opt.Text, []conversationmedia.Media{})
+			if err != nil {
+				log.Errorf("Could not send the conversation_send request. err: %v", err)
+				return
+			}
+			log.WithField("message", res).Debugf("Sent the conversation message correctly. message_id: %s", res.ID)
 		}()
 	}
 

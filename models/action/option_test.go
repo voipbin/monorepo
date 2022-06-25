@@ -415,6 +415,44 @@ func Test_marshalOptionConditionCallStatus(t *testing.T) {
 	}
 }
 
+func Test_marshalOptionConversationSend(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionConversationSend
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			[]byte(`{"conversation_id": "af3620f8-f464-11ec-926e-23a17cd3e34b", "text": "hello world!", "sync": true}`),
+
+			OptionConversationSend{
+				ConversationID: uuid.FromStringOrNil("af3620f8-f464-11ec-926e-23a17cd3e34b"),
+				Text:           "hello world!",
+				Sync:           true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionConversationSend{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_marshalOptionVariableSet(t *testing.T) {
 	type test struct {
 		name string

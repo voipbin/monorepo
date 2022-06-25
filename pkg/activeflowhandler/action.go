@@ -45,7 +45,7 @@ func (h *activeflowHandler) getNextAction(ctx context.Context, activeflowID uuid
 	log.Debug("Getting next action.")
 
 	// get active-flow
-	af, err := h.db.ActiveflowGet(ctx, activeflowID)
+	af, err := h.Get(ctx, activeflowID)
 	if err != nil {
 		log.Errorf("Could not get active-flow. err: %v", err)
 		return stack.IDEmpty, nil, err
@@ -64,12 +64,21 @@ func (h *activeflowHandler) getNextAction(ctx context.Context, activeflowID uuid
 		return stack.IDEmpty, nil, fmt.Errorf("current action does not match")
 	}
 
+	// get next action
+	var stackID uuid.UUID
+	var act *action.Action
 	if af.ForwardStackID != stack.IDEmpty && af.ForwardActionID != action.IDEmpty {
 		log.Debugf("The forward action ID exist. forward_stack_id: %s, forward_action_id: %s", af.ForwardStackID, af.ForwardActionID)
-		return h.stackHandler.GetAction(ctx, af.StackMap, af.ForwardStackID, af.ForwardActionID, true)
+		stackID, act, err = h.stackHandler.GetAction(ctx, af.StackMap, af.ForwardStackID, af.ForwardActionID, true)
+		if err != nil {
+			log.Errorf("Could not get action. err: %v", err)
+			return stack.IDEmpty, nil, err
+		}
+	} else {
+		log.Debugf("The forward action ID does not exist. current_stack_id: %s, current_action_id: %s", af.CurrentStackID, &af.CurrentAction.ID)
+		stackID, act = h.stackHandler.GetNextAction(ctx, af.StackMap, af.CurrentStackID, &af.CurrentAction, true)
 	}
-
-	stackID, act := h.stackHandler.GetNextAction(ctx, af.StackMap, af.CurrentStackID, &af.CurrentAction, true)
 	log.Debugf("Found next action. stack_id: %s, action_id: %s", stackID, act.ID)
+
 	return stackID, act, nil
 }

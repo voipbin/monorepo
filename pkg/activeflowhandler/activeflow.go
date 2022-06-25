@@ -157,7 +157,7 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	)
 
 	// get af
-	af, err := h.db.ActiveflowGet(ctx, id)
+	af, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get active-flow. err: %v", err)
 		return nil, err
@@ -170,7 +170,7 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	af.ForwardStackID = stack.IDEmpty
 	af.ForwardActionID = action.IDEmpty
 	af.ExecuteCount++
-	af.TMUpdate = h.db.GetCurTime()
+	af.TMUpdate = dbhandler.GetCurTime()
 
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active-flow's current action. err: %v", err)

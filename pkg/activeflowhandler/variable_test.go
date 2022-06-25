@@ -69,10 +69,10 @@ func Test_variableSubstitueAddress(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockVar.EXPECT().Substitue(ctx, tt.address.Name, tt.v).Return(tt.responseSubName)
-			mockVar.EXPECT().Substitue(ctx, tt.address.Detail, tt.v).Return(tt.responseSubDetail)
-			mockVar.EXPECT().Substitue(ctx, tt.address.Target, tt.v).Return(tt.responseSubTarget)
-			mockVar.EXPECT().Substitue(ctx, tt.address.TargetName, tt.v).Return(tt.responseSubTargetName)
+			mockVar.EXPECT().SubstituteString(ctx, tt.address.Name, tt.v).Return(tt.responseSubName)
+			mockVar.EXPECT().SubstituteString(ctx, tt.address.Detail, tt.v).Return(tt.responseSubDetail)
+			mockVar.EXPECT().SubstituteString(ctx, tt.address.Target, tt.v).Return(tt.responseSubTarget)
+			mockVar.EXPECT().SubstituteString(ctx, tt.address.TargetName, tt.v).Return(tt.responseSubTargetName)
 
 			h.variableSubstitueAddress(ctx, tt.address, tt.v)
 			if reflect.DeepEqual(tt.address, tt.expectRes) != true {
