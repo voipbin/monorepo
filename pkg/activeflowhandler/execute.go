@@ -77,6 +77,14 @@ func (h *activeflowHandler) executeAction(ctx context.Context, activeflowID uuid
 	)
 	log.Debugf("Executing the action. action_id: %s, action_type: %s", act.ID, act.Type)
 
+	// substitute the option variables.
+	v, err := h.variableHandler.Get(ctx, activeflowID)
+	if err != nil {
+		log.Errorf("Could not get variables. err: %v", err)
+		return nil, err
+	}
+	act.Option = h.variableHandler.SubstituteByte(ctx, act.Option, v)
+
 	// update current action in active-flow
 	af, err := h.updateCurrentAction(ctx, activeflowID, stackID, act)
 	if err != nil {
@@ -129,6 +137,12 @@ func (h *activeflowHandler) executeAction(ctx context.Context, activeflowID uuid
 		if errHandle := h.actionHandleConnect(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the connect action correctly. err: %v", err)
 			return nil, err
+		}
+		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
+
+	case action.TypeConversationSend:
+		if errHandle := h.actionHandleConversationSend(ctx, af); errHandle != nil {
+			log.Errorf("Could not send the conversation message correctly. err: %v", errHandle)
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 

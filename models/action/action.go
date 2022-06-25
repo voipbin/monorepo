@@ -60,6 +60,7 @@ const (
 	TypeConfbridgeJoin      Type = "confbridge_join"       // call-manager. join to the confbridge.
 	TypeConferenceJoin      Type = "conference_join"       // conference-manager. join to the conference.
 	TypeConnect             Type = "connect"               // flow-manager. connect to the other destination.
+	TypeConversationSend    Type = "conversation_send"     // conversation-manager. Send the message to the conversation.
 	TypeDigitsReceive       Type = "digits_receive"        // call-manager. receive the digits(dtmfs).
 	TypeDigitsSend          Type = "digits_send"           // call-manager. send the digits(dtmfs).
 	TypeEcho                Type = "echo"                  // call-manager.
@@ -97,6 +98,7 @@ var TypeList []Type = []Type{
 	TypeConfbridgeJoin,
 	TypeConferenceJoin,
 	TypeConnect,
+	TypeConversationSend,
 	TypeDigitsReceive,
 	TypeDigitsSend,
 	TypeEcho,

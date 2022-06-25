@@ -82,7 +82,7 @@ func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, key str
 		return err
 	}
 
-	val := h.Substitue(ctx, value, v)
+	val := h.SubstituteString(ctx, value, v)
 	v.Variables[key] = val
 	if err := h.Set(ctx, v); err != nil {
 		log.Errorf("Could not set variable. err: %v", err)

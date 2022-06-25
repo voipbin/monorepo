@@ -74,6 +74,13 @@ type OptionConnect struct {
 	Unchained    bool                    `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
 }
 
+// OptionConversationSend defines action conversation_send's optoin.
+type OptionConversationSend struct {
+	ConversationID uuid.UUID `json:"conversation_id"` // conversation's id.
+	Text           string    `json:"text"`            // message text.
+	Sync           bool      `json:"sync"`
+}
+
 // OptionDigitsReceive defines action dtmf_receive's option.
 type OptionDigitsReceive struct {
 	Duration int    `json:"duration"` // dtmf receiving duration. ms

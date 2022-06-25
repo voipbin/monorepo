@@ -13,11 +13,12 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220611213710-f484abced1e9
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220611211540-aca4fc4de5a8
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220612082804-a10478456105
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220617051220-a77254c62406
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220624040703-5b53fdaad075
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220412180445-b5f041da51b3
-	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220612082606-32ea7b93d6bd
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220524124918-fc99b31aebd4
+	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220624040003-b3cd5e686f85
+	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220621154053-22fefa61a48f
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20220612144953-f3eed3c362db
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20220412183503-21306796da28
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220607060321-69fc9046521a
 )
@@ -29,19 +30,19 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.34.0 // indirect
+	github.com/prometheus/common v0.35.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220611222844-e5c44b372689 // indirect
-	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220607052644-b8feae22071c // indirect
-	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220412180021-aa7216424a33 // indirect
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5 // indirect
+	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220613130804-0755e1eb84d9 // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220508083304-215537bdcdaa // indirect
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220611220718-0fcb5e204d02 // indirect
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220424171422-5a3b77610aae // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20220413034054-1271ef0d98c3 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220412175449-ec3a017dbd18 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
-	golang.org/x/sys v0.0.0-20220610221304-9f5ed59c137d // indirect
-	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac // indirect
+	golang.org/x/sys v0.0.0-20220624220833-87e55d714810 // indirect
+	google.golang.org/genproto v0.0.0-20220624142145-8cd45d7dbd1f // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )

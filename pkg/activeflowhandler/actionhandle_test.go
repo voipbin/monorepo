@@ -12,6 +12,8 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	conversationmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -344,52 +346,6 @@ func Test_actionHandleConnect(t *testing.T) {
 			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectUpdateActiveflow).Return(nil)
 
 			if err := h.actionHandleConnect(ctx, tt.af); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_getActionsFromFlow(t *testing.T) {
-
-	tests := []struct {
-		name   string
-		flowID uuid.UUID
-		flow   *flow.Flow
-		callID uuid.UUID
-	}{
-		{
-			"normal",
-			uuid.FromStringOrNil("9091d6aa-3cbe-11ec-9a9e-7f0d954e1f7a"),
-			&flow.Flow{
-				ID: uuid.FromStringOrNil("9091d6aa-3cbe-11ec-9a9e-7f0d954e1f7a"),
-			},
-			uuid.FromStringOrNil("549d358a-fbfc-11ea-a625-43073fda56b9"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-
-			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
-			}
-
-			ctx := context.Background()
-
-			tmpFlow := &flow.Flow{
-				CustomerID: tt.flow.CustomerID,
-			}
-			mockReq.EXPECT().FMV1FlowGet(ctx, tt.flowID).Return(tmpFlow, nil)
-
-			_, err := h.getActionsFromFlow(ctx, tt.flowID, tt.flow.CustomerID)
-			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -2135,7 +2091,6 @@ func Test_actionHandleMessageSend(t *testing.T) {
 		expectDestinations []commonaddress.Address
 		expectText         string
 
-		responseVariable    *variable.Variable
 		responseCall        *cmcall.Call
 		expectReqActiveFlow *activeflow.Activeflow
 	}{
@@ -2190,13 +2145,6 @@ func Test_actionHandleMessageSend(t *testing.T) {
 			},
 			expectText: "hello world. test variable: ttteeesssttt",
 
-			responseVariable: &variable.Variable{
-				ID: uuid.FromStringOrNil("9332ed50-dc86-11ec-ba14-8b96908d546b"),
-				Variables: map[string]string{
-					"test.variable":    "ttteeesssttt",
-					"test.destination": "+821100000003",
-				},
-			},
 			responseCall: &cmcall.Call{
 				ID:     uuid.FromStringOrNil("4d496946-a2ce-11ec-a96e-eb9ac0dce8e7"),
 				Status: cmcall.StatusProgressing,
@@ -2249,20 +2197,7 @@ func Test_actionHandleMessageSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockVar.EXPECT().Get(ctx, tt.activeFlow.ID).Return(tt.responseVariable, nil)
-			mockVar.EXPECT().Substitue(ctx, tt.expectSource.Name, tt.responseVariable).Return(tt.expectSource.Name)
-			mockVar.EXPECT().Substitue(ctx, tt.expectSource.Detail, tt.responseVariable).Return(tt.expectSource.Detail)
-			mockVar.EXPECT().Substitue(ctx, tt.expectSource.Target, tt.responseVariable).Return(tt.expectSource.Target)
-			mockVar.EXPECT().Substitue(ctx, tt.expectSource.TargetName, tt.responseVariable).Return(tt.expectSource.TargetName)
-			for i := range tt.expectDestinations {
-				mockVar.EXPECT().Substitue(ctx, tt.expectDestinations[i].Name, tt.responseVariable).Return(tt.expectDestinations[i].Name)
-				mockVar.EXPECT().Substitue(ctx, tt.expectDestinations[i].Detail, tt.responseVariable).Return(tt.expectDestinations[i].Detail)
-				mockVar.EXPECT().Substitue(ctx, tt.expectDestinations[i].Target, tt.responseVariable).Return(tt.expectDestinations[i].Target)
-				mockVar.EXPECT().Substitue(ctx, tt.expectDestinations[i].TargetName, tt.responseVariable).Return(tt.expectDestinations[i].TargetName)
-			}
-			mockVar.EXPECT().Substitue(ctx, tt.expectText, tt.responseVariable).Return(tt.expectText)
-
-			mockReq.EXPECT().MMV1MessageSend(ctx, tt.expectCustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(&mmmessage.Message{}, nil)
+			mockReq.EXPECT().MMV1MessageSend(ctx, uuid.Nil, tt.expectCustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(&mmmessage.Message{}, nil)
 
 			if err := h.actionHandleMessageSend(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -2400,9 +2335,8 @@ func Test_actionHandleCall(t *testing.T) {
 		actions      []action.Action
 		masterCallID uuid.UUID
 
-		responseFlow     *flow.Flow
-		responseVariable *variable.Variable
-		responseCall     []cmcall.Call
+		responseFlow *flow.Flow
+		responseCall []cmcall.Call
 	}{
 		{
 			"single destination with flow id",
@@ -2444,7 +2378,6 @@ func Test_actionHandleCall(t *testing.T) {
 			uuid.Nil,
 
 			&flow.Flow{},
-			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("a49dda82-a941-11ec-b5a9-9baf180541e9"),
@@ -2495,7 +2428,6 @@ func Test_actionHandleCall(t *testing.T) {
 			uuid.Nil,
 
 			&flow.Flow{},
-			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("ff16e1f2-a941-11ec-b2c1-c3aa4ce144a0"),
@@ -2555,7 +2487,6 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("3936013c-a943-11ec-bdf1-af72361eecf4"),
 			},
-			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("39691e00-a943-11ec-a69c-7f0e69becb70"),
@@ -2612,7 +2543,6 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("f46f3e96-a943-11ec-b4e1-2bfce6b84c2b"),
 			},
-			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("f4a90298-a943-11ec-b31a-bf1f552ced44"),
@@ -2664,7 +2594,6 @@ func Test_actionHandleCall(t *testing.T) {
 			uuid.FromStringOrNil("3f0cd396-a994-11ec-95db-e73c30df842c"),
 
 			&flow.Flow{},
-			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("2aafe7e4-a994-11ec-8bae-338c6a067225"),
@@ -2713,7 +2642,6 @@ func Test_actionHandleCall(t *testing.T) {
 			uuid.Nil,
 
 			&flow.Flow{},
-			&variable.Variable{},
 			[]cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("8873be9e-a996-11ec-993b-438622bb78da"),
@@ -2748,17 +2676,6 @@ func Test_actionHandleCall(t *testing.T) {
 				flowID = tt.responseFlow.ID
 			}
 
-			mockVar.EXPECT().Get(ctx, tt.af.ID).Return(tt.responseVariable, nil)
-			mockVar.EXPECT().Substitue(ctx, tt.source.Name, tt.responseVariable).Return(tt.source.Name)
-			mockVar.EXPECT().Substitue(ctx, tt.source.Detail, tt.responseVariable).Return(tt.source.Detail)
-			mockVar.EXPECT().Substitue(ctx, tt.source.Target, tt.responseVariable).Return(tt.source.Target)
-			mockVar.EXPECT().Substitue(ctx, tt.source.TargetName, tt.responseVariable).Return(tt.source.TargetName)
-			for i := range tt.destinations {
-				mockVar.EXPECT().Substitue(ctx, tt.destinations[i].Name, tt.responseVariable).Return(tt.destinations[i].Name)
-				mockVar.EXPECT().Substitue(ctx, tt.destinations[i].Detail, tt.responseVariable).Return(tt.destinations[i].Detail)
-				mockVar.EXPECT().Substitue(ctx, tt.destinations[i].Target, tt.responseVariable).Return(tt.destinations[i].Target)
-				mockVar.EXPECT().Substitue(ctx, tt.destinations[i].TargetName, tt.responseVariable).Return(tt.destinations[i].TargetName)
-			}
 			mockReq.EXPECT().CMV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations).Return(tt.responseCall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {
@@ -2843,10 +2760,7 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 	tests := []struct {
 		name string
 
-		af         *activeflow.Activeflow
-		optionData string
-
-		responseVariable *variable.Variable
+		af *activeflow.Activeflow
 
 		expectSync     bool
 		expectURI      string
@@ -2863,7 +2777,7 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
 					Type:   action.TypeWebhookSend,
-					Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"variable test ${voipbin.test.name}."}`),
+					Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"test message."}`),
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -2873,18 +2787,10 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 							{
 								ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
 								Type:   action.TypeWebhookSend,
-								Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"variable test ${voipbin.test.name}."}`),
+								Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"test message."}`),
 							},
 						},
 					},
-				},
-			},
-			"variable test ${voipbin.test.name}.",
-
-			&variable.Variable{
-				ID: uuid.FromStringOrNil("284a82d4-d9eb-11ec-aa89-3fb4df202ec8"),
-				Variables: map[string]string{
-					"voipbin.test.name": "test name",
 				},
 			},
 
@@ -2892,47 +2798,7 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 			"test.com",
 			webhook.MethodTypePOST,
 			webhook.DataTypeJSON,
-			[]byte(`variable test test name.`),
-		},
-		{
-			"variable does not exist",
-
-			&activeflow.Activeflow{
-				ID:         uuid.FromStringOrNil("2751d836-da32-11ec-8ebb-df5c61605fec"),
-				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
-				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
-					Type:   action.TypeWebhookSend,
-					Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"variable test ${voipbin.test.name} and non-exist variable ${voipbin.test.non-exist}."}`),
-				},
-
-				StackMap: map[uuid.UUID]*stack.Stack{
-					stack.IDMain: {
-						ID: stack.IDMain,
-						Actions: []action.Action{
-							{
-								ID:     uuid.FromStringOrNil("63574506-d9eb-11ec-a261-67821a8699b0"),
-								Type:   action.TypeWebhookSend,
-								Option: []byte(`{"sync":false,"uri":"test.com","method":"POST","data_type":"application/json","data":"variable test ${voipbin.test.name} and non-exist variable ${voipbin.test.non-exist}."}`),
-							},
-						},
-					},
-				},
-			},
-			"variable test ${voipbin.test.name} and non-exist variable ${voipbin.test.non-exist}.",
-
-			&variable.Variable{
-				ID: uuid.FromStringOrNil("2751d836-da32-11ec-8ebb-df5c61605fec"),
-				Variables: map[string]string{
-					"voipbin.test.name": "test name",
-				},
-			},
-
-			true,
-			"test.com",
-			webhook.MethodTypePOST,
-			webhook.DataTypeJSON,
-			[]byte(`variable test test name and non-exist variable .`),
+			[]byte(`test message.`),
 		},
 	}
 
@@ -2956,11 +2822,91 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockVariable.EXPECT().Get(ctx, tt.af.ID).Return(tt.responseVariable, nil)
-			mockVariable.EXPECT().Substitue(ctx, tt.optionData, tt.responseVariable).Return(string(tt.expectData[:]))
 			mockReq.EXPECT().WMV1WebhookSendToDestination(ctx, tt.af.CustomerID, tt.expectURI, tt.expectMethod, tt.expectDataType, tt.expectData).Return(nil)
 
 			if errCall := h.actionHandleWebhookSend(ctx, tt.af); errCall != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		})
+	}
+}
+
+func Test_actionHandleConversationSend(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		af         *activeflow.Activeflow
+		optionText string
+
+		expectSync           bool
+		expectURI            string
+		expectMethod         webhook.MethodType
+		expectDataType       webhook.DataType
+		expectConversationID uuid.UUID
+		expectText           string
+	}{
+		{
+			"normal",
+
+			&activeflow.Activeflow{
+				ID:         uuid.FromStringOrNil("5c82ef66-f474-11ec-b5da-07a1796b759d"),
+				CustomerID: uuid.FromStringOrNil("4ea19a38-a941-11ec-b04d-bb69d70f3461"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("5ce765cc-f474-11ec-b2e9-eb0259d7bacf"),
+					Type:   action.TypeConversationSend,
+					Option: []byte(`{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message.","sync":true}`),
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:     uuid.FromStringOrNil("5ce765cc-f474-11ec-b2e9-eb0259d7bacf"),
+								Type:   action.TypeConversationSend,
+								Option: []byte(`{"conversation_id":"7e5116e2-f477-11ec-9c08-b343a05abaee","text":"test message.","sync":true}`),
+							},
+						},
+					},
+				},
+			},
+			"test message.",
+
+			true,
+			"test.com",
+			webhook.MethodTypePOST,
+			webhook.DataTypeJSON,
+			uuid.FromStringOrNil("7e5116e2-f477-11ec-9c08-b343a05abaee"),
+			"test message.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockVariable := variablehandler.NewMockVariableHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler:   mockAction,
+				variableHandler: mockVariable,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.expectConversationID, tt.expectText, []conversationmedia.Media{}).Return(&conversationmessage.Message{}, nil)
+
+			if errCall := h.actionHandleConversationSend(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
 			}
 
