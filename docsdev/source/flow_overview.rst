@@ -1,4 +1,4 @@
-.. _flow-overview: flow_overview
+.. _flow-overview:
 
 Overview
 ========
