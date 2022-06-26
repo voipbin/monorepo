@@ -37,7 +37,34 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#feature">Feature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#channels">Channels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#programmable-voice">Programmable voice</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#account-notifications">Account Notifications</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#call-tracking">Call Tracking</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#programmable-calling">Programmable calling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#global-conferencing">Global conferencing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#interactive-voice-response-ivr">Interactive voice response(IVR)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#messaging">Messaging</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#programmable-messaging-api">Programmable Messaging API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#conversations-api">Conversations API</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#video">Video</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#applications">Applications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flow">Flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#agent">Agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#campaign">Campaign</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conference">Conference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conversation">Conversation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#domain">Domain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#queue">Queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#webhook">Webhook</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
@@ -88,21 +115,102 @@
   <section id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h1>
 <p>Provide useful APIs for call handling.</p>
-<section id="feature">
-<h2>Feature<a class="headerlink" href="#feature" title="Permalink to this headline"></a></h2>
-<p>The VoIPBIN API provides various resource control.</p>
-<ul class="simple">
-<li><p>Action: The VoIPBIN provides action blocks that can be used like lego blocks. Each action blocks have its own behaviors.</p></li>
-<li><p>Flow: The VoIPBIN provides action blocks that can be used like lego blocks. Each action blocks have its own behaviors.</p></li>
-<li><p>Call: The VoIPBIN provides call APIs that make easiest way to build high-quality call application in the Cloud.</p></li>
-<li><p>PSTN/WebRTC/SIP: The VoIPBIN provides various types of realtime communications.</p></li>
-<li><p>Queue: The VoIPBIN provides waiting queue control.</p></li>
-<li><p>Agent: The VoIPBIN provides agents management.</p></li>
-<li><p>Conference: The VoIPBIN provides Conference room control.</p></li>
-<li><p>Private domain(SIP trunking): The VoIPBIN private domain for call forwarding and SIP trunking.</p></li>
-<li><p>Extension registration: The VoIPBIN provides extension management and registration for call receiving.</p></li>
-</ul>
+<section id="channels">
+<span id="intro-channels"></span><h2>Channels<a class="headerlink" href="#channels" title="Permalink to this headline"></a></h2>
+<p>VoIPBin provides vairous types of channels.</p>
 <img alt="_images/intro_feature_feature.png" src="_images/intro_feature_feature.png" />
+<section id="programmable-voice">
+<span id="intro-channels-programmable-voice"></span><h3>Programmable voice<a class="headerlink" href="#programmable-voice" title="Permalink to this headline"></a></h3>
+<p>Build an engaging voice experience that you can quickly scale and modify with a wide array of customization options and resources, like our Voice actions.
+Then, add on features like Interactive Voice Response (IVR), recording transcriptions, and speech recognition to create an experience that you and your customers will appreciate.</p>
+<p>See detail at <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">here</span></a>.</p>
+<section id="account-notifications">
+<h4>Account Notifications<a class="headerlink" href="#account-notifications" title="Permalink to this headline"></a></h4>
+<p>Messaging and Voice APIs that let you keep customers in the loop about every change to their account.</p>
+</section>
+<section id="call-tracking">
+<h4>Call Tracking<a class="headerlink" href="#call-tracking" title="Permalink to this headline"></a></h4>
+<p>Accurately attribute calls, measure campaigns, and optimize customer experiences in your software.</p>
+</section>
+<section id="programmable-calling">
+<h4>Programmable calling<a class="headerlink" href="#programmable-calling" title="Permalink to this headline"></a></h4>
+<p>Use VoIPBin’s action flow to quickly build scalable, WebRTC/PSTN/VoIP voice application with uniform perfomance across all protocols and devices.</p>
+</section>
+<section id="global-conferencing">
+<h4>Global conferencing<a class="headerlink" href="#global-conferencing" title="Permalink to this headline"></a></h4>
+<p>Add multi-party calling experiences, global dial-in/out support.</p>
+</section>
+<section id="interactive-voice-response-ivr">
+<h4>Interactive voice response(IVR)<a class="headerlink" href="#interactive-voice-response-ivr" title="Permalink to this headline"></a></h4>
+<p>Increase customer engagement and reduce operation costs with a scalable IVR system that can respond to commands, build text-to-speech experiences in hundreds of languages, and more.</p>
+</section>
+</section>
+<section id="messaging">
+<span id="intro-channels-messaging"></span><h3>Messaging<a class="headerlink" href="#messaging" title="Permalink to this headline"></a></h3>
+<p>Omnichannel messaging on a single, scalable platform.
+Messaging is a centralized messaging platform to engage customers across their preferred channels. The VoIPBin’s enterprise-ready APIs and scalable software are powered by an intelligent network, enabling unrivaled reliability at any scale.</p>
+<section id="programmable-messaging-api">
+<h4>Programmable Messaging API<a class="headerlink" href="#programmable-messaging-api" title="Permalink to this headline"></a></h4>
+<p>Deliver messages to customers across preferred channels with an API for one-way, transactional messaging.</p>
+<p>One API for transactional SMS, MMS, and Line messaging..
+Build messaging solutions for alerts and notifications, promotions, marketing messages, and more.</p>
+<p>See detail at <a class="reference internal" href="message_overview.html#message-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="conversations-api">
+<h4>Conversations API<a class="headerlink" href="#conversations-api" title="Permalink to this headline"></a></h4>
+<p>Support customers at critical moments on the channels they prefer with scalable, multiparty conversations.</p>
+<p>A single API for in-app SMS, MMS, Line.
+Build conversational messaging solutions for customer care, conversational commerce, and more.</p>
+<p>See detail at <a class="reference internal" href="conversation_overview.html#conversation-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+</section>
+<section id="video">
+<span id="intro-channels-video"></span><h3>Video<a class="headerlink" href="#video" title="Permalink to this headline"></a></h3>
+<p>Build memorable video experiences. Embed customized video experiences into your applications at scale with VoIPBin Video.</p>
+</section>
+</section>
+<section id="applications">
+<span id="intro-applications"></span><h2>Applications<a class="headerlink" href="#applications" title="Permalink to this headline"></a></h2>
+<section id="flow">
+<span id="intro-applications-flow"></span><h3>Flow<a class="headerlink" href="#flow" title="Permalink to this headline"></a></h3>
+<p>The flow is a set of instructions you can use to tell VoIPBIN what to do when you receive an incoming call.</p>
+<p>See detail at <a class="reference internal" href="flow_overview.html#flow-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="agent">
+<span id="intro-applications-agent"></span><h3>Agent<a class="headerlink" href="#agent" title="Permalink to this headline"></a></h3>
+<p>The agent, or more accurately the call centre agent or phone agent, works for a company and takes calls with private or business customers on their behalf.</p>
+<p>See detail at <a class="reference internal" href="agent_overview.html#agent-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="campaign">
+<span id="intro-applications-campaign"></span><h3>Campaign<a class="headerlink" href="#campaign" title="Permalink to this headline"></a></h3>
+<p>The VoIPBIN campaign API provides campaign service for massive outbound calling/messaing/….</p>
+<p>See detail at <a class="reference internal" href="campaign_overview.html#campaign-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="conference">
+<span id="intro-applications-conference"></span><h3>Conference<a class="headerlink" href="#conference" title="Permalink to this headline"></a></h3>
+<p>The Conference API is a low-level API that allows you to create a conference room for various objects such as voice, video, and chat.</p>
+<p>See detail at <a class="reference internal" href="conference_overview.html#conference-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="conversation">
+<span id="intro-applications-conversation"></span><h3>Conversation<a class="headerlink" href="#conversation" title="Permalink to this headline"></a></h3>
+<p>Build conversational, cross-channel messaging through a few API calls with VoIPBIN Conversations.</p>
+<p>See detail at <a class="reference internal" href="conversation_overview.html#conversation-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="domain">
+<span id="intro-applications-domain"></span><h3>Domain<a class="headerlink" href="#domain" title="Permalink to this headline"></a></h3>
+<p>A SIP Domain resource describes a custom DNS hostname that can be accept SIP traffic for your account.</p>
+<p>See detail at <a class="reference internal" href="domain_overview.html#domain-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="queue">
+<span id="intro-applications-queue"></span><h3>Queue<a class="headerlink" href="#queue" title="Permalink to this headline"></a></h3>
+<p>Call queueing allows calls to be placed on hold without handling the actual enquiries or transferring callers to the desired party.</p>
+<p>See detail at <a class="reference internal" href="queue_overview.html#queue-overfiw"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="webhook">
+<span id="intro-applications-webhook"></span><h3>Webhook<a class="headerlink" href="#webhook" title="Permalink to this headline"></a></h3>
+<p>Webhooks are a way of receiving event data for your calls and associated resources by your own servers.</p>
+<p>See detail at <a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
 </section>
 </section>
 

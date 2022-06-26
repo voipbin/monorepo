@@ -5,4 +5,5 @@ Introduction
 ************
 Provide useful APIs for call handling.
 
-.. include:: intro_feature.rst
+.. include:: intro_channels.rst
+.. include:: intro_applications.rst
