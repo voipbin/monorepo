@@ -10,5 +10,5 @@ COPY etc/asterisk /etc/asterisk
 COPY etc/scripts/* /
 
 # Download asterisk-exporter
-RUN ["wget", "https://github.com/pchero/asterisk-exporter/releases/download/0.0.2/asterisk-exporter-0.0.2-linux-amd64", "-O", "/asterisk-exporter"]
+RUN ["wget", "https://github.com/pchero/asterisk-exporter/releases/download/0.0.4/asterisk-exporter-0.0.4-linux-amd64", "-O", "/asterisk-exporter"]
 RUN ["chmod", "755", "/asterisk-exporter"]
