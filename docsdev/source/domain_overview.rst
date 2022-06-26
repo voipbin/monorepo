@@ -1,4 +1,4 @@
-.. _domain-overview: domain_overview
+.. _domain-overview:
 
 Overview
 ========
