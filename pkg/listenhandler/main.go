@@ -1,15 +1,15 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/ttshandler"
 )
 
@@ -25,14 +25,11 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock     rabbitmqhandler.Rabbit
-	ttshandler     ttshandler.TTSHandler
-	httpListenAddr string
+	rabbitSock rabbitmqhandler.Rabbit
+	ttshandler ttshandler.TTSHandler
 }
 
 var (
-	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-
 	// speeches
 	regV1Speeches = regexp.MustCompile("/v1/speeches")
 )
@@ -127,13 +124,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 			"data":      m.Data,
 		}).Debug("Received request.")
 
+	ctx := context.Background()
 	start := time.Now()
 	switch {
 
 	// v1
-	case regV1Speeches.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
+	case regV1Speeches.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/speeches"
-		response, err = h.v1SpeechesPost(m)
+		response, err = h.v1SpeechesPost(ctx, m)
 
 	default:
 		logrus.WithFields(
@@ -149,12 +147,4 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	return response, err
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

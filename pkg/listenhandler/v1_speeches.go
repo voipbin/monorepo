@@ -13,8 +13,7 @@ import (
 
 // v1SpeechesPost handles /v1/speeches POST request
 // creates a new tts audio for the given text and upload the file to the bucket. Returns uploaded filename with path.
-func (h *listenHandler) v1SpeechesPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) v1SpeechesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithField(
 		"func", "v1SpeechesPost",
 	)
