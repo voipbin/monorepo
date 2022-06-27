@@ -32,6 +32,8 @@ func TestTTSCreate(t *testing.T) {
 		gender   string
 		language string
 		filename string
+
+		expectRes string
 	}
 
 	tests := []test{
@@ -43,6 +45,8 @@ func TestTTSCreate(t *testing.T) {
 			"male",
 			"en-US",
 			"865e9979dc81574475491a52a38bd423487935e9.wav",
+
+			"tts/865e9979dc81574475491a52a38bd423487935e9.wav",
 		},
 	}
 
@@ -56,7 +60,14 @@ func TestTTSCreate(t *testing.T) {
 			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.filename).Return(nil)
 			mockBucket.EXPECT().FileUpload(tt.filename, target).Return(nil)
 
-			h.TTSCreate(ctx, tt.callID, tt.text, tt.language, tt.gender)
+			res, err := h.TTSCreate(ctx, tt.callID, tt.text, tt.language, tt.gender)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, res)
+			}
 		})
 	}
 }

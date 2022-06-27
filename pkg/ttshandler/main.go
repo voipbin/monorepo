@@ -47,8 +47,3 @@ func NewTTSHandler(credentialPath string, projectID, bucketName string) TTSHandl
 
 	return h
 }
-
-// Init initialize the bucket
-func (h *ttsHandler) Init() {
-	return
-}

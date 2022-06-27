@@ -12,8 +12,8 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/ttshandler"
 )
@@ -24,10 +24,10 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueFlowRequest = flag.String("rabbit_queue_flow", "bin-manager.flow-manager.request", "rabbitmq queue name for flow request")
-var rabbitQueueCallRequest = flag.String("rabbit_queue_call", "bin-manager.call-manager.request", "rabbitmq queue name for call request")
+
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.tts-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.tts-manager.event", "rabbitmq queue name for event notify")
+
+// var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.tts-manager.event", "rabbitmq queue name for event notify")
 
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
@@ -41,8 +41,14 @@ var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id"
 var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name to use")
 
 func main() {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "main",
+	})
 
-	run()
+	if errRun := run(); errRun != nil {
+		log.Errorf("Could not run. err: %v", errRun)
+		return
+	}
 	<-chDone
 }
 
@@ -78,7 +84,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 
