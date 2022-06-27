@@ -15,10 +15,6 @@ import (
 	"google.golang.org/api/option"
 )
 
-const (
-	bucketDirectory = "tts"
-)
-
 // BucketHandler intreface for GCP bucket handler
 type BucketHandler interface {
 	FileGet(target string) ([]byte, error)
@@ -71,11 +67,6 @@ func NewBucketHandler(credentialPath string, projectID string, bucketName string
 	}
 
 	return h
-}
-
-// Init initialize the bucket
-func (h *bucketHandler) Init() {
-	return
 }
 
 // FileUpload uploads the filename to the bucket(target)
