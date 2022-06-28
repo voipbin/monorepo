@@ -12,11 +12,15 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/ttshandler"
 )
+
+const serviceName = "tts-manager"
 
 // channels
 var chSigs = make(chan os.Signal, 1)
@@ -24,11 +28,8 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.tts-manager.request", "rabbitmq queue name for request listen")
-
-// var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.tts-manager.event", "rabbitmq queue name for event notify")
-
+var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.tts-manager.event", "rabbitmq exchange name for event notify")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -106,9 +107,16 @@ func initProm(endpoint, listen string) {
 
 // Run the services
 func run() error {
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	// create listen handler
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 
 	// run listener
-	if err := runListen(); err != nil {
+	if err := runListen(rabbitSock, notifyHandler); err != nil {
 		return err
 	}
 
@@ -116,19 +124,15 @@ func run() error {
 }
 
 // runListen run the listener
-func runListen() error {
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+func runListen(rabbitSock rabbitmqhandler.Rabbit, notifyHandler notifyhandler.NotifyHandler) error {
 
 	// create tts handler
-	ttsHandler := ttshandler.NewTTSHandler(*gcpCredential, *gcpProjectID, *gcpBucketName)
+	ttsHandler := ttshandler.NewTTSHandler(notifyHandler, *gcpCredential, *gcpProjectID, *gcpBucketName)
 	if ttsHandler == nil {
 		logrus.Errorf("Could not create tts handler.")
 		return fmt.Errorf("could not create tts handler")
 	}
 
-	// create listen handler
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, ttsHandler)
 
 	// run
