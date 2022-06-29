@@ -467,6 +467,42 @@ Example
         }
     }
 
+.. _flow-struct-action-conversation_send:
+
+Conversation send
+-----------------
+Send the message to the conversation.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "conversation_send",
+        "option": {
+            "conversation_id": "<string>",
+            "text": "<string>",
+            "sync": <boolean>
+        }
+    }
+
+* conversation_id: Target conversation id.
+* text: Send text message.
+* sync: If this set to true, waits until this action done.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "conversation_send",
+        "option": {
+            "conversation_id": "b5ef5e64-f7ca-11ec-bbe9-9f74186a2a72",
+            "text": "hello world, this is test message.",
+            "sync": false
+        }
+    }
+
 .. _flow-struct-action-digits_receive:
 
 Digits Receive
