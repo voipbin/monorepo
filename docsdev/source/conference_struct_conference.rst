@@ -36,18 +36,18 @@ Conference
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
-* *id*: Conference's ID.
+* id: Conference's ID.
 * *type*: Conference's type. See detail :ref:`here <conference-struct-conference-type>`.
 * *status*: Conference's status. See detail :ref:`here <conference-struct-conference-status>`.
-* *name*: Conference's name.
-* *detail*: Conference's detail description.
-* *data*: Reserved.
-* *timeout*: Timeout(second).
-* *pre_actions*: Set of actions for entering calls.
-* *post_action*: Set of actions for leaving calls.
-* *call_ids*: List of conferencing call ids.
-* *recording_id*: Currently recoriding id.
-* *recording_ids*: List of recording ids.
+* name: Conference's name.
+* detail: Conference's detail description.
+* data: Reserved.
+* timeout: Timeout(second).
+* pre_actions: Set of actions for entering calls.
+* post_action: Set of actions for leaving calls.
+* call_ids: List of conferencing call ids.
+* recording_id: Currently recoriding id.
+* recording_ids: List of recording ids.
 
 .. _conference-struct-conference-type:
 

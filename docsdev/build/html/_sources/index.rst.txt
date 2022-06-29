@@ -28,6 +28,7 @@ Welcome to voipbin's documentation!
    outdial
    outplan
    webhook
+   customer
    variable
    common
 
