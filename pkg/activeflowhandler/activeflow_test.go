@@ -21,7 +21,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
-func Test_ActiveFlowCreate_with_activeflowid(t *testing.T) {
+func Test_Create_with_activeflowid(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -120,7 +120,7 @@ func Test_ActiveFlowCreate_with_activeflowid(t *testing.T) {
 	}
 }
 
-func Test_ActiveFlowCreate_without_activeflowid(t *testing.T) {
+func Test_Create_without_activeflowid(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -195,7 +195,7 @@ func Test_ActiveFlowCreate_without_activeflowid(t *testing.T) {
 	}
 }
 
-func Test_ActiveFlowUpdateCurrentAction(t *testing.T) {
+func Test_updateCurrentAction(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -532,6 +532,123 @@ func Test_SetForwardActionID(t *testing.T) {
 			if err := h.SetForwardActionID(ctx, tt.id, tt.actionID, tt.forwardNow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseGet *activeflow.Activeflow
+
+		expectRes *activeflow.Activeflow
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("e25d0800-f81c-11ec-8bd9-2b2aa60686f5"),
+
+			responseGet: &activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("e25d0800-f81c-11ec-8bd9-2b2aa60686f5"),
+			},
+
+			expectRes: &activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("e25d0800-f81c-11ec-8bd9-2b2aa60686f5"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
+
+			h := &activeflowHandler{
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				variableHandler: mockVariableHandler,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ActiveflowDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, activeflow.EventTypeActiveflowDeleted, tt.responseGet)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_GetsByCustomerID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		token      string
+		limit      uint64
+
+		responseGet []*activeflow.Activeflow
+	}{
+		{
+			"test normal",
+
+			uuid.FromStringOrNil("e3bb9832-f81d-11ec-bcd9-9f298317c9f9"),
+			"2020-10-10T03:30:17.000000",
+			10,
+
+			[]*activeflow.Activeflow{
+				{
+					ID: uuid.FromStringOrNil("7a8224b6-f81e-11ec-99b1-476bd41ee6d0"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
+
+			h := &activeflowHandler{
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				variableHandler: mockVariableHandler,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ActiveflowGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(tt.responseGet, nil)
+
+			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseGet) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseGet, res)
+			}
+
 		})
 	}
 }
