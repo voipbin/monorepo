@@ -11,8 +11,7 @@ import (
 )
 
 // processEventCMConfbridgeJoined handles the call-manager's confbridge_joined event.
-func (h *subscribeHandler) processEventCMConfbridgeJoined(m *rabbitmqhandler.Event) error {
-	ctx := context.Background()
+func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":  "processEventCMConfbridgeJoined",
@@ -33,8 +32,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(m *rabbitmqhandler.Eve
 }
 
 // processEventCMConfbridgeLeaved handles the call-manager's confbridge_leaved event.
-func (h *subscribeHandler) processEventCMConfbridgeLeaved(m *rabbitmqhandler.Event) error {
-	ctx := context.Background()
+func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":  "processEventCMConfbridgeLeaved",
@@ -55,8 +53,7 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(m *rabbitmqhandler.Eve
 }
 
 // processEventCMCallHungup handles the call-manager's confbridge_leaved event.
-func (h *subscribeHandler) processEventCMCallHungup(m *rabbitmqhandler.Event) error {
-	ctx := context.Background()
+func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":  "processEventCMCallHungup",

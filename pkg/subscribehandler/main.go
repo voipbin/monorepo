@@ -3,6 +3,7 @@ package subscribehandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package subscribehandler -destination ./mock_subscribehandler_subscribehandler.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -133,19 +134,20 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	var err error
 	start := time.Now()
+	ctx := context.Background()
 	switch {
 
 	//// call-manager
 	// confbridge
 	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeJoined)):
-		err = h.processEventCMConfbridgeJoined(m)
+		err = h.processEventCMConfbridgeJoined(ctx, m)
 
 	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved)):
-		err = h.processEventCMConfbridgeLeaved(m)
+		err = h.processEventCMConfbridgeLeaved(ctx, m)
 
 	// call
 	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHungup)):
-		err = h.processEventCMCallHungup(m)
+		err = h.processEventCMCallHungup(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
