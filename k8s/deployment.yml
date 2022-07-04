@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main
+  labels:
+    app: main
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main
+  template:
+    metadata:
+      labels:
+        app: main
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: main
+          image: main-image
+          command:
+            - '/usr/local/bin/serve'
+          args:
+            - '-s'
+            - 'build'
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+            - name: http
+              protocol: "TCP"
+              containerPort: 3000
+          resources:
+            limits:
+              cpu: "20m"
+              memory: "150M"
