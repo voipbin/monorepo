@@ -35,7 +35,7 @@ const Hero = ({
   const closeModal = (e) => {
     e.preventDefault();
     setVideomodalactive(false);
-  }   
+  }
 
   const outerClasses = classNames(
     'hero section center-content',
@@ -69,10 +69,10 @@ const Hero = ({
               </p>
               <div className="reveal-from-bottom" data-reveal-delay="600">
                 <ButtonGroup>
-                  <Button tag="a" color="primary" wideMobile href="https://meet-voipbin.herokuapp.com/">
+                  {/* <Button tag="a" color="primary" wideMobile href="https://meet-voipbin.herokuapp.com/">
                     Get started
-                  </Button>
-                  <Button tag="a" color="dark" wideMobile href="https://api.voipbin.net/swagger/index.html">
+                  </Button> */}
+                  <Button tag="a" color="dark" wideMobile href="https://api.voipbin.net/docs/" target="_blank" >
                     Documentation
                   </Button>
                 </ButtonGroup>
@@ -80,15 +80,27 @@ const Hero = ({
             </div>
           </div>
           <div className="hero-figure reveal-from-bottom illustration-element-01" data-reveal-value="20px" data-reveal-delay="800">
-            <a
-              data-video="https://player.vimeo.com/video/300669558"
+          <a
+              // data-video="https://player.vimeo.com/video/300669558"
               href="#0"
               aria-controls="video-modal"
               onClick={openModal}
             >
-              <Image
+            {/* <a
+              data-video="https://player.vimeo.com/video/300669558"
+              href="#0"
+              aria-controls="video-modal"
+              onClick={openModal}
+            > */}
+              {/* <Image
                 className="has-shadow"
                 src={require('./../../assets/images/video-placeholder.jpg')}
+                alt="Hero"
+                width={896}
+                height={504} /> */}
+              <Image
+                className="has-shadow"
+                src={require('./../../assets/images/front-startup.webp')}
                 alt="Hero"
                 width={896}
                 height={504} />
@@ -98,7 +110,7 @@ const Hero = ({
             id="video-modal"
             show={videoModalActive}
             handleClose={closeModal}
-            video="https://player.vimeo.com/video/300669558"
+            // video="https://player.vimeo.com/video/300669558"
             videoTag="iframe" />
         </div>
       </div>

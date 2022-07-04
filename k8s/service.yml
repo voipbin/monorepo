@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: main
+  # annotations:
+  #   cloud.google.com/load-balancer-type: "Internal"
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "main-static-ip"
+  labels:
+    name: square-manager
+
+spec:
+  type: LoadBalancer
+  selector:
+    app: main
+  ports:
+  - name: https
+    port: 443
+    targetPort: 443
+    protocol: TCP
+  - name: http
+    port: 80
+    targetPort: 3000
+    protocol: TCP
