@@ -112,9 +112,18 @@ const Header = ({
                       navPosition && `header-nav-${navPosition}`
                     )}>
                     <li>
-                      {/* <Link to={{ pathname: "https://api.voipbin.net/docs/" }} target="_blank" onClick={closeMenu}>Documentation</Link> */}
+                      <Link to={{ pathname: "https://meet.voipbin.net/" }} target="_blank" onClick={closeMenu}>Conference</Link>
                     </li>
                   </ul>
+                  {/* <ul className={
+                    classNames(
+                      'list-reset text-xs',
+                      navPosition && `header-nav-${navPosition}`
+                    )}>
+                    <li>
+                      <Link to={{ pathname: "https://meet.voipbin.net/" }} target="_blank" onClick={closeMenu}>Admin</Link>
+                    </li>
+                  </ul> */}
                   {!hideSignin &&
                     <ul
                       className="list-reset header-nav-right"
