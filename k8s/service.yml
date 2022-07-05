@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: meet
+  # annotations:
+  #   cloud.google.com/load-balancer-type: "Internal"
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "meet-static-ip"
+  labels:
+    name: square-manager
+
+spec:
+  type: LoadBalancer
+  selector:
+    app: meet
+  ports:
+  - name: https
+    port: 443
+    targetPort: 3000
+    protocol: TCP
