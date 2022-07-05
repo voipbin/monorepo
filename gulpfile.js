@@ -263,7 +263,6 @@ gulp.task('watch', (done) =>
 gulp.task('prod', gulp.series(
 	'env:prod',
 	'clean',
-	'lint',
 	'bundle',
 	'html',
 	'css',
@@ -273,7 +272,6 @@ gulp.task('prod', gulp.series(
 gulp.task('dev', gulp.series(
 	'env:dev',
 	'clean',
-	'lint',
 	'bundle',
 	'html',
 	'css',
@@ -283,7 +281,6 @@ gulp.task('dev', gulp.series(
 gulp.task('live', gulp.series(
 	'env:dev',
 	'clean',
-	'lint',
 	'bundle:watch',
 	'html',
 	'css',
