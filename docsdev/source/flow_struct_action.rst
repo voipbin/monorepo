@@ -44,6 +44,7 @@ condition_call_status   Condition check(call's status)
 confbridge_join         Join to the confbridge.
 conference_join         Join to the conference.
 connect                 Connect to the other destination.
+conversation_send       Send a message to the conversation.
 digits_receive          Receive the digits(dtmfs).
 digits_send             Send the digits(dtmfs).
 echo                    Echo to stream.
