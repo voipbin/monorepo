@@ -23,7 +23,7 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 		"data":      data,
 	}).Debugf("Sending an webhook. customer_id: %s", customerID)
 
-	m, err := h.messageTargetHandler.Get(ctx, customerID)
+	m, err := h.accoutHandler.Get(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not get message target. err: %v", err)
 		return fmt.Errorf("could not get message target. err: %v", err)
@@ -45,6 +45,7 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", m.WebhookMethod, m.WebhookURI, res.StatusCode)
 
 	}()
+	h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, data)
 
 	return nil
 }
@@ -71,6 +72,7 @@ func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.U
 		}
 		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", method, uri, res.StatusCode)
 	}()
+	h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, data)
 
 	return nil
 }

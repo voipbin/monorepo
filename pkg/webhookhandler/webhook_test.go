@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
@@ -59,15 +60,19 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &webhookHandler{
-				db:                   mockDB,
-				messageTargetHandler: mockMessageTargethandler,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				accoutHandler: mockMessageTargethandler,
 			}
 
 			ctx := context.Background()
 
-			mockMessageTargethandler.EXPECT().Get(gomock.Any(), tt.customerID).Return(tt.messageTarget, nil)
+			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(tt.messageTarget, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.data)
+
 			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -116,13 +121,17 @@ func Test_SendWebhookToURI(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &webhookHandler{
-				db:                   mockDB,
-				messageTargetHandler: mockMessageTargethandler,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				accoutHandler: mockMessageTargethandler,
 			}
 
 			ctx := context.Background()
+
+			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.data)
 
 			err := h.SendWebhookToURI(ctx, tt.customerID, tt.uri, tt.method, tt.dataType, tt.data)
 			if err != nil {
