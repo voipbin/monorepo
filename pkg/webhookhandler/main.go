@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/accounthandler"
@@ -21,17 +22,20 @@ type WebhookHandler interface {
 
 // webhookHandler structure for service handle
 type webhookHandler struct {
-	db dbhandler.DBHandler
+	db            dbhandler.DBHandler
+	notifyHandler notifyhandler.NotifyHandler
 
-	messageTargetHandler accounthandler.AccountHandler
+	accoutHandler accounthandler.AccountHandler
 }
 
 // NewWebhookHandler returns new webhook handler
-func NewWebhookHandler(db dbhandler.DBHandler, messageTargetHandler accounthandler.AccountHandler) WebhookHandler {
+func NewWebhookHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageTargetHandler accounthandler.AccountHandler) WebhookHandler {
 
 	h := &webhookHandler{
-		db:                   db,
-		messageTargetHandler: messageTargetHandler,
+		db:            db,
+		notifyHandler: notifyHandler,
+
+		accoutHandler: messageTargetHandler,
 	}
 
 	return h

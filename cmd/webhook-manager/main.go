@@ -13,6 +13,7 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -32,6 +33,7 @@ var chDone = make(chan bool, 1)
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.webhook-manager.request", "rabbitmq queue name for request listen")
+var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.webhook-manager.event", "rabbitmq exchange name for event notify")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
@@ -145,8 +147,10 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	rabbitSock.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 	messagetargetHandler := accounthandler.NewAccountHandler(db, reqHandler)
-	whHandler := webhookhandler.NewWebhookHandler(db, messagetargetHandler)
+
+	whHandler := webhookhandler.NewWebhookHandler(db, notifyHandler, messagetargetHandler)
 
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, whHandler)
 
