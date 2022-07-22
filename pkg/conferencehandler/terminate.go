@@ -39,7 +39,8 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 
 	// remove flow
 	log.WithField("flow_id", cf.FlowID).Debug("Deleting the flow.")
-	if err := h.reqHandler.FMV1FlowDelete(ctx, cf.FlowID); err != nil {
+	_, err = h.reqHandler.FMV1FlowDelete(ctx, cf.FlowID)
+	if err != nil {
 		log.WithField("flow_id", cf.FlowID).Errorf("Could not delete the conference. But keep moving on. err: %v", err)
 	}
 

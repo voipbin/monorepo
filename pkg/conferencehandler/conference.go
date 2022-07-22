@@ -208,6 +208,19 @@ func (h *conferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.
 	return res, nil
 }
 
+// GetByConfbridgeID returns conference of the given confbridge id.
+func (h *conferenceHandler) GetByConfbridgeID(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	log := logrus.WithField("func", "GetByConfbridgeID")
+
+	res, err := h.db.ConferenceGetByConfbridgeID(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get conferences. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // Create is handy function for creating a conference.
 // it increases corresponded counter
 func (h *conferenceHandler) Update(

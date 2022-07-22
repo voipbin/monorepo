@@ -67,6 +67,21 @@ func (mr *MockConferenceHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConferenceHandler)(nil).Get), ctx, id)
 }
 
+// GetByConfbridgeID mocks base method.
+func (m *MockConferenceHandler) GetByConfbridgeID(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByConfbridgeID", ctx, id)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByConfbridgeID indicates an expected call of GetByConfbridgeID.
+func (mr *MockConferenceHandlerMockRecorder) GetByConfbridgeID(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByConfbridgeID", reflect.TypeOf((*MockConferenceHandler)(nil).GetByConfbridgeID), ctx, id)
+}
+
 // Gets mocks base method.
 func (m *MockConferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
 	m.ctrl.T.Helper()
