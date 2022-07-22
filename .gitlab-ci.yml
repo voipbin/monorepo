@@ -27,12 +27,14 @@ ensure:
   script:
     - git config --global url."https://$GL_DEPLOY_USER:$GL_DEPLOY_TOKEN@gitlab.com".insteadOf "https://gitlab.com"
     - export GOPRIVATE="gitlab.com/voipbin"
+    - apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
     - go mod download
     - go mod vendor
 
 lint:
   stage: test
   script:
+    - apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
     - golint -set_exit_status $(go list ./...)
 
 golangci-lint:
@@ -40,11 +42,13 @@ golangci-lint:
   stage: test
   script:
     - golangci-lint version
+    - apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
     - golangci-lint run -v --timeout 5m
 
 vet:
   stage: test
   script:
+    - apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
     - go vet $(go list ./...)
 
 test:
@@ -55,6 +59,7 @@ test:
     paths:
       - cp.html
   script:
+    - apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
     - go test -coverprofile cp.out -v $(go list ./...)
     - go tool cover -html=cp.out -o cp.html
 

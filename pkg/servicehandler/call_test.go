@@ -17,13 +17,8 @@ import (
 )
 
 func TestCallCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name         string
 		customer     *cscustomer.Customer
 		flowID       uuid.UUID
@@ -33,9 +28,7 @@ func TestCallCreate(t *testing.T) {
 
 		responseCall []cmcall.Call
 		expectRes    []*cmcall.WebhookMessage
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -132,6 +125,12 @@ func TestCallCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
 			h := serviceHandler{
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
@@ -158,25 +157,13 @@ func TestCallCreate(t *testing.T) {
 }
 
 func TestCallDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
-
-	type test struct {
+	tests := []struct {
 		name     string
 		customer *cscustomer.Customer
 		callID   uuid.UUID
 		call     *cmcall.Call
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&cscustomer.Customer{
@@ -192,6 +179,17 @@ func TestCallDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.callID).Return(tt.call, nil)
 			mockReq.EXPECT().CMV1CallHangup(gomock.Any(), tt.callID).Return(nil, nil)
 
