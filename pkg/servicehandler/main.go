@@ -4,6 +4,7 @@ package servicehandler
 
 import (
 	"context"
+	"net/http"
 	"strings"
 	"time"
 
@@ -35,6 +36,7 @@ import (
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
 )
 
 const (
@@ -281,26 +283,26 @@ type ServiceHandler interface {
 	// transcribe handlers
 	TranscribeCreate(u *cscustomer.Customer, referencdID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error)
 
-	// // user handlers
-	// UserCreate(u *user.User, username, password, name, detail string, permission user.Permission) (*user.User, error)
-	// UserDelete(u *user.User, id uint64) error
-	// UserGet(u *user.User, userID uint64) (*user.User, error)
-	// UserGets(u *user.User, size uint64, token string) ([]*user.User, error)
-	// UserUpdate(u *user.User, id uint64, name, detail string) error
-	// UserUpdatePassword(u *user.User, id uint64, password string) error
-	// UserUpdatePermission(u *user.User, id uint64, permission user.Permission) error
+	WebsockCreate(ctx context.Context, u *cscustomer.Customer, w http.ResponseWriter, r *http.Request) error
 }
 
 type serviceHandler struct {
-	reqHandler requesthandler.RequestHandler
-	dbHandler  dbhandler.DBHandler
+	reqHandler     requesthandler.RequestHandler
+	dbHandler      dbhandler.DBHandler
+	websockHandler websockhandler.WebsockHandler
 }
 
 // NewServiceHandler return ServiceHandler interface
-func NewServiceHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler) ServiceHandler {
+func NewServiceHandler(
+	reqHandler requesthandler.RequestHandler,
+	dbHandler dbhandler.DBHandler,
+	websockHandler websockhandler.WebsockHandler,
+) ServiceHandler {
 	return &serviceHandler{
 		reqHandler: reqHandler,
 		dbHandler:  dbHandler,
+
+		websockHandler: websockHandler,
 	}
 }
 

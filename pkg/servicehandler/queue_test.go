@@ -15,16 +15,6 @@ import (
 )
 
 func Test_QueueGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name      string
@@ -60,6 +50,17 @@ func Test_QueueGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().QMV1QueueGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.QueueGets(tt.customer, tt.pageSize, tt.pageToken)
@@ -81,16 +82,6 @@ func Test_QueueGets(t *testing.T) {
 }
 
 func Test_QueueGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name     string
@@ -121,6 +112,16 @@ func Test_QueueGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
@@ -137,16 +138,6 @@ func Test_QueueGet(t *testing.T) {
 }
 
 func Test_QueueCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -197,6 +188,16 @@ func Test_QueueCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().QMV1QueueCreate(
 				gomock.Any(),
@@ -232,16 +233,6 @@ func Test_QueueCreate(t *testing.T) {
 }
 
 func Test_QueueDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -274,6 +265,16 @@ func Test_QueueDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueDelete(gomock.Any(), tt.queueID).Return(tt.response, nil)
@@ -292,16 +293,6 @@ func Test_QueueDelete(t *testing.T) {
 }
 
 func Test_QueueUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -338,6 +329,16 @@ func Test_QueueUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueUpdate(gomock.Any(), tt.queueID, tt.queueName, tt.detail).Return(tt.response, nil)
@@ -355,16 +356,6 @@ func Test_QueueUpdate(t *testing.T) {
 }
 
 func Test_QueueUpdateTagIDs(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -421,6 +412,16 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueUpdateTagIDs(gomock.Any(), tt.queueID, tt.tagIDs).Return(tt.response, nil)
@@ -439,16 +440,6 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 }
 
 func Test_QueueUpdateRoutingMethod(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -500,6 +491,16 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueUpdateRoutingMethod(gomock.Any(), tt.queueID, tt.routingMethod).Return(tt.response, nil)
@@ -517,16 +518,6 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 }
 
 func Test_QueueUpdateActions(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name string
@@ -569,6 +560,16 @@ func Test_QueueUpdateActions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().QMV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QMV1QueueUpdateActions(gomock.Any(), tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(tt.response, nil)
