@@ -76,7 +76,7 @@ func Test_TelnyxPhoneNumbersIDGet(t *testing.T) {
 				PhoneNumber:           "+14703298699",
 				Status:                "active",
 				Tags:                  []string{},
-				ConnectionID:          "1762151958791063062",
+				ConnectionID:          "1943381594949551263",
 				CustomerReference:     "",
 				ExternalPin:           "",
 				T38FaxGatewayEnabled:  true,

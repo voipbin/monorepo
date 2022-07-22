@@ -8,8 +8,9 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID     uuid.UUID `json:"id"`
-	Number string    `json:"number"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	Number     string    `json:"number"`
 
 	CallFlowID    uuid.UUID `json:"call_flow_id"`
 	MessageFlowID uuid.UUID `json:"message_flow_id"`
@@ -30,8 +31,9 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Number) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:     h.ID,
-		Number: h.Number,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+		Number:     h.Number,
 
 		CallFlowID:    h.CallFlowID,
 		MessageFlowID: h.MessageFlowID,
