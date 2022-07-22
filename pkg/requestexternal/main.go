@@ -11,7 +11,7 @@ import (
 // telnyx
 const (
 	telnyxToken              string = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
-	telnyxConnectionID       string = "1762151958791063062"
+	telnyxConnectionID       string = "1943381594949551263"
 	telnyxMessagingProfileID string = "40017f8e-49bd-4f16-9e3d-ef103f916228"
 )
 
