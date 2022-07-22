@@ -6,6 +6,7 @@ package servicehandler
 
 import (
 	context "context"
+	http "net/http"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -1628,4 +1629,18 @@ func (m *MockServiceHandler) TranscribeCreate(u *customer.Customer, referencdID 
 func (mr *MockServiceHandlerMockRecorder) TranscribeCreate(u, referencdID, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeCreate", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeCreate), u, referencdID, language)
+}
+
+// WebsockCreate mocks base method.
+func (m *MockServiceHandler) WebsockCreate(ctx context.Context, u *customer.Customer, w http.ResponseWriter, r *http.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WebsockCreate", ctx, u, w, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WebsockCreate indicates an expected call of WebsockCreate.
+func (mr *MockServiceHandlerMockRecorder) WebsockCreate(ctx, u, w, r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebsockCreate", reflect.TypeOf((*MockServiceHandler)(nil).WebsockCreate), ctx, u, w, r)
 }

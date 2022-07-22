@@ -17,16 +17,6 @@ import (
 )
 
 func TestTranscribeCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name     string
@@ -70,6 +60,17 @@ func TestTranscribeCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().CMV1RecordingGet(gomock.Any(), tt.referenceID).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().TSV1RecordingCreate(gomock.Any(), tt.customer.ID, tt.referenceID, tt.language).Return(tt.response, nil)
 

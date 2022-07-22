@@ -13,6 +13,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -21,7 +22,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/subscribehandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/zmqpubhandler"
 )
 
 var dsn = flag.String("dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn")
@@ -37,6 +40,9 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
+
+var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.webhook-manager.event", "comma separated rabbitmq exchange name for subscribe")
+var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.api-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 
 // @title VoIPBIN project API
 // @version 1.0
@@ -74,9 +80,110 @@ func main() {
 	sock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	sock.Connect()
 
-	// create servicehandler
+	run(sock, db)
+
+	// // create servicehandler
+	// requestHandler := requesthandler.NewRequestHandler(sock, "api_manager")
+	// serviceHandler := servicehandler.NewServiceHandler(requestHandler, db)
+
+	// app := gin.Default()
+
+	// // swagger
+	// app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// // docs
+	// app.Static("/docs", "docsdev/build/html")
+
+	// // CORS setting
+	// // CORS for https://foo.com and https://github.com origins, allowing:
+	// // - PUT and PATCH methods
+	// // - Origin header
+	// // - Credentials share
+	// // - Preflight requests cached for 12 hours
+	// app.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"*"},
+	// 	AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"},
+	// 	AllowHeaders:     []string{"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"},
+	// 	ExposeHeaders:    []string{"Content-Length"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           12 * time.Hour,
+	// }))
+
+	// // inject servicehandler
+	// app.Use(func(c *gin.Context) {
+	// 	c.Set(common.OBJServiceHandler, serviceHandler)
+	// 	c.Next()
+	// })
+
+	// // set jwt middleware
+	// app.Use(middleware.JWTMiddleware())
+
+	// // apply api router
+	// api.ApplyRoutes(app)
+
+	// logrus.Debug("Starting the api service.")
+	// if errAppRun := app.RunTLS(":443", *sslCert, *sslKey); errAppRun != nil {
+	// 	log.Errorf("The api service ended with error. err: %v", errAppRun)
+	// }
+}
+
+func init() {
+	flag.Parse()
+
+	// init log
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
+
+	// init middleware
+	middleware.Init(*jwtKey)
+}
+
+func run(
+	sock rabbitmqhandler.Rabbit,
+	db dbhandler.DBHandler,
+) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "run",
+	})
+
+	// create handlers
 	requestHandler := requesthandler.NewRequestHandler(sock, "api_manager")
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db)
+	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
+	websockHandler := websockhandler.NewWebsockHandler()
+	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler)
+
+	if errSub := runSubscribe(sock, zmqPubHandler); errSub != nil {
+		log.Errorf("Could not run subscribe handler. err: %v", errSub)
+	}
+
+	runListen(serviceHandler)
+}
+
+func runSubscribe(
+	rabbitSock rabbitmqhandler.Rabbit,
+	zmqHandler zmqpubhandler.ZMQPubHandler,
+) error {
+
+	subHandler := subscribehandler.NewSubscribeHandler(
+		rabbitSock,
+		*rabbitQueueSubscribe,
+		*rabbitListenSubscribes,
+
+		zmqHandler,
+	)
+
+	// run
+	if err := subHandler.Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func runListen(serviceHandler servicehandler.ServiceHandler) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runListen",
+	})
 
 	app := gin.Default()
 
@@ -117,15 +224,5 @@ func main() {
 	if errAppRun := app.RunTLS(":443", *sslCert, *sslKey); errAppRun != nil {
 		log.Errorf("The api service ended with error. err: %v", errAppRun)
 	}
-}
 
-func init() {
-	flag.Parse()
-
-	// init log
-	logrus.SetFormatter(joonix.NewFormatter())
-	logrus.SetLevel(logrus.DebugLevel)
-
-	// init middleware
-	middleware.Init(*jwtKey)
 }

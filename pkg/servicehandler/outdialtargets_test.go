@@ -204,16 +204,6 @@ func Test_OutdialtargetGet(t *testing.T) {
 }
 
 func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name      string
@@ -256,6 +246,17 @@ func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().OMV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
 			mockReq.EXPECT().OMV1OutdialtargetGetsByOutdialID(gomock.Any(), tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
