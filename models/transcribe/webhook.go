@@ -10,7 +10,9 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID          uuid.UUID                   `json:"id"`           // Transcribe id
+	ID         uuid.UUID `json:"id"`          // Transcribe id
+	CustomerID uuid.UUID `json:"customer_id"` // customer
+
 	Type        Type                        `json:"type"`         // type
 	ReferenceID uuid.UUID                   `json:"reference_id"` // call/conference/recording's id
 	HostID      uuid.UUID                   `json:"host_id"`      // host id
@@ -33,7 +35,9 @@ func (h *Transcribe) ConvertWebhookMessage() *WebhookMessage {
 	}
 
 	return &WebhookMessage{
-		ID:          h.ID,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+
 		Type:        h.Type,
 		ReferenceID: h.ReferenceID,
 		HostID:      h.HostID,
