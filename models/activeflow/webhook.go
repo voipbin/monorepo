@@ -10,7 +10,8 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID uuid.UUID `json:"id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
 	FlowID uuid.UUID `json:"flow_id"`
 
@@ -29,7 +30,8 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Activeflow) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID: h.ID,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
 
 		FlowID: h.FlowID,
 
