@@ -4,17 +4,17 @@ import (
 	"encoding/json"
 
 	uuid "github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
 	// identity
-	ID     uuid.UUID `json:"id"`
-	FlowID uuid.UUID `json:"flow_id"` // flow id
-	Type   Type      `json:"type"`    // call type
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	FlowID     uuid.UUID `json:"flow_id"` // flow id
+	Type       Type      `json:"type"`    // call type
 
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
@@ -45,9 +45,10 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:     h.ID,
-		FlowID: h.FlowID,
-		Type:   h.Type,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+		FlowID:     h.FlowID,
+		Type:       h.Type,
 
 		MasterCallID:   h.MasterCallID,
 		ChainedCallIDs: h.ChainedCallIDs,
