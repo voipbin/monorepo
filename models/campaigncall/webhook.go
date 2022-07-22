@@ -10,6 +10,7 @@ import (
 // WebhookMessage defines
 type WebhookMessage struct {
 	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 	CampaignID uuid.UUID `json:"campaign_id"`
 
 	OutplanID       uuid.UUID `json:"outplan_id"`
