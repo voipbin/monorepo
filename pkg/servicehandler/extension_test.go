@@ -14,16 +14,6 @@ import (
 )
 
 func TestExtensionCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name     string
@@ -64,6 +54,17 @@ func TestExtensionCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().RMV1ExtensionCreate(gomock.Any(), tt.customer.ID, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(tt.response, nil)
 
 			res, err := h.ExtensionCreate(tt.customer, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail)
@@ -79,16 +80,6 @@ func TestExtensionCreate(t *testing.T) {
 }
 
 func TestExtensionUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name     string
@@ -139,6 +130,17 @@ func TestExtensionUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.id).Return(&rmextension.Extension{CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988")}, nil)
 			mockReq.EXPECT().RMV1ExtensionUpdate(gomock.Any(), tt.id, tt.extName, tt.detail, tt.password).Return(tt.response, nil)
 			res, err := h.ExtensionUpdate(tt.customer, tt.id, tt.extName, tt.detail, tt.password)
@@ -154,16 +156,6 @@ func TestExtensionUpdate(t *testing.T) {
 }
 
 func TestExtensionDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name        string
@@ -207,6 +199,17 @@ func TestExtensionDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
 			mockReq.EXPECT().RMV1ExtensionDelete(gomock.Any(), tt.extensionID).Return(tt.response, nil)
 
@@ -223,16 +226,6 @@ func TestExtensionDelete(t *testing.T) {
 }
 
 func TestExtensionGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name        string
@@ -270,6 +263,17 @@ func TestExtensionGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
 			res, err := h.ExtensionGet(tt.customer, tt.extensionID)
 			if err != nil {
@@ -284,16 +288,6 @@ func TestExtensionGet(t *testing.T) {
 }
 
 func TestExtensionGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	type test struct {
 		name      string
@@ -351,6 +345,17 @@ func TestExtensionGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().RMV1ExtensionGets(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.ExtensionGets(tt.customer, tt.domainID, tt.pageSize, tt.pageToken)

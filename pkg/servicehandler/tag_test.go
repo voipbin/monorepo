@@ -14,15 +14,6 @@ import (
 )
 
 func TestTagCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -53,6 +44,16 @@ func TestTagCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
 			mockReq.EXPECT().AMV1TagCreate(gomock.Any(), tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
 
 			res, err := h.TagCreate(tt.customer, tt.tagName, tt.detail)
@@ -68,15 +69,6 @@ func TestTagCreate(t *testing.T) {
 }
 
 func TestTagGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -136,6 +128,15 @@ func TestTagGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().AMV1TagGets(gomock.Any(), tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
 
@@ -152,15 +153,6 @@ func TestTagGets(t *testing.T) {
 }
 
 func TestTagGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -190,6 +182,15 @@ func TestTagGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.response, nil)
 
@@ -206,15 +207,6 @@ func TestTagGet(t *testing.T) {
 }
 
 func TestTagDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -244,6 +236,15 @@ func TestTagDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
 			mockReq.EXPECT().AMV1TagDelete(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
@@ -261,15 +262,6 @@ func TestTagDelete(t *testing.T) {
 }
 
 func TestTagUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := serviceHandler{
-		reqHandler: mockReq,
-		dbHandler:  mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -303,6 +295,15 @@ func TestTagUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
 
 			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
 			mockReq.EXPECT().AMV1TagUpdate(gomock.Any(), tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
