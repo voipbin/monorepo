@@ -1,16 +1,16 @@
 package subscribehandler
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// processEventCMConfbridgeJoinedLeaved handles the call-manager's call related event
-func (h *subscribeHandler) processEventCMConfbridgeJoinedLeaved(m *rabbitmqhandler.Event) error {
+// processEventCMConfbridgeJoined handles the call-manager's call related event
+func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m *rabbitmqhandler.Event) error {
 	// ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -20,7 +20,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoinedLeaved(m *rabbitmqhandl
 	)
 	log.Debugf("Received call event. event: %s", m.Type)
 
-	evt := cmconfbridge.EventConfbridgeJoinedLeaved{}
+	evt := cmconfbridge.EventConfbridgeJoined{}
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
@@ -31,21 +31,58 @@ func (h *subscribeHandler) processEventCMConfbridgeJoinedLeaved(m *rabbitmqhandl
 		},
 	).Debugf("Detail event. event: %s", m.Type)
 
-	// tmp, err := h.db.ConferenceConfbridgeGet(ctx, evt.ID)
-	// if err != nil {
-	// 	log.Errorf("Could not get conference-confbridge info. err: %v", err)
-	// 	return err
-	// }
+	// get conference
+	cf, err := h.db.ConferenceGetByConfbridgeID(ctx, evt.ID)
+	if err != nil {
+		log.Errorf("Could not get conference. err: %v", err)
+		return err
+	}
+	log = log.WithField("conference_id", cf.ID)
+	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
 
-	switch m.Type {
-	// case string(cmconfbridge.EventTypeConfbridgeJoined):
-	// 	return h.conferenceHandler.Joined(ctx, tmp.ConferenceID, evt.CallID)
-
-	// case string(cmconfbridge.EventTypeConfbridgeLeaved):
-	// 	return h.conferenceHandler.Leaved(ctx, tmp.ConferenceID, evt.CallID)
-
-	default:
-		return fmt.Errorf("no handler found")
+	if err := h.conferenceHandler.JoinedConfbridge(ctx, cf.ID, evt.JoinedCallID); err != nil {
+		log.Errorf("Could not handle the confbridge joined event. err: %v", err)
+		return err
 	}
 
+	return nil
+}
+
+// processEventCMConfbridgeLeaved handles the call-manager's call related event
+func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m *rabbitmqhandler.Event) error {
+	// ctx := context.Background()
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":  "processEventCMConfbridgeLeaved",
+			"event": m,
+		},
+	)
+	log.Debugf("Received call event. event: %s", m.Type)
+
+	evt := cmconfbridge.EventConfbridgeLeaved{}
+	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+	log.WithFields(
+		logrus.Fields{
+			"event": evt,
+		},
+	).Debugf("Detail event. event: %s", m.Type)
+
+	// get conference
+	cf, err := h.db.ConferenceGetByConfbridgeID(ctx, evt.ID)
+	if err != nil {
+		log.Errorf("Could not get conference. err: %v", err)
+		return err
+	}
+	log = log.WithField("conference_id", cf.ID)
+	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
+
+	if err := h.conferenceHandler.LeavedConfbridge(ctx, evt.ID, evt.LeavedCallID); err != nil {
+		log.Errorf("Could not handle the confbridge leaved event. err: %v", err)
+		return err
+	}
+
+	return nil
 }

@@ -3,6 +3,7 @@ package subscribehandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package subscribehandler -destination ./mock_subscribehandler_subscribehandler.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -10,10 +11,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
@@ -137,13 +138,16 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	var err error
 	start := time.Now()
+	ctx := context.Background()
 	switch {
 
 	//// call-manager
-	// call
-	case m.Publisher == publisherCallManager &&
-		(m.Type == string(cmconfbridge.EventTypeConfbridgeJoined) || m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved)):
-		err = h.processEventCMConfbridgeJoinedLeaved(m)
+	// confbridge
+	case m.Publisher == publisherCallManager && m.Type == string(cmconfbridge.EventTypeConfbridgeJoined):
+		err = h.processEventCMConfbridgeJoined(ctx, m)
+
+	case m.Publisher == publisherCallManager && m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved):
+		err = h.processEventCMConfbridgeLeaved(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
