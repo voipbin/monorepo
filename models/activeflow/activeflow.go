@@ -12,10 +12,10 @@ import (
 
 // Activeflow struct
 type Activeflow struct {
-	ID uuid.UUID `json:"id"`
-
+	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
-	FlowID     uuid.UUID `json:"flow_id"`
+
+	FlowID uuid.UUID `json:"flow_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
