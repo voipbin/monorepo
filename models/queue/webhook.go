@@ -9,7 +9,8 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID uuid.UUID `json:"id"` // queue id
+	ID         uuid.UUID `json:"id"`          // queue id
+	CustomerID uuid.UUID `json:"customer_id"` // owner id
 
 	// basic info
 	Name   string `json:"name"`   // queue's name
@@ -40,7 +41,9 @@ type WebhookMessage struct {
 // ConvertWebhookMessage Convert to the publishable message.
 func (h *Queue) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:            h.ID,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+
 		Name:          h.Name,
 		Detail:        h.Detail,
 		RoutingMethod: h.RoutingMethod,
