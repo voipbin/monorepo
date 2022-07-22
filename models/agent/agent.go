@@ -8,7 +8,7 @@ import (
 // Agent data model
 type Agent struct {
 	ID           uuid.UUID `json:"id"`            // agent id
-	CustomerID   uuid.UUID `json:"customer_id"`   // owner's id
+	CustomerID   uuid.UUID `json:"customer_id"`   // customer's id
 	Username     string    `json:"username"`      // agent's username
 	PasswordHash string    `json:"password_hash"` // hashed Password
 
