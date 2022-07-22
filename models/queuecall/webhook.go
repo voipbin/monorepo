@@ -8,7 +8,9 @@ import (
 
 // WebhookMessage defines conference webhook event
 type WebhookMessage struct {
-	ID            uuid.UUID `json:"id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"` // owner id
+
 	ReferenceType string    `json:"reference_type"`
 	ReferenceID   uuid.UUID `json:"reference_id"`
 
@@ -27,7 +29,9 @@ type WebhookMessage struct {
 // ConvertWebhookMessage defines
 func (h *Queuecall) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:            h.ID,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+
 		ReferenceType: string(h.ReferenceType),
 		ReferenceID:   h.ReferenceID,
 
