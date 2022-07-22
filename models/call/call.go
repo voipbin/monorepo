@@ -5,11 +5,11 @@ import (
 	"reflect"
 
 	uuid "github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // Call struct represent asterisk's channel information
