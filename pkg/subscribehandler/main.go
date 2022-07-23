@@ -31,7 +31,7 @@ type subscribeHandler struct {
 	subscribeQueue    string
 	subscribesTargets string
 
-	messagetargetHandler accounthandler.AccountHandler
+	accountHandler accounthandler.AccountHandler
 }
 
 var (
@@ -61,7 +61,7 @@ func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	subscribeQueue string,
 	subscribeTargets string,
-	messagetargetHandler accounthandler.AccountHandler,
+	accountHandler accounthandler.AccountHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
@@ -69,7 +69,7 @@ func NewSubscribeHandler(
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
 
-		messagetargetHandler: messagetargetHandler,
+		accountHandler: accountHandler,
 	}
 
 	return h

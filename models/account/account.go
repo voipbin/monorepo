@@ -14,7 +14,7 @@ type Account struct {
 	WebhookURI    string             `json:"webhook_uri"`
 }
 
-// CreateAccountFromCustomer creates messagetarget using the cscustomer.Customer
+// CreateAccountFromCustomer creates account from the cscustomer.Customer
 func CreateAccountFromCustomer(cs *cscustomer.Customer) *Account {
 	return &Account{
 		ID:            cs.ID,

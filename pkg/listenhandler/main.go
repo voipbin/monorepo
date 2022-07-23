@@ -2,6 +2,7 @@ package listenhandler
 
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_listenhandler.go -source main.go -build_flags=-mod=mod
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -104,12 +105,12 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
 	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests
@@ -146,6 +147,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
+	ctx := context.Background()
+
 	switch {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1
@@ -156,7 +159,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 	// POST /webhooks
 	case regV1Webhooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1WebhooksPost(m)
+		response, err = h.processV1WebhooksPost(ctx, m)
 		requestType = "/v1/webhooks"
 
 	////////////////////
@@ -164,7 +167,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 	// POST /webhook_destinations
 	case regV1WebhookDestinations.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1WebhookDestinationsPost(m)
+		response, err = h.processV1WebhookDestinationsPost(ctx, m)
 		requestType = "/v1/webhook_destinations"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////

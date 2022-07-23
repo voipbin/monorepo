@@ -25,8 +25,8 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 
 	m, err := h.accoutHandler.Get(ctx, customerID)
 	if err != nil {
-		log.Errorf("Could not get message target. err: %v", err)
-		return fmt.Errorf("could not get message target. err: %v", err)
+		log.Errorf("Could not get account. err: %v", err)
+		return fmt.Errorf("could not get account. err: %v", err)
 	}
 
 	if m.WebhookURI == "" {
@@ -45,7 +45,13 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", m.WebhookMethod, m.WebhookURI, res.StatusCode)
 
 	}()
-	h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, data)
+
+	wh := &webhook.Webhook{
+		CustomerID: customerID,
+		DataType:   dataType,
+		Data:       data,
+	}
+	h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, wh)
 
 	return nil
 }
@@ -72,7 +78,13 @@ func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.U
 		}
 		log.Debugf("Sent the request correctly. method: %s, uri: %s, res: %d", method, uri, res.StatusCode)
 	}()
-	h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, data)
+
+	wh := &webhook.Webhook{
+		CustomerID: customerID,
+		DataType:   dataType,
+		Data:       data,
+	}
+	h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, wh)
 
 	return nil
 }
