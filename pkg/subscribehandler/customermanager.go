@@ -26,12 +26,12 @@ func (h *subscribeHandler) processEventCSCustomerCreatedUpdated(m *rabbitmqhandl
 		return err
 	}
 
-	tmp, err := h.messagetargetHandler.UpdateByCustomer(ctx, e)
+	tmp, err := h.accountHandler.UpdateByCustomer(ctx, e)
 	if err != nil {
-		log.Errorf("Could not update the messagetarget. err: %v", err)
+		log.Errorf("Could not update the account. err: %v", err)
 		return err
 	}
-	log.Debugf("Updated messagetarget. messagetarget: %v", tmp)
+	log.Debugf("Updated account. account: %v", tmp)
 
 	return nil
 }

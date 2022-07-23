@@ -32,8 +32,8 @@ func (h *accountHandler) Get(ctx context.Context, customerID uuid.UUID) (*accoun
 	// create and update the account
 	res = account.CreateAccountFromCustomer(tmp)
 	if errUpdate := h.Update(ctx, res); errUpdate != nil {
-		// we couldn't update the message target, but keep going because we've got customer info
-		log.Errorf("Could not update the message target. err: %v", errUpdate)
+		// we couldn't update the account, but keep going because we've got customer info
+		log.Errorf("Could not update the account. err: %v", errUpdate)
 	}
 
 	return res, nil
@@ -54,8 +54,8 @@ func (h *accountHandler) UpdateByCustomer(ctx context.Context, m *cscustomer.Cus
 
 	res := account.CreateAccountFromCustomer(m)
 	if errUpdate := h.Update(ctx, res); errUpdate != nil {
-		// we couldn't update the message target, but keep going because we've got customer info
-		log.Errorf("Could not update the message target. err: %v", errUpdate)
+		// we couldn't update the account, but keep going because we've got customer info
+		log.Errorf("Could not update the account. err: %v", errUpdate)
 	}
 
 	return res, nil

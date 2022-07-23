@@ -148,9 +148,9 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
-	messagetargetHandler := accounthandler.NewAccountHandler(db, reqHandler)
+	accountHandler := accounthandler.NewAccountHandler(db, reqHandler)
 
-	whHandler := webhookhandler.NewWebhookHandler(db, notifyHandler, messagetargetHandler)
+	whHandler := webhookhandler.NewWebhookHandler(db, notifyHandler, accountHandler)
 
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, whHandler)
 

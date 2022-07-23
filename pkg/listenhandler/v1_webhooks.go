@@ -12,7 +12,7 @@ import (
 )
 
 // processV1WebhooksPost handles POST /v1/webhooks request
-func (h *listenHandler) processV1WebhooksPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "processV1WebhooksPost",
@@ -20,7 +20,6 @@ func (h *listenHandler) processV1WebhooksPost(m *rabbitmqhandler.Request) (*rabb
 	)
 	log.WithField("request", m).Debugf("Sending a webhook message.")
 
-	ctx := context.Background()
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {
 		return simpleResponse(400), nil
@@ -52,7 +51,7 @@ func (h *listenHandler) processV1WebhooksPost(m *rabbitmqhandler.Request) (*rabb
 }
 
 // processV1WebhookDestinationsPost handles POST /v1/webhook_destinations request
-func (h *listenHandler) processV1WebhookDestinationsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1WebhookDestinationsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "processV1WebhookDestinationsPost",
@@ -60,7 +59,6 @@ func (h *listenHandler) processV1WebhookDestinationsPost(m *rabbitmqhandler.Requ
 	)
 	log.WithField("request", m).Debugf("Sending a webhook message.")
 
-	ctx := context.Background()
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {
 		return simpleResponse(400), nil

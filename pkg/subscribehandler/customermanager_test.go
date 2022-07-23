@@ -17,11 +17,11 @@ func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessagetarget := accounthandler.NewMockAccountHandler(mc)
+	mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 	h := &subscribeHandler{
-		rabbitSock:           mockSock,
-		messagetargetHandler: mockMessagetarget,
+		rabbitSock:     mockSock,
+		accountHandler: mockAccount,
 	}
 
 	tests := []struct {
@@ -48,7 +48,7 @@ func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockMessagetarget.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&account.Account{}, nil)
+			mockAccount.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&account.Account{}, nil)
 
 			h.processEvent(tt.event)
 
@@ -61,11 +61,11 @@ func TestProcessEventCSCustomerCreatedUpdated(t *testing.T) {
 	defer mc.Finish()
 
 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockMessagetarget := accounthandler.NewMockAccountHandler(mc)
+	mockAccount := accounthandler.NewMockAccountHandler(mc)
 
 	h := &subscribeHandler{
-		rabbitSock:           mockSock,
-		messagetargetHandler: mockMessagetarget,
+		rabbitSock:     mockSock,
+		accountHandler: mockAccount,
 	}
 
 	tests := []struct {
@@ -92,7 +92,7 @@ func TestProcessEventCSCustomerCreatedUpdated(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockMessagetarget.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&account.Account{}, nil)
+			mockAccount.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&account.Account{}, nil)
 
 			h.processEvent(tt.event)
 
