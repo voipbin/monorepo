@@ -25,8 +25,7 @@ func (h *websockHandler) runZMQSub(
 	})
 
 	if errRun := sock.Run(ctx, cancel, func(topic, message string) error {
-		log.Debugf("Received subscribed message. topic: %s", topic)
-		if errWrite := ws.WriteJSON([]byte(message)); errWrite != nil {
+		if errWrite := ws.WriteMessage(websocket.TextMessage, []byte(message)); errWrite != nil {
 			return errWrite
 		}
 		return nil

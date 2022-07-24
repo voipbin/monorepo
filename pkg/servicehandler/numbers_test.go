@@ -101,8 +101,9 @@ func TestOrderNumberGet(t *testing.T) {
 				TMDelete:   defaultTimestamp,
 			},
 			&nmnumber.WebhookMessage{
-				ID:       uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
-				TMDelete: defaultTimestamp,
+				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}

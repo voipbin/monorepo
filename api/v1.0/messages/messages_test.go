@@ -107,7 +107,7 @@ func Test_MessagesIDGET(t *testing.T) {
 			&mmmessage.WebhookMessage{
 				ID: uuid.FromStringOrNil("55b11820-a2e9-11ec-bc5e-936e4fe1096f"),
 			},
-			[]byte(`{"id":"55b11820-a2e9-11ec-bc5e-936e4fe1096f","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			[]byte(`{"id":"55b11820-a2e9-11ec-bc5e-936e4fe1096f","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
 		},
 	}
 
