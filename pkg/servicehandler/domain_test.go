@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestDomainCreate(t *testing.T) {
+func Test_DomainCreate(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -46,6 +46,7 @@ func TestDomainCreate(t *testing.T) {
 			},
 			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("5b06161c-6ed9-11eb-85e4-f38ba2415baf"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -114,6 +115,7 @@ func TestDomainUpdate(t *testing.T) {
 			},
 			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("d38cff42-6ed9-11eb-9117-5bf23c8e309c"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "update name",
 				Detail:     "update detail",
@@ -172,7 +174,8 @@ func TestDomainDelete(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			&rmdomain.WebhookMessage{
-				ID: uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
+				ID:         uuid.FromStringOrNil("4f7686fa-6eda-11eb-bc3f-5b6eefd85a3d"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 		},
 	}
@@ -233,6 +236,7 @@ func TestDomainGet(t *testing.T) {
 			},
 			&rmdomain.WebhookMessage{
 				ID:         uuid.FromStringOrNil("8142024a-6eda-11eb-be4f-9b2b473fcf90"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				DomainName: "test.sip.voipbin.net",
 				Name:       "test",
 				Detail:     "test detail",
@@ -307,12 +311,14 @@ func TestDomainGets(t *testing.T) {
 			[]*rmdomain.WebhookMessage{
 				{
 					ID:         uuid.FromStringOrNil("cbd2f846-6eda-11eb-a1b5-c39b7ed749b1"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 					DomainName: "test.sip.voipbin.net",
 					Name:       "test1",
 					Detail:     "test detail1",
 				},
 				{
 					ID:         uuid.FromStringOrNil("cf9ee9a8-6eda-11eb-8961-3b8e36c03336"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 					DomainName: "test2.sip.voipbin.net",
 					Name:       "test2",
 					Detail:     "test detail2",

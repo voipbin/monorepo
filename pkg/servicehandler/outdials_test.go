@@ -45,10 +45,11 @@ func Test_OutdialCreate(t *testing.T) {
 				Data:       "test data",
 			},
 			&omoutdial.WebhookMessage{
-				ID:     uuid.FromStringOrNil("58515568-030d-4fcd-a11d-e606d439eaef"),
-				Name:   "test",
-				Detail: "test detail",
-				Data:   "test data",
+				ID:         uuid.FromStringOrNil("58515568-030d-4fcd-a11d-e606d439eaef"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				Name:       "test",
+				Detail:     "test detail",
+				Data:       "test data",
 			},
 		},
 	}
@@ -165,7 +166,8 @@ func Test_OutdialDelete(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("92d41af7-4249-41a8-b86a-cb2ce21f214a"),
+				ID:         uuid.FromStringOrNil("92d41af7-4249-41a8-b86a-cb2ce21f214a"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -225,7 +227,8 @@ func Test_OutdialUpdate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
+				ID:         uuid.FromStringOrNil("178f8cfa-b46f-4a66-aa95-85b9dd65500a"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -282,7 +285,8 @@ func Test_OutdialUpdateCampaignID(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("a7b05592-2d89-4440-a53d-a8dff4acc581"),
+				ID:         uuid.FromStringOrNil("a7b05592-2d89-4440-a53d-a8dff4acc581"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -339,7 +343,8 @@ func Test_OutdialUpdateData(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&omoutdial.WebhookMessage{
-				ID: uuid.FromStringOrNil("e46bbea3-4b82-4b11-a9bb-8be3e152ae92"),
+				ID:         uuid.FromStringOrNil("e46bbea3-4b82-4b11-a9bb-8be3e152ae92"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}

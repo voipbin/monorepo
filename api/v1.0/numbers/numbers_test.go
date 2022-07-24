@@ -105,7 +105,7 @@ func TestNumbersIDGET(t *testing.T) {
 			&nmnumber.WebhookMessage{
 				ID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 			},
-			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_create":"","tm_update":"","tm_delete":""}`),
+			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_create":"","tm_update":"","tm_delete":""}`),
 		},
 	}
 

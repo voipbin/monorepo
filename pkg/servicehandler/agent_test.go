@@ -134,7 +134,8 @@ func TestAgentGet(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			&amagent.WebhookMessage{
-				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 		},
 	}
@@ -542,7 +543,7 @@ func TestAgentLogin(t *testing.T) {
 	}
 }
 
-func TestAgentUpdate(t *testing.T) {
+func Test_AgentUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -576,7 +577,8 @@ func TestAgentUpdate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 			&amagent.WebhookMessage{
-				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
+				CustomerID: uuid.FromStringOrNil("852b9d5e-7ff9-11ec-9ca0-cf3c47e8c96b"),
 			},
 		},
 	}
