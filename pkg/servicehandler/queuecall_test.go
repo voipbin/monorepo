@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestQueuecallGets(t *testing.T) {
+func Test_QueuecallGets(t *testing.T) {
 
 	type test struct {
 		name      string
@@ -80,7 +80,7 @@ func TestQueuecallGets(t *testing.T) {
 	}
 }
 
-func TestQueuecallGet(t *testing.T) {
+func Test_QueuecallGet(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -104,7 +104,8 @@ func TestQueuecallGet(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueuecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
+				ID:         uuid.FromStringOrNil("cd268152-6413-11ec-8e49-4bc7bcc6d465"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -136,7 +137,7 @@ func TestQueuecallGet(t *testing.T) {
 	}
 }
 
-func TestQueuecallDelete(t *testing.T) {
+func Test_QueuecallDelete(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -160,7 +161,8 @@ func TestQueuecallDelete(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueuecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
+				ID:         uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -193,7 +195,7 @@ func TestQueuecallDelete(t *testing.T) {
 	}
 }
 
-func TestQueuecallDeleteByReferenceID(t *testing.T) {
+func Test_QueuecallDeleteByReferenceID(t *testing.T) {
 
 	type test struct {
 		name        string
@@ -217,7 +219,8 @@ func TestQueuecallDeleteByReferenceID(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueuecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
+				ID:         uuid.FromStringOrNil("00043d94-6414-11ec-9c13-eb81c8c76e8d"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}

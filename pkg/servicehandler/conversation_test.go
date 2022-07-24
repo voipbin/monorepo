@@ -106,6 +106,7 @@ func Test_ConversationGet(t *testing.T) {
 			},
 			&cvconversation.WebhookMessage{
 				ID: uuid.FromStringOrNil("828e75ba-ed24-11ec-bbf2-7f0e56ac76f1"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}

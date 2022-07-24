@@ -103,8 +103,9 @@ func Test_MessageGet(t *testing.T) {
 				TMDelete:   defaultTimestamp,
 			},
 			&mmmessage.WebhookMessage{
-				ID:       uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
-				TMDelete: defaultTimestamp,
+				ID:         uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
+				CustomerID: uuid.FromStringOrNil("5d4cca48-a2e4-11ec-b285-abf68e05b01d"),
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}
@@ -225,8 +226,9 @@ func Test_MessageDelete(t *testing.T) {
 				TMDelete:   defaultTimestamp,
 			},
 			&mmmessage.WebhookMessage{
-				ID:       uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
-				TMDelete: defaultTimestamp,
+				ID:         uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
+				CustomerID: uuid.FromStringOrNil("8866d636-a2e6-11ec-88f1-b76cfda0af43"),
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}

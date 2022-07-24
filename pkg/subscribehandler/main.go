@@ -29,8 +29,8 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	subscribeQueue    string
-	subscribesTargets string
+	subscribeQueueNamePod string // subscribe queue name for this pod
+	subscribesTargets     string
 
 	zmqpubHandler zmqpubhandler.ZMQPubHandler
 }
@@ -60,15 +60,15 @@ func init() {
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
-	subscribeQueue string,
+	subscribeQueueName string,
 	subscribeTargets string,
 	zmqpubHandler zmqpubhandler.ZMQPubHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
 
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
+		subscribeQueueNamePod: subscribeQueueName,
+		subscribesTargets:     subscribeTargets,
 
 		zmqpubHandler: zmqpubHandler,
 	}
@@ -77,12 +77,14 @@ func NewSubscribeHandler(
 }
 
 func (h *subscribeHandler) Run() error {
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func": "Run",
-	}).Info("Creating rabbitmq queue for listen.")
+	})
+	log.Info("Creating rabbitmq queue for listen.")
 
-	// declare the queue for subscribe
-	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
+	// declare the queue for subscribe(pod)
+	log.Debugf("Declaring the queue for subscribe(pod). queue_name: %s", h.subscribeQueueNamePod)
+	if err := h.rabbitSock.QueueDeclare(h.subscribeQueueNamePod, false, true, false, false); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
@@ -91,7 +93,7 @@ func (h *subscribeHandler) Run() error {
 	for _, target := range targets {
 
 		// bind each targets
-		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
+		if err := h.rabbitSock.QueueBind(h.subscribeQueueNamePod, "", target, false, nil); err != nil {
 			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
 			return err
 		}
@@ -100,7 +102,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "api-manager", false, false, false, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueueNamePod, "api-manager", false, false, false, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
