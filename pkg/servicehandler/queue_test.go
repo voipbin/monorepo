@@ -105,7 +105,8 @@ func Test_QueueGet(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+				ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -181,7 +182,8 @@ func Test_QueueCreate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
+				ID:         uuid.FromStringOrNil("eb2ee214-6316-11ec-88b2-db9da3dd0931"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -258,7 +260,8 @@ func Test_QueueDelete(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
+				ID:         uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -322,7 +325,8 @@ func Test_QueueUpdate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
+				ID:         uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -385,7 +389,8 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
+				ID:         uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 		{
@@ -405,7 +410,8 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
+				ID:         uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -467,7 +473,8 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
+				ID:         uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 		{
@@ -484,7 +491,8 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
+				ID:         uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}
@@ -553,7 +561,8 @@ func Test_QueueUpdateActions(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&qmqueue.WebhookMessage{
-				ID: uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
+				ID:         uuid.FromStringOrNil("f4fc8e6a-6391-11ec-bd03-337ff376d96d"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
 	}

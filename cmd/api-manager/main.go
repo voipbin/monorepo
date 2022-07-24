@@ -3,11 +3,13 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gofrs/uuid"
 	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
@@ -81,50 +83,6 @@ func main() {
 	sock.Connect()
 
 	run(sock, db)
-
-	// // create servicehandler
-	// requestHandler := requesthandler.NewRequestHandler(sock, "api_manager")
-	// serviceHandler := servicehandler.NewServiceHandler(requestHandler, db)
-
-	// app := gin.Default()
-
-	// // swagger
-	// app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// // docs
-	// app.Static("/docs", "docsdev/build/html")
-
-	// // CORS setting
-	// // CORS for https://foo.com and https://github.com origins, allowing:
-	// // - PUT and PATCH methods
-	// // - Origin header
-	// // - Credentials share
-	// // - Preflight requests cached for 12 hours
-	// app.Use(cors.New(cors.Config{
-	// 	AllowOrigins:     []string{"*"},
-	// 	AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"},
-	// 	AllowHeaders:     []string{"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"},
-	// 	ExposeHeaders:    []string{"Content-Length"},
-	// 	AllowCredentials: true,
-	// 	MaxAge:           12 * time.Hour,
-	// }))
-
-	// // inject servicehandler
-	// app.Use(func(c *gin.Context) {
-	// 	c.Set(common.OBJServiceHandler, serviceHandler)
-	// 	c.Next()
-	// })
-
-	// // set jwt middleware
-	// app.Use(middleware.JWTMiddleware())
-
-	// // apply api router
-	// api.ApplyRoutes(app)
-
-	// logrus.Debug("Starting the api service.")
-	// if errAppRun := app.RunTLS(":443", *sslCert, *sslKey); errAppRun != nil {
-	// 	log.Errorf("The api service ended with error. err: %v", errAppRun)
-	// }
 }
 
 func init() {
@@ -164,9 +122,11 @@ func runSubscribe(
 	zmqHandler zmqpubhandler.ZMQPubHandler,
 ) error {
 
+	queuNamePod := fmt.Sprintf("%s-%s", *rabbitQueueSubscribe, uuid.Must(uuid.NewV4()))
+
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
-		*rabbitQueueSubscribe,
+		queuNamePod,
 		*rabbitListenSubscribes,
 
 		zmqHandler,
@@ -224,5 +184,4 @@ func runListen(serviceHandler servicehandler.ServiceHandler) {
 	if errAppRun := app.RunTLS(":443", *sslCert, *sslKey); errAppRun != nil {
 		log.Errorf("The api service ended with error. err: %v", errAppRun)
 	}
-
 }
