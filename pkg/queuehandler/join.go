@@ -21,15 +21,27 @@ const (
 )
 
 // Join creates the new queuecall
-func (h *queueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, exitActionID uuid.UUID) (*queuecall.Queuecall, error) {
-	log := logrus.New().WithFields(
+func (h *queueHandler) Join(
+	ctx context.Context,
+	queueID uuid.UUID,
+	referenceType queuecall.ReferenceType,
+	referenceID uuid.UUID,
+	referenceActiveflowID uuid.UUID,
+	exitActionID uuid.UUID,
+) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(
 		logrus.Fields{
 			"func":     "Join",
 			"queue_id": queueID,
 			"call_id":  referenceID,
 		},
 	)
-	log.Debugf("Creating a new queuecall. queue_id: %s activeflow_id: %s, reference_type: %s, reference_id: %s", queueID, referenceActiveflowID, referenceType, referenceID)
+	log.Debugf("Creating a new queuecall. queue_id: %s activeflow_id: %s, reference_type: %s, reference_id: %s",
+		queueID,
+		referenceActiveflowID,
+		referenceType,
+		referenceID,
+	)
 
 	// get queue
 	q, err := h.Get(ctx, queueID)

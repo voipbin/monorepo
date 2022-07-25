@@ -470,7 +470,7 @@ func (h *handler) QueueAddQueueCallID(ctx context.Context, id, queueCallID uuid.
 	update queues set
 		total_incoming_count = total_incoming_count + 1,
 		wait_queue_call_ids = json_array_append(
-			wait_queue_call_ids,
+			coalesce(wait_queue_call_ids,'[]'),
 			'$',
 			?
 		),
@@ -509,7 +509,7 @@ func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queue
 			)
 		),
 		service_queue_call_ids = json_array_append(
-			service_queue_call_ids,
+			coalesce(service_queue_call_ids,'[]'),
 			'$',
 			?
 		),
