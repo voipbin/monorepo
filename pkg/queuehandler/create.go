@@ -118,7 +118,7 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID
 
 // createQueueFlowActions creates the actions for queue join.
 func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, confbridgeID uuid.UUID) ([]fmaction.Action, error) {
-	log := logrus.New().WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "createQueueFlowActions",
 			"confbridge_id": confbridgeID,
