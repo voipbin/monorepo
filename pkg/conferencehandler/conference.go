@@ -29,7 +29,7 @@ func (h *conferenceHandler) Create(
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*conference.Conference, error) {
-	log := logrus.New().WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
 			"func":            "Create",
 			"customer_id":     customerID,
@@ -38,7 +38,7 @@ func (h *conferenceHandler) Create(
 	)
 
 	id := uuid.Must(uuid.NewV4())
-	log = log.WithField("confbridge_id", id.String())
+	log = log.WithField("conference_id", id.String())
 
 	// send confbridge create request
 	confbridgeType := cmconfbridge.TypeConnect
@@ -108,6 +108,7 @@ func (h *conferenceHandler) Create(
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, cf.CustomerID, conference.EventTypeConferenceCreated, cf)
+	log.WithField("conference", cf).Debugf("Created a new conference. conference_id: %s", cf.ID)
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {
@@ -121,7 +122,7 @@ func (h *conferenceHandler) Create(
 
 // createConferenceFlowActions creates the actions for conference join.
 func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) ([]fmaction.Action, error) {
-	log := logrus.New().WithField("func", "createConferenceFlow")
+	log := logrus.WithField("func", "createConferenceFlow")
 	actions := []fmaction.Action{}
 
 	// append the pre actions
@@ -232,7 +233,7 @@ func (h *conferenceHandler) Update(
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*conference.Conference, error) {
-	log := logrus.New().WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "Update",
 			"conference_id": id,

@@ -14,7 +14,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 	// ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":  "processEventCMConfbridgeJoinedLeaved",
+			"func":  "processEventCMConfbridgeJoined",
 			"event": m,
 		},
 	)
@@ -34,8 +34,9 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 	// get conference
 	cf, err := h.db.ConferenceGetByConfbridgeID(ctx, evt.ID)
 	if err != nil {
-		log.Errorf("Could not get conference. err: %v", err)
-		return err
+		// not found the conference
+		log.Debugf("Could not get conference. err: %v", err)
+		return nil
 	}
 	log = log.WithField("conference_id", cf.ID)
 	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
@@ -73,8 +74,9 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 	// get conference
 	cf, err := h.db.ConferenceGetByConfbridgeID(ctx, evt.ID)
 	if err != nil {
-		log.Errorf("Could not get conference. err: %v", err)
-		return err
+		// not found the conference
+		log.Debugf("Could not get conference. err: %v", err)
+		return nil
 	}
 	log = log.WithField("conference_id", cf.ID)
 	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
