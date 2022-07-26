@@ -33,11 +33,11 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *rabbitm
 
 	// create confbridge
 	cb, err := h.confbridgeHandler.Create(ctx, req.Type)
-
 	if err != nil {
 		log.Errorf("Could not create the confbridge. err: %v", err)
 		return simpleResponse(400), nil
 	}
+	log.WithField("confbridge", cb).Debugf("Created a new confbridge. confbridge_id: %s", cb.ID)
 
 	tmp, err := json.Marshal(cb)
 	if err != nil {
