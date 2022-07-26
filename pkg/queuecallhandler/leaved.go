@@ -78,7 +78,13 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		return
 	}
 
+	// delete variables
 	if errVariables := h.deleteVariables(ctx, tmp); errVariables != nil {
 		log.Errorf("Could not delete variables. err: %v", errVariables)
+	}
+
+	// delete confbridge
+	if errConfbridge := h.reqHandler.CMV1ConfbridgeDelete(ctx, qc.ConfbridgeID); errConfbridge != nil {
+		log.Errorf("Could not delete the confbridge. err: %v", errConfbridge)
 	}
 }
