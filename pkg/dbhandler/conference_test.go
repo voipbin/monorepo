@@ -198,6 +198,31 @@ func TestConferenceCreate(t *testing.T) {
 				RecordingIDs: []uuid.UUID{},
 			},
 		},
+		{
+			"having confbridge",
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("ba8a9474-0c2f-11ed-8002-37c00264d0b5"),
+				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
+				ConfbridgeID: uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
+				Type:         conference.TypeConference,
+				Name:         "test type conference",
+				Detail:       "test type conference detail",
+				Timeout:      86400,
+			},
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("ba8a9474-0c2f-11ed-8002-37c00264d0b5"),
+				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
+				ConfbridgeID: uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
+				Type:         conference.TypeConference,
+				Name:         "test type conference",
+				Detail:       "test type conference detail",
+				Timeout:      86400,
+				PreActions:   []fmaction.Action{},
+				PostActions:  []fmaction.Action{},
+				CallIDs:      []uuid.UUID{},
+				RecordingIDs: []uuid.UUID{},
+			},
+		},
 	}
 
 	for _, tt := range tests {
