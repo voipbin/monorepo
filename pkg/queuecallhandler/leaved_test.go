@@ -93,6 +93,7 @@ func Test_Leaved(t *testing.T) {
 			mockDB.EXPECT().QueueRemoveServiceQueueCall(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID)
 
 			mockReq.EXPECT().FMV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockReq.EXPECT().CMV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(nil)
 
 			h.Leaved(ctx, tt.referenceID, tt.confbridgeID)
 		})
