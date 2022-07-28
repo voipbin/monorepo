@@ -28,6 +28,8 @@ type MessageHandle func(topic, message string) error
 // zmqSubHandler defines
 type zmqSubHandler struct {
 	sock zmq.ZMQ
+
+	topics []string // subscribed topics
 }
 
 // NewZMQSubHandler creates a new ZMQSubHandler
