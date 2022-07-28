@@ -1,6 +1,7 @@
 package zmqsubhandler
 
 import (
+	reflect "reflect"
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
@@ -74,12 +75,39 @@ func Test_Subscribe(t *testing.T) {
 	tests := []struct {
 		name string
 
+		topics []string
+
 		topic string
+
+		duplicated bool
+
+		expectResTopics []string
 	}{
 		{
 			"normal",
 
+			[]string{},
+
 			"test",
+
+			false,
+
+			[]string{
+				"test",
+			},
+		},
+		{
+			"subscribe the same topic",
+
+			[]string{"hello"},
+
+			"hello",
+
+			true,
+
+			[]string{
+				"hello",
+			},
 		},
 	}
 
@@ -91,13 +119,20 @@ func Test_Subscribe(t *testing.T) {
 			mockSock := zmq.NewMockZMQ(mc)
 
 			h := &zmqSubHandler{
-				sock: mockSock,
+				sock:   mockSock,
+				topics: tt.topics,
 			}
 
-			mockSock.EXPECT().Subscribe(tt.topic).Return(nil)
+			if !tt.duplicated {
+				mockSock.EXPECT().Subscribe(tt.topic).Return(nil)
+			}
 
 			if err := h.Subscribe(tt.topic); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(h.topics, tt.expectResTopics) {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectResTopics, h.topics)
 			}
 
 		})
@@ -109,12 +144,36 @@ func Test_Unsubscribe(t *testing.T) {
 	tests := []struct {
 		name string
 
+		topics []string
+
 		topic string
+
+		expectResTopics []string
 	}{
 		{
 			"normal",
 
+			[]string{
+				"test",
+			},
+
 			"test",
+
+			[]string{},
+		},
+		{
+			"have 2 items",
+
+			[]string{
+				"hello",
+				"world",
+			},
+
+			"hello",
+
+			[]string{
+				"world",
+			},
 		},
 	}
 
@@ -126,13 +185,18 @@ func Test_Unsubscribe(t *testing.T) {
 			mockSock := zmq.NewMockZMQ(mc)
 
 			h := &zmqSubHandler{
-				sock: mockSock,
+				sock:   mockSock,
+				topics: tt.topics,
 			}
 
 			mockSock.EXPECT().Unsubscribe(tt.topic).Return(nil)
 
 			if err := h.Unsubscribe(tt.topic); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(h.topics, tt.expectResTopics) {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectResTopics, h.topics)
 			}
 
 		})
