@@ -3,6 +3,7 @@ package zmqsubhandler
 import (
 	"github.com/pebbe/zmq4"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 )
 
 // initSock initiate zmq
@@ -30,11 +31,20 @@ func (h *zmqSubHandler) Subscribe(topic string) error {
 		"func": "Subscribe",
 	})
 
+	// check already subscribed topic
+	if slices.Contains(h.topics, topic) {
+		log.Debugf("The topic already subscribed. topic: %s", topic)
+		return nil
+	}
+
 	if errSub := h.sock.Subscribe(topic); errSub != nil {
 		log.Errorf("Could not subscribe the topic. err: %v", errSub)
 		return errSub
 	}
 	log.Debugf("Subsribed the topic correctly. topic: %s", topic)
+
+	// add the topic
+	h.topics = append(h.topics, topic)
 
 	return nil
 }
@@ -45,6 +55,20 @@ func (h *zmqSubHandler) Unsubscribe(topic string) error {
 		"func": "Unsubscribe",
 	})
 
+	// delete topic from the subscribed list
+	idx := -1
+	for i, sub := range h.topics {
+		if sub == topic {
+			idx = i
+			break
+		}
+	}
+	if idx == -1 {
+		// nothing to unsubscribe
+		return nil
+	}
+	h.topics = slices.Delete(h.topics, idx, 1)
+
 	if errSub := h.sock.Unsubscribe(topic); errSub != nil {
 		log.Errorf("Could not unsubscribe the topic. err: %v", errSub)
 		return errSub
@@ -53,4 +77,3 @@ func (h *zmqSubHandler) Unsubscribe(topic string) error {
 
 	return nil
 }
-
