@@ -58,6 +58,7 @@ const (
 	TypeNone       Type = ""
 	TypeConference Type = "conference" // conference for more than 3 calls join
 	TypeConnect    Type = "connect"    // connect type kicks out the participant if the 1 call has left in the conference.
+	TypeQueue      Type = "queue"      // queue for conference room for queue.
 )
 
 // Status type
