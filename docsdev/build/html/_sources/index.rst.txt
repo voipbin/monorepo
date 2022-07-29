@@ -30,6 +30,7 @@ Welcome to voipbin's documentation!
    webhook
    customer
    variable
+   websocket
    common
 
 
