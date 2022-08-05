@@ -196,7 +196,7 @@ func TestConferenceDelete(t *testing.T) {
 				Detail: "test detail",
 				Data:   map[string]interface{}{},
 
-				CallIDs: []uuid.UUID{},
+				ConferencecallIDs: []uuid.UUID{},
 			},
 		},
 	}
@@ -246,16 +246,19 @@ func TestConferenceGets(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 
-					PreActions:  []fmaction.Action{},
-					PostActions: []fmaction.Action{},
+					PreActions:        []fmaction.Action{},
+					PostActions:       []fmaction.Action{},
+					ConferencecallIDs: []uuid.UUID{},
 				},
 			},
 			[]*cfconference.WebhookMessage{
 				{
-					ID: uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
+					ID:         uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
+					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 
-					PreActions:  []fmaction.Action{},
-					PostActions: []fmaction.Action{},
+					PreActions:        []fmaction.Action{},
+					PostActions:       []fmaction.Action{},
+					ConferencecallIDs: []uuid.UUID{},
 				},
 			},
 		},
@@ -309,7 +312,8 @@ func TestConferenceGet(t *testing.T) {
 				PostActions: []fmaction.Action{},
 			},
 			&cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
+				ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 
 				PreActions:  []fmaction.Action{},
 				PostActions: []fmaction.Action{},
@@ -329,7 +333,8 @@ func TestConferenceGet(t *testing.T) {
 				PostActions: []fmaction.Action{},
 			},
 			&cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
+				ID:         uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 
 				PreActions:  []fmaction.Action{},
 				PostActions: []fmaction.Action{},
