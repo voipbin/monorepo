@@ -3,7 +3,7 @@ package messages
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -136,7 +136,7 @@ func Test_MessagesIDGET(t *testing.T) {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
 
-			resBytes, err := ioutil.ReadAll(w.Body)
+			resBytes, err := io.ReadAll(w.Body)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
