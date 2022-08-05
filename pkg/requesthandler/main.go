@@ -22,6 +22,7 @@ import (
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -145,7 +146,8 @@ const (
 
 	resourceCMConfbridges resource = "cm/confbridges"
 
-	resourceCFConferences resource = "cm/conferences"
+	resourceCFConferences     resource = "conference/conferences"
+	resourceCFConferencecalls resource = "conference/conferencecalls"
 
 	resourceCallRecordings resource = "cm/recordings"
 
@@ -411,8 +413,10 @@ type RequestHandler interface {
 	) (*cfconference.Conference, error)
 	CFV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) error
 	CFV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error
-	CFV1ConferenceKick(ctx context.Context, conferenceID, callID uuid.UUID) error
 	CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
+
+	// conference-manager conferencecall
+	ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
 
 	// conversation-manager conversation
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)

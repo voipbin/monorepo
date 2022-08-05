@@ -136,8 +136,8 @@ func (r *requestHandler) sendRequestNM(uri string, method rabbitmqhandler.Reques
 	return r.sendRequest(queueNumber, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestCF send a request to the conference-manager and return the response
-func (r *requestHandler) sendRequestCF(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+// sendRequestConference send a request to the conference-manager and return the response
+func (r *requestHandler) sendRequestConference(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueConference, uri, method, resource, timeout, delayed, dataType, data)
 }

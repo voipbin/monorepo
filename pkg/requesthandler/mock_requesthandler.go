@@ -25,6 +25,7 @@ import (
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -1014,20 +1015,6 @@ func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceGets(ctx, customerID, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceGets), ctx, customerID, pageToken, pageSize, conferenceType)
 }
 
-// CFV1ConferenceKick mocks base method.
-func (m *MockRequestHandler) CFV1ConferenceKick(ctx context.Context, conferenceID, callID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CFV1ConferenceKick", ctx, conferenceID, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CFV1ConferenceKick indicates an expected call of CFV1ConferenceKick.
-func (mr *MockRequestHandlerMockRecorder) CFV1ConferenceKick(ctx, conferenceID, callID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CFV1ConferenceKick", reflect.TypeOf((*MockRequestHandler)(nil).CFV1ConferenceKick), ctx, conferenceID, callID)
-}
-
 // CFV1ConferenceUpdate mocks base method.
 func (m *MockRequestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
@@ -1468,6 +1455,21 @@ func (m *MockRequestHandler) CSV1Login(ctx context.Context, timeout int, usernam
 func (mr *MockRequestHandlerMockRecorder) CSV1Login(ctx, timeout, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1Login", reflect.TypeOf((*MockRequestHandler)(nil).CSV1Login), ctx, timeout, username, password)
+}
+
+// ConferenceV1ConferencecallKick mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallKick", ctx, conferencecallID)
+	ret0, _ := ret[0].(*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ConferencecallKick indicates an expected call of ConferenceV1ConferencecallKick.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallKick(ctx, conferencecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallKick", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallKick), ctx, conferencecallID)
 }
 
 // ConversationV1ConversationGet mocks base method.
