@@ -13,13 +13,14 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 )
 
 // DBHandler interface for database handle
 type DBHandler interface {
 	// conferences
-	ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error
+	ConferenceAddConferencecallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
 	ConferenceEnd(ctx context.Context, id uuid.UUID) error
@@ -27,11 +28,20 @@ type DBHandler interface {
 	ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error)
 	ConferenceGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conference.Conference, error)
 	ConferenceGetsWithType(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error)
-	ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error
+	ConferenceRemoveConferencecallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []fmaction.Action) error
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
 	ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
+
+	// conferencecalls
+	ConferencecallCreate(ctx context.Context, cf *conferencecall.Conferencecall) error
+	ConferencecallGet(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
+	ConferencecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
+	ConferencecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conferencecall.Conferencecall, error)
+	ConferencecallGetsByConferenceID(ctx context.Context, conferenceID uuid.UUID, size uint64, token string) ([]*conferencecall.Conferencecall, error)
+	ConferencecallUpdateStatus(ctx context.Context, id uuid.UUID, status conferencecall.Status) error
+	ConferencecallDelete(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler
@@ -42,11 +52,12 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = errors.New("Record not found")
+	ErrNotFound = errors.New("record not found")
 )
 
+// list of default variables
 const (
-	defaultTimeStamp = "9999-01-01 00:00:00.000000"
+	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
 )
 
 // NewHandler creates DBHandler

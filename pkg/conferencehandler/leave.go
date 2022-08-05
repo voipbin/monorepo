@@ -2,49 +2,65 @@ package conferencehandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
 // Leave outs the call from the conference
-func (h *conferenceHandler) Leave(ctx context.Context, id, callID uuid.UUID) error {
+func (h *conferenceHandler) Leave(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"conference": id.String(),
-			"call":       callID.String(),
+			"func":              "Leave",
+			"conferencecall_id": conferencecallID,
 		})
 	log.Debugf("Leaving the call from the conference.")
 
-	cf, err := h.db.ConferenceGet(ctx, id)
+	// update conferencecall status to leaving
+	cc, err := h.conferencecallHandler.UpdateStatusLeaving(ctx, conferencecallID)
 	if err != nil {
-		log.Errorf("Could not get conference. err: %v", err)
-		return err
+		log.Errorf("Could not update the conferencecall status. err: %v", err)
+		return nil, err
+	}
+	log.WithField("conferencecall", cc).Debugf("Updated conferencecall info. conferencecall_id: %s", cc.ID)
+
+	// get conference
+	cf, err := h.Get(ctx, cc.ConferenceID)
+	if err != nil {
+		log.Errorf("Could not get conference info. conference_id: %s, err: %v", cf.ID, err)
+		return nil, err
 	}
 
-	// check the call does exist
-	if !isCallExist(cf.CallIDs, callID) {
-		log.Errorf("The call does not exist in the conference.")
-		return fmt.Errorf("call does not exist")
-	}
+	switch cc.ReferenceType {
 
-	// send the kick request
-	if err := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, callID); err != nil {
-		log.Errorf("Could not kick the call from the conference. err: %v", err)
-		return err
-	}
-
-	return nil
-}
-
-// isCallExist returns true if the call is exist in the calls.
-func isCallExist(calls []uuid.UUID, callID uuid.UUID) bool {
-	for _, id := range calls {
-		if id == callID {
-			return true
+	default:
+		// send the kick request
+		if err := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, cc.ReferenceID); err != nil {
+			log.Errorf("Could not kick the call from the conference. err: %v", err)
+			return nil, err
 		}
 	}
 
-	return false
+	return cc, nil
+}
+
+func (h *conferenceHandler) LeaveByReferenceID(ctx context.Context, conferenceID, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "LeaveByReferenceID",
+			"conference_id": conferenceID,
+			"reference_id":  referenceID,
+		})
+	log.Debugf("Leaving the call from the conference.")
+
+	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, referenceID)
+	if err != nil {
+		log.Errorf("Could not get conferencecall info. err: %v", err)
+		return nil, err
+	}
+
+	return h.Leave(ctx, cc.ID)
 }

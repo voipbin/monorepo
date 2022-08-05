@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
 // getSerialize returns cached serialized info.
@@ -37,7 +38,7 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 	return nil
 }
 
-// ConferenceGet returns conference call info
+// ConferenceGet returns conference info
 func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 	key := fmt.Sprintf("conference:%s", id)
 
@@ -52,6 +53,29 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 // ConferenceSet sets the conference info into the cache.
 func (h *handler) ConferenceSet(ctx context.Context, conference *conference.Conference) error {
 	key := fmt.Sprintf("conference:%s", conference.ID)
+
+	if err := h.setSerialize(ctx, key, conference, time.Hour*24); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ConferencecallGet returns conferencecall info
+func (h *handler) ConferencecallGet(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
+	key := fmt.Sprintf("conferencecall:%s", id)
+
+	var res conferencecall.Conferencecall
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ConferencecallSet sets the conferencecall info into the cache.
+func (h *handler) ConferencecallSet(ctx context.Context, conference *conferencecall.Conferencecall) error {
+	key := fmt.Sprintf("conferencecall:%s", conference.ID)
 
 	if err := h.setSerialize(ctx, key, conference, time.Hour*24); err != nil {
 		return err

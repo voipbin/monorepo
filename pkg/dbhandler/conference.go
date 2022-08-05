@@ -30,7 +30,7 @@ const (
 		pre_actions,
 		post_actions,
 
-		call_ids,
+		conferencecall_ids,
 
 		recording_id,
 		recording_ids,
@@ -44,13 +44,13 @@ const (
 	`
 )
 
-// conferenceGetFromRow gets the call from the row.
+// conferenceGetFromRow gets the conference from the row.
 func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, error) {
 
 	var preActions string
 	var postActions string
 	var data string
-	var callIDs string
+	var conferencecallIDs sql.NullString
 	var RecordingIDs string
 
 	res := &conference.Conference{}
@@ -70,7 +70,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		&preActions,
 		&postActions,
 
-		&callIDs,
+		&conferencecallIDs,
 
 		&res.RecordingID,
 		&RecordingIDs,
@@ -100,11 +100,15 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		return nil, fmt.Errorf("could not unmarshal the data. conferenceGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(callIDs), &res.CallIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the destination. conferenceGetFromRow. err: %v", err)
-	}
-	if res.CallIDs == nil {
-		res.CallIDs = []uuid.UUID{}
+	if conferencecallIDs.Valid && conferencecallIDs.String != "" {
+		if err := json.Unmarshal([]byte(conferencecallIDs.String), &res.ConferencecallIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the queucall_ids. conferenceGetFromRow. err: %v", err)
+		}
+		if res.ConferencecallIDs == nil {
+			res.ConferencecallIDs = []uuid.UUID{}
+		}
+	} else {
+		res.ConferencecallIDs = []uuid.UUID{}
 	}
 
 	if err := json.Unmarshal([]byte(RecordingIDs), &res.RecordingIDs); err != nil {
@@ -135,7 +139,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		pre_actions,
 		post_actions,
 
-		call_ids,
+		conferencecall_ids,
 
 		recording_id,
 		recording_ids,
@@ -168,7 +172,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		return fmt.Errorf("could not marshal data. ConferenceCreate. err: %v", err)
 	}
 
-	callIDs, err := json.Marshal(cf.CallIDs)
+	conferencecallIDs, err := json.Marshal(cf.ConferencecallIDs)
 	if err != nil {
 		return fmt.Errorf("could not marshal calls. ConferenceCreate. err: %v", err)
 	}
@@ -194,7 +198,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		preActions,
 		postActions,
 
-		callIDs,
+		conferencecallIDs,
 
 		cf.RecordingID.Bytes(),
 		recordingIDs,
@@ -292,7 +296,7 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 	return res, nil
 }
 
-// ConferenceGets returns a list of calls.
+// ConferenceGets returns a list of conferences.
 func (h *handler) ConferenceGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conference.Conference, error) {
 
 	// prepare
@@ -307,7 +311,7 @@ func (h *handler) ConferenceGets(ctx context.Context, customerID uuid.UUID, size
 		limit ?
 	`, conferenceSelect)
 
-	rows, err := h.db.Query(q, defaultTimeStamp, customerID.Bytes(), token, size)
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
 	}
@@ -342,7 +346,7 @@ func (h *handler) ConferenceGetsWithType(ctx context.Context, customerID uuid.UU
 		limit ?
 	`, conferenceSelect)
 
-	rows, err := h.db.Query(q, defaultTimeStamp, customerID.Bytes(), confType, token, size)
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), confType, token, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ConferenceGets. err: %v", err)
 	}
@@ -385,13 +389,13 @@ func (h *handler) ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID 
 	return res, nil
 }
 
-// ConferenceAddCallID adds the call id to the conference.
-func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID) error {
+// ConferenceAddConferencecallID adds the call id to the conference.
+func (h *handler) ConferenceAddConferencecallID(ctx context.Context, id, callID uuid.UUID) error {
 	// prepare
 	q := `
 	update conferences set
-		call_ids = json_array_append(
-			call_ids,
+		conferencecall_ids = json_array_append(
+			coalesce(conferencecall_ids, '[]'),
 			'$',
 			?
 		),
@@ -402,7 +406,7 @@ func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID)
 
 	_, err := h.db.Exec(q, callID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceAddCallID. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceAddConferencecallID. err: %v", err)
 	}
 
 	// update the cache
@@ -411,15 +415,15 @@ func (h *handler) ConferenceAddCallID(ctx context.Context, id, callID uuid.UUID)
 	return nil
 }
 
-// ConferenceRemoveCallID removes the call id from the conference.
-func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UUID) error {
+// ConferenceRemoveConferencecallID removes the call id from the conference.
+func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, callID uuid.UUID) error {
 	// prepare
 	q := `
 	update conferences set
-		call_ids = json_remove(
-			call_ids, replace(
+		conferencecall_ids = json_remove(
+			conferencecall_ids, replace(
 				json_search(
-					call_ids,
+					conferencecall_ids,
 					'one',
 					?
 				),
@@ -434,7 +438,7 @@ func (h *handler) ConferenceRemoveCallID(ctx context.Context, id, callID uuid.UU
 
 	_, err := h.db.Exec(q, callID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceRemoveCallID. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceRemoveConferencecallID. err: %v", err)
 	}
 
 	// update the cache

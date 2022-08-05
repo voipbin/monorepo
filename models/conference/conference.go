@@ -26,7 +26,7 @@ type Conference struct {
 	PreActions  []fmaction.Action `json:"pre_actions"`  // pre actions
 	PostActions []fmaction.Action `json:"post_actions"` // post actions
 
-	CallIDs []uuid.UUID `json:"call_ids"` // list of call ids of conference
+	ConferencecallIDs []uuid.UUID `json:"conferencecall_ids"` // list of conferencecall ids of the conference
 
 	RecordingID  uuid.UUID   `json:"recording_id"`
 	RecordingIDs []uuid.UUID `json:"recording_ids"`

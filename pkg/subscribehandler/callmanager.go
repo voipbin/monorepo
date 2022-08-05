@@ -11,7 +11,6 @@ import (
 
 // processEventCMConfbridgeJoined handles the call-manager's call related event
 func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m *rabbitmqhandler.Event) error {
-	// ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":  "processEventCMConfbridgeJoined",
@@ -32,7 +31,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 	).Debugf("Detail event. event: %s", m.Type)
 
 	// get conference
-	cf, err := h.db.ConferenceGetByConfbridgeID(ctx, evt.ID)
+	cf, err := h.conferenceHandler.GetByConfbridgeID(ctx, evt.ID)
 	if err != nil {
 		// not found the conference
 		log.Debugf("Could not get conference. err: %v", err)
@@ -72,7 +71,7 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 	).Debugf("Detail event. event: %s", m.Type)
 
 	// get conference
-	cf, err := h.db.ConferenceGetByConfbridgeID(ctx, evt.ID)
+	cf, err := h.conferenceHandler.GetByConfbridgeID(ctx, evt.ID)
 	if err != nil {
 		// not found the conference
 		log.Debugf("Could not get conference. err: %v", err)
@@ -81,7 +80,7 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 	log = log.WithField("conference_id", cf.ID)
 	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
 
-	if err := h.conferenceHandler.LeavedConfbridge(ctx, evt.ID, evt.LeavedCallID); err != nil {
+	if err := h.conferenceHandler.Leaved(ctx, cf, evt.LeavedCallID); err != nil {
 		log.Errorf("Could not handle the confbridge leaved event. err: %v", err)
 		return err
 	}

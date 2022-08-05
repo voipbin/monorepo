@@ -14,20 +14,15 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 )
 
-func TestConferenceCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_ConferenceCreate(t *testing.T) {
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name string
 
-		conference       *conference.Conference
-		expectConference *conference.Conference
-	}
+		conference *conference.Conference
+		expectRes  *conference.Conference
+	}{
 
-	tests := []test{
 		{
 			"type conference",
 			&conference.Conference{
@@ -38,15 +33,15 @@ func TestConferenceCreate(t *testing.T) {
 				Detail:     "test type conference detail",
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
-				CustomerID:   uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
+				CustomerID:        uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
+				Type:              conference.TypeConference,
+				Name:              "test type conference",
+				Detail:            "test type conference detail",
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 			},
 		},
 		{
@@ -59,15 +54,15 @@ func TestConferenceCreate(t *testing.T) {
 				Detail:     "test type conference detail",
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
-				CustomerID:   uuid.FromStringOrNil("3fccf15e-7f45-11ec-bae1-7344ecec79bd"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
+				CustomerID:        uuid.FromStringOrNil("3fccf15e-7f45-11ec-bae1-7344ecec79bd"),
+				Type:              conference.TypeConference,
+				Name:              "test type conference",
+				Detail:            "test type conference detail",
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 			},
 		},
 		{
@@ -81,16 +76,16 @@ func TestConferenceCreate(t *testing.T) {
 				RecordingID: uuid.FromStringOrNil("37962c54-6122-11eb-a8b2-4ff0062b4c1b"),
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("218aa220-2c19-11eb-905f-1b9d4d0da185"),
-				CustomerID:   uuid.FromStringOrNil("48974ac8-7f45-11ec-9ba9-1f3e79c1ba60"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingID:  uuid.FromStringOrNil("37962c54-6122-11eb-a8b2-4ff0062b4c1b"),
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("218aa220-2c19-11eb-905f-1b9d4d0da185"),
+				CustomerID:        uuid.FromStringOrNil("48974ac8-7f45-11ec-9ba9-1f3e79c1ba60"),
+				Type:              conference.TypeConference,
+				Name:              "test type conference",
+				Detail:            "test type conference detail",
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingID:       uuid.FromStringOrNil("37962c54-6122-11eb-a8b2-4ff0062b4c1b"),
+				RecordingIDs:      []uuid.UUID{},
 			},
 		},
 		{
@@ -104,15 +99,15 @@ func TestConferenceCreate(t *testing.T) {
 				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("515f79ce-6122-11eb-b3ca-db50409503c4")},
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("21d33d64-2c19-11eb-be7d-1ff9387bed0e"),
-				CustomerID:   uuid.FromStringOrNil("50b72fca-7f45-11ec-8734-6749711ab0ed"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("515f79ce-6122-11eb-b3ca-db50409503c4")},
+				ID:                uuid.FromStringOrNil("21d33d64-2c19-11eb-be7d-1ff9387bed0e"),
+				CustomerID:        uuid.FromStringOrNil("50b72fca-7f45-11ec-8734-6749711ab0ed"),
+				Type:              conference.TypeConference,
+				Name:              "test type conference",
+				Detail:            "test type conference detail",
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{uuid.FromStringOrNil("515f79ce-6122-11eb-b3ca-db50409503c4")},
 			},
 		},
 		{
@@ -140,9 +135,9 @@ func TestConferenceCreate(t *testing.T) {
 						Type: "answer",
 					},
 				},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 			},
 		},
 		{
@@ -171,8 +166,8 @@ func TestConferenceCreate(t *testing.T) {
 						Type: "answer",
 					},
 				},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 			},
 		},
 		{
@@ -186,16 +181,16 @@ func TestConferenceCreate(t *testing.T) {
 				Timeout:    86400,
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("05d6758c-3bee-11ec-a2f7-e78825f985e2"),
-				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				Timeout:      86400,
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("05d6758c-3bee-11ec-a2f7-e78825f985e2"),
+				CustomerID:        uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
+				Type:              conference.TypeConference,
+				Name:              "test type conference",
+				Detail:            "test type conference detail",
+				Timeout:           86400,
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 			},
 		},
 		{
@@ -210,7 +205,35 @@ func TestConferenceCreate(t *testing.T) {
 				Timeout:      86400,
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("ba8a9474-0c2f-11ed-8002-37c00264d0b5"),
+				ID:                uuid.FromStringOrNil("ba8a9474-0c2f-11ed-8002-37c00264d0b5"),
+				CustomerID:        uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
+				ConfbridgeID:      uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
+				Type:              conference.TypeConference,
+				Name:              "test type conference",
+				Detail:            "test type conference detail",
+				Timeout:           86400,
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
+			},
+		},
+		{
+			"have conferencecall ids",
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("dc31f848-14d5-11ed-a65a-13e7fcbe84bb"),
+				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
+				ConfbridgeID: uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
+				Type:         conference.TypeConference,
+				Name:         "test type conference",
+				Detail:       "test type conference detail",
+				ConferencecallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("dc060896-14d5-11ed-8fb1-6fece6a05aa5"),
+				},
+				Timeout: 86400,
+			},
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("dc31f848-14d5-11ed-a65a-13e7fcbe84bb"),
 				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
 				ConfbridgeID: uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
 				Type:         conference.TypeConference,
@@ -219,7 +242,9 @@ func TestConferenceCreate(t *testing.T) {
 				Timeout:      86400,
 				PreActions:   []fmaction.Action{},
 				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
+				ConferencecallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("dc060896-14d5-11ed-8fb1-6fece6a05aa5"),
+				},
 				RecordingIDs: []uuid.UUID{},
 			},
 		},
@@ -227,6 +252,11 @@ func TestConferenceCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
@@ -241,28 +271,22 @@ func TestConferenceCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMCreate = ""
-			if reflect.DeepEqual(tt.expectConference, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConference, res)
+			// res.TMCreate = ""
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
 
 func Test_ConferenceGetByConfbridgeID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		conference       *conference.Conference
 		expectConference *conference.Conference
-	}
-
-	tests := []test{
+	}{
 		{
 			"normal",
 			&conference.Conference{
@@ -274,22 +298,27 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 				Detail:       "test type conference detail",
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("1ac9f480-9861-11ec-8e29-c7820822026e"),
-				CustomerID:   uuid.FromStringOrNil("1afc3ce2-9861-11ec-90b1-d76e949c3805"),
-				ConfbridgeID: uuid.FromStringOrNil("1b280016-9861-11ec-999c-5f70848e711d"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("1ac9f480-9861-11ec-8e29-c7820822026e"),
+				CustomerID:        uuid.FromStringOrNil("1afc3ce2-9861-11ec-90b1-d76e949c3805"),
+				ConfbridgeID:      uuid.FromStringOrNil("1b280016-9861-11ec-999c-5f70848e711d"),
+				Type:              conference.TypeConference,
+				Name:              "test type conference",
+				Detail:            "test type conference detail",
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
@@ -311,19 +340,13 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 }
 
 func TestConferenceSetRecordID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name             string
 		conference       *conference.Conference
 		recordID         uuid.UUID
 		expectConference *conference.Conference
-	}
-
-	tests := []test{
+	}{
 		{
 			"test normal",
 			&conference.Conference{
@@ -331,18 +354,23 @@ func TestConferenceSetRecordID(t *testing.T) {
 			},
 			uuid.FromStringOrNil("2fb4b446-2834-11eb-b864-1fdb13777d08"),
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("2f7b0ee4-2834-11eb-9a6d-5beea5795ea6"),
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingID:  uuid.FromStringOrNil("2fb4b446-2834-11eb-b864-1fdb13777d08"),
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("2f7b0ee4-2834-11eb-9a6d-5beea5795ea6"),
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingID:       uuid.FromStringOrNil("2fb4b446-2834-11eb-b864-1fdb13777d08"),
+				RecordingIDs:      []uuid.UUID{},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
@@ -372,19 +400,13 @@ func TestConferenceSetRecordID(t *testing.T) {
 }
 
 func TestConferenceSetData(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name             string
 		conference       *conference.Conference
 		data             map[string]interface{}
 		expectConference *conference.Conference
-	}
-
-	tests := []test{
+	}{
 		{
 			"test normal",
 			&conference.Conference{
@@ -394,11 +416,11 @@ func TestConferenceSetData(t *testing.T) {
 				"key1": "string value",
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("0a64e234-675d-11eb-92c7-13f0c9a0e28b"),
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("0a64e234-675d-11eb-92c7-13f0c9a0e28b"),
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 				Data: map[string]interface{}{
 					"key1": "string value",
 				},
@@ -414,11 +436,11 @@ func TestConferenceSetData(t *testing.T) {
 				"key2": "string value",
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("d54bf5b4-675d-11eb-b133-9b06996a9b99"),
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("d54bf5b4-675d-11eb-b133-9b06996a9b99"),
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 				Data: map[string]interface{}{
 					"key1": "string value",
 					"key2": "string value",
@@ -435,11 +457,11 @@ func TestConferenceSetData(t *testing.T) {
 				"key2": 123,
 			},
 			&conference.Conference{
-				ID:           uuid.FromStringOrNil("efa1ec2a-675d-11eb-b854-ffe06d0fc488"),
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ID:                uuid.FromStringOrNil("efa1ec2a-675d-11eb-b854-ffe06d0fc488"),
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 				Data: map[string]interface{}{
 					"key1": "string value",
 					"key2": float64(123),
@@ -450,6 +472,11 @@ func TestConferenceSetData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
@@ -479,15 +506,6 @@ func TestConferenceSetData(t *testing.T) {
 }
 
 func TestConferenceGetsWithType(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
-
 	tests := []struct {
 		name string
 
@@ -508,6 +526,14 @@ func TestConferenceGetsWithType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
@@ -516,7 +542,7 @@ func TestConferenceGetsWithType(t *testing.T) {
 					ID:         uuid.Must(uuid.NewV4()),
 					CustomerID: tt.customerID,
 					Type:       conference.TypeConference,
-					TMDelete:   defaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				}
 
 				mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
@@ -536,14 +562,6 @@ func TestConferenceGetsWithType(t *testing.T) {
 }
 
 func TestConferenceGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		db:    dbTest,
-		cache: mockCache,
-	}
 
 	tests := []struct {
 		name string
@@ -565,6 +583,14 @@ func TestConferenceGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
@@ -572,7 +598,7 @@ func TestConferenceGets(t *testing.T) {
 				cf := &conference.Conference{
 					ID:         uuid.Must(uuid.NewV4()),
 					CustomerID: tt.customerID,
-					TMDelete:   defaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				}
 
 				mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
@@ -587,6 +613,61 @@ func TestConferenceGets(t *testing.T) {
 			if len(res) != tt.count {
 				t.Errorf("Wrong match. expect: %d, got: %v", tt.count, len(res))
 			}
+		})
+	}
+}
+
+func Test_ConferenceEnd(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("ee73d1ea-8c8b-4c06-9f8d-b8f6b9539ff2"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			cc := &conference.Conference{
+				ID: tt.id,
+			}
+
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			if err := h.ConferenceCreate(ctx, cc); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			if errDel := h.ConferenceEnd(ctx, tt.id); errDel != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
+			}
+
+			mockCache.EXPECT().ConferenceGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			res, err := h.ConferenceGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.TMDelete > GetCurTime() {
+				t.Errorf("Wrong match. expect: small, got: %s", res.TMDelete)
+			}
+
 		})
 	}
 }

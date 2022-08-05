@@ -12,7 +12,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -41,10 +43,10 @@ type ConferenceHandler interface {
 		postActions []action.Action,
 	) (*conference.Conference, error)
 
-	Join(ctx context.Context, conferenceID, callID uuid.UUID) error
+	Join(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
 	JoinedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error
-	Leave(ctx context.Context, id, callID uuid.UUID) error
-	LeavedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error
+	Leave(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error)
+	Leaved(ctx context.Context, cf *conference.Conference, referenceID uuid.UUID) error
 	Terminate(ctx context.Context, id uuid.UUID) error
 }
 
@@ -54,6 +56,8 @@ type conferenceHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
 	cache         cachehandler.CacheHandler
+
+	conferencecallHandler conferencecallhandler.ConferencecallHandler
 }
 
 // List of default values
@@ -102,13 +106,21 @@ func init() {
 }
 
 // NewConferenceHandler returns new service handler
-func NewConferenceHandler(req requesthandler.RequestHandler, notify notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) ConferenceHandler {
+func NewConferenceHandler(
+	req requesthandler.RequestHandler,
+	notify notifyhandler.NotifyHandler,
+	db dbhandler.DBHandler,
+	cache cachehandler.CacheHandler,
+	conferencecallHandler conferencecallhandler.ConferencecallHandler,
+) ConferenceHandler {
 
 	h := &conferenceHandler{
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,
 		cache:         cache,
+
+		conferencecallHandler: conferencecallHandler,
 	}
 
 	return h

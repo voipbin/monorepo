@@ -9,8 +9,9 @@ import (
 
 // WebhookMessage defines conference webhook event
 type WebhookMessage struct {
-	ID   uuid.UUID `json:"id"`
-	Type Type      `json:"type"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+	Type       Type      `json:"type"`
 
 	Status Status `json:"status"`
 
@@ -22,7 +23,7 @@ type WebhookMessage struct {
 	PreActions  []fmaction.Action `json:"pre_actions"`  // pre actions
 	PostActions []fmaction.Action `json:"post_actions"` // post actions
 
-	CallIDs []uuid.UUID `json:"call_ids"` // list of call ids of conference
+	ConferencecallIDs []uuid.UUID `json:"conferencecall_ids"`
 
 	RecordingID  uuid.UUID   `json:"recording_id"`
 	RecordingIDs []uuid.UUID `json:"recording_ids"`
@@ -35,8 +36,9 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Conference) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:   h.ID,
-		Type: h.Type,
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+		Type:       h.Type,
 
 		Status: h.Status,
 
@@ -48,7 +50,7 @@ func (h *Conference) ConvertWebhookMessage() *WebhookMessage {
 		PreActions:  h.PreActions,
 		PostActions: h.PostActions,
 
-		CallIDs: h.CallIDs,
+		ConferencecallIDs: h.ConferencecallIDs,
 
 		RecordingID:  h.RecordingID,
 		RecordingIDs: h.RecordingIDs,

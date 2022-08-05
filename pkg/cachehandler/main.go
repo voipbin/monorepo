@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
 type handler struct {
@@ -25,6 +26,9 @@ type CacheHandler interface {
 
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceSet(ctx context.Context, conference *conference.Conference) error
+
+	ConferencecallGet(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
+	ConferencecallSet(ctx context.Context, conference *conferencecall.Conferencecall) error
 }
 
 // NewHandler creates DBHandler
