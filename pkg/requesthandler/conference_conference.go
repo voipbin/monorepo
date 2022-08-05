@@ -19,7 +19,7 @@ func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uui
 
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID.String())
 
-	tmp, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uui
 func (r *requestHandler) CFV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, conferenceType)
 
-	tmp, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -74,7 +74,7 @@ func (r *requestHandler) CFV1ConferenceDelete(ctx context.Context, conferenceID 
 func (r *requestHandler) CFV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodDelete, resourceCFConferences, requestTimeoutDefault, delay, ContentTypeJSON, []byte(""))
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodDelete, resourceCFConferences, requestTimeoutDefault, delay, ContentTypeJSON, []byte(""))
 	switch {
 	case err != nil:
 		return err
@@ -122,7 +122,7 @@ func (r *requestHandler) CFV1ConferenceCreate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodPost, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPost, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -160,7 +160,7 @@ func (r *requestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID,
 		return nil, err
 	}
 
-	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodPut, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPut, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -177,21 +177,4 @@ func (r *requestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID,
 	}
 
 	return &conference, nil
-}
-
-// CFV1ConferenceKick sends a request to conference-manager
-// to kick the call from the conference
-// it returns deleted conference if it succeed.
-func (r *requestHandler) CFV1ConferenceKick(ctx context.Context, conferenceID, callID uuid.UUID) error {
-	uri := fmt.Sprintf("/v1/conferences/%s/calls/%s", conferenceID, callID)
-
-	res, err := r.sendRequestCF(uri, rabbitmqhandler.RequestMethodDelete, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	return nil
 }
