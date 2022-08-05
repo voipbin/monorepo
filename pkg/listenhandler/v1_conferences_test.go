@@ -13,17 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 )
 
-func TestProcessV1ConferencesGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		conferenceHandler: mockConf,
-	}
+func Test_processV1ConferencesGets(t *testing.T) {
 
 	tests := []struct {
 		name           string
@@ -54,7 +44,7 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"0addf332-9312-11eb-95e8-9b90e44428a0","customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"0addf332-9312-11eb-95e8-9b90e44428a0","customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -69,23 +59,23 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 			"",
 			[]*conference.Conference{
 				{
-					ID:           uuid.FromStringOrNil("33b1138a-3bef-11ec-a187-f77a455f3ced"),
-					CustomerID:   uuid.FromStringOrNil("3be94c82-7f49-11ec-814e-ff2a9d84a806"),
-					ConfbridgeID: uuid.FromStringOrNil("343ae074-3bef-11ec-b657-db12d3135e42"),
-					FlowID:       uuid.FromStringOrNil("49da6378-3bef-11ec-88b6-f31f8c97b61b"),
-					Data:         map[string]interface{}{},
-					Timeout:      86400,
-					PreActions:   []fmaction.Action{},
-					PostActions:  []fmaction.Action{},
-					CallIDs:      []uuid.UUID{},
-					RecordingID:  [16]byte{},
-					RecordingIDs: []uuid.UUID{},
+					ID:                uuid.FromStringOrNil("33b1138a-3bef-11ec-a187-f77a455f3ced"),
+					CustomerID:        uuid.FromStringOrNil("3be94c82-7f49-11ec-814e-ff2a9d84a806"),
+					ConfbridgeID:      uuid.FromStringOrNil("343ae074-3bef-11ec-b657-db12d3135e42"),
+					FlowID:            uuid.FromStringOrNil("49da6378-3bef-11ec-88b6-f31f8c97b61b"),
+					Data:              map[string]interface{}{},
+					Timeout:           86400,
+					PreActions:        []fmaction.Action{},
+					PostActions:       []fmaction.Action{},
+					ConferencecallIDs: []uuid.UUID{},
+					RecordingID:       [16]byte{},
+					RecordingIDs:      []uuid.UUID{},
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"33b1138a-3bef-11ec-a187-f77a455f3ced","customer_id":"3be94c82-7f49-11ec-814e-ff2a9d84a806","confbridge_id":"343ae074-3bef-11ec-b657-db12d3135e42","flow_id":"49da6378-3bef-11ec-88b6-f31f8c97b61b","type":"","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"33b1138a-3bef-11ec-a187-f77a455f3ced","customer_id":"3be94c82-7f49-11ec-814e-ff2a9d84a806","confbridge_id":"343ae074-3bef-11ec-b657-db12d3135e42","flow_id":"49da6378-3bef-11ec-88b6-f31f8c97b61b","type":"","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -100,30 +90,40 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 			"conference",
 			[]*conference.Conference{
 				{
-					ID:           uuid.FromStringOrNil("c1e0a078-3de6-11ec-ae88-13052faf6ad7"),
-					CustomerID:   uuid.FromStringOrNil("4d4d8ce0-7f49-11ec-a61f-1358990ed631"),
-					Type:         conference.TypeConference,
-					ConfbridgeID: uuid.FromStringOrNil("c21b98ea-3de6-11ec-ab1e-4bcde9e784af"),
-					FlowID:       uuid.FromStringOrNil("c234ce0a-3de6-11ec-8807-0b3f00d6e280"),
-					Data:         map[string]interface{}{},
-					Timeout:      86400,
-					PreActions:   []fmaction.Action{},
-					PostActions:  []fmaction.Action{},
-					CallIDs:      []uuid.UUID{},
-					RecordingID:  [16]byte{},
-					RecordingIDs: []uuid.UUID{},
+					ID:                uuid.FromStringOrNil("c1e0a078-3de6-11ec-ae88-13052faf6ad7"),
+					CustomerID:        uuid.FromStringOrNil("4d4d8ce0-7f49-11ec-a61f-1358990ed631"),
+					Type:              conference.TypeConference,
+					ConfbridgeID:      uuid.FromStringOrNil("c21b98ea-3de6-11ec-ab1e-4bcde9e784af"),
+					FlowID:            uuid.FromStringOrNil("c234ce0a-3de6-11ec-8807-0b3f00d6e280"),
+					Data:              map[string]interface{}{},
+					Timeout:           86400,
+					PreActions:        []fmaction.Action{},
+					PostActions:       []fmaction.Action{},
+					ConferencecallIDs: []uuid.UUID{},
+					RecordingID:       [16]byte{},
+					RecordingIDs:      []uuid.UUID{},
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c1e0a078-3de6-11ec-ae88-13052faf6ad7","customer_id":"4d4d8ce0-7f49-11ec-a61f-1358990ed631","confbridge_id":"c21b98ea-3de6-11ec-ab1e-4bcde9e784af","flow_id":"c234ce0a-3de6-11ec-8807-0b3f00d6e280","type":"conference","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"c1e0a078-3de6-11ec-ae88-13052faf6ad7","customer_id":"4d4d8ce0-7f49-11ec-a61f-1358990ed631","confbridge_id":"c21b98ea-3de6-11ec-ab1e-4bcde9e784af","flow_id":"c234ce0a-3de6-11ec-8807-0b3f00d6e280","type":"conference","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
 
 			mockConf.EXPECT().Gets(gomock.Any(), tt.customerID, conference.Type(tt.conferenceType), tt.pageSize, tt.pageToken).Return(tt.confs, nil)
 			res, err := h.processRequest(tt.request)
@@ -139,17 +139,7 @@ func TestProcessV1ConferencesGets(t *testing.T) {
 	}
 }
 
-func TestProcessV1ConferencesPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		conferenceHandler: mockConf,
-	}
+func Test_processV1ConferencesPost(t *testing.T) {
 
 	tests := []struct {
 		name             string
@@ -186,13 +176,23 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
 
 			mockConf.EXPECT().Create(gomock.Any(), tt.expectConference.Type, tt.expectConference.CustomerID, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, tt.expectConference.PreActions, tt.expectConference.PostActions).Return(tt.expectConference, nil)
 			res, err := h.processRequest(tt.request)
@@ -208,17 +208,7 @@ func TestProcessV1ConferencesPost(t *testing.T) {
 	}
 }
 
-func TestProcessV1ConferencesIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		conferenceHandler: mockConf,
-	}
+func Test_processV1ConferencesIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -241,6 +231,16 @@ func TestProcessV1ConferencesIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
 
 			mockConf.EXPECT().Terminate(gomock.Any(), tt.id).Return(nil)
 			res, err := h.processRequest(tt.request)
@@ -256,17 +256,7 @@ func TestProcessV1ConferencesIDDelete(t *testing.T) {
 	}
 }
 
-func TestProcessV1ConferencesIDPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		conferenceHandler: mockConf,
-	}
+func Test_processV1ConferencesIDPut(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -303,19 +293,29 @@ func TestProcessV1ConferencesIDPut(t *testing.T) {
 						Type: "hangup",
 					},
 				},
-				CallIDs:      []uuid.UUID{},
-				RecordingIDs: []uuid.UUID{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"call_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
 
 			mockConf.EXPECT().Update(gomock.Any(), tt.conference.ID, tt.conference.Name, tt.conference.Detail, tt.conference.Timeout, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
 			res, err := h.processRequest(tt.request)
@@ -331,17 +331,7 @@ func TestProcessV1ConferencesIDPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1ConferencesIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		conferenceHandler: mockConf,
-	}
+func Test_processV1ConferencesIDGet(t *testing.T) {
 
 	tests := []struct {
 		name             string
@@ -376,13 +366,23 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
 
 			mockConf.EXPECT().Get(gomock.Any(), tt.expectConference.ID).Return(tt.expectConference, nil)
 			res, err := h.processRequest(tt.request)
@@ -398,123 +398,123 @@ func TestProcessV1ConferencesIDGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// func TestProcessV1ConferencesIDCallsIDDelete(t *testing.T) {
+// 	mc := gomock.NewController(t)
+// 	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+// 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		conferenceHandler: mockConf,
-	}
+// 	h := &listenHandler{
+// 		rabbitSock:        mockSock,
+// 		conferenceHandler: mockConf,
+// 	}
 
-	tests := []struct {
-		name             string
-		request          *rabbitmqhandler.Request
-		callID           uuid.UUID
-		expectConference *conference.Conference
-		expectRes        *rabbitmqhandler.Response
-	}{
-		{
-			"type conference",
-			&rabbitmqhandler.Request{
-				URI:    "/v1/conferences/89e95b8c-3bf3-11ec-b6b1-0380a4a12739/calls/8a1fd900-3bf3-11ec-bd15-eb0c54c84612",
-				Method: rabbitmqhandler.RequestMethodDelete,
-			},
-			uuid.FromStringOrNil("8a1fd900-3bf3-11ec-bd15-eb0c54c84612"),
-			&conference.Conference{
-				ID:         uuid.FromStringOrNil("89e95b8c-3bf3-11ec-b6b1-0380a4a12739"),
-				CustomerID: uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
-				Type:       conference.TypeConference,
-				Name:       "test",
-				Detail:     "test detail",
-				Timeout:    86400,
-				PreActions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
-				PostActions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
-				CallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("8a1fd900-3bf3-11ec-bd15-eb0c54c84612"),
-				},
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-			},
-		},
-	}
+// 	tests := []struct {
+// 		name             string
+// 		request          *rabbitmqhandler.Request
+// 		callID           uuid.UUID
+// 		expectConference *conference.Conference
+// 		expectRes        *rabbitmqhandler.Response
+// 	}{
+// 		{
+// 			"type conference",
+// 			&rabbitmqhandler.Request{
+// 				URI:    "/v1/conferences/89e95b8c-3bf3-11ec-b6b1-0380a4a12739/calls/8a1fd900-3bf3-11ec-bd15-eb0c54c84612",
+// 				Method: rabbitmqhandler.RequestMethodDelete,
+// 			},
+// 			uuid.FromStringOrNil("8a1fd900-3bf3-11ec-bd15-eb0c54c84612"),
+// 			&conference.Conference{
+// 				ID:         uuid.FromStringOrNil("89e95b8c-3bf3-11ec-b6b1-0380a4a12739"),
+// 				CustomerID: uuid.FromStringOrNil("4fa8d53a-8057-11ec-9e7c-2310213dc857"),
+// 				Type:       conference.TypeConference,
+// 				Name:       "test",
+// 				Detail:     "test detail",
+// 				Timeout:    86400,
+// 				PreActions: []fmaction.Action{
+// 					{
+// 						Type: "answer",
+// 					},
+// 				},
+// 				PostActions: []fmaction.Action{
+// 					{
+// 						Type: "answer",
+// 					},
+// 				},
+// 				ConferencecallIDs: []uuid.UUID{
+// 					uuid.FromStringOrNil("8a1fd900-3bf3-11ec-bd15-eb0c54c84612"),
+// 				},
+// 			},
+// 			&rabbitmqhandler.Response{
+// 				StatusCode: 200,
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConf.EXPECT().Leave(gomock.Any(), tt.expectConference.ID, tt.callID).Return(nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			mockConf.EXPECT().Leave(gomock.Any(), tt.callID).Return(nil)
+// 			res, err := h.processRequest(tt.request)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
+// 			if reflect.DeepEqual(res, tt.expectRes) != true {
+// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+// 			}
 
-		})
-	}
-}
+// 		})
+// 	}
+// }
 
-func TestProcessV1ConferencesIDCallsIDPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// func TestProcessV1ConferencesIDCallsIDPost(t *testing.T) {
+// 	mc := gomock.NewController(t)
+// 	defer mc.Finish()
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockConf := conferencehandler.NewMockConferenceHandler(mc)
+// 	mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 	mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		conferenceHandler: mockConf,
-	}
+// 	h := &listenHandler{
+// 		rabbitSock:        mockSock,
+// 		conferenceHandler: mockConf,
+// 	}
 
-	tests := []struct {
-		name         string
-		request      *rabbitmqhandler.Request
-		conferenceID uuid.UUID
-		callID       uuid.UUID
-		expectRes    *rabbitmqhandler.Response
-	}{
-		{
-			"type conference",
-			&rabbitmqhandler.Request{
-				URI:    "/v1/conferences/f3dd474c-3bf3-11ec-b9fb-d7835bd4849d/calls/f3fd9268-3bf3-11ec-b5d5-938679a1a8f0",
-				Method: rabbitmqhandler.RequestMethodPost,
-			},
-			uuid.FromStringOrNil("f3dd474c-3bf3-11ec-b9fb-d7835bd4849d"),
-			uuid.FromStringOrNil("f3fd9268-3bf3-11ec-b5d5-938679a1a8f0"),
+// 	tests := []struct {
+// 		name         string
+// 		request      *rabbitmqhandler.Request
+// 		conferenceID uuid.UUID
+// 		callID       uuid.UUID
+// 		expectRes    *rabbitmqhandler.Response
+// 	}{
+// 		{
+// 			"type conference",
+// 			&rabbitmqhandler.Request{
+// 				URI:    "/v1/conferences/f3dd474c-3bf3-11ec-b9fb-d7835bd4849d/calls/f3fd9268-3bf3-11ec-b5d5-938679a1a8f0",
+// 				Method: rabbitmqhandler.RequestMethodPost,
+// 			},
+// 			uuid.FromStringOrNil("f3dd474c-3bf3-11ec-b9fb-d7835bd4849d"),
+// 			uuid.FromStringOrNil("f3fd9268-3bf3-11ec-b5d5-938679a1a8f0"),
 
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-			},
-		},
-	}
+// 			&rabbitmqhandler.Response{
+// 				StatusCode: 200,
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConf.EXPECT().Join(gomock.Any(), tt.conferenceID, tt.callID).Return(nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			mockConf.EXPECT().Join(gomock.Any(), tt.conferenceID, tt.callID).Return(nil)
+// 			res, err := h.processRequest(tt.request)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
+// 			if reflect.DeepEqual(res, tt.expectRes) != true {
+// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+// 			}
 
-		})
-	}
-}
+// 		})
+// 	}
+// }

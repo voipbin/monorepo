@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -63,6 +64,35 @@ func (m *MockCacheHandler) ConferenceSet(ctx context.Context, conference *confer
 func (mr *MockCacheHandlerMockRecorder) ConferenceSet(ctx, conference interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockCacheHandler)(nil).ConferenceSet), ctx, conference)
+}
+
+// ConferencecallGet mocks base method.
+func (m *MockCacheHandler) ConferencecallGet(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferencecallGet", ctx, id)
+	ret0, _ := ret[0].(*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferencecallGet indicates an expected call of ConferencecallGet.
+func (mr *MockCacheHandlerMockRecorder) ConferencecallGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallGet", reflect.TypeOf((*MockCacheHandler)(nil).ConferencecallGet), ctx, id)
+}
+
+// ConferencecallSet mocks base method.
+func (m *MockCacheHandler) ConferencecallSet(ctx context.Context, conference *conferencecall.Conferencecall) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferencecallSet", ctx, conference)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferencecallSet indicates an expected call of ConferencecallSet.
+func (mr *MockCacheHandlerMockRecorder) ConferencecallSet(ctx, conference interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallSet", reflect.TypeOf((*MockCacheHandler)(nil).ConferencecallSet), ctx, conference)
 }
 
 // Connect mocks base method.

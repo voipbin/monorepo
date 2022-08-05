@@ -81,8 +81,8 @@ func (h *conferenceHandler) Create(
 		PreActions:  preActions,
 		PostActions: postActions,
 
-		CallIDs:      []uuid.UUID{},
-		RecordingIDs: []uuid.UUID{},
+		ConferencecallIDs: []uuid.UUID{},
+		RecordingIDs:      []uuid.UUID{},
 
 		TMCreate: dbhandler.GetCurTime(),
 		TMUpdate: defaultTimeStamp,
@@ -102,7 +102,7 @@ func (h *conferenceHandler) Create(
 	promConferenceCreateTotal.WithLabelValues(string(newCf.Type)).Inc()
 
 	// get created conference and notify
-	cf, err := h.db.ConferenceGet(ctx, id)
+	cf, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get created conference. err: %v", err)
 		return nil, err
@@ -210,10 +210,10 @@ func (h *conferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.
 }
 
 // GetByConfbridgeID returns conference of the given confbridge id.
-func (h *conferenceHandler) GetByConfbridgeID(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+func (h *conferenceHandler) GetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error) {
 	log := logrus.WithField("func", "GetByConfbridgeID")
 
-	res, err := h.db.ConferenceGetByConfbridgeID(ctx, id)
+	res, err := h.db.ConferenceGetByConfbridgeID(ctx, confbridgeID)
 	if err != nil {
 		log.Errorf("Could not get conferences. err: %v", err)
 		return nil, err
@@ -243,7 +243,7 @@ func (h *conferenceHandler) Update(
 		name, detail, timeout, preActions, postActions)
 
 	// get conference
-	cf, err := h.db.ConferenceGet(ctx, id)
+	cf, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		return nil, err

@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
@@ -98,17 +99,18 @@ func (mr *MockConferenceHandlerMockRecorder) Gets(ctx, customerID, confType, siz
 }
 
 // Join mocks base method.
-func (m *MockConferenceHandler) Join(ctx context.Context, conferenceID, callID uuid.UUID) error {
+func (m *MockConferenceHandler) Join(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Join", ctx, conferenceID, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Join", ctx, conferenceID, referenceType, referenceID)
+	ret0, _ := ret[0].(*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Join indicates an expected call of Join.
-func (mr *MockConferenceHandlerMockRecorder) Join(ctx, conferenceID, callID interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Join(ctx, conferenceID, referenceType, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockConferenceHandler)(nil).Join), ctx, conferenceID, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockConferenceHandler)(nil).Join), ctx, conferenceID, referenceType, referenceID)
 }
 
 // JoinedConfbridge mocks base method.
@@ -126,31 +128,32 @@ func (mr *MockConferenceHandlerMockRecorder) JoinedConfbridge(ctx, confbridgeID,
 }
 
 // Leave mocks base method.
-func (m *MockConferenceHandler) Leave(ctx context.Context, id, callID uuid.UUID) error {
+func (m *MockConferenceHandler) Leave(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Leave", ctx, id, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Leave", ctx, conferencecallID)
+	ret0, _ := ret[0].(*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Leave indicates an expected call of Leave.
-func (mr *MockConferenceHandlerMockRecorder) Leave(ctx, id, callID interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) Leave(ctx, conferencecallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leave", reflect.TypeOf((*MockConferenceHandler)(nil).Leave), ctx, id, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leave", reflect.TypeOf((*MockConferenceHandler)(nil).Leave), ctx, conferencecallID)
 }
 
-// LeavedConfbridge mocks base method.
-func (m *MockConferenceHandler) LeavedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error {
+// Leaved mocks base method.
+func (m *MockConferenceHandler) Leaved(ctx context.Context, cf *conference.Conference, referenceID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LeavedConfbridge", ctx, confbridgeID, callID)
+	ret := m.ctrl.Call(m, "Leaved", ctx, cf, referenceID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// LeavedConfbridge indicates an expected call of LeavedConfbridge.
-func (mr *MockConferenceHandlerMockRecorder) LeavedConfbridge(ctx, confbridgeID, callID interface{}) *gomock.Call {
+// Leaved indicates an expected call of Leaved.
+func (mr *MockConferenceHandlerMockRecorder) Leaved(ctx, cf, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LeavedConfbridge", reflect.TypeOf((*MockConferenceHandler)(nil).LeavedConfbridge), ctx, confbridgeID, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockConferenceHandler)(nil).Leaved), ctx, cf, referenceID)
 }
 
 // Terminate mocks base method.

@@ -16,7 +16,7 @@ create table conferences(
   pre_actions   json,     -- action set for before conference join(enter)
   post_actions  json,     -- action set for after conference join(enter)
 
-  call_ids   json, -- calls in the conference
+  conferencecall_ids json, -- conferencecalls in the conference
 
   -- record info
   recording_id   binary(16),  -- current record id

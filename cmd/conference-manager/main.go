@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/listenhandler"
@@ -145,10 +146,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	requestHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify, serviceName)
 
-	conferenceHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db, cache)
+	conferencecallHandler := conferencecallhandler.NewConferencecallHandler(requestHandler, notifyHandler, db, cache)
+	conferenceHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db, cache, conferencecallHandler)
 
 	// run listen
-	if err := runListen(db, rabbitSock, requestHandler, notifyHandler, conferenceHandler); err != nil {
+	if err := runListen(db, rabbitSock, requestHandler, notifyHandler, conferenceHandler, conferencecallHandler); err != nil {
 		log.Errorf("Could not start runListen. err: %v", err)
 		return err
 	}
@@ -163,7 +165,13 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(db dbhandler.DBHandler, rabbitSock rabbitmqhandler.Rabbit, requestHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, conferenceHandler conferencehandler.ConferenceHandler) error {
+func runSubscribe(
+	db dbhandler.DBHandler,
+	rabbitSock rabbitmqhandler.Rabbit,
+	requestHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	conferenceHandler conferencehandler.ConferenceHandler,
+) error {
 
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
@@ -185,9 +193,16 @@ func runSubscribe(db dbhandler.DBHandler, rabbitSock rabbitmqhandler.Rabbit, req
 }
 
 // runListen runs the listen handler
-func runListen(db dbhandler.DBHandler, rabbitSock rabbitmqhandler.Rabbit, requestHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, conferenceHandler conferencehandler.ConferenceHandler) error {
+func runListen(
+	db dbhandler.DBHandler,
+	rabbitSock rabbitmqhandler.Rabbit,
+	requestHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	conferenceHandler conferencehandler.ConferenceHandler,
+	conferencecallHandler conferencecallhandler.ConferencecallHandler,
+) error {
 
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, notifyHandler, conferenceHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, db, notifyHandler, conferenceHandler, conferencecallHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

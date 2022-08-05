@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -11,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
@@ -22,7 +24,7 @@ const (
 )
 
 const (
-	constCosumerName = "webhook-manager"
+	constCosumerName = "conference-manager"
 )
 
 // ListenHandler interface
@@ -34,18 +36,21 @@ type listenHandler struct {
 	rabbitSock    rabbitmqhandler.Rabbit
 	notifyHandler notifyhandler.NotifyHandler
 
-	conferenceHandler conferencehandler.ConferenceHandler
+	conferenceHandler     conferencehandler.ConferenceHandler
+	conferencecallHandler conferencecallhandler.ConferencecallHandler
 }
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// v1
-
 	// conferences
-	regV1Conferences          = regexp.MustCompile("/v1/conferences")
-	regV1ConferencesID        = regexp.MustCompile("/v1/conferences/" + regUUID)
-	regV1ConferencesIDCallsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/calls/" + regUUID)
+	regV1Conferences       = regexp.MustCompile("/v1/conferences")
+	regV1ConferencesID     = regexp.MustCompile("/v1/conferences/" + regUUID)
+	regV1ConferencesIDJoin = regexp.MustCompile("/v1/conferences/" + regUUID + "/join$")
+
+	// conferencecalls
+	regV1ConferencecallsID = regexp.MustCompile("/v1/conferencecalls/" + regUUID)
 )
 
 var (
@@ -82,12 +87,14 @@ func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
-	cfHandler conferencehandler.ConferenceHandler,
+	conferenceHandler conferencehandler.ConferenceHandler,
+	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock:        rabbitSock,
-		notifyHandler:     notifyHandler,
-		conferenceHandler: cfHandler,
+		rabbitSock:            rabbitSock,
+		notifyHandler:         notifyHandler,
+		conferenceHandler:     conferenceHandler,
+		conferencecallHandler: conferencecallHandler,
 	}
 
 	return h
@@ -139,6 +146,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
+	ctx := context.Background()
 
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
@@ -162,40 +170,49 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// conferences
 	////////////////////
 
-	// POST /conferences/<conference-id>/calls/<call-id>
-	case regV1ConferencesIDCallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencesIDCallsIDPost(m)
-		requestType = "/v1/conferences"
-
-	// DELETE /conferences/<conference-id>/calls/<call-id>
-	case regV1ConferencesIDCallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1ConferencesIDCallsIDDelete(m)
-		requestType = "/v1/conferences"
+	// POST /conferences/<conference-id>/join
+	case regV1ConferencesIDJoin.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConferencesIDJoinPost(ctx, m)
+		requestType = "/v1/conferences/<conference-id>/join"
 
 	// GET /conferences/<conference-id>
 	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ConferencesIDGet(m)
-		requestType = "/v1/conferences"
+		response, err = h.processV1ConferencesIDGet(ctx, m)
+		requestType = "/v1/conferences/<conference-id>"
 
 	// PUT /conferences/<conference-id>
 	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1ConferencesIDPut(m)
-		requestType = "/v1/conferences"
+		response, err = h.processV1ConferencesIDPut(ctx, m)
+		requestType = "/v1/conferences/<conference-id>"
 
 	// DELETE /conferences/<conference-id>
 	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1ConferencesIDDelete(m)
-		requestType = "/v1/conferences"
+		response, err = h.processV1ConferencesIDDelete(ctx, m)
+		requestType = "/v1/conferences/<conference-id>"
 
 	// POST /conferences
 	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencesPost(m)
+		response, err = h.processV1ConferencesPost(ctx, m)
 		requestType = "/v1/conferences"
 
 	// GET /conferences
 	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ConferencesGet(m)
+		response, err = h.processV1ConferencesGet(ctx, m)
 		requestType = "/v1/conferences"
+
+	//////////////////
+	// conferencecalls
+	////////////////////
+
+	// GET /conferencecalls/<conferencecall-id>
+	case regV1ConferencecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ConferencecallsIDGet(ctx, m)
+		requestType = "/v1/conferencescalls/<conferencecall-id>"
+
+	// DELETE /conferencecalls/<conferencecall-id>
+	case regV1ConferencecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ConferencecallsIDDelete(ctx, m)
+		requestType = "/v1/conferencescalls/<conferencecall-id>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

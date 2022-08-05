@@ -10,36 +10,48 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 )
 
-// leaved handles event the channel has left from the bridge
-// when the channel has left from the conference bridge, this func will be fired.
-func (h *conferenceHandler) LeavedConfbridge(ctx context.Context, conferenceID, callID uuid.UUID) error {
-
+// Leaved handles event the referencecall has left from the confbridge
+func (h *conferenceHandler) Leaved(ctx context.Context, cf *conference.Conference, referenceID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "LeavedConfbridge",
-		"conference_id": conferenceID,
-		"call_id":       callID,
+		"func":          "Leaved",
+		"conference_id": cf.ID,
+		"reference_id":  referenceID,
 	})
 
+	// get conferencecall
+	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, referenceID)
+	if err != nil {
+		log.Errorf("Could not get conferencecall info. err: %v", err)
+		return err
+	}
+
+	// update conferencecall status
+	_, err = h.conferencecallHandler.UpdateStatusLeaved(ctx, cc.ID)
+	if err != nil {
+		log.Errorf("Could not update the conferencecall's status. err: %v", err)
+		return err
+	}
+
 	// remove call from the conference
-	if errRemove := h.db.ConferenceRemoveCallID(ctx, conferenceID, callID); errRemove != nil {
+	if errRemove := h.db.ConferenceRemoveConferencecallID(ctx, cf.ID, cc.ID); errRemove != nil {
 		log.Errorf("Could not remove the callID from the conference. err: %v", errRemove)
 		return errRemove
 	}
 
 	// get updated conference
-	cf, err := h.Get(ctx, conferenceID)
+	tmp, err := h.Get(ctx, cf.ID)
 	if err != nil {
 		log.Errorf("Could not get updated conference. err: %v", err)
 		return err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, cf.CustomerID, conference.EventTypeConferenceUpdated, cf)
+	h.notifyHandler.PublishWebhookEvent(ctx, tmp.CustomerID, conference.EventTypeConferenceUpdated, tmp)
 
 	switch cf.Type {
 	case conference.TypeConnect:
-		return h.leavedTypeConnect(ctx, cf, callID)
+		return h.leavedTypeConnect(ctx, tmp)
 
 	case conference.TypeConference:
-		return h.leavedTypeConference(ctx, cf, callID)
+		return h.leavedTypeConference(ctx, tmp)
 
 	default:
 		log.Errorf("Could not find correct event handler.")
@@ -48,13 +60,12 @@ func (h *conferenceHandler) LeavedConfbridge(ctx context.Context, conferenceID, 
 }
 
 // leavedTypeConnect
-func (h *conferenceHandler) leavedTypeConnect(ctx context.Context, cf *conference.Conference, callID uuid.UUID) error {
+func (h *conferenceHandler) leavedTypeConnect(ctx context.Context, cf *conference.Conference) error {
 	log := logrus.WithFields(logrus.Fields{
 		"conference_id": cf.ID,
-		"call_id":       callID,
 	})
 
-	if len(cf.CallIDs) <= 0 {
+	if len(cf.ConferencecallIDs) <= 0 {
 		if err := h.Destroy(ctx, cf); err != nil {
 			log.Errorf("Could not destroy the conference. err: %v", err)
 			return err
@@ -70,11 +81,10 @@ func (h *conferenceHandler) leavedTypeConnect(ctx context.Context, cf *conferenc
 }
 
 // leavedTypeConference
-func (h *conferenceHandler) leavedTypeConference(ctx context.Context, cf *conference.Conference, callID uuid.UUID) error {
+func (h *conferenceHandler) leavedTypeConference(ctx context.Context, cf *conference.Conference) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "leavedTypeConference",
 		"conference_id": cf.ID,
-		"call_id":       callID,
 	})
 
 	if cf.Status != conference.StatusTerminating {
@@ -82,7 +92,7 @@ func (h *conferenceHandler) leavedTypeConference(ctx context.Context, cf *confer
 		return nil
 	}
 
-	if len(cf.CallIDs) > 0 {
+	if len(cf.ConferencecallIDs) > 0 {
 		// we need to wait until all the call has gone
 		return nil
 	}

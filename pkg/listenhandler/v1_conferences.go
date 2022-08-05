@@ -16,7 +16,7 @@ import (
 )
 
 // processV1ConferencesGet handles GET /v1/conferences request
-func (h *listenHandler) processV1ConferencesGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencesGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -38,7 +38,6 @@ func (h *listenHandler) processV1ConferencesGet(req *rabbitmqhandler.Request) (*
 	})
 
 	log.Debug("Getting conference info.")
-	ctx := context.Background()
 	confs, err := h.conferenceHandler.Gets(ctx, customerID, conference.Type(conferenceType), pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
@@ -61,8 +60,7 @@ func (h *listenHandler) processV1ConferencesGet(req *rabbitmqhandler.Request) (*
 }
 
 // processV1ConferencesPost handles /v1/conferences request
-func (h *listenHandler) processV1ConferencesPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1ConferencesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1ConferencesPost",
@@ -100,8 +98,7 @@ func (h *listenHandler) processV1ConferencesPost(m *rabbitmqhandler.Request) (*r
 }
 
 // processV1ConferencesIDDelete handles /v1/conferences/<id> DELETE request
-func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1ConferencesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1ConferencesIDDelete",
@@ -125,8 +122,7 @@ func (h *listenHandler) processV1ConferencesIDDelete(m *rabbitmqhandler.Request)
 }
 
 // processV1ConferencesIDPut handles /v1/conferences/<id> PUT request
-func (h *listenHandler) processV1ConferencesIDPut(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1ConferencesIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1ConferencesIDPut",
@@ -169,7 +165,7 @@ func (h *listenHandler) processV1ConferencesIDPut(m *rabbitmqhandler.Request) (*
 }
 
 // processV1ConferencesIDGet handles /v1/conferences/<id> GET request
-func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1ConferencesIDGet",
@@ -184,7 +180,7 @@ func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmqhandler.Request) (*
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	cf, err := h.conferenceHandler.Get(context.Background(), id)
+	cf, err := h.conferenceHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get conference info. conference: %s, err: %v", id, err)
 		return simpleResponse(400), nil
@@ -205,64 +201,107 @@ func (h *listenHandler) processV1ConferencesIDGet(m *rabbitmqhandler.Request) (*
 	return res, nil
 }
 
-// processV1ConferencesIDCallsIDDelete handles /v1/conferences/<id>/calls/<id> DELETE request
-func (h *listenHandler) processV1ConferencesIDCallsIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+// // processV1ConferencesIDCallsIDDelete handles /v1/conferences/<id>/calls/<id> DELETE request
+// func (h *listenHandler) processV1ConferencesIDCallsIDDelete(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// 	ctx := context.Background()
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func": "processV1ConferencesIDCallsIDDelete",
+// 			"uri":  m.URI,
+// 		},
+// 	)
+
+// 	uriItems := strings.Split(m.URI, "/")
+// 	if len(uriItems) < 6 {
+// 		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+// 		return simpleResponse(400), nil
+// 	}
+// 	cfID := uuid.FromStringOrNil(uriItems[3])
+// 	callID := uuid.FromStringOrNil(uriItems[5])
+
+// 	if cfID == uuid.Nil || callID == uuid.Nil {
+// 		log.Errorf("Wrong id info. conference: %s, call: %s", cfID, callID)
+// 		return simpleResponse(400), nil
+// 	}
+
+// 	if err := h.conferenceHandler.Leave(ctx, cfID, callID); err != nil {
+// 		log.Errorf("Could not remove the call from the conference. err: %v", err)
+// 		return simpleResponse(400), nil
+// 	}
+
+// 	return simpleResponse(200), nil
+// }
+
+// // processV1ConferencesIDCallsIDPost handles /v1/conferences/<id>/calls/<id> POST request
+// func (h *listenHandler) processV1ConferencesIDCallsIDPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// 	ctx := context.Background()
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func": "processV1ConferencesIDCallsIDPost",
+// 			"uri":  m.URI,
+// 		},
+// 	)
+
+// 	uriItems := strings.Split(m.URI, "/")
+// 	if len(uriItems) < 6 {
+// 		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+// 		return simpleResponse(400), nil
+// 	}
+// 	cfID := uuid.FromStringOrNil(uriItems[3])
+// 	callID := uuid.FromStringOrNil(uriItems[5])
+
+// 	if cfID == uuid.Nil || callID == uuid.Nil {
+// 		log.Errorf("Wrong id info. conference: %s, call: %s", cfID, callID)
+// 		return simpleResponse(400), nil
+// 	}
+
+// 	if err := h.conferenceHandler.Join(ctx, cfID, callID); err != nil {
+// 		log.Errorf("Could not join the call to the conference. err: %v", err)
+// 		return simpleResponse(400), nil
+// 	}
+
+// 	return simpleResponse(200), nil
+// }
+
+// processV1ConferencesIDJoinPost handles /v1/conferences/<id>/join POST request
+func (h *listenHandler) processV1ConferencesIDJoinPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "processV1ConferencesIDCallsIDDelete",
+			"func": "processV1ConferencesIDJoinPost",
 			"uri":  m.URI,
 		},
 	)
 
 	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 6 {
+	if len(uriItems) < 5 {
 		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
 		return simpleResponse(400), nil
 	}
 	cfID := uuid.FromStringOrNil(uriItems[3])
-	callID := uuid.FromStringOrNil(uriItems[5])
 
-	if cfID == uuid.Nil || callID == uuid.Nil {
-		log.Errorf("Wrong id info. conference: %s, call: %s", cfID, callID)
+	var data request.V1DataConferencesIDJoinPost
+	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return nil, err
+	}
+
+	cc, err := h.conferenceHandler.Join(ctx, cfID, data.ReferenceType, data.ReferenceID)
+	if err != nil {
+		log.Errorf("Could not join the conference. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := json.Marshal(cc)
+	if err != nil {
+		log.Errorf("Could not marshal the conferencecall. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	if err := h.conferenceHandler.Leave(ctx, cfID, callID); err != nil {
-		log.Errorf("Could not remove the call from the conference. err: %v", err)
-		return simpleResponse(400), nil
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       tmp,
 	}
 
-	return simpleResponse(200), nil
-}
-
-// processV1ConferencesIDCallsIDPost handles /v1/conferences/<id>/calls/<id> POST request
-func (h *listenHandler) processV1ConferencesIDCallsIDPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDCallsIDPost",
-			"uri":  m.URI,
-		},
-	)
-
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 6 {
-		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
-		return simpleResponse(400), nil
-	}
-	cfID := uuid.FromStringOrNil(uriItems[3])
-	callID := uuid.FromStringOrNil(uriItems[5])
-
-	if cfID == uuid.Nil || callID == uuid.Nil {
-		log.Errorf("Wrong id info. conference: %s, call: %s", cfID, callID)
-		return simpleResponse(400), nil
-	}
-
-	if err := h.conferenceHandler.Join(ctx, cfID, callID); err != nil {
-		log.Errorf("Could not join the call to the conference. err: %v", err)
-		return simpleResponse(400), nil
-	}
-
-	return simpleResponse(200), nil
+	return res, nil
 }

@@ -18,7 +18,7 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 	)
 
 	// get conference
-	cf, err := h.db.ConferenceGet(ctx, id)
+	cf, err := h.Get(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -45,15 +45,29 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 	}
 
 	// kick out the all calls from the conference.
-	log.Debugf("Kicking out all calls from the conference. call_count: %d", len(cf.CallIDs))
-	for _, callID := range cf.CallIDs {
-		log.Debugf("Kicking out the call. call_id: %v", callID.String())
-		if errHangup := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, callID); errHangup != nil {
-			log.WithField("call_id", callID).Errorf("Could not kicking out the call. err: %v", errHangup)
+	log.Debugf("Kicking out all calls from the conference. call_count: %d", len(cf.ConferencecallIDs))
+	for _, conferencecallID := range cf.ConferencecallIDs {
+
+		cc, err := h.conferencecallHandler.Get(ctx, conferencecallID)
+		if err != nil {
+			log.Errorf("Could not get conferencecall info. err: %v", err)
+			continue
+		}
+
+		switch cc.ReferenceType {
+
+		default:
+			// todo: we have to check the conferencecall's type and run the corresponded kick handler here.
+			// but we have only 1 conferencecall type, so we don't check the type here.
+			log.Debugf("Kicking out the conferencecall. reference_type: %s, reference_id: %s", cc.ReferenceType, cc.ReferenceID)
+			if errHangup := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, cc.ReferenceID); errHangup != nil {
+				log.WithField("call_id", cc.ReferenceID).Errorf("Could not kicking out the call. err: %v", errHangup)
+			}
+
 		}
 	}
 
-	if len(cf.CallIDs) == 0 {
+	if len(cf.ConferencecallIDs) == 0 {
 		if err := h.Destroy(ctx, cf); err != nil {
 			log.Errorf("Could not destroy the conference. err: %v", err)
 			return err
@@ -87,7 +101,7 @@ func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conferen
 	promConferenceCloseTotal.WithLabelValues(string(cf.Type)).Inc()
 
 	// notify conference deleted event
-	tmpConf, err := h.db.ConferenceGet(ctx, cf.ID)
+	tmpConf, err := h.Get(ctx, cf.ID)
 	if err != nil {
 		log.Errorf("Could not get updated conference info. err: %v", err)
 		return nil
@@ -96,25 +110,3 @@ func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conferen
 
 	return nil
 }
-
-// hangupAllChannelsInBridge hangs up the all channels in the bridge
-// func (h *conferenceHandler) hangupAllChannelsInBridge(bridge *bridge.Bridge) {
-// logrus.WithFields(
-// 	logrus.Fields{
-// 		"asterisk": bridge.AsteriskID,
-// 		"bridge":   bridge.ID,
-// 		"channels": bridge.ChannelIDs,
-// 	}).Debug("Hanging up all channels in the bridge.")
-
-// // destroy all the channels in the bridge
-// for _, channelID := range bridge.ChannelIDs {
-// 	if err := h.reqHandler.AstChannelHangup(bridge.AsteriskID, channelID, ari.ChannelCauseNormalClearing); err != nil {
-// 		logrus.WithFields(
-// 			logrus.Fields{
-// 				"asterisk": bridge.AsteriskID,
-// 				"bridge":   bridge.ID,
-// 				"channel":  channelID,
-// 			}).Warningf("Could not hangup the channel. err: %v", err)
-// 	}
-// }
-// }

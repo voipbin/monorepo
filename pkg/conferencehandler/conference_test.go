@@ -18,21 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
-func TestCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := conferenceHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		cache:         mockCache,
-		notifyHandler: mockNotify,
-	}
+func Test_Create(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -87,6 +73,20 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
 
 			ctx := context.Background()
 
@@ -115,21 +115,7 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestCreateConferenceFlow(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := conferenceHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		cache:         mockCache,
-		notifyHandler: mockNotify,
-	}
+func Test_createConferenceFlow(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -169,6 +155,21 @@ func TestCreateConferenceFlow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
 			ctx := context.Background()
 
 			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customerID, fmflow.TypeConference, tt.flowName, "generated for conference by conference-manager.", gomock.Any(), true).Return(tt.responseFlow, nil)
@@ -181,21 +182,7 @@ func TestCreateConferenceFlow(t *testing.T) {
 	}
 }
 
-func TestCreateConferenceFlowActions(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := conferenceHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		cache:         mockCache,
-		notifyHandler: mockNotify,
-	}
+func Test_createConferenceFlowActions(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -238,6 +225,21 @@ func TestCreateConferenceFlowActions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
 			res, err := h.createConferenceFlowActions(tt.confbridgeID, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -245,6 +247,59 @@ func TestCreateConferenceFlowActions(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_GetByConfbridgeID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		confbridgeID uuid.UUID
+
+		responseConference *conference.Conference
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("3d72398e-13bd-11ed-9abc-67fe710b5f19"),
+
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("3d72398e-13bd-11ed-9abc-67fe710b5f19"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConferenceGetByConfbridgeID(ctx, tt.confbridgeID).Return(tt.responseConference, nil)
+
+			res, err := h.GetByConfbridgeID(ctx, tt.confbridgeID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConference) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConference, res)
 			}
 		})
 	}
