@@ -20,6 +20,7 @@ import (
 	outplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -538,18 +539,49 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceGets(u, size, token interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGets), u, size, token)
 }
 
-// ConferenceKick mocks base method.
-func (m *MockServiceHandler) ConferenceKick(u *customer.Customer, confID, callID uuid.UUID) error {
+// ConferencecallCreate mocks base method.
+func (m *MockServiceHandler) ConferencecallCreate(ctx context.Context, u *customer.Customer, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceKick", u, confID, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "ConferencecallCreate", ctx, u, conferenceID, referenceType, referenceID)
+	ret0, _ := ret[0].(*conferencecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// ConferenceKick indicates an expected call of ConferenceKick.
-func (mr *MockServiceHandlerMockRecorder) ConferenceKick(u, confID, callID interface{}) *gomock.Call {
+// ConferencecallCreate indicates an expected call of ConferencecallCreate.
+func (mr *MockServiceHandlerMockRecorder) ConferencecallCreate(ctx, u, conferenceID, referenceType, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceKick", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceKick), u, confID, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallCreate), ctx, u, conferenceID, referenceType, referenceID)
+}
+
+// ConferencecallGet mocks base method.
+func (m *MockServiceHandler) ConferencecallGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*conferencecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferencecallGet", ctx, u, id)
+	ret0, _ := ret[0].(*conferencecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferencecallGet indicates an expected call of ConferencecallGet.
+func (mr *MockServiceHandlerMockRecorder) ConferencecallGet(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallGet", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallGet), ctx, u, id)
+}
+
+// ConferencecallKick mocks base method.
+func (m *MockServiceHandler) ConferencecallKick(ctx context.Context, u *customer.Customer, conferencecallID uuid.UUID) (*conferencecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferencecallKick", ctx, u, conferencecallID)
+	ret0, _ := ret[0].(*conferencecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferencecallKick indicates an expected call of ConferencecallKick.
+func (mr *MockServiceHandlerMockRecorder) ConferencecallKick(ctx, u, conferencecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallKick", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallKick), ctx, u, conferencecallID)
 }
 
 // ConversationGet mocks base method.

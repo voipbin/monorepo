@@ -10,6 +10,4 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	conferences.GET("", conferencesGET)
 	conferences.GET("/:id", conferencesIDGET)
 	conferences.DELETE("/:id", conferencesIDDELETE)
-
-	conferences.DELETE("/:id/calls/:call_id", conferencesIDCallsIDDELETE)
 }

@@ -19,6 +19,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -114,7 +115,11 @@ type ServiceHandler interface {
 	ConferenceDelete(u *cscustomer.Customer, confID uuid.UUID) error
 	ConferenceGet(u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGets(u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
-	ConferenceKick(u *cscustomer.Customer, confID uuid.UUID, callID uuid.UUID) error
+
+	// conferencecall handlers
+	ConferencecallGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconferencecall.WebhookMessage, error)
+	ConferencecallCreate(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfconferencecall.WebhookMessage, error)
+	ConferencecallKick(ctx context.Context, u *cscustomer.Customer, conferencecallID uuid.UUID) (*cfconferencecall.WebhookMessage, error)
 
 	// conversation handlers
 	ConversationGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cvconversation.WebhookMessage, error)
