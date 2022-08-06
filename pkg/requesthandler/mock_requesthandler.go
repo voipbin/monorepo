@@ -1457,6 +1457,36 @@ func (mr *MockRequestHandlerMockRecorder) CSV1Login(ctx, timeout, username, pass
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CSV1Login", reflect.TypeOf((*MockRequestHandler)(nil).CSV1Login), ctx, timeout, username, password)
 }
 
+// ConferenceV1ConferencecallCreate mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferencecallCreate(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallCreate", ctx, conferenceID, referenceType, referenceID)
+	ret0, _ := ret[0].(*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ConferencecallCreate indicates an expected call of ConferenceV1ConferencecallCreate.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallCreate(ctx, conferenceID, referenceType, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallCreate", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallCreate), ctx, conferenceID, referenceType, referenceID)
+}
+
+// ConferenceV1ConferencecallGet mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferencecallGet(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallGet", ctx, conferencecallID)
+	ret0, _ := ret[0].(*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ConferencecallGet indicates an expected call of ConferenceV1ConferencecallGet.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallGet(ctx, conferencecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallGet", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallGet), ctx, conferencecallID)
+}
+
 // ConferenceV1ConferencecallKick mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()

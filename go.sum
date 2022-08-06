@@ -230,6 +230,8 @@ gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220722053845-9d5f
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220722053845-9d5fb6862e5f/go.mod h1:/M1K56b+yb7iczJNDE18xqn0X0wqY4PyejXgmJqQ4X0=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220805161107-da8b0fa13774 h1:MZQHzz6prrGBve/w9/aeXtLU3yQub2iShgUJ7mLN51k=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220805161107-da8b0fa13774/go.mod h1:hAJR/JG51UoIM+uR73X9lcjgvD4fYbUlTr975TadSP0=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220806062644-b34347cd79db h1:9gDEQaTIIkCvghjtyJJXD2YBeAosNcI+69KoaNiDfEU=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220806062644-b34347cd79db/go.mod h1:FuCmZv3T4nYgx5yAw8kBDf1DXXK5N8XF+eePt2nU+mY=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220624040003-b3cd5e686f85 h1:CbYy0zijvALmHRvqXTRz9k5COQRUETdYgVJIILPxw5g=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220624040003-b3cd5e686f85/go.mod h1:Rqx13xOWZLx27UClDB4QGqArIX1CsOlssDMLp8V40TQ=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a h1:6tQaB5eQ8du+G2tXWGrm1E9oI2fPZQT+slbcYFcVqPE=
