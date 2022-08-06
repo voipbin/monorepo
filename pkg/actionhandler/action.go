@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/gofrs/uuid"
@@ -78,7 +78,7 @@ func (h *actionHandler) ActionFetchGet(act *action.Action, activeflowID uuid.UUI
 		return nil, fmt.Errorf("wrong status return. stauts: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorf("Could not get the result. err: %v", err)
 		return nil, err
