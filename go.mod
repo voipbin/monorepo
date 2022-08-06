@@ -16,14 +16,14 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/prometheus/client_golang v1.12.2
+	github.com/prometheus/client_golang v1.13.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.1
 	github.com/swaggo/swag v1.8.4
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220726004520-28d857adb01e
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220722173359-40f7c34f6399
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220722162423-28653ad77d0f
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220806073613-403f32658c1b
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220806090102-4997175182a9
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220722163735-36c125e09c26
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20220722165215-cbc86d274ceb
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20220413034054-1271ef0d98c3
@@ -40,7 +40,7 @@ require (
 	github.com/pebbe/zmq4 v1.2.9
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220722043822-a8daf3858b87
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220722044501-749018171b9b
-	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220805161107-da8b0fa13774
+	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220806062644-b34347cd79db
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220722162946-5c63199f33dd
