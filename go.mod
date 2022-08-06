@@ -1,6 +1,6 @@
 module gitlab.com/voipbin/bin-manager/conference-manager.git
 
-go 1.17
+go 1.18
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
@@ -9,12 +9,12 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/prometheus/client_golang v1.12.2
+	github.com/prometheus/client_golang v1.13.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220726004520-28d857adb01e
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220805181650-0d8cd47b4607
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220722162423-28653ad77d0f
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20220806073613-403f32658c1b
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220806090102-4997175182a9
 )
 
 require (
