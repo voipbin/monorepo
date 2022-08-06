@@ -1,4 +1,4 @@
-package conferences
+package conferencecalls
 
 import (
 	"bytes"
@@ -9,10 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
@@ -24,77 +23,33 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func Test_conferencesPOST(t *testing.T) {
+func Test_conferencecallsPOST(t *testing.T) {
 
 	tests := []struct {
 		name     string
 		customer cscustomer.Customer
 
-		conferenceType cfconference.Type
-		conferenceName string
-		detail         string
-		preActions     []fmaction.Action
-		postActions    []fmaction.Action
+		conferenceID  uuid.UUID
+		referenceType cfconferencecall.ReferenceType
+		referenceID   uuid.UUID
 
-		conference *cfconference.WebhookMessage
-		request    []byte
+		responseConferencecall *cfconferencecall.WebhookMessage
+		request                []byte
 	}{
 		{
-			"conference type",
+			"reference type call",
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 
-			cfconference.TypeConference,
-			"conference name",
-			"conference detail",
-			[]fmaction.Action{},
-			[]fmaction.Action{},
+			uuid.FromStringOrNil("90fa3988-15b3-11ed-918b-e3c155fcc880"),
+			cfconferencecall.ReferenceTypeCall,
+			uuid.FromStringOrNil("a42f781a-15b3-11ed-aa52-2bc25e2dce16"),
 
-			&cfconference.WebhookMessage{
-				ID:     uuid.FromStringOrNil("ee1e90cc-ac7a-11ea-8474-e740530b4266"),
-				Type:   cfconference.TypeConference,
-				Name:   "conference name",
-				Detail: "conference detail",
+			&cfconferencecall.WebhookMessage{
+				ID: uuid.FromStringOrNil("b5ca8e2a-15b3-11ed-8aba-831ab1a0e559"),
 			},
-			[]byte(`{"type": "conference", "name": "conference name", "detail": "conference detail"}`),
-		},
-		{
-			"pre/post actions",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-			},
-
-			cfconference.TypeConference,
-			"conference name",
-			"conference detail",
-			[]fmaction.Action{
-				{
-					Type: "answer",
-				},
-			},
-			[]fmaction.Action{
-				{
-					Type: "hangup",
-				},
-			},
-			&cfconference.WebhookMessage{
-				ID:     uuid.FromStringOrNil("62fc88ba-3fe9-11ec-8ebb-8f1ee591edec"),
-				Type:   cfconference.TypeConference,
-				Name:   "conference name",
-				Detail: "conference detail",
-				PreActions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
-				PostActions: []fmaction.Action{
-					{
-						Type: "hangup",
-					},
-				},
-			},
-			[]byte(`{"type": "conference", "name": "conference name", "detail": "conference detail", "webhook_uri": "test.com/webhook", "pre_actions": [{"type": "answer"}], "post_actions":[{"type": "hangup"}]}`),
+			[]byte(`{"conference_id": "90fa3988-15b3-11ed-918b-e3c155fcc880", "reference_type": "call", "reference_id": "a42f781a-15b3-11ed-aa52-2bc25e2dce16"}`),
 		},
 	}
 
@@ -115,10 +70,10 @@ func Test_conferencesPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceCreate(&tt.customer, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
-			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(tt.request))
-
+			req, _ := http.NewRequest("POST", "/v1.0/conferencecalls", bytes.NewBuffer(tt.request))
 			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().ConferencecallCreate(req.Context(), &tt.customer, tt.conferenceID, tt.referenceType, tt.referenceID).Return(tt.responseConferencecall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -132,27 +87,29 @@ func Test_conferencesPOST(t *testing.T) {
 func TestConferencesIDGET(t *testing.T) {
 
 	tests := []struct {
-		name     string
+		name string
+
 		customer cscustomer.Customer
 		id       uuid.UUID
 
 		requestURI string
 
-		conference *cfconference.WebhookMessage
+		conference *cfconferencecall.WebhookMessage
 	}{
 		{
-			"simple test",
+			"normal",
+
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				PermissionIDs: []uuid.UUID{
 					cspermission.PermissionAdmin.ID,
 				},
 			},
-			uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
+			uuid.FromStringOrNil("c2de6db2-15b2-11ed-a8c9-df3874205c01"),
 
-			"/v1.0/conferences/5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb",
-			&cfconference.WebhookMessage{
-				ID: uuid.FromStringOrNil("5ab35aba-ac3a-11ea-bcd7-4baa13dc0cdb"),
+			"/v1.0/conferencecalls/c2de6db2-15b2-11ed-a8c9-df3874205c01",
+			&cfconferencecall.WebhookMessage{
+				ID: uuid.FromStringOrNil("c2de6db2-15b2-11ed-a8c9-df3874205c01"),
 			},
 		},
 	}
@@ -174,10 +131,9 @@ func TestConferencesIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceGet(&tt.customer, tt.id).Return(tt.conference, nil)
-
 			req, _ := http.NewRequest("GET", tt.requestURI, nil)
 
+			mockSvc.EXPECT().ConferencecallGet(req.Context(), &tt.customer, tt.id).Return(tt.conference, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -187,14 +143,17 @@ func TestConferencesIDGET(t *testing.T) {
 	}
 }
 
-func Test_conferencesIDDELETE(t *testing.T) {
+func Test_conferencecallsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name     string
 		customer cscustomer.Customer
-		id       uuid.UUID
+
+		id uuid.UUID
 
 		requestURI string
+
+		responseConferencecall *cfconferencecall.WebhookMessage
 	}{
 		{
 			"simple test",
@@ -204,8 +163,12 @@ func Test_conferencesIDDELETE(t *testing.T) {
 					cspermission.PermissionAdmin.ID,
 				},
 			},
-			uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
-			"/v1.0/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
+			uuid.FromStringOrNil("23d576b4-15b4-11ed-b6f4-fbfaed3df462"),
+			"/v1.0/conferencecalls/23d576b4-15b4-11ed-b6f4-fbfaed3df462",
+
+			&cfconferencecall.WebhookMessage{
+				ID: uuid.FromStringOrNil("23d576b4-15b4-11ed-b6f4-fbfaed3df462"),
+			},
 		},
 	}
 
@@ -228,7 +191,7 @@ func Test_conferencesIDDELETE(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
 
-			mockSvc.EXPECT().ConferenceDelete(&tt.customer, tt.id).Return(nil)
+			mockSvc.EXPECT().ConferencecallKick(req.Context(), &tt.customer, tt.id).Return(tt.responseConferencecall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

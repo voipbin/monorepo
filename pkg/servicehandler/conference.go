@@ -153,32 +153,3 @@ func (h *serviceHandler) ConferenceDelete(u *cscustomer.Customer, confID uuid.UU
 
 	return nil
 }
-
-// ConferenceDelete is a service handler for conference creating.
-func (h *serviceHandler) ConferenceKick(u *cscustomer.Customer, confID uuid.UUID, callID uuid.UUID) error {
-	ctx := context.Background()
-	log := logrus.WithFields(
-		logrus.Fields{
-			"customer_id":   u.ID,
-			"username":      u.Username,
-			"conference_id": confID,
-			"call_id":       callID,
-		},
-	)
-
-	// get conference for ownership check
-	_, err := h.conferenceGet(ctx, u, confID)
-	if err != nil {
-		log.Errorf("Could not get conference info. err: %v", err)
-		return err
-	}
-
-	// kick the call from the conference
-	log.Debug("Kick")
-	if err := h.reqHandler.CFV1ConferenceKick(ctx, confID, callID); err != nil {
-		log.Errorf("Could not kick the call from the conference. err: %v", err)
-		return err
-	}
-
-	return nil
-}
