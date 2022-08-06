@@ -26,7 +26,7 @@ type ConferencecallHandler interface {
 	) (*conferencecall.Conferencecall, error)
 	Get(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
-	UpdateStatusJoinedByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
+	UpdateStatusJoined(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error)
 	UpdateStatusLeaving(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	UpdateStatusLeaved(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 }

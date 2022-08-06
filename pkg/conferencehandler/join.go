@@ -47,31 +47,37 @@ func (h *conferenceHandler) Join(ctx context.Context, conferenceID uuid.UUID, re
 }
 
 // JoinedConfbridge handles call's joined confbridge notification
-func (h *conferenceHandler) JoinedConfbridge(ctx context.Context, conferenceID, callID uuid.UUID) error {
+func (h *conferenceHandler) JoinedConfbridge(ctx context.Context, cf *conference.Conference, callID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "JoinedConfbridge",
-			"conference_id": conferenceID,
+			"conference_id": cf.ID,
 			"call_id":       callID,
 		})
 	log.Info("The call has joined to the confbridge.")
 
+	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not find a conferencecall. reference_id: %s, err: %v", callID, err)
+		return err
+	}
+
 	// update conferencecall
-	cc, err := h.conferencecallHandler.UpdateStatusJoinedByReferenceID(ctx, callID)
+	cc, err = h.conferencecallHandler.UpdateStatusJoined(ctx, cc.ID)
 	if err != nil {
 		log.Errorf("Could not update the conferencecall status to the joined. err: %v", err)
 		return err
 	}
 
 	// add the call to the conference.
-	if errAdd := h.db.ConferenceAddConferencecallID(ctx, conferenceID, cc.ID); errAdd != nil {
+	if errAdd := h.db.ConferenceAddConferencecallID(ctx, cf.ID, cc.ID); errAdd != nil {
 		log.Errorf("Could not add the conferencecall to the conference. Kicking out the call from the conference. err: %v", errAdd)
-		_ = h.reqHandler.CMV1ConfbridgeCallKick(ctx, conferenceID, callID)
+		_ = h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ID, cc.ReferenceID)
 		return errAdd
 	}
 
 	// send conference notification
-	tmpCf, err := h.Get(ctx, conferenceID)
+	tmpCf, err := h.Get(ctx, cf.ID)
 	if err != nil {
 		log.Errorf("Could not get updated conference info. err: %v", err)
 	}

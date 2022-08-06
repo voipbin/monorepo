@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -8,10 +9,87 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 )
+
+func Test_processV1ConferencecallsPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		conferenceID  uuid.UUID
+		referenceType conferencecall.ReferenceType
+		referenceID   uuid.UUID
+
+		responseConference     *conference.Conference
+		responseConferencecall *conferencecall.Conferencecall
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"type conference",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferencecalls",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"conference_id":"615e5ba2-154d-11ed-9b8e-b71e78fea662","reference_type":"call","reference_id":"618c3eaa-154d-11ed-8537-bb60168f9cd6"}`),
+			},
+
+			uuid.FromStringOrNil("615e5ba2-154d-11ed-9b8e-b71e78fea662"),
+			conferencecall.ReferenceTypeCall,
+			uuid.FromStringOrNil("618c3eaa-154d-11ed-8537-bb60168f9cd6"),
+
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("615e5ba2-154d-11ed-9b8e-b71e78fea662"),
+			},
+			&conferencecall.Conferencecall{
+				ID: uuid.FromStringOrNil("61b64632-154d-11ed-b09a-ff9437f55bcd"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"61b64632-154d-11ed-b09a-ff9437f55bcd","customer_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+			mockConferencecall := conferencecallhandler.NewMockConferencecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:            mockSock,
+				conferenceHandler:     mockConf,
+				conferencecallHandler: mockConferencecall,
+			}
+
+			ctx := context.Background()
+
+			mockConf.EXPECT().Get(ctx, tt.conferenceID).Return(tt.responseConference, nil)
+			mockConferencecall.EXPECT().Create(ctx, tt.responseConference.CustomerID, tt.responseConference.ID, tt.referenceType, tt.referenceID).Return(tt.responseConferencecall, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
 
 func Test_processV1ConferencecallsIDGet(t *testing.T) {
 

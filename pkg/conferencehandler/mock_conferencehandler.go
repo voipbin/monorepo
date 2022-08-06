@@ -114,17 +114,17 @@ func (mr *MockConferenceHandlerMockRecorder) Join(ctx, conferenceID, referenceTy
 }
 
 // JoinedConfbridge mocks base method.
-func (m *MockConferenceHandler) JoinedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error {
+func (m *MockConferenceHandler) JoinedConfbridge(ctx context.Context, cf *conference.Conference, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JoinedConfbridge", ctx, confbridgeID, callID)
+	ret := m.ctrl.Call(m, "JoinedConfbridge", ctx, cf, callID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // JoinedConfbridge indicates an expected call of JoinedConfbridge.
-func (mr *MockConferenceHandlerMockRecorder) JoinedConfbridge(ctx, confbridgeID, callID interface{}) *gomock.Call {
+func (mr *MockConferenceHandlerMockRecorder) JoinedConfbridge(ctx, cf, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JoinedConfbridge", reflect.TypeOf((*MockConferenceHandler)(nil).JoinedConfbridge), ctx, confbridgeID, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JoinedConfbridge", reflect.TypeOf((*MockConferenceHandler)(nil).JoinedConfbridge), ctx, cf, callID)
 }
 
 // Leave mocks base method.

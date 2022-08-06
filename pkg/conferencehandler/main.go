@@ -44,7 +44,7 @@ type ConferenceHandler interface {
 	) (*conference.Conference, error)
 
 	Join(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
-	JoinedConfbridge(ctx context.Context, confbridgeID, callID uuid.UUID) error
+	JoinedConfbridge(ctx context.Context, cf *conference.Conference, callID uuid.UUID) error
 	Leave(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error)
 	Leaved(ctx context.Context, cf *conference.Conference, referenceID uuid.UUID) error
 	Terminate(ctx context.Context, id uuid.UUID) error

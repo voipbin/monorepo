@@ -40,7 +40,7 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 	log = log.WithField("conference_id", cf.ID)
 	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
 
-	if err := h.conferenceHandler.JoinedConfbridge(ctx, cf.ID, evt.JoinedCallID); err != nil {
+	if err := h.conferenceHandler.JoinedConfbridge(ctx, cf, evt.JoinedCallID); err != nil {
 		log.Errorf("Could not handle the confbridge joined event. err: %v", err)
 		return err
 	}
