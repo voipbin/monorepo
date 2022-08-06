@@ -12,6 +12,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	conversationmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -1136,13 +1137,17 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 		responseConference *cfconference.Conference
 		responseFlow       *flow.Flow
 
-		responseStackID uuid.UUID
-		responseAction  *action.Action
+		conferenceID uuid.UUID
+
+		responseConferencecall *cfconferencecall.Conferencecall
+		responseStackID        uuid.UUID
+		responseAction         *action.Action
 
 		expectActiveFlow *activeflow.Activeflow
 	}{
 		{
 			name: "normal",
+
 			activeFlow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
@@ -1161,6 +1166,8 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 						},
 					},
 				},
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("c71e769a-155f-11ed-9bfb-9b3081a1b9f0"),
 			},
 			responseConference: &cfconference.Conference{
 				ID:     uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
@@ -1185,6 +1192,11 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 				},
 			},
 
+			conferenceID: uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
+
+			responseConferencecall: &cfconferencecall.Conferencecall{
+				ID: uuid.FromStringOrNil("1ef16ac6-1560-11ed-bbad-0775d313f1ee"),
+			},
 			responseStackID: uuid.FromStringOrNil("fd6d9b84-d4e3-11ec-a53b-879007c0bc0a"),
 			responseAction: &action.Action{
 				ID:   uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
@@ -1211,6 +1223,8 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 						},
 					},
 				},
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("c71e769a-155f-11ed-9bfb-9b3081a1b9f0"),
 			},
 		},
 	}
@@ -1232,10 +1246,11 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockReq.EXPECT().ConferenceV1ConferencecallCreate(ctx, tt.conferenceID, cfconferencecall.ReferenceTypeCall, tt.activeFlow.ReferenceID).Return(tt.responseConferencecall, nil)
 			mockReq.EXPECT().CFV1ConferenceGet(ctx, tt.responseConference.ID).Return(tt.responseConference, nil)
 			mockReq.EXPECT().FMV1FlowGet(ctx, tt.responseConference.FlowID).Return(tt.responseFlow, nil)
 			mockStack.EXPECT().Push(ctx, tt.activeFlow.StackMap, tt.responseFlow.Actions, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
-			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectActiveFlow).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveFlow).Return(nil)
 
 			if err := h.actionHandleConferenceJoin(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

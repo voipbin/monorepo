@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
@@ -272,6 +273,20 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 		return err
 	}
 	log = log.WithField("conference_id", opt.ConferenceID)
+
+	if af.ReferenceType != activeflow.ReferenceTypeCall {
+		log.Errorf("Wrong type of reference. Only reference type call is supported. reference_type: %s", af.ReferenceType)
+		return fmt.Errorf("wrong reference type. reference_type: %s", af.ReferenceType)
+	}
+
+	// create conferencecall
+	cc, err := h.reqHandler.ConferenceV1ConferencecallCreate(ctx, opt.ConferenceID, cfconferencecall.ReferenceTypeCall, af.ReferenceID)
+	if err != nil {
+		log.Errorf("Could not create a conferencecall. err: %v", err)
+		return err
+	}
+	log.WithField("conferencecall", cc).Debugf("Created a conferencecall. conferencecall_id: %s", cc.ID)
+	log = log.WithField("conferencecall_id", cc.ID)
 
 	// get conference
 	conf, err := h.reqHandler.CFV1ConferenceGet(ctx, opt.ConferenceID)
