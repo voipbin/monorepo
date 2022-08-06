@@ -91,8 +91,8 @@ func Test_JoinedConfbridge(t *testing.T) {
 	tests := []struct {
 		name string
 
-		conferenceID uuid.UUID
-		callID       uuid.UUID
+		conference *conference.Conference
+		callID     uuid.UUID
 
 		responseConferencecall *conferencecall.Conferencecall
 		responseConference     *conference.Conference
@@ -100,7 +100,11 @@ func Test_JoinedConfbridge(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("67c2dcb8-14c9-11ed-a5d0-2f904a6e3049"),
+			&conference.Conference{
+				ID:           uuid.FromStringOrNil("aec64aa8-1340-11ed-b710-ef3b76998e5f"),
+				Type:         conference.TypeConference,
+				ConfbridgeID: uuid.FromStringOrNil("7d0bb11c-3e69-11ec-a38a-7b47fb83fb56"),
+			},
 			uuid.FromStringOrNil("68004986-14c9-11ed-a7a1-679de3f88fb4"),
 
 			&conferencecall.Conferencecall{
@@ -135,12 +139,13 @@ func Test_JoinedConfbridge(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockConferencecall.EXPECT().UpdateStatusJoinedByReferenceID(ctx, tt.callID).Return(tt.responseConferencecall, nil)
-			mockDB.EXPECT().ConferenceAddConferencecallID(ctx, tt.conferenceID, tt.responseConferencecall.ID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.conferenceID).Return(tt.responseConference, nil)
+			mockConferencecall.EXPECT().GetByReferenceID(ctx, tt.callID).Return(tt.responseConferencecall, nil)
+			mockConferencecall.EXPECT().UpdateStatusJoined(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
+			mockDB.EXPECT().ConferenceAddConferencecallID(ctx, tt.conference.ID, tt.responseConferencecall.ID).Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.responseConference, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
 
-			if err := h.JoinedConfbridge(ctx, tt.conferenceID, tt.callID); err != nil {
+			if err := h.JoinedConfbridge(ctx, tt.conference, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

@@ -157,20 +157,17 @@ func (h *conferencecallHandler) updateStatusByReferenceID(
 	return h.updateStatus(ctx, cc.ID, status)
 }
 
-// UpdateStatusJoinedByReferenceID is handy function for update the conferencecall's status to the joined.
+// UpdateStatusJoined is handy function for update the conferencecall's status to the joined.
 // it increases corresponded counter
-func (h *conferencecallHandler) UpdateStatusJoinedByReferenceID(
-	ctx context.Context,
-	referenceID uuid.UUID,
-) (*conferencecall.Conferencecall, error) {
+func (h *conferencecallHandler) UpdateStatusJoined(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":              "UpdateStatusJoinedByReferenceID",
-			"conferencecall_id": referenceID,
+			"func":              "UpdateStatusJoined",
+			"conferencecall_id": conferencecallID,
 		},
 	)
 
-	res, err := h.updateStatusByReferenceID(ctx, referenceID, conferencecall.StatusJoined)
+	res, err := h.updateStatus(ctx, conferencecallID, conferencecall.StatusJoined)
 	if err != nil {
 		log.Errorf("Could not update the status correctly. err: %v", err)
 		return nil, err
