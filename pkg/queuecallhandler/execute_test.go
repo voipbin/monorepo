@@ -40,7 +40,7 @@ func Test_Execute(t *testing.T) {
 				ReferenceID:     uuid.FromStringOrNil("b658394e-5ee0-11ec-92ba-5f2f2eabf000"),
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
-				ConfbridgeID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
+				ConferenceID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
@@ -108,7 +108,7 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 		name string
 
 		customerID   uuid.UUID
-		confbridgeID uuid.UUID
+		conferenceID uuid.UUID
 
 		expectActions []fmaction.Action
 
@@ -122,8 +122,8 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 
 			[]fmaction.Action{
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"f42361d2-d1b2-11ec-8303-5baaf068dbab"}`),
+					Type:   fmaction.TypeConferenceJoin,
+					Option: []byte(`{"conference_id":"f42361d2-d1b2-11ec-8303-5baaf068dbab"}`),
 				},
 			},
 
@@ -152,7 +152,7 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 
 			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", tt.expectActions, false).Return(tt.responseFlow, nil)
 
-			res, err := h.generateFlowForAgentCall(ctx, tt.customerID, tt.confbridgeID)
+			res, err := h.generateFlowForAgentCall(ctx, tt.customerID, tt.conferenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -24,7 +24,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, qc *queuecall.Queuecall,
 	)
 
 	// create the flow for the agnet dial
-	f, err := h.generateFlowForAgentCall(ctx, qc.CustomerID, qc.ConfbridgeID)
+	f, err := h.generateFlowForAgentCall(ctx, qc.CustomerID, qc.ConferenceID)
 	if err != nil {
 		log.Errorf("Could not create the flow tor agent dialing. err: %v", err)
 		return nil, err
@@ -58,14 +58,14 @@ func (h *queuecallHandler) Execute(ctx context.Context, qc *queuecall.Queuecall,
 }
 
 // generateFlowForAgentCall creates a flow for the agent call action.
-func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, customerID, confbridgeID uuid.UUID) (*fmflow.Flow, error) {
+func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, customerID, conferenceID uuid.UUID) (*fmflow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "generateFlowForAgentCall",
-		"confbridge_id": confbridgeID,
+		"conference_id": conferenceID,
 	})
 
-	opt, err := json.Marshal(fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: confbridgeID,
+	opt, err := json.Marshal(fmaction.OptionConferenceJoin{
+		ConferenceID: conferenceID,
 	})
 	if err != nil {
 		log.Errorf("Could not marshal the action. err: %v", err)
@@ -75,7 +75,7 @@ func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, custome
 	// create actions
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeConfbridgeJoin,
+			Type:   fmaction.TypeConferenceJoin,
 			Option: opt,
 		},
 	}

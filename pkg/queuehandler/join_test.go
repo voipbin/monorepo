@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
@@ -37,7 +37,7 @@ func Test_Join(t *testing.T) {
 		call      *cmcall.Call
 		queuecall *queuecall.Queuecall
 
-		responseConfbridge *cmconfbridge.Confbridge
+		responseConference *cfconference.Conference
 		responseFlow       *fmflow.Flow
 
 		responseQueue *queue.Queue
@@ -70,14 +70,14 @@ func Test_Join(t *testing.T) {
 				QueueID: uuid.FromStringOrNil("8e8c729e-60e9-11ec-ae8e-130047a0c46f"),
 			},
 
-			&cmconfbridge.Confbridge{
+			&cfconference.Conference{
 				ID: uuid.FromStringOrNil("ad4c17a0-60e6-11ec-9eeb-e76c2c4c7fd4"),
 			},
 			&fmflow.Flow{
 				Actions: []fmaction.Action{
 					{
 						ID:   uuid.FromStringOrNil("1cf6612c-60e8-11ec-810d-a79b29cef25c"),
-						Type: fmaction.TypeConfbridgeJoin,
+						Type: fmaction.TypeConferenceJoin,
 					},
 				},
 			},
@@ -117,7 +117,7 @@ func Test_Join(t *testing.T) {
 			mockDB.EXPECT().QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
 			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.referenceID).Return(tt.call, nil)
 
-			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any(), cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.queue.CustomerID, cfconference.TypeQueue, gomock.Any(), gomock.Any(), 86400, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseConference, nil)
 			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.CustomerID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(tt.responseFlow, nil)
 
 			var source commonaddress.Address
@@ -141,7 +141,7 @@ func Test_Join(t *testing.T) {
 				tt.responseFlow.ID,
 				forwardActionID,
 				tt.exitActionID,
-				tt.responseConfbridge.ID,
+				tt.responseConference.ID,
 				source,
 			).Return(tt.queuecall, nil)
 

@@ -10,17 +10,17 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
-// Joined handle the situation when the queuecall joined to the the queue's confbridge.
-func (h *queuecallHandler) Joined(ctx context.Context, referenceID, confbridgeID uuid.UUID) {
+// Joined handle the situation when the queuecall joined to the the queuecall's conference.
+func (h *queuecallHandler) Joined(ctx context.Context, referenceID, conferenceID uuid.UUID) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":          "Leaved",
+			"func":          "Joined",
 			"reference_id":  referenceID,
-			"confbridge_id": confbridgeID,
+			"conference_id": conferenceID,
 		},
 	)
 
-	// get queuecallreference
+	// get queuecallreference by referenceID
 	qr, err := h.queuecallReferenceHandler.Get(ctx, referenceID)
 	if err != nil {
 		log.Debugf("Could not get queuecallreference. err: %v", err)
@@ -37,9 +37,9 @@ func (h *queuecallHandler) Joined(ctx context.Context, referenceID, confbridgeID
 	log = log.WithField("queuecall_id", qc.ID)
 	log.WithField("queuecall", qc).Debug("Found queuecall.")
 
-	// compare confbridge info
-	if qc.ConfbridgeID != confbridgeID {
-		log.WithField("queuecall", qc).Infof("The confbridge info incorrect. Ignore the request. confbridge: %s", confbridgeID)
+	// compare conference info
+	if qc.ConferenceID != conferenceID {
+		log.WithField("queuecall", qc).Infof("The conference info incorrect. Ignore the request. conference_id: %s", conferenceID)
 		return
 	}
 

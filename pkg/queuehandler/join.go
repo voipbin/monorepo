@@ -8,8 +8,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/ttacon/libphonenumber"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -68,15 +69,15 @@ func (h *queueHandler) Join(
 	source := h.getSource(c)
 	log.WithField("source", source).Debugf("Source address info.")
 
-	// create confbridge
-	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx, cmconfbridge.TypeConnect)
+	// create conference
+	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, q.CustomerID, cfconference.TypeQueue, "conference for queue", "", 86400, nil, []fmaction.Action{}, []fmaction.Action{})
 	if err != nil {
-		log.Errorf("Could not create the confbridge. err: %v", err)
+		log.Errorf("Could not create the conference. err: %v", err)
 		return nil, err
 	}
 
 	// create queue flow
-	f, err := h.createQueueFlow(ctx, q.CustomerID, q.ID, cb.ID, q.WaitActions)
+	f, err := h.createQueueFlow(ctx, q.CustomerID, q.ID, cf.ID, q.WaitActions)
 	if err != nil {
 		log.Errorf("Could not create the queue flow. err: %v", err)
 		return nil, err
@@ -99,7 +100,7 @@ func (h *queueHandler) Join(
 		f.ID,
 		forwardActionID,
 		exitActionID,
-		cb.ID,
+		cf.ID,
 		source,
 	)
 	if err != nil {

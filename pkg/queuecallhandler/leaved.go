@@ -10,13 +10,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
-// Leaved handle the situation when the queuecall left from the queue's confbridge.
-func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID uuid.UUID) {
+// Leaved handle the situation when the queuecall left from the queuecall's conference.
+func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, conferenceID uuid.UUID) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "Leaved",
 			"reference_id":  referenceID,
-			"confbridge_id": confbridgeID,
+			"conference_id": conferenceID,
 		},
 	)
 
@@ -37,9 +37,9 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 	log = log.WithField("queuecall_id", qc.ID)
 	log.WithField("queuecall", qc).Debug("Found queuecall.")
 
-	// compare confbridge info
-	if qc.ConfbridgeID != confbridgeID {
-		log.WithField("queuecall", qc).Infof("The confbridge info incorrect. Ignore the request. confbridge: %s", confbridgeID)
+	// compare conference info
+	if qc.ConferenceID != conferenceID {
+		log.WithField("queuecall", qc).Infof("The conference info incorrect. Ignore the request. conference_id: %s", conferenceID)
 		return
 	}
 
@@ -83,8 +83,8 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID
 		log.Errorf("Could not delete variables. err: %v", errVariables)
 	}
 
-	// delete confbridge
-	if errConfbridge := h.reqHandler.CMV1ConfbridgeDelete(ctx, qc.ConfbridgeID); errConfbridge != nil {
-		log.Errorf("Could not delete the confbridge. err: %v", errConfbridge)
+	// delete conference
+	if errConference := h.reqHandler.CFV1ConferenceDelete(ctx, qc.ConferenceID); errConference != nil {
+		log.Errorf("Could not delete the conference. err: %v", errConference)
 	}
 }

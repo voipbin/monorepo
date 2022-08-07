@@ -11,7 +11,7 @@ create table queuecalls(
   flow_id           binary(16),   -- queuecall's queue flow id.
   forward_action_id binary(16),   -- action id for forward.
   exit_action_id    binary(16),   -- action id for queue exit.
-  confbridge_id     binary(16),
+  conference_id     binary(16),
 
   source            json,
   routing_method    varchar(255),
