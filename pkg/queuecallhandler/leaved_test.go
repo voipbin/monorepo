@@ -22,7 +22,7 @@ func Test_Leaved(t *testing.T) {
 		name string
 
 		referenceID  uuid.UUID
-		confbridgeID uuid.UUID
+		conferenceID uuid.UUID
 
 		responseQueuecallReference *queuecallreference.QueuecallReference
 		responseQueuecall          *queuecall.Queuecall
@@ -47,7 +47,7 @@ func Test_Leaved(t *testing.T) {
 				ReferenceID:     uuid.FromStringOrNil("3d626154-5ef9-11ec-9406-77e6457e61c9"),
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
-				ConfbridgeID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
+				ConferenceID:    uuid.FromStringOrNil("ece5e716-5efb-11ec-a6ad-3fe3ed6844cb"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
@@ -93,9 +93,9 @@ func Test_Leaved(t *testing.T) {
 			mockDB.EXPECT().QueueRemoveServiceQueueCall(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID)
 
 			mockReq.EXPECT().FMV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockReq.EXPECT().CMV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(nil)
+			mockReq.EXPECT().CFV1ConferenceDelete(ctx, tt.responseQueuecall.ConferenceID).Return(nil)
 
-			h.Leaved(ctx, tt.referenceID, tt.confbridgeID)
+			h.Leaved(ctx, tt.referenceID, tt.conferenceID)
 		})
 	}
 }

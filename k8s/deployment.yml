@@ -37,7 +37,7 @@ spec:
             - '-rabbit_exchange_delay'
             - 'bin-manager.delay'
             - '-rabbit_exchange_subscribes'
-            - 'bin-manager.call-manager.event,bin-manager.agent-manager.event'
+            - 'bin-manager.call-manager.event,bin-manager.agent-manager.event,bin-manager.conference-manager.event'
             - '-rabbit_exchange_notify'
             - 'bin-manager.queue-manager.event'
             - '-redis_addr'

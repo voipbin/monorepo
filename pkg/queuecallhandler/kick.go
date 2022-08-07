@@ -40,7 +40,7 @@ func (h *queuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*qu
 
 	if qc.Status == queuecall.StatusService {
 		// nothing to do here.
-		// the call-manager's confbridge_leaved message event subscribe will handle it.
+		// the conference-manager's conference_leaved message event subscribe will handle it.
 		return qc, nil
 	}
 

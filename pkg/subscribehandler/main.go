@@ -11,8 +11,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
@@ -20,7 +20,8 @@ import (
 
 // list of publishers
 const (
-	publisherCallManager = "call-manager"
+	publisherCallManager       = "call-manager"
+	publisherConferenceManager = "conference-manager"
 )
 
 // SubscribeHandler interface
@@ -138,16 +139,17 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	switch {
 
 	//// call-manager
-	// confbridge
-	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeJoined)):
-		err = h.processEventCMConfbridgeJoined(ctx, m)
-
-	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeLeaved)):
-		err = h.processEventCMConfbridgeLeaved(ctx, m)
-
 	// call
 	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHungup)):
 		err = h.processEventCMCallHungup(ctx, m)
+
+	//// conference-manager
+	// conferencecall
+	case m.Publisher == publisherConferenceManager && (m.Type == string(cfconferencecall.EventTypeConferencecallJoined)):
+		err = h.processEventConferenceConferencecallJoined(ctx, m)
+
+	case m.Publisher == publisherConferenceManager && (m.Type == string(cfconferencecall.EventTypeConferencecallLeaved)):
+		err = h.processEventConferenceConferencecallLeaved(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

@@ -287,7 +287,7 @@ func Test_Create(t *testing.T) {
 		flowID          uuid.UUID
 		forwardActionID uuid.UUID
 		exitActionID    uuid.UUID
-		confbridgeID    uuid.UUID
+		conferenceID    uuid.UUID
 
 		source commonaddress.Address
 
@@ -375,7 +375,7 @@ func Test_Create(t *testing.T) {
 				tt.flowID,
 				tt.forwardActionID,
 				tt.exitActionID,
-				tt.confbridgeID,
+				tt.conferenceID,
 				tt.source,
 			)
 			if err != nil {

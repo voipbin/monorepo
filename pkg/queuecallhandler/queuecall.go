@@ -99,7 +99,7 @@ func (h *queuecallHandler) Create(
 	flowID uuid.UUID,
 	forwardActionID uuid.UUID,
 	exitActionID uuid.UUID,
-	confbridgeID uuid.UUID,
+	conferenceID uuid.UUID,
 	source commonaddress.Address,
 ) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -127,7 +127,7 @@ func (h *queuecallHandler) Create(
 		FlowID:          flowID,
 		ForwardActionID: forwardActionID,
 		ExitActionID:    exitActionID,
-		ConfbridgeID:    confbridgeID,
+		ConferenceID:    conferenceID,
 
 		Source:        source,
 		RoutingMethod: q.RoutingMethod,

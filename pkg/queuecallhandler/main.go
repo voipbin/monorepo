@@ -30,15 +30,15 @@ type QueuecallHandler interface {
 		flowID uuid.UUID,
 		forwardActionID uuid.UUID,
 		exitActionID uuid.UUID,
-		confbridgeID uuid.UUID,
+		conferenceID uuid.UUID,
 		source commonaddress.Address,
 	) (*queuecall.Queuecall, error)
 	Execute(ctx context.Context, qc *queuecall.Queuecall, agent *amagent.Agent) (*queuecall.Queuecall, error)
 	Hungup(ctx context.Context, referenceID uuid.UUID)
 	Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error)
 	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
-	Leaved(ctx context.Context, referenceID, confbridgeID uuid.UUID)
-	Joined(ctx context.Context, referenceID, confbridgeID uuid.UUID)
+	Leaved(ctx context.Context, referenceID, conferenceID uuid.UUID)
+	Joined(ctx context.Context, referenceID, conferenceID uuid.UUID)
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)
 	TimeoutWait(ctx context.Context, queuecallID uuid.UUID)

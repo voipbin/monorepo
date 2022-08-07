@@ -67,8 +67,8 @@ func (h *queuecallReferenceHandler) SetCurrentQueuecallID(ctx context.Context, r
 }
 
 // Get returns queuecallreference.
-func (h *queuecallReferenceHandler) Get(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error) {
-	qm, err := h.db.QueuecallReferenceGet(ctx, id)
+func (h *queuecallReferenceHandler) Get(ctx context.Context, referenceID uuid.UUID) (*queuecallreference.QueuecallReference, error) {
+	qm, err := h.db.QueuecallReferenceGet(ctx, referenceID)
 	if err != nil {
 		// we don't write the error log here.
 		// there's so many case of returning the error here.

@@ -26,7 +26,7 @@ const (
 		flow_id,
 		forward_action_id,
 		exit_action_id,
-		confbridge_id,
+		conference_id,
 
 		source,
 		routing_method,
@@ -69,7 +69,7 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 		&res.FlowID,
 		&res.ForwardActionID,
 		&res.ExitActionID,
-		&res.ConfbridgeID,
+		&res.ConferenceID,
 
 		&source,
 		&res.RoutingMethod,
@@ -120,7 +120,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		flow_id,
 		forward_action_id,
 		exit_action_id,
-		confbridge_id,
+		conference_id,
 
 		source,
 		routing_method,
@@ -173,7 +173,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		a.FlowID.Bytes(),
 		a.ForwardActionID.Bytes(),
 		a.ExitActionID.Bytes(),
-		a.ConfbridgeID.Bytes(),
+		a.ConferenceID.Bytes(),
 
 		tmpSource,
 		a.RoutingMethod,
@@ -308,7 +308,7 @@ func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid
 // QueuecallGetsByReferenceID returns QueueCalls.
 func (h *handler) QueuecallGetsByReferenceID(ctx context.Context, referenceID uuid.UUID) ([]*queuecall.Queuecall, error) {
 	// prepare
-	q := fmt.Sprintf("%s where reference_id = ?", queueCallSelect)
+	q := fmt.Sprintf("%s where reference_id = ? order by tm_create desc", queueCallSelect)
 
 	rows, err := h.db.Query(q, referenceID.Bytes())
 	if err != nil {

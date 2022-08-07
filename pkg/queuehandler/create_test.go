@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
@@ -31,7 +31,7 @@ func Test_Create(t *testing.T) {
 		waitTimeout    int
 		serviceTimeout int
 
-		responseConfbridge *cmconfbridge.Confbridge
+		responseConference *cfconference.Conference
 		responseFlow       *fmflow.Flow
 
 		expectRes *queue.Queue
@@ -54,14 +54,14 @@ func Test_Create(t *testing.T) {
 			100000,
 			1000000,
 
-			&cmconfbridge.Confbridge{
+			&cfconference.Conference{
 				ID: uuid.FromStringOrNil("ad4c17a0-60e6-11ec-9eeb-e76c2c4c7fd4"),
 			},
 			&fmflow.Flow{
 				Actions: []fmaction.Action{
 					{
 						ID:   uuid.FromStringOrNil("1cf6612c-60e8-11ec-810d-a79b29cef25c"),
-						Type: fmaction.TypeConfbridgeJoin,
+						Type: fmaction.TypeConferenceJoin,
 					},
 				},
 			},
@@ -119,7 +119,7 @@ func Test_createQueueFlow(t *testing.T) {
 
 		customerID   uuid.UUID
 		queueID      uuid.UUID
-		confbridgeID uuid.UUID
+		conferenceID uuid.UUID
 		waitActions  []fmaction.Action
 
 		flowName     string
@@ -149,8 +149,8 @@ func Test_createQueueFlow(t *testing.T) {
 					NextID: uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
 				},
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"61d32f5a-60e3-11ec-943d-db1b16329a1c"}`),
+					Type:   fmaction.TypeConferenceJoin,
+					Option: []byte(`{"conference_id":"61d32f5a-60e3-11ec-943d-db1b16329a1c"}`),
 				},
 			},
 			&fmflow.Flow{
@@ -182,7 +182,7 @@ func Test_createQueueFlow(t *testing.T) {
 
 			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.customerID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", tt.flowActions, false).Return(tt.responseFlow, nil)
 
-			res, err := h.createQueueFlow(ctx, tt.customerID, tt.queueID, tt.confbridgeID, tt.waitActions)
+			res, err := h.createQueueFlow(ctx, tt.customerID, tt.queueID, tt.conferenceID, tt.waitActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -200,7 +200,7 @@ func Test_createQueueFlowActions(t *testing.T) {
 		name string
 
 		waitActions  []fmaction.Action
-		confbridgeID uuid.UUID
+		conferenceID uuid.UUID
 
 		expectRes []fmaction.Action
 	}{
@@ -222,8 +222,8 @@ func Test_createQueueFlowActions(t *testing.T) {
 					NextID: uuid.FromStringOrNil("522072fc-adf5-11ec-83ee-13ad3cde9282"),
 				},
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"f1b786fa-60e0-11ec-82a4-a3997b361548"}`),
+					Type:   fmaction.TypeConferenceJoin,
+					Option: []byte(`{"conference_id":"f1b786fa-60e0-11ec-82a4-a3997b361548"}`),
 				},
 			},
 		},
@@ -255,8 +255,8 @@ func Test_createQueueFlowActions(t *testing.T) {
 					Option: []byte(`{"text":"hello"}`),
 				},
 				{
-					Type:   fmaction.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"d9ad87d8-60e2-11ec-8fe6-7bb5167cee96"}`),
+					Type:   fmaction.TypeConferenceJoin,
+					Option: []byte(`{"conference_id":"d9ad87d8-60e2-11ec-8fe6-7bb5167cee96"}`),
 				},
 			},
 		},
@@ -277,7 +277,7 @@ func Test_createQueueFlowActions(t *testing.T) {
 				notifyhandler: mockNotify,
 			}
 
-			res, err := h.createQueueFlowActions(tt.waitActions, tt.confbridgeID)
+			res, err := h.createQueueFlowActions(tt.waitActions, tt.conferenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -301,7 +301,6 @@ func Test_getForwardActionID(t *testing.T) {
 		{
 			"normal",
 
-			// uuid.FromStringOrNil("f21fdbc6-60de-11ec-ad49-5fa7a8a1a0fc"),
 			&fmflow.Flow{
 				Actions: []fmaction.Action{
 					{
@@ -310,7 +309,7 @@ func Test_getForwardActionID(t *testing.T) {
 					},
 					{
 						ID:   uuid.FromStringOrNil("78534d7c-60df-11ec-805c-7786412e957a"),
-						Type: fmaction.TypeConfbridgeJoin,
+						Type: fmaction.TypeConferenceJoin,
 					},
 				},
 			},

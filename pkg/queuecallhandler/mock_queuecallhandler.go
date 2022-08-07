@@ -40,18 +40,18 @@ func (m *MockQueuecallHandler) EXPECT() *MockQueuecallHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockQueuecallHandler) Create(ctx context.Context, q *queue.Queue, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, confbridgeID uuid.UUID, source address.Address) (*queuecall.Queuecall, error) {
+func (m *MockQueuecallHandler) Create(ctx context.Context, q *queue.Queue, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID uuid.UUID, source address.Address) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, confbridgeID, source)
+	ret := m.ctrl.Call(m, "Create", ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID, source)
 	ret0, _ := ret[0].(*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, confbridgeID, source interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID, source interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, confbridgeID, source)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID, source)
 }
 
 // Execute mocks base method.
@@ -142,15 +142,15 @@ func (mr *MockQueuecallHandlerMockRecorder) Hungup(ctx, referenceID interface{})
 }
 
 // Joined mocks base method.
-func (m *MockQueuecallHandler) Joined(ctx context.Context, referenceID, confbridgeID uuid.UUID) {
+func (m *MockQueuecallHandler) Joined(ctx context.Context, referenceID, conferenceID uuid.UUID) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Joined", ctx, referenceID, confbridgeID)
+	m.ctrl.Call(m, "Joined", ctx, referenceID, conferenceID)
 }
 
 // Joined indicates an expected call of Joined.
-func (mr *MockQueuecallHandlerMockRecorder) Joined(ctx, referenceID, confbridgeID interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Joined(ctx, referenceID, conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockQueuecallHandler)(nil).Joined), ctx, referenceID, confbridgeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockQueuecallHandler)(nil).Joined), ctx, referenceID, conferenceID)
 }
 
 // Kick mocks base method.
@@ -184,15 +184,15 @@ func (mr *MockQueuecallHandlerMockRecorder) KickByReferenceID(ctx, referenceID i
 }
 
 // Leaved mocks base method.
-func (m *MockQueuecallHandler) Leaved(ctx context.Context, referenceID, confbridgeID uuid.UUID) {
+func (m *MockQueuecallHandler) Leaved(ctx context.Context, referenceID, conferenceID uuid.UUID) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Leaved", ctx, referenceID, confbridgeID)
+	m.ctrl.Call(m, "Leaved", ctx, referenceID, conferenceID)
 }
 
 // Leaved indicates an expected call of Leaved.
-func (mr *MockQueuecallHandlerMockRecorder) Leaved(ctx, referenceID, confbridgeID interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Leaved(ctx, referenceID, conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockQueuecallHandler)(nil).Leaved), ctx, referenceID, confbridgeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockQueuecallHandler)(nil).Leaved), ctx, referenceID, conferenceID)
 }
 
 // TimeoutService mocks base method.

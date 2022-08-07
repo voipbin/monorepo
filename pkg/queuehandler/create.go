@@ -87,7 +87,7 @@ func (h *queueHandler) Create(
 }
 
 // createQueueFlow creates a queue flow and returns created flow.
-func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID, queueID uuid.UUID, confbridgeID uuid.UUID, waitActions []fmaction.Action) (*fmflow.Flow, error) {
+func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID, queueID uuid.UUID, conferenceID uuid.UUID, waitActions []fmaction.Action) (*fmflow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":     "createQueueFlow",
@@ -95,7 +95,7 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID
 		})
 
 	// create flow actions
-	actions, err := h.createQueueFlowActions(waitActions, confbridgeID)
+	actions, err := h.createQueueFlowActions(waitActions, conferenceID)
 	if err != nil {
 		log.Errorf("Could not create actions. err: %v", err)
 		return nil, err
@@ -117,11 +117,11 @@ func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID
 }
 
 // createQueueFlowActions creates the actions for queue join.
-func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, confbridgeID uuid.UUID) ([]fmaction.Action, error) {
+func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, conferenceID uuid.UUID) ([]fmaction.Action, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "createQueueFlowActions",
-			"confbridge_id": confbridgeID,
+			"conference_id": conferenceID,
 		})
 
 	res := []fmaction.Action{}
@@ -146,9 +146,9 @@ func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, con
 	// set next id for loop
 	res[len(res)-1].NextID = res[0].ID
 
-	// append the confbridge join
-	option := fmaction.OptionConfbridgeJoin{
-		ConfbridgeID: confbridgeID,
+	// append the conference join
+	option := fmaction.OptionConferenceJoin{
+		ConferenceID: conferenceID,
 	}
 	opt, err := json.Marshal(option)
 	if err != nil {
@@ -156,7 +156,7 @@ func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, con
 		return nil, err
 	}
 	act := fmaction.Action{
-		Type:   fmaction.TypeConfbridgeJoin,
+		Type:   fmaction.TypeConferenceJoin,
 		Option: opt,
 	}
 	res = append(res, act)
@@ -175,7 +175,7 @@ func (h *queueHandler) getForwardActionID(ctx context.Context, f *fmflow.Flow) (
 
 	res := uuid.Nil
 	for _, act := range f.Actions {
-		if act.Type == fmaction.TypeConfbridgeJoin {
+		if act.Type == fmaction.TypeConferenceJoin {
 			res = act.ID
 		}
 	}
