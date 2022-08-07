@@ -62,7 +62,7 @@ func Test_Create(t *testing.T) {
 
 			mockDB.EXPECT().ConferencecallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, gomock.Any()).Return(tt.responseConferencecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConferencecall.CustomerID, conferencecall.EventTypeConferencecallJoining, tt.responseConferencecall)
+			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallJoining, tt.responseConferencecall)
 			res, err := h.Create(ctx, tt.customerID, tt.conferenceID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -279,6 +279,7 @@ func Test_UpdateStatusLeaving(t *testing.T) {
 
 			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.responseConferencecall.ID, conferencecall.StatusLeaving).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaving, tt.responseConferencecall)
 
 			res, err := h.UpdateStatusLeaving(ctx, tt.id)
 			if err != nil {
@@ -333,6 +334,7 @@ func Test_UpdateStatusLeaved(t *testing.T) {
 
 			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.responseConferencecall.ID, conferencecall.StatusLeaved).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaved, tt.responseConferencecall)
 
 			res, err := h.UpdateStatusLeaved(ctx, tt.id)
 			if err != nil {

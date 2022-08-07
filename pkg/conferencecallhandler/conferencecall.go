@@ -57,7 +57,7 @@ func (h *conferencecallHandler) Create(
 		log.Errorf("Could not get created conferencecall info. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conferencecall.EventTypeConferencecallJoining, res)
+	h.notifyHandler.PublishEvent(ctx, conferencecall.EventTypeConferencecallJoining, res)
 
 	return res, nil
 }
@@ -172,6 +172,7 @@ func (h *conferencecallHandler) UpdateStatusJoined(ctx context.Context, conferen
 		log.Errorf("Could not update the status correctly. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, conferencecall.EventTypeConferencecallJoined, res)
 
 	return res, nil
 }
@@ -191,6 +192,7 @@ func (h *conferencecallHandler) UpdateStatusLeaving(ctx context.Context, id uuid
 		log.Errorf("Could not update the status correctly. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaving, res)
 
 	return res, nil
 }
@@ -210,6 +212,7 @@ func (h *conferencecallHandler) UpdateStatusLeaved(ctx context.Context, id uuid.
 		log.Errorf("Could not update the status correctly. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaved, res)
 
 	return res, nil
 

@@ -2,7 +2,6 @@ package conferencehandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -50,12 +49,9 @@ func (h *conferenceHandler) Leaved(ctx context.Context, cf *conference.Conferenc
 	case conference.TypeConnect:
 		return h.leavedTypeConnect(ctx, tmp)
 
-	case conference.TypeConference:
-		return h.leavedTypeConference(ctx, tmp)
-
 	default:
-		log.Errorf("Could not find correct event handler.")
-		return fmt.Errorf("could not find connrect event handler")
+		log.Debugf("Executing default conference leave handle. conference_type: %s", cf.Type)
+		return h.leavedTypeConference(ctx, tmp)
 	}
 }
 
