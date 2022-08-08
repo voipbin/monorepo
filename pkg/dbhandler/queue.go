@@ -97,18 +97,18 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 		res.WaitActions = []fmaction.Action{}
 	}
 
-	if err := json.Unmarshal([]byte(waitQueuecallIDs), &res.WaitQueueCallIDs); err != nil {
+	if err := json.Unmarshal([]byte(waitQueuecallIDs), &res.WaitQueuecallIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the tag_ids. queueGetFromRow. err: %v", err)
 	}
-	if res.WaitQueueCallIDs == nil {
-		res.WaitQueueCallIDs = []uuid.UUID{}
+	if res.WaitQueuecallIDs == nil {
+		res.WaitQueuecallIDs = []uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(serviceQueuecallIDs), &res.ServiceQueueCallIDs); err != nil {
+	if err := json.Unmarshal([]byte(serviceQueuecallIDs), &res.ServiceQueuecallIDs); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the tag_ids. queueGetFromRow. err: %v", err)
 	}
-	if res.ServiceQueueCallIDs == nil {
-		res.ServiceQueueCallIDs = []uuid.UUID{}
+	if res.ServiceQueuecallIDs == nil {
+		res.ServiceQueuecallIDs = []uuid.UUID{}
 	}
 
 	return res, nil
@@ -160,11 +160,11 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 	if err != nil {
 		return fmt.Errorf("could not marshal the wait_actions. err: %v", err)
 	}
-	waitQueueCallIDs, err := json.Marshal(a.WaitQueueCallIDs)
+	waitQueueCallIDs, err := json.Marshal(a.WaitQueuecallIDs)
 	if err != nil {
 		return fmt.Errorf("could not marshal the queue_call_ids. err: %v", err)
 	}
-	serviceQueueCallIDs, err := json.Marshal(a.ServiceQueueCallIDs)
+	serviceQueueCallIDs, err := json.Marshal(a.ServiceQueuecallIDs)
 	if err != nil {
 		return fmt.Errorf("could not marshal the queue_call_ids. err: %v", err)
 	}

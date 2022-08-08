@@ -57,9 +57,9 @@ func (h *queueHandler) Create(
 		Execute: queue.ExecuteStop,
 
 		WaitActions:         waitActions,
-		WaitQueueCallIDs:    []uuid.UUID{},
+		WaitQueuecallIDs:    []uuid.UUID{},
 		WaitTimeout:         waitTimeout,
-		ServiceQueueCallIDs: []uuid.UUID{},
+		ServiceQueuecallIDs: []uuid.UUID{},
 		ServiceTimeout:      serviceTimeout,
 
 		TotalIncomingCount:  0,
