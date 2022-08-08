@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -59,10 +60,11 @@ func Test_QueuecallGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueuecallGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().QMV1QueuecallGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.QueuecallGets(tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.QueuecallGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -122,10 +124,11 @@ func Test_QueuecallGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueuecallGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().QMV1QueuecallGet(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.QueuecallGet(tt.customer, tt.id)
+			res, err := h.QueuecallGet(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -179,11 +182,12 @@ func Test_QueuecallDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueuecallGet(gomock.Any(), tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().QMV1QueuecallDelete(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().QMV1QueuecallGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().QMV1QueuecallDelete(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.QueuecallDelete(tt.customer, tt.id)
+			res, err := h.QueuecallDelete(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -237,11 +241,12 @@ func Test_QueuecallDeleteByReferenceID(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueuecallGet(gomock.Any(), tt.referenceID).Return(tt.response, nil)
-			mockReq.EXPECT().QMV1QueuecallDelete(gomock.Any(), tt.referenceID).Return(tt.response, nil)
+			mockReq.EXPECT().QMV1QueuecallGet(ctx, tt.referenceID).Return(tt.response, nil)
+			mockReq.EXPECT().QMV1QueuecallDelete(ctx, tt.referenceID).Return(tt.response, nil)
 
-			res, err := h.QueuecallDelete(tt.customer, tt.referenceID)
+			res, err := h.QueuecallDelete(ctx, tt.customer, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -33,6 +33,7 @@ import (
 	outdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	outdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
@@ -1526,6 +1527,66 @@ func (m *MockServiceHandler) QueueUpdateTagIDs(u *customer.Customer, queueID uui
 func (mr *MockServiceHandlerMockRecorder) QueueUpdateTagIDs(u, queueID, tagIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUpdateTagIDs", reflect.TypeOf((*MockServiceHandler)(nil).QueueUpdateTagIDs), u, queueID, tagIDs)
+}
+
+// QueuecallDelete mocks base method.
+func (m *MockServiceHandler) QueuecallDelete(ctx context.Context, u *customer.Customer, queuecallID uuid.UUID) (*queuecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallDelete", ctx, u, queuecallID)
+	ret0, _ := ret[0].(*queuecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallDelete indicates an expected call of QueuecallDelete.
+func (mr *MockServiceHandlerMockRecorder) QueuecallDelete(ctx, u, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallDelete", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallDelete), ctx, u, queuecallID)
+}
+
+// QueuecallDeleteByReferenceID mocks base method.
+func (m *MockServiceHandler) QueuecallDeleteByReferenceID(ctx context.Context, u *customer.Customer, referenceID uuid.UUID) (*queuecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallDeleteByReferenceID", ctx, u, referenceID)
+	ret0, _ := ret[0].(*queuecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallDeleteByReferenceID indicates an expected call of QueuecallDeleteByReferenceID.
+func (mr *MockServiceHandlerMockRecorder) QueuecallDeleteByReferenceID(ctx, u, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallDeleteByReferenceID", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallDeleteByReferenceID), ctx, u, referenceID)
+}
+
+// QueuecallGet mocks base method.
+func (m *MockServiceHandler) QueuecallGet(ctx context.Context, u *customer.Customer, queueID uuid.UUID) (*queuecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallGet", ctx, u, queueID)
+	ret0, _ := ret[0].(*queuecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallGet indicates an expected call of QueuecallGet.
+func (mr *MockServiceHandlerMockRecorder) QueuecallGet(ctx, u, queueID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGet", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallGet), ctx, u, queueID)
+}
+
+// QueuecallGets mocks base method.
+func (m *MockServiceHandler) QueuecallGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*queuecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallGets", ctx, u, size, token)
+	ret0, _ := ret[0].([]*queuecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallGets indicates an expected call of QueuecallGets.
+func (mr *MockServiceHandlerMockRecorder) QueuecallGets(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGets", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallGets), ctx, u, size, token)
 }
 
 // RecordingGet mocks base method.

@@ -39,8 +39,7 @@ func (h *serviceHandler) queuecallGet(ctx context.Context, u *cscustomer.Custome
 
 // QueuecallGet sends a request to queue-manager
 // to getting the queuecall.
-func (h *serviceHandler) QueuecallGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) QueuecallGet(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueGet",
 		"customer_id": u.ID,
@@ -61,8 +60,7 @@ func (h *serviceHandler) QueuecallGet(u *cscustomer.Customer, queueID uuid.UUID)
 // QueuecallGets sends a request to queue-manager
 // to getting a list of queuecalls.
 // it returns queuecall info if it succeed.
-func (h *serviceHandler) QueuecallGets(u *cscustomer.Customer, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) QueuecallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueuecallGets",
 		"customer_id": u.ID,
@@ -92,8 +90,7 @@ func (h *serviceHandler) QueuecallGets(u *cscustomer.Customer, size uint64, toke
 
 // QueuecallDelete sends a request to the queue-manager
 // to kick out the given queuecall.
-func (h *serviceHandler) QueuecallDelete(u *cscustomer.Customer, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) QueuecallDelete(ctx context.Context, u *cscustomer.Customer, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueuecallDelete",
 		"customer_id": u.ID,
@@ -119,8 +116,7 @@ func (h *serviceHandler) QueuecallDelete(u *cscustomer.Customer, queuecallID uui
 
 // QueuecallDeleteByReferenceID sends a request to the queue-manager
 // to kick out the given reference id's queuecall.
-func (h *serviceHandler) QueuecallDeleteByReferenceID(u *cscustomer.Customer, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) QueuecallDeleteByReferenceID(ctx context.Context, u *cscustomer.Customer, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueuecallDeleteByReferenceID",
 		"customer_id": u.ID,
