@@ -32,6 +32,7 @@ import (
 	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
@@ -253,7 +254,7 @@ type ServiceHandler interface {
 		maxTryCount4 int,
 	) (*caoutplan.WebhookMessage, error)
 
-	// queue handler
+	// queue handlers
 	QueueGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
 	QueueGets(u *cscustomer.Customer, size uint64, token string) ([]*qmqueue.WebhookMessage, error)
 	QueueCreate(
@@ -271,6 +272,12 @@ type ServiceHandler interface {
 	QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error)
 	QueueUpdateRoutingMethod(u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error)
 	QueueUpdateActions(u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error)
+
+	// queuecall handlers
+	QueuecallGet(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
+	QueuecallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error)
+	QueuecallDelete(ctx context.Context, u *cscustomer.Customer, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
+	QueuecallDeleteByReferenceID(ctx context.Context, u *cscustomer.Customer, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
 
 	// recording handlers
 	RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error)
