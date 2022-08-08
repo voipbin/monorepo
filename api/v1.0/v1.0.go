@@ -19,6 +19,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/numbers"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/outdials"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/outplans"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/queuecalls"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/queues"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/recordingfiles"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/recordings"
@@ -50,6 +51,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	outdials.ApplyRoutes(v1)
 	outplans.ApplyRoutes(v1)
 	queues.ApplyRoutes(v1)
+	queuecalls.ApplyRoutes(v1)
 	recordings.ApplyRoutes(v1)
 	recordingfiles.ApplyRoutes(v1)
 	tags.ApplyRoutes(v1)
