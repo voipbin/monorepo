@@ -27,8 +27,8 @@ type Queue struct {
 	ServiceTimeout int               `json:"service_timeout"` // service queue timeout(ms).
 
 	// queuecall info
-	WaitQueueCallIDs    []uuid.UUID `json:"wait_queue_call_ids"`    // waiting queue call ids.
-	ServiceQueueCallIDs []uuid.UUID `json:"service_queue_call_ids"` // service queue call ids(ms).
+	WaitQueuecallIDs    []uuid.UUID `json:"wait_queuecall_ids"`    // waiting queue call ids.
+	ServiceQueuecallIDs []uuid.UUID `json:"service_queuecall_ids"` // service queue call ids(ms).
 
 	TotalIncomingCount  int `json:"total_incoming_count"`  // total incoming call count
 	TotalServicedCount  int `json:"total_serviced_count"`  // total serviced call count
