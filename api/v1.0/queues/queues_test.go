@@ -54,12 +54,12 @@ func Test_queuesGet(t *testing.T) {
 					TagIDs:      []uuid.UUID{},
 					WaitActions: []fmaction.Action{},
 
-					WaitQueueCallIDs:    []uuid.UUID{},
-					ServiceQueueCallIDs: []uuid.UUID{},
+					WaitQueuecallIDs:    []uuid.UUID{},
+					ServiceQueuecallIDs: []uuid.UUID{},
 					TMCreate:            "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"f188b7aa-6476-11ec-a130-03a796c9e1e4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"f188b7aa-6476-11ec-a130-03a796c9e1e4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queuecall_ids":[],"service_queuecall_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -78,8 +78,8 @@ func Test_queuesGet(t *testing.T) {
 					TagIDs:      []uuid.UUID{},
 					WaitActions: []fmaction.Action{},
 
-					WaitQueueCallIDs:    []uuid.UUID{},
-					ServiceQueueCallIDs: []uuid.UUID{},
+					WaitQueuecallIDs:    []uuid.UUID{},
+					ServiceQueuecallIDs: []uuid.UUID{},
 					TMCreate:            "2020-09-20T03:23:21.995000",
 				},
 				{
@@ -87,8 +87,8 @@ func Test_queuesGet(t *testing.T) {
 					TagIDs:      []uuid.UUID{},
 					WaitActions: []fmaction.Action{},
 
-					WaitQueueCallIDs:    []uuid.UUID{},
-					ServiceQueueCallIDs: []uuid.UUID{},
+					WaitQueuecallIDs:    []uuid.UUID{},
+					ServiceQueuecallIDs: []uuid.UUID{},
 					TMCreate:            "2020-09-20T03:23:22.995000",
 				},
 				{
@@ -96,12 +96,12 @@ func Test_queuesGet(t *testing.T) {
 					TagIDs:      []uuid.UUID{},
 					WaitActions: []fmaction.Action{},
 
-					WaitQueueCallIDs:    []uuid.UUID{},
-					ServiceQueueCallIDs: []uuid.UUID{},
+					WaitQueuecallIDs:    []uuid.UUID{},
+					ServiceQueuecallIDs: []uuid.UUID{},
 					TMCreate:            "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"f1ad64a6-6476-11ec-a650-cf22de7273e6","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"f1ad64a6-6476-11ec-a650-cf22de7273e6","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queuecall_ids":[],"service_queuecall_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queuecall_ids":[],"service_queuecall_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queuecall_ids":[],"service_queuecall_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -242,11 +242,11 @@ func Test_queuesIDGet(t *testing.T) {
 				TagIDs:      []uuid.UUID{},
 				WaitActions: []fmaction.Action{},
 
-				WaitQueueCallIDs:    []uuid.UUID{},
-				ServiceQueueCallIDs: []uuid.UUID{},
+				WaitQueuecallIDs:    []uuid.UUID{},
+				ServiceQueuecallIDs: []uuid.UUID{},
 				TMCreate:            "2020-09-20T03:23:21.995000",
 			},
-			`{"id":"395518ca-830a-11eb-badc-b3582bc51917","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
+			`{"id":"395518ca-830a-11eb-badc-b3582bc51917","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queuecall_ids":[],"service_queuecall_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
 		},
 		{
 			"webhook",
@@ -258,11 +258,11 @@ func Test_queuesIDGet(t *testing.T) {
 				TagIDs:      []uuid.UUID{},
 				WaitActions: []fmaction.Action{},
 
-				WaitQueueCallIDs:    []uuid.UUID{},
-				ServiceQueueCallIDs: []uuid.UUID{},
+				WaitQueuecallIDs:    []uuid.UUID{},
+				ServiceQueuecallIDs: []uuid.UUID{},
 				TMCreate:            "2020-09-20T03:23:21.995000",
 			},
-			`{"id":"9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queue_call_ids":[],"service_queue_call_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
+			`{"id":"9e6e2dbe-830a-11eb-8fb0-cf5ab9cac353","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","routing_method":"","tag_ids":[],"wait_actions":[],"wait_timeout":0,"service_timeout":0,"wait_queuecall_ids":[],"service_queuecall_ids":[],"total_incoming_count":0,"total_serviced_count":0,"total_abandoned_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
 		},
 	}
 
