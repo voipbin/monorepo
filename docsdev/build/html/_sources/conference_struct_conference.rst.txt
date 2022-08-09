@@ -11,13 +11,14 @@ Conference
 .. code::
 
     {
-        "id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",
-        "type": "conference",
-        "status": "progressing",
-        "name": "test conference",
-        "detail": "test conference for example.",
+        "id": "<string>",
+        "customer_id": "<string>",
+        "type": "<string>",
+        "status": "<string>",
+        "name": "<string>",
+        "detail": "<string>",
         "data": {},
-        "timeout": 0,
+        "timeout": <integer>,
         "pre_actions": [
             {
                 ...
@@ -28,15 +29,20 @@ Conference
                 ...
             }
         ],
-        "call_ids": [],
-        "recording_id": "00000000-0000-0000-0000-000000000000",
-        "recording_ids": [],
-        "tm_create": "2022-02-03 06:08:56.672025",
-        "tm_update": "2022-02-03 06:29:48.601658",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "conferencecall_ids": [
+            ...
+        ],
+        "recording_id": "<string>",
+        "recording_ids": [
+            ...
+        ],
+        "tm_create": "<string>",
+        "tm_update": "<string>",
+        "tm_delete": "<string>"
     }
 
 * id: Conference's ID.
+* customer_id: Customer's ID.
 * *type*: Conference's type. See detail :ref:`here <conference-struct-conference-type>`.
 * *status*: Conference's status. See detail :ref:`here <conference-struct-conference-status>`.
 * name: Conference's name.
@@ -45,9 +51,56 @@ Conference
 * timeout: Timeout(second).
 * pre_actions: Set of actions for entering calls.
 * post_action: Set of actions for leaving calls.
-* call_ids: List of conferencing call ids.
+* conferencecall_ids: List of conferencecall ids.
 * recording_id: Currently recoriding id.
 * recording_ids: List of recording ids.
+
+
+Example
++++++++
+
+.. code::
+
+    {
+        "id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "type": "conference",
+        "status": "progressing",
+        "name": "test conference",
+        "detail": "test conference for example.",
+        "data": {},
+        "timeout": 0,
+        "pre_actions": [
+            {
+                "id": "00000000-0000-0000-0000-000000000000",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "talk",
+                "option": {
+                    "text": "Hello. Welcome to the test conference.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            }
+        ],
+        "post_actions": [
+            {
+                "id": "00000000-0000-0000-0000-000000000000",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "talk",
+                "option": {
+                    "text": "The conference has closed. Thank you. Good bye.",
+                    "gender": "female",
+                    "language": "en-US"
+                }
+            }
+        ],
+        "conferencecall_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
+        "recording_ids": [],
+        "tm_create": "2022-02-03 06:08:56.672025",
+        "tm_update": "2022-08-06 19:11:13.040418",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
 
 .. _conference-struct-conference-type:
 
