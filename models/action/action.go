@@ -57,6 +57,7 @@ const (
 	TypeCall                Type = "call"                  // flow-manager. make a call.
 	TypeConditionCallDigits Type = "condition_call_digits" // flow-manager. condition check(call's digits)
 	TypeConditionCallStatus Type = "condition_call_status" // flow-manager. condition check(call's status)
+	TypeConditionDatetime   Type = "condition_datetime"    // flow-manager. condition check(datetime)
 	TypeConfbridgeJoin      Type = "confbridge_join"       // call-manager. join to the confbridge.
 	TypeConferenceJoin      Type = "conference_join"       // conference-manager. join to the conference.
 	TypeConnect             Type = "connect"               // flow-manager. connect to the other destination.

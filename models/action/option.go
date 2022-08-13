@@ -62,6 +62,19 @@ type OptionConditionCallStatus struct {
 	FalseTargetID uuid.UUID `json:"false_target_id"` // target id for false case.
 }
 
+// OptionConditionDatetime defines action condition_datetime's option.
+type OptionConditionDatetime struct {
+	Condition OptionConditionCommonCondition `json:"condition"`
+
+	Minute   int   `json:"minute"`   // 0 - 59
+	Hour     int   `json:"hour"`     // 0 - 23
+	Day      int   `json:"day"`      // 1 - 31
+	Month    int   `json:"month"`    // 1 - 12
+	Weekdays []int `json:"weekdays"` // Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6
+
+	FalseTargetID uuid.UUID `json:"false_target_id"` // target id for false case.
+}
+
 // OptionConferenceJoin defines action conference_join's option.
 type OptionConferenceJoin struct {
 	ConferenceID uuid.UUID `json:"conference_id"`

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -243,6 +244,130 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 	log.Debugf("Could not match the condition. Forward to the false target. target_stack_id:%s, target_action_id: %s", targetStackID, targetAction.ID)
 
 	// failed
+	af.ForwardStackID = targetStackID
+	af.ForwardActionID = targetAction.ID
+	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// actionHandleConditionDatetime handles action condition_datetime with activeflow.
+// it checks the current datetime and sets the forward action id.
+func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleConditionDatetime",
+		"activeflow_id":     af.ID,
+		"reference_type":    af.ReferenceType,
+		"reference_id":      af.ReferenceID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	act := &af.CurrentAction
+
+	var opt action.OptionConditionDatetime
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return err
+	}
+	log.WithField("option", opt).Debugf("Detail option.")
+
+	// get current time
+	current := time.Now().UTC()
+	log.Debugf("Current time. datetime: %s", current.String())
+
+	match := true
+
+	// check the weekdays
+	// if the option has weekdays, we need to check this first.
+	if len(opt.Weekdays) != 0 {
+		match = false
+		weekday := int(current.Weekday())
+		for _, day := range opt.Weekdays {
+			if day == weekday {
+				match = true
+				break
+			}
+		}
+
+		if !match {
+			log.Debugf("The weekday does not match. weekdays: %v, current: %d", opt.Weekdays, weekday)
+		}
+	}
+
+	// check month
+	if match {
+		if opt.Month > 0 {
+			res := compareCondition(opt.Condition, opt.Month, int(current.Month()))
+			if !res {
+				match = false
+			}
+		}
+
+		if !match {
+			log.Debugf("The month does not match. condition: %s, month: %d, current: %d", opt.Condition, opt.Month, current.Month())
+		}
+	}
+
+	// check day
+	if match {
+		if opt.Day > 0 {
+			res := compareCondition(opt.Condition, opt.Day, current.Day())
+			if !res {
+				match = false
+			}
+		}
+
+		if !match {
+			log.Debugf("The day does not match. condition: %s, day: %d, current: %d", opt.Condition, opt.Day, current.Day())
+		}
+	}
+
+	// check hour
+	if match {
+		if opt.Hour >= 0 {
+			res := compareCondition(opt.Condition, opt.Hour, current.Hour())
+			if !res {
+				match = false
+			}
+		}
+
+		if !match {
+			log.Debugf("The hour does not match. condition: %s, hour: %d, current: %d", opt.Condition, opt.Hour, current.Hour())
+		}
+	}
+
+	// check minute
+	if match {
+		if opt.Minute >= 0 {
+			res := compareCondition(opt.Condition, opt.Minute, current.Minute())
+			if !res {
+				match = false
+			}
+		}
+
+		if !match {
+			log.Debugf("The minute does not match. condition: %s, minute: %d, current: %d", opt.Condition, opt.Minute, current.Minute())
+		}
+	}
+
+	// it matched all conditions.
+	// nothing to do here.
+	if match {
+		return nil
+	}
+
+	// could not pass the match conditions.
+	// gets the false target action
+	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
+	if err != nil {
+		log.Errorf("Could not find false target action. err: %v", err)
+		return err
+	}
+
+	// sets the false target action
+	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {

@@ -529,3 +529,45 @@ func Test_OptionWebhookSend(t *testing.T) {
 		})
 	}
 }
+
+func Test_marshalOptionConditionDatetime(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionConditionDatetime
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			[]byte(`{"condition": ">=", "hour": 8, "day": -1, "month": -1, "weekdays": [], "false_target_id": "722c49b0-a976-4671-b946-489be3b1dc23"}`),
+
+			OptionConditionDatetime{
+				Condition:     OptionConditionCommonConditionGreaterEqual,
+				Minute:        0,
+				Hour:          8,
+				Day:           -1,
+				Month:         -1,
+				Weekdays:      []int{},
+				FalseTargetID: uuid.FromStringOrNil("722c49b0-a976-4671-b946-489be3b1dc23"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionConditionDatetime{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

@@ -40,7 +40,7 @@ golangci-lint:
   stage: test
   script:
     - golangci-lint version
-    - golangci-lint run -v --timeout 5m
+    - golangci-lint run -v --timeout 5m --go=1.18
 
 vet:
   stage: test

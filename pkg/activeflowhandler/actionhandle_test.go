@@ -2,6 +2,7 @@ package activeflowhandler
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -2088,6 +2089,263 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectReqActiveFlow)
 
 			if err := h.actionHandleConditionCallStatus(ctx, tt.activeFlow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_actionHandleConditionDatetime_lessequal(t *testing.T) {
+
+	// test values
+	minute := 0x01
+	hour := 0x02
+	day := 0x04
+	month := 0x08
+	weekdays := 0x10
+
+	tests := []struct {
+		name string
+
+		conditions int
+	}{
+		{name: "minute", conditions: minute},
+		{name: "hour", conditions: hour},
+		{name: "day", conditions: day},
+		{name: "month", conditions: month},
+		{name: "weekdays", conditions: weekdays},
+
+		{name: "min + hour", conditions: minute | hour},
+		{name: "min + day", conditions: minute | day},
+		{name: "min + month", conditions: minute | month},
+		{name: "min + weekdays", conditions: minute | weekdays},
+
+		{name: "hour + day", conditions: hour | day},
+		{name: "hour + month", conditions: hour | month},
+		{name: "hour + weekdays", conditions: hour | weekdays},
+
+		{name: "day + month", conditions: day | month},
+		{name: "day + weekdays", conditions: day | weekdays},
+
+		{name: "month + weekdays", conditions: month | weekdays},
+
+		{name: "min + hour + day", conditions: minute | hour | day},
+		{name: "min + hour + month", conditions: minute | hour | month},
+		{name: "min + hour + weekdays", conditions: minute | hour | weekdays},
+
+		{name: "min + day + month", conditions: minute | day | month},
+		{name: "min + day + weekdays", conditions: minute | day | weekdays},
+
+		{name: "min + month + weekdays", conditions: minute | month | weekdays},
+
+		{name: "hour + day + month", conditions: hour | day | month},
+		{name: "hour + day + weekdays", conditions: hour | day | weekdays},
+
+		{name: "day + month + weekdays", conditions: day | month | weekdays},
+
+		{name: "min + hour + day + month", conditions: minute | hour | day | month},
+		{name: "min + hour + day + weekdays", conditions: minute | hour | day | weekdays},
+
+		{name: "hour + day + month + weekdays", conditions: minute | hour | day | month | weekdays},
+
+		{name: "all", conditions: minute | hour | day | month | weekdays},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockStack := stackhandler.NewMockStackHandler(mc)
+
+			h := &activeflowHandler{
+				db:           mockDB,
+				reqHandler:   mockReq,
+				stackHandler: mockStack,
+			}
+
+			af := &activeflow.Activeflow{
+				ReferenceID:    uuid.FromStringOrNil("1bd34ec7-f306-4c4b-af0e-0f446f5561b1"),
+				CurrentStackID: stack.IDMain,
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("177946a3-d1c3-4c5d-8468-739a1dd65d4c"),
+					Type: action.TypeConditionDatetime,
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("177946a3-d1c3-4c5d-8468-739a1dd65d4c"),
+								Type: action.TypeConditionDatetime,
+							},
+						},
+					},
+				},
+			}
+
+			ctx := context.Background()
+
+			// get currnet time
+			current := time.Now().UTC()
+
+			// generate test options
+			opt := &action.OptionConditionDatetime{
+				Condition: action.OptionConditionCommonConditionLessEqual,
+			}
+			if tt.conditions&minute == minute {
+				opt.Minute = current.Minute()
+			}
+			if tt.conditions&hour == hour {
+				opt.Hour = current.Hour()
+			}
+			if tt.conditions&day == day {
+				opt.Day = current.Day()
+			}
+			if tt.conditions&month == month {
+				opt.Month = int(current.Month())
+			}
+			if tt.conditions&weekdays == weekdays {
+				opt.Weekdays = []int{int(current.Weekday())}
+			}
+
+			tmp, _ := json.Marshal(opt)
+			af.CurrentAction.Option = tmp
+
+			if err := h.actionHandleConditionDatetime(ctx, af); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_actionHandleConditionDatetime_false(t *testing.T) {
+
+	// test values
+	minute := 0x01
+	hour := 0x02
+	day := 0x04
+	month := 0x08
+	weekdays := 0x10
+
+	tests := []struct {
+		name string
+
+		conditions int
+	}{
+		{name: "minute", conditions: minute},
+		{name: "hour", conditions: hour},
+		{name: "day", conditions: day},
+		{name: "month", conditions: month},
+		{name: "weekdays", conditions: weekdays},
+
+		{name: "min + hour", conditions: minute | hour},
+		{name: "min + day", conditions: minute | day},
+		{name: "min + month", conditions: minute | month},
+		{name: "min + weekdays", conditions: minute | weekdays},
+
+		{name: "hour + day", conditions: hour | day},
+		{name: "hour + month", conditions: hour | month},
+		{name: "hour + weekdays", conditions: hour | weekdays},
+
+		{name: "day + month", conditions: day | month},
+		{name: "day + weekdays", conditions: day | weekdays},
+
+		{name: "month + weekdays", conditions: month | weekdays},
+
+		{name: "min + hour + day", conditions: minute | hour | day},
+		{name: "min + hour + month", conditions: minute | hour | month},
+		{name: "min + hour + weekdays", conditions: minute | hour | weekdays},
+
+		{name: "min + day + month", conditions: minute | day | month},
+		{name: "min + day + weekdays", conditions: minute | day | weekdays},
+
+		{name: "min + month + weekdays", conditions: minute | month | weekdays},
+
+		{name: "hour + day + month", conditions: hour | day | month},
+		{name: "hour + day + weekdays", conditions: hour | day | weekdays},
+
+		{name: "day + month + weekdays", conditions: day | month | weekdays},
+
+		{name: "min + hour + day + month", conditions: minute | hour | day | month},
+		{name: "min + hour + day + weekdays", conditions: minute | hour | day | weekdays},
+
+		{name: "hour + day + month + weekdays", conditions: minute | hour | day | month | weekdays},
+
+		{name: "all", conditions: minute | hour | day | month | weekdays},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockStack := stackhandler.NewMockStackHandler(mc)
+
+			h := &activeflowHandler{
+				db:           mockDB,
+				reqHandler:   mockReq,
+				stackHandler: mockStack,
+			}
+
+			af := &activeflow.Activeflow{
+				ReferenceID:    uuid.FromStringOrNil("1bd34ec7-f306-4c4b-af0e-0f446f5561b1"),
+				CurrentStackID: stack.IDMain,
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("177946a3-d1c3-4c5d-8468-739a1dd65d4c"),
+					Type: action.TypeConditionDatetime,
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("177946a3-d1c3-4c5d-8468-739a1dd65d4c"),
+								Type: action.TypeConditionDatetime,
+							},
+						},
+					},
+				},
+			}
+
+			ctx := context.Background()
+
+			// get currnet time
+			current := time.Now().UTC()
+
+			// generate test options
+			opt := &action.OptionConditionDatetime{
+				Condition: action.OptionConditionCommonConditionGreater,
+			}
+			if tt.conditions&minute == minute {
+				opt.Minute = current.Minute()
+			}
+			if tt.conditions&hour == hour {
+				opt.Hour = current.Hour()
+			}
+			if tt.conditions&day == day {
+				opt.Day = current.Day()
+			}
+			if tt.conditions&month == month {
+				opt.Month = int(current.Month())
+			}
+			if tt.conditions&weekdays == weekdays {
+				opt.Weekdays = []int{int(current.Weekday())}
+			}
+
+			tmp, _ := json.Marshal(opt)
+			af.CurrentAction.Option = tmp
+
+			mockStack.EXPECT().GetAction(ctx, af.StackMap, af.CurrentStackID, gomock.Any(), false).Return(stack.IDMain, &action.Action{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, af).Return(nil)
+
+			if err := h.actionHandleConditionDatetime(ctx, af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
