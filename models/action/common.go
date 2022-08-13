@@ -9,6 +9,19 @@ const (
 	OptionAMDMachineHandleTypeContinue OptionAMDMachineHandleType = "continue"
 )
 
+// OptionConditionCommonCondition define
+type OptionConditionCommonCondition string
+
+// list of OptionConditionCommonCondition.
+const (
+	OptionConditionCommonConditionEqual        OptionConditionCommonCondition = "=="
+	OptionConditionCommonConditionNotEqual     OptionConditionCommonCondition = "!="
+	OptionConditionCommonConditionGreater      OptionConditionCommonCondition = ">"
+	OptionConditionCommonConditionGreaterEqual OptionConditionCommonCondition = ">="
+	OptionConditionCommonConditionLess         OptionConditionCommonCondition = "<"
+	OptionConditionCommonConditionLessEqual    OptionConditionCommonCondition = "<="
+)
+
 // OptionConditionCallStatusStatus define
 type OptionConditionCallStatusStatus string
 

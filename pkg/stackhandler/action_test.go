@@ -209,6 +209,51 @@ func Test_GetAction(t *testing.T) {
 	}
 }
 
+func Test_GetAction_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		stackMap       map[uuid.UUID]*stack.Stack
+		currentStackID uuid.UUID
+		targetActionID uuid.UUID
+	}{
+		{
+			"action id does not exist",
+
+			map[uuid.UUID]*stack.Stack{
+				uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"): {
+					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+					Actions: []action.Action{
+						{
+							ID:   uuid.FromStringOrNil("51e04796-d3b5-11ec-a41b-1fb38082327f"),
+							Type: action.TypeAnswer,
+						},
+					},
+					ReturnStackID:  uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+					ReturnActionID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000"),
+				},
+			},
+			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+			uuid.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			h := &stackHandler{}
+
+			ctx := context.Background()
+
+			_, _, err := h.GetAction(ctx, tt.stackMap, tt.currentStackID, tt.targetActionID, true)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+		})
+	}
+}
+
 func Test_GetActionReference(t *testing.T) {
 
 	tests := []struct {
