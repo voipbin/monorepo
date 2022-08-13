@@ -96,6 +96,7 @@ var TypeList []Type = []Type{
 	TypeCall,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
+	TypeConditionDatetime,
 	TypeConfbridgeJoin,
 	TypeConferenceJoin,
 	TypeConnect,
