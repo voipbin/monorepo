@@ -41,6 +41,7 @@ branch                  Branch the flow
 call                    Make a call in a new context.
 condition_call_digits   Condition check(call's digits)
 condition_call_status   Condition check(call's status)
+condition_datetime      Condition check(time)
 confbridge_join         Join to the confbridge.
 conference_join         Join to the conference.
 connect                 Connect to the other destination.
@@ -392,6 +393,60 @@ Example
         }
     }
 
+.. _flow-struct-action-condition_datetime:
+
+Condition Datetime
+---------------------
+Check the condition of the time.
+It checks the current time(UTC) and if it matched with condition then move to the next action. If not, move to the false_target_id.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "condition_datetime",
+        "option": {
+            "condition": <number>,
+
+            "minute": <number>,
+            "hour": <number>,
+            "day": <number>,
+            "month": <number>,
+            "weekdays": [
+                <number>,
+                ...
+            ],
+
+
+            "false_target_id": "<string>"
+        }
+    }
+
+* *condition*: Match condition. One of "==", "!=", ">", ">=", "<", "<=".
+* minute: Minutes. -1 for all minutes.
+* hour: Hour. -1 for all hours.
+* day: Day. -1 for all days.
+* month: Month. 0 for all months.
+* weekdays: List of weekdays. Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6
+* false_target_id: action id for false condition.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "condition_datetime",
+        "option": {
+            "condition": ">=,
+            "minute": 0
+            "hour": 8,
+            "day": -1,
+            "month": 0,
+            "weekdays": [],
+            "false_target_id": "d08582ee-1b3d-11ed-a43e-9379f27c3f7f"
+        }
+    }
 
 .. _flow-struct-action-conference_join:
 
