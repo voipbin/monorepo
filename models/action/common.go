@@ -36,6 +36,16 @@ const (
 	OptionConditionCallStatusStatusHangup      OptionConditionCallStatusStatus = "hangup"      // The call has been completed.
 )
 
+// OptionConditionVariableValueType define
+type OptionConditionVariableValueType string
+
+// list of OptionConditionVariableType.
+const (
+	OptionConditionVariableTypeString OptionConditionVariableValueType = "string"
+	OptionConditionVariableTypeNumber OptionConditionVariableValueType = "number"
+	OptionConditionVariableTypeLength OptionConditionVariableValueType = "length"
+)
+
 // list of OptionBranch's const
 const (
 	OptionBranchVariableDefault = "voipbin.call.digits" // Default variable for branch option.

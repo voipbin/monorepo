@@ -126,6 +126,18 @@ func (h *activeflowHandler) executeAction(ctx context.Context, activeflowID uuid
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
+	case action.TypeConditionDatetime:
+		if errHandle := h.actionHandleConditionDatetime(ctx, af); errHandle != nil {
+			return nil, err
+		}
+		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
+
+	case action.TypeConditionVariable:
+		if errHandle := h.actionHandleConditionVariable(ctx, af); errHandle != nil {
+			return nil, err
+		}
+		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
+
 	case action.TypeConferenceJoin:
 		if errHandle := h.actionHandleConferenceJoin(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the conference_join action correctly. err: %v", err)

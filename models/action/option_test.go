@@ -571,3 +571,69 @@ func Test_marshalOptionConditionDatetime(t *testing.T) {
 		})
 	}
 }
+
+func Test_marshalOptionConditionVariable(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionConditionVariable
+	}
+
+	tests := []test{
+		{
+			"value type string",
+
+			[]byte(`{"condition": ">=", "variable":"${voipbin.call.source.target}", "value_type": "string", "value_string": "test", "false_target_id": "ebccdde3-f408-4736-99dc-d37407dc14fb"}`),
+
+			OptionConditionVariable{
+				Condition:     OptionConditionCommonConditionGreaterEqual,
+				Variable:      "${voipbin.call.source.target}",
+				ValueType:     OptionConditionVariableTypeString,
+				ValueString:   "test",
+				FalseTargetID: uuid.FromStringOrNil("ebccdde3-f408-4736-99dc-d37407dc14fb"),
+			},
+		},
+		{
+			"value type number",
+
+			[]byte(`{"condition": ">=", "variable":"${test.number}", "value_type": "number", "value_number": 110.1, "false_target_id": "79cd79c2-6a94-4d4c-8da4-a4edf875788e"}`),
+
+			OptionConditionVariable{
+				Condition:     OptionConditionCommonConditionGreaterEqual,
+				Variable:      "${test.number}",
+				ValueType:     OptionConditionVariableTypeNumber,
+				ValueNumber:   110.1,
+				FalseTargetID: uuid.FromStringOrNil("79cd79c2-6a94-4d4c-8da4-a4edf875788e"),
+			},
+		},
+		{
+			"value type length",
+
+			[]byte(`{"condition": ">=", "variable":"${voipbin.call.source.target}", "value_type": "length", "value_length": 10, "false_target_id": "83b3a0ba-2c1f-4dd3-b045-3ed6ab6a5eb2"}`),
+
+			OptionConditionVariable{
+				Condition:     OptionConditionCommonConditionGreaterEqual,
+				Variable:      "${voipbin.call.source.target}",
+				ValueType:     OptionConditionVariableTypeLength,
+				ValueLength:   10,
+				FalseTargetID: uuid.FromStringOrNil("83b3a0ba-2c1f-4dd3-b045-3ed6ab6a5eb2"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionConditionVariable{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

@@ -75,6 +75,19 @@ type OptionConditionDatetime struct {
 	FalseTargetID uuid.UUID `json:"false_target_id"` // target id for false case.
 }
 
+// OptionConditionVariable defines action condition_variable's option.
+type OptionConditionVariable struct {
+	Condition OptionConditionCommonCondition `json:"condition"`
+
+	Variable    string                           `json:"variable"`   // variable name.
+	ValueType   OptionConditionVariableValueType `json:"value_type"` // value's type.
+	ValueString string                           `json:"value_string"`
+	ValueNumber float32                          `json:"value_number"`
+	ValueLength int                              `json:"value_length"`
+
+	FalseTargetID uuid.UUID `json:"false_target_id"` // target id for false case.
+}
+
 // OptionConferenceJoin defines action conference_join's option.
 type OptionConferenceJoin struct {
 	ConferenceID uuid.UUID `json:"conference_id"`

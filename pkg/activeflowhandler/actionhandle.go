@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -354,6 +355,66 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 
 	// it matched all conditions.
 	// nothing to do here.
+	if match {
+		return nil
+	}
+
+	// could not pass the match conditions.
+	// gets the false target action
+	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, opt.FalseTargetID, false)
+	if err != nil {
+		log.Errorf("Could not find false target action. err: %v", err)
+		return err
+	}
+
+	// sets the false target action
+	log.Debugf("Could not match the condition. Move to the false target. false_target_id: %s", opt.FalseTargetID)
+	af.ForwardStackID = targetStackID
+	af.ForwardActionID = targetAction.ID
+	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// actionHandleConditionVariable handles action condition_variable with activeflow.
+// it checks the given variable and sets the forward action id.
+func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleConditionVariable",
+		"activeflow_id":     af.ID,
+		"reference_type":    af.ReferenceType,
+		"reference_id":      af.ReferenceID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	act := &af.CurrentAction
+
+	var opt action.OptionConditionVariable
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the option. err: %v", err)
+		return err
+	}
+	log.WithField("option", opt).Debugf("Detail option.")
+
+	match := false
+	switch opt.ValueType {
+	case action.OptionConditionVariableTypeString:
+		match = compareCondition(opt.Condition, opt.Variable, opt.ValueString)
+
+	case action.OptionConditionVariableTypeNumber:
+		tmp, err := strconv.ParseFloat(opt.Variable, 32)
+		if err != nil {
+			log.Errorf("Could not parse the variable. err: %v", err)
+			break
+		}
+		match = compareCondition(opt.Condition, float32(tmp), opt.ValueNumber)
+
+	case action.OptionConditionVariableTypeLength:
+		match = compareCondition(opt.Condition, len(opt.Variable), opt.ValueLength)
+	}
+
 	if match {
 		return nil
 	}

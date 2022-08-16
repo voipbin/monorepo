@@ -58,6 +58,7 @@ const (
 	TypeConditionCallDigits Type = "condition_call_digits" // flow-manager. condition check(call's digits)
 	TypeConditionCallStatus Type = "condition_call_status" // flow-manager. condition check(call's status)
 	TypeConditionDatetime   Type = "condition_datetime"    // flow-manager. condition check(datetime)
+	TypeConditionVariable   Type = "condition_variable"    // flow-manager. condition check(variable)
 	TypeConfbridgeJoin      Type = "confbridge_join"       // call-manager. join to the confbridge.
 	TypeConferenceJoin      Type = "conference_join"       // conference-manager. join to the conference.
 	TypeConnect             Type = "connect"               // flow-manager. connect to the other destination.
@@ -97,6 +98,7 @@ var TypeList []Type = []Type{
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
 	TypeConditionDatetime,
+	TypeConditionVariable,
 	TypeConfbridgeJoin,
 	TypeConferenceJoin,
 	TypeConnect,
