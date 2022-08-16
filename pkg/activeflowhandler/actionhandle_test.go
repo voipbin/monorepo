@@ -2095,7 +2095,7 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 	}
 }
 
-func Test_actionHandleConditionDatetime_lessequal(t *testing.T) {
+func Test_actionHandleConditionDatetime_match(t *testing.T) {
 
 	// test values
 	minute := 0x01
@@ -2222,7 +2222,7 @@ func Test_actionHandleConditionDatetime_lessequal(t *testing.T) {
 	}
 }
 
-func Test_actionHandleConditionDatetime_false(t *testing.T) {
+func Test_actionHandleConditionDatetime_unmatch(t *testing.T) {
 
 	// test values
 	minute := 0x01
@@ -2346,6 +2346,287 @@ func Test_actionHandleConditionDatetime_false(t *testing.T) {
 			mockDB.EXPECT().ActiveflowUpdate(ctx, af).Return(nil)
 
 			if err := h.actionHandleConditionDatetime(ctx, af); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_actionHandleConditionVariable_match(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeFlow *activeflow.Activeflow
+	}{
+		{
+			name: "string equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "==", "variable": "test value", "value_type": "string", "value_string": "test value"}`),
+				},
+			},
+		},
+		{
+			name: "string not equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "!=", "variable": "test value 1", "value_type": "string", "value_string": "test value 2"}`),
+				},
+			},
+		},
+		{
+			name: "string greater",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": ">", "variable": "test value 123", "value_type": "string", "value_string": "test value 111"}`),
+				},
+			},
+		},
+		{
+			name: "string greater equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": ">=", "variable": "test value 123", "value_type": "string", "value_string": "test value 123"}`),
+				},
+			},
+		},
+		{
+			name: "string less",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "<", "variable": "test value 111", "value_type": "string", "value_string": "test value 123"}`),
+				},
+			},
+		},
+		{
+			name: "string less equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "<=", "variable": "test value 111", "value_type": "string", "value_string": "test value 111"}`),
+				},
+			},
+		},
+		{
+			name: "number equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "==", "variable": "123", "value_type": "number", "value_number": 123}`),
+				},
+			},
+		},
+		{
+			name: "number not equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "!=", "variable": "123", "value_type": "number", "value_number": 456}`),
+				},
+			},
+		},
+		{
+			name: "number greater",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": ">", "variable": "123.1", "value_type": "number", "value_number": 111.1}`),
+				},
+			},
+		},
+		{
+			name: "number greater equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": ">=", "variable": "123.1", "value_type": "number", "value_number": 123.1}`),
+				},
+			},
+		},
+		{
+			name: "number less",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "<", "variable": "111.1", "value_type": "number", "value_number": 123.1}`),
+				},
+			},
+		},
+		{
+			name: "number less equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "<=", "variable": "111.1", "value_type": "number", "value_number": 111.1}`),
+				},
+			},
+		},
+		{
+			name: "length equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "==", "variable": "test length", "value_type": "length", "value_length": 11}`),
+				},
+			},
+		},
+		{
+			name: "length not equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "!=", "variable": "test length", "value_type": "length", "value_length": 12}`),
+				},
+			},
+		},
+		{
+			name: "length greater",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": ">", "variable": "test length", "value_type": "length", "value_length": 10}`),
+				},
+			},
+		},
+		{
+			name: "length greater equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": ">=", "variable": "test length", "value_type": "length", "value_length": 11}`),
+				},
+			},
+		},
+		{
+			name: "length less",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "<", "variable": "test length", "value_type": "length", "value_length": 12}`),
+				},
+			},
+		},
+		{
+			name: "length less equal",
+
+			activeFlow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "<=", "variable": "test length", "value_type": "length", "value_length": 11}`),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
+
+			h := &activeflowHandler{
+				db:              mockDB,
+				reqHandler:      mockReq,
+				variableHandler: mockVar,
+			}
+
+			ctx := context.Background()
+
+			if err := h.actionHandleConditionVariable(ctx, tt.activeFlow); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_actionHandleConditionVariable_unmatch(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflow *activeflow.Activeflow
+	}{
+		{
+			name: "string",
+
+			activeflow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "==", "variable": "test value", "value_type": "string", "value_string": "test value unmatch"}`),
+				},
+			},
+		},
+		{
+			name: "number",
+
+			activeflow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "==", "variable": "123", "value_type": "number", "value_number": 123.1}`),
+				},
+			},
+		},
+		{
+			name: "length",
+
+			activeflow: &activeflow.Activeflow{
+				CurrentAction: action.Action{
+					Type:   action.TypeConditionVariable,
+					Option: []byte(`{"condition": "==", "variable": "12345", "value_type": "length", "value_length": 6}`),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockVar := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackhandler.NewMockStackHandler(mc)
+
+			h := &activeflowHandler{
+				db:              mockDB,
+				reqHandler:      mockReq,
+				variableHandler: mockVar,
+				stackHandler:    mockStack,
+			}
+
+			ctx := context.Background()
+
+			mockStack.EXPECT().GetAction(ctx, tt.activeflow.StackMap, tt.activeflow.CurrentStackID, gomock.Any(), false).Return(stack.IDMain, &action.Action{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow).Return(nil)
+
+			if err := h.actionHandleConditionVariable(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
