@@ -2,7 +2,7 @@ package messages
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -26,7 +26,7 @@ func messagesPOST(c *gin.Context) {
 		},
 	)
 
-	data, err := ioutil.ReadAll(c.Request.Body)
+	data, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Errorf("Could not read the data. err: %v", err)
 		c.AbortWithStatus(400)
