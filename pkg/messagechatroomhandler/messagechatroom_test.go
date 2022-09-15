@@ -1,0 +1,307 @@
+package messagechatroomhandler
+
+import (
+	"context"
+	"reflect"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	"github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
+)
+
+func Test_Get(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseMessagechatroom *messagechatroom.Messagechatroom
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("f9a22990-32b0-11ed-911a-8baec663a128"),
+
+			&messagechatroom.Messagechatroom{
+				ID: uuid.FromStringOrNil("f9a22990-32b0-11ed-911a-8baec663a128"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &messagechatroomHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessagechatroomGet(ctx, tt.id).Return(tt.responseMessagechatroom, nil)
+
+			res, err := h.Get(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseMessagechatroom) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseMessagechatroom, res)
+			}
+		})
+	}
+}
+
+func Test_GetsByChatroomID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatroomID uuid.UUID
+		token      string
+		limit      uint64
+
+		responseMessagechatroom []*messagechatroom.Messagechatroom
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("df481ecc-32b2-11ed-9274-6b15aa52d410"),
+			"2022-04-18 03:22:17.995000",
+			10,
+
+			[]*messagechatroom.Messagechatroom{
+				{
+					CustomerID: uuid.FromStringOrNil("df481ecc-32b2-11ed-9274-6b15aa52d410"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &messagechatroomHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessagechatroomGetsByChatroomID(ctx, tt.chatroomID, tt.token, tt.limit).Return(tt.responseMessagechatroom, nil)
+
+			res, err := h.GetsByChatroomID(ctx, tt.chatroomID, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseMessagechatroom) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseMessagechatroom, res)
+			}
+		})
+	}
+}
+
+func Test_GetsByMessagechatID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		messagechatID uuid.UUID
+		token         string
+		limit         uint64
+
+		responseMessagechatroom []*messagechatroom.Messagechatroom
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("285b5e40-32c1-11ed-9df5-637f0c9b71fa"),
+			"2022-04-18 03:22:17.995000",
+			10,
+
+			[]*messagechatroom.Messagechatroom{
+				{
+					MessagechatID: uuid.FromStringOrNil("285b5e40-32c1-11ed-9df5-637f0c9b71fa"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &messagechatroomHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessagechatroomGetsByMessagechatID(ctx, tt.messagechatID, tt.token, tt.limit).Return(tt.responseMessagechatroom, nil)
+
+			res, err := h.GetsByMessagechatID(ctx, tt.messagechatID, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseMessagechatroom) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseMessagechatroom, res)
+			}
+		})
+	}
+}
+
+func Test_Create(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		chatroomID    uuid.UUID
+		messagechatID uuid.UUID
+		source        *commonaddress.Address
+		messageType   message.Type
+		text          string
+		medias        []media.Media
+
+		responseMessagechatroom *messagechatroom.Messagechatroom
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("65ac45e2-32b3-11ed-b720-973a629c7807"),
+			uuid.FromStringOrNil("65d8b7e4-32b3-11ed-8846-97d903739f2c"),
+			uuid.FromStringOrNil("662ecbfc-32b3-11ed-ae98-a71aa0c6ca99"),
+			&commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+821100000001",
+				TargetName: "test target",
+				Name:       "test name",
+				Detail:     "test detail",
+			},
+			message.TypeNormal,
+			"test text",
+			[]media.Media{},
+
+			&messagechatroom.Messagechatroom{
+				ID: uuid.FromStringOrNil("6692d52a-32b3-11ed-9cf8-ef08221492ce"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &messagechatroomHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessagechatroomCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().MessagechatroomGet(ctx, gomock.Any()).Return(tt.responseMessagechatroom, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechatroom.CustomerID, messagechatroom.EventTypeMessagechatroomCreated, tt.responseMessagechatroom)
+
+			res, err := h.Create(ctx, tt.customerID, tt.chatroomID, tt.messagechatID, tt.source, tt.messageType, tt.text, tt.medias)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseMessagechatroom) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseMessagechatroom, res)
+			}
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseMessagechatroom *messagechatroom.Messagechatroom
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("f1b4ce88-32b3-11ed-910f-c300da3e58d5"),
+
+			&messagechatroom.Messagechatroom{
+				ID: uuid.FromStringOrNil("f1b4ce88-32b3-11ed-910f-c300da3e58d5"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &messagechatroomHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().MessagechatroomDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().MessagechatroomGet(ctx, tt.responseMessagechatroom.ID).Return(tt.responseMessagechatroom, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechatroom.CustomerID, messagechatroom.EventTypeMessagechatroomDeleted, tt.responseMessagechatroom)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseMessagechatroom) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseMessagechatroom, res)
+			}
+		})
+	}
+}

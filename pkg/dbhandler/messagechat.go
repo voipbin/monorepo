@@ -1,0 +1,288 @@
+package dbhandler
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
+)
+
+const (
+	// select query for messagechat get
+	messagechatSelect = `
+	select
+		id,
+		customer_id,
+
+		chat_id,
+
+		message json,
+
+		tm_create,
+		tm_update,
+		tm_delete
+	from
+		messagechats
+	`
+)
+
+// messagechatGetFromRow gets the messagechat from the row.
+func (h *handler) messagechatGetFromRow(row *sql.Rows) (*messagechat.Messagechat, error) {
+	var msg sql.NullString
+
+	res := &messagechat.Messagechat{}
+	if err := row.Scan(
+		&res.ID,
+		&res.CustomerID,
+
+		&res.ChatID,
+
+		&msg,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+		&res.TMDelete,
+	); err != nil {
+		return nil, fmt.Errorf("could not scan the row. messagechatGetFromRow. err: %v", err)
+	}
+
+	if msg.Valid {
+		if err := json.Unmarshal([]byte(msg.String), &res.Message); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the data. messagechatGetFromRow. err: %v", err)
+		}
+	} else {
+		res.Message = message.Message{}
+	}
+
+	return res, nil
+}
+
+// MessagechatCreate creates a new messagechat record
+func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagechat) error {
+
+	q := `insert into messagechats(
+		id,
+		customer_id,
+
+		chat_id,
+
+		message,
+
+		tm_create,
+		tm_update,
+		tm_delete
+	) values(
+		?, ?,
+		?,
+		?,
+		?, ?, ?
+		)`
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return fmt.Errorf("could not prepare. MessagechatCreate. err: %v", err)
+	}
+	defer stmt.Close()
+
+	msg, err := json.Marshal(m.Message)
+	if err != nil {
+		return fmt.Errorf("could not marshal actions. MessagechatCreate. err: %v", err)
+	}
+
+	_, err = stmt.ExecContext(ctx,
+		m.ID.Bytes(),
+		m.CustomerID.Bytes(),
+
+		m.ChatID.Bytes(),
+
+		msg,
+
+		m.TMCreate,
+		m.TMUpdate,
+		m.TMDelete,
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute query. MessagechatCreate. err: %v", err)
+	}
+
+	_ = h.messagechatUpdateToCache(ctx, m.ID)
+
+	return nil
+}
+
+// messagechatUpdateToCache gets the messagechat from the DB and update the cache.
+func (h *handler) messagechatUpdateToCache(ctx context.Context, id uuid.UUID) error {
+
+	res, err := h.messagechatGetFromDB(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := h.messagechatSetToCache(ctx, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// messagechatSetToCache sets the given messagechat to the cache
+func (h *handler) messagechatSetToCache(ctx context.Context, m *messagechat.Messagechat) error {
+	if err := h.cache.MessagechatSet(ctx, m); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// messagechatGetFromCache returns messagechat from the cache if possible.
+func (h *handler) messagechatGetFromCache(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error) {
+
+	// get from cache
+	res, err := h.cache.MessagechatGet(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// messagechatGetFromDB gets the messagechat info from the db.
+func (h *handler) messagechatGetFromDB(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error) {
+
+	// prepare
+	q := fmt.Sprintf("%s where id = ?", messagechatSelect)
+
+	stmt, err := h.db.PrepareContext(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("could not prepare. messagechatGetFromDB. err: %v", err)
+	}
+	defer stmt.Close()
+
+	// query
+	row, err := stmt.QueryContext(ctx, id.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. messagechatGetFromDB. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.messagechatGetFromRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// MessagechatGet returns messagechat.
+func (h *handler) MessagechatGet(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error) {
+
+	res, err := h.messagechatGetFromCache(ctx, id)
+	if err == nil {
+		return res, nil
+	}
+
+	res, err = h.messagechatGetFromDB(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = h.messagechatSetToCache(ctx, res)
+
+	return res, nil
+}
+
+// MessagechatGetsByCustomerID returns list of messagechats.
+func (h *handler) MessagechatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*messagechat.Messagechat, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete >= ?
+			and customer_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, messagechatSelect)
+
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. MessagechatGetsByCustomerID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*messagechat.Messagechat
+	for rows.Next() {
+		u, err := h.messagechatGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. MessagechatGetsByCustomerID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// MessagechatGetsByChatID returns list of messagechats of the given chat_id.
+func (h *handler) MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, token string, limit uint64) ([]*messagechat.Messagechat, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete >= ?
+			and chat_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, messagechatSelect)
+
+	rows, err := h.db.Query(q, DefaultTimeStamp, chatID.Bytes(), token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. MessagechatGetsByChatID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*messagechat.Messagechat
+	for rows.Next() {
+		u, err := h.messagechatGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. MessagechatGetsByChatID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// MessagechatDelete deletes the given messagechat
+func (h *handler) MessagechatDelete(ctx context.Context, id uuid.UUID) error {
+	q := `
+	update messagechats set
+		tm_delete = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. MessagechatDelete. err: %v", err)
+	}
+
+	// delete cache
+	_ = h.messagechatUpdateToCache(ctx, id)
+
+	return nil
+}

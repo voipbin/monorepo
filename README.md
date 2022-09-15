@@ -1,5 +1,9 @@
 # chat-manager
+       |- Room
+Chat ->|
+       |- Room
 
+Message
 
 
 ## Getting started
