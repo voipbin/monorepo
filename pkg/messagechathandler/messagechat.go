@@ -9,8 +9,8 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
 )
 
@@ -54,7 +54,7 @@ func (h *messagechatHandler) Create(
 	customerID uuid.UUID,
 	chatID uuid.UUID,
 	source *commonaddress.Address,
-	messageType message.Type,
+	messageType messagechat.Type,
 	text string,
 	medias []media.Media,
 ) (*messagechat.Messagechat, error) {
@@ -89,6 +89,7 @@ func (h *messagechatHandler) Create(
 		log.Errorf("Could not get list of chatrooms. err: %v", err)
 		return nil, err
 	}
+	convertType := messagechatroom.ConvertType(messageType)
 
 	// send a messagechatroom to the chatrooms
 	for _, cr := range chatrooms {
@@ -97,10 +98,10 @@ func (h *messagechatHandler) Create(
 			res.CustomerID,
 			cr.ID,
 			res.ID,
-			res.Message.Source,
-			res.Message.Type,
-			res.Message.Text,
-			res.Message.Medias,
+			res.Source,
+			convertType,
+			res.Text,
+			res.Medias,
 		)
 		if err != nil {
 			log.Errorf("Could not create messagechatroom. chatroom_id: %s, err: %v", cr.ID, err)
@@ -118,7 +119,7 @@ func (h *messagechatHandler) create(
 	customerID uuid.UUID,
 	chatID uuid.UUID,
 	source *commonaddress.Address,
-	messageType message.Type,
+	messageType messagechat.Type,
 	text string,
 	medias []media.Media,
 ) (*messagechat.Messagechat, error) {
@@ -134,15 +135,13 @@ func (h *messagechatHandler) create(
 		ID:         id,
 		CustomerID: customerID,
 		ChatID:     id,
-		Message: message.Message{
-			Source: &address.Address{},
-			Type:   messageType,
-			Text:   text,
-			Medias: medias,
-		},
-		TMCreate: curTime,
-		TMUpdate: curTime,
-		TMDelete: dbhandler.DefaultTimeStamp,
+		Source:     &address.Address{},
+		Type:       messageType,
+		Text:       text,
+		Medias:     medias,
+		TMCreate:   curTime,
+		TMUpdate:   curTime,
+		TMDelete:   dbhandler.DefaultTimeStamp,
 	}
 
 	if errCreate := h.db.MessagechatCreate(ctx, tmp); errCreate != nil {

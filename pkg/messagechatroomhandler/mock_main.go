@@ -11,7 +11,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	media "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	message "gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
 	messagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
@@ -40,7 +39,7 @@ func (m *MockMessagechatroomHandler) EXPECT() *MockMessagechatroomHandlerMockRec
 }
 
 // Create mocks base method.
-func (m *MockMessagechatroomHandler) Create(ctx context.Context, customerID, chatroomID, messagechatID uuid.UUID, source *address.Address, messageType message.Type, text string, medias []media.Media) (*messagechatroom.Messagechatroom, error) {
+func (m *MockMessagechatroomHandler) Create(ctx context.Context, customerID, chatroomID, messagechatID uuid.UUID, source *address.Address, messageType messagechatroom.Type, text string, medias []media.Media) (*messagechatroom.Messagechatroom, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, customerID, chatroomID, messagechatID, source, messageType, text, medias)
 	ret0, _ := ret[0].(*messagechatroom.Messagechatroom)

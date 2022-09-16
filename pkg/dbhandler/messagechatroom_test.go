@@ -11,7 +11,6 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/cachehandler"
 )
@@ -39,18 +38,16 @@ func Test_MessagechatroomCreate(t *testing.T) {
 
 				ChatroomID: uuid.FromStringOrNil("7a9865d2-20b9-11ed-8243-3faf34c97731"),
 
-				Message: message.Message{
-					Source: &commonaddress.Address{
-						Type:       commonaddress.TypeTel,
-						Target:     "+821100000001",
-						TargetName: "test target",
-						Name:       "test name",
-						Detail:     "test detail",
-					},
-					Type:   message.TypeSystem,
-					Text:   "test message",
-					Medias: []media.Media{},
+				Source: &commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000001",
+					TargetName: "test target",
+					Name:       "test name",
+					Detail:     "test detail",
 				},
+				Type:   messagechatroom.TypeNormal,
+				Text:   "test message",
+				Medias: []media.Media{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:17.995000",

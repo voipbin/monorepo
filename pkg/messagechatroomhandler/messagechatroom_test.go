@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
 )
@@ -191,7 +190,7 @@ func Test_Create(t *testing.T) {
 		chatroomID    uuid.UUID
 		messagechatID uuid.UUID
 		source        *commonaddress.Address
-		messageType   message.Type
+		messageType   messagechatroom.Type
 		text          string
 		medias        []media.Media
 
@@ -210,7 +209,7 @@ func Test_Create(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 			},
-			message.TypeNormal,
+			messagechatroom.TypeNormal,
 			"test text",
 			[]media.Media{},
 

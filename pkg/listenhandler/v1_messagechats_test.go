@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chathandler"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chatroomhandler"
@@ -26,7 +25,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 		customerID  uuid.UUID
 		chatID      uuid.UUID
 		source      *commonaddress.Address
-		messageType message.Type
+		messageType messagechat.Type
 		text        string
 		medias      []media.Media
 
@@ -49,7 +48,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			message.TypeNormal,
+			messagechat.TypeNormal,
 			"test text",
 			[]media.Media{},
 
@@ -60,7 +59,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"63c6f11a-3505-11ed-be2a-7bbff41a9a6c","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","message":{"source":null,"type":"","text":"","medias":null},"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"63c6f11a-3505-11ed-be2a-7bbff41a9a6c","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -143,7 +142,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"123c4966-3506-11ed-be0c-f7d1f54f9992","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","message":{"source":null,"type":"","text":"","medias":null},"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"123c4966-3506-11ed-be0c-f7d1f54f9992","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -170,7 +169,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"68b5594a-3506-11ed-9414-73dd9e1d2cca","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","message":{"source":null,"type":"","text":"","medias":null},"tm_create":"","tm_update":"","tm_delete":""},{"id":"68e6aebe-3506-11ed-9fd0-635331039efa","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","message":{"source":null,"type":"","text":"","medias":null},"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"68b5594a-3506-11ed-9414-73dd9e1d2cca","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"68e6aebe-3506-11ed-9fd0-635331039efa","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -258,7 +257,7 @@ func Test_v1MessagechatsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cf9f32fc-3506-11ed-97f5-07ccb6f809de","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","message":{"source":null,"type":"","text":"","medias":null},"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"cf9f32fc-3506-11ed-97f5-07ccb6f809de","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -325,7 +324,7 @@ func Test_v1MessagechatsIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"26a0a8c4-3507-11ed-8ced-e36d2e15f350","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","message":{"source":null,"type":"","text":"","medias":null},"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"26a0a8c4-3507-11ed-8ced-e36d2e15f350","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
