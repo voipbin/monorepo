@@ -21,4 +21,3 @@ create table chats(
 
 create index idx_chats_customer_id on chats(customer_id);
 create index idx_chats_owner_id on chats(owner_id);
-create index idx_chats_customer_id_participant_id on chats(customer_id, participant_ids);
