@@ -23,5 +23,4 @@ create table chatrooms(
 create index idx_chatrooms_customer_id on chatrooms(customer_id);
 create index idx_chatrooms_chat_id on chatrooms(chat_id);
 create index idx_chatrooms_owner_id on chatrooms(owner_id);
-
 create index idx_chatrooms_chat_id_owner_id on chatrooms(chat_id, owner_id);
