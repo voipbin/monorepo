@@ -8,7 +8,6 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
 )
@@ -71,7 +70,7 @@ func (h *messagechatroomHandler) Create(
 	chatroomID uuid.UUID,
 	messagechatID uuid.UUID,
 	source *commonaddress.Address,
-	messageType message.Type,
+	messageType messagechatroom.Type,
 	text string,
 	medias []media.Media,
 ) (*messagechatroom.Messagechatroom, error) {
@@ -89,12 +88,11 @@ func (h *messagechatroomHandler) Create(
 
 		ChatroomID:    chatroomID,
 		MessagechatID: messagechatID,
-		Message: message.Message{
-			Source: source,
-			Type:   messageType,
-			Text:   text,
-			Medias: medias,
-		},
+
+		Source: source,
+		Type:   messageType,
+		Text:   text,
+		Medias: medias,
 
 		TMCreate: curTime,
 		TMUpdate: curTime,

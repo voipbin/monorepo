@@ -7,8 +7,9 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 )
 
@@ -21,7 +22,10 @@ const (
 
 		chat_id,
 
-		message json,
+		source,
+		type,
+		text,
+		medias,
 
 		tm_create,
 		tm_update,
@@ -33,7 +37,8 @@ const (
 
 // messagechatGetFromRow gets the messagechat from the row.
 func (h *handler) messagechatGetFromRow(row *sql.Rows) (*messagechat.Messagechat, error) {
-	var msg sql.NullString
+	var source sql.NullString
+	var medias sql.NullString
 
 	res := &messagechat.Messagechat{}
 	if err := row.Scan(
@@ -42,7 +47,10 @@ func (h *handler) messagechatGetFromRow(row *sql.Rows) (*messagechat.Messagechat
 
 		&res.ChatID,
 
-		&msg,
+		&source,
+		&res.Type,
+		&res.Text,
+		&medias,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -51,12 +59,20 @@ func (h *handler) messagechatGetFromRow(row *sql.Rows) (*messagechat.Messagechat
 		return nil, fmt.Errorf("could not scan the row. messagechatGetFromRow. err: %v", err)
 	}
 
-	if msg.Valid {
-		if err := json.Unmarshal([]byte(msg.String), &res.Message); err != nil {
+	if source.Valid {
+		if err := json.Unmarshal([]byte(source.String), &res.Source); err != nil {
 			return nil, fmt.Errorf("could not unmarshal the data. messagechatGetFromRow. err: %v", err)
 		}
 	} else {
-		res.Message = message.Message{}
+		res.Source = &commonaddress.Address{}
+	}
+
+	if medias.Valid {
+		if err := json.Unmarshal([]byte(medias.String), &res.Medias); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the data. messagechatGetFromRow. err: %v", err)
+		}
+	} else {
+		res.Medias = []media.Media{}
 	}
 
 	return res, nil
@@ -71,7 +87,10 @@ func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagec
 
 		chat_id,
 
-		message,
+		source,
+		type,
+		text,
+		medias,
 
 		tm_create,
 		tm_update,
@@ -79,7 +98,7 @@ func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagec
 	) values(
 		?, ?,
 		?,
-		?,
+		?, ?, ?, ?,
 		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -88,9 +107,14 @@ func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagec
 	}
 	defer stmt.Close()
 
-	msg, err := json.Marshal(m.Message)
+	source, err := json.Marshal(m.Source)
 	if err != nil {
-		return fmt.Errorf("could not marshal actions. MessagechatCreate. err: %v", err)
+		return fmt.Errorf("could not marshal source. MessagechatCreate. err: %v", err)
+	}
+
+	medias, err := json.Marshal(m.Medias)
+	if err != nil {
+		return fmt.Errorf("could not marshal medias. MessagechatCreate. err: %v", err)
 	}
 
 	_, err = stmt.ExecContext(ctx,
@@ -99,7 +123,10 @@ func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagec
 
 		m.ChatID.Bytes(),
 
-		msg,
+		source,
+		m.Type,
+		m.Text,
+		medias,
 
 		m.TMCreate,
 		m.TMUpdate,

@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 )
 
 // WebhookMessage defines
@@ -15,7 +16,10 @@ type WebhookMessage struct {
 
 	ChatID uuid.UUID `json:"chat_id"`
 
-	Message message.Message `json:"message"`
+	Source *commonaddress.Address
+	Type   Type
+	Text   string
+	Medias []media.Media
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -30,7 +34,10 @@ func (h *Messagechat) ConvertWebhookMessage() *WebhookMessage {
 
 		ChatID: h.ChatID,
 
-		Message: h.Message,
+		Source: h.Source,
+		Type:   h.Type,
+		Text:   h.Text,
+		Medias: h.Medias,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

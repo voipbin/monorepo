@@ -5,7 +5,10 @@ create table messagechats(
 
   chat_id binary(16),
 
-  message json,
+  source  json,
+  type    varchar(255),
+  text    text,
+  medias  json,
 
   -- timestamps
   tm_create datetime(6),  -- create

@@ -13,7 +13,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chatroomhandler"
@@ -137,7 +136,7 @@ func Test_Create(t *testing.T) {
 		customerID  uuid.UUID
 		chatID      uuid.UUID
 		source      *commonaddress.Address
-		messageType message.Type
+		messageType messagechat.Type
 		text        string
 		medias      []media.Media
 
@@ -156,25 +155,23 @@ func Test_Create(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 			},
-			message.TypeNormal,
+			messagechat.TypeNormal,
 			"test message.",
 			[]media.Media{},
 
 			&messagechat.Messagechat{
 				ID:     uuid.FromStringOrNil("c437982e-32b7-11ed-be19-af03b26e1f0e"),
 				ChatID: uuid.FromStringOrNil("c40c7bda-32b7-11ed-829e-73051197cfc8"),
-				Message: message.Message{
-					Source: &commonaddress.Address{
-						Type:       commonaddress.TypeTel,
-						Target:     "+821100000001",
-						TargetName: "test target",
-						Name:       "test name",
-						Detail:     "test detail",
-					},
-					Type:   message.TypeNormal,
-					Text:   "test message",
-					Medias: []media.Media{},
+				Source: &commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000001",
+					TargetName: "test target",
+					Name:       "test name",
+					Detail:     "test detail",
 				},
+				Type:   messagechat.TypeNormal,
+				Text:   "test message",
+				Medias: []media.Media{},
 			},
 			[]*chatroom.Chatroom{
 				{
@@ -211,6 +208,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessagechatGet(ctx, gomock.Any()).Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatCreated, tt.responseMessagechat)
 
+			convertType := messagechatroom.ConvertType(tt.responseMessagechat.Type)
 			mockChatroom.EXPECT().GetsByChatID(ctx, tt.responseMessagechat.ChatID, gomock.Any(), gomock.Any()).Return(tt.responseChatroom, nil)
 			for _, cr := range tt.responseChatroom {
 				mockMessagechatroom.EXPECT().Create(
@@ -218,10 +216,10 @@ func Test_Create(t *testing.T) {
 					tt.responseMessagechat.CustomerID,
 					cr.ID,
 					tt.responseMessagechat.ID,
-					tt.responseMessagechat.Message.Source,
-					tt.responseMessagechat.Message.Type,
-					tt.responseMessagechat.Message.Text,
-					tt.responseMessagechat.Message.Medias,
+					tt.responseMessagechat.Source,
+					convertType,
+					tt.responseMessagechat.Text,
+					tt.responseMessagechat.Medias,
 				).Return(&messagechatroom.Messagechatroom{}, nil)
 			}
 
@@ -245,7 +243,7 @@ func Test_create(t *testing.T) {
 		customerID  uuid.UUID
 		chatID      uuid.UUID
 		source      *commonaddress.Address
-		messageType message.Type
+		messageType messagechat.Type
 		text        string
 		medias      []media.Media
 
@@ -263,7 +261,7 @@ func Test_create(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 			},
-			message.TypeNormal,
+			messagechat.TypeNormal,
 			"test message.",
 			[]media.Media{},
 

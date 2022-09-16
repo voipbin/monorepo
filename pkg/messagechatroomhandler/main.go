@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
-	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/chatroomhandler"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/dbhandler"
@@ -35,7 +34,7 @@ type MessagechatroomHandler interface {
 		chatroomID uuid.UUID,
 		messagechatID uuid.UUID,
 		source *commonaddress.Address,
-		messageType message.Type,
+		messageType messagechatroom.Type,
 		text string,
 		medias []media.Media,
 	) (*messagechatroom.Messagechatroom, error)
