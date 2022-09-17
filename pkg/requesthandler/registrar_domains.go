@@ -16,7 +16,7 @@ import (
 // RMDomainCreate sends a request to registrar-manager
 // to creating a domain.
 // it returns created domain if it succeed.
-func (r *requestHandler) RMV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*rmdomain.Domain, error) {
+func (r *requestHandler) RegistrarV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*rmdomain.Domain, error) {
 	uri := "/v1/domains"
 
 	data := &rmrequest.V1DataDomainsPost{
@@ -31,7 +31,7 @@ func (r *requestHandler) RMV1DomainCreate(ctx context.Context, customerID uuid.U
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodPost, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPost, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -53,10 +53,10 @@ func (r *requestHandler) RMV1DomainCreate(ctx context.Context, customerID uuid.U
 // RMDomainGet sends a request to registrar-manager
 // to getting a detail domain info.
 // it returns detail domain info if it succeed.
-func (r *requestHandler) RMV1DomainGet(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error) {
+func (r *requestHandler) RegistrarV1DomainGet(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error) {
 	uri := fmt.Sprintf("/v1/domains/%s", domainID)
 
-	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -77,10 +77,10 @@ func (r *requestHandler) RMV1DomainGet(ctx context.Context, domainID uuid.UUID) 
 
 // RMDomainDelete sends a request to registrar-manager
 // to deleting the domain.
-func (r *requestHandler) RMV1DomainDelete(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error) {
+func (r *requestHandler) RegistrarV1DomainDelete(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error) {
 	uri := fmt.Sprintf("/v1/domains/%s", domainID)
 
-	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodDelete, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodDelete, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -102,7 +102,7 @@ func (r *requestHandler) RMV1DomainDelete(ctx context.Context, domainID uuid.UUI
 // RMDomainUpdate sends a request to registrar-manager
 // to update the detail domain info.
 // it returns updated domain info if it succeed.
-func (r *requestHandler) RMV1DomainUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*rmdomain.Domain, error) {
+func (r *requestHandler) RegistrarV1DomainUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*rmdomain.Domain, error) {
 	uri := fmt.Sprintf("/v1/domains/%s", id)
 
 	data := &rmrequest.V1DataDomainsIDPut{
@@ -115,7 +115,7 @@ func (r *requestHandler) RMV1DomainUpdate(ctx context.Context, id uuid.UUID, nam
 		return nil, err
 	}
 
-	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodPut, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -137,10 +137,10 @@ func (r *requestHandler) RMV1DomainUpdate(ctx context.Context, id uuid.UUID, nam
 // RMDomainGets sends a request to registrar-manager
 // to getting a list of domain info.
 // it returns detail list of domain info if it succeed.
-func (r *requestHandler) RMV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmdomain.Domain, error) {
+func (r *requestHandler) RegistrarV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmdomain.Domain, error) {
 	uri := fmt.Sprintf("/v1/domains?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

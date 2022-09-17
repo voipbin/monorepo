@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_TSV1StreamingCreate(t *testing.T) {
+func Test_TranscribeV1StreamingCreate(t *testing.T) {
 
 	type test struct {
 		name string
@@ -70,7 +70,7 @@ func Test_TSV1StreamingCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TSV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language)
+			res, err := reqHandler.TranscribeV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

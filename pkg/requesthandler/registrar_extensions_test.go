@@ -80,7 +80,7 @@ func Test_RMExtensionCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1ExtensionCreate(ctx, tt.customerID, tt.ext, tt.password, tt.domainID, tt.extensionName, tt.detail)
+			res, err := reqHandler.RegistrarV1ExtensionCreate(ctx, tt.customerID, tt.ext, tt.password, tt.domainID, tt.extensionName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -151,7 +151,7 @@ func Test_RMExtensionUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password)
+			res, err := reqHandler.RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -220,7 +220,7 @@ func Test_RMExtensionGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1ExtensionGet(ctx, tt.extensionID)
+			res, err := reqHandler.RegistrarV1ExtensionGet(ctx, tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -280,7 +280,7 @@ func Test_RMExtensionDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1ExtensionDelete(ctx, tt.extesnionID)
+			res, err := reqHandler.RegistrarV1ExtensionDelete(ctx, tt.extesnionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -356,7 +356,7 @@ func Test_RMExtensionsGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1ExtensionGets(ctx, tt.domainID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RegistrarV1ExtensionGets(ctx, tt.domainID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

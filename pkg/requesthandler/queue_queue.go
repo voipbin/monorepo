@@ -16,13 +16,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// QMV1QueueGets sends a request to queue-manager
+// QueueV1QueueGets sends a request to queue-manager
 // to get a list of queues.
 // Returns list of queues
-func (r *requestHandler) QMV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueue.Queue, error) {
+func (r *requestHandler) QueueV1QueueGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodGet, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -40,13 +40,13 @@ func (r *requestHandler) QMV1QueueGets(ctx context.Context, customerID uuid.UUID
 	return resData, nil
 }
 
-// QMV1QueueGet sends a request to queue-manager
+// QueueV1QueueGet sends a request to queue-manager
 // to getting the queue.
 // it returns an queue if it succeed.
-func (r *requestHandler) QMV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error) {
+func (r *requestHandler) QueueV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodGet, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -65,8 +65,8 @@ func (r *requestHandler) QMV1QueueGet(ctx context.Context, queueID uuid.UUID) (*
 	return &res, nil
 }
 
-// QMV1QueueCreate sends the request to create the queue.
-func (r *requestHandler) QMV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error) {
+// QueueV1QueueCreate sends the request to create the queue.
+func (r *requestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid.UUID, name, detail string, routingMethod qmqueue.RoutingMethod, tagIDs []uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error) {
 	uri := "/v1/queues"
 
 	data := &qmrequest.V1DataQueuesPost{
@@ -85,7 +85,7 @@ func (r *requestHandler) QMV1QueueCreate(ctx context.Context, customerID uuid.UU
 		return nil, err
 	}
 
-	res, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPost, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -103,13 +103,13 @@ func (r *requestHandler) QMV1QueueCreate(ctx context.Context, customerID uuid.UU
 	return &c, nil
 }
 
-// QMV1QueueDelete sends a request to queue-manager
+// QueueV1QueueDelete sends a request to queue-manager
 // to deleteing the queue.
 // it returns an error if it failed.
-func (r *requestHandler) QMV1QueueDelete(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error) {
+func (r *requestHandler) QueueV1QueueDelete(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodDelete, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodDelete, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -127,8 +127,8 @@ func (r *requestHandler) QMV1QueueDelete(ctx context.Context, queueID uuid.UUID)
 	return &res, nil
 }
 
-// QMV1QueueUpdate sends the request to update the queue.
-func (r *requestHandler) QMV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail string) (*qmqueue.Queue, error) {
+// QueueV1QueueUpdate sends the request to update the queue.
+func (r *requestHandler) QueueV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail string) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 
 	data := &qmrequest.V1DataQueuesIDPut{
@@ -141,7 +141,7 @@ func (r *requestHandler) QMV1QueueUpdate(ctx context.Context, queueID uuid.UUID,
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPut, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPut, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -159,8 +159,8 @@ func (r *requestHandler) QMV1QueueUpdate(ctx context.Context, queueID uuid.UUID,
 	return &res, nil
 }
 
-// QMV1QueueUpdate sends the request to update the queue's tag_ids.
-func (r *requestHandler) QMV1QueueUpdateTagIDs(ctx context.Context, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.Queue, error) {
+// QueueV1QueueUpdate sends the request to update the queue's tag_ids.
+func (r *requestHandler) QueueV1QueueUpdateTagIDs(ctx context.Context, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s/tag_ids", queueID)
 
 	data := &qmrequest.V1DataQueuesIDTagIDsPut{
@@ -172,7 +172,7 @@ func (r *requestHandler) QMV1QueueUpdateTagIDs(ctx context.Context, queueID uuid
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPut, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPut, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -190,11 +190,11 @@ func (r *requestHandler) QMV1QueueUpdateTagIDs(ctx context.Context, queueID uuid
 	return &res, nil
 }
 
-// QMV1QueueGetAgents sends the request to getting the agent list of the given queue's and status.
-func (r *requestHandler) QMV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
+// QueueV1QueueGetAgents sends the request to getting the agent list of the given queue's and status.
+func (r *requestHandler) QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/queues/%s/agents?status=%s", queueID, status)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodGet, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -212,8 +212,8 @@ func (r *requestHandler) QMV1QueueGetAgents(ctx context.Context, queueID uuid.UU
 	return res, nil
 }
 
-// QMV1QueueUpdateRoutingMethod sends the request to update the queue's routing_method.
-func (r *requestHandler) QMV1QueueUpdateRoutingMethod(ctx context.Context, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.Queue, error) {
+// QueueV1QueueUpdateRoutingMethod sends the request to update the queue's routing_method.
+func (r *requestHandler) QueueV1QueueUpdateRoutingMethod(ctx context.Context, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s/routing_method", queueID)
 
 	data := &qmrequest.V1DataQueuesIDRoutingMethodPut{
@@ -225,7 +225,7 @@ func (r *requestHandler) QMV1QueueUpdateRoutingMethod(ctx context.Context, queue
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPut, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPut, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -243,8 +243,8 @@ func (r *requestHandler) QMV1QueueUpdateRoutingMethod(ctx context.Context, queue
 	return &res, nil
 }
 
-// QMV1QueueUpdateActions sends the request to update the queue's action handles.
-func (r *requestHandler) QMV1QueueUpdateActions(ctx context.Context, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error) {
+// QueueV1QueueUpdateActions sends the request to update the queue's action handles.
+func (r *requestHandler) QueueV1QueueUpdateActions(ctx context.Context, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s/wait_actions", queueID)
 
 	data := &qmrequest.V1DataQueuesIDWaitActionsPut{
@@ -258,7 +258,7 @@ func (r *requestHandler) QMV1QueueUpdateActions(ctx context.Context, queueID uui
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPut, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPut, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -276,8 +276,8 @@ func (r *requestHandler) QMV1QueueUpdateActions(ctx context.Context, queueID uui
 	return &res, nil
 }
 
-// QMV1QueueCreateQueuecall sends the request to create a new queuecall.
-func (r *requestHandler) QMV1QueueCreateQueuecall(
+// QueueV1QueueCreateQueuecall sends the request to create a new queuecall.
+func (r *requestHandler) QueueV1QueueCreateQueuecall(
 	ctx context.Context,
 	queueID uuid.UUID,
 	referenceType qmqueuecall.ReferenceType,
@@ -299,7 +299,7 @@ func (r *requestHandler) QMV1QueueCreateQueuecall(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPost, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -318,12 +318,12 @@ func (r *requestHandler) QMV1QueueCreateQueuecall(
 	return &c, nil
 }
 
-// QMV1QueueExecute sends the request to execute the queue.
+// QueueV1QueueExecute sends the request to execute the queue.
 // executeDelay: ms
-func (r *requestHandler) QMV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
+func (r *requestHandler) QueueV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
 	uri := fmt.Sprintf("/v1/queues/%s/execute_run", queueID)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueues, requestTimeoutDefault, executeDelay, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPost, resourceQueueQueues, requestTimeoutDefault, executeDelay, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -336,8 +336,8 @@ func (r *requestHandler) QMV1QueueExecuteRun(ctx context.Context, queueID uuid.U
 	return nil
 }
 
-// QMV1QueueExecute sends the request to execute the queue.
-func (r *requestHandler) QMV1QueueUpdateExecute(ctx context.Context, queueID uuid.UUID, execute qmqueue.Execute) (*qmqueue.Queue, error) {
+// QueueV1QueueExecute sends the request to execute the queue.
+func (r *requestHandler) QueueV1QueueUpdateExecute(ctx context.Context, queueID uuid.UUID, execute qmqueue.Execute) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s/execute", queueID)
 
 	data := &qmrequest.V1DataQueuesIDExecutePut{
@@ -349,7 +349,7 @@ func (r *requestHandler) QMV1QueueUpdateExecute(ctx context.Context, queueID uui
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPut, resourceQMQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPut, resourceQueueQueues, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

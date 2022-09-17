@@ -12,9 +12,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// CMV1ConfbridgeCreate sends the request for confbridge create.
+// CallV1ConfbridgeCreate sends the request for confbridge create.
 // conferenceID: conference id
-func (r *requestHandler) CMV1ConfbridgeCreate(ctx context.Context, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error) {
+func (r *requestHandler) CallV1ConfbridgeCreate(ctx context.Context, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error) {
 	uri := "/v1/confbridges"
 
 	m, err := json.Marshal(cmrequest.V1DataConfbridgesPost{
@@ -24,7 +24,7 @@ func (r *requestHandler) CMV1ConfbridgeCreate(ctx context.Context, confbridgeTyp
 		return nil, err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -42,12 +42,12 @@ func (r *requestHandler) CMV1ConfbridgeCreate(ctx context.Context, confbridgeTyp
 	return &cb, nil
 }
 
-// CMV1ConfbridgeDelete sends the request for confbridge delete.
+// CallV1ConfbridgeDelete sends the request for confbridge delete.
 // conferenceID: conference id
-func (r *requestHandler) CMV1ConfbridgeDelete(ctx context.Context, conferenceID uuid.UUID) error {
+func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, conferenceID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s", conferenceID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodDelete, resourceCMConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -60,13 +60,13 @@ func (r *requestHandler) CMV1ConfbridgeDelete(ctx context.Context, conferenceID 
 	return nil
 }
 
-// CMV1ConfbridgeCallKick sends the kick request to the confbridge.
+// CallV1ConfbridgeCallKick sends the kick request to the confbridge.
 // conferenceID: conference id
 // callID: call id
-func (r *requestHandler) CMV1ConfbridgeCallKick(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error {
+func (r *requestHandler) CallV1ConfbridgeCallKick(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s/calls/%s", conferenceID, callID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodDelete, resourceCMConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -79,13 +79,13 @@ func (r *requestHandler) CMV1ConfbridgeCallKick(ctx context.Context, conferenceI
 	return nil
 }
 
-// CMV1ConfbridgeCallAdd sends the call join request to the confbridge.
+// CallV1ConfbridgeCallAdd sends the call join request to the confbridge.
 // conferenceID: conference id
 // callID: call id
-func (r *requestHandler) CMV1ConfbridgeCallAdd(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error {
+func (r *requestHandler) CallV1ConfbridgeCallAdd(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s/calls/%s", conferenceID, callID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

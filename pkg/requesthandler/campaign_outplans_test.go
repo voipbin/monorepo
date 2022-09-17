@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_CAV1OutplanCreate(t *testing.T) {
+func Test_CampaignV1OutplanCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -88,7 +88,7 @@ func Test_CAV1OutplanCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1OutplanCreate(
+			res, err := reqHandler.CampaignV1OutplanCreate(
 				ctx,
 				tt.customerID,
 				tt.outplanName,
@@ -113,7 +113,7 @@ func Test_CAV1OutplanCreate(t *testing.T) {
 	}
 }
 
-func Test_CAV1OutplanGetsByCustomerID(t *testing.T) {
+func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -168,7 +168,7 @@ func Test_CAV1OutplanGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1OutplanGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CampaignV1OutplanGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -180,7 +180,7 @@ func Test_CAV1OutplanGetsByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_CAV1OutplanGet(t *testing.T) {
+func Test_CampaignV1OutplanGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -228,7 +228,7 @@ func Test_CAV1OutplanGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1OutplanGet(ctx, tt.outplanID)
+			res, err := reqHandler.CampaignV1OutplanGet(ctx, tt.outplanID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -240,7 +240,7 @@ func Test_CAV1OutplanGet(t *testing.T) {
 	}
 }
 
-func Test_CAV1OutplanDelete(t *testing.T) {
+func Test_CampaignV1OutplanDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -288,7 +288,7 @@ func Test_CAV1OutplanDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1OutplanDelete(ctx, tt.campaignID)
+			res, err := reqHandler.CampaignV1OutplanDelete(ctx, tt.campaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -300,7 +300,7 @@ func Test_CAV1OutplanDelete(t *testing.T) {
 	}
 }
 
-func Test_CAV1OutplanUpdateBasicInfo(t *testing.T) {
+func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -354,7 +354,7 @@ func Test_CAV1OutplanUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1OutplanUpdateBasicInfo(ctx, tt.outplanID, tt.updateName, tt.updateDetail)
+			res, err := reqHandler.CampaignV1OutplanUpdateBasicInfo(ctx, tt.outplanID, tt.updateName, tt.updateDetail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -366,7 +366,7 @@ func Test_CAV1OutplanUpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_CAV1OutplanUpdateDialInfo(t *testing.T) {
+func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -435,7 +435,7 @@ func Test_CAV1OutplanUpdateDialInfo(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1OutplanUpdateDialInfo(ctx, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
+			res, err := reqHandler.CampaignV1OutplanUpdateDialInfo(ctx, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

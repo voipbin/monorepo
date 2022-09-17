@@ -14,8 +14,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// FMV1FlowCreate creates a new flow.
-func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error) {
+// FlowV1FlowCreate creates a new flow.
+func (r *requestHandler) FlowV1FlowCreate(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, name string, detail string, actions []fmaction.Action, persist bool) (*fmflow.Flow, error) {
 
 	uri := "/v1/flows"
 
@@ -33,7 +33,7 @@ func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUI
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -50,13 +50,13 @@ func (r *requestHandler) FMV1FlowCreate(ctx context.Context, customerID uuid.UUI
 	return &res, nil
 }
 
-// FMV1FlowGet sends a request to flow-manager
+// FlowV1FlowGet sends a request to flow-manager
 // to getting a detail flow info.
 // it returns detail flow info if it succeed.
-func (r *requestHandler) FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
+func (r *requestHandler) FlowV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -75,12 +75,12 @@ func (r *requestHandler) FMV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fm
 	return &res, nil
 }
 
-// FMV1FlowDelete sends a request to flow-manager
+// FlowV1FlowDelete sends a request to flow-manager
 // to deleting the flow.
-func (r *requestHandler) FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
+func (r *requestHandler) FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodDelete, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodDelete, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -99,10 +99,10 @@ func (r *requestHandler) FMV1FlowDelete(ctx context.Context, flowID uuid.UUID) (
 	return &res, nil
 }
 
-// FMV1FlowUpdate sends a request to flow-manager
+// FlowV1FlowUpdate sends a request to flow-manager
 // to update the detail flow info.
 // it returns updated flow info if it succeed.
-func (r *requestHandler) FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error) {
+func (r *requestHandler) FlowV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", f.ID)
 
 	data := &fmrequest.V1DataFlowIDPut{
@@ -116,7 +116,7 @@ func (r *requestHandler) FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*f
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPut, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPut, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -135,10 +135,10 @@ func (r *requestHandler) FMV1FlowUpdate(ctx context.Context, f *fmflow.Flow) (*f
 	return &res, nil
 }
 
-// FMV1FlowUpdateActions sends a request to flow-manager
+// FlowV1FlowUpdateActions sends a request to flow-manager
 // to update the actions.
 // it returns updated flow info if it succeed.
-func (r *requestHandler) FMV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error) {
+func (r *requestHandler) FlowV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s/actions", flowID)
 
 	data := &fmrequest.V1DataFlowIDActionsPut{
@@ -150,7 +150,7 @@ func (r *requestHandler) FMV1FlowUpdateActions(ctx context.Context, flowID uuid.
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPut, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPut, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -169,13 +169,13 @@ func (r *requestHandler) FMV1FlowUpdateActions(ctx context.Context, flowID uuid.
 	return &res, nil
 }
 
-// FMV1FlowGets sends a request to flow-manager
+// FlowV1FlowGets sends a request to flow-manager
 // to getting a list of flows.
 // it returns detail list of flows if it succeed.
-func (r *requestHandler) FMV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error) {
+func (r *requestHandler) FlowV1FlowGets(ctx context.Context, customerID uuid.UUID, flowType fmflow.Type, pageToken string, pageSize uint64) ([]fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, flowType)
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFMFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowFlows, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_MMV1MessageGets(t *testing.T) {
+func Test_MessageV1MessageGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -93,7 +93,7 @@ func Test_MMV1MessageGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.MMV1MessageGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.MessageV1MessageGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -105,7 +105,7 @@ func Test_MMV1MessageGets(t *testing.T) {
 	}
 }
 
-func Test_MMV1MessageGet(t *testing.T) {
+func Test_MessageV1MessageGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -152,7 +152,7 @@ func Test_MMV1MessageGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.MMV1MessageGet(ctx, tt.id)
+			res, err := reqHandler.MessageV1MessageGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -164,7 +164,7 @@ func Test_MMV1MessageGet(t *testing.T) {
 	}
 }
 
-func Test_MMV1MessageDelete(t *testing.T) {
+func Test_MessageV1MessageDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -211,7 +211,7 @@ func Test_MMV1MessageDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.MMV1MessageDelete(ctx, tt.id)
+			res, err := reqHandler.MessageV1MessageDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -223,7 +223,7 @@ func Test_MMV1MessageDelete(t *testing.T) {
 	}
 }
 
-func Test_MMV1MessageSend(t *testing.T) {
+func Test_MessageV1MessageSend(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -357,7 +357,7 @@ func Test_MMV1MessageSend(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.MMV1MessageSend(ctx, tt.id, tt.customerID, tt.source, tt.destinations, tt.text)
+			res, err := reqHandler.MessageV1MessageSend(ctx, tt.id, tt.customerID, tt.source, tt.destinations, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

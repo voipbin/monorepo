@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_FMV1ActiveflowCreate(t *testing.T) {
+func Test_FlowV1ActiveflowCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -140,7 +140,7 @@ func Test_FMV1ActiveflowCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
-			res, err := reqHandler.FMV1ActiveflowCreate(ctx, tt.id, tt.flowID, tt.referenceType, tt.referenceID)
+			res, err := reqHandler.FlowV1ActiveflowCreate(ctx, tt.id, tt.flowID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -153,7 +153,7 @@ func Test_FMV1ActiveflowCreate(t *testing.T) {
 	}
 }
 
-func Test_FMV1ActiveflowGetNextAction(t *testing.T) {
+func Test_FlowV1ActiveflowGetNextAction(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -205,7 +205,7 @@ func Test_FMV1ActiveflowGetNextAction(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1ActiveflowGetNextAction(context.Background(), tt.callID, tt.currentActionID)
+			res, err := reqHandler.FlowV1ActiveflowGetNextAction(context.Background(), tt.callID, tt.currentActionID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -218,7 +218,7 @@ func Test_FMV1ActiveflowGetNextAction(t *testing.T) {
 	}
 }
 
-func Test_FMV1ActiveflowUpdateForwardActionID(t *testing.T) {
+func Test_FlowV1ActiveflowUpdateForwardActionID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -286,7 +286,7 @@ func Test_FMV1ActiveflowUpdateForwardActionID(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMV1ActiveflowUpdateForwardActionID(context.Background(), tt.callID, tt.forwardActionID, tt.forwardNow); err != nil {
+			if err := reqHandler.FlowV1ActiveflowUpdateForwardActionID(context.Background(), tt.callID, tt.forwardActionID, tt.forwardNow); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
 
@@ -294,7 +294,7 @@ func Test_FMV1ActiveflowUpdateForwardActionID(t *testing.T) {
 	}
 }
 
-func Test_FMV1ActiveflowExecute(t *testing.T) {
+func Test_FlowV1ActiveflowExecute(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -337,7 +337,7 @@ func Test_FMV1ActiveflowExecute(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMV1ActiveflowExecute(context.Background(), tt.id); err != nil {
+			if err := reqHandler.FlowV1ActiveflowExecute(context.Background(), tt.id); err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
 
@@ -345,7 +345,7 @@ func Test_FMV1ActiveflowExecute(t *testing.T) {
 	}
 }
 
-func Test_FMV1ActiveflowDelete(t *testing.T) {
+func Test_FlowV1ActiveflowDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -393,7 +393,7 @@ func Test_FMV1ActiveflowDelete(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1ActiveflowDelete(context.Background(), tt.id)
+			res, err := reqHandler.FlowV1ActiveflowDelete(context.Background(), tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_CSV1CustomerGets(t *testing.T) {
+func Test_CustomerV1CustomerGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -77,7 +77,7 @@ func Test_CSV1CustomerGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CSV1CustomerGets(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CustomerV1CustomerGets(ctx, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -89,7 +89,7 @@ func Test_CSV1CustomerGets(t *testing.T) {
 	}
 }
 
-func Test_CSV1CustomerGet(t *testing.T) {
+func Test_CustomerV1CustomerGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -142,7 +142,7 @@ func Test_CSV1CustomerGet(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CSV1CustomerGet(ctx, tt.id)
+			res, err := reqHandler.CustomerV1CustomerGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -154,7 +154,7 @@ func Test_CSV1CustomerGet(t *testing.T) {
 	}
 }
 
-func Test_CSV1CustomerDelete(t *testing.T) {
+func Test_CustomerV1CustomerDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -204,7 +204,7 @@ func Test_CSV1CustomerDelete(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CSV1CustomerDelete(ctx, tt.customerID)
+			res, err := reqHandler.CustomerV1CustomerDelete(ctx, tt.customerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -216,7 +216,7 @@ func Test_CSV1CustomerDelete(t *testing.T) {
 	}
 }
 
-func Test_CSV1CustomerCreate(t *testing.T) {
+func Test_CustomerV1CustomerCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -294,7 +294,7 @@ func Test_CSV1CustomerCreate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CSV1CustomerCreate(
+			res, err := reqHandler.CustomerV1CustomerCreate(
 				ctx,
 				requestTimeoutDefault,
 				tt.username,
@@ -318,7 +318,7 @@ func Test_CSV1CustomerCreate(t *testing.T) {
 	}
 }
 
-func Test_CSV1CustomerUpdateBasicInfo(t *testing.T) {
+func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -375,7 +375,7 @@ func Test_CSV1CustomerUpdateBasicInfo(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CSV1CustomerUpdate(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI)
+			res, err := reqHandler.CustomerV1CustomerUpdate(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -387,7 +387,7 @@ func Test_CSV1CustomerUpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_CSV1CustomerUpdatePassword(t *testing.T) {
+func Test_CustomerV1CustomerUpdatePassword(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -438,7 +438,7 @@ func Test_CSV1CustomerUpdatePassword(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CSV1CustomerUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password)
+			res, err := reqHandler.CustomerV1CustomerUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -450,7 +450,7 @@ func Test_CSV1CustomerUpdatePassword(t *testing.T) {
 	}
 }
 
-func Test_CSV1CustomerUpdatePermission(t *testing.T) {
+func Test_CustomerV1CustomerUpdatePermission(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -503,7 +503,7 @@ func Test_CSV1CustomerUpdatePermission(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CSV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs)
+			res, err := reqHandler.CustomerV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

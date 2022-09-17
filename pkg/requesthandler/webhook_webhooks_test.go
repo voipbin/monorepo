@@ -11,7 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_WMV1WebhookSend(t *testing.T) {
+func Test_WebhookV1WebhookSend(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -61,7 +61,7 @@ func Test_WMV1WebhookSend(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.WMV1WebhookSend(ctx, tt.customerID, tt.dataType, tt.messageType, tt.messageData)
+			err := reqHandler.WebhookV1WebhookSend(ctx, tt.customerID, tt.dataType, tt.messageType, tt.messageData)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -69,7 +69,7 @@ func Test_WMV1WebhookSend(t *testing.T) {
 	}
 }
 
-func Test_WMV1WebhookDestinationSend(t *testing.T) {
+func Test_WebhookV1WebhookDestinationSend(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -121,7 +121,7 @@ func Test_WMV1WebhookDestinationSend(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			a := []byte(`"test webhook."`)
-			err := reqHandler.WMV1WebhookSendToDestination(ctx, tt.customerID, tt.destination, tt.method, tt.dataType, a)
+			err := reqHandler.WebhookV1WebhookSendToDestination(ctx, tt.customerID, tt.destination, tt.method, tt.dataType, a)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

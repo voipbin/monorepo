@@ -14,8 +14,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// MMV1MessageSend sends a message
-func (r *requestHandler) MMV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error) {
+// MessageV1MessageSend sends a message
+func (r *requestHandler) MessageV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error) {
 
 	uri := "/v1/messages"
 
@@ -32,7 +32,7 @@ func (r *requestHandler) MMV1MessageSend(ctx context.Context, id uuid.UUID, cust
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestMM(uri, rabbitmqhandler.RequestMethodPost, resourceMMMessages, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestMessage(uri, rabbitmqhandler.RequestMethodPost, resourceMessageMessages, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -49,11 +49,11 @@ func (r *requestHandler) MMV1MessageSend(ctx context.Context, id uuid.UUID, cust
 	return &res, nil
 }
 
-// MMV1MessageGet gets the messages
-func (r *requestHandler) MMV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error) {
+// MessageV1MessageGet gets the messages
+func (r *requestHandler) MessageV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestMM(uri, rabbitmqhandler.RequestMethodGet, resourceMMMessages, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestMessage(uri, rabbitmqhandler.RequestMethodGet, resourceMessageMessages, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -72,12 +72,12 @@ func (r *requestHandler) MMV1MessageGets(ctx context.Context, customerID uuid.UU
 	return f, nil
 }
 
-// MMV1MessageGet gets the message
-func (r *requestHandler) MMV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error) {
+// MessageV1MessageGet gets the message
+func (r *requestHandler) MessageV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error) {
 
 	uri := fmt.Sprintf("/v1/messages/%s", id)
 
-	tmp, err := r.sendRequestMM(uri, rabbitmqhandler.RequestMethodGet, resourceMMMessages, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestMessage(uri, rabbitmqhandler.RequestMethodGet, resourceMessageMessages, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -94,12 +94,12 @@ func (r *requestHandler) MMV1MessageGet(ctx context.Context, id uuid.UUID) (*mmm
 	return &res, nil
 }
 
-// MMV1MessageDelete deletes the message
-func (r *requestHandler) MMV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error) {
+// MessageV1MessageDelete deletes the message
+func (r *requestHandler) MessageV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error) {
 
 	uri := fmt.Sprintf("/v1/messages/%s", id)
 
-	tmp, err := r.sendRequestMM(uri, rabbitmqhandler.RequestMethodDelete, resourceMMMessages, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestMessage(uri, rabbitmqhandler.RequestMethodDelete, resourceMessageMessages, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_CMV1ConfbridgeCreate(t *testing.T) {
+func Test_CallV1ConfbridgeCreate(t *testing.T) {
 
 	type test struct {
 		name string
@@ -91,7 +91,7 @@ func Test_CMV1ConfbridgeCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1ConfbridgeCreate(ctx, tt.confbridgeType)
+			res, err := reqHandler.CallV1ConfbridgeCreate(ctx, tt.confbridgeType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -14,8 +14,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// CAV1OutplanCreate creates a new outplan.
-func (r *requestHandler) CAV1OutplanCreate(
+// CampaignV1OutplanCreate creates a new outplan.
+func (r *requestHandler) CampaignV1OutplanCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	name string,
@@ -51,7 +51,7 @@ func (r *requestHandler) CAV1OutplanCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPost, resourceCAOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPost, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +68,13 @@ func (r *requestHandler) CAV1OutplanCreate(
 	return &res, nil
 }
 
-// CAV1OutplanGetsByCustomerID sends a request to campaign-manager
+// CampaignV1OutplanGetsByCustomerID sends a request to campaign-manager
 // to getting a list of outplans of the given customer id.
 // it returns detail list of outplans if it succeed.
-func (r *requestHandler) CAV1OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error) {
+func (r *requestHandler) CampaignV1OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCAOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -93,13 +93,13 @@ func (r *requestHandler) CAV1OutplanGetsByCustomerID(ctx context.Context, custom
 	return res, nil
 }
 
-// CAV1OutplanGet sends a request to campaign-manager
+// CampaignV1OutplanGet sends a request to campaign-manager
 // to getting a detail outplan info.
 // it returns detail outplan info if it succeed.
-func (r *requestHandler) CAV1OutplanGet(ctx context.Context, id uuid.UUID) (*caoutplan.Outplan, error) {
+func (r *requestHandler) CampaignV1OutplanGet(ctx context.Context, id uuid.UUID) (*caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans/%s", id)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCAOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -118,12 +118,12 @@ func (r *requestHandler) CAV1OutplanGet(ctx context.Context, id uuid.UUID) (*cao
 	return &res, nil
 }
 
-// CAV1OutplanDelete sends a request to campaign-manager
+// CampaignV1OutplanDelete sends a request to campaign-manager
 // to deleting the outplan.
-func (r *requestHandler) CAV1OutplanDelete(ctx context.Context, outplanID uuid.UUID) (*caoutplan.Outplan, error) {
+func (r *requestHandler) CampaignV1OutplanDelete(ctx context.Context, outplanID uuid.UUID) (*caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans/%s", outplanID)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodDelete, resourceCAOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodDelete, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -142,10 +142,10 @@ func (r *requestHandler) CAV1OutplanDelete(ctx context.Context, outplanID uuid.U
 	return &res, nil
 }
 
-// CAV1OutplanUpdateBasicInfo sends a request to campaign-manager
+// CampaignV1OutplanUpdateBasicInfo sends a request to campaign-manager
 // to update the outplan's basic info.
 // delay millisecond
-func (r *requestHandler) CAV1OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*caoutplan.Outplan, error) {
+func (r *requestHandler) CampaignV1OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans/%s", id)
 
 	data := &carequest.V1DataOutplansIDPut{
@@ -158,7 +158,7 @@ func (r *requestHandler) CAV1OutplanUpdateBasicInfo(ctx context.Context, id uuid
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCAOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -177,10 +177,10 @@ func (r *requestHandler) CAV1OutplanUpdateBasicInfo(ctx context.Context, id uuid
 	return &res, nil
 }
 
-// CAV1OutplanUpdateDialInfo sends a request to campaign-manager
+// CampaignV1OutplanUpdateDialInfo sends a request to campaign-manager
 // to update the outplan's dial info.
 // delay millisecond
-func (r *requestHandler) CAV1OutplanUpdateDialInfo(
+func (r *requestHandler) CampaignV1OutplanUpdateDialInfo(
 	ctx context.Context,
 	id uuid.UUID,
 	source *address.Address,
@@ -210,7 +210,7 @@ func (r *requestHandler) CAV1OutplanUpdateDialInfo(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCAOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

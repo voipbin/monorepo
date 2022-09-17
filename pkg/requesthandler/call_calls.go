@@ -16,8 +16,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// CMV1CallHealth sends the request for call health-check
-func (r *requestHandler) CMV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
+// CallV1CallHealth sends the request for call health-check
+func (r *requestHandler) CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
 	uri := fmt.Sprintf("/v1/calls/%s/health-check", id)
 
 	type Data struct {
@@ -33,7 +33,7 @@ func (r *requestHandler) CMV1CallHealth(ctx context.Context, id uuid.UUID, delay
 		return err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCallsHealth, requestTimeoutDefault, delay, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsHealth, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -45,10 +45,10 @@ func (r *requestHandler) CMV1CallHealth(ctx context.Context, id uuid.UUID, delay
 	return nil
 }
 
-// CMV1CallActionTimeout sends the request for call's action timeout.
+// CallV1CallActionTimeout sends the request for call's action timeout.
 //
 // delay: millisecond
-func (r *requestHandler) CMV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *action.Action) error {
+func (r *requestHandler) CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *action.Action) error {
 	uri := fmt.Sprintf("/v1/calls/%s/action-timeout", id)
 
 	m, err := json.Marshal(cmrequest.V1DataCallsIDActionTimeoutPost{
@@ -60,7 +60,7 @@ func (r *requestHandler) CMV1CallActionTimeout(ctx context.Context, id uuid.UUID
 		return err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCallsActionTimeout, requestTimeoutDefault, delay, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsActionTimeout, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -72,10 +72,10 @@ func (r *requestHandler) CMV1CallActionTimeout(ctx context.Context, id uuid.UUID
 	return nil
 }
 
-// CMV1CallActionNext sends the request for call's action next.
+// CallV1CallActionNext sends the request for call's action next.
 //
 // delay: millisecond
-func (r *requestHandler) CMV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error {
+func (r *requestHandler) CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error {
 	uri := fmt.Sprintf("/v1/calls/%s/action-next", callID)
 
 	m, err := json.Marshal(cmrequest.V1DataCallsIDActionNextPost{
@@ -85,7 +85,7 @@ func (r *requestHandler) CMV1CallActionNext(ctx context.Context, callID uuid.UUI
 		return err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCallsActionNext, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsActionNext, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -97,10 +97,10 @@ func (r *requestHandler) CMV1CallActionNext(ctx context.Context, callID uuid.UUI
 	return nil
 }
 
-// CMV1CallCreate sends a request to call-manager
+// CallV1CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address) ([]cmcall.Call, error) {
+func (r *requestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address) ([]cmcall.Call, error) {
 	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsPost{
@@ -116,7 +116,7 @@ func (r *requestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -135,10 +135,10 @@ func (r *requestHandler) CMV1CallsCreate(ctx context.Context, customerID, flowID
 	return res, nil
 }
 
-// CMV1CallCreateWithID sends a request to call-manager
+// CallV1CallCreateWithID sends a request to call-manager
 // to creating a call with the given id.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
 	data := &cmrequest.V1DataCallsIDPost{
@@ -155,7 +155,7 @@ func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerI
 		return nil, err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -174,13 +174,13 @@ func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerI
 	return &c, nil
 }
 
-// CMV1CallGet sends a request to call-manager
+// CallV1CallGet sends a request to call-manager
 // to getting a call.
 // it returns given call id's call if it succeed.
-func (r *requestHandler) CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", callID)
 
-	tmp, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -199,13 +199,13 @@ func (r *requestHandler) CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cm
 	return &res, nil
 }
 
-// CMV1CallGets sends a request to call-manager
+// CallV1CallGets sends a request to call-manager
 // to getting a list of call info.
 // it returns detail list of call info if it succeed.
-func (r *requestHandler) CMV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
+func (r *requestHandler) CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -224,13 +224,13 @@ func (r *requestHandler) CMV1CallGets(ctx context.Context, customerID uuid.UUID,
 	return res, nil
 }
 
-// CMV1CallHangup sends a request to call-manager
+// CallV1CallHangup sends a request to call-manager
 // to hangup the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CMV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", callID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodDelete, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -249,10 +249,10 @@ func (r *requestHandler) CMV1CallHangup(ctx context.Context, callID uuid.UUID) (
 	return &c, nil
 }
 
-// CMV1CallAddChainedCall sends a request to call-manager
+// CallV1CallAddChainedCall sends a request to call-manager
 // to add the chained call to the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CMV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/chained-call-ids", callID)
 
 	data := &cmrequest.V1DataCallsIDChainedCallIDsPost{
@@ -264,7 +264,7 @@ func (r *requestHandler) CMV1CallAddChainedCall(ctx context.Context, callID uuid
 		return nil, err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -283,13 +283,13 @@ func (r *requestHandler) CMV1CallAddChainedCall(ctx context.Context, callID uuid
 	return &c, nil
 }
 
-// CMV1CallRemoveChainedCall sends a request to call-manager
+// CallV1CallRemoveChainedCall sends a request to call-manager
 // to remove the chained call to the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CMV1CallRemoveChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallRemoveChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/chained-call-ids/%s", callID, chainedCallID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodDelete, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -308,10 +308,10 @@ func (r *requestHandler) CMV1CallRemoveChainedCall(ctx context.Context, callID u
 	return &c, nil
 }
 
-// CMV1CallAddExternalMedia sends a request to call-manager
+// CallV1CallAddExternalMedia sends a request to call-manager
 // to add the external media.
 // it returns error if something went wrong.
-func (r *requestHandler) CMV1CallAddExternalMedia(
+func (r *requestHandler) CallV1CallAddExternalMedia(
 	ctx context.Context,
 	callID uuid.UUID,
 	externalHost string, // external host:port
@@ -337,7 +337,7 @@ func (r *requestHandler) CMV1CallAddExternalMedia(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -356,13 +356,13 @@ func (r *requestHandler) CMV1CallAddExternalMedia(
 	return &resData, nil
 }
 
-// CMV1CallGetDigits sends a request to call-manager
+// CallV1CallGetDigits sends a request to call-manager
 // to get received digits of the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CMV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error) {
+func (r *requestHandler) CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/digits", callID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return "", err
@@ -381,10 +381,10 @@ func (r *requestHandler) CMV1CallGetDigits(ctx context.Context, callID uuid.UUID
 	return resData.Digits, nil
 }
 
-// CMV1CallSetDigits sends a request to call-manager
+// CallV1CallSetDigits sends a request to call-manager
 // to sets the digits of the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CMV1CallSetDigits(ctx context.Context, callID uuid.UUID, digits string) error {
+func (r *requestHandler) CallV1CallSetDigits(ctx context.Context, callID uuid.UUID, digits string) error {
 	uri := fmt.Sprintf("/v1/calls/%s/digits", callID)
 
 	reqData := &cmrequest.V1DataCallsIDDigitsPost{
@@ -396,7 +396,7 @@ func (r *requestHandler) CMV1CallSetDigits(ctx context.Context, callID uuid.UUID
 		return err
 	}
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodPost, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

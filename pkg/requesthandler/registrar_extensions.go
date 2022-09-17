@@ -16,7 +16,7 @@ import (
 // RMExtensionCreate sends a request to registrar-manager
 // to creating a extension.
 // it returns created extension if it succeed.
-func (r *requestHandler) RMV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.Extension, error) {
 	uri := "/v1/extensions"
 
 	data := &rmrequest.V1DataExtensionsPost{
@@ -33,7 +33,7 @@ func (r *requestHandler) RMV1ExtensionCreate(ctx context.Context, customerID uui
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodPost, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPost, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -55,10 +55,10 @@ func (r *requestHandler) RMV1ExtensionCreate(ctx context.Context, customerID uui
 // RMExtensionGet sends a request to registrar-manager
 // to getting a detail extension info.
 // it returns detail extension info if it succeed.
-func (r *requestHandler) RMV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", extensionID)
 
-	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -79,10 +79,10 @@ func (r *requestHandler) RMV1ExtensionGet(ctx context.Context, extensionID uuid.
 
 // RMExtensionDelete sends a request to registrar-manager
 // to deleting the domain.
-func (r *requestHandler) RMV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", extensionID)
 
-	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodDelete, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodDelete, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -104,7 +104,7 @@ func (r *requestHandler) RMV1ExtensionDelete(ctx context.Context, extensionID uu
 // RMExtensionUpdate sends a request to registrar-manager
 // to update the detail extension info.
 // it returns updated extension info if it succeed.
-func (r *requestHandler) RMV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", id)
 
 	data := &rmrequest.V1DataExtensionsIDPut{
@@ -118,7 +118,7 @@ func (r *requestHandler) RMV1ExtensionUpdate(ctx context.Context, id uuid.UUID, 
 		return nil, err
 	}
 
-	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodPut, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -140,10 +140,10 @@ func (r *requestHandler) RMV1ExtensionUpdate(ctx context.Context, id uuid.UUID, 
 // RMExtensionGets sends a request to registrar-manager
 // to getting a list of extension info.
 // it returns detail list of extension info if it succeed.
-func (r *requestHandler) RMV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions?page_token=%s&page_size=%d&domain_id=%s", url.QueryEscape(pageToken), pageSize, domainID)
 
-	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

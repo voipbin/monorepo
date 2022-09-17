@@ -13,10 +13,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// AMV1TagsCreate sends a request to agent-manager
+// AgentV1TagsCreate sends a request to agent-manager
 // to creating a tag.
 // it returns created call if it succeed.
-func (r *requestHandler) AMV1TagCreate(
+func (r *requestHandler) AgentV1TagCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	name string,
@@ -35,7 +35,7 @@ func (r *requestHandler) AMV1TagCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPost, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPost, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -54,13 +54,13 @@ func (r *requestHandler) AMV1TagCreate(
 	return &res, nil
 }
 
-// AMV1TagGet sends a request to agent-manager
+// AgentV1TagGet sends a request to agent-manager
 // to getting an tag.
 // it returns an tag if it succeed.
-func (r *requestHandler) AMV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.Tag, error) {
+func (r *requestHandler) AgentV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags/%s", id)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodGet, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -79,13 +79,13 @@ func (r *requestHandler) AMV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.T
 	return &res, nil
 }
 
-// AMV1TagGets sends a request to agent-manager
+// AgentV1TagGets sends a request to agent-manager
 // to getting a list of tag info.
 // it returns detail list of tag info if it succeed.
-func (r *requestHandler) AMV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error) {
+func (r *requestHandler) AgentV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodGet, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -104,10 +104,10 @@ func (r *requestHandler) AMV1TagGets(ctx context.Context, customerID uuid.UUID, 
 	return res, nil
 }
 
-// AMV1TagUpdate sends a request to agent-manager
+// AgentV1TagUpdate sends a request to agent-manager
 // to update teh tag basic info
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*amtag.Tag, error) {
+func (r *requestHandler) AgentV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags/%s", id)
 
 	data := &amrequest.V1DataTagsIDPut{
@@ -120,7 +120,7 @@ func (r *requestHandler) AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPut, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -139,13 +139,13 @@ func (r *requestHandler) AMV1TagUpdate(ctx context.Context, id uuid.UUID, name, 
 	return &res, nil
 }
 
-// AMV1TagDelete sends a request to agent-manager
+// AgentV1TagDelete sends a request to agent-manager
 // to delete the tag.
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error) {
+func (r *requestHandler) AgentV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags/%s", id)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodDelete, resourceAMTag, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodDelete, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

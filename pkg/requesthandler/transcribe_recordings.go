@@ -12,10 +12,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// TSV1RecordingCreate sends a request to transcribe-manager
+// TranscribeV1RecordingCreate sends a request to transcribe-manager
 // to transcode the exist recording.
 // it returns transcoded text if it succeed.
-func (r *requestHandler) TSV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*tstranscribe.Transcribe, error) {
+func (r *requestHandler) TranscribeV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*tstranscribe.Transcribe, error) {
 	uri := "/v1/recordings"
 
 	req := &tsrequest.V1DataRecordingsPost{
@@ -29,7 +29,7 @@ func (r *requestHandler) TSV1RecordingCreate(ctx context.Context, customerID, re
 		return nil, err
 	}
 
-	res, err := r.sendRequestTS(uri, rabbitmqhandler.RequestMethodPost, resourceStorageRecording, 60000, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestTranscribe(uri, rabbitmqhandler.RequestMethodPost, resourceStorageRecording, 60000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

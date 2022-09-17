@@ -59,7 +59,7 @@ func Test_AMV1QueuecallReferenceGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueuecallReferenceGet(ctx, tt.id)
+			res, err := reqHandler.QueueV1QueuecallReferenceGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

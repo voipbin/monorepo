@@ -13,14 +13,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// OMV1OutdialCreate creates a new outdial.
+// OutdialV1OutdialCreate creates a new outdial.
 // ctx: context
 // customerID: customer id
 // campaignID: campaign id
 // name: name
 // detail: detail
 // data: data
-func (r *requestHandler) OMV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error) {
+func (r *requestHandler) OutdialV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error) {
 
 	uri := "/v1/outdials"
 
@@ -37,7 +37,7 @@ func (r *requestHandler) OMV1OutdialCreate(ctx context.Context, customerID, camp
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPost, resourceOMOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPost, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -54,13 +54,13 @@ func (r *requestHandler) OMV1OutdialCreate(ctx context.Context, customerID, camp
 	return &res, nil
 }
 
-// OMV1OutdialGetsByCustomerID sends a request to outdial-manager
+// OutdialV1OutdialGetsByCustomerID sends a request to outdial-manager
 // to get a list of outdials.
 // Returns list of outdials
-func (r *requestHandler) OMV1OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdial.Outdial, error) {
+func (r *requestHandler) OutdialV1OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdial.Outdial, error) {
 	uri := fmt.Sprintf("/v1/outdials?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodGet, resourceOMOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodGet, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -78,13 +78,13 @@ func (r *requestHandler) OMV1OutdialGetsByCustomerID(ctx context.Context, custom
 	return resData, nil
 }
 
-// OMV1OutdialGet returns an outdial
+// OutdialV1OutdialGet returns an outdial
 // ctx: context
-func (r *requestHandler) OMV1OutdialGet(ctx context.Context, outdialID uuid.UUID) (*omoutdial.Outdial, error) {
+func (r *requestHandler) OutdialV1OutdialGet(ctx context.Context, outdialID uuid.UUID) (*omoutdial.Outdial, error) {
 
 	uri := fmt.Sprintf("/v1/outdials/%s", outdialID)
 
-	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodGet, resourceOMOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodGet, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -101,12 +101,12 @@ func (r *requestHandler) OMV1OutdialGet(ctx context.Context, outdialID uuid.UUID
 	return &res, nil
 }
 
-// OMV1OutdialDelete sends a request to outdial-manager
+// OutdialV1OutdialDelete sends a request to outdial-manager
 // to deleting the outdial.
-func (r *requestHandler) OMV1OutdialDelete(ctx context.Context, outdialID uuid.UUID) (*omoutdial.Outdial, error) {
+func (r *requestHandler) OutdialV1OutdialDelete(ctx context.Context, outdialID uuid.UUID) (*omoutdial.Outdial, error) {
 	uri := fmt.Sprintf("/v1/outdials/%s", outdialID)
 
-	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodDelete, resourceOMOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodDelete, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -125,10 +125,10 @@ func (r *requestHandler) OMV1OutdialDelete(ctx context.Context, outdialID uuid.U
 	return &res, nil
 }
 
-// OMV1OutdialUpdateBasicInfo sends a request to outdial-manager
+// OutdialV1OutdialUpdateBasicInfo sends a request to outdial-manager
 // to update the outdial's basic info.
 // it returns updated outdial info if it succeed.
-func (r *requestHandler) OMV1OutdialUpdateBasicInfo(ctx context.Context, outdialID uuid.UUID, name, detail string) (*omoutdial.Outdial, error) {
+func (r *requestHandler) OutdialV1OutdialUpdateBasicInfo(ctx context.Context, outdialID uuid.UUID, name, detail string) (*omoutdial.Outdial, error) {
 	uri := fmt.Sprintf("/v1/outdials/%s", outdialID)
 
 	data := &omrequest.V1DataOutdialsIDPut{
@@ -141,7 +141,7 @@ func (r *requestHandler) OMV1OutdialUpdateBasicInfo(ctx context.Context, outdial
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPut, resourceOMOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPut, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -160,10 +160,10 @@ func (r *requestHandler) OMV1OutdialUpdateBasicInfo(ctx context.Context, outdial
 	return &res, nil
 }
 
-// OMV1OutdialUpdateCampaignID sends a request to outdial-manager
+// OutdialV1OutdialUpdateCampaignID sends a request to outdial-manager
 // to update the outdial's campaign_id.
 // it returns updated outdial info if it succeed.
-func (r *requestHandler) OMV1OutdialUpdateCampaignID(ctx context.Context, outdialID, campaignID uuid.UUID) (*omoutdial.Outdial, error) {
+func (r *requestHandler) OutdialV1OutdialUpdateCampaignID(ctx context.Context, outdialID, campaignID uuid.UUID) (*omoutdial.Outdial, error) {
 	uri := fmt.Sprintf("/v1/outdials/%s/campaign_id", outdialID)
 
 	data := &omrequest.V1DataOutdialsIDCampaignIDPut{
@@ -175,7 +175,7 @@ func (r *requestHandler) OMV1OutdialUpdateCampaignID(ctx context.Context, outdia
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPut, resourceOMOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPut, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -194,10 +194,10 @@ func (r *requestHandler) OMV1OutdialUpdateCampaignID(ctx context.Context, outdia
 	return &res, nil
 }
 
-// OMV1OutdialUpdateCampaignID sends a request to outdial-manager
+// OutdialV1OutdialUpdateCampaignID sends a request to outdial-manager
 // to update the outdial's campaign_id.
 // it returns updated outdial info if it succeed.
-func (r *requestHandler) OMV1OutdialUpdateData(ctx context.Context, outdialID uuid.UUID, data string) (*omoutdial.Outdial, error) {
+func (r *requestHandler) OutdialV1OutdialUpdateData(ctx context.Context, outdialID uuid.UUID, data string) (*omoutdial.Outdial, error) {
 	uri := fmt.Sprintf("/v1/outdials/%s/data", outdialID)
 
 	tmpData := &omrequest.V1DataOutdialsIDDataPut{
@@ -209,7 +209,7 @@ func (r *requestHandler) OMV1OutdialUpdateData(ctx context.Context, outdialID uu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPut, resourceOMOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPut, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

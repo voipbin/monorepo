@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_FMV1VariableGet(t *testing.T) {
+func Test_FlowV1VariableGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -64,7 +64,7 @@ func Test_FMV1VariableGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FMV1VariableGet(ctx, tt.variableID)
+			res, err := reqHandler.FlowV1VariableGet(ctx, tt.variableID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -76,7 +76,7 @@ func Test_FMV1VariableGet(t *testing.T) {
 	}
 }
 
-func Test_FMV1VariableSetVariable(t *testing.T) {
+func Test_FlowV1VariableSetVariable(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -125,7 +125,7 @@ func Test_FMV1VariableSetVariable(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMV1VariableSetVariable(ctx, tt.variableID, tt.key, tt.value); err != nil {
+			if err := reqHandler.FlowV1VariableSetVariable(ctx, tt.variableID, tt.key, tt.value); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -133,7 +133,7 @@ func Test_FMV1VariableSetVariable(t *testing.T) {
 	}
 }
 
-func Test_FMV1VariableDeleteVariable(t *testing.T) {
+func Test_FlowV1VariableDeleteVariable(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -197,7 +197,7 @@ func Test_FMV1VariableDeleteVariable(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FMV1VariableDeleteVariable(ctx, tt.variableID, tt.key); err != nil {
+			if err := reqHandler.FlowV1VariableDeleteVariable(ctx, tt.variableID, tt.key); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

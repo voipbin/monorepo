@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_CSV1Login(t *testing.T) {
+func Test_CustomerV1Login(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -68,7 +68,7 @@ func Test_CSV1Login(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CSV1Login(ctx, requestTimeoutDefault, tt.username, tt.password)
+			res, err := reqHandler.CustomerV1Login(ctx, requestTimeoutDefault, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

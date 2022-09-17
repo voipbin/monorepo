@@ -92,10 +92,10 @@ func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmqh
 	return r.sendRequest(target, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestFM send a request to the flow-manager and return the response
+// sendRequestFlow send a request to the flow-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestFM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueFlow, uri, method, resource, timeout, delayed, dataType, data)
 }
@@ -108,30 +108,30 @@ func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.Reque
 	return r.sendRequest(queueTTS, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestWM send a request to the webhook-manager and return the response
+// sendRequestWebhook send a request to the webhook-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestWM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestWebhook(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueWebhook, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestCM send a request to the call-manager and return the response
+// sendRequestCall send a request to the call-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestCM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueCall, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestRM send a request to the registrar-manager and return the response
-func (r *requestHandler) sendRequestRM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+// sendRequestRegistrar send a request to the registrar-manager and return the response
+func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueRegistrar, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestNM send a request to the number-manager and return the response
-func (r *requestHandler) sendRequestNM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+// sendRequestNumber send a request to the number-manager and return the response
+func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueNumber, uri, method, resource, timeout, delayed, dataType, data)
 }
@@ -142,42 +142,42 @@ func (r *requestHandler) sendRequestConference(uri string, method rabbitmqhandle
 	return r.sendRequest(queueConference, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestTS send a request to the transcribe-manager and return the response
+// sendRequestTranscribe send a request to the transcribe-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestTranscribe(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueTranscribe, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestSM send a request to the storage-manager and return the response
+// sendRequestStorage send a request to the storage-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestSM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestStorage(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueStorage, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestUM send a request to the user-manager and return the response
+// sendRequestUser send a request to the user-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestUM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestUser(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueUser, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestAM send a request to the agent-manager and return the response
+// sendRequestAgent send a request to the agent-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestAM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestAgent(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueAgent, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestQM send a request to the queue-manager and return the response
+// sendRequestQueue send a request to the queue-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestQM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestQueue(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueQueue, uri, method, resource, timeout, delayed, dataType, data)
 }
@@ -190,10 +190,10 @@ func (r *requestHandler) sendRequestCustomer(uri string, method rabbitmqhandler.
 	return r.sendRequest(queueCustomer, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestMM send a request to the message-manager and return the response
+// sendRequestMessage send a request to the message-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestMM(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestMessage(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
 	return r.sendRequest(queueMessage, uri, method, resource, timeout, delayed, dataType, data)
 }

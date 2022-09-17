@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_AMV1TagCreate(t *testing.T) {
+func Test_AgentV1TagCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -64,7 +64,7 @@ func Test_AMV1TagCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1TagCreate(ctx, tt.customerID, tt.tagName, tt.deail)
+			res, err := reqHandler.AgentV1TagCreate(ctx, tt.customerID, tt.tagName, tt.deail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -76,7 +76,7 @@ func Test_AMV1TagCreate(t *testing.T) {
 	}
 }
 
-func Test_AMV1TagGet(t *testing.T) {
+func Test_AgentV1TagGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -123,7 +123,7 @@ func Test_AMV1TagGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1TagGet(ctx, tt.id)
+			res, err := reqHandler.AgentV1TagGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -135,7 +135,7 @@ func Test_AMV1TagGet(t *testing.T) {
 	}
 }
 
-func Test_AMV1TagGets(t *testing.T) {
+func Test_AgentV1TagGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -215,7 +215,7 @@ func Test_AMV1TagGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1TagGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.AgentV1TagGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -276,7 +276,7 @@ func Test_AMTagDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1TagDelete(ctx, tt.id)
+			res, err := reqHandler.AgentV1TagDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -288,7 +288,7 @@ func Test_AMTagDelete(t *testing.T) {
 	}
 }
 
-func Test_AMV1TagUpdate(t *testing.T) {
+func Test_AgentV1TagUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -342,7 +342,7 @@ func Test_AMV1TagUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1TagUpdate(ctx, tt.id, tt.agentName, tt.detail)
+			res, err := reqHandler.AgentV1TagUpdate(ctx, tt.id, tt.agentName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

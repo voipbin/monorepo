@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_OMV1OutdialCreate(t *testing.T) {
+func Test_OutdialV1OutdialCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -67,7 +67,7 @@ func Test_OMV1OutdialCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			_, err := reqHandler.OMV1OutdialCreate(ctx, tt.customerID, tt.campaignID, tt.outdialName, tt.detail, tt.data)
+			_, err := reqHandler.OutdialV1OutdialCreate(ctx, tt.customerID, tt.campaignID, tt.outdialName, tt.detail, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -76,7 +76,7 @@ func Test_OMV1OutdialCreate(t *testing.T) {
 	}
 }
 
-func Test_OMV1OutdialGetsByCustomerID(t *testing.T) {
+func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -131,7 +131,7 @@ func Test_OMV1OutdialGetsByCustomerID(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.OMV1OutdialGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.OutdialV1OutdialGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -143,7 +143,7 @@ func Test_OMV1OutdialGetsByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_OMV1OutdialGet(t *testing.T) {
+func Test_OutdialV1OutdialGet(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -190,7 +190,7 @@ func Test_OMV1OutdialGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.OMV1OutdialGet(ctx, tt.outdialID)
+			res, err := reqHandler.OutdialV1OutdialGet(ctx, tt.outdialID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -202,7 +202,7 @@ func Test_OMV1OutdialGet(t *testing.T) {
 	}
 }
 
-func Test_OMV1OutdialDelete(t *testing.T) {
+func Test_OutdialV1OutdialDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -250,7 +250,7 @@ func Test_OMV1OutdialDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.OMV1OutdialDelete(ctx, tt.outdialID)
+			res, err := reqHandler.OutdialV1OutdialDelete(ctx, tt.outdialID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -262,7 +262,7 @@ func Test_OMV1OutdialDelete(t *testing.T) {
 	}
 }
 
-func Test_OMV1OutdialUpdateBasicInfo(t *testing.T) {
+func Test_OutdialV1OutdialUpdateBasicInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -314,7 +314,7 @@ func Test_OMV1OutdialUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.OMV1OutdialUpdateBasicInfo(ctx, tt.id, tt.outdialName, tt.detail)
+			res, err := reqHandler.OutdialV1OutdialUpdateBasicInfo(ctx, tt.id, tt.outdialName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -326,7 +326,7 @@ func Test_OMV1OutdialUpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_OMV1OutdialUpdateCampaignID(t *testing.T) {
+func Test_OutdialV1OutdialUpdateCampaignID(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -376,7 +376,7 @@ func Test_OMV1OutdialUpdateCampaignID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.OMV1OutdialUpdateCampaignID(ctx, tt.id, tt.campaignID)
+			res, err := reqHandler.OutdialV1OutdialUpdateCampaignID(ctx, tt.id, tt.campaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -388,7 +388,7 @@ func Test_OMV1OutdialUpdateCampaignID(t *testing.T) {
 	}
 }
 
-func Test_OMV1OutdialUpdateData(t *testing.T) {
+func Test_OutdialV1OutdialUpdateData(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -438,7 +438,7 @@ func Test_OMV1OutdialUpdateData(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.OMV1OutdialUpdateData(ctx, tt.id, tt.data)
+			res, err := reqHandler.OutdialV1OutdialUpdateData(ctx, tt.id, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

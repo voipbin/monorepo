@@ -14,12 +14,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// CFV1ConferenceGet gets the conference.
-func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
+// ConferenceV1ConferenceGet gets the conference.
+func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID.String())
 
-	tmp, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -36,13 +36,13 @@ func (r *requestHandler) CFV1ConferenceGet(ctx context.Context, conferenceID uui
 	return &res, nil
 }
 
-// CFV1ConferenceGets sends a request to conference-manager
+// ConferenceV1ConferenceGets sends a request to conference-manager
 // to getting a list of conference info.
 // it returns detail list of conference info if it succeed.
-func (r *requestHandler) CFV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
+func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, conferenceType)
 
-	tmp, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceCFConferences, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -61,20 +61,20 @@ func (r *requestHandler) CFV1ConferenceGets(ctx context.Context, customerID uuid
 	return res, nil
 }
 
-// CFV1ConferenceDelete sends a request to conference-manager
+// ConferenceV1ConferenceDelete sends a request to conference-manager
 // to deleting a conference.
 // it returns deleted conference if it succeed.
-func (r *requestHandler) CFV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) error {
-	return r.CFV1ConferenceDeleteDelay(ctx, conferenceID, DelayNow)
+func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) error {
+	return r.ConferenceV1ConferenceDeleteDelay(ctx, conferenceID, DelayNow)
 }
 
-// CFV1ConferenceDeleteDelay sends a request to conference-manager
+// ConferenceV1ConferenceDeleteDelay sends a request to conference-manager
 // to deleting a conference.
 // it returns deleted conference if it succeed.
-func (r *requestHandler) CFV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error {
+func (r *requestHandler) ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodDelete, resourceCFConferences, requestTimeoutDefault, delay, ContentTypeJSON, []byte(""))
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferences, requestTimeoutDefault, delay, ContentTypeJSON, []byte(""))
 	switch {
 	case err != nil:
 		return err
@@ -88,12 +88,12 @@ func (r *requestHandler) CFV1ConferenceDeleteDelay(ctx context.Context, conferen
 	return nil
 }
 
-// CFV1ConferenceCreate sends a request to conference-manager
+// ConferenceV1ConferenceCreate sends a request to conference-manager
 // to creating a conference.
 // it returns created conference if it succeed.
 // timeout(sec)
 // it the timeout set to 0 means no timeout.
-func (r *requestHandler) CFV1ConferenceCreate(
+func (r *requestHandler) ConferenceV1ConferenceCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	conferenceType cfconference.Type,
@@ -122,7 +122,7 @@ func (r *requestHandler) CFV1ConferenceCreate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPost, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -141,10 +141,10 @@ func (r *requestHandler) CFV1ConferenceCreate(
 	return &conference, nil
 }
 
-// CFV1ConferenceUpdate sends a request to conference-manager
+// ConferenceV1ConferenceUpdate sends a request to conference-manager
 // to update the conference.
 // it returns updated conference if it succeed.
-func (r *requestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error) {
+func (r *requestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", id.String())
 
 	data := &cfrequest.V1DataConferencesIDPut{
@@ -160,7 +160,7 @@ func (r *requestHandler) CFV1ConferenceUpdate(ctx context.Context, id uuid.UUID,
 		return nil, err
 	}
 
-	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPut, resourceCFConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

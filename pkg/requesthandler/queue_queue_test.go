@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_QMV1QueueGets(t *testing.T) {
+func Test_QueueV1QueueGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -95,7 +95,7 @@ func Test_QMV1QueueGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.QueueV1QueueGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -107,7 +107,7 @@ func Test_QMV1QueueGets(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueGet(t *testing.T) {
+func Test_QueueV1QueueGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -154,7 +154,7 @@ func Test_QMV1QueueGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueGet(ctx, tt.id)
+			res, err := reqHandler.QueueV1QueueGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -166,7 +166,7 @@ func Test_QMV1QueueGet(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueGetAgents(t *testing.T) {
+func Test_QueueV1QueueGetAgents(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -240,7 +240,7 @@ func Test_QMV1QueueGetAgents(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueGetAgents(ctx, tt.id, tt.status)
+			res, err := reqHandler.QueueV1QueueGetAgents(ctx, tt.id, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -252,7 +252,7 @@ func Test_QMV1QueueGetAgents(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueCreate(t *testing.T) {
+func Test_QueueV1QueueCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -320,7 +320,7 @@ func Test_QMV1QueueCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueCreate(ctx, tt.customerID, tt.queueName, tt.detail, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.timeoutWait, tt.timeoutService)
+			res, err := reqHandler.QueueV1QueueCreate(ctx, tt.customerID, tt.queueName, tt.detail, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.timeoutWait, tt.timeoutService)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -332,7 +332,7 @@ func Test_QMV1QueueCreate(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueDelete(t *testing.T) {
+func Test_QueueV1QueueDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -381,7 +381,7 @@ func Test_QMV1QueueDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueDelete(ctx, tt.id)
+			res, err := reqHandler.QueueV1QueueDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -394,7 +394,7 @@ func Test_QMV1QueueDelete(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueUpdate(t *testing.T) {
+func Test_QueueV1QueueUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -448,7 +448,7 @@ func Test_QMV1QueueUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueUpdate(ctx, tt.id, tt.queueName, tt.detail)
+			res, err := reqHandler.QueueV1QueueUpdate(ctx, tt.id, tt.queueName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -460,7 +460,7 @@ func Test_QMV1QueueUpdate(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueUpdateTagIDs(t *testing.T) {
+func Test_QueueV1QueueUpdateTagIDs(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -514,7 +514,7 @@ func Test_QMV1QueueUpdateTagIDs(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueUpdateTagIDs(ctx, tt.id, tt.tagIDs)
+			res, err := reqHandler.QueueV1QueueUpdateTagIDs(ctx, tt.id, tt.tagIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -527,7 +527,7 @@ func Test_QMV1QueueUpdateTagIDs(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueUpdateRoutingMethod(t *testing.T) {
+func Test_QueueV1QueueUpdateRoutingMethod(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -579,7 +579,7 @@ func Test_QMV1QueueUpdateRoutingMethod(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueUpdateRoutingMethod(ctx, tt.id, tt.routingMethod)
+			res, err := reqHandler.QueueV1QueueUpdateRoutingMethod(ctx, tt.id, tt.routingMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -592,7 +592,7 @@ func Test_QMV1QueueUpdateRoutingMethod(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueUpdateActions(t *testing.T) {
+func Test_QueueV1QueueUpdateActions(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -652,7 +652,7 @@ func Test_QMV1QueueUpdateActions(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueUpdateActions(ctx, tt.id, tt.waitActions, tt.timeoutWait, tt.timeoutService)
+			res, err := reqHandler.QueueV1QueueUpdateActions(ctx, tt.id, tt.waitActions, tt.timeoutWait, tt.timeoutService)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -665,7 +665,7 @@ func Test_QMV1QueueUpdateActions(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueCreateQueuecall(t *testing.T) {
+func Test_QueueV1QueueCreateQueuecall(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -723,7 +723,7 @@ func Test_QMV1QueueCreateQueuecall(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueCreateQueuecall(ctx, tt.id, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, tt.exitActionID)
+			res, err := reqHandler.QueueV1QueueCreateQueuecall(ctx, tt.id, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, tt.exitActionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -735,7 +735,7 @@ func Test_QMV1QueueCreateQueuecall(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueueExecuteRun(t *testing.T) {
+func Test_QueueV1QueueExecuteRun(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -784,14 +784,14 @@ func Test_QMV1QueueExecuteRun(t *testing.T) {
 				mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.executeDelay).Return(nil)
 			}
 
-			if err := reqHandler.QMV1QueueExecuteRun(ctx, tt.id, tt.executeDelay); err != nil {
+			if err := reqHandler.QueueV1QueueExecuteRun(ctx, tt.id, tt.executeDelay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_QMV1QueueUpdateExecute(t *testing.T) {
+func Test_QueueV1QueueUpdateExecute(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -843,7 +843,7 @@ func Test_QMV1QueueUpdateExecute(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueueUpdateExecute(ctx, tt.id, tt.execute)
+			res, err := reqHandler.QueueV1QueueUpdateExecute(ctx, tt.id, tt.execute)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

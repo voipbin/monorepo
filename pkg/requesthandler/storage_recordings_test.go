@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_SMRecordingGet(t *testing.T) {
+func Test_StorageV1RecordingGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -59,7 +59,7 @@ func Test_SMRecordingGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.SMV1RecordingGet(ctx, tt.id)
+			res, err := reqHandler.StorageV1RecordingGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

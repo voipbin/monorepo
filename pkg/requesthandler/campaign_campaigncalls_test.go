@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_CAV1CampaigncallGetsByCampaignID(t *testing.T) {
+func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -69,7 +69,7 @@ func Test_CAV1CampaigncallGetsByCampaignID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CampaignV1CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -81,7 +81,7 @@ func Test_CAV1CampaigncallGetsByCampaignID(t *testing.T) {
 	}
 }
 
-func Test_CAV1CampaigncallGet(t *testing.T) {
+func Test_CampaignV1CampaigncallGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -129,7 +129,7 @@ func Test_CAV1CampaigncallGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1CampaigncallGet(ctx, tt.campaigncallID)
+			res, err := reqHandler.CampaignV1CampaigncallGet(ctx, tt.campaigncallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -141,7 +141,7 @@ func Test_CAV1CampaigncallGet(t *testing.T) {
 	}
 }
 
-func Test_CAV1CampaigncallDelete(t *testing.T) {
+func Test_CampaignV1CampaigncallDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -189,7 +189,7 @@ func Test_CAV1CampaigncallDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CAV1CampaigncallDelete(ctx, tt.campaigncallID)
+			res, err := reqHandler.CampaignV1CampaigncallDelete(ctx, tt.campaigncallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
