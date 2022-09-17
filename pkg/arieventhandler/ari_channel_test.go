@@ -75,7 +75,7 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 			cn := &channel.Channel{}
 			mockDB.EXPECT().ChannelCreate(gomock.Any(), gomock.AssignableToTypeOf(cn)).Return(nil)
-			mockRequest.EXPECT().CMV1ChannelHealth(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, gomock.Any(), gomock.Any(), gomock.Any())
+			mockRequest.EXPECT().CallV1ChannelHealth(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, gomock.Any(), gomock.Any(), gomock.Any())
 
 			if err := h.EventHandlerChannelCreated(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

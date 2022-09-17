@@ -27,7 +27,7 @@ func (h *eventHandler) EventHandlerChannelCreated(ctx context.Context, evt inter
 	}
 
 	// start channel watcher
-	if err := h.reqHandler.CMV1ChannelHealth(ctx, cn.AsteriskID, cn.ID, requesthandler.DelaySecond*10, 0, 2); err != nil {
+	if err := h.reqHandler.CallV1ChannelHealth(ctx, cn.AsteriskID, cn.ID, requesthandler.DelaySecond*10, 0, 2); err != nil {
 		log.WithFields(
 			log.Fields{
 				"asterisk": cn.AsteriskID,

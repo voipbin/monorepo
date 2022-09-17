@@ -46,7 +46,7 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 
 	// send activeflow delete
 	log.Debugf("Deleting activeflow. activeflow_id: %s", c.ActiveFlowID)
-	_, err = h.reqHandler.FMV1ActiveflowDelete(ctx, c.ActiveFlowID)
+	_, err = h.reqHandler.FlowV1ActiveflowDelete(ctx, c.ActiveFlowID)
 	if err != nil {
 		// we don't do anything here. just write log only
 		log.Errorf("Could not delete activeflow correctly. err: %v", err)

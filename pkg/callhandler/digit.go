@@ -44,7 +44,7 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 		// we are setting the dtmf here even it is not dtmf receive action.
 		// this is needed, because if the user press the dtmf in the prior of dtmf receive(i.e play action),
 		// the user exepects pressed dtmf could be collected in the dtmf received action in next.
-		if errSet := h.reqHandler.FMV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digit); errSet != nil {
+		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digit); errSet != nil {
 			log.Errorf("Could not set DTMF. err: %v", err)
 		}
 
@@ -58,7 +58,7 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 	}
 
 	digits := fmt.Sprintf("${%s}%s", variableCallDigits, digit)
-	if errSet := h.reqHandler.FMV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digits); errSet != nil {
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digits); errSet != nil {
 		log.Errorf("Could not set DTMF. err: %v", err)
 		return nil
 	}
@@ -75,7 +75,7 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 	}
 
 	// send next action request
-	if errNext := h.reqHandler.CMV1CallActionNext(ctx, c.ID, false); errNext != nil {
+	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); errNext != nil {
 		log.Errorf("Could not get next action. err: %v", errNext)
 		_ = h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, c.ChannelID, ari.ChannelCauseNormalClearing, 0)
 	}
@@ -99,7 +99,7 @@ func (h *callHandler) DigitsGet(ctx context.Context, id uuid.UUID) (string, erro
 		return "", err
 	}
 
-	vars, err := h.reqHandler.FMV1VariableGet(ctx, c.ActiveFlowID)
+	vars, err := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveFlowID)
 	if err != nil {
 		log.Errorf("Could not get variables. err: %v", err)
 		return "", err
@@ -127,7 +127,7 @@ func (h *callHandler) DigitsSet(ctx context.Context, id uuid.UUID, digits string
 		return err
 	}
 
-	if errSet := h.reqHandler.FMV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digits); errSet != nil {
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digits); errSet != nil {
 		log.Errorf("Could not set DTMF. err: %v", err)
 		return errSet
 	}
@@ -144,7 +144,7 @@ func (h *callHandler) checkDigitsCondition(ctx context.Context, variableID uuid.
 		},
 	)
 
-	vars, err := h.reqHandler.FMV1VariableGet(ctx, variableID)
+	vars, err := h.reqHandler.FlowV1VariableGet(ctx, variableID)
 	if err != nil {
 		log.Errorf("Could not get activeflow variable. err: %v", err)
 		return false, err

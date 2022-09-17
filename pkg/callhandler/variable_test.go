@@ -82,7 +82,7 @@ func Test_setVariables(t *testing.T) {
 			}
 
 			for k, v := range variables {
-				mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.call.ActiveFlowID, k, v).Return(nil)
+				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.call.ActiveFlowID, k, v).Return(nil)
 			}
 
 			if err := h.setVariablesCall(ctx, tt.call); err != nil {

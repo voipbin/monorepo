@@ -67,7 +67,7 @@ func TestBridgeLeftJoin(t *testing.T) {
 			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.bridge.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.bridge.ReferenceID).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
-			mockReq.EXPECT().CMV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 
 			if err := h.bridgeLeftJoin(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
