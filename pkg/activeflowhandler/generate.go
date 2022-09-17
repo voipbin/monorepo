@@ -36,7 +36,7 @@ func (h *activeflowHandler) generateFlowForAgentCall(ctx context.Context, custom
 
 	// create a flow for agent dial.
 	// res, err := h.FlowCreate(ctx, customerID, flow.TypeFlow, "automatically generated for the agent call", "", false, actions)
-	res, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, flow.TypeFlow, "automatically generated for the agent call", "", actions, false)
+	res, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, flow.TypeFlow, "automatically generated for the agent call", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create the flow. err: %v", err)
 		return nil, err

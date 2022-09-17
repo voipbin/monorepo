@@ -170,7 +170,7 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 	log.WithField("option", opt).Debugf("Detail option.")
 
 	// gets the received digits
-	digits, err := h.reqHandler.CMV1CallGetDigits(ctx, af.ReferenceID)
+	digits, err := h.reqHandler.CallV1CallGetDigits(ctx, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get digits. err: %v", err)
 		return err
@@ -224,7 +224,7 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 	log.WithField("option", opt).Debugf("Detail option.")
 
 	// gets the call
-	c, err := h.reqHandler.CMV1CallGet(ctx, af.ReferenceID)
+	c, err := h.reqHandler.CallV1CallGet(ctx, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get call. err: %v", err)
 		return err
@@ -475,7 +475,7 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 	log = log.WithField("conferencecall_id", cc.ID)
 
 	// get conference
-	conf, err := h.reqHandler.CFV1ConferenceGet(ctx, opt.ConferenceID)
+	conf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, opt.ConferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference. err: %v", err)
 		return err
@@ -486,7 +486,7 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 	}
 
 	// get flow
-	f, err := h.reqHandler.FMV1FlowGet(ctx, conf.FlowID)
+	f, err := h.reqHandler.FlowV1FlowGet(ctx, conf.FlowID)
 	if err != nil {
 		log.Errorf("Could not get flow. err: %v", err)
 		return err
@@ -523,7 +523,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	act := &af.CurrentAction
 
 	// create conference room for connect
-	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
+	cf, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create conference for connect. err: %v", err)
 		return fmt.Errorf("could not create conference for connect. err: %v", err)
@@ -551,7 +551,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a flow
-	connectCF, err := h.reqHandler.FMV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", actions, false)
+	connectCF, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 		return fmt.Errorf("could not create a call flow. err: %v", err)
@@ -570,7 +570,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a call
-	resCall, err := h.reqHandler.CMV1CallsCreate(ctx, connectCF.CustomerID, connectCF.ID, masterCallID, &optConnect.Source, optConnect.Destinations)
+	resCall, err := h.reqHandler.CallV1CallsCreate(ctx, connectCF.CustomerID, connectCF.ID, masterCallID, &optConnect.Source, optConnect.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
@@ -655,7 +655,7 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 	}
 
 	// transcribe-recording
-	res, err := h.reqHandler.TSV1CallRecordingCreate(ctx, af.CustomerID, af.ReferenceID, optRecordingToText.Language, 120000, 30)
+	res, err := h.reqHandler.TranscribeV1CallRecordingCreate(ctx, af.CustomerID, af.ReferenceID, optRecordingToText.Language, 120000, 30)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
@@ -684,7 +684,7 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 	}
 
 	// transcribe-recording
-	trans, err := h.reqHandler.TSV1StreamingCreate(ctx, af.CustomerID, af.ReferenceID, tstranscribe.TypeCall, opt.Language)
+	trans, err := h.reqHandler.TranscribeV1StreamingCreate(ctx, af.CustomerID, af.ReferenceID, tstranscribe.TypeCall, opt.Language)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
@@ -713,7 +713,7 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 	log = log.WithField("agent_id", opt.AgentID)
 
 	// create conference room for agent_call
-	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
+	cf, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create conference for agent_call. err: %v", err)
 		return fmt.Errorf("could not create conference for agent_call. err: %v", err)
@@ -724,7 +724,7 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 	log.Debug("Created conference for agent_call.")
 
 	// get call info
-	c, err := h.reqHandler.CMV1CallGet(ctx, af.ReferenceID)
+	c, err := h.reqHandler.CallV1CallGet(ctx, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
 		return err
@@ -741,7 +741,7 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 
 	// call to the agent
 	log.Debugf("Dialing to the agent. call_id: %s, flow_id: %s", af.ReferenceID, f.ID)
-	agentDial, err := h.reqHandler.AMV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, af.ReferenceID)
+	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not dial to the agent. err: %v", err)
 		return err
@@ -808,10 +808,10 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	log.WithField("exit_action", exitAction).Debugf("Found exit action info. stack_id: %s, action_id: %s", exitStackID, exitAction.ID)
 
 	// send the queue join request
-	qc, err := h.reqHandler.QMV1QueueCreateQueuecall(ctx, queueID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitAction.ID)
+	qc, err := h.reqHandler.QueueV1QueueCreateQueuecall(ctx, queueID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitAction.ID)
 	if err != nil {
 		log.WithField("exit_action_id", exitAction.ID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
-		errForward := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, af.ReferenceID, exitAction.ID, true)
+		errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, af.ReferenceID, exitAction.ID, true)
 		if errForward != nil {
 			log.Errorf("Could not forward the active flow. err: %v", errForward)
 		}
@@ -842,7 +842,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 		return err
 	}
 
-	tmp, err := h.reqHandler.QMV1QueuecallUpdateStatusWaiting(ctx, qc.ID)
+	tmp, err := h.reqHandler.QueueV1QueuecallUpdateStatusWaiting(ctx, qc.ID)
 	if err != nil {
 		log.Errorf("Could not update the queuecall status to waiting. err: %v", err)
 		return err
@@ -930,7 +930,7 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 	}
 
 	// send message
-	tmp, err := h.reqHandler.MMV1MessageSend(ctx, uuid.Nil, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
+	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, af.CustomerID, opt.Source, opt.Destinations, opt.Text)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
 		return err
@@ -962,7 +962,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 	flowID := opt.FlowID
 	if flowID == uuid.Nil {
 		// create a flow
-		tmpFlow, err := h.reqHandler.FMV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", opt.Actions, false)
+		tmpFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", opt.Actions, false)
 		if err != nil {
 			log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 			return fmt.Errorf("could not create a call flow. err: %v", err)
@@ -977,7 +977,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 		masterCallID = af.ReferenceID
 	}
 
-	resCalls, err := h.reqHandler.CMV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations)
+	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
@@ -1034,12 +1034,12 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 	log.Debugf("Sending webhook message. message: %s", opt.Data)
 
 	if opt.Sync {
-		if errSend := h.reqHandler.WMV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
+		if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
 			log.Errorf("Could not send the webhook correctly on sync mode. err: %v", errSend)
 		}
 	} else {
 		go func() {
-			if errSend := h.reqHandler.WMV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
+			if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
 				log.Errorf("Could not send the webhook correctlyon async mode. err: %v", errSend)
 			}
 		}()

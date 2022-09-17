@@ -81,7 +81,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
 
 			res, err := h.getActionsFromFlow(ctx, tt.flowID, tt.customerID)
 			if err != nil {

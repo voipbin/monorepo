@@ -132,7 +132,7 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	if forwardNow {
 		switch af.ReferenceType {
 		case activeflow.ReferenceTypeCall:
-			if err := h.reqHandler.CMV1CallActionNext(ctx, af.ReferenceID, true); err != nil {
+			if err := h.reqHandler.CallV1CallActionNext(ctx, af.ReferenceID, true); err != nil {
 				log.Errorf("Could not send action next request. err: %v", err)
 				return err
 			}

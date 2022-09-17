@@ -67,7 +67,7 @@ func TestGenerateFlowForAgentCall(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.customerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectReqActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectReqActions, false).Return(tt.responseFlow, nil)
 			res, err := h.generateFlowForAgentCall(ctx, tt.customerID, tt.confbridgeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

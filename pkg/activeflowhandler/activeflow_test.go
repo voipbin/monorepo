@@ -526,7 +526,7 @@ func Test_SetForwardActionID(t *testing.T) {
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if tt.forwardNow && tt.af.ReferenceType == activeflow.ReferenceTypeCall {
-				mockReq.EXPECT().CMV1CallActionNext(ctx, tt.af.ReferenceID, true).Return(nil)
+				mockReq.EXPECT().CallV1CallActionNext(ctx, tt.af.ReferenceID, true).Return(nil)
 			}
 
 			if err := h.SetForwardActionID(ctx, tt.id, tt.actionID, tt.forwardNow); err != nil {
