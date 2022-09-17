@@ -184,7 +184,7 @@ func Test_FlowDelete(t *testing.T) {
 			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowDeleted, gomock.Any())
 
-			mockReq.EXPECT().NMV1NumberFlowDelete(ctx, tt.flowID).Return(nil)
+			mockReq.EXPECT().NumberV1NumberFlowDelete(ctx, tt.flowID).Return(nil)
 
 			res, err := h.FlowDelete(ctx, tt.flowID)
 			if err != nil {

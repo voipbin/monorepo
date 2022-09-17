@@ -20,7 +20,7 @@ func (h *activeflowHandler) getActionsFromFlow(ctx context.Context, flowID uuid.
 	)
 
 	// get flow
-	f, err := h.reqHandler.FMV1FlowGet(ctx, flowID)
+	f, err := h.reqHandler.FlowV1FlowGet(ctx, flowID)
 	if err != nil {
 		log.Errorf("Could not get flow info. err: %v", err)
 		return nil, err
