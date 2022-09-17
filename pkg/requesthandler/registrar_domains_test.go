@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_RMV1DomainCreate(t *testing.T) {
+func Test_RegistrarV1DomainCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -74,7 +74,7 @@ func Test_RMV1DomainCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1DomainCreate(ctx, tt.customerID, tt.domainName, tt.domainTmpName, tt.domainTmpDetail)
+			res, err := reqHandler.RegistrarV1DomainCreate(ctx, tt.customerID, tt.domainName, tt.domainTmpName, tt.domainTmpDetail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -86,7 +86,7 @@ func Test_RMV1DomainCreate(t *testing.T) {
 	}
 }
 
-func Test_RMV1DomainUpdate(t *testing.T) {
+func Test_RegistrarV1DomainUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -147,7 +147,7 @@ func Test_RMV1DomainUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1DomainUpdate(ctx, tt.id, tt.domainN, tt.detail)
+			res, err := reqHandler.RegistrarV1DomainUpdate(ctx, tt.id, tt.domainN, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -159,7 +159,7 @@ func Test_RMV1DomainUpdate(t *testing.T) {
 	}
 }
 
-func Test_RMV1DomainGet(t *testing.T) {
+func Test_RegistrarV1DomainGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -214,7 +214,7 @@ func Test_RMV1DomainGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1DomainGet(ctx, tt.domainID)
+			res, err := reqHandler.RegistrarV1DomainGet(ctx, tt.domainID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -226,7 +226,7 @@ func Test_RMV1DomainGet(t *testing.T) {
 	}
 }
 
-func Test_RMV1DomainDelete(t *testing.T) {
+func Test_RegistrarV1DomainDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -274,7 +274,7 @@ func Test_RMV1DomainDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1DomainDelete(ctx, tt.domainID)
+			res, err := reqHandler.RegistrarV1DomainDelete(ctx, tt.domainID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -286,7 +286,7 @@ func Test_RMV1DomainDelete(t *testing.T) {
 	}
 }
 
-func Test_RMV1DomainsGets(t *testing.T) {
+func Test_RegistrarV1DomainsGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -348,7 +348,7 @@ func Test_RMV1DomainsGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RMV1DomainGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RegistrarV1DomainGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

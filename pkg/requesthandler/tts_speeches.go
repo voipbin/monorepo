@@ -12,8 +12,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// TMV1SpeecheCreate create speech-to-text.
-func (r *requestHandler) TMV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error) {
+// TTSV1SpeecheCreate create speech-to-text.
+func (r *requestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error) {
 
 	uri := "/v1/speeches"
 

@@ -12,13 +12,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// CAV1CampaigncallGetsByCampaignID sends a request to campaign-manager
+// CampaignV1CampaigncallGetsByCampaignID sends a request to campaign-manager
 // to getting a list of campaigncalls.
 // it returns detail list of campaigncalls if it succeed.
-func (r *requestHandler) CAV1CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error) {
+func (r *requestHandler) CampaignV1CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error) {
 	uri := fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=%d&campaign_id=%s", url.QueryEscape(pageToken), pageSize, campaignID)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCACampaigncalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCampaignCampaigncalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -37,13 +37,13 @@ func (r *requestHandler) CAV1CampaigncallGetsByCampaignID(ctx context.Context, c
 	return res, nil
 }
 
-// CAV1CampaigncallGet sends a request to campaign-manager
+// CampaignV1CampaigncallGet sends a request to campaign-manager
 // to getting a detail campaigncall.
 // it returns detail campaigncall if it succeed.
-func (r *requestHandler) CAV1CampaigncallGet(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error) {
+func (r *requestHandler) CampaignV1CampaigncallGet(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error) {
 	uri := fmt.Sprintf("/v1/campaigncalls/%s", id)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCACampaigncalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCampaignCampaigncalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -62,13 +62,13 @@ func (r *requestHandler) CAV1CampaigncallGet(ctx context.Context, id uuid.UUID) 
 	return &res, nil
 }
 
-// CAV1CampaigncallDelete sends a request to campaign-manager
+// CampaignV1CampaigncallDelete sends a request to campaign-manager
 // to delete(hangup) the campaigncall.
 // it returns detail campaigncall if it succeed.
-func (r *requestHandler) CAV1CampaigncallDelete(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error) {
+func (r *requestHandler) CampaignV1CampaigncallDelete(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error) {
 	uri := fmt.Sprintf("/v1/campaigncalls/%s", id)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodDelete, resourceCACampaigncalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodDelete, resourceCampaignCampaigncalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

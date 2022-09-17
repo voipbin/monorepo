@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_AMV1AgentCreate(t *testing.T) {
+func Test_AgentV1AgentCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -104,7 +104,7 @@ func Test_AMV1AgentCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentCreate(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password, tt.agentName, tt.deail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
+			res, err := reqHandler.AgentV1AgentCreate(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password, tt.agentName, tt.deail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -116,7 +116,7 @@ func Test_AMV1AgentCreate(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentGet(t *testing.T) {
+func Test_AgentV1AgentGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -163,7 +163,7 @@ func Test_AMV1AgentGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentGet(ctx, tt.agentID)
+			res, err := reqHandler.AgentV1AgentGet(ctx, tt.agentID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -175,7 +175,7 @@ func Test_AMV1AgentGet(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentGets(t *testing.T) {
+func Test_AgentV1AgentGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -255,7 +255,7 @@ func Test_AMV1AgentGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.AgentV1AgentGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -267,7 +267,7 @@ func Test_AMV1AgentGets(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentGetsByTagIDs(t *testing.T) {
+func Test_AgentV1AgentGetsByTagIDs(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -349,7 +349,7 @@ func Test_AMV1AgentGetsByTagIDs(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentGetsByTagIDs(ctx, tt.customerID, tt.tagIDs)
+			res, err := reqHandler.AgentV1AgentGetsByTagIDs(ctx, tt.customerID, tt.tagIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -361,7 +361,7 @@ func Test_AMV1AgentGetsByTagIDs(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
+func Test_AgentV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -446,7 +446,7 @@ func Test_AMV1AgentGetsByTagIDsAndStatus(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, tt.customerID, tt.tagIDs, tt.status)
+			res, err := reqHandler.AgentV1AgentGetsByTagIDsAndStatus(ctx, tt.customerID, tt.tagIDs, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -507,7 +507,7 @@ func Test_AMAgentDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentDelete(ctx, tt.id)
+			res, err := reqHandler.AgentV1AgentDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -519,7 +519,7 @@ func Test_AMAgentDelete(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentLogin(t *testing.T) {
+func Test_AgentV1AgentLogin(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -573,7 +573,7 @@ func Test_AMV1AgentLogin(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentLogin(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password)
+			res, err := reqHandler.AgentV1AgentLogin(ctx, requestTimeoutDefault, tt.customerID, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -585,7 +585,7 @@ func Test_AMV1AgentLogin(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentUpdateAddresses(t *testing.T) {
+func Test_AgentV1AgentUpdateAddresses(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -642,7 +642,7 @@ func Test_AMV1AgentUpdateAddresses(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentUpdateAddresses(ctx, tt.id, tt.addresses)
+			res, err := reqHandler.AgentV1AgentUpdateAddresses(ctx, tt.id, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -654,7 +654,7 @@ func Test_AMV1AgentUpdateAddresses(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentUpdatePassword(t *testing.T) {
+func Test_AgentV1AgentUpdatePassword(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -706,7 +706,7 @@ func Test_AMV1AgentUpdatePassword(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password)
+			res, err := reqHandler.AgentV1AgentUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -718,7 +718,7 @@ func Test_AMV1AgentUpdatePassword(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentUpdate(t *testing.T) {
+func Test_AgentV1AgentUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -774,7 +774,7 @@ func Test_AMV1AgentUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentUpdate(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod)
+			res, err := reqHandler.AgentV1AgentUpdate(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -787,7 +787,7 @@ func Test_AMV1AgentUpdate(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentUpdateTagIDs(t *testing.T) {
+func Test_AgentV1AgentUpdateTagIDs(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -841,7 +841,7 @@ func Test_AMV1AgentUpdateTagIDs(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentUpdateTagIDs(ctx, tt.id, tt.tagIDs)
+			res, err := reqHandler.AgentV1AgentUpdateTagIDs(ctx, tt.id, tt.tagIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -853,7 +853,7 @@ func Test_AMV1AgentUpdateTagIDs(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentUpdateStatus(t *testing.T) {
+func Test_AgentV1AgentUpdateStatus(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -905,7 +905,7 @@ func Test_AMV1AgentUpdateStatus(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentUpdateStatus(ctx, tt.id, tt.status)
+			res, err := reqHandler.AgentV1AgentUpdateStatus(ctx, tt.id, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -917,7 +917,7 @@ func Test_AMV1AgentUpdateStatus(t *testing.T) {
 	}
 }
 
-func Test_AMV1AgentDial(t *testing.T) {
+func Test_AgentV1AgentDial(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -976,7 +976,7 @@ func Test_AMV1AgentDial(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AMV1AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID)
+			res, err := reqHandler.AgentV1AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

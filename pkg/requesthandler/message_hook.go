@@ -10,8 +10,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// MMV1Hook sends a hook
-func (r *requestHandler) MMV1Hook(ctx context.Context, hm *hmhook.Hook) error {
+// MessageV1Hook sends a hook
+func (r *requestHandler) MessageV1Hook(ctx context.Context, hm *hmhook.Hook) error {
 
 	uri := "/v1/hooks"
 
@@ -20,7 +20,7 @@ func (r *requestHandler) MMV1Hook(ctx context.Context, hm *hmhook.Hook) error {
 		return err
 	}
 
-	tmp, err := r.sendRequestMM(uri, rabbitmqhandler.RequestMethodPost, resourceMMMessages, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestMessage(uri, rabbitmqhandler.RequestMethodPost, resourceMessageMessages, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

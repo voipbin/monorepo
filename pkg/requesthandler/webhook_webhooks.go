@@ -12,8 +12,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// WMV1WebhookSend sends the webhook.
-func (r *requestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error {
+// WebhookV1WebhookSend sends the webhook.
+func (r *requestHandler) WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error {
 
 	uri := "/v1/webhooks"
 
@@ -29,7 +29,7 @@ func (r *requestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UU
 		return err
 	}
 
-	res, err := r.sendRequestWM(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWebhook(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
@@ -41,8 +41,8 @@ func (r *requestHandler) WMV1WebhookSend(ctx context.Context, customerID uuid.UU
 	return nil
 }
 
-// WMV1WebhookSendToDestination sends the webhook to the given destination.
-func (r *requestHandler) WMV1WebhookSendToDestination(ctx context.Context, customerID uuid.UUID, destination string, method wmwebhook.MethodType, dataType wmwebhook.DataType, messageData []byte) error {
+// WebhookV1WebhookSendToDestination sends the webhook to the given destination.
+func (r *requestHandler) WebhookV1WebhookSendToDestination(ctx context.Context, customerID uuid.UUID, destination string, method wmwebhook.MethodType, dataType wmwebhook.DataType, messageData []byte) error {
 
 	uri := "/v1/webhook_destinations"
 
@@ -57,7 +57,7 @@ func (r *requestHandler) WMV1WebhookSendToDestination(ctx context.Context, custo
 		return err
 	}
 
-	res, err := r.sendRequestWM(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWebhook(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

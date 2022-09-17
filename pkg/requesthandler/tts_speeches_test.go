@@ -10,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_TMV1SpeecheCreate(t *testing.T) {
+func Test_TTSV1SpeecheCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -62,7 +62,7 @@ func Test_TMV1SpeecheCreate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.tts-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TMV1SpeecheCreate(context.Background(), tt.callID, tt.text, tt.gender, tt.language, tt.timeout)
+			res, err := reqHandler.TTSV1SpeecheCreate(context.Background(), tt.callID, tt.text, tt.gender, tt.language, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

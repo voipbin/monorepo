@@ -13,8 +13,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// FMV1ActiveflowCreate creates a new activeflow.
-func (r *requestHandler) FMV1ActiveflowCreate(ctx context.Context, id, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error) {
+// FlowV1ActiveflowCreate creates a new activeflow.
+func (r *requestHandler) FlowV1ActiveflowCreate(ctx context.Context, id, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error) {
 
 	uri := "/v1/activeflows"
 
@@ -28,7 +28,7 @@ func (r *requestHandler) FMV1ActiveflowCreate(ctx context.Context, id, flowID uu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +45,12 @@ func (r *requestHandler) FMV1ActiveflowCreate(ctx context.Context, id, flowID uu
 	return &res, nil
 }
 
-// FMV1ActiveflowDelete delets activeflow.
-func (r *requestHandler) FMV1ActiveflowDelete(ctx context.Context, id uuid.UUID) (*fmactiveflow.Activeflow, error) {
+// FlowV1ActiveflowDelete delets activeflow.
+func (r *requestHandler) FlowV1ActiveflowDelete(ctx context.Context, id uuid.UUID) (*fmactiveflow.Activeflow, error) {
 
 	uri := fmt.Sprintf("/v1/activeflows/%s", id)
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodDelete, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodDelete, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +67,8 @@ func (r *requestHandler) FMV1ActiveflowDelete(ctx context.Context, id uuid.UUID)
 	return &res, nil
 }
 
-// FMV1ActiveflowGetNextAction gets the next action.
-func (r *requestHandler) FMV1ActiveflowGetNextAction(ctx context.Context, id, currentActionID uuid.UUID) (*fmaction.Action, error) {
+// FlowV1ActiveflowGetNextAction gets the next action.
+func (r *requestHandler) FlowV1ActiveflowGetNextAction(ctx context.Context, id, currentActionID uuid.UUID) (*fmaction.Action, error) {
 
 	uri := fmt.Sprintf("/v1/activeflows/%s/next", id)
 
@@ -79,7 +79,7 @@ func (r *requestHandler) FMV1ActiveflowGetNextAction(ctx context.Context, id, cu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +96,8 @@ func (r *requestHandler) FMV1ActiveflowGetNextAction(ctx context.Context, id, cu
 	return &res, nil
 }
 
-// FMV1ActiveflowUpdateForwardActionID updates the forward action id.
-func (r *requestHandler) FMV1ActiveflowUpdateForwardActionID(ctx context.Context, id, forwardActionID uuid.UUID, forwardNow bool) error {
+// FlowV1ActiveflowUpdateForwardActionID updates the forward action id.
+func (r *requestHandler) FlowV1ActiveflowUpdateForwardActionID(ctx context.Context, id, forwardActionID uuid.UUID, forwardNow bool) error {
 
 	uri := fmt.Sprintf("/v1/activeflows/%s/forward_action_id", id)
 
@@ -109,7 +109,7 @@ func (r *requestHandler) FMV1ActiveflowUpdateForwardActionID(ctx context.Context
 		return err
 	}
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPut, resourceFMActiveFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPut, resourceFlowActiveFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
@@ -121,12 +121,12 @@ func (r *requestHandler) FMV1ActiveflowUpdateForwardActionID(ctx context.Context
 	return nil
 }
 
-// FMV1ActiveflowExecute executes the activeflow
-func (r *requestHandler) FMV1ActiveflowExecute(ctx context.Context, id uuid.UUID) error {
+// FlowV1ActiveflowExecute executes the activeflow
+func (r *requestHandler) FlowV1ActiveflowExecute(ctx context.Context, id uuid.UUID) error {
 
 	uri := fmt.Sprintf("/v1/activeflows/%s/execute", id)
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodPost, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

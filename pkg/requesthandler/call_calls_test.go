@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_CMV1CallHealth(t *testing.T) {
+func Test_CallV1CallHealth(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -62,7 +62,7 @@ func Test_CMV1CallHealth(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.CMV1CallHealth(ctx, tt.callID, tt.delay, tt.retryCount)
+			err := reqHandler.CallV1CallHealth(ctx, tt.callID, tt.delay, tt.retryCount)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -70,7 +70,7 @@ func Test_CMV1CallHealth(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallActionTimeout(t *testing.T) {
+func Test_CallV1CallActionTimeout(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -121,7 +121,7 @@ func Test_CMV1CallActionTimeout(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.CMV1CallActionTimeout(ctx, tt.callID, tt.delay, tt.action)
+			err := reqHandler.CallV1CallActionTimeout(ctx, tt.callID, tt.delay, tt.action)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -129,7 +129,7 @@ func Test_CMV1CallActionTimeout(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallActionNext(t *testing.T) {
+func Test_CallV1CallActionNext(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -192,7 +192,7 @@ func Test_CMV1CallActionNext(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.CMV1CallActionNext(ctx, tt.callID, tt.force)
+			err := reqHandler.CallV1CallActionNext(ctx, tt.callID, tt.force)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -200,7 +200,7 @@ func Test_CMV1CallActionNext(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallsCreate(t *testing.T) {
+func Test_CallV1CallsCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -266,7 +266,7 @@ func Test_CMV1CallsCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations)
+			res, err := reqHandler.CallV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -278,7 +278,7 @@ func Test_CMV1CallsCreate(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallCreateWithID(t *testing.T) {
+func Test_CallV1CallCreateWithID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -346,7 +346,7 @@ func Test_CMV1CallCreateWithID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination)
+			res, err := reqHandler.CallV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -358,7 +358,7 @@ func Test_CMV1CallCreateWithID(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallGet(t *testing.T) {
+func Test_CallV1CallGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -405,7 +405,7 @@ func Test_CMV1CallGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallGet(ctx, tt.callID)
+			res, err := reqHandler.CallV1CallGet(ctx, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -417,7 +417,7 @@ func Test_CMV1CallGet(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallGets(t *testing.T) {
+func Test_CallV1CallGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -497,7 +497,7 @@ func Test_CMV1CallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CallV1CallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -561,7 +561,7 @@ func Test_CMCallAddChainedCall(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallAddChainedCall(ctx, tt.callID, tt.chainedCallID)
+			res, err := reqHandler.CallV1CallAddChainedCall(ctx, tt.callID, tt.chainedCallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -625,7 +625,7 @@ func Test_CMCallRemoveChainedCall(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallRemoveChainedCall(ctx, tt.callID, tt.chainedCallID)
+			res, err := reqHandler.CallV1CallRemoveChainedCall(ctx, tt.callID, tt.chainedCallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -691,7 +691,7 @@ func Test_CMCallHangup(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallHangup(ctx, tt.callID)
+			res, err := reqHandler.CallV1CallHangup(ctx, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -703,7 +703,7 @@ func Test_CMCallHangup(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallAddExternalMedia(t *testing.T) {
+func Test_CallV1CallAddExternalMedia(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -765,7 +765,7 @@ func Test_CMV1CallAddExternalMedia(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallAddExternalMedia(ctx, tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := reqHandler.CallV1CallAddExternalMedia(ctx, tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -777,7 +777,7 @@ func Test_CMV1CallAddExternalMedia(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallGetDigits(t *testing.T) {
+func Test_CallV1CallGetDigits(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -823,7 +823,7 @@ func Test_CMV1CallGetDigits(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CMV1CallGetDigits(ctx, tt.callID)
+			res, err := reqHandler.CallV1CallGetDigits(ctx, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -835,7 +835,7 @@ func Test_CMV1CallGetDigits(t *testing.T) {
 	}
 }
 
-func Test_CMV1CallSetDigits(t *testing.T) {
+func Test_CallV1CallSetDigits(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -879,7 +879,7 @@ func Test_CMV1CallSetDigits(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CMV1CallSetDigits(ctx, tt.callID, tt.digits); err != nil {
+			if err := reqHandler.CallV1CallSetDigits(ctx, tt.callID, tt.digits); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

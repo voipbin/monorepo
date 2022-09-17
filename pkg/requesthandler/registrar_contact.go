@@ -11,12 +11,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// RMV1ContactGets sends the /v1/contacts GET request to registrar-manager
-func (r *requestHandler) RMV1ContactGets(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
+// RegistrarV1ContactGets sends the /v1/contacts GET request to registrar-manager
+func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
-	tmp, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -38,12 +38,12 @@ func (r *requestHandler) RMV1ContactGets(ctx context.Context, endpoint string) (
 	return res, nil
 }
 
-// RMV1ContactUpdate sends the /v1/contacts PUT request to registrar-manager
-func (r *requestHandler) RMV1ContactUpdate(ctx context.Context, endpoint string) error {
+// RegistrarV1ContactUpdate sends the /v1/contacts PUT request to registrar-manager
+func (r *requestHandler) RegistrarV1ContactUpdate(ctx context.Context, endpoint string) error {
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
-	res, err := r.sendRequestRM(uri, rabbitmqhandler.RequestMethodPut, resourceCMChannelsHealth, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceCallChannelsHealth, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

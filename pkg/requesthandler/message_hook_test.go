@@ -10,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_MMV1Hook(t *testing.T) {
+func Test_MessageV1Hook(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -56,7 +56,7 @@ func Test_MMV1Hook(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.MMV1Hook(ctx, tt.hookMessage); err != nil {
+			if err := reqHandler.MessageV1Hook(ctx, tt.hookMessage); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

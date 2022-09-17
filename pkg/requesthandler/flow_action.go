@@ -11,12 +11,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// FMV1ActionGet gets the action of the flow.
-func (r *requestHandler) FMV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*action.Action, error) {
+// FlowV1ActionGet gets the action of the flow.
+func (r *requestHandler) FlowV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*action.Action, error) {
 
 	uri := fmt.Sprintf("/flows/%s/actions/%s", flowID, actionID)
 
-	res, err := r.sendRequestFM(uri, rabbitmqhandler.RequestMethodGet, resourceFlowsActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}

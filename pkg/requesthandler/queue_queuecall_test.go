@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_QMV1QueuecallGets(t *testing.T) {
+func Test_QueueV1QueuecallGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -92,7 +92,7 @@ func Test_QMV1QueuecallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueuecallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.QueueV1QueuecallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -104,7 +104,7 @@ func Test_QMV1QueuecallGets(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueuecallGet(t *testing.T) {
+func Test_QueueV1QueuecallGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -151,7 +151,7 @@ func Test_QMV1QueuecallGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueuecallGet(ctx, tt.id)
+			res, err := reqHandler.QueueV1QueuecallGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -212,7 +212,7 @@ func Test_QMQueuecallDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueuecallDelete(ctx, tt.queuecallID)
+			res, err := reqHandler.QueueV1QueuecallDelete(ctx, tt.queuecallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -273,7 +273,7 @@ func Test_QMQueuecallDeleteByReferenceID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueuecallDeleteByReferenceID(ctx, tt.referenceID)
+			res, err := reqHandler.QueueV1QueuecallDeleteByReferenceID(ctx, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -285,7 +285,7 @@ func Test_QMQueuecallDeleteByReferenceID(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueuecallTimeoutWait(t *testing.T) {
+func Test_QueueV1QueuecallTimeoutWait(t *testing.T) {
 
 	type test struct {
 		name string
@@ -326,7 +326,7 @@ func Test_QMV1QueuecallTimeoutWait(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
-			if err := reqHandler.QMV1QueuecallTimeoutWait(ctx, tt.queuecallID, tt.delay); err != nil {
+			if err := reqHandler.QueueV1QueuecallTimeoutWait(ctx, tt.queuecallID, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -334,7 +334,7 @@ func Test_QMV1QueuecallTimeoutWait(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueuecallTimeoutService(t *testing.T) {
+func Test_QueueV1QueuecallTimeoutService(t *testing.T) {
 
 	type test struct {
 		name string
@@ -375,7 +375,7 @@ func Test_QMV1QueuecallTimeoutService(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishExchangeDelayedRequest(gomock.Any(), tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
 
-			if err := reqHandler.QMV1QueuecallTimeoutService(ctx, tt.queuecallID, tt.delay); err != nil {
+			if err := reqHandler.QueueV1QueuecallTimeoutService(ctx, tt.queuecallID, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -383,7 +383,7 @@ func Test_QMV1QueuecallTimeoutService(t *testing.T) {
 	}
 }
 
-func Test_QMV1QueuecallUpdateStatusWaiting(t *testing.T) {
+func Test_QueueV1QueuecallUpdateStatusWaiting(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -431,7 +431,7 @@ func Test_QMV1QueuecallUpdateStatusWaiting(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QMV1QueuecallUpdateStatusWaiting(ctx, tt.queuecallID)
+			res, err := reqHandler.QueueV1QueuecallUpdateStatusWaiting(ctx, tt.queuecallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

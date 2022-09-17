@@ -11,11 +11,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// CSV1Login sends a request to customer-manager
+// CustomerV1Login sends a request to customer-manager
 // to login.
 // it returns customer if it succeed.
 // timeout: milliseconds
-func (r *requestHandler) CSV1Login(ctx context.Context, timeout int, username, password string) (*cscustomer.Customer, error) {
+func (r *requestHandler) CustomerV1Login(ctx context.Context, timeout int, username, password string) (*cscustomer.Customer, error) {
 	uri := "/v1/login"
 
 	req := &csrequest.V1DataLoginPost{
@@ -28,7 +28,7 @@ func (r *requestHandler) CSV1Login(ctx context.Context, timeout int, username, p
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodPost, resourceCSLogin, timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCustomer(uri, rabbitmqhandler.RequestMethodPost, resourceCustomerLogin, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

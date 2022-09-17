@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_TSV1RecordingPost(t *testing.T) {
+func Test_TranscribeV1RecordingPost(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -77,7 +77,7 @@ func Test_TSV1RecordingPost(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TSV1RecordingCreate(ctx, tt.customerID, tt.recordingID, tt.language)
+			res, err := reqHandler.TranscribeV1RecordingCreate(ctx, tt.customerID, tt.recordingID, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

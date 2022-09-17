@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_NMV1AvailableNumberGets(t *testing.T) {
+func Test_NumberV1AvailableNumberGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -70,7 +70,7 @@ func Test_NMV1AvailableNumberGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1AvailableNumberGets(ctx, tt.customerID, tt.pageSize, tt.countryCode)
+			res, err := reqHandler.NumberV1AvailableNumberGets(ctx, tt.customerID, tt.pageSize, tt.countryCode)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

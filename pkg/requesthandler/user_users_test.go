@@ -11,7 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_UMV1UserGets(t *testing.T) {
+func Test_UserV1UserGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -83,7 +83,7 @@ func Test_UMV1UserGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.UMV1UserGets(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.UserV1UserGets(ctx, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -95,7 +95,7 @@ func Test_UMV1UserGets(t *testing.T) {
 	}
 }
 
-func Test_UMV1UserGet(t *testing.T) {
+func Test_UserV1UserGet(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -151,7 +151,7 @@ func Test_UMV1UserGet(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.UMV1UserGet(ctx, tt.userID)
+			res, err := reqHandler.UserV1UserGet(ctx, tt.userID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -163,7 +163,7 @@ func Test_UMV1UserGet(t *testing.T) {
 	}
 }
 
-func Test_UMV1UserDelete(t *testing.T) {
+func Test_UserV1UserDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -206,14 +206,14 @@ func Test_UMV1UserDelete(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.UMV1UserDelete(ctx, tt.userID); err != nil {
+			if err := reqHandler.UserV1UserDelete(ctx, tt.userID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_UMV1UserCreate(t *testing.T) {
+func Test_UserV1UserCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -279,7 +279,7 @@ func Test_UMV1UserCreate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.UMV1UserCreate(ctx, requestTimeoutDefault, tt.username, tt.password, tt.userName, tt.detail, tt.permission)
+			res, err := reqHandler.UserV1UserCreate(ctx, requestTimeoutDefault, tt.username, tt.password, tt.userName, tt.detail, tt.permission)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -291,7 +291,7 @@ func Test_UMV1UserCreate(t *testing.T) {
 	}
 }
 
-func Test_UMV1UserLogin(t *testing.T) {
+func Test_UserV1UserLogin(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -351,7 +351,7 @@ func Test_UMV1UserLogin(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.UMV1UserLogin(ctx, requestTimeoutDefault, tt.username, tt.password)
+			res, err := reqHandler.UserV1UserLogin(ctx, requestTimeoutDefault, tt.username, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -363,7 +363,7 @@ func Test_UMV1UserLogin(t *testing.T) {
 	}
 }
 
-func Test_UMV1UserUpdate(t *testing.T) {
+func Test_UserV1UserUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -411,14 +411,14 @@ func Test_UMV1UserUpdate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.UMV1UserUpdateBasicInfo(ctx, tt.id, tt.userName, tt.detail); err != nil {
+			if err := reqHandler.UserV1UserUpdateBasicInfo(ctx, tt.id, tt.userName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_UMV1UserUpdatePassword(t *testing.T) {
+func Test_UserV1UserUpdatePassword(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -464,14 +464,14 @@ func Test_UMV1UserUpdatePassword(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.UMV1UserUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password); err != nil {
+			if err := reqHandler.UserV1UserUpdatePassword(ctx, requestTimeoutDefault, tt.id, tt.password); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_UMV1UserUpdatePermission(t *testing.T) {
+func Test_UserV1UserUpdatePermission(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -517,7 +517,7 @@ func Test_UMV1UserUpdatePermission(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.UMV1UserUpdatePermission(ctx, tt.id, tt.permission); err != nil {
+			if err := reqHandler.UserV1UserUpdatePermission(ctx, tt.id, tt.permission); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

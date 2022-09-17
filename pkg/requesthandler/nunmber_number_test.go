@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_NMV1NumberFlowDelete(t *testing.T) {
+func Test_NumberV1NumberFlowDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -57,7 +57,7 @@ func Test_NMV1NumberFlowDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.NMV1NumberFlowDelete(ctx, tt.flowID); err != nil {
+			if err := reqHandler.NumberV1NumberFlowDelete(ctx, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -65,7 +65,7 @@ func Test_NMV1NumberFlowDelete(t *testing.T) {
 	}
 }
 
-func Test_NMV1NumberCreate(t *testing.T) {
+func Test_NumberV1NumberCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -124,7 +124,7 @@ func Test_NMV1NumberCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberCreate(ctx, tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
+			res, err := reqHandler.NumberV1NumberCreate(ctx, tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -136,7 +136,7 @@ func Test_NMV1NumberCreate(t *testing.T) {
 	}
 }
 
-func Test_NMV1NumberGets(t *testing.T) {
+func Test_NumberV1NumberGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -202,7 +202,7 @@ func Test_NMV1NumberGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.NumberV1NumberGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -214,7 +214,7 @@ func Test_NMV1NumberGets(t *testing.T) {
 	}
 }
 
-func Test_NMV1NumberGet(t *testing.T) {
+func Test_NumberV1NumberGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -273,7 +273,7 @@ func Test_NMV1NumberGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberGet(ctx, tt.numberID)
+			res, err := reqHandler.NumberV1NumberGet(ctx, tt.numberID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -285,7 +285,7 @@ func Test_NMV1NumberGet(t *testing.T) {
 	}
 }
 
-func Test_NMV1NumberDelete(t *testing.T) {
+func Test_NumberV1NumberDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -344,7 +344,7 @@ func Test_NMV1NumberDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberDelete(ctx, tt.numberID)
+			res, err := reqHandler.NumberV1NumberDelete(ctx, tt.numberID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -356,7 +356,7 @@ func Test_NMV1NumberDelete(t *testing.T) {
 	}
 }
 
-func Test_NMV1NumberUpdateBasicInfo(t *testing.T) {
+func Test_NumberV1NumberUpdateBasicInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -421,7 +421,7 @@ func Test_NMV1NumberUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberUpdateBasicInfo(ctx, tt.id, tt.numberName, tt.detail)
+			res, err := reqHandler.NumberV1NumberUpdateBasicInfo(ctx, tt.id, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -433,7 +433,7 @@ func Test_NMV1NumberUpdateBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_NMV1NumberUpdateFlowID(t *testing.T) {
+func Test_NumberV1NumberUpdateFlowID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -486,7 +486,7 @@ func Test_NMV1NumberUpdateFlowID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NMV1NumberUpdateFlowID(ctx, tt.id, tt.callFlowID, tt.messageFlowID)
+			res, err := reqHandler.NumberV1NumberUpdateFlowID(ctx, tt.id, tt.callFlowID, tt.messageFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

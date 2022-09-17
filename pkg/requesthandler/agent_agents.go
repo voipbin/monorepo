@@ -15,11 +15,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// AMV1AgentCreate sends a request to agent-manager
+// AgentV1AgentCreate sends a request to agent-manager
 // to creating an Agent.
 // it returns created call if it succeed.
 // timeout: milliseconds
-func (r *requestHandler) AMV1AgentCreate(
+func (r *requestHandler) AgentV1AgentCreate(
 	ctx context.Context,
 	timeout int,
 	customerID uuid.UUID,
@@ -52,7 +52,7 @@ func (r *requestHandler) AMV1AgentCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPost, resourceAMAgent, timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPost, resourceAgentAgents, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -71,13 +71,13 @@ func (r *requestHandler) AMV1AgentCreate(
 	return &res, nil
 }
 
-// AMV1AgentGet sends a request to agent-manager
+// AgentV1AgentGet sends a request to agent-manager
 // to getting an agent.
 // it returns an agent if it succeed.
-func (r *requestHandler) AMV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", agentID)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodGet, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -96,13 +96,13 @@ func (r *requestHandler) AMV1AgentGet(ctx context.Context, agentID uuid.UUID) (*
 	return &res, nil
 }
 
-// CMV1AgentGets sends a request to agent-manager
+// AgentV1AgentGets sends a request to agent-manager
 // to getting a list of agent info.
 // it returns detail list of agent info if it succeed.
-func (r *requestHandler) AMV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodGet, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -121,10 +121,10 @@ func (r *requestHandler) AMV1AgentGets(ctx context.Context, customerID uuid.UUID
 	return res, nil
 }
 
-// AMV1AgentGetsByTagIDs sends a request to agent-manager
+// AgentV1AgentGetsByTagIDs sends a request to agent-manager
 // to getting a list of agent info.
 // it returns detail list of agent info if it succeed.
-func (r *requestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]amagent.Agent, error) {
 
 	if len(tagIDs) == 0 {
 		return nil, fmt.Errorf("no tag id given")
@@ -137,7 +137,7 @@ func (r *requestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, customerID u
 
 	uri := fmt.Sprintf("/v1/agents?customer_id=%s&tag_ids=%s", customerID, tagStr)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodGet, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -156,10 +156,10 @@ func (r *requestHandler) AMV1AgentGetsByTagIDs(ctx context.Context, customerID u
 	return res, nil
 }
 
-// AMV1AgentGetsByTagIDs sends a request to agent-manager
+// AgentV1AgentGetsByTagIDs sends a request to agent-manager
 // to getting a list of agent info.
 // it returns detail list of agent info if it succeed.
-func (r *requestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
 
 	if len(tagIDs) == 0 {
 		return nil, fmt.Errorf("no tag id given")
@@ -172,7 +172,7 @@ func (r *requestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, cus
 
 	uri := fmt.Sprintf("/v1/agents?customer_id=%s&tag_ids=%s&status=%s", customerID, tagStr, status)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodGet, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodGet, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -191,13 +191,13 @@ func (r *requestHandler) AMV1AgentGetsByTagIDsAndStatus(ctx context.Context, cus
 	return res, nil
 }
 
-// CMV1AgentDelete sends a request to agent-manager
+// AgentV1AgentDelete sends a request to agent-manager
 // to delete the agent.
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", id)
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodDelete, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodDelete, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -216,11 +216,11 @@ func (r *requestHandler) AMV1AgentDelete(ctx context.Context, id uuid.UUID) (*am
 	return &res, nil
 }
 
-// CMV1AgentLogin sends a request to agent-manager
+// AgentV1AgentLogin sends a request to agent-manager
 // to login the agent
 // it returns error if something went wrong.
 // timeout: milliseconds
-func (r *requestHandler) AMV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/login", username)
 
 	data := &amrequest.V1DataAgentsUsernameLoginPost{
@@ -233,7 +233,7 @@ func (r *requestHandler) AMV1AgentLogin(ctx context.Context, timeout int, custom
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPost, resourceAMAgent, timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPost, resourceAgentAgents, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -252,10 +252,10 @@ func (r *requestHandler) AMV1AgentLogin(ctx context.Context, timeout int, custom
 	return &res, nil
 }
 
-// CMV1AgentLogin sends a request to agent-manager
+// AgentV1AgentLogin sends a request to agent-manager
 // to login the agent
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/addresses", id)
 
 	data := &amrequest.V1DataAgentsIDAddressesPut{
@@ -267,7 +267,7 @@ func (r *requestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.U
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPut, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -286,11 +286,11 @@ func (r *requestHandler) AMV1AgentUpdateAddresses(ctx context.Context, id uuid.U
 	return &res, nil
 }
 
-// AMV1AgentUpdatePassword sends a request to agent-manager
+// AgentV1AgentUpdatePassword sends a request to agent-manager
 // to update the agent's password
 // it returns error if something went wrong.
 // timeout: milliseconds
-func (r *requestHandler) AMV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/password", id)
 
 	data := &amrequest.V1DataAgentsIDPasswordPut{
@@ -302,7 +302,7 @@ func (r *requestHandler) AMV1AgentUpdatePassword(ctx context.Context, timeout in
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPut, resourceAgentAgents, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -321,10 +321,10 @@ func (r *requestHandler) AMV1AgentUpdatePassword(ctx context.Context, timeout in
 	return &res, nil
 }
 
-// CMV1AgentUpdate sends a request to agent-manager
+// AgentV1AgentUpdate sends a request to agent-manager
 // to update teh agent basic info
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", id)
 
 	data := &amrequest.V1DataAgentsIDPut{
@@ -338,7 +338,7 @@ func (r *requestHandler) AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPut, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -357,10 +357,10 @@ func (r *requestHandler) AMV1AgentUpdate(ctx context.Context, id uuid.UUID, name
 	return &res, nil
 }
 
-// AMV1AgentUpdate sends a request to agent-manager
+// AgentV1AgentUpdate sends a request to agent-manager
 // to update teh agent's tag_ids info
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/tag_ids", id)
 
 	data := &amrequest.V1DataAgentsIDTagIDsPut{
@@ -372,7 +372,7 @@ func (r *requestHandler) AMV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPut, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -391,10 +391,10 @@ func (r *requestHandler) AMV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID
 	return &res, nil
 }
 
-// AMV1AgentUpdateStatus sends a request to agent-manager
+// AgentV1AgentUpdateStatus sends a request to agent-manager
 // to update teh agent's status info
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/status", id)
 
 	data := &amrequest.V1DataAgentsIDStatusPut{
@@ -406,7 +406,7 @@ func (r *requestHandler) AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPut, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPut, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -425,10 +425,10 @@ func (r *requestHandler) AMV1AgentUpdateStatus(ctx context.Context, id uuid.UUID
 	return &res, nil
 }
 
-// AMV1AgentDial sends a request to agent-manager
+// AgentV1AgentDial sends a request to agent-manager
 // to dial to the agent.
 // it returns error if something went wrong.
-func (r *requestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, flowID, masterCallID uuid.UUID) (*amagentdial.AgentDial, error) {
+func (r *requestHandler) AgentV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, flowID, masterCallID uuid.UUID) (*amagentdial.AgentDial, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/dial", id)
 
 	data := &amrequest.V1DataAgentsIDDialPost{
@@ -442,7 +442,7 @@ func (r *requestHandler) AMV1AgentDial(ctx context.Context, id uuid.UUID, source
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAM(uri, rabbitmqhandler.RequestMethodPost, resourceAMAgent, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPost, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

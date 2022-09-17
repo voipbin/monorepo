@@ -12,13 +12,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// QMV1QueuecallGets sends a request to queue-manager
+// QueueV1QueuecallGets sends a request to queue-manager
 // to get a list of queuecalls.
 // Returns list of queuecalls
-func (r *requestHandler) QMV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error) {
+func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodGet, resourceQMQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -36,13 +36,13 @@ func (r *requestHandler) QMV1QueuecallGets(ctx context.Context, customerID uuid.
 	return resData, nil
 }
 
-// QMV1QueuecallGet sends a request to queue-manager
+// QueueV1QueuecallGet sends a request to queue-manager
 // to get the queuecall.
 // it returns an queuecall if it succeed.
-func (r *requestHandler) QMV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+func (r *requestHandler) QueueV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/%s", queuecallID)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodGet, resourceQMQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -61,12 +61,12 @@ func (r *requestHandler) QMV1QueuecallGet(ctx context.Context, queuecallID uuid.
 	return &res, nil
 }
 
-// QMV1QueuecallDelete sends a request to queue-manager
+// QueueV1QueuecallDelete sends a request to queue-manager
 // to delete the queuecall and exit the queuecall from the queue.
-func (r *requestHandler) QMV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+func (r *requestHandler) QueueV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/%s", queuecallID)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodDelete, resourceQMQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodDelete, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -85,12 +85,12 @@ func (r *requestHandler) QMV1QueuecallDelete(ctx context.Context, queuecallID uu
 	return &res, nil
 }
 
-// QMV1QueuecallreferenceDelete sends a request to queue-manager
+// QueueV1QueuecallreferenceDelete sends a request to queue-manager
 // to delete the queuecallreference and exit the queuecall from the queue.
-func (r *requestHandler) QMV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+func (r *requestHandler) QueueV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecallreferences/%s", referenceID)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodDelete, resourceQMQueuecallreferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodDelete, resourceQueueQueuecallreferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -109,13 +109,13 @@ func (r *requestHandler) QMV1QueuecallDeleteByReferenceID(ctx context.Context, r
 	return &res, nil
 }
 
-// QMV1QueuecallTimeoutWait sends the request for queuecall wait timeout.
+// QueueV1QueuecallTimeoutWait sends the request for queuecall wait timeout.
 //
 // delay: millisecond
-func (r *requestHandler) QMV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error {
+func (r *requestHandler) QueueV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/timeout_wait", queuecallID)
 
-	res, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueuecalls, requestTimeoutDefault, delay, ContentTypeJSON, nil)
+	res, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPost, resourceQueueQueuecalls, requestTimeoutDefault, delay, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -127,13 +127,13 @@ func (r *requestHandler) QMV1QueuecallTimeoutWait(ctx context.Context, queuecall
 	return nil
 }
 
-// QMV1QueuecallTimeoutService sends the request for queuecall service timeout.
+// QueueV1QueuecallTimeoutService sends the request for queuecall service timeout.
 //
 // delay: millisecond
-func (r *requestHandler) QMV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error {
+func (r *requestHandler) QueueV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/timeout_service", queuecallID)
 
-	res, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueuecalls, requestTimeoutDefault, delay, ContentTypeJSON, nil)
+	res, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPost, resourceQueueQueuecalls, requestTimeoutDefault, delay, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -145,11 +145,11 @@ func (r *requestHandler) QMV1QueuecallTimeoutService(ctx context.Context, queuec
 	return nil
 }
 
-// QMV1QueuecallUpdateStatusWaiting sends the request for update the queuecall status to waiting.
-func (r *requestHandler) QMV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+// QueueV1QueuecallUpdateStatusWaiting sends the request for update the queuecall status to waiting.
+func (r *requestHandler) QueueV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/status_waiting", queuecallID)
 
-	tmp, err := r.sendRequestQM(uri, rabbitmqhandler.RequestMethodPost, resourceQMQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodPost, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

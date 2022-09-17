@@ -12,9 +12,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// TMStreamingsPost sends a request to transcribe-manager
+// TranscribeV1StreamingCreate sends a request to transcribe-manager
 // to start the streaming transcribe
-func (r *requestHandler) TSV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType tstranscribe.Type, language string) (*tstranscribe.Transcribe, error) {
+func (r *requestHandler) TranscribeV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType tstranscribe.Type, language string) (*tstranscribe.Transcribe, error) {
 	uri := "/v1/streamings"
 
 	data := &tmrequest.V1DataStreamingsPost{
@@ -29,7 +29,7 @@ func (r *requestHandler) TSV1StreamingCreate(ctx context.Context, customerID, re
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestTS(uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeStreamings, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTranscribe(uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeStreamings, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

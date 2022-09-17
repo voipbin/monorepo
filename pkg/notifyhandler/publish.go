@@ -52,7 +52,7 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 		return
 	}
 
-	if err := h.reqHandler.WMV1WebhookSend(ctx, customerID, wmwebhook.DataTypeJSON, eventType, m); err != nil {
+	if err := h.reqHandler.WebhookV1WebhookSend(ctx, customerID, wmwebhook.DataTypeJSON, eventType, m); err != nil {
 		log.Errorf("Could not publish the webhook. err: %v", err)
 		return
 	}

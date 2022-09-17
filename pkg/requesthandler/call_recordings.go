@@ -12,13 +12,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// CMV1RecordingGets sends a request to call-manager
+// CallV1RecordingGets sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error) {
+func (r *requestHandler) CallV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(token), size, customerID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -37,13 +37,13 @@ func (r *requestHandler) CMV1RecordingGets(ctx context.Context, customerID uuid.
 	return recordings, nil
 }
 
-// CMV1RecordingGet sends a request to call-manager
+// CallV1RecordingGet sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CMV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error) {
+func (r *requestHandler) CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

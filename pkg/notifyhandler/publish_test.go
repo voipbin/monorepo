@@ -80,7 +80,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
 			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
 			if tt.customerID != uuid.Nil {
-				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), tt.customerID, wmwebhook.DataTypeJSON, string(tt.eventType), tt.expectWebhook)
+				mockReq.EXPECT().WebhookV1WebhookSend(gomock.Any(), tt.customerID, wmwebhook.DataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
 
 			h.PublishWebhookEvent(ctx, tt.customerID, tt.eventType, tt.event)
@@ -156,7 +156,7 @@ func TestPublishWebhook(t *testing.T) {
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
 			if tt.customerID != uuid.Nil {
-				mockReq.EXPECT().WMV1WebhookSend(gomock.Any(), tt.customerID, wmwebhook.DataTypeJSON, string(tt.eventType), tt.expectWebhook)
+				mockReq.EXPECT().WebhookV1WebhookSend(gomock.Any(), tt.customerID, wmwebhook.DataTypeJSON, string(tt.eventType), tt.expectWebhook)
 			}
 			h.PublishWebhook(ctx, tt.customerID, tt.eventType, tt.event)
 

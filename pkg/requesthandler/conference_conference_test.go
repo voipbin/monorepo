@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_CFV1ConferenceGet(t *testing.T) {
+func Test_ConferenceV1ConferenceGet(t *testing.T) {
 
 	type test struct {
 		name         string
@@ -61,7 +61,7 @@ func Test_CFV1ConferenceGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CFV1ConferenceGet(context.Background(), tt.conferenceID)
+			res, err := reqHandler.ConferenceV1ConferenceGet(context.Background(), tt.conferenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -74,7 +74,7 @@ func Test_CFV1ConferenceGet(t *testing.T) {
 	}
 }
 
-func Test_CFV1ConferenceGets(t *testing.T) {
+func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -135,7 +135,7 @@ func Test_CFV1ConferenceGets(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CFV1ConferenceGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, string(tt.conferenceType))
+			res, err := reqHandler.ConferenceV1ConferenceGets(ctx, tt.customerID, tt.pageToken, tt.pageSize, string(tt.conferenceType))
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -147,7 +147,7 @@ func Test_CFV1ConferenceGets(t *testing.T) {
 	}
 }
 
-func Test_CFV1ConferenceDelete(t *testing.T) {
+func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -186,14 +186,14 @@ func Test_CFV1ConferenceDelete(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CFV1ConferenceDelete(ctx, tt.conferenceID); err != nil {
+			if err := reqHandler.ConferenceV1ConferenceDelete(ctx, tt.conferenceID); err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_CFV1ConferenceCreate(t *testing.T) {
+func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -241,7 +241,7 @@ func Test_CFV1ConferenceCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.CFV1ConferenceCreate(ctx, tt.expectConference.CustomerID, tt.expectConference.Type, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, nil, nil, nil)
+			cf, err := reqHandler.ConferenceV1ConferenceCreate(ctx, tt.expectConference.CustomerID, tt.expectConference.Type, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, nil, nil, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
