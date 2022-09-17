@@ -57,7 +57,7 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 			}
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(gomock.Any(), tt.call.ActiveFlowID, variableCallDigits, tt.digit).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.call.ActiveFlowID, variableCallDigits, tt.digit).Return(nil)
 
 			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -124,8 +124,8 @@ func Test_DTMFReceivedContinue(t *testing.T) {
 			}
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FMV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar, nil)
-			mockReq.EXPECT().FMV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, variableCallDigits, tt.expectVariable).Return(nil)
+			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, variableCallDigits, tt.expectVariable).Return(nil)
 
 			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -263,9 +263,9 @@ func Test_DTMFReceivedStop(t *testing.T) {
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 
-			mockReq.EXPECT().FMV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, variableCallDigits, tt.expectDigits).Return(nil)
-			mockReq.EXPECT().FMV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar2, nil)
-			mockReq.EXPECT().CMV1CallActionNext(gomock.Any(), tt.responseCall.ID, false)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, variableCallDigits, tt.expectDigits).Return(nil)
+			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar2, nil)
+			mockReq.EXPECT().CallV1CallActionNext(gomock.Any(), tt.responseCall.ID, false)
 
 			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -322,7 +322,7 @@ func Test_DTMFGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockReq.EXPECT().FMV1VariableGet(ctx, tt.responseCall.ActiveFlowID).Return(tt.responseVar, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveFlowID).Return(tt.responseVar, nil)
 
 			res, err := h.DigitsGet(ctx, tt.id)
 			if err != nil {
@@ -433,7 +433,7 @@ func Test_checkDigitsCondition(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1VariableGet(ctx, tt.variableID).Return(tt.responseVariable, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.variableID).Return(tt.responseVariable, nil)
 
 			res, err := h.checkDigitsCondition(ctx, tt.variableID, tt.option)
 			if err != nil {

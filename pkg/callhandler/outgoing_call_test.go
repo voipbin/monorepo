@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -17,7 +18,6 @@ import (
 	// address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 func Test_CreateCallOutgoing(t *testing.T) {
@@ -164,13 +164,13 @@ func Test_CreateCallOutgoing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, tt.activeflowID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.af, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.af, nil)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
 
 			// setVariables
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			if tt.masterCallID != uuid.Nil {
 				mockDB.EXPECT().CallTXStart(tt.masterCallID).Return(nil, &call.Call{}, nil)
@@ -527,7 +527,7 @@ func Test_GetDialURIExtension(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RMV1ContactGets(ctx, tt.destination.Target).Return(tt.contacts, nil)
+			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.destination.Target).Return(tt.contacts, nil)
 
 			res, err := h.getDialURI(ctx, *tt.destination)
 			if err != nil {
@@ -573,7 +573,7 @@ func Test_GetDialURIEndpointError(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RMV1ContactGets(ctx, tt.destination.Target).Return(tt.contacts, nil)
+			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.destination.Target).Return(tt.contacts, nil)
 
 			_, err := h.getDialURI(context.Background(), *tt.destination)
 			if err == nil {

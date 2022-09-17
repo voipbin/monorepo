@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
-	commonaddress	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -83,7 +83,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// create active-flow
-	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, activeflowID, flowID, fmactiveflow.ReferenceTypeCall, id)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, flowID, fmactiveflow.ReferenceTypeCall, id)
 	if err != nil {
 		af = &fmactiveflow.Activeflow{}
 		log.Errorf("Could not get an active flow for outgoing call. Created dummy active flow. This call will be hungup. call: %s, flow: %s, err: %v", id, flowID, err)
@@ -201,7 +201,7 @@ func (h *callHandler) getDialURISIP(ctx context.Context, destination commonaddre
 func (h *callHandler) getDialURIEndpoint(ctx context.Context, destination commonaddress.Address) (string, error) {
 
 	// get contacts
-	contacts, err := h.reqHandler.RMV1ContactGets(ctx, destination.Target)
+	contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, destination.Target)
 	if err != nil {
 		return "", fmt.Errorf("could not get contacts info. target: err: %v", err)
 	}
@@ -256,7 +256,7 @@ func (h *callHandler) createCallOutgoingAgent(ctx context.Context, customerID, f
 
 	// get agent id
 	agentID := uuid.FromStringOrNil(destination.Target)
-	agentDial, err := h.reqHandler.AMV1AgentDial(ctx, agentID, &source, flowID, masterCallID)
+	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, agentID, &source, flowID, masterCallID)
 	if err != nil {
 		log.Errorf("Could not create an outgoing call to agent. err: %v", err)
 		return nil, err

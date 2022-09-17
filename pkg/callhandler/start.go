@@ -449,7 +449,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 	log.Debugf("Starting the conference to joining. source: %s", cn.SourceNumber)
 
 	// get conference info
-	cf, err := h.reqHandler.CFV1ConferenceGet(ctx, cfID)
+	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, cfID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
@@ -475,7 +475,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 	tmpCall.BridgeID = callBridgeID
 
 	// create active flow
-	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, uuid.Nil, tmpCall.FlowID, fmactiveflow.ReferenceTypeCall, tmpCall.ID)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, tmpCall.FlowID, fmactiveflow.ReferenceTypeCall, tmpCall.ID)
 	if err != nil {
 		log.Errorf("Could not create active flow. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
@@ -520,7 +520,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	log.Debugf("Starting the flow incoming call handler. source: %s, destinaiton: %s", cn.SourceNumber, cn.DestinationNumber)
 
 	// get number info
-	numb, err := h.reqHandler.NMV1NumberGetByNumber(ctx, cn.DestinationNumber)
+	numb, err := h.reqHandler.NumberV1NumberGetByNumber(ctx, cn.DestinationNumber)
 	if err != nil {
 		log.Debugf("Could not find number info. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination, 0)
@@ -548,7 +548,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	tmpCall.BridgeID = callBridgeID
 
 	// create active flow
-	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, uuid.Nil, numb.CallFlowID, fmactiveflow.ReferenceTypeCall, tmpCall.ID)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, numb.CallFlowID, fmactiveflow.ReferenceTypeCall, tmpCall.ID)
 	if err != nil {
 		af = &fmactiveflow.Activeflow{}
 		log.Errorf("Could not get an active flow info. Created dummy active flow. This call will be hungup. call: %s, flow: %s", tmpCall.ID, tmpCall.FlowID)

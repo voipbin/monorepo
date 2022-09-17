@@ -97,7 +97,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 				mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), ari.ChannelCauseCallAMD, 0).Return(nil)
 			} else {
 				if !tt.responseAMD.Async {
-					mockReq.EXPECT().CMV1CallActionNext(ctx, tt.responseAMD.CallID, false)
+					mockReq.EXPECT().CallV1CallActionNext(ctx, tt.responseAMD.CallID, false)
 				}
 			}
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)

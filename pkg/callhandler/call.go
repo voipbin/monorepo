@@ -94,7 +94,7 @@ func (h *callHandler) CallHealthCheck(ctx context.Context, id uuid.UUID, retryCo
 	}
 
 	// send another health check.
-	if err := h.reqHandler.CMV1CallHealth(ctx, id, delay, retryCount); err != nil {
+	if err := h.reqHandler.CallV1CallHealth(ctx, id, delay, retryCount); err != nil {
 		log.Errorf("Could not send the call health check request. err: %v", err)
 		return
 	}

@@ -53,7 +53,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		// kick the other channel
 		for _, joinedCallID := range cf.ChannelCallIDs {
 			log.Debugf("Kicking out the call from the confbridge. call_id: %s", joinedCallID)
-			if errKick := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ID, joinedCallID); errKick != nil {
+			if errKick := h.reqHandler.CallV1ConfbridgeCallKick(ctx, cf.ID, joinedCallID); errKick != nil {
 				log.Errorf("Could not kick the call from the confbridge. err: %v", errKick)
 			}
 		}

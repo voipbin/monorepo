@@ -33,7 +33,7 @@ func (h *callHandler) setVariablesCall(ctx context.Context, c *call.Call) error 
 	}
 
 	for key, val := range variables {
-		if err := h.reqHandler.FMV1VariableSetVariable(ctx, c.ActiveFlowID, key, val); err != nil {
+		if err := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, key, val); err != nil {
 			return fmt.Errorf("could not set the variable. key: %s, val: %s, err: %v", key, val, err)
 		}
 	}

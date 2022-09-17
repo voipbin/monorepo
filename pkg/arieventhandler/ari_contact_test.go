@@ -66,7 +66,7 @@ func TestEventHandlerContactStatusChange(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().RMV1ContactUpdate(gomock.Any(), tt.endpoint).Return(nil)
+			mockReq.EXPECT().RegistrarV1ContactUpdate(gomock.Any(), tt.endpoint).Return(nil)
 			if err := h.EventHandlerContactStatusChange(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

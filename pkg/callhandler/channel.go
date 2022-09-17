@@ -55,7 +55,7 @@ func (h *callHandler) ChannelHealthCheck(ctx context.Context, asteriskID string,
 
 	// send another health check.
 	log.Debugf("Sending health-check request. retry: %d, retry_max: %d, delay: %d", retryCount, retryCountMax, delay)
-	if err := h.reqHandler.CMV1ChannelHealth(ctx, asteriskID, channelID, delay, retryCount, retryCountMax); err != nil {
+	if err := h.reqHandler.CallV1ChannelHealth(ctx, asteriskID, channelID, delay, retryCount, retryCountMax); err != nil {
 		log.Errorf("Could not send the channel check request. err: %v", err)
 		return
 	}

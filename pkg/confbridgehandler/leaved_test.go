@@ -102,7 +102,7 @@ func Test_Leaved(t *testing.T) {
 
 			if tt.confbridge.Type == confbridge.TypeConnect && len(tt.confbridge.ChannelCallIDs) == 1 {
 				for _, joinedCallID := range tt.confbridge.ChannelCallIDs {
-					mockReq.EXPECT().CMV1ConfbridgeCallKick(ctx, tt.confbridge.ID, joinedCallID).Return(nil)
+					mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.confbridge.ID, joinedCallID).Return(nil)
 				}
 			}
 
