@@ -221,3 +221,11 @@ func (r *requestHandler) sendRequestConversation(uri string, method rabbitmqhand
 
 	return r.sendRequest(queueConversation, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestChat send a request to the chat-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestChat(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(queueChat, uri, method, resource, timeout, delayed, dataType, data)
+}

@@ -175,28 +175,28 @@ func (r *requestHandler) CMV1CallCreateWithID(ctx context.Context, id, customerI
 }
 
 // CMV1CallGet sends a request to call-manager
-// to creating a call.
-// it returns created call if it succeed.
+// to getting a call.
+// it returns given call id's call if it succeed.
 func (r *requestHandler) CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", callID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var c cmcall.Call
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+	var res cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	return &res, nil
 }
 
 // CMV1CallGets sends a request to call-manager
@@ -205,23 +205,23 @@ func (r *requestHandler) CMV1CallGet(ctx context.Context, callID uuid.UUID) (*cm
 func (r *requestHandler) CMV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCM(uri, rabbitmqhandler.RequestMethodGet, resourceCMCall, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var calls []cmcall.Call
-	if err := json.Unmarshal([]byte(res.Data), &calls); err != nil {
+	var res []cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return calls, nil
+	return res, nil
 }
 
 // CMV1CallHangup sends a request to call-manager
