@@ -21,6 +21,11 @@ import (
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
+	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
+	chatmedia "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
+	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
+	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -49,6 +54,7 @@ import (
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -83,6 +89,7 @@ const (
 	queueAPI          = "bin-manager.api-manager.request"
 	queueCall         = "bin-manager.call-manager.request"
 	queueCampaign     = "bin-manager.campaign-manager.request"
+	queueChat         = "bin-manager.chat-manager.request"
 	queueConference   = "bin-manager.conference-manager.request"
 	queueConversation = "bin-manager.conversation-manager.request"
 	queueCustomer     = "bin-manager.customer-manager.request"
@@ -145,6 +152,11 @@ const (
 	resourceCMChannelsHealth     resource = "cm/channels/health"
 
 	resourceCMConfbridges resource = "cm/confbridges"
+
+	resourceChatChats            resource = "chat/chats"
+	resourceChatChatrooms        resource = "chat/chatrooms"
+	resourceChatMessagechats     resource = "chat/messagechats"
+	resourceChatMessagechatrooms resource = "chat/messagechatrooms"
 
 	resourceCFConferences     resource = "conference/conferences"
 	resourceCFConferencecalls resource = "conference/conferencecalls"
@@ -343,6 +355,44 @@ type RequestHandler interface {
 		maxTryCount3 int,
 		maxTryCount4 int,
 	) (*caoutplan.Outplan, error)
+
+	ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error)
+	ChatV1ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, pageToken string, pageSize uint64) ([]chatchatroom.Chatroom, error)
+	ChatV1ChatroomDelete(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error)
+
+	ChatV1ChatCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		chatType chatchat.Type,
+		ownerID uuid.UUID,
+		participantIDs []uuid.UUID,
+		name string,
+		detail string,
+	) (*chatchat.Chat, error)
+	ChatV1ChatGet(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error)
+	ChatV1ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatchat.Chat, error)
+	ChatV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error)
+	ChatV1ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*chatchat.Chat, error)
+	ChatV1ChatUpdateOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) (*chatchat.Chat, error)
+	ChatV1ChatAddParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
+	ChatV1ChatRemoveParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
+
+	ChatV1MessagechatroomGetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechatroom.Messagechatroom, error)
+	ChatV1MessagechatroomGet(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error)
+	ChatV1MessagechatroomDelete(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error)
+
+	ChatV1MessagechatCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		chatID uuid.UUID,
+		source commonaddress.Address,
+		messageType chatmessagechat.Type,
+		text string,
+		medias []chatmedia.Media,
+	) (*chatmessagechat.Messagechat, error)
+	ChatV1MessagechatGet(ctx context.Context, messagechatID uuid.UUID) (*chatmessagechat.Messagechat, error)
+	ChatV1MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechat.Messagechat, error)
+	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 
 	// call-manager call
 	CMV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
