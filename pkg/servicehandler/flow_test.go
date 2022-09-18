@@ -65,7 +65,7 @@ func TestFlowCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
 			res, err := h.FlowCreate(tt.customer, tt.flowName, tt.detail, tt.actions, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -125,8 +125,8 @@ func TestFlowDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FMV1FlowDelete(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowDelete(gomock.Any(), tt.flowID).Return(tt.response, nil)
 
 			res, err := h.FlowDelete(tt.customer, tt.flowID)
 			if err != nil {
@@ -219,7 +219,7 @@ func TestFlowGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
 
 			res, err := h.FlowGet(tt.customer, tt.flowID)
 			if err != nil {
@@ -337,7 +337,7 @@ func TestFlowGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().FMV1FlowGets(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGets(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.FlowGets(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -411,8 +411,8 @@ func TestFlowUpdate(t *testing.T) {
 				Actions: tt.actions,
 			}
 
-			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FMV1FlowUpdate(gomock.Any(), f).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowUpdate(gomock.Any(), f).Return(tt.response, nil)
 			res, err := h.FlowUpdate(tt.customer, f)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -473,8 +473,8 @@ func Test_FlowUpdateActions(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().FMV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FMV1FlowUpdateActions(gomock.Any(), tt.flowID, tt.actions).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowUpdateActions(gomock.Any(), tt.flowID, tt.actions).Return(tt.response, nil)
 			res, err := h.FlowUpdateActions(tt.customer, tt.flowID, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

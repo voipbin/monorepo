@@ -22,7 +22,7 @@ func (h *serviceHandler) extensionGet(ctx context.Context, u *cscustomer.Custome
 	)
 
 	// send request
-	res, err := h.reqHandler.RMV1ExtensionGet(ctx, id)
+	res, err := h.reqHandler.RegistrarV1ExtensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get an tag. err: %v", err)
 		return nil, err
@@ -50,7 +50,7 @@ func (h *serviceHandler) ExtensionCreate(u *cscustomer.Customer, ext, password s
 	})
 	log.Debug("Creating a new extension.")
 
-	tmp, err := h.reqHandler.RMV1ExtensionCreate(ctx, u.ID, ext, password, domainID, name, detail)
+	tmp, err := h.reqHandler.RegistrarV1ExtensionCreate(ctx, u.ID, ext, password, domainID, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a new domain. err: %v", err)
 		return nil, err
@@ -76,7 +76,7 @@ func (h *serviceHandler) ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) (
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.RMV1ExtensionDelete(ctx, id)
+	tmp, err := h.reqHandler.RegistrarV1ExtensionDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the extension. err: %v", err)
 		return nil, err
@@ -125,7 +125,7 @@ func (h *serviceHandler) ExtensionGets(u *cscustomer.Customer, domainID uuid.UUI
 	}
 
 	// get extensions
-	exts, err := h.reqHandler.RMV1ExtensionGets(ctx, domainID, token, size)
+	exts, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, domainID, token, size)
 	if err != nil {
 		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extensions info. err: %v", err)
@@ -157,7 +157,7 @@ func (h *serviceHandler) ExtensionUpdate(u *cscustomer.Customer, id uuid.UUID, n
 		return nil, fmt.Errorf("could not find extension info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.RMV1ExtensionUpdate(ctx, id, name, detail, password)
+	tmp, err := h.reqHandler.RegistrarV1ExtensionUpdate(ctx, id, name, detail, password)
 	if err != nil {
 		logrus.Errorf("Could not update the domain. err: %v", err)
 		return nil, err

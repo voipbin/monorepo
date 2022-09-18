@@ -23,7 +23,7 @@ func (h *serviceHandler) TranscribeCreate(u *cscustomer.Customer, recordingID uu
 	})
 
 	// get recording
-	rec, err := h.reqHandler.CMV1RecordingGet(ctx, recordingID)
+	rec, err := h.reqHandler.CallV1RecordingGet(ctx, recordingID)
 	if err != nil {
 		log.Errorf("Could not")
 		return nil, err
@@ -36,7 +36,7 @@ func (h *serviceHandler) TranscribeCreate(u *cscustomer.Customer, recordingID uu
 	}
 
 	// create tanscribe
-	tmp, err := h.reqHandler.TSV1RecordingCreate(ctx, u.ID, recordingID, language)
+	tmp, err := h.reqHandler.TranscribeV1RecordingCreate(ctx, u.ID, recordingID, language)
 	if err != nil {
 		log.Errorf("Could not get recordings from the call manager. err: %v", err)
 		return nil, err

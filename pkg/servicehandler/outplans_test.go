@@ -78,7 +78,7 @@ func Test_OutplanCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CAV1OutplanCreate(gomock.Any(), tt.customer.ID, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanCreate(gomock.Any(), tt.customer.ID, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
 			res, err := h.OutplanCreate(tt.customer, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -132,8 +132,8 @@ func Test_OutplanDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CAV1OutplanGet(gomock.Any(), tt.id).Return(tt.responseOutplan, nil)
-			mockReq.EXPECT().CAV1OutplanDelete(gomock.Any(), tt.id).Return(tt.responseOutplan, nil)
+			mockReq.EXPECT().CampaignV1OutplanGet(gomock.Any(), tt.id).Return(tt.responseOutplan, nil)
+			mockReq.EXPECT().CampaignV1OutplanDelete(gomock.Any(), tt.id).Return(tt.responseOutplan, nil)
 			res, err := h.OutplanDelete(tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -197,7 +197,7 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CAV1OutplanGetsByCustomerID(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGetsByCustomerID(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 			res, err := h.OutplanGetsByCustomerID(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -251,7 +251,7 @@ func Test_OutplanGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CAV1OutplanGet(gomock.Any(), tt.outplanID).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGet(gomock.Any(), tt.outplanID).Return(tt.response, nil)
 			res, err := h.OutplanGet(tt.customer, tt.outplanID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -309,8 +309,8 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CAV1OutplanGet(gomock.Any(), tt.outplanID).Return(tt.response, nil)
-			mockReq.EXPECT().CAV1OutplanUpdateBasicInfo(gomock.Any(), tt.outplanID, tt.outplanName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGet(gomock.Any(), tt.outplanID).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanUpdateBasicInfo(gomock.Any(), tt.outplanID, tt.outplanName, tt.detail).Return(tt.response, nil)
 			res, err := h.OutplanUpdateBasicInfo(tt.customer, tt.outplanID, tt.outplanName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -383,8 +383,8 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CAV1OutplanGet(gomock.Any(), tt.outplanID).Return(tt.response, nil)
-			mockReq.EXPECT().CAV1OutplanUpdateDialInfo(gomock.Any(), tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGet(gomock.Any(), tt.outplanID).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanUpdateDialInfo(gomock.Any(), tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
 			res, err := h.OutplanUpdateDialInfo(tt.customer, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

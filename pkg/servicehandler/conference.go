@@ -23,7 +23,7 @@ func (h *serviceHandler) conferenceGet(ctx context.Context, u *cscustomer.Custom
 	)
 
 	// send request
-	tmp, err := h.reqHandler.CFV1ConferenceGet(ctx, id)
+	tmp, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the conference. err: %v", err)
 		return nil, err
@@ -77,7 +77,7 @@ func (h *serviceHandler) ConferenceGets(u *cscustomer.Customer, size uint64, tok
 	}
 
 	// get conferences
-	tmps, err := h.reqHandler.CFV1ConferenceGets(ctx, u.ID, token, size, "conference")
+	tmps, err := h.reqHandler.ConferenceV1ConferenceGets(ctx, u.ID, token, size, "conference")
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err
@@ -116,7 +116,7 @@ func (h *serviceHandler) ConferenceCreate(
 	)
 	log.Debugf("Creating a conference.")
 
-	tmp, err := h.reqHandler.CFV1ConferenceCreate(ctx, u.ID, confType, name, detail, 0, map[string]interface{}{}, preActions, postActions)
+	tmp, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, u.ID, confType, name, detail, 0, map[string]interface{}{}, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
@@ -146,7 +146,7 @@ func (h *serviceHandler) ConferenceDelete(u *cscustomer.Customer, confID uuid.UU
 
 	// destroy
 	log.Debug("Destroying conference.")
-	if err := h.reqHandler.CFV1ConferenceDelete(ctx, confID); err != nil {
+	if err := h.reqHandler.ConferenceV1ConferenceDelete(ctx, confID); err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
 		return err
 	}

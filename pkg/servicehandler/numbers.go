@@ -24,7 +24,7 @@ func (h *serviceHandler) NumberGets(u *cscustomer.Customer, size uint64, token s
 	})
 
 	// get available numbers
-	tmps, err := h.reqHandler.NMV1NumberGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get numbers info. err: %v", err)
 		return nil, err
@@ -57,7 +57,7 @@ func (h *serviceHandler) NumberCreate(u *cscustomer.Customer, num string, callFl
 	}
 
 	// create numbers
-	tmp, err := h.reqHandler.NMV1NumberCreate(ctx, u.ID, num, callFlowID, messageFlowID, name, detail)
+	tmp, err := h.reqHandler.NumberV1NumberCreate(ctx, u.ID, num, callFlowID, messageFlowID, name, detail)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err
@@ -79,7 +79,7 @@ func (h *serviceHandler) NumberGet(u *cscustomer.Customer, id uuid.UUID) (*nmnum
 	})
 
 	// get number info
-	tmp, err := h.reqHandler.NMV1NumberGet(ctx, id)
+	tmp, err := h.reqHandler.NumberV1NumberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -113,7 +113,7 @@ func (h *serviceHandler) NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*nm
 	})
 
 	// get number info
-	num, err := h.reqHandler.NMV1NumberGet(ctx, id)
+	num, err := h.reqHandler.NumberV1NumberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -131,7 +131,7 @@ func (h *serviceHandler) NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*nm
 	}
 
 	// delete numbers
-	tmp, err := h.reqHandler.NMV1NumberDelete(ctx, id)
+	tmp, err := h.reqHandler.NumberV1NumberDelete(ctx, id)
 	if err != nil {
 		log.Infof("Could not delete numbers info. err: %v", err)
 		return nil, err
@@ -152,7 +152,7 @@ func (h *serviceHandler) NumberUpdate(u *cscustomer.Customer, id uuid.UUID, name
 	})
 
 	// get number
-	num, err := h.reqHandler.NMV1NumberGet(ctx, id)
+	num, err := h.reqHandler.NumberV1NumberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -170,7 +170,7 @@ func (h *serviceHandler) NumberUpdate(u *cscustomer.Customer, id uuid.UUID, name
 	}
 
 	// update number
-	tmp, err := h.reqHandler.NMV1NumberUpdateBasicInfo(ctx, id, name, detail)
+	tmp, err := h.reqHandler.NumberV1NumberUpdateBasicInfo(ctx, id, name, detail)
 	if err != nil {
 		log.Errorf("Could not update the number info. err: %v", err)
 		return nil, err
@@ -191,7 +191,7 @@ func (h *serviceHandler) NumberUpdateFlowIDs(u *cscustomer.Customer, id, callFlo
 	})
 
 	// get number
-	num, err := h.reqHandler.NMV1NumberGet(ctx, id)
+	num, err := h.reqHandler.NumberV1NumberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
@@ -209,7 +209,7 @@ func (h *serviceHandler) NumberUpdateFlowIDs(u *cscustomer.Customer, id, callFlo
 	}
 
 	// update number
-	tmp, err := h.reqHandler.NMV1NumberUpdateFlowID(ctx, id, callFlowID, messageFlowID)
+	tmp, err := h.reqHandler.NumberV1NumberUpdateFlowID(ctx, id, callFlowID, messageFlowID)
 	if err != nil {
 		log.Errorf("Could not update the number info. err: %v", err)
 		return nil, err

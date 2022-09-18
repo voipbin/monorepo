@@ -21,7 +21,7 @@ func (h *serviceHandler) AvailableNumberGets(u *cscustomer.Customer, size uint64
 	})
 
 	// get available numbers
-	tmps, err := h.reqHandler.NMV1AvailableNumberGets(ctx, u.ID, size, countryCode)
+	tmps, err := h.reqHandler.NumberV1AvailableNumberGets(ctx, u.ID, size, countryCode)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err

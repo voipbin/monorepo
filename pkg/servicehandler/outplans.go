@@ -33,7 +33,7 @@ func (h *serviceHandler) OutplanCreate(
 	})
 
 	log.Debug("Creating a new outplan.")
-	tmp, err := h.reqHandler.CAV1OutplanCreate(ctx, u.ID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	tmp, err := h.reqHandler.CampaignV1OutplanCreate(ctx, u.ID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	if err != nil {
 		log.Errorf("Could not create a new flow. err: %v", err)
 		return nil, err
@@ -54,7 +54,7 @@ func (h *serviceHandler) OutplanDelete(u *cscustomer.Customer, id uuid.UUID) (*c
 	log.Debug("Deleting a outplan.")
 
 	// get outplan
-	f, err := h.reqHandler.CAV1OutplanGet(ctx, id)
+	f, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flow info. err: %v", err)
@@ -66,7 +66,7 @@ func (h *serviceHandler) OutplanDelete(u *cscustomer.Customer, id uuid.UUID) (*c
 		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	tmp, err := h.reqHandler.CAV1OutplanDelete(ctx, id)
+	tmp, err := h.reqHandler.CampaignV1OutplanDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the outplan. err: %v", err)
 		return nil, err
@@ -93,7 +93,7 @@ func (h *serviceHandler) OutplanGetsByCustomerID(u *cscustomer.Customer, size ui
 	}
 
 	// get outplans
-	outplans, err := h.reqHandler.CAV1OutplanGetsByCustomerID(ctx, u.ID, token, size)
+	outplans, err := h.reqHandler.CampaignV1OutplanGetsByCustomerID(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get outplans info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplans info. err: %v", err)
@@ -122,7 +122,7 @@ func (h *serviceHandler) OutplanGet(u *cscustomer.Customer, id uuid.UUID) (*caou
 	log.Debug("Getting an outplan.")
 
 	// get outplan
-	tmp, err := h.reqHandler.CAV1OutplanGet(ctx, id)
+	tmp, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
@@ -151,7 +151,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(u *cscustomer.Customer, id uuid.
 	log.Debug("Updating an outplan.")
 
 	// get outplan
-	tmpOutplan, err := h.reqHandler.CAV1OutplanGet(ctx, id)
+	tmpOutplan, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
@@ -163,7 +163,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(u *cscustomer.Customer, id uuid.
 		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	tmp, err := h.reqHandler.CAV1OutplanUpdateBasicInfo(ctx, id, name, detail)
+	tmp, err := h.reqHandler.CampaignV1OutplanUpdateBasicInfo(ctx, id, name, detail)
 	if err != nil {
 		logrus.Errorf("Could not update the outplan. err: %v", err)
 		return nil, err
@@ -197,7 +197,7 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 	log.Debug("Updating an outplan.")
 
 	// get outplan
-	tmpOutplan, err := h.reqHandler.CAV1OutplanGet(ctx, id)
+	tmpOutplan, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
@@ -209,7 +209,7 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	tmp, err := h.reqHandler.CAV1OutplanUpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+	tmp, err := h.reqHandler.CampaignV1OutplanUpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	if err != nil {
 		logrus.Errorf("Could not update the outplan. err: %v", err)
 		return nil, err

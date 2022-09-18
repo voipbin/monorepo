@@ -21,7 +21,7 @@ func (h *serviceHandler) RecordingfileGet(u *cscustomer.Customer, id uuid.UUID) 
 	)
 
 	// get recording info from call-manager
-	recording, err := h.reqHandler.CMV1RecordingGet(ctx, id)
+	recording, err := h.reqHandler.CallV1RecordingGet(ctx, id)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -36,7 +36,7 @@ func (h *serviceHandler) RecordingfileGet(u *cscustomer.Customer, id uuid.UUID) 
 
 	// get download url from storage-manager
 	log.Debugf("Getting recording file. recording: %s", id)
-	res, err := h.reqHandler.SMV1RecordingGet(ctx, id)
+	res, err := h.reqHandler.StorageV1RecordingGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get download url. err: %v", err)
 		return "", err

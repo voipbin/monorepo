@@ -159,7 +159,7 @@ func TestConferenceCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CFV1ConferenceCreate(gomock.Any(), tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceCreate(gomock.Any(), tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
 			res, err := h.ConferenceCreate(tt.customer, tt.confType, tt.confName, tt.confDetail, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -213,8 +213,8 @@ func TestConferenceDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), tt.confID).Return(tt.cfConference, nil)
-			mockReq.EXPECT().CFV1ConferenceDelete(gomock.Any(), tt.confID).Return(nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(gomock.Any(), tt.confID).Return(tt.cfConference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceDelete(gomock.Any(), tt.confID).Return(nil)
 
 			err := h.ConferenceDelete(tt.customer, tt.confID)
 			if err != nil {
@@ -276,7 +276,7 @@ func TestConferenceGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CFV1ConferenceGets(gomock.Any(), tt.customer.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGets(gomock.Any(), tt.customer.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
 			res, err := h.ConferenceGets(tt.customer, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -354,7 +354,7 @@ func TestConferenceGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CFV1ConferenceGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(gomock.Any(), tt.id).Return(tt.response, nil)
 			res, err := h.ConferenceGet(tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

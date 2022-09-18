@@ -67,7 +67,7 @@ func Test_DomainCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1DomainCreate(gomock.Any(), tt.customer.ID, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainCreate(gomock.Any(), tt.customer.ID, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail).Return(tt.response, nil)
 
 			res, err := h.DomainCreate(tt.customer, tt.DomainName, tt.DomainTmpName, tt.DomainTmpDetail)
 			if err != nil {
@@ -136,8 +136,8 @@ func TestDomainUpdate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.id).Return(&rmdomain.Domain{CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3")}, nil)
-			mockReq.EXPECT().RMV1DomainUpdate(gomock.Any(), tt.id, tt.domainN, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainGet(gomock.Any(), tt.id).Return(&rmdomain.Domain{CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3")}, nil)
+			mockReq.EXPECT().RegistrarV1DomainUpdate(gomock.Any(), tt.id, tt.domainN, tt.detail).Return(tt.response, nil)
 			res, err := h.DomainUpdate(tt.customer, tt.id, tt.domainN, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -193,8 +193,8 @@ func TestDomainDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.domainID).Return(tt.response, nil)
-			mockReq.EXPECT().RMV1DomainDelete(gomock.Any(), tt.domainID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainGet(gomock.Any(), tt.domainID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainDelete(gomock.Any(), tt.domainID).Return(tt.response, nil)
 
 			res, err := h.DomainDelete(tt.customer, tt.domainID)
 			if err != nil {
@@ -257,7 +257,7 @@ func TestDomainGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1DomainGet(gomock.Any(), tt.DomainID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainGet(gomock.Any(), tt.DomainID).Return(tt.response, nil)
 
 			res, err := h.DomainGet(tt.customer, tt.DomainID)
 			if err != nil {
@@ -340,7 +340,7 @@ func TestDomainGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1DomainGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1DomainGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.DomainGets(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
