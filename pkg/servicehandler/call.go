@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -44,7 +44,7 @@ func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, ac
 		targetFlowID = f.ID
 	}
 
-	tmps, err := h.reqHandler.CMV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations)
+	tmps, err := h.reqHandler.CallV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -71,7 +71,7 @@ func (h *serviceHandler) CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmc
 	})
 
 	// send request
-	c, err := h.reqHandler.CMV1CallGet(ctx, callID)
+	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -106,7 +106,7 @@ func (h *serviceHandler) CallGets(u *cscustomer.Customer, size uint64, token str
 	}
 
 	// get calls
-	tmps, err := h.reqHandler.CMV1CallGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.CallV1CallGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
@@ -134,7 +134,7 @@ func (h *serviceHandler) CallDelete(u *cscustomer.Customer, callID uuid.UUID) er
 	})
 
 	// todo need to check the call's ownership
-	c, err := h.reqHandler.CMV1CallGet(ctx, callID)
+	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
 		return err
@@ -147,7 +147,7 @@ func (h *serviceHandler) CallDelete(u *cscustomer.Customer, callID uuid.UUID) er
 	}
 
 	// send request
-	if _, err := h.reqHandler.CMV1CallHangup(ctx, callID); err != nil {
+	if _, err := h.reqHandler.CallV1CallHangup(ctx, callID); err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return err

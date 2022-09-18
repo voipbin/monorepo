@@ -22,7 +22,7 @@ func (h *serviceHandler) RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*cm
 	)
 
 	// get recording info from call-manager
-	rec, err := h.reqHandler.CMV1RecordingGet(ctx, id)
+	rec, err := h.reqHandler.CallV1RecordingGet(ctx, id)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -56,7 +56,7 @@ func (h *serviceHandler) RecordingGets(u *cscustomer.Customer, size uint64, toke
 		token = getCurTime()
 	}
 
-	tmp, err := h.reqHandler.CMV1RecordingGets(ctx, u.ID, size, token)
+	tmp, err := h.reqHandler.CallV1RecordingGets(ctx, u.ID, size, token)
 	if err != nil {
 		log.Errorf("Could not get recordings from the call manager. err: %v", err)
 		return nil, err

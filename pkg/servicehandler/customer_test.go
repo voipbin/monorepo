@@ -80,7 +80,7 @@ func TestCustomerCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CSV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lineToken, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lineToken, tt.permissionIDs).Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerCreate(ctx, tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lineToken, tt.permissionIDs)
 			if err != nil {
@@ -142,7 +142,7 @@ func TestCustomerGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CSV1CustomerGet(ctx, tt.id).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerGet(ctx, tt.customer, tt.id)
 			if err != nil {
@@ -211,7 +211,7 @@ func TestCustomerGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CSV1CustomerGets(ctx, tt.token, tt.size).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size).Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerGets(ctx, tt.customer, tt.size, tt.token)
 			if err != nil {
@@ -281,8 +281,8 @@ func TestCustomerUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CSV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CSV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerUpdate(ctx, tt.customer, tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
@@ -344,8 +344,8 @@ func TestCustomerDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CSV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CSV1CustomerDelete(ctx, tt.id).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, tt.id).Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerDelete(ctx, tt.customer, tt.id)
 			if err != nil {
@@ -409,8 +409,8 @@ func TestCustomerUpdatePassword(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CSV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CSV1CustomerUpdatePassword(ctx, 30000, tt.id, tt.password).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdatePassword(ctx, 30000, tt.id, tt.password).Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerUpdatePassword(ctx, tt.customer, tt.id, tt.password)
 			if err != nil {
@@ -476,7 +476,7 @@ func TestCustomerUpdatePermissionIDs(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CSV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerUpdatePermissionIDs(ctx, tt.customer, tt.id, tt.permissionIDs)
 			if err != nil {

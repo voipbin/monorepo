@@ -21,7 +21,7 @@ func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
 		},
 	)
 
-	c, err := h.reqHandler.CSV1Login(ctx, 30000, username, password)
+	c, err := h.reqHandler.CustomerV1Login(ctx, 30000, username, password)
 	if err != nil {
 		log.Warningf("Could not get customer info. err: %v", err)
 		return "", err

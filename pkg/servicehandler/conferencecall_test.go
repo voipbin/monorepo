@@ -127,7 +127,7 @@ func Test_ConferencecallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CFV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseConference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseConference, nil)
 			mockReq.EXPECT().ConferenceV1ConferencecallCreate(ctx, tt.conferenceID, tt.referenceType, tt.referenceID).Return(tt.responseConferencecall, nil)
 
 			res, err := h.ConferencecallCreate(ctx, tt.customer, tt.conferenceID, tt.referenceType, tt.referenceID)

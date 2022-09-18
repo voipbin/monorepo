@@ -22,7 +22,7 @@ func (h *serviceHandler) domainGet(ctx context.Context, u *cscustomer.Customer, 
 	)
 
 	// send request
-	res, err := h.reqHandler.RMV1DomainGet(ctx, id)
+	res, err := h.reqHandler.RegistrarV1DomainGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the domain info. err: %v", err)
 		return nil, err
@@ -47,7 +47,7 @@ func (h *serviceHandler) DomainCreate(u *cscustomer.Customer, domainName, name, 
 	})
 	log.Debug("Creating a new domain.")
 
-	tmp, err := h.reqHandler.RMV1DomainCreate(ctx, u.ID, domainName, name, detail)
+	tmp, err := h.reqHandler.RegistrarV1DomainCreate(ctx, u.ID, domainName, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a new domain. err: %v", err)
 		return nil, err
@@ -74,7 +74,7 @@ func (h *serviceHandler) DomainDelete(u *cscustomer.Customer, id uuid.UUID) (*rm
 	}
 
 	// delete
-	tmp, err := h.reqHandler.RMV1DomainDelete(ctx, id)
+	tmp, err := h.reqHandler.RegistrarV1DomainDelete(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (h *serviceHandler) DomainGets(u *cscustomer.Customer, size uint64, token s
 	}
 
 	// get tmps
-	tmps, err := h.reqHandler.RMV1DomainGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.RegistrarV1DomainGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get domains info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find domains info. err: %v", err)
@@ -158,7 +158,7 @@ func (h *serviceHandler) DomainUpdate(u *cscustomer.Customer, id uuid.UUID, name
 	}
 
 	// update
-	tmp, err := h.reqHandler.RMV1DomainUpdate(ctx, id, name, detail)
+	tmp, err := h.reqHandler.RegistrarV1DomainUpdate(ctx, id, name, detail)
 	if err != nil {
 		logrus.Errorf("Could not update the domain. err: %v", err)
 		return nil, err

@@ -54,7 +54,7 @@ func TestTagCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().AMV1TagCreate(gomock.Any(), tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1TagCreate(gomock.Any(), tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
 
 			res, err := h.TagCreate(tt.customer, tt.tagName, tt.detail)
 			if err != nil {
@@ -138,7 +138,7 @@ func TestTagGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().AMV1TagGets(gomock.Any(), tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1TagGets(gomock.Any(), tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
 
 			res, err := h.TagGets(tt.customer, tt.size, tt.token)
 			if err != nil {
@@ -192,7 +192,7 @@ func TestTagGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1TagGet(gomock.Any(), tt.tagID).Return(tt.response, nil)
 
 			res, err := h.TagGet(tt.customer, tt.tagID)
 			if err != nil {
@@ -246,8 +246,8 @@ func TestTagDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
-			mockReq.EXPECT().AMV1TagDelete(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().AgentV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().AgentV1TagDelete(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
 
 			res, err := h.TagDelete(tt.customer, tt.tagID)
 			if err != nil {
@@ -305,8 +305,8 @@ func TestTagUpdate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().AMV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
-			mockReq.EXPECT().AMV1TagUpdate(gomock.Any(), tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().AgentV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().AgentV1TagUpdate(gomock.Any(), tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
 
 			res, err := h.TagUpdate(tt.customer, tt.tagID, tt.tagName, tt.detail)
 			if err != nil {

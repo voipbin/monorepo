@@ -27,7 +27,7 @@ func (h *serviceHandler) customerGet(ctx context.Context, u *cscustomer.Customer
 	}
 
 	// send request
-	res, err := h.reqHandler.CSV1CustomerGet(ctx, customerID)
+	res, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not get the customer. err: %v", err)
 		return nil, err
@@ -64,7 +64,7 @@ func (h *serviceHandler) CustomerCreate(
 		return nil, fmt.Errorf("has no permission")
 	}
 
-	tmp, err := h.reqHandler.CSV1CustomerCreate(ctx, 30000, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
+	tmp, err := h.reqHandler.CustomerV1CustomerCreate(ctx, 30000, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
 	if err != nil {
 		log.Errorf("Could not create a new customer. err: %v", err)
 		return nil, err
@@ -117,7 +117,7 @@ func (h *serviceHandler) CustomerGets(ctx context.Context, u *cscustomer.Custome
 		token = getCurTime()
 	}
 
-	tmp, err := h.reqHandler.CSV1CustomerGets(ctx, token, size)
+	tmp, err := h.reqHandler.CustomerV1CustomerGets(ctx, token, size)
 	if err != nil {
 		log.Errorf("Could not get customers info. err: %v", err)
 		return nil, err
@@ -148,7 +148,7 @@ func (h *serviceHandler) CustomerUpdate(ctx context.Context, u *cscustomer.Custo
 	}
 
 	// send request
-	res, err := h.reqHandler.CSV1CustomerUpdate(ctx, id, name, detail, webhookMethod, webhookURI)
+	res, err := h.reqHandler.CustomerV1CustomerUpdate(ctx, id, name, detail, webhookMethod, webhookURI)
 	if err != nil {
 		log.Errorf("Could not update the customer's basic info. err: %v", err)
 		return nil, err
@@ -179,7 +179,7 @@ func (h *serviceHandler) CustomerDelete(ctx context.Context, u *cscustomer.Custo
 		}
 	}
 
-	res, err := h.reqHandler.CSV1CustomerDelete(ctx, customerID)
+	res, err := h.reqHandler.CustomerV1CustomerDelete(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not delete the customer. err: %v", err)
 		return nil, err
@@ -204,7 +204,7 @@ func (h *serviceHandler) CustomerUpdatePassword(ctx context.Context, u *cscustom
 	}
 
 	// send request
-	res, err := h.reqHandler.CSV1CustomerUpdatePassword(ctx, 30000, customerID, password)
+	res, err := h.reqHandler.CustomerV1CustomerUpdatePassword(ctx, 30000, customerID, password)
 	if err != nil {
 		log.Infof("Could not update the customer's password. err: %v", err)
 		return nil, err
@@ -228,7 +228,7 @@ func (h *serviceHandler) CustomerUpdatePermissionIDs(ctx context.Context, u *csc
 	}
 
 	// send request
-	res, err := h.reqHandler.CSV1CustomerUpdatePermissionIDs(ctx, customerID, permissionIDs)
+	res, err := h.reqHandler.CustomerV1CustomerUpdatePermissionIDs(ctx, customerID, permissionIDs)
 	if err != nil {
 		log.Errorf("Could not update the customer's permission. err: %v", err)
 		return nil, err
@@ -252,7 +252,7 @@ func (h *serviceHandler) CustomerUpdateLineInfo(ctx context.Context, u *cscustom
 	}
 
 	// send request
-	res, err := h.reqHandler.CSV1CustomerUpdateLineInfo(ctx, customerID, lineSecret, lineToken)
+	res, err := h.reqHandler.CustomerV1CustomerUpdateLineInfo(ctx, customerID, lineSecret, lineToken)
 	if err != nil {
 		log.Errorf("Could not update the customer's permission. err: %v", err)
 		return nil, err

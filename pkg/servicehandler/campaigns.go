@@ -23,7 +23,7 @@ func (h *serviceHandler) campaignGet(ctx context.Context, u *cscustomer.Customer
 	)
 
 	// send request
-	tmp, err := h.reqHandler.CAV1CampaignGet(ctx, id)
+	tmp, err := h.reqHandler.CampaignV1CampaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the campaign info. err: %v", err)
 		return nil, err
@@ -62,7 +62,7 @@ func (h *serviceHandler) CampaignCreate(
 	})
 
 	log.Debug("Creating a new campaign.")
-	tmp, err := h.reqHandler.CAV1CampaignCreate(
+	tmp, err := h.reqHandler.CampaignV1CampaignCreate(
 		ctx,
 		uuid.Nil,
 		u.ID,
@@ -104,7 +104,7 @@ func (h *serviceHandler) CampaignGetsByCustomerID(u *cscustomer.Customer, size u
 	}
 
 	// get campaigns
-	campaigns, err := h.reqHandler.CAV1CampaignGetsByCustomerID(ctx, u.ID, token, size)
+	campaigns, err := h.reqHandler.CampaignV1CampaignGetsByCustomerID(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
@@ -160,7 +160,7 @@ func (h *serviceHandler) CampaignDelete(u *cscustomer.Customer, id uuid.UUID) (*
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CAV1CampaignDelete(ctx, id)
+	tmp, err := h.reqHandler.CampaignV1CampaignDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the campaign. err: %v", err)
 		return nil, err
@@ -189,7 +189,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(u *cscustomer.Customer, id uuid
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CAV1CampaignUpdateBasicInfo(ctx, id, name, detail)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, id, name, detail)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err
@@ -218,7 +218,7 @@ func (h *serviceHandler) CampaignUpdateStatus(u *cscustomer.Customer, id uuid.UU
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CAV1CampaignUpdateStatus(ctx, id, status)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateStatus(ctx, id, status)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err
@@ -247,7 +247,7 @@ func (h *serviceHandler) CampaignUpdateServiceLevel(u *cscustomer.Customer, id u
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CAV1CampaignUpdateServiceLevel(ctx, id, serviceLevel)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateServiceLevel(ctx, id, serviceLevel)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err
@@ -276,7 +276,7 @@ func (h *serviceHandler) CampaignUpdateActions(u *cscustomer.Customer, id uuid.U
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CAV1CampaignUpdateActions(ctx, id, actions)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateActions(ctx, id, actions)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err
@@ -305,7 +305,7 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(u *cscustomer.Customer, id u
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CAV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err
@@ -334,7 +334,7 @@ func (h *serviceHandler) CampaignUpdateNextCampaignID(u *cscustomer.Customer, id
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CAV1CampaignUpdateNextCampaignID(ctx, id, nextCampaignID)
+	tmp, err := h.reqHandler.CampaignV1CampaignUpdateNextCampaignID(ctx, id, nextCampaignID)
 	if err != nil {
 		logrus.Errorf("Could not update the campaign. err: %v", err)
 		return nil, err

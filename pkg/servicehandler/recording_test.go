@@ -74,7 +74,7 @@ func TestRecordingGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CMV1RecordingGets(gomock.Any(), tt.customer.ID, tt.size, tt.token).Return(tt.response, nil)
+			mockReq.EXPECT().CallV1RecordingGets(gomock.Any(), tt.customer.ID, tt.size, tt.token).Return(tt.response, nil)
 
 			res, err := h.RecordingGets(tt.customer, tt.size, tt.token)
 
