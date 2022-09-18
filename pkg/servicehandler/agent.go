@@ -26,7 +26,7 @@ func (h *serviceHandler) agentGet(ctx context.Context, u *cscustomer.Customer, i
 	)
 
 	// send request
-	res, err := h.reqHandler.AMV1AgentGet(ctx, id)
+	res, err := h.reqHandler.AgentV1AgentGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the agent info. err: %v", err)
 		return nil, err
@@ -64,7 +64,7 @@ func (h *serviceHandler) AgentCreate(
 
 	// send request
 	log.Debug("Creating a new agent.")
-	tmp, err := h.reqHandler.AMV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
+	tmp, err := h.reqHandler.AgentV1AgentCreate(ctx, 30, u.ID, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -115,11 +115,11 @@ func (h *serviceHandler) AgentGets(ctx context.Context, u *cscustomer.Customer, 
 	var tmps []amagent.Agent
 	var err error
 	if len(tagIDs) > 0 && status != "" {
-		tmps, err = h.reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, u.ID, tagIDs, amagent.Status(status))
+		tmps, err = h.reqHandler.AgentV1AgentGetsByTagIDsAndStatus(ctx, u.ID, tagIDs, amagent.Status(status))
 	} else if len(tagIDs) > 0 {
-		tmps, err = h.reqHandler.AMV1AgentGetsByTagIDs(ctx, u.ID, tagIDs)
+		tmps, err = h.reqHandler.AgentV1AgentGetsByTagIDs(ctx, u.ID, tagIDs)
 	} else {
-		tmps, err = h.reqHandler.AMV1AgentGets(ctx, u.ID, token, size)
+		tmps, err = h.reqHandler.AgentV1AgentGets(ctx, u.ID, token, size)
 	}
 	if err != nil {
 		log.Infof("Could not get agents info. err: %v", err)
@@ -153,7 +153,7 @@ func (h *serviceHandler) AgentDelete(ctx context.Context, u *cscustomer.Customer
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AMV1AgentDelete(ctx, agentID)
+	tmp, err := h.reqHandler.AgentV1AgentDelete(ctx, agentID)
 	if err != nil {
 		log.Infof("Could not delete the agent info. err: %v", err)
 		return nil, err
@@ -174,7 +174,7 @@ func (h *serviceHandler) AgentLogin(ctx context.Context, customerID uuid.UUID, u
 	})
 
 	// send request
-	ag, err := h.reqHandler.AMV1AgentLogin(ctx, 30000, customerID, username, password)
+	ag, err := h.reqHandler.AgentV1AgentLogin(ctx, 30000, customerID, username, password)
 	if err != nil {
 		log.Warningf("Could not agent login. err: %v", err)
 		return "", err
@@ -213,7 +213,7 @@ func (h *serviceHandler) AgentUpdate(ctx context.Context, u *cscustomer.Customer
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AMV1AgentUpdate(ctx, agentID, name, detail, ringMethod)
+	tmp, err := h.reqHandler.AgentV1AgentUpdate(ctx, agentID, name, detail, ringMethod)
 	if err != nil {
 		log.Infof("Could not delete the agent info. err: %v", err)
 		return nil, err
@@ -240,7 +240,7 @@ func (h *serviceHandler) AgentUpdateAddresses(ctx context.Context, u *cscustomer
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AMV1AgentUpdateAddresses(ctx, agentID, addresses)
+	tmp, err := h.reqHandler.AgentV1AgentUpdateAddresses(ctx, agentID, addresses)
 	if err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
 		return nil, err
@@ -267,7 +267,7 @@ func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, u *cscustomer.Cu
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AMV1AgentUpdateTagIDs(ctx, agentID, tagIDs)
+	tmp, err := h.reqHandler.AgentV1AgentUpdateTagIDs(ctx, agentID, tagIDs)
 	if err != nil {
 		log.Infof("Could not update the agent tag ids. err: %v", err)
 		return nil, err
@@ -294,7 +294,7 @@ func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, u *cscustomer.Cu
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AMV1AgentUpdateStatus(ctx, agentID, status)
+	tmp, err := h.reqHandler.AgentV1AgentUpdateStatus(ctx, agentID, status)
 	if err != nil {
 		log.Infof("Could not update the agent addresses. err: %v", err)
 		return nil, err

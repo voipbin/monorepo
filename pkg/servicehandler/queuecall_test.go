@@ -62,7 +62,7 @@ func Test_QueuecallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueuecallGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.QueuecallGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -126,7 +126,7 @@ func Test_QueuecallGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueuecallGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.id).Return(tt.response, nil)
 
 			res, err := h.QueuecallGet(ctx, tt.customer, tt.id)
 			if err != nil {
@@ -184,8 +184,8 @@ func Test_QueuecallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueuecallGet(ctx, tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().QMV1QueuecallDelete(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallDelete(ctx, tt.id).Return(tt.response, nil)
 
 			res, err := h.QueuecallDelete(ctx, tt.customer, tt.id)
 			if err != nil {
@@ -243,8 +243,8 @@ func Test_QueuecallDeleteByReferenceID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueuecallGet(ctx, tt.referenceID).Return(tt.response, nil)
-			mockReq.EXPECT().QMV1QueuecallDelete(ctx, tt.referenceID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.referenceID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallDelete(ctx, tt.referenceID).Return(tt.response, nil)
 
 			res, err := h.QueuecallDelete(ctx, tt.customer, tt.referenceID)
 			if err != nil {

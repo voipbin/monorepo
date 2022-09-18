@@ -22,7 +22,7 @@ func (h *serviceHandler) outdialGet(ctx context.Context, u *cscustomer.Customer,
 	)
 
 	// send request
-	tmp, err := h.reqHandler.OMV1OutdialGet(ctx, id)
+	tmp, err := h.reqHandler.OutdialV1OutdialGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the outdial info. err: %v", err)
 		return nil, err
@@ -49,7 +49,7 @@ func (h *serviceHandler) OutdialCreate(u *cscustomer.Customer, campaignID uuid.U
 	})
 
 	log.Debug("Creating a new outdial.")
-	tmp, err := h.reqHandler.OMV1OutdialCreate(ctx, u.ID, campaignID, name, detail, data)
+	tmp, err := h.reqHandler.OutdialV1OutdialCreate(ctx, u.ID, campaignID, name, detail, data)
 	if err != nil {
 		log.Errorf("Could not create a new flow. err: %v", err)
 		return nil, err
@@ -77,7 +77,7 @@ func (h *serviceHandler) OutdialGetsByCustomerID(u *cscustomer.Customer, size ui
 	}
 
 	// get outdials
-	outdials, err := h.reqHandler.OMV1OutdialGetsByCustomerID(ctx, u.ID, token, size)
+	outdials, err := h.reqHandler.OutdialV1OutdialGetsByCustomerID(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get outdials info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outdials info. err: %v", err)
@@ -110,7 +110,7 @@ func (h *serviceHandler) OutdialDelete(u *cscustomer.Customer, id uuid.UUID) (*o
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.OMV1OutdialDelete(ctx, id)
+	tmp, err := h.reqHandler.OutdialV1OutdialDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the outdial. err: %v", err)
 		return nil, err
@@ -160,7 +160,7 @@ func (h *serviceHandler) OutdialUpdateBasicInfo(u *cscustomer.Customer, id uuid.
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.OMV1OutdialUpdateBasicInfo(ctx, id, name, detail)
+	tmp, err := h.reqHandler.OutdialV1OutdialUpdateBasicInfo(ctx, id, name, detail)
 	if err != nil {
 		logrus.Errorf("Could not update the outdial. err: %v", err)
 		return nil, err
@@ -190,7 +190,7 @@ func (h *serviceHandler) OutdialUpdateCampaignID(u *cscustomer.Customer, id, cam
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.OMV1OutdialUpdateCampaignID(ctx, id, campaignID)
+	tmp, err := h.reqHandler.OutdialV1OutdialUpdateCampaignID(ctx, id, campaignID)
 	if err != nil {
 		logrus.Errorf("Could not update the outdial. err: %v", err)
 		return nil, err
@@ -220,7 +220,7 @@ func (h *serviceHandler) OutdialUpdateData(u *cscustomer.Customer, id uuid.UUID,
 		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.OMV1OutdialUpdateData(ctx, id, data)
+	tmp, err := h.reqHandler.OutdialV1OutdialUpdateData(ctx, id, data)
 	if err != nil {
 		logrus.Errorf("Could not update the outdial. err: %v", err)
 		return nil, err

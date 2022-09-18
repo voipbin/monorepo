@@ -22,7 +22,7 @@ func (h *serviceHandler) queuecallGet(ctx context.Context, u *cscustomer.Custome
 	)
 
 	// send request
-	res, err := h.reqHandler.QMV1QueuecallGet(ctx, id)
+	res, err := h.reqHandler.QueueV1QueuecallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the queuecall info. err: %v", err)
 		return nil, err
@@ -73,7 +73,7 @@ func (h *serviceHandler) QueuecallGets(ctx context.Context, u *cscustomer.Custom
 		token = getCurTime()
 	}
 
-	tmps, err := h.reqHandler.QMV1QueuecallGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.QueueV1QueuecallGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get queues from the queue-manager. err: %v", err)
 		return nil, err
@@ -103,7 +103,7 @@ func (h *serviceHandler) QueuecallDelete(ctx context.Context, u *cscustomer.Cust
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.QMV1QueuecallDelete(ctx, queuecallID)
+	tmp, err := h.reqHandler.QueueV1QueuecallDelete(ctx, queuecallID)
 	if err != nil {
 		log.Errorf("Could not delete the queuecall. err: %v", err)
 		return nil, err
@@ -123,7 +123,7 @@ func (h *serviceHandler) QueuecallDeleteByReferenceID(ctx context.Context, u *cs
 		"username":    u.Username,
 	})
 
-	tmp, err := h.reqHandler.QMV1QueuecallReferenceGet(ctx, referenceID)
+	tmp, err := h.reqHandler.QueueV1QueuecallReferenceGet(ctx, referenceID)
 	if err != nil {
 		log.Errorf("Could not get queuecall reference. err: %v", err)
 		return nil, err
@@ -139,7 +139,7 @@ func (h *serviceHandler) QueuecallDeleteByReferenceID(ctx context.Context, u *cs
 		return nil, fmt.Errorf("current queuecall id has not set")
 	}
 
-	tmpRes, err := h.reqHandler.QMV1QueuecallDeleteByReferenceID(ctx, tmp.CurrentQueuecallID)
+	tmpRes, err := h.reqHandler.QueueV1QueuecallDeleteByReferenceID(ctx, tmp.CurrentQueuecallID)
 	if err != nil {
 		log.Errorf("Could not delete the queuecall. err: %v", err)
 		return nil, err

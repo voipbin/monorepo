@@ -43,7 +43,7 @@ func TestAvailableNumberGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NMV1AvailableNumberGets(gomock.Any(), tt.customer.ID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
+			mockReq.EXPECT().NumberV1AvailableNumberGets(gomock.Any(), tt.customer.ID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
 
 			_, err := h.AvailableNumberGets(tt.customer, tt.limit, tt.countryCode)
 			if err != nil {

@@ -58,7 +58,7 @@ func TestOrderNumberGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NMV1NumberGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.NumberGets(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -121,7 +121,7 @@ func TestOrderNumberGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
 			res, err := h.NumberGet(tt.customer, tt.id)
 			if err != nil {
@@ -180,7 +180,7 @@ func TestOrderNumberGetError(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
 			_, err := h.NumberGet(tt.customer, tt.id)
 			if err == nil {
@@ -239,7 +239,7 @@ func TestNumberCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NMV1NumberCreate(gomock.Any(), tt.customer.ID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberCreate(gomock.Any(), tt.customer.ID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
 			res, err := h.NumberCreate(tt.customer, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -311,8 +311,8 @@ func TestNumberDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NMV1NumberDelete(gomock.Any(), tt.id).Return(tt.responseDelete, nil)
+			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NumberV1NumberDelete(gomock.Any(), tt.id).Return(tt.responseDelete, nil)
 
 			res, err := h.NumberDelete(tt.customer, tt.id)
 			if err != nil {
@@ -390,8 +390,8 @@ func TestNumberUpdate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NMV1NumberUpdateBasicInfo(gomock.Any(), tt.id, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
+			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NumberV1NumberUpdateBasicInfo(gomock.Any(), tt.id, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
 
 			res, err := h.NumberUpdate(tt.customer, tt.id, tt.numberName, tt.detail)
 			if err != nil {
@@ -456,7 +456,7 @@ func TestNumberUpdateError(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NMV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
 
 			_, err := h.NumberUpdate(tt.customer, tt.id, tt.numberName, tt.detail)
 			if err == nil {

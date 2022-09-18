@@ -22,7 +22,7 @@ func (h *serviceHandler) campaigncallGet(ctx context.Context, u *cscustomer.Cust
 	)
 
 	// send request
-	tmp, err := h.reqHandler.CAV1CampaigncallGet(ctx, campaigncallID)
+	tmp, err := h.reqHandler.CampaignV1CampaigncallGet(ctx, campaigncallID)
 	if err != nil {
 		log.Errorf("Could not get the campaign info. err: %v", err)
 		return nil, err
@@ -64,7 +64,7 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(u *cscustomer.Customer, ca
 	}
 
 	// get campaigns
-	campaigns, err := h.reqHandler.CAV1CampaigncallGetsByCampaignID(ctx, campaignID, token, size)
+	campaigns, err := h.reqHandler.CampaignV1CampaigncallGetsByCampaignID(ctx, campaignID, token, size)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
@@ -119,7 +119,7 @@ func (h *serviceHandler) CampaigncallDelete(u *cscustomer.Customer, campaigncall
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	tmp, err := h.reqHandler.CAV1CampaigncallDelete(ctx, campaigncallID)
+	tmp, err := h.reqHandler.CampaignV1CampaigncallDelete(ctx, campaigncallID)
 	if err != nil {
 		log.Errorf("Could not delete the campaign. err: %v", err)
 		return nil, err
