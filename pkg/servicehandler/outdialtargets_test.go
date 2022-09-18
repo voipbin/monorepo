@@ -126,8 +126,8 @@ func Test_OutdialtargetCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().OMV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
-			mockReq.EXPECT().OMV1OutdialtargetCreate(gomock.Any(), tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetCreate(gomock.Any(), tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4).Return(tt.response, nil)
 			res, err := h.OutdialtargetCreate(tt.customer, tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -189,8 +189,8 @@ func Test_OutdialtargetGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().OMV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
-			mockReq.EXPECT().OMV1OutdialtargetGet(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetGet(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
 			res, err := h.OutdialtargetGet(tt.customer, tt.outdialID, tt.outdialtargetID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -257,8 +257,8 @@ func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().OMV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
-			mockReq.EXPECT().OMV1OutdialtargetGetsByOutdialID(gomock.Any(), tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetGetsByOutdialID(gomock.Any(), tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.OutdialtargetGetsByOutdialID(tt.customer, tt.outdialID, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -327,9 +327,9 @@ func Test_OutdialtargetDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().OMV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
-			mockReq.EXPECT().OMV1OutdialtargetGet(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
-			mockReq.EXPECT().OMV1OutdialtargetDelete(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetGet(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetDelete(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
 			res, err := h.OutdialtargetDelete(tt.customer, tt.outdialID, tt.outdialtargetID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

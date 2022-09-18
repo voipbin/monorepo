@@ -23,7 +23,7 @@ func (h *serviceHandler) queueGet(ctx context.Context, u *cscustomer.Customer, i
 	)
 
 	// send request
-	tmp, err := h.reqHandler.QMV1QueueGet(ctx, id)
+	tmp, err := h.reqHandler.QueueV1QueueGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the queue info. err: %v", err)
 		return nil, err
@@ -77,7 +77,7 @@ func (h *serviceHandler) QueueGets(u *cscustomer.Customer, size uint64, token st
 		token = getCurTime()
 	}
 
-	tmps, err := h.reqHandler.QMV1QueueGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.QueueV1QueueGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get queues from the queue-manager. err: %v", err)
 		return nil, err
@@ -112,7 +112,7 @@ func (h *serviceHandler) QueueCreate(
 		"username":    u.Username,
 	})
 
-	tmp, err := h.reqHandler.QMV1QueueCreate(
+	tmp, err := h.reqHandler.QueueV1QueueCreate(
 		ctx,
 		u.ID,
 		name,
@@ -150,7 +150,7 @@ func (h *serviceHandler) QueueDelete(u *cscustomer.Customer, queueID uuid.UUID) 
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.QMV1QueueDelete(ctx, queueID)
+	tmp, err := h.reqHandler.QueueV1QueueDelete(ctx, queueID)
 	if err != nil {
 		log.Errorf("Could not delete the queue. err: %v", err)
 		return nil, err
@@ -178,7 +178,7 @@ func (h *serviceHandler) QueueUpdate(u *cscustomer.Customer, queueID uuid.UUID, 
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.QMV1QueueUpdate(ctx, queueID, name, detail)
+	tmp, err := h.reqHandler.QueueV1QueueUpdate(ctx, queueID, name, detail)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		return nil, err
@@ -206,7 +206,7 @@ func (h *serviceHandler) QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.QMV1QueueUpdateTagIDs(ctx, queueID, tagIDs)
+	tmp, err := h.reqHandler.QueueV1QueueUpdateTagIDs(ctx, queueID, tagIDs)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		return nil, err
@@ -234,7 +234,7 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(u *cscustomer.Customer, queueI
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.QMV1QueueUpdateRoutingMethod(ctx, queueID, routingMethod)
+	tmp, err := h.reqHandler.QueueV1QueueUpdateRoutingMethod(ctx, queueID, routingMethod)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		return nil, err
@@ -262,7 +262,7 @@ func (h *serviceHandler) QueueUpdateActions(u *cscustomer.Customer, queueID uuid
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.QMV1QueueUpdateActions(ctx, queueID, waitActions, timeoutWait, timeoutService)
+	tmp, err := h.reqHandler.QueueV1QueueUpdateActions(ctx, queueID, waitActions, timeoutWait, timeoutService)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		return nil, err

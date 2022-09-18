@@ -60,7 +60,7 @@ func Test_MessageGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().MMV1MessageGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.MessageGets(tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -123,7 +123,7 @@ func Test_MessageGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().MMV1MessageGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGet(gomock.Any(), tt.id).Return(tt.response, nil)
 
 			res, err := h.MessageGet(tt.customer, tt.id)
 			if err != nil {
@@ -190,7 +190,7 @@ func Test_MessageSend(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().MMV1MessageSend(gomock.Any(), uuid.Nil, tt.customer.ID, tt.source, tt.destinations, tt.text).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageSend(gomock.Any(), uuid.Nil, tt.customer.ID, tt.source, tt.destinations, tt.text).Return(tt.response, nil)
 			res, err := h.MessageSend(tt.customer, tt.source, tt.destinations, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -246,8 +246,8 @@ func Test_MessageDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().MMV1MessageGet(gomock.Any(), tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().MMV1MessageDelete(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageDelete(gomock.Any(), tt.id).Return(tt.response, nil)
 
 			res, err := h.MessageDelete(tt.customer, tt.id)
 			if err != nil {

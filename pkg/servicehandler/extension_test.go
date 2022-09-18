@@ -66,7 +66,7 @@ func TestExtensionCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1ExtensionCreate(gomock.Any(), tt.customer.ID, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionCreate(gomock.Any(), tt.customer.ID, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(tt.response, nil)
 
 			res, err := h.ExtensionCreate(tt.customer, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail)
 			if err != nil {
@@ -143,8 +143,8 @@ func TestExtensionUpdate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.id).Return(&rmextension.Extension{CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988")}, nil)
-			mockReq.EXPECT().RMV1ExtensionUpdate(gomock.Any(), tt.id, tt.extName, tt.detail, tt.password).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(gomock.Any(), tt.id).Return(&rmextension.Extension{CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988")}, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionUpdate(gomock.Any(), tt.id, tt.extName, tt.detail, tt.password).Return(tt.response, nil)
 			res, err := h.ExtensionUpdate(tt.customer, tt.id, tt.extName, tt.detail, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -213,8 +213,8 @@ func TestExtensionDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
-			mockReq.EXPECT().RMV1ExtensionDelete(gomock.Any(), tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionDelete(gomock.Any(), tt.extensionID).Return(tt.response, nil)
 
 			res, err := h.ExtensionDelete(tt.customer, tt.extensionID)
 			if err != nil {
@@ -279,7 +279,7 @@ func TestExtensionGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
 			res, err := h.ExtensionGet(tt.customer, tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -363,7 +363,7 @@ func TestExtensionGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().RMV1ExtensionGets(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
 			res, err := h.ExtensionGets(tt.customer, tt.domainID, tt.pageSize, tt.pageToken)
 			if err != nil {

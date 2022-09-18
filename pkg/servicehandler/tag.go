@@ -22,7 +22,7 @@ func (h *serviceHandler) tagGet(ctx context.Context, u *cscustomer.Customer, tag
 	)
 
 	// send request
-	res, err := h.reqHandler.AMV1TagGet(ctx, tagID)
+	res, err := h.reqHandler.AgentV1TagGet(ctx, tagID)
 	if err != nil {
 		log.Errorf("Could not get an tag. err: %v", err)
 		return nil, err
@@ -50,7 +50,7 @@ func (h *serviceHandler) TagCreate(u *cscustomer.Customer, name string, detail s
 
 	// send request
 	log.Debug("Creating a new tag.")
-	tmp, err := h.reqHandler.AMV1TagCreate(ctx, u.ID, name, detail)
+	tmp, err := h.reqHandler.AgentV1TagCreate(ctx, u.ID, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -94,7 +94,7 @@ func (h *serviceHandler) TagGets(u *cscustomer.Customer, size uint64, token stri
 		"username":    u.Username,
 	})
 
-	tmp, err := h.reqHandler.AMV1TagGets(ctx, u.ID, token, size)
+	tmp, err := h.reqHandler.AgentV1TagGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Errorf("Could not get tags.. err: %v", err)
 		return nil, err
@@ -127,7 +127,7 @@ func (h *serviceHandler) TagDelete(u *cscustomer.Customer, id uuid.UUID) (*amtag
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AMV1TagDelete(ctx, id)
+	tmp, err := h.reqHandler.AgentV1TagDelete(ctx, id)
 	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
 		return nil, err
@@ -157,7 +157,7 @@ func (h *serviceHandler) TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, d
 	}
 
 	// send request
-	tmp, err := h.reqHandler.AMV1TagUpdate(ctx, id, name, detail)
+	tmp, err := h.reqHandler.AgentV1TagUpdate(ctx, id, name, detail)
 	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
 		return nil, err

@@ -23,7 +23,7 @@ func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail string,
 	})
 
 	log.WithField("actions", actions).Debug("Creating a new flow.")
-	tmp, err := h.reqHandler.FMV1FlowCreate(ctx, u.ID, fmflow.TypeFlow, name, detail, actions, persist)
+	tmp, err := h.reqHandler.FlowV1FlowCreate(ctx, u.ID, fmflow.TypeFlow, name, detail, actions, persist)
 	if err != nil {
 		log.Errorf("Could not create a new flow. err: %v", err)
 		return nil, err
@@ -45,7 +45,7 @@ func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) (*fmfl
 	log.Debug("Deleting a flow.")
 
 	// get flow
-	f, err := h.reqHandler.FMV1FlowGet(ctx, id)
+	f, err := h.reqHandler.FlowV1FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flow info. err: %v", err)
@@ -57,7 +57,7 @@ func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) (*fmfl
 		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	tmp, err := h.reqHandler.FMV1FlowDelete(ctx, id)
+	tmp, err := h.reqHandler.FlowV1FlowDelete(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.
 	log.Debug("Getting a flow.")
 
 	// get flow
-	tmp, err := h.reqHandler.FMV1FlowGet(ctx, id)
+	tmp, err := h.reqHandler.FlowV1FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flow info. err: %v", err)
@@ -113,7 +113,7 @@ func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token str
 	}
 
 	// get flows
-	flows, err := h.reqHandler.FMV1FlowGets(ctx, u.ID, fmflow.TypeFlow, token, size)
+	flows, err := h.reqHandler.FlowV1FlowGets(ctx, u.ID, fmflow.TypeFlow, token, size)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)
@@ -142,7 +142,7 @@ func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fm
 	log.Debug("Updating a flow.")
 
 	// get flows
-	tmpFlow, err := h.reqHandler.FMV1FlowGet(ctx, f.ID)
+	tmpFlow, err := h.reqHandler.FlowV1FlowGet(ctx, f.ID)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)
@@ -154,7 +154,7 @@ func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fm
 		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	tmp, err := h.reqHandler.FMV1FlowUpdate(ctx, f)
+	tmp, err := h.reqHandler.FlowV1FlowUpdate(ctx, f)
 	if err != nil {
 		logrus.Errorf("Could not update the flow. err: %v", err)
 		return nil, err
@@ -177,7 +177,7 @@ func (h *serviceHandler) FlowUpdateActions(u *cscustomer.Customer, flowID uuid.U
 	log.Debug("Updating a flow actions.")
 
 	// get flows
-	tmpFlow, err := h.reqHandler.FMV1FlowGet(ctx, flowID)
+	tmpFlow, err := h.reqHandler.FlowV1FlowGet(ctx, flowID)
 	if err != nil {
 		log.Errorf("Could not get flows info from the flow-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find flows info. err: %v", err)
@@ -189,7 +189,7 @@ func (h *serviceHandler) FlowUpdateActions(u *cscustomer.Customer, flowID uuid.U
 		return nil, fmt.Errorf("customer has no permission")
 	}
 
-	tmp, err := h.reqHandler.FMV1FlowUpdateActions(ctx, flowID, actions)
+	tmp, err := h.reqHandler.FlowV1FlowUpdateActions(ctx, flowID, actions)
 	if err != nil {
 		logrus.Errorf("Could not update the flow. err: %v", err)
 		return nil, err

@@ -60,8 +60,8 @@ func TestRecordingfileGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().CMV1RecordingGet(gomock.Any(), tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().SMV1RecordingGet(gomock.Any(), tt.response.ID).Return(tt.responseST, nil)
+			mockReq.EXPECT().CallV1RecordingGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().StorageV1RecordingGet(gomock.Any(), tt.response.ID).Return(tt.responseST, nil)
 
 			res, err := h.RecordingfileGet(tt.customer, tt.id)
 			if err != nil {

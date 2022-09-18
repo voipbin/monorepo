@@ -44,7 +44,7 @@ func (h *serviceHandler) OutdialtargetCreate(
 	}
 
 	// create
-	tmp, err := h.reqHandler.OMV1OutdialtargetCreate(
+	tmp, err := h.reqHandler.OutdialV1OutdialtargetCreate(
 		ctx,
 		outdialID,
 		name,
@@ -85,7 +85,7 @@ func (h *serviceHandler) OutdialtargetGet(u *cscustomer.Customer, outdialID uuid
 	}
 
 	// get outdialtarget
-	tmp, err := h.reqHandler.OMV1OutdialtargetGet(ctx, outdialtargetID)
+	tmp, err := h.reqHandler.OutdialV1OutdialtargetGet(ctx, outdialtargetID)
 	if err != nil {
 		log.Errorf("Could not get outdialtarget info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outdialtarget info. err: %v", err)
@@ -126,7 +126,7 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(u *cscustomer.Customer, ou
 	}
 
 	// get targets
-	targets, err := h.reqHandler.OMV1OutdialtargetGetsByOutdialID(ctx, outdialID, token, size)
+	targets, err := h.reqHandler.OutdialV1OutdialtargetGetsByOutdialID(ctx, outdialID, token, size)
 	if err != nil {
 		log.Errorf("Could not get outdials info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outdials info. err: %v", err)
@@ -155,7 +155,7 @@ func (h *serviceHandler) OutdialtargetDelete(u *cscustomer.Customer, outdialID u
 	log.Debug("Executing OutdialtargetDelete.")
 
 	// get outdial
-	od, err := h.reqHandler.OMV1OutdialGet(ctx, outdialID)
+	od, err := h.reqHandler.OutdialV1OutdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
@@ -168,7 +168,7 @@ func (h *serviceHandler) OutdialtargetDelete(u *cscustomer.Customer, outdialID u
 	}
 
 	// get outdialtarget
-	ot, err := h.reqHandler.OMV1OutdialtargetGet(ctx, outdialtargetID)
+	ot, err := h.reqHandler.OutdialV1OutdialtargetGet(ctx, outdialtargetID)
 	if err != nil {
 		log.Errorf("Could not get outdialtarget info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outdialtarget info. err: %v", err)
@@ -181,7 +181,7 @@ func (h *serviceHandler) OutdialtargetDelete(u *cscustomer.Customer, outdialID u
 	}
 
 	// delete
-	tmp, err := h.reqHandler.OMV1OutdialtargetDelete(ctx, outdialtargetID)
+	tmp, err := h.reqHandler.OutdialV1OutdialtargetDelete(ctx, outdialtargetID)
 	if err != nil {
 		logrus.Errorf("Could not delete the outdialtarget. err: %v", err)
 		return nil, err

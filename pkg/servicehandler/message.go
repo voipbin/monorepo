@@ -23,7 +23,7 @@ func (h *serviceHandler) messageGet(ctx context.Context, u *cscustomer.Customer,
 	)
 
 	// send request
-	res, err := h.reqHandler.MMV1MessageGet(ctx, messageID)
+	res, err := h.reqHandler.MessageV1MessageGet(ctx, messageID)
 	if err != nil {
 		log.Errorf("Could not get message. err: %v", err)
 		return nil, err
@@ -53,7 +53,7 @@ func (h *serviceHandler) MessageGets(u *cscustomer.Customer, size uint64, token 
 	})
 
 	// get messages
-	tmps, err := h.reqHandler.MMV1MessageGets(ctx, u.ID, token, size)
+	tmps, err := h.reqHandler.MessageV1MessageGets(ctx, u.ID, token, size)
 	if err != nil {
 		log.Infof("Could not get messages info. err: %v", err)
 		return nil, err
@@ -86,7 +86,7 @@ func (h *serviceHandler) MessageSend(u *cscustomer.Customer, source *commonaddre
 	}
 
 	// send message
-	tmp, err := h.reqHandler.MMV1MessageSend(ctx, uuid.Nil, u.ID, source, destinations, text)
+	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, uuid.Nil, u.ID, source, destinations, text)
 	if err != nil {
 		log.Infof("Could not get send a message info. err: %v", err)
 		return nil, err
@@ -145,7 +145,7 @@ func (h *serviceHandler) MessageDelete(u *cscustomer.Customer, id uuid.UUID) (*m
 	}
 
 	// delete message info
-	tmp, err := h.reqHandler.MMV1MessageDelete(ctx, id)
+	tmp, err := h.reqHandler.MessageV1MessageDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get message info. err: %v", err)
 		return nil, err
