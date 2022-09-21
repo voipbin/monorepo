@@ -16,6 +16,11 @@ import (
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
+	chatchat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chat"
+	chatchatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/chatroom"
+	chatmedia "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
+	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
+	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
@@ -110,6 +115,48 @@ type ServiceHandler interface {
 	CampaigncallGetsByCampaignID(u *cscustomer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error)
 	CampaigncallGet(u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error)
 	CampaigncallDelete(u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error)
+
+	// chat handlers
+	ChatCreate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		chatType chatchat.Type,
+		ownerID uuid.UUID,
+		participantIDs []uuid.UUID,
+		name string,
+		detail string,
+	) (*chatchat.WebhookMessage, error)
+	ChatGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*chatchat.WebhookMessage, error)
+	ChatGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatchat.WebhookMessage, error)
+	ChatDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatchat.WebhookMessage, error)
+	ChatUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*chatchat.WebhookMessage, error)
+	ChatUpdateOwnerID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, ownerID uuid.UUID) (*chatchat.WebhookMessage, error)
+	ChatAddParticipantID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
+	ChatRemoveParticipantID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
+
+	// chatmessage handlers
+	ChatmessageCreate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		chatID uuid.UUID,
+		source commonaddress.Address,
+		messageType chatmessagechat.Type,
+		text string,
+		medias []chatmedia.Media,
+	) (*chatmessagechat.WebhookMessage, error)
+	ChatmessageGetsByChatID(ctx context.Context, u *cscustomer.Customer, chatID uuid.UUID, size uint64, token string) ([]*chatmessagechat.WebhookMessage, error)
+	ChatmessageGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechat.WebhookMessage, error)
+	ChatmessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechat.WebhookMessage, error)
+
+	// chatroom handlers
+	ChatroomGetsByOwnerID(ctx context.Context, u *cscustomer.Customer, ownerID uuid.UUID, size uint64, token string) ([]*chatchatroom.WebhookMessage, error)
+	ChatroomGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatchatroom.WebhookMessage, error)
+	ChatroomDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatchatroom.WebhookMessage, error)
+
+	// chatroommessage handlers
+	ChatroommessageGetsByChatroomID(ctx context.Context, u *cscustomer.Customer, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error)
+	ChatroommessageGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
+	ChatroommessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
 
 	// conference handlers
 	ConferenceCreate(u *cscustomer.Customer, confType cfconference.Type, name, detail string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
