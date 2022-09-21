@@ -37,6 +37,8 @@ func Test_campaignsPOST(t *testing.T) {
 		reqBody  request.BodyCampaignsPOST
 
 		response *cacampaign.WebhookMessage
+
+		expectRes string
 	}{
 		{
 			"normal",
@@ -68,6 +70,8 @@ func Test_campaignsPOST(t *testing.T) {
 			&cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("1e701ed2-c649-11ec-97e4-87f868a3e3a9"),
 			},
+
+			`{"id":"1e701ed2-c649-11ec-97e4-87f868a3e3a9","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -113,6 +117,10 @@ func Test_campaignsPOST(t *testing.T) {
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
 	}
@@ -225,7 +233,9 @@ func Test_campaignsIDGET(t *testing.T) {
 
 		reqQuery string
 
-		response *cacampaign.WebhookMessage
+		responseCampaign *cacampaign.WebhookMessage
+
+		expectRes string
 	}{
 		{
 			"normal",
@@ -239,6 +249,8 @@ func Test_campaignsIDGET(t *testing.T) {
 			&cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("832bd31a-c68b-11ec-bcd0-7f66f70ae88d"),
 			},
+
+			`{"id":"832bd31a-c68b-11ec-bcd0-7f66f70ae88d","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -259,12 +271,16 @@ func Test_campaignsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().CampaignGet(&tt.customer, tt.campaignID).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignGet(&tt.customer, tt.campaignID).Return(tt.responseCampaign, nil)
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
 	}
@@ -273,24 +289,30 @@ func Test_campaignsIDGET(t *testing.T) {
 func Test_campaignsIDDELETE(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		customer   cscustomer.Customer
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery   string
 		campaignID uuid.UUID
 
-		reqQuery string
-		response *cacampaign.WebhookMessage
+		responseCampaign *cacampaign.WebhookMessage
+
+		expectRes string
 	}{
 		{
 			"normal",
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
-			uuid.FromStringOrNil("aa1a055a-c68b-11ec-99c7-173b42898a47"),
 
 			"/v1.0/campaigns/aa1a055a-c68b-11ec-99c7-173b42898a47",
+			uuid.FromStringOrNil("aa1a055a-c68b-11ec-99c7-173b42898a47"),
+
 			&cacampaign.WebhookMessage{
 				ID: uuid.FromStringOrNil("aa1a055a-c68b-11ec-99c7-173b42898a47"),
 			},
+
+			`{"id":"aa1a055a-c68b-11ec-99c7-173b42898a47","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -311,12 +333,16 @@ func Test_campaignsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().CampaignDelete(&tt.customer, tt.campaignID).Return(tt.response, nil)
+			mockSvc.EXPECT().CampaignDelete(&tt.customer, tt.campaignID).Return(tt.responseCampaign, nil)
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
 	}
@@ -325,11 +351,12 @@ func Test_campaignsIDDELETE(t *testing.T) {
 func Test_campaignsIDPUT(t *testing.T) {
 
 	tests := []struct {
-		name      string
-		customer  cscustomer.Customer
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery  string
 		outdialID uuid.UUID
 
-		reqQuery string
 		reqBody  request.BodyCampaignsIDPUT
 		response *cacampaign.WebhookMessage
 	}{
@@ -341,9 +368,10 @@ func Test_campaignsIDPUT(t *testing.T) {
 					cspermission.PermissionAdmin.ID,
 				},
 			},
-			uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
 
 			"/v1.0/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
+			uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
+
 			request.BodyCampaignsIDPUT{
 				Name:   "test name",
 				Detail: "test detail",
