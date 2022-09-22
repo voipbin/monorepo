@@ -11,8 +11,7 @@ type Chatroom struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
-	Type Type `json:"type"`
-
+	Type   Type      `json:"type"`
 	ChatID uuid.UUID `json:"chat_id"`
 
 	OwnerID        uuid.UUID   `json:"onwer_id"`        // chatroom's owner agnet id.
