@@ -11,7 +11,8 @@ type WebhookMessage struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
-	Type Type `json:"type"`
+	Type   Type      `json:"type"`
+	ChatID uuid.UUID `json:"chat_id"`
 
 	OwnerID        uuid.UUID   `json:"owner_id"`        // owned agent id
 	ParticipantIDs []uuid.UUID `json:"participant_ids"` // list of participated ids(agent ids)
@@ -30,7 +31,8 @@ func (h *Chatroom) ConvertWebhookMessage() *WebhookMessage {
 		ID:         h.ID,
 		CustomerID: h.CustomerID,
 
-		Type: h.Type,
+		Type:   h.Type,
+		ChatID: h.ChatID,
 
 		OwnerID:        h.OwnerID,
 		ParticipantIDs: h.ParticipantIDs,
