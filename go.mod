@@ -6,20 +6,20 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/streadway/amqp v1.0.0
-	golang.org/x/sys v0.0.0-20220915200043-7b5979e65e41 // indirect
+	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8 // indirect
 )
 
 require (
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/prometheus/client_golang v1.13.0
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20220722043822-a8daf3858b87
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220726004520-28d857adb01e
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20220917172109-24211b12153a
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20220722044501-749018171b9b
-	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220916145027-abf17f1587b3
+	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220922035328-8871094328af
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220807174531-0227483c904d
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220816052510-00d1818e0df4
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20220917174709-a6be8747debf
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20220910161114-850aece1ef56
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20220722162946-5c63199f33dd
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20220722163735-36c125e09c26
