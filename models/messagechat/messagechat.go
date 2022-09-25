@@ -15,10 +15,10 @@ type Messagechat struct {
 	ChatID uuid.UUID `json:"chat_id"`
 
 	// message defines
-	Source *commonaddress.Address
-	Type   Type
-	Text   string
-	Medias []media.Media
+	Source *commonaddress.Address `json:"source"`
+	Type   Type                   `json:"type"`
+	Text   string                 `json:"text"`
+	Medias []media.Media          `json:"medias"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
