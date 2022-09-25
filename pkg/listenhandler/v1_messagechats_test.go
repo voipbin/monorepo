@@ -62,6 +62,35 @@ func Test_v1MessagechatsPost(t *testing.T) {
 				Data:       []byte(`{"id":"63c6f11a-3505-11ed-be2a-7bbff41a9a6c","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
+		{
+			"media is null",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/messagechats",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"9ab4fa2e-3504-11ed-b3a3-53fb5b1fecb9","chat_id":"a0c05828-3504-11ed-9ad6-639abfa992b7","source":{"type":"tel","target":"+821100000001"},"message_type":"normal","text":"test text","medias":null}`),
+			},
+
+			uuid.FromStringOrNil("9ab4fa2e-3504-11ed-b3a3-53fb5b1fecb9"),
+			uuid.FromStringOrNil("a0c05828-3504-11ed-9ad6-639abfa992b7"),
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			messagechat.TypeNormal,
+			"test text",
+			[]media.Media{},
+
+			&messagechat.Messagechat{
+				ID: uuid.FromStringOrNil("be7c686a-3cc1-11ed-b98a-cb05fdbf5ebc"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"be7c686a-3cc1-11ed-b98a-cb05fdbf5ebc","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
 	}
 
 	for _, tt := range tests {

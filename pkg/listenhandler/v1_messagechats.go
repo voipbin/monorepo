@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -28,6 +29,10 @@ func (h *listenHandler) v1MessagechatsPost(ctx context.Context, m *rabbitmqhandl
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return nil, err
+	}
+
+	if req.Medias == nil {
+		req.Medias = []media.Media{}
 	}
 
 	// create
