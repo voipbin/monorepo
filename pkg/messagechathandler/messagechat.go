@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
@@ -134,8 +133,8 @@ func (h *messagechatHandler) create(
 	tmp := &messagechat.Messagechat{
 		ID:         id,
 		CustomerID: customerID,
-		ChatID:     id,
-		Source:     &address.Address{},
+		ChatID:     chatID,
+		Source:     source,
 		Type:       messageType,
 		Text:       text,
 		Medias:     medias,
