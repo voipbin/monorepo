@@ -5,6 +5,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
+	_ "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message" // for swag use
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"

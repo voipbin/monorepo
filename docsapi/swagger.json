@@ -8,7 +8,6 @@
             "name": "VoIPBIN Project",
             "email": "pchero21@gmail.com"
         },
-        "license": {},
         "version": "1.0"
     },
     "host": "api.voipbin.net",
@@ -141,7 +140,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             },
             "put": {
@@ -169,7 +170,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             },
             "delete": {
@@ -188,7 +191,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -218,7 +223,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -248,7 +255,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -278,7 +287,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -462,7 +473,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -597,7 +610,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -807,6 +822,601 @@
                 }
             }
         },
+        "/v1.0/chatmessages": {
+            "get": {
+                "description": "Gets a list of chatmessages",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of chatmessages.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyChatmessagesGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new chatmessage and returns detail created chatmessage info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new chatmessage and returns detail created chatmessage info.",
+                "parameters": [
+                    {
+                        "description": "chatmessage info.",
+                        "name": "chatmessage",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatmessagesPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/messagechat.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chatmessages/{id}": {
+            "get": {
+                "description": "Returns detail chatmessage info of the given chatmessage id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail chatmessage info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chatmessage",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/messagechat.Messagechat"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a chatmessage and returns detail chatmessage info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Deletes a chatmessage and returns detail chatmessage info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chatroom",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/messagechat.Messagechat"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chatroommessages": {
+            "get": {
+                "description": "Gets a list of chatroommessages",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of chatroommessages.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The id of the chatroom",
+                        "name": "chatroom_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyChatsGET"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chatroommessages/{id}": {
+            "get": {
+                "description": "Returns detail chatroommessage info of the given chatroommessage id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail chatroommessage info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chatroommessage",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/messagechatroom.Messagechatroom"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a chatroommessage and returns detail chatroommessage info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Deletes a chatroommessage and returns detail chatroommessage info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chatroommessage",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/messagechatroom.Messagechatroom"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chatrooms": {
+            "get": {
+                "description": "Gets a list of chatrooms",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of chatrooms.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The id of the chatroom owner",
+                        "name": "owner_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyChatsGET"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chatrooms/{id}": {
+            "get": {
+                "description": "Returns detail chatroom info of the given chatroom id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail chatroom info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chatroom",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chatroom.Chatroom"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a chatroom and returns detail chatroom info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Deletes a chatroom and returns detail chatroom info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chatroom",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chatroom.Chatroom"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chats": {
+            "get": {
+                "description": "Gets a list of chats",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of chats.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyChatsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new chat and returns detail created chat info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new chat and returns detail created chat info.",
+                "parameters": [
+                    {
+                        "description": "chat info.",
+                        "name": "chat",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chat.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chats/{id}": {
+            "get": {
+                "description": "Returns detail chat info of the given chat id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail chat info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chat",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chat.Chat"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a chat and returns detail updated info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a chat and reuturns updated info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The chat's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatsIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chat.Chat"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing chat.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing chat.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The chat's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/chats/{id}/owner_id": {
+            "put": {
+                "description": "Update a chat and returns detail updated info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a chat and reuturns updated info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The chat's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "The update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatsIDOwnerIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chat.Chat"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chats/{id}/participant_ids": {
+            "post": {
+                "description": "Add a new participant id to the cat and returns detail updated chat info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Add a new participant id to the chat and returns detail updated chat info.",
+                "parameters": [
+                    {
+                        "description": "chat info.",
+                        "name": "chat",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chat.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chats/{id}/participant_ids/{participant_id}": {
+            "delete": {
+                "description": "Remove participant id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Remove participant id.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The chat's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The chat's participant id",
+                        "name": "participant_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/conferencecalls": {
+            "post": {
+                "description": "Create a new conferencecall with the given information.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new conferencecall",
+                "parameters": [
+                    {
+                        "description": "The conferencecall detail",
+                        "name": "conference",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyConferencecallsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/conferencecall.Conferencecall"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/conferencecalls/{id}": {
+            "get": {
+                "description": "Returns detail conferencecall info of the given conferencecall id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail conferencecall info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conferencecall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/conferencecall.Conferencecall"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Kicks the conferencecall.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Kicks the conferencecall from the conference.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conferencecall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1.0/conferences": {
             "get": {
                 "description": "get conferences of the customer",
@@ -912,42 +1522,94 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
-        "/v1.0/conferences/{id}/calls/{call_id}": {
-            "delete": {
-                "description": "Kick the call from the conference.",
+        "/v1.0/conversations": {
+            "get": {
+                "description": "Gets a list of conversations",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Kick the call from the conference.",
+                "summary": "Gets a list of conversations.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyConversationsGET"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/conversations/setup": {
+            "post": {
+                "description": "Send a message and returns a sent message info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Send a message and returns detail sent message info.",
+                "parameters": [
+                    {
+                        "description": "message info.",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ParamConversationsSetupPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/conversations/{id}": {
+            "get": {
+                "description": "Returns detail conversation info of the given conversation id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail conversation info.",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "The ID of the conference",
+                        "description": "The ID of the conversation",
                         "name": "id",
                         "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The call's id",
-                        "name": "call_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "JWT token",
-                        "name": "token",
-                        "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/conversation.WebhookMessage"
+                        }
+                    }
                 }
             }
         },
@@ -994,7 +1656,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.ParamConversationsSetupPOST"
+                            "$ref": "#/definitions/request.ParamConversationsIDMessagesPOST"
                         }
                     }
                 ],
@@ -1002,7 +1664,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/message.WebhookMessage"
+                            "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage"
                         }
                     }
                 }
@@ -1112,7 +1774,9 @@
                 ],
                 "summary": "Delete a existing customer.",
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -1260,7 +1924,9 @@
                 ],
                 "summary": "Delete a existing domain.",
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -1407,7 +2073,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -1542,7 +2210,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -1945,7 +2615,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -2036,7 +2708,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             },
             "post": {
@@ -2097,7 +2771,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             },
             "delete": {
@@ -2123,7 +2799,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -2258,7 +2936,65 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/queuecall/{id}": {
+            "get": {
+                "description": "Returns detail conferencecall info of the given queuecall id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail queuecall info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queuecall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/queuecall.Queuecall"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/queuecalls/{id}": {
+            "delete": {
+                "description": "Kicks the queuecall.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Kicks the queuecall from the queue.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queuecall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -2336,7 +3072,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             },
             "put": {
@@ -2364,7 +3102,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             },
             "delete": {
@@ -2383,7 +3123,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -2413,7 +3155,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -2443,7 +3187,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -2473,7 +3219,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -2653,7 +3401,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             },
             "delete": {
@@ -2672,7 +3422,9 @@
                     }
                 ],
                 "responses": {
-                    "200": {}
+                    "200": {
+                        "description": "OK"
+                    }
                 }
             }
         },
@@ -2703,6 +3455,23 @@
                     }
                 }
             }
+        },
+        "/v1.0/ws": {
+            "get": {
+                "description": "create a new queue",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new queue.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/queue.WebhookMessage"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -2717,7 +3486,10 @@
                     "type": "string"
                 },
                 "option": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "tm_execute": {
                     "description": "represent when this action has executed. This is used in call-manager.",
@@ -2764,7 +3536,7 @@
                     }
                 },
                 "customer_id": {
-                    "description": "owner's id",
+                    "description": "customer's id",
                     "type": "string"
                 },
                 "detail": {
@@ -2829,6 +3601,10 @@
                     "items": {
                         "$ref": "#/definitions/address.Address"
                     }
+                },
+                "customer_id": {
+                    "description": "customer's id",
+                    "type": "string"
                 },
                 "detail": {
                     "description": "agent's detail",
@@ -2906,7 +3682,6 @@
             "type": "object",
             "properties": {
                 "action": {
-                    "type": "object",
                     "$ref": "#/definitions/action.Action"
                 },
                 "active_flow_id": {
@@ -2944,7 +3719,6 @@
                     }
                 },
                 "destination": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "direction": {
@@ -2981,7 +3755,6 @@
                 },
                 "source": {
                     "description": "source/destination",
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "status": {
@@ -3014,7 +3787,6 @@
             "type": "object",
             "properties": {
                 "action": {
-                    "type": "object",
                     "$ref": "#/definitions/action.Action"
                 },
                 "chained_call_ids": {
@@ -3024,8 +3796,10 @@
                         "type": "string"
                     }
                 },
+                "customer_id": {
+                    "type": "string"
+                },
                 "destination": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "direction": {
@@ -3062,7 +3836,6 @@
                 },
                 "source": {
                     "description": "source/destination",
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "status": {
@@ -3167,6 +3940,9 @@
                         "$ref": "#/definitions/action.Action"
                     }
                 },
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
@@ -3222,8 +3998,10 @@
                 "campaign_id": {
                     "type": "string"
                 },
+                "customer_id": {
+                    "type": "string"
+                },
                 "destination": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "destination_index": {
@@ -3256,7 +4034,6 @@
                     "type": "string"
                 },
                 "source": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "status": {
@@ -3273,19 +4050,142 @@
                 }
             }
         },
-        "conference.Conference": {
+        "chat.Chat": {
             "type": "object",
             "properties": {
-                "call_ids": {
-                    "description": "list of call ids of conference",
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "description": "owned agent id",
+                    "type": "string"
+                },
+                "participant_ids": {
+                    "description": "list of participated ids(agent ids)",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "chat.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "description": "owned agent id",
+                    "type": "string"
+                },
+                "participant_ids": {
+                    "description": "list of participated ids(agent ids)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "chatroom.Chatroom": {
+            "type": "object",
+            "properties": {
+                "chat_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "onwer_id": {
+                    "description": "chatroom's owner agnet id.",
+                    "type": "string"
+                },
+                "participant_ids": {
+                    "description": "list of participated agent ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "conference.Conference": {
+            "type": "object",
+            "properties": {
                 "confbridge_id": {
                     "description": "confbridge id(call-manager)",
                     "type": "string"
+                },
+                "conferencecall_ids": {
+                    "description": "list of conferencecall ids of the conference",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "customer_id": {
                     "type": "string"
@@ -3351,9 +4251,44 @@
                 }
             }
         },
+        "conferencecall.Conferencecall": {
+            "type": "object",
+            "properties": {
+                "conference_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
         "conversation.WebhookMessage": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
@@ -3374,6 +4309,9 @@
                 },
                 "reference_type": {
                     "type": "string"
+                },
+                "source": {
+                    "$ref": "#/definitions/address.Address"
                 },
                 "tm_create": {
                     "type": "string"
@@ -3530,6 +4468,9 @@
         "domain.WebhookMessage": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
@@ -3645,6 +4586,9 @@
                         "$ref": "#/definitions/action.Action"
                     }
                 },
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
@@ -3668,7 +4612,10 @@
                 }
             }
         },
-        "media.Media": {
+        "gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media": {
+            "type": "object"
+        },
+        "gitlab.com_voipbin_bin-manager_conversation-manager.git_models_media.Media": {
             "type": "object",
             "properties": {
                 "customer_id": {
@@ -3694,7 +4641,7 @@
                 }
             }
         },
-        "message.Message": {
+        "gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage": {
             "type": "object",
             "properties": {
                 "conversation_id": {
@@ -3703,26 +4650,27 @@
                 "customer_id": {
                     "type": "string"
                 },
+                "direction": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "medias": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/media.Media"
+                        "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_media.Media"
                     }
                 },
                 "reference_id": {
-                    "description": "used for find a conversation info(source info: group_id, room_id, user_id)",
                     "type": "string"
                 },
                 "reference_type": {
-                    "description": "used for find a conversation info(source info: group/room/user)",
                     "type": "string"
                 },
-                "source_target": {
-                    "description": "message source target.",
-                    "type": "string"
+                "source": {
+                    "description": "source",
+                    "$ref": "#/definitions/address.Address"
                 },
                 "status": {
                     "type": "string"
@@ -3741,9 +4689,12 @@
                 }
             }
         },
-        "message.WebhookMessage": {
+        "gitlab.com_voipbin_bin-manager_message-manager.git_models_message.WebhookMessage": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "direction": {
                     "type": "string"
                 },
@@ -3752,7 +4703,6 @@
                 },
                 "source": {
                     "description": "from/to info",
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "targets": {
@@ -3763,6 +4713,178 @@
                 },
                 "text": {
                     "description": "message info",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "message.Message": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provider_name": {
+                    "description": "provider info",
+                    "type": "string"
+                },
+                "provider_reference_id": {
+                    "type": "string"
+                },
+                "source": {
+                    "description": "from/to info",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "targets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/target.Target"
+                    }
+                },
+                "text": {
+                    "description": "message info",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "messagechat.Messagechat": {
+            "type": "object",
+            "properties": {
+                "chat_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media"
+                    }
+                },
+                "source": {
+                    "description": "message defines",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "messagechat.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "chat_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media"
+                    }
+                },
+                "source": {
+                    "$ref": "#/definitions/address.Address"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "messagechatroom.Messagechatroom": {
+            "type": "object",
+            "properties": {
+                "chatroom_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media"
+                    }
+                },
+                "messagechat_id": {
+                    "type": "string"
+                },
+                "source": {
+                    "description": "message defines",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "text": {
                     "type": "string"
                 },
                 "tm_create": {
@@ -3839,6 +4961,9 @@
                 "call_flow_id": {
                     "type": "string"
                 },
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
@@ -3912,6 +5037,9 @@
                 "campaign_id": {
                     "type": "string"
                 },
+                "customer_id": {
+                    "type": "string"
+                },
                 "data": {
                     "type": "string"
                 },
@@ -3977,7 +5105,6 @@
                 },
                 "source": {
                     "description": "source settings",
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "tm_create": {
@@ -3998,6 +5125,9 @@
         "outplan.WebhookMessage": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
                 "detail": {
                     "type": "string"
                 },
@@ -4029,7 +5159,6 @@
                 },
                 "source": {
                     "description": "source settings",
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "tm_create": {
@@ -4050,6 +5179,10 @@
         "queue.WebhookMessage": {
             "type": "object",
             "properties": {
+                "customer_id": {
+                    "description": "owner id",
+                    "type": "string"
+                },
                 "detail": {
                     "description": "queue's detail",
                     "type": "string"
@@ -4066,7 +5199,7 @@
                     "description": "operation info",
                     "type": "string"
                 },
-                "service_queue_call_ids": {
+                "service_queuecall_ids": {
                     "description": "service queue call ids(ms).",
                     "type": "array",
                     "items": {
@@ -4115,7 +5248,7 @@
                         "$ref": "#/definitions/action.Action"
                     }
                 },
-                "wait_queue_call_ids": {
+                "wait_queuecall_ids": {
                     "description": "queuecall info",
                     "type": "array",
                     "items": {
@@ -4125,6 +5258,101 @@
                 "wait_timeout": {
                     "description": "wait queue timeout.(ms)",
                     "type": "integer"
+                }
+            }
+        },
+        "queuecall.Queuecall": {
+            "type": "object",
+            "properties": {
+                "conference_id": {
+                    "description": "conference id",
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "duration_service": {
+                    "description": "duration for service(ms)",
+                    "type": "integer"
+                },
+                "duration_waiting": {
+                    "description": "duration for waiting(ms)",
+                    "type": "integer"
+                },
+                "exit_action_id": {
+                    "description": "action id for queue exit. When the queuecall has ended, the queuemanager will send the request forward to this action id.",
+                    "type": "string"
+                },
+                "flow_id": {
+                    "description": "queuecall's queue flow id.",
+                    "type": "string"
+                },
+                "forward_action_id": {
+                    "description": "action id for forward. This is for the conference_join's action id.",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "queue_id": {
+                    "type": "string"
+                },
+                "reference_activeflow_id": {
+                    "description": "referenced resource's activeflow id",
+                    "type": "string"
+                },
+                "reference_id": {
+                    "description": "referenced resource's id.",
+                    "type": "string"
+                },
+                "reference_type": {
+                    "description": "referenced resource's type.",
+                    "type": "string"
+                },
+                "routing_method": {
+                    "description": "queue's routing method",
+                    "type": "string"
+                },
+                "service_agent_id": {
+                    "type": "string"
+                },
+                "source": {
+                    "description": "source address for calling to the agent.",
+                    "$ref": "#/definitions/address.Address"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tag_ids": {
+                    "description": "queue's tags",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timeout_service": {
+                    "description": "timeout for service.(ms)",
+                    "type": "integer"
+                },
+                "timeout_wait": {
+                    "description": "timeout for wait.(ms)",
+                    "type": "integer"
+                },
+                "tm_create": {
+                    "description": "Created timestamp.",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "description": "Deleted timestamp.",
+                    "type": "string"
+                },
+                "tm_service": {
+                    "description": "Serviced timestamp.",
+                    "type": "string"
+                },
+                "tm_update": {
+                    "description": "Updated timestamp.",
+                    "type": "string"
                 }
             }
         },
@@ -4234,6 +5462,7 @@
                     "type": "string"
                 },
                 "ring_method": {
+                    "description": "agent's ring method",
                     "type": "string"
                 }
             }
@@ -4245,6 +5474,7 @@
             ],
             "properties": {
                 "status": {
+                    "description": "agent's status",
                     "type": "string"
                 }
             }
@@ -4286,7 +5516,7 @@
                     "type": "string"
                 },
                 "permission": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "ring_method": {
                     "type": "string"
@@ -4325,7 +5555,6 @@
                     "type": "string"
                 },
                 "source": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 }
             }
@@ -4399,6 +5628,85 @@
                     "type": "integer"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyChatmessagesPOST": {
+            "type": "object",
+            "properties": {
+                "chat_id": {
+                    "type": "string"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media"
+                    }
+                },
+                "source": {
+                    "$ref": "#/definitions/address.Address"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyChatsIDOwnerIDPUT": {
+            "type": "object",
+            "properties": {
+                "owner_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyChatsIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyChatsPOST": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "participant_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyConferencecallsPOST": {
+            "type": "object",
+            "properties": {
+                "conference_id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
                     "type": "string"
                 }
             }
@@ -4560,7 +5868,6 @@
                     }
                 },
                 "source": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "text": {
@@ -4668,7 +5975,6 @@
                     "type": "integer"
                 },
                 "source": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "try_interval": {
@@ -4715,7 +6021,6 @@
                     "type": "string"
                 },
                 "source": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "try_interval": {
@@ -4795,7 +6100,7 @@
         "request.ParamConversationsSetupPOST": {
             "type": "object",
             "properties": {
-                "referenceType": {
+                "reference_type": {
                     "type": "string"
                 }
             }
@@ -4867,6 +6172,34 @@
                 }
             }
         },
+        "response.BodyChatmessagesGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/messagechat.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyChatsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/chat.WebhookMessage"
+                    }
+                }
+            }
+        },
         "response.BodyConversationsGET": {
             "type": "object",
             "properties": {
@@ -4890,7 +6223,7 @@
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/message.WebhookMessage"
+                        "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage"
                     }
                 }
             }
@@ -4957,7 +6290,7 @@
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/message.WebhookMessage"
+                        "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_message-manager.git_models_message.WebhookMessage"
                     }
                 }
             }
@@ -5112,7 +6445,6 @@
             "type": "object",
             "properties": {
                 "destination": {
-                    "type": "object",
                     "$ref": "#/definitions/address.Address"
                 },
                 "parts": {

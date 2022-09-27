@@ -4,10 +4,13 @@ definitions:
       id:
         type: string
       next_id:
-        description: represent next target action id. if it not set, just go to next action in the action array.
+        description: represent next target action id. if it not set, just go to next
+          action in the action array.
         type: string
       option:
-        type: string
+        items:
+          type: integer
+        type: array
       tm_execute:
         description: represent when this action has executed. This is used in call-manager.
         type: string
@@ -40,7 +43,7 @@ definitions:
           $ref: '#/definitions/address.Address'
         type: array
       customer_id:
-        description: owner's id
+        description: customer's id
         type: string
       detail:
         description: agent's detail
@@ -88,6 +91,9 @@ definitions:
         items:
           $ref: '#/definitions/address.Address'
         type: array
+      customer_id:
+        description: customer's id
+        type: string
       detail:
         description: agent's detail
         type: string
@@ -143,7 +149,6 @@ definitions:
     properties:
       action:
         $ref: '#/definitions/action.Action'
-        type: object
       active_flow_id:
         description: active flow id
         type: string
@@ -170,7 +175,6 @@ definitions:
         type: object
       destination:
         $ref: '#/definitions/address.Address'
-        type: object
       direction:
         type: string
       flow_id:
@@ -197,7 +201,6 @@ definitions:
       source:
         $ref: '#/definitions/address.Address'
         description: source/destination
-        type: object
       status:
         description: info
         type: string
@@ -220,15 +223,15 @@ definitions:
     properties:
       action:
         $ref: '#/definitions/action.Action'
-        type: object
       chained_call_ids:
         description: chained call ids
         items:
           type: string
         type: array
+      customer_id:
+        type: string
       destination:
         $ref: '#/definitions/address.Address'
-        type: object
       direction:
         type: string
       flow_id:
@@ -255,7 +258,6 @@ definitions:
       source:
         $ref: '#/definitions/address.Address'
         description: source/destination
-        type: object
       status:
         description: info
         type: string
@@ -326,6 +328,8 @@ definitions:
         items:
           $ref: '#/definitions/action.Action'
         type: array
+      customer_id:
+        type: string
       detail:
         type: string
       end_handle:
@@ -363,9 +367,10 @@ definitions:
         type: string
       campaign_id:
         type: string
+      customer_id:
+        type: string
       destination:
         $ref: '#/definitions/address.Address'
-        type: object
       destination_index:
         type: integer
       id:
@@ -388,7 +393,6 @@ definitions:
         type: string
       source:
         $ref: '#/definitions/address.Address'
-        type: object
       status:
         type: string
       tm_create:
@@ -398,16 +402,99 @@ definitions:
       try_count:
         type: integer
     type: object
-  conference.Conference:
+  chat.Chat:
     properties:
-      call_ids:
-        description: list of call ids of conference
+      customer_id:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        description: owned agent id
+        type: string
+      participant_ids:
+        description: list of participated ids(agent ids)
         items:
           type: string
         type: array
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  chat.WebhookMessage:
+    properties:
+      customer_id:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        description: owned agent id
+        type: string
+      participant_ids:
+        description: list of participated ids(agent ids)
+        items:
+          type: string
+        type: array
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  chatroom.Chatroom:
+    properties:
+      chat_id:
+        type: string
+      customer_id:
+        type: string
+      detail:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      onwer_id:
+        description: chatroom's owner agnet id.
+        type: string
+      participant_ids:
+        description: list of participated agent ids
+        items:
+          type: string
+        type: array
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  conference.Conference:
+    properties:
       confbridge_id:
         description: confbridge id(call-manager)
         type: string
+      conferencecall_ids:
+        description: list of conferencecall ids of the conference
+        items:
+          type: string
+        type: array
       customer_id:
         type: string
       data:
@@ -452,8 +539,31 @@ definitions:
       type:
         type: string
     type: object
+  conferencecall.Conferencecall:
+    properties:
+      conference_id:
+        type: string
+      customer_id:
+        type: string
+      id:
+        type: string
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
   conversation.WebhookMessage:
     properties:
+      customer_id:
+        type: string
       detail:
         type: string
       id:
@@ -468,6 +578,8 @@ definitions:
         type: string
       reference_type:
         type: string
+      source:
+        $ref: '#/definitions/address.Address'
       tm_create:
         type: string
       tm_delete:
@@ -578,6 +690,8 @@ definitions:
     type: object
   domain.WebhookMessage:
     properties:
+      customer_id:
+        type: string
       detail:
         type: string
       domain_name:
@@ -654,6 +768,8 @@ definitions:
         items:
           $ref: '#/definitions/action.Action'
         type: array
+      customer_id:
+        type: string
       detail:
         type: string
       id:
@@ -669,7 +785,9 @@ definitions:
       type:
         type: string
     type: object
-  media.Media:
+  gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media:
+    type: object
+  gitlab.com_voipbin_bin-manager_conversation-manager.git_models_media.Media:
     properties:
       customer_id:
         type: string
@@ -686,27 +804,27 @@ definitions:
       type:
         type: string
     type: object
-  message.Message:
+  gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage:
     properties:
       conversation_id:
         type: string
       customer_id:
         type: string
+      direction:
+        type: string
       id:
         type: string
       medias:
         items:
-          $ref: '#/definitions/media.Media'
+          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_media.Media'
         type: array
       reference_id:
-        description: 'used for find a conversation info(source info: group_id, room_id, user_id)'
         type: string
       reference_type:
-        description: 'used for find a conversation info(source info: group/room/user)'
         type: string
-      source_target:
-        description: message source target.
-        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+        description: source
       status:
         type: string
       text:
@@ -718,8 +836,10 @@ definitions:
       tm_update:
         type: string
     type: object
-  message.WebhookMessage:
+  gitlab.com_voipbin_bin-manager_message-manager.git_models_message.WebhookMessage:
     properties:
+      customer_id:
+        type: string
       direction:
         type: string
       id:
@@ -727,13 +847,127 @@ definitions:
       source:
         $ref: '#/definitions/address.Address'
         description: from/to info
-        type: object
       targets:
         items:
           $ref: '#/definitions/target.Target'
         type: array
       text:
         description: message info
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  message.Message:
+    properties:
+      customer_id:
+        type: string
+      direction:
+        type: string
+      id:
+        type: string
+      medias:
+        items:
+          type: string
+        type: array
+      provider_name:
+        description: provider info
+        type: string
+      provider_reference_id:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+        description: from/to info
+      targets:
+        items:
+          $ref: '#/definitions/target.Target'
+        type: array
+      text:
+        description: message info
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  messagechat.Messagechat:
+    properties:
+      chat_id:
+        type: string
+      customer_id:
+        type: string
+      id:
+        type: string
+      medias:
+        items:
+          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media'
+        type: array
+      source:
+        $ref: '#/definitions/address.Address'
+        description: message defines
+      text:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  messagechat.WebhookMessage:
+    properties:
+      chat_id:
+        type: string
+      customer_id:
+        type: string
+      id:
+        type: string
+      medias:
+        items:
+          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media'
+        type: array
+      source:
+        $ref: '#/definitions/address.Address'
+      text:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
+  messagechatroom.Messagechatroom:
+    properties:
+      chatroom_id:
+        type: string
+      customer_id:
+        type: string
+      id:
+        type: string
+      medias:
+        items:
+          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media'
+        type: array
+      messagechat_id:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+        description: message defines
+      text:
         type: string
       tm_create:
         type: string
@@ -784,6 +1018,8 @@ definitions:
     properties:
       call_flow_id:
         type: string
+      customer_id:
+        type: string
       detail:
         type: string
       emergency_enabled:
@@ -832,6 +1068,8 @@ definitions:
     properties:
       campaign_id:
         type: string
+      customer_id:
+        type: string
       data:
         type: string
       detail:
@@ -879,7 +1117,6 @@ definitions:
       source:
         $ref: '#/definitions/address.Address'
         description: source settings
-        type: object
       tm_create:
         type: string
       tm_delete:
@@ -892,6 +1129,8 @@ definitions:
     type: object
   outplan.WebhookMessage:
     properties:
+      customer_id:
+        type: string
       detail:
         type: string
       dial_timeout:
@@ -915,7 +1154,6 @@ definitions:
       source:
         $ref: '#/definitions/address.Address'
         description: source settings
-        type: object
       tm_create:
         type: string
       tm_delete:
@@ -928,6 +1166,9 @@ definitions:
     type: object
   queue.WebhookMessage:
     properties:
+      customer_id:
+        description: owner id
+        type: string
       detail:
         description: queue's detail
         type: string
@@ -940,7 +1181,7 @@ definitions:
       routing_method:
         description: operation info
         type: string
-      service_queue_call_ids:
+      service_queuecall_ids:
         description: service queue call ids(ms).
         items:
           type: string
@@ -976,7 +1217,7 @@ definitions:
         items:
           $ref: '#/definitions/action.Action'
         type: array
-      wait_queue_call_ids:
+      wait_queuecall_ids:
         description: queuecall info
         items:
           type: string
@@ -984,6 +1225,77 @@ definitions:
       wait_timeout:
         description: wait queue timeout.(ms)
         type: integer
+    type: object
+  queuecall.Queuecall:
+    properties:
+      conference_id:
+        description: conference id
+        type: string
+      customer_id:
+        type: string
+      duration_service:
+        description: duration for service(ms)
+        type: integer
+      duration_waiting:
+        description: duration for waiting(ms)
+        type: integer
+      exit_action_id:
+        description: action id for queue exit. When the queuecall has ended, the queuemanager
+          will send the request forward to this action id.
+        type: string
+      flow_id:
+        description: queuecall's queue flow id.
+        type: string
+      forward_action_id:
+        description: action id for forward. This is for the conference_join's action
+          id.
+        type: string
+      id:
+        type: string
+      queue_id:
+        type: string
+      reference_activeflow_id:
+        description: referenced resource's activeflow id
+        type: string
+      reference_id:
+        description: referenced resource's id.
+        type: string
+      reference_type:
+        description: referenced resource's type.
+        type: string
+      routing_method:
+        description: queue's routing method
+        type: string
+      service_agent_id:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+        description: source address for calling to the agent.
+      status:
+        type: string
+      tag_ids:
+        description: queue's tags
+        items:
+          type: string
+        type: array
+      timeout_service:
+        description: timeout for service.(ms)
+        type: integer
+      timeout_wait:
+        description: timeout for wait.(ms)
+        type: integer
+      tm_create:
+        description: Created timestamp.
+        type: string
+      tm_delete:
+        description: Deleted timestamp.
+        type: string
+      tm_service:
+        description: Serviced timestamp.
+        type: string
+      tm_update:
+        description: Updated timestamp.
+        type: string
     type: object
   recording.Recording:
     properties:
@@ -1055,11 +1367,13 @@ definitions:
       name:
         type: string
       ring_method:
+        description: agent's ring method
         type: string
     type: object
   request.BodyAgentsIDStatusPUT:
     properties:
       status:
+        description: agent's status
         type: string
     required:
     - status
@@ -1086,7 +1400,7 @@ definitions:
       password:
         type: string
       permission:
-        type: string
+        type: integer
       ring_method:
         type: string
       tag_ids:
@@ -1113,7 +1427,6 @@ definitions:
         type: string
       source:
         $ref: '#/definitions/address.Address'
-        type: object
     required:
     - destinations
     - source
@@ -1164,6 +1477,57 @@ definitions:
       service_level:
         type: integer
       type:
+        type: string
+    type: object
+  request.BodyChatmessagesPOST:
+    properties:
+      chat_id:
+        type: string
+      medias:
+        items:
+          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media'
+        type: array
+      source:
+        $ref: '#/definitions/address.Address'
+      text:
+        type: string
+      type:
+        type: string
+    type: object
+  request.BodyChatsIDOwnerIDPUT:
+    properties:
+      owner_id:
+        type: string
+    type: object
+  request.BodyChatsIDPUT:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+    type: object
+  request.BodyChatsPOST:
+    properties:
+      detail:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      participant_ids:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    type: object
+  request.BodyConferencecallsPOST:
+    properties:
+      conference_id:
+        type: string
+      reference_id:
+        type: string
+      reference_type:
         type: string
     type: object
   request.BodyConferencesPOST:
@@ -1270,7 +1634,6 @@ definitions:
         type: array
       source:
         $ref: '#/definitions/address.Address'
-        type: object
       text:
         type: string
     type: object
@@ -1340,7 +1703,6 @@ definitions:
         type: integer
       source:
         $ref: '#/definitions/address.Address'
-        type: object
       try_interval:
         type: integer
     type: object
@@ -1371,7 +1733,6 @@ definitions:
         type: string
       source:
         $ref: '#/definitions/address.Address'
-        type: object
       try_interval:
         type: integer
     type: object
@@ -1421,7 +1782,7 @@ definitions:
     type: object
   request.ParamConversationsSetupPOST:
     properties:
-      referenceType:
+      reference_type:
         type: string
     type: object
   response.BodyAgentsGET:
@@ -1467,6 +1828,24 @@ definitions:
           $ref: '#/definitions/campaigncall.WebhookMessage'
         type: array
     type: object
+  response.BodyChatmessagesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/messagechat.WebhookMessage'
+        type: array
+    type: object
+  response.BodyChatsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/chat.WebhookMessage'
+        type: array
+    type: object
   response.BodyConversationsGET:
     properties:
       next_page_token:
@@ -1482,7 +1861,7 @@ definitions:
         type: string
       result:
         items:
-          $ref: '#/definitions/message.WebhookMessage'
+          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage'
         type: array
     type: object
   response.BodyCustomersGET:
@@ -1525,7 +1904,7 @@ definitions:
         type: string
       result:
         items:
-          $ref: '#/definitions/message.WebhookMessage'
+          $ref: '#/definitions/gitlab.com_voipbin_bin-manager_message-manager.git_models_message.WebhookMessage'
         type: array
     type: object
   response.BodyNumbersGET:
@@ -1631,7 +2010,6 @@ definitions:
     properties:
       destination:
         $ref: '#/definitions/address.Address'
-        type: object
       parts:
         description: number of messages
         type: integer
@@ -1699,7 +2077,6 @@ info:
     email: pchero21@gmail.com
     name: VoIPBIN Project
   description: RESTful API documents for VoIPBIN project.
-  license: {}
   termsOfService: http://swagger.io/terms/
   title: VoIPBIN project API
   version: "1.0"
@@ -1788,7 +2165,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete the agent
     get:
       description: Get the agent of the given id
@@ -1801,7 +2179,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Get the agent
     put:
       description: Update an agent and returns detail updated agent info.
@@ -1820,7 +2199,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update an agent and reuturns updated agent info.
   /v1.0/agents/{id}/addresses:
     put:
@@ -1840,7 +2220,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update an agent info.
   /v1.0/agents/{id}/status:
     put:
@@ -1860,7 +2241,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update an agent's status info.
   /v1.0/agents/{id}/tag_ids:
     put:
@@ -1880,7 +2262,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update an agent's tag_id info.
   /v1.0/available_numbers:
     get:
@@ -1985,7 +2368,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Finish a existing campaign.
     get:
       description: Returns detail campaigns info of the given campaigncall id.
@@ -2052,7 +2436,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete a existing campaign.
     get:
       description: Returns detail campaigns info of the given campaigns id.
@@ -2227,6 +2612,402 @@ paths:
           schema:
             $ref: '#/definitions/campaign.Campaign'
       summary: Update a campaign and reuturns updated campaign info.
+  /v1.0/chatmessages:
+    get:
+      description: Gets a list of chatmessages
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyChatmessagesGET'
+      summary: Gets a list of chatmessages.
+    post:
+      description: Create a new chatmessage and returns detail created chatmessage
+        info.
+      parameters:
+      - description: chatmessage info.
+        in: body
+        name: chatmessage
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatmessagesPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/messagechat.WebhookMessage'
+      summary: Create a new chatmessage and returns detail created chatmessage info.
+  /v1.0/chatmessages/{id}:
+    delete:
+      description: Deletes a chatmessage and returns detail chatmessage info.
+      parameters:
+      - description: The ID of the chatroom
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/messagechat.Messagechat'
+      summary: Deletes a chatmessage and returns detail chatmessage info.
+    get:
+      description: Returns detail chatmessage info of the given chatmessage id.
+      parameters:
+      - description: The ID of the chatmessage
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/messagechat.Messagechat'
+      summary: Returns detail chatmessage info.
+  /v1.0/chatroommessages:
+    get:
+      description: Gets a list of chatroommessages
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      - description: The id of the chatroom
+        in: query
+        name: chatroom_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyChatsGET'
+      summary: Gets a list of chatroommessages.
+  /v1.0/chatroommessages/{id}:
+    delete:
+      description: Deletes a chatroommessage and returns detail chatroommessage info.
+      parameters:
+      - description: The ID of the chatroommessage
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/messagechatroom.Messagechatroom'
+      summary: Deletes a chatroommessage and returns detail chatroommessage info.
+    get:
+      description: Returns detail chatroommessage info of the given chatroommessage
+        id.
+      parameters:
+      - description: The ID of the chatroommessage
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/messagechatroom.Messagechatroom'
+      summary: Returns detail chatroommessage info.
+  /v1.0/chatrooms:
+    get:
+      description: Gets a list of chatrooms
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      - description: The id of the chatroom owner
+        in: query
+        name: owner_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyChatsGET'
+      summary: Gets a list of chatrooms.
+  /v1.0/chatrooms/{id}:
+    delete:
+      description: Deletes a chatroom and returns detail chatroom info.
+      parameters:
+      - description: The ID of the chatroom
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chatroom.Chatroom'
+      summary: Deletes a chatroom and returns detail chatroom info.
+    get:
+      description: Returns detail chatroom info of the given chatroom id.
+      parameters:
+      - description: The ID of the chatroom
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chatroom.Chatroom'
+      summary: Returns detail chatroom info.
+  /v1.0/chats:
+    get:
+      description: Gets a list of chats
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyChatsGET'
+      summary: Gets a list of chats.
+    post:
+      description: Create a new chat and returns detail created chat info.
+      parameters:
+      - description: chat info.
+        in: body
+        name: chat
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chat.WebhookMessage'
+      summary: Create a new chat and returns detail created chat info.
+  /v1.0/chats/{id}:
+    delete:
+      description: Delete a existing chat.
+      parameters:
+      - description: The chat's id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delete a existing chat.
+    get:
+      description: Returns detail chat info of the given chat id.
+      parameters:
+      - description: The ID of the chat
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chat.Chat'
+      summary: Returns detail chat info.
+    put:
+      description: Update a chat and returns detail updated info.
+      parameters:
+      - description: The chat's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatsIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chat.Chat'
+      summary: Update a chat and reuturns updated info.
+  /v1.0/chats/{id}/owner_id:
+    put:
+      description: Update a chat and returns detail updated info.
+      parameters:
+      - description: The chat's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatsIDOwnerIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chat.Chat'
+      summary: Update a chat and reuturns updated info.
+  /v1.0/chats/{id}/participant_ids:
+    post:
+      description: Add a new participant id to the cat and returns detail updated
+        chat info.
+      parameters:
+      - description: chat info.
+        in: body
+        name: chat
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chat.WebhookMessage'
+      summary: Add a new participant id to the chat and returns detail updated chat
+        info.
+  /v1.0/chats/{id}/participant_ids/{participant_id}:
+    delete:
+      description: Remove participant id.
+      parameters:
+      - description: The chat's id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: The chat's participant id
+        in: query
+        name: participant_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Remove participant id.
+  /v1.0/conferencecalls:
+    post:
+      description: Create a new conferencecall with the given information.
+      parameters:
+      - description: The conferencecall detail
+        in: body
+        name: conference
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyConferencecallsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/conferencecall.Conferencecall'
+      summary: Create a new conferencecall
+  /v1.0/conferencecalls/{id}:
+    delete:
+      description: Kicks the conferencecall.
+      parameters:
+      - description: The ID of the conferencecall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Kicks the conferencecall from the conference.
+    get:
+      description: Returns detail conferencecall info of the given conferencecall
+        id.
+      parameters:
+      - description: The ID of the conferencecall
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/conferencecall.Conferencecall'
+      summary: Returns detail conferencecall info.
   /v1.0/conferences:
     get:
       description: get conferences of the customer
@@ -2266,7 +3047,8 @@ paths:
       summary: Create a new conferences
   /v1.0/conferences/{id}:
     delete:
-      description: Delete the conference. All the participants in the conference will be kicked out.
+      description: Delete the conference. All the participants in the conference will
+        be kicked out.
       parameters:
       - description: The ID of the conference
         in: path
@@ -2276,7 +3058,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete the conference.
     get:
       description: Returns detail conference info of the given conference id.
@@ -2299,30 +3082,43 @@ paths:
           schema:
             $ref: '#/definitions/conference.Conference'
       summary: Returns detail conference info.
-  /v1.0/conferences/{id}/calls/{call_id}:
-    delete:
-      description: Kick the call from the conference.
+  /v1.0/conversations:
+    get:
+      description: Gets a list of conversations
       parameters:
-      - description: The ID of the conference
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyConversationsGET'
+      summary: Gets a list of conversations.
+  /v1.0/conversations/{id}:
+    get:
+      description: Returns detail conversation info of the given conversation id.
+      parameters:
+      - description: The ID of the conversation
         in: path
         name: id
-        required: true
-        type: string
-      - description: The call's id
-        in: path
-        name: call_id
-        required: true
-        type: string
-      - description: JWT token
-        in: query
-        name: token
         required: true
         type: string
       produces:
       - application/json
       responses:
-        "200": {}
-      summary: Kick the call from the conference.
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/conversation.WebhookMessage'
+      summary: Returns detail conversation info.
   /v1.0/conversations/{id}/messages:
     get:
       description: Gets a list of conversation messages
@@ -2351,6 +3147,24 @@ paths:
         name: message
         required: true
         schema:
+          $ref: '#/definitions/request.ParamConversationsIDMessagesPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage'
+      summary: Send a message and returns detail sent message info.
+  /v1.0/conversations/setup:
+    post:
+      description: Send a message and returns a sent message info.
+      parameters:
+      - description: message info.
+        in: body
+        name: message
+        required: true
+        schema:
           $ref: '#/definitions/request.ParamConversationsSetupPOST'
       produces:
       - application/json
@@ -2358,7 +3172,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/message.WebhookMessage'
+            $ref: '#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage'
       summary: Send a message and returns detail sent message info.
   /v1.0/customers:
     get:
@@ -2403,7 +3217,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete a existing customer.
     get:
       description: Returns detail customer info of the given customer id.
@@ -2500,7 +3315,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete a existing domain.
     get:
       description: Returns detail domain info of the given domain id.
@@ -2601,7 +3417,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete a existing extension.
     put:
       description: Update a extension and returns detail updated extension info.
@@ -2674,7 +3491,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete a existing flow.
     get:
       description: Returns detail flow info of the given flow id.
@@ -2938,7 +3756,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete a existing outdial.
     get:
       description: Returns detail outdials info of the given outdials id.
@@ -2980,7 +3799,8 @@ paths:
       summary: Update a outdial and reuturns updated outdial info.
   /v1.0/outdials/{id}/campaign_id:
     put:
-      description: Update a outdial's campaign_id and returns detail updated outdial info.
+      description: Update a outdial's campaign_id and returns detail updated outdial
+        info.
       parameters:
       - description: The outdial's id
         in: query
@@ -3036,7 +3856,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Get a list of outdialtargets.
     post:
       description: Update a outdial's data and returns detail updated outdial info.
@@ -3077,7 +3898,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete a existing outdialtarget.
     get:
       description: Get a existing outdialtarget.
@@ -3095,7 +3917,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Get a existing outdialtarget.
   /v1.0/outplans:
     get:
@@ -3146,7 +3969,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete a existing outplan.
     get:
       description: Returns detail outplans info of the given outplans id.
@@ -3186,6 +4010,43 @@ paths:
           schema:
             $ref: '#/definitions/outplan.Outplan'
       summary: Update a outplan and reuturns updated outplan info.
+  /v1.0/queuecall/{id}:
+    get:
+      description: Returns detail conferencecall info of the given queuecall id.
+      parameters:
+      - description: The ID of the queuecall
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/queuecall.Queuecall'
+      summary: Returns detail queuecall info.
+  /v1.0/queuecalls/{id}:
+    delete:
+      description: Kicks the queuecall.
+      parameters:
+      - description: The ID of the queuecall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Kicks the queuecall from the queue.
   /v1.0/queues:
     get:
       description: get queues of the customer
@@ -3235,7 +4096,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete the queue
     get:
       description: Get the queue of the given id
@@ -3248,7 +4110,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Get the queue
     put:
       description: Update an queue and returns detail updated queue info.
@@ -3267,7 +4130,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update an queue and reuturns updated queue info.
   /v1.0/queues/{id}/routing_method:
     put:
@@ -3287,7 +4151,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update an queue's tag_id info.
   /v1.0/queues/{id}/status:
     put:
@@ -3307,7 +4172,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update an queue's action handle info.
   /v1.0/queues/{id}/tag_ids:
     put:
@@ -3327,7 +4193,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update an queue's tag_ids info.
   /v1.0/recordingfiles/{id}:
     get:
@@ -3423,7 +4290,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete the tag
     get:
       description: Get the tag of the given id
@@ -3458,7 +4326,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Update the tag info.
   /v1.0/transcribes:
     post:
@@ -3478,4 +4347,15 @@ paths:
           schema:
             $ref: '#/definitions/transcribe.Transcribe'
       summary: Create a transcribe
+  /v1.0/ws:
+    get:
+      description: create a new queue
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/queue.WebhookMessage'
+      summary: Create a new queue.
 swagger: "2.0"
