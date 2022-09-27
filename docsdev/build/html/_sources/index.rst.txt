@@ -29,6 +29,7 @@ Welcome to voipbin's documentation!
    outplan
    webhook
    customer
+   chat
    variable
    websocket
    common
