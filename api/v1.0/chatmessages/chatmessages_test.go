@@ -89,7 +89,7 @@ func Test_chatmessagesPOST(t *testing.T) {
 			}
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Content-type", "application/json")
 
 			mockSvc.EXPECT().ChatmessageCreate(
 				req.Context(),
@@ -142,7 +142,7 @@ func Test_chatmessagesGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"6402aab8-389b-11ed-b537-57de22d7f36f","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"6402aab8-389b-11ed-b537-57de22d7f36f","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -169,7 +169,7 @@ func Test_chatmessagesGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"57f0ff4c-389e-11ed-9694-7b4ee5f2ad11","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"5819a442-389e-11ed-bdff-177962843d00","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"583d596e-389e-11ed-84ff-83124069fc30","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"57f0ff4c-389e-11ed-9694-7b4ee5f2ad11","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"5819a442-389e-11ed-bdff-177962843d00","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"583d596e-389e-11ed-84ff-83124069fc30","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -232,7 +232,7 @@ func Test_chatmessagesIDGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("97c8071e-389e-11ed-b5ac-c3e9dbd9d066"),
 			},
 
-			`{"id":"97c8071e-389e-11ed-b5ac-c3e9dbd9d066","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"97c8071e-389e-11ed-b5ac-c3e9dbd9d066","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -295,7 +295,7 @@ func Test_chatmessagesIDDELETE(t *testing.T) {
 				ID: uuid.FromStringOrNil("fa4c5552-389e-11ed-adca-eb6b8dfe8032"),
 			},
 
-			`{"id":"fa4c5552-389e-11ed-adca-eb6b8dfe8032","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","Source":null,"Type":"","Text":"","Medias":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"fa4c5552-389e-11ed-adca-eb6b8dfe8032","customer_id":"00000000-0000-0000-0000-000000000000","chat_id":"00000000-0000-0000-0000-000000000000","source":null,"type":"","text":"","medias":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 

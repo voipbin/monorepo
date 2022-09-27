@@ -14,9 +14,8 @@ import (
 // @Summary Create a new queue.
 // @Description create a new queue
 // @Produce  json
-// @Param agent body request.BodyAgentsPOST true "The queue detail"
 // @Success 200 {object} queue.WebhookMessage
-// @Router /v1.0/queues [post]
+// @Router /v1.0/ws [get]
 func wsGET(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{
