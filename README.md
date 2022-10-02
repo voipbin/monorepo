@@ -1,4 +1,5 @@
 # call-manager
+Manage the call resource.
 Handling the call.
 Execute the atomic call actions.
 
