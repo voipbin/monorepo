@@ -326,7 +326,8 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 		customerID  uuid.UUID
 		limit       uint64
 		activeflows []activeflow.Activeflow
-		expectRes   []*activeflow.Activeflow
+
+		expectRes []*activeflow.Activeflow
 	}{
 		{
 			"have no actions",
@@ -344,6 +345,7 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 					TMDelete:   DefaultTimeStamp,
 				},
 			},
+
 			[]*activeflow.Activeflow{
 				{
 					ID:         uuid.FromStringOrNil("4a107676-add1-11ec-ad99-33457dadbc35"),

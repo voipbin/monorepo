@@ -17,9 +17,10 @@ import (
 func Test_FlowCreate(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		flow       *flow.Flow
-		expectFlow *flow.Flow
+		name string
+		flow *flow.Flow
+
+		expectRes *flow.Flow
 	}{
 		{
 			"have no actions",
@@ -123,9 +124,9 @@ func Test_FlowCreate(t *testing.T) {
 			}
 			t.Logf("Created flow. flow: %v", res)
 
-			tt.expectFlow.TMCreate = res.TMCreate
-			if reflect.DeepEqual(tt.expectFlow, res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectFlow, res)
+			tt.expectRes.TMCreate = res.TMCreate
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -138,7 +139,8 @@ func Test_FlowGets(t *testing.T) {
 		customerID uuid.UUID
 		limit      uint64
 		flows      []flow.Flow
-		expectFlow []*flow.Flow
+
+		expectRes []*flow.Flow
 	}{
 		{
 			"have no actions",
@@ -208,8 +210,8 @@ func Test_FlowGets(t *testing.T) {
 				flow.TMCreate = ""
 			}
 
-			if reflect.DeepEqual(flows, tt.expectFlow) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectFlow, flows)
+			if reflect.DeepEqual(flows, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, flows)
 			}
 		})
 	}
@@ -223,7 +225,8 @@ func Test_FlowGetsByType(t *testing.T) {
 		flowType   flow.Type
 		limit      uint64
 		flows      []flow.Flow
-		expectFlow []*flow.Flow
+
+		expectRes []*flow.Flow
 	}{
 		{
 			"normal",
@@ -298,8 +301,8 @@ func Test_FlowGetsByType(t *testing.T) {
 				flow.TMCreate = ""
 			}
 
-			if reflect.DeepEqual(flows, tt.expectFlow) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectFlow, flows)
+			if reflect.DeepEqual(flows, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, flows)
 			}
 		})
 	}
@@ -311,9 +314,10 @@ func Test_FlowUpdate(t *testing.T) {
 		name string
 		flow *flow.Flow
 
-		flowName  string
-		detail    string
-		actions   []action.Action
+		flowName string
+		detail   string
+		actions  []action.Action
+
 		expectRes *flow.Flow
 	}{
 		{

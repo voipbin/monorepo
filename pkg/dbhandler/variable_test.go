@@ -15,8 +15,9 @@ import (
 func Test_VariableCreate(t *testing.T) {
 
 	tests := []struct {
-		name      string
-		variable  *variable.Variable
+		name     string
+		variable *variable.Variable
+
 		expectRes *variable.Variable
 	}{
 		{
