@@ -26,8 +26,8 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 		expectRefereceID   uuid.UUID
 		expectFlowID       uuid.UUID
 
-		af        *activeflow.Activeflow
-		expectRes *rabbitmqhandler.Response
+		responseActiveflow *activeflow.Activeflow
+		expectRes          *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -41,8 +41,8 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 			uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
 			activeflow.ReferenceTypeCall,
 			uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
-
 			uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+
 			&activeflow.Activeflow{
 				ID: uuid.FromStringOrNil("a508739b-d98d-40fb-8a47-61e9a70958cd"),
 
@@ -76,8 +76,8 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 			uuid.Nil,
 			activeflow.ReferenceTypeCall,
 			uuid.FromStringOrNil("b66c4922-a7a4-11ec-8e1b-6765ceec0323"),
-
 			uuid.FromStringOrNil("24092c98-05ee-11eb-a410-17d716ff3d61"),
+
 			&activeflow.Activeflow{
 				ID: uuid.FromStringOrNil("7a18e7e0-7d67-44f2-9591-58cc7d8f5610"),
 
@@ -116,7 +116,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Create(gomock.Any(), tt.expectID, tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.af, nil)
+			mockActive.EXPECT().Create(gomock.Any(), tt.expectID, tt.expectRefereceType, tt.expectRefereceID, tt.expectFlowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -131,11 +131,13 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 
 func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 	tests := []struct {
-		name            string
-		request         *rabbitmqhandler.Request
+		name    string
+		request *rabbitmqhandler.Request
+
 		callID          uuid.UUID
 		currentActionID uuid.UUID
-		nextAction      action.Action
+
+		responseAction action.Action
 	}{
 		{
 			"normal",
@@ -169,7 +171,7 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().ExecuteNextAction(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.nextAction, nil)
+			mockActive.EXPECT().ExecuteNextAction(gomock.Any(), tt.callID, tt.currentActionID).Return(&tt.responseAction, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -185,11 +187,14 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 
 	tests := []struct {
-		name            string
-		request         *rabbitmqhandler.Request
+		name    string
+		request *rabbitmqhandler.Request
+
 		callID          uuid.UUID
 		forwardActionID uuid.UUID
 		forwardNow      bool
+
+		expectRes *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
@@ -199,9 +204,15 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": true}`),
 			},
+
 			uuid.FromStringOrNil("6f14f3b8-5758-11ec-a413-772c32e3e51f"),
 			uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
 			true,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
 		},
 		{
 			"forward now false",
@@ -211,9 +222,15 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"forward_action_id": "6732dd5e-5758-11ec-92b1-bfe33ab190aa", "forward_now": false}`),
 			},
+
 			uuid.FromStringOrNil("6f14f3b8-5758-11ec-a413-772c32e3e51f"),
 			uuid.FromStringOrNil("6732dd5e-5758-11ec-92b1-bfe33ab190aa"),
 			false,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
 		},
 	}
 
@@ -238,8 +255,8 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.StatusCode != 200 {
-				t.Errorf("Wrong match. expect: 200, got: %d", res.StatusCode)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

@@ -11,7 +11,7 @@ import (
 
 // ActionGet returns corresponded action.
 func (h *flowHandler) ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error) {
-	flow, err := h.FlowGet(ctx, flowID)
+	flow, err := h.Get(ctx, flowID)
 	if err != nil {
 		return nil, err
 	}
