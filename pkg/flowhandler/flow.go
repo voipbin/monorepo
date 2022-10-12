@@ -12,20 +12,24 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 )
 
-// FlowGet returns flow
-func (h *flowHandler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
-	log := logrus.WithField("func", "FlowGet")
-	resFlow, err := h.db.FlowGet(ctx, id)
+// Get returns flow
+func (h *flowHandler) Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Get",
+			"id":   id,
+		})
+	res, err := h.db.FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow. err: %v", err)
 		return nil, err
 	}
 
-	return resFlow, nil
+	return res, nil
 }
 
-// FlowCreate creates a new flow
-func (h *flowHandler) FlowCreate(
+// Create creates a new flow
+func (h *flowHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
 	flowType flow.Type,
@@ -34,7 +38,7 @@ func (h *flowHandler) FlowCreate(
 	persist bool,
 	actions []action.Action,
 ) (*flow.Flow, error) {
-	log := logrus.WithField("func", "FlowCreate")
+	log := logrus.WithField("func", "Create")
 
 	// generates the actions
 	a, err := h.actionHandler.GenerateFlowActions(ctx, actions)
@@ -76,7 +80,7 @@ func (h *flowHandler) FlowCreate(
 		}
 	}
 
-	res, err := h.FlowGet(ctx, id)
+	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get created flow. err: %v", err)
 		return nil, err
@@ -86,51 +90,51 @@ func (h *flowHandler) FlowCreate(
 	return res, nil
 }
 
-// FlowGetsByCustomerID returns list of flows
-func (h *flowHandler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
+// GetsByCustomerID returns list of flows
+func (h *flowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "FlowGetsByCustomerID",
+			"func":        "GetsByCustomerID",
 			"customer_id": customerID,
 			"token":       token,
 			"limit":       limit,
 		})
 	log.Debug("Getting flows.")
 
-	flows, err := h.db.FlowGetsByCustomerID(ctx, customerID, token, limit)
+	res, err := h.db.FlowGetsByCustomerID(ctx, customerID, token, limit)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err
 	}
 
-	return flows, nil
+	return res, nil
 }
 
-// FlowGetsByType returns list of flows
-func (h *flowHandler) FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
+// GetsByType returns list of flows
+func (h *flowHandler) GetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "FlowGetsByType",
+			"func":        "GetsByType",
 			"customer_id": customerID,
 			"token":       token,
 			"limit":       limit,
 		})
 	log.Debug("Getting flows.")
 
-	flows, err := h.db.FlowGetsByType(ctx, customerID, flowType, token, limit)
+	res, err := h.db.FlowGetsByType(ctx, customerID, flowType, token, limit)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err
 	}
 
-	return flows, nil
+	return res, nil
 }
 
-// FlowUpdate updates the flow info and return the updated flow
-func (h *flowHandler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error) {
+// Update updates the flow info and return the updated flow
+func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":    "FlowUpdate",
+			"func":    "Update",
 			"flow_id": id,
 		})
 	log.WithFields(
@@ -164,12 +168,12 @@ func (h *flowHandler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail
 	return res, nil
 }
 
-// FlowDelete deletes the flow
+// Delete deletes the flow
 // And it also removes the related flow_id from the number-manager
-func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+func (h *flowHandler) Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":    "FlowDelete",
+			"func":    "Delete",
 			"flow_id": id,
 		},
 	)
@@ -199,11 +203,11 @@ func (h *flowHandler) FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow,
 	return res, nil
 }
 
-// FlowUpdateActions updates the actions and return the updated flow
-func (h *flowHandler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error) {
+// UpdateActions updates the actions and return the updated flow
+func (h *flowHandler) UpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":    "FlowUpdateActions",
+			"func":    "UpdateActions",
 			"flow_id": id,
 		})
 	log.WithFields(

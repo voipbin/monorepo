@@ -52,107 +52,107 @@ func (mr *MockFlowHandlerMockRecorder) ActionGet(ctx, flowID, actionID interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionGet", reflect.TypeOf((*MockFlowHandler)(nil).ActionGet), ctx, flowID, actionID)
 }
 
-// FlowCreate mocks base method.
-func (m *MockFlowHandler) FlowCreate(ctx context.Context, customerID uuid.UUID, flowType flow.Type, name, detail string, persist bool, actions []action.Action) (*flow.Flow, error) {
+// Create mocks base method.
+func (m *MockFlowHandler) Create(ctx context.Context, customerID uuid.UUID, flowType flow.Type, name, detail string, persist bool, actions []action.Action) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowCreate", ctx, customerID, flowType, name, detail, persist, actions)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, flowType, name, detail, persist, actions)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowCreate indicates an expected call of FlowCreate.
-func (mr *MockFlowHandlerMockRecorder) FlowCreate(ctx, customerID, flowType, name, detail, persist, actions interface{}) *gomock.Call {
+// Create indicates an expected call of Create.
+func (mr *MockFlowHandlerMockRecorder) Create(ctx, customerID, flowType, name, detail, persist, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCreate", reflect.TypeOf((*MockFlowHandler)(nil).FlowCreate), ctx, customerID, flowType, name, detail, persist, actions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFlowHandler)(nil).Create), ctx, customerID, flowType, name, detail, persist, actions)
 }
 
-// FlowDelete mocks base method.
-func (m *MockFlowHandler) FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+// Delete mocks base method.
+func (m *MockFlowHandler) Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowDelete", ctx, id)
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowDelete indicates an expected call of FlowDelete.
-func (mr *MockFlowHandlerMockRecorder) FlowDelete(ctx, id interface{}) *gomock.Call {
+// Delete indicates an expected call of Delete.
+func (mr *MockFlowHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowDelete", reflect.TypeOf((*MockFlowHandler)(nil).FlowDelete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFlowHandler)(nil).Delete), ctx, id)
 }
 
-// FlowGet mocks base method.
-func (m *MockFlowHandler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
+// Get mocks base method.
+func (m *MockFlowHandler) Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowGet", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, id)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowGet indicates an expected call of FlowGet.
-func (mr *MockFlowHandlerMockRecorder) FlowGet(ctx, id interface{}) *gomock.Call {
+// Get indicates an expected call of Get.
+func (mr *MockFlowHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockFlowHandler)(nil).FlowGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockFlowHandler)(nil).Get), ctx, id)
 }
 
-// FlowGetsByCustomerID mocks base method.
-func (m *MockFlowHandler) FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
+// GetsByCustomerID mocks base method.
+func (m *MockFlowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowGetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
 	ret0, _ := ret[0].([]*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowGetsByCustomerID indicates an expected call of FlowGetsByCustomerID.
-func (mr *MockFlowHandlerMockRecorder) FlowGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+// GetsByCustomerID indicates an expected call of GetsByCustomerID.
+func (mr *MockFlowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetsByCustomerID", reflect.TypeOf((*MockFlowHandler)(nil).FlowGetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockFlowHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
 }
 
-// FlowGetsByType mocks base method.
-func (m *MockFlowHandler) FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
+// GetsByType mocks base method.
+func (m *MockFlowHandler) GetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowGetsByType", ctx, customerID, flowType, token, limit)
+	ret := m.ctrl.Call(m, "GetsByType", ctx, customerID, flowType, token, limit)
 	ret0, _ := ret[0].([]*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowGetsByType indicates an expected call of FlowGetsByType.
-func (mr *MockFlowHandlerMockRecorder) FlowGetsByType(ctx, customerID, flowType, token, limit interface{}) *gomock.Call {
+// GetsByType indicates an expected call of GetsByType.
+func (mr *MockFlowHandlerMockRecorder) GetsByType(ctx, customerID, flowType, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGetsByType", reflect.TypeOf((*MockFlowHandler)(nil).FlowGetsByType), ctx, customerID, flowType, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByType", reflect.TypeOf((*MockFlowHandler)(nil).GetsByType), ctx, customerID, flowType, token, limit)
 }
 
-// FlowUpdate mocks base method.
-func (m *MockFlowHandler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error) {
+// Update mocks base method.
+func (m *MockFlowHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdate", ctx, id, name, detail, actions)
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, actions)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowUpdate indicates an expected call of FlowUpdate.
-func (mr *MockFlowHandlerMockRecorder) FlowUpdate(ctx, id, name, detail, actions interface{}) *gomock.Call {
+// Update indicates an expected call of Update.
+func (mr *MockFlowHandlerMockRecorder) Update(ctx, id, name, detail, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockFlowHandler)(nil).FlowUpdate), ctx, id, name, detail, actions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockFlowHandler)(nil).Update), ctx, id, name, detail, actions)
 }
 
-// FlowUpdateActions mocks base method.
-func (m *MockFlowHandler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error) {
+// UpdateActions mocks base method.
+func (m *MockFlowHandler) UpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowUpdateActions", ctx, id, actions)
+	ret := m.ctrl.Call(m, "UpdateActions", ctx, id, actions)
 	ret0, _ := ret[0].(*flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowUpdateActions indicates an expected call of FlowUpdateActions.
-func (mr *MockFlowHandlerMockRecorder) FlowUpdateActions(ctx, id, actions interface{}) *gomock.Call {
+// UpdateActions indicates an expected call of UpdateActions.
+func (mr *MockFlowHandlerMockRecorder) UpdateActions(ctx, id, actions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdateActions", reflect.TypeOf((*MockFlowHandler)(nil).FlowUpdateActions), ctx, id, actions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateActions", reflect.TypeOf((*MockFlowHandler)(nil).UpdateActions), ctx, id, actions)
 }

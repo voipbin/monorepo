@@ -142,7 +142,7 @@ func Test_v1FlowsPost(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().FlowCreate(gomock.Any(), tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions).Return(&flow.Flow{}, nil)
+			mockFlowHandler.EXPECT().Create(gomock.Any(), tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions).Return(&flow.Flow{}, nil)
 
 			if _, err := h.processRequest(tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -154,27 +154,31 @@ func Test_v1FlowsPost(t *testing.T) {
 func Test_v1FlowsGet(t *testing.T) {
 
 	tests := []struct {
-		name       string
+		name    string
+		request *rabbitmqhandler.Request
+
 		customerID uuid.UUID
 		flowType   flow.Type
 		pageToken  string
 		pageSize   uint64
-		request    *rabbitmqhandler.Request
-		flows      []*flow.Flow
+
+		responseFlows []*flow.Flow
 
 		expectRes *rabbitmqhandler.Response
 	}{
 		{
 			"1 item",
-			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
-			flow.TypeNone,
-			"2020-10-10T03:30:17.000000",
-			10,
 			&rabbitmqhandler.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
+
+			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+			flow.TypeNone,
+			"2020-10-10T03:30:17.000000",
+			10,
+
 			[]*flow.Flow{
 				{
 					ID:         uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
@@ -195,15 +199,17 @@ func Test_v1FlowsGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
-			flow.TypeNone,
-			"2020-10-10T03:30:17.000000",
-			10,
 			&rabbitmqhandler.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
+
+			uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
+			flow.TypeNone,
+			"2020-10-10T03:30:17.000000",
+			10,
+
 			[]*flow.Flow{
 				{
 					ID:         uuid.FromStringOrNil("13a7aeaa-0c4d-11eb-8210-073d8779e386"),
@@ -234,15 +240,17 @@ func Test_v1FlowsGet(t *testing.T) {
 		},
 		{
 			"empty",
-			uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
-			flow.TypeNone,
-			"2020-10-10T03:30:17.000000",
-			10,
 			&rabbitmqhandler.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
+
+			uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
+			flow.TypeNone,
+			"2020-10-10T03:30:17.000000",
+			10,
+
 			[]*flow.Flow{},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -252,15 +260,17 @@ func Test_v1FlowsGet(t *testing.T) {
 		},
 		{
 			"type flow",
-			uuid.FromStringOrNil("49e66560-7f4c-11ec-9d15-2396902a0309"),
-			flow.TypeFlow,
-			"2020-10-10T03:30:17.000000",
-			10,
 			&rabbitmqhandler.Request{
 				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=49e66560-7f4c-11ec-9d15-2396902a0309&type=flow",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
+
+			uuid.FromStringOrNil("49e66560-7f4c-11ec-9d15-2396902a0309"),
+			flow.TypeFlow,
+			"2020-10-10T03:30:17.000000",
+			10,
+
 			[]*flow.Flow{
 				{
 					ID:         uuid.FromStringOrNil("c64b621a-6c03-11ec-b44a-c7b5fb85cead"),
@@ -295,9 +305,9 @@ func Test_v1FlowsGet(t *testing.T) {
 			}
 
 			if tt.flowType != flow.TypeNone {
-				mockFlowHandler.EXPECT().FlowGetsByType(gomock.Any(), tt.customerID, tt.flowType, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
+				mockFlowHandler.EXPECT().GetsByType(gomock.Any(), tt.customerID, tt.flowType, tt.pageToken, tt.pageSize).Return(tt.responseFlows, nil)
 			} else {
-				mockFlowHandler.EXPECT().FlowGetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.flows, nil)
+				mockFlowHandler.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseFlows, nil)
 			}
 
 			res, err := h.processRequest(tt.request)
@@ -314,8 +324,9 @@ func Test_v1FlowsGet(t *testing.T) {
 
 func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 	tests := []struct {
-		name           string
-		request        *rabbitmqhandler.Request
+		name    string
+		request *rabbitmqhandler.Request
+
 		expectFlowID   uuid.UUID
 		expectActionID uuid.UUID
 	}{
@@ -327,6 +338,7 @@ func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 				DataType: "application/json",
 				Data:     nil,
 			},
+
 			uuid.FromStringOrNil("c71bba06-8a77-11ea-93c7-47dc226c8c31"),
 			uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
 		},
@@ -360,8 +372,9 @@ func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 
 func Test_v1FlowsIDGet(t *testing.T) {
 	tests := []struct {
-		name      string
-		request   *rabbitmqhandler.Request
+		name    string
+		request *rabbitmqhandler.Request
+
 		flow      *flow.Flow
 		expectRes *rabbitmqhandler.Response
 	}{
@@ -373,6 +386,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 				DataType: "application/json",
 				Data:     nil,
 			},
+
 			&flow.Flow{
 				ID:   uuid.FromStringOrNil("01677a56-0c2d-11eb-96cb-eb2cd309ca81"),
 				Type: flow.TypeFlow,
@@ -396,6 +410,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 				DataType: "application/json",
 				Data:     nil,
 			},
+
 			&flow.Flow{
 				ID:      uuid.FromStringOrNil("53b8aeb4-822b-11eb-82fe-a3c14b4e38de"),
 				Type:    flow.TypeFlow,
@@ -427,7 +442,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
+			mockFlowHandler.EXPECT().Get(gomock.Any(), tt.flow.ID).Return(tt.flow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -512,7 +527,7 @@ func Test_v1FlowsIDPut(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().FlowUpdate(gomock.Any(), tt.id, tt.flowName, tt.detail, tt.actions).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().Update(gomock.Any(), tt.id, tt.flowName, tt.detail, tt.actions).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -526,25 +541,25 @@ func Test_v1FlowsIDPut(t *testing.T) {
 	}
 }
 
-func Test_v11FlowsIDDelete(t *testing.T) {
+func Test_v1FlowsIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		flowID  uuid.UUID
 		request *rabbitmqhandler.Request
+		flowID  uuid.UUID
 
 		responseFlow *flow.Flow
 		expectRes    *rabbitmqhandler.Response
 	}{
 		{
 			"normal",
-			uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
 			&rabbitmqhandler.Request{
 				URI:      "/v1/flows/89ecd1f6-67c6-11eb-815a-a75d4cc3df3e",
 				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     nil,
 			},
+			uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
 
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("89ecd1f6-67c6-11eb-815a-a75d4cc3df3e"),
@@ -570,7 +585,7 @@ func Test_v11FlowsIDDelete(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().FlowDelete(gomock.Any(), tt.flowID).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().Delete(gomock.Any(), tt.flowID).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -578,7 +593,7 @@ func Test_v11FlowsIDDelete(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -651,7 +666,7 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().FlowUpdateActions(gomock.Any(), tt.id, tt.actions).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().UpdateActions(gomock.Any(), tt.id, tt.actions).Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -105,7 +105,7 @@ func Test_FlowCreate(t *testing.T) {
 			}
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, tt.responseFlow)
 
-			_, err := h.FlowCreate(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions)
+			_, err := h.Create(ctx, tt.customerID, tt.flowType, tt.flowName, tt.detail, tt.persist, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -140,7 +140,7 @@ func Test_FlowGet(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().FlowGet(ctx, tt.flow.ID).Return(tt.flow, nil)
 
-			_, err := h.FlowGet(ctx, tt.flow.ID)
+			_, err := h.Get(ctx, tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -186,7 +186,7 @@ func Test_FlowDelete(t *testing.T) {
 
 			mockReq.EXPECT().NumberV1NumberFlowDelete(ctx, tt.flowID).Return(nil)
 
-			res, err := h.FlowDelete(ctx, tt.flowID)
+			res, err := h.Delete(ctx, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -227,7 +227,7 @@ func Test_FlowGets(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().FlowGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
 
-			_, err := h.FlowGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -306,7 +306,7 @@ func Test_FlowUpdate(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
 
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
-			res, err := h.FlowUpdate(ctx, tt.id, tt.flowName, tt.detail, tt.actions)
+			res, err := h.Update(ctx, tt.id, tt.flowName, tt.detail, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -386,7 +386,7 @@ func Test_FlowUpdateActions(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
 
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
-			res, err := h.FlowUpdateActions(ctx, tt.id, tt.actions)
+			res, err := h.UpdateActions(ctx, tt.id, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

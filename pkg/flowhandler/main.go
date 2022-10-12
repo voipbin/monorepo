@@ -29,7 +29,7 @@ type flowHandler struct {
 type FlowHandler interface {
 	ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error)
 
-	FlowCreate(
+	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
 		flowType flow.Type,
@@ -38,12 +38,12 @@ type FlowHandler interface {
 		persist bool,
 		actions []action.Action,
 	) (*flow.Flow, error)
-	FlowDelete(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
-	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
-	FlowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
-	FlowGetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
-	FlowUpdate(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error)
-	FlowUpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error)
+	Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
+	Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
+	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*flow.Flow, error)
+	GetsByType(ctx context.Context, customerID uuid.UUID, flowType flow.Type, token string, limit uint64) ([]*flow.Flow, error)
+	Update(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action) (*flow.Flow, error)
+	UpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error)
 }
 
 // NewFlowHandler return FlowHandler

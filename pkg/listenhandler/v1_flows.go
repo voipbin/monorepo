@@ -33,7 +33,7 @@ func (h *listenHandler) v1FlowsIDGet(ctx context.Context, m *rabbitmqhandler.Req
 	tmpVals := strings.Split(u.Path, "/")
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 
-	tmp, err := h.flowHandler.FlowGet(ctx, flowID)
+	tmp, err := h.flowHandler.Get(ctx, flowID)
 	if err != nil {
 		log.Errorf("Could not get flow info. err: %v", err)
 		return nil, err
@@ -78,7 +78,7 @@ func (h *listenHandler) v1FlowsIDPut(ctx context.Context, m *rabbitmqhandler.Req
 		return nil, err
 	}
 
-	tmp, err := h.flowHandler.FlowUpdate(ctx, flowID, req.Name, req.Detail, req.Actions)
+	tmp, err := h.flowHandler.Update(ctx, flowID, req.Name, req.Detail, req.Actions)
 	if err != nil {
 		log.Errorf("Could not update the flow info. err: %v", err)
 		return nil, err
@@ -117,7 +117,7 @@ func (h *listenHandler) v1FlowsIDDelete(ctx context.Context, m *rabbitmqhandler.
 	tmpVals := strings.Split(u.Path, "/")
 	flowID := uuid.FromStringOrNil(tmpVals[3])
 
-	tmp, err := h.flowHandler.FlowDelete(ctx, flowID)
+	tmp, err := h.flowHandler.Delete(ctx, flowID)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (h *listenHandler) v1FlowsPost(ctx context.Context, m *rabbitmqhandler.Requ
 	}
 
 	// create flow
-	tmp, err := h.flowHandler.FlowCreate(
+	tmp, err := h.flowHandler.Create(
 		ctx,
 		req.CustomerID,
 		req.Type,
@@ -210,13 +210,13 @@ func (h *listenHandler) v1FlowsGet(ctx context.Context, m *rabbitmqhandler.Reque
 
 	var tmp []*flow.Flow
 	if tmpType != flow.TypeNone {
-		tmp, err = h.flowHandler.FlowGetsByType(ctx, customerID, flow.Type(tmpType), pageToken, pageSize)
+		tmp, err = h.flowHandler.GetsByType(ctx, customerID, flow.Type(tmpType), pageToken, pageSize)
 		if err != nil {
 			log.Errorf("Could not get flows. err: %v", err)
 			return nil, err
 		}
 	} else {
-		tmp, err = h.flowHandler.FlowGetsByCustomerID(ctx, customerID, pageToken, pageSize)
+		tmp, err = h.flowHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
 		if err != nil {
 			log.Errorf("Could not get flows. err: %v", err)
 			return nil, err
@@ -262,7 +262,7 @@ func (h *listenHandler) v1FlowsIDActionsPut(ctx context.Context, m *rabbitmqhand
 		return nil, err
 	}
 
-	tmp, err := h.flowHandler.FlowUpdateActions(ctx, flowID, req.Actions)
+	tmp, err := h.flowHandler.UpdateActions(ctx, flowID, req.Actions)
 	if err != nil {
 		log.Errorf("Could not update the flow actions. err: %v", err)
 		return nil, err

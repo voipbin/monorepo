@@ -201,17 +201,17 @@ func Test_FlowGets(t *testing.T) {
 				}
 			}
 
-			flows, err := h.FlowGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
+			res, err := h.FlowGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			for _, flow := range flows {
+			for _, flow := range res {
 				flow.TMCreate = ""
 			}
 
-			if reflect.DeepEqual(flows, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, flows)
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -429,7 +429,7 @@ func Test_FlowDelete(t *testing.T) {
 		flow *flow.Flow
 	}{
 		{
-			"normal deletion",
+			"normal",
 			&flow.Flow{
 				ID:         uuid.FromStringOrNil("9f59d11a-67c1-11eb-9cf4-1b8a94365c22"),
 				CustomerID: uuid.FromStringOrNil("cf304d36-7f46-11ec-9455-93fccf7c0fdf"),
@@ -449,20 +449,21 @@ func Test_FlowDelete(t *testing.T) {
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := NewHandler(dbTest, mockCache)
+			ctx := context.Background()
 
-			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any())
-			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
+			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
+			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().FlowDel(gomock.Any(), tt.flow.ID)
-			if err := h.FlowDelete(context.Background(), tt.flow.ID); err != nil {
+			mockCache.EXPECT().FlowDel(ctx, tt.flow.ID)
+			if err := h.FlowDelete(ctx, tt.flow.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().FlowGet(gomock.Any(), tt.flow.ID).Return(nil, fmt.Errorf("error"))
-			mockCache.EXPECT().FlowSet(gomock.Any(), gomock.Any()).Return(nil)
-			res, err := h.FlowGet(context.Background(), tt.flow.ID)
+			mockCache.EXPECT().FlowGet(ctx, tt.flow.ID).Return(nil, fmt.Errorf("error"))
+			mockCache.EXPECT().FlowSet(ctx, gomock.Any()).Return(nil)
+			res, err := h.FlowGet(ctx, tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -526,18 +527,18 @@ func Test_FlowUpdateActions(t *testing.T) {
 			ctx := context.Background()
 
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
-			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
+			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
-			if err := h.FlowUpdateActions(context.Background(), tt.flow.ID, tt.actions); err != nil {
+			if err := h.FlowUpdateActions(ctx, tt.flow.ID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().FlowGet(ctx, tt.flow.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
-			res, err := h.FlowGet(context.Background(), tt.flow.ID)
+			res, err := h.FlowGet(ctx, tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
