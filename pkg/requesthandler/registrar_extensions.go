@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// RMExtensionCreate sends a request to registrar-manager
+// RegistrarV1ExtensionCreate sends a request to registrar-manager
 // to creating a extension.
 // it returns created extension if it succeed.
 func (r *requestHandler) RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.Extension, error) {
@@ -52,7 +52,7 @@ func (r *requestHandler) RegistrarV1ExtensionCreate(ctx context.Context, custome
 	return &res, nil
 }
 
-// RMExtensionGet sends a request to registrar-manager
+// RegistrarV1ExtensionGet sends a request to registrar-manager
 // to getting a detail extension info.
 // it returns detail extension info if it succeed.
 func (r *requestHandler) RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
@@ -77,7 +77,7 @@ func (r *requestHandler) RegistrarV1ExtensionGet(ctx context.Context, extensionI
 	return &res, nil
 }
 
-// RMExtensionDelete sends a request to registrar-manager
+// RegistrarV1ExtensionDelete sends a request to registrar-manager
 // to deleting the domain.
 func (r *requestHandler) RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", extensionID)
@@ -101,7 +101,7 @@ func (r *requestHandler) RegistrarV1ExtensionDelete(ctx context.Context, extensi
 	return &res, nil
 }
 
-// RMExtensionUpdate sends a request to registrar-manager
+// RegistrarV1ExtensionUpdate sends a request to registrar-manager
 // to update the detail extension info.
 // it returns updated extension info if it succeed.
 func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error) {
@@ -118,46 +118,46 @@ func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid
 		return nil, err
 	}
 
-	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resDomain rmextension.Extension
-	if err := json.Unmarshal([]byte(res.Data), &resDomain); err != nil {
+	var res rmextension.Extension
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resDomain, nil
+	return &res, nil
 }
 
-// RMExtensionGets sends a request to registrar-manager
+// RegistrarV1ExtensionGets sends a request to registrar-manager
 // to getting a list of extension info.
 // it returns detail list of extension info if it succeed.
 func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions?page_token=%s&page_size=%d&domain_id=%s", url.QueryEscape(pageToken), pageSize, domainID)
 
-	res, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var f []rmextension.Extension
-	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+	var res []rmextension.Extension
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return f, nil
+	return res, nil
 }

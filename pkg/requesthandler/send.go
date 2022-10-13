@@ -229,3 +229,9 @@ func (r *requestHandler) sendRequestChat(uri string, method rabbitmqhandler.Requ
 
 	return r.sendRequest(queueChat, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestRoute send a request to the route-manager and return the response
+func (r *requestHandler) sendRequestRoute(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(queueRoute, uri, method, resource, timeout, delayed, dataType, data)
+}

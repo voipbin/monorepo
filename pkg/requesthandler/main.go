@@ -48,12 +48,13 @@ import (
 	rmastcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -81,6 +82,7 @@ const (
 )
 
 // list of queue names
+//
 //nolint:deadcode,varcheck // this is ok
 const (
 	exchangeDelay = "bin-manager.delay"
@@ -99,6 +101,7 @@ const (
 	queueOutdial      = "bin-manager.outdial-manager.request"
 	queueQueue        = "bin-manager.queue-manager.request"
 	queueRegistrar    = "bin-manager.registrar-manager.request"
+	queueRoute        = "bin-manager.route-manager.request"
 	queueStorage      = "bin-manager.storage-manager.request"
 	queueTranscribe   = "bin-manager.transcribe-manager.request"
 	queueTTS          = "bin-manager.tts-manager.request"
@@ -188,6 +191,9 @@ const (
 	resourceRegistrarDomains    resource = "registrar/domain"
 	resourceRegistrarExtensions resource = "registrar/extension"
 
+	resourceRouteRoutes    resource = "route/routes"
+	resourceRouteProviders resource = "route/providers"
+
 	resourceStorageRecording resource = "storage/recording"
 
 	resourceTranscribeStreamings     = "transcribe/streamings"
@@ -263,17 +269,17 @@ type RequestHandler interface {
 		ringMethod amagent.RingMethod,
 		permission amagent.Permission,
 		tagIDs []uuid.UUID,
-		addresses []address.Address,
+		addresses []commonaddress.Address,
 	) (*amagent.Agent, error)
 	AgentV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error)
 	AgentV1AgentGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amagent.Agent, error)
 	AgentV1AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID) ([]amagent.Agent, error)
 	AgentV1AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tagIDs []uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
 	AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error)
-	AgentV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, flowID, masterCallID uuid.UUID) (*amagentdial.AgentDial, error)
+	AgentV1AgentDial(ctx context.Context, id uuid.UUID, source *commonaddress.Address, flowID, masterCallID uuid.UUID) (*amagentdial.AgentDial, error)
 	AgentV1AgentLogin(ctx context.Context, timeout int, customerID uuid.UUID, username, password string) (*amagent.Agent, error)
 	AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error)
-	AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*amagent.Agent, error)
+	AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*amagent.Agent, error)
 	AgentV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) (*amagent.Agent, error)
 	AgentV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error)
 	AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error)
@@ -327,7 +333,7 @@ type RequestHandler interface {
 		customerID uuid.UUID,
 		name string,
 		detail string,
-		source *address.Address,
+		source *commonaddress.Address,
 		dialTimeout int,
 		tryInterval int,
 		maxTryCount0 int,
@@ -343,7 +349,7 @@ type RequestHandler interface {
 	CampaignV1OutplanUpdateDialInfo(
 		ctx context.Context,
 		id uuid.UUID,
-		source *address.Address,
+		source *commonaddress.Address,
 		dialTimeout int,
 		tryInterval int,
 		maxTryCount0 int,
@@ -353,10 +359,12 @@ type RequestHandler interface {
 		maxTryCount4 int,
 	) (*caoutplan.Outplan, error)
 
+	// chat-manager chatrooms
 	ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error)
 	ChatV1ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, pageToken string, pageSize uint64) ([]chatchatroom.Chatroom, error)
 	ChatV1ChatroomDelete(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error)
 
+	// chat-manager chats
 	ChatV1ChatCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -374,10 +382,12 @@ type RequestHandler interface {
 	ChatV1ChatAddParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
 	ChatV1ChatRemoveParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
 
+	// chat-manager messagerooms
 	ChatV1MessagechatroomGetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechatroom.Messagechatroom, error)
 	ChatV1MessagechatroomGet(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error)
 	ChatV1MessagechatroomDelete(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error)
 
+	// chat-manager messagechats
 	ChatV1MessagechatCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -398,8 +408,8 @@ type RequestHandler interface {
 	CallV1CallAddExternalMedia(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmresponse.V1ResponseCallsIDExternalMediaPost, error)
 	CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
 	CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
-	CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destination []address.Address) ([]cmcall.Call, error)
-	CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address) (*cmcall.Call, error)
+	CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *commonaddress.Address, destination []commonaddress.Address) ([]cmcall.Call, error)
+	CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *commonaddress.Address) (*cmcall.Call, error)
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
@@ -507,7 +517,7 @@ type RequestHandler interface {
 	MessageV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error)
 	MessageV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MessageV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
-	MessageV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*mmmessage.Message, error)
+	MessageV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.Message, error)
 
 	// number-manager available-number
 	NumberV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
@@ -538,11 +548,11 @@ type RequestHandler interface {
 		name string,
 		detail string,
 		data string,
-		destination0 *address.Address,
-		destination1 *address.Address,
-		destination2 *address.Address,
-		destination3 *address.Address,
-		destination4 *address.Address,
+		destination0 *commonaddress.Address,
+		destination1 *commonaddress.Address,
+		destination2 *commonaddress.Address,
+		destination3 *commonaddress.Address,
+		destination4 *commonaddress.Address,
 	) (*omoutdialtarget.OutdialTarget, error)
 	OutdialV1OutdialtargetDelete(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error)
 	OutdialV1OutdialtargetGet(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error)
@@ -603,6 +613,30 @@ type RequestHandler interface {
 	RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
+
+	// route-manager providers
+	RouteV1ProviderCreate(ctx context.Context, provierType rmprovider.Type, hostname string, techPrefix string, techPostfix string, techHeaders map[string]string, name string, detail string) (*rmprovider.Provider, error)
+	RouteV1ProviderGet(ctx context.Context, providerID uuid.UUID) (*rmprovider.Provider, error)
+	RouteV1ProviderDelete(ctx context.Context, providerID uuid.UUID) (*rmprovider.Provider, error)
+	RouteV1ProviderUpdate(
+		ctx context.Context,
+		providerID uuid.UUID,
+		providerType rmprovider.Type,
+		hostname string,
+		techPrefix string,
+		techPostfix string,
+		techHeaders map[string]string,
+		name string,
+		detail string,
+	) (*rmprovider.Provider, error)
+	RouteV1ProviderGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
+
+	// route-manager routes
+	RouteV1RouteCreate(ctx context.Context, customerID uuid.UUID, providerID uuid.UUID, priority int, target string) (*rmroute.Route, error)
+	RouteV1RouteGet(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error)
+	RouteV1RouteDelete(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error)
+	RouteV1RouteUpdate(ctx context.Context, routeID uuid.UUID, providerID uuid.UUID, priority int, target string) (*rmroute.Route, error)
+	RouteV1RouteGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 
 	// storage: recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID) (*smbucketrecording.BucketRecording, error)

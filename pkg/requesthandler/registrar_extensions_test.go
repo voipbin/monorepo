@@ -30,7 +30,7 @@ func Test_RMExtensionCreate(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectResult *rmextension.Extension
+		expectRes *rmextension.Extension
 	}{
 		{
 			"normal",
@@ -85,8 +85,8 @@ func Test_RMExtensionCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(*tt.expectResult, *res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			if reflect.DeepEqual(*tt.expectRes, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectRes, *res)
 			}
 		})
 	}
@@ -106,7 +106,7 @@ func Test_RMExtensionUpdate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *rmextension.Extension
+		expectRes     *rmextension.Extension
 	}{
 		{
 			"normal",
@@ -156,8 +156,8 @@ func Test_RMExtensionUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(*tt.expectResult, *res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			if reflect.DeepEqual(*tt.expectRes, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectRes, *res)
 			}
 		})
 	}
@@ -174,7 +174,7 @@ func Test_RMExtensionGet(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  *rmextension.Extension
+		expectRes     *rmextension.Extension
 	}{
 		{
 			"normal",
@@ -225,8 +225,8 @@ func Test_RMExtensionGet(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(*tt.expectResult, *res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			if reflect.DeepEqual(*tt.expectRes, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectRes, *res)
 			}
 		})
 	}
@@ -305,7 +305,7 @@ func Test_RMExtensionsGets(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  []rmextension.Extension
+		expectRes     []rmextension.Extension
 	}{
 		{
 			"normal",
@@ -361,8 +361,8 @@ func Test_RMExtensionsGets(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectResult, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}
