@@ -1,0 +1,50 @@
+package route
+
+import (
+	"encoding/json"
+
+	"github.com/gofrs/uuid"
+)
+
+// WebhookMessage defines
+type WebhookMessage struct {
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+
+	ProviderID uuid.UUID `json:"provider_id"`
+	Priority   int       `json:"priority"`
+
+	Target string `json:"target"` // country code or all
+
+	// timestamp
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+}
+
+// ConvertWebhookMessage converts to the event
+func (h *Route) ConvertWebhookMessage() *WebhookMessage {
+	return &WebhookMessage{
+		ID:         h.ID,
+		CustomerID: h.CustomerID,
+
+		ProviderID: h.ProviderID,
+		Priority:   h.Priority,
+
+		Target: h.Target,
+
+		TMCreate: h.TMCreate,
+		TMUpdate: h.TMUpdate,
+	}
+}
+
+// CreateWebhookEvent generates the WebhookEvent
+func (h *Route) CreateWebhookEvent() ([]byte, error) {
+	e := h.ConvertWebhookMessage()
+
+	m, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
