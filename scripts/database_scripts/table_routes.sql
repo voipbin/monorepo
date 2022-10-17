@@ -16,3 +16,4 @@ create table routes(
 );
 
 create index idx_routes_customer_id on routes(customer_id);
+create index idx_routes_provider_id on routes(provider_id);
