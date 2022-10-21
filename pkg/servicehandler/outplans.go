@@ -28,6 +28,7 @@ func (h *serviceHandler) OutplanCreate(
 ) (*caoutplan.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "OutplanCreate",
 		"customer_id": u.ID,
 		"name":        name,
 	})
@@ -35,7 +36,7 @@ func (h *serviceHandler) OutplanCreate(
 	log.Debug("Creating a new outplan.")
 	tmp, err := h.reqHandler.CampaignV1OutplanCreate(ctx, u.ID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	if err != nil {
-		log.Errorf("Could not create a new flow. err: %v", err)
+		log.Errorf("Could not create a new outplan. err: %v", err)
 		return nil, err
 	}
 
@@ -47,6 +48,7 @@ func (h *serviceHandler) OutplanCreate(
 func (h *serviceHandler) OutplanDelete(u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
 	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "OutplanDelete",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"outplan_id":  id,
