@@ -40,6 +40,8 @@ import (
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -301,6 +303,34 @@ type ServiceHandler interface {
 		maxTryCount4 int,
 	) (*caoutplan.WebhookMessage, error)
 
+	// provider handlers
+	ProviderCreate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		providerType rmprovider.Type,
+		hostname string,
+		techPrefix string,
+		techPostfix string,
+		techHeaders map[string]string,
+		name string,
+		detail string,
+	) (*rmprovider.WebhookMessage, error)
+	ProviderDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmprovider.WebhookMessage, error)
+	ProviderGet(ctx context.Context, u *cscustomer.Customer, providerID uuid.UUID) (*rmprovider.WebhookMessage, error)
+	ProviderGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmprovider.WebhookMessage, error)
+	ProviderUpdate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		providerID uuid.UUID,
+		providerType rmprovider.Type,
+		hostname string,
+		techPrefix string,
+		techPostfix string,
+		techHeaders map[string]string,
+		name string,
+		detail string,
+	) (*rmprovider.WebhookMessage, error)
+
 	// queue handlers
 	QueueGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
 	QueueGets(u *cscustomer.Customer, size uint64, token string) ([]*qmqueue.WebhookMessage, error)
@@ -333,6 +363,20 @@ type ServiceHandler interface {
 	// recordingfile handlers
 	RecordingfileGet(u *cscustomer.Customer, id uuid.UUID) (string, error)
 
+	// route handlers
+	RouteGet(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*rmroute.WebhookMessage, error)
+	RouteGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmroute.WebhookMessage, error)
+	RouteCreate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		providerID uuid.UUID,
+		priority int,
+		target string,
+	) (*rmroute.WebhookMessage, error)
+	RouteDelete(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*rmroute.WebhookMessage, error)
+	RouteUpdate(ctx context.Context, u *cscustomer.Customer, routeID, providerID uuid.UUID, priority int, target string) (*rmroute.WebhookMessage, error)
+
+	// tag handlers
 	TagCreate(u *cscustomer.Customer, name string, detail string) (*amtag.WebhookMessage, error)
 	TagDelete(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
 	TagGet(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)

@@ -41,6 +41,8 @@ import (
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
@@ -1684,6 +1686,81 @@ func (mr *MockServiceHandlerMockRecorder) OutplanUpdateDialInfo(u, id, source, d
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanUpdateDialInfo", reflect.TypeOf((*MockServiceHandler)(nil).OutplanUpdateDialInfo), u, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 }
 
+// ProviderCreate mocks base method.
+func (m *MockServiceHandler) ProviderCreate(ctx context.Context, u *customer.Customer, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCreate", ctx, u, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderCreate indicates an expected call of ProviderCreate.
+func (mr *MockServiceHandlerMockRecorder) ProviderCreate(ctx, u, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCreate", reflect.TypeOf((*MockServiceHandler)(nil).ProviderCreate), ctx, u, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+}
+
+// ProviderDelete mocks base method.
+func (m *MockServiceHandler) ProviderDelete(ctx context.Context, u *customer.Customer, id uuid.UUID) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderDelete", ctx, u, id)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderDelete indicates an expected call of ProviderDelete.
+func (mr *MockServiceHandlerMockRecorder) ProviderDelete(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderDelete", reflect.TypeOf((*MockServiceHandler)(nil).ProviderDelete), ctx, u, id)
+}
+
+// ProviderGet mocks base method.
+func (m *MockServiceHandler) ProviderGet(ctx context.Context, u *customer.Customer, providerID uuid.UUID) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderGet", ctx, u, providerID)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderGet indicates an expected call of ProviderGet.
+func (mr *MockServiceHandlerMockRecorder) ProviderGet(ctx, u, providerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderGet", reflect.TypeOf((*MockServiceHandler)(nil).ProviderGet), ctx, u, providerID)
+}
+
+// ProviderGets mocks base method.
+func (m *MockServiceHandler) ProviderGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderGets", ctx, u, size, token)
+	ret0, _ := ret[0].([]*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderGets indicates an expected call of ProviderGets.
+func (mr *MockServiceHandlerMockRecorder) ProviderGets(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderGets", reflect.TypeOf((*MockServiceHandler)(nil).ProviderGets), ctx, u, size, token)
+}
+
+// ProviderUpdate mocks base method.
+func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, u *customer.Customer, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderUpdate", ctx, u, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderUpdate indicates an expected call of ProviderUpdate.
+func (mr *MockServiceHandlerMockRecorder) ProviderUpdate(ctx, u, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ProviderUpdate), ctx, u, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+}
+
 // QueueCreate mocks base method.
 func (m *MockServiceHandler) QueueCreate(u *customer.Customer, name, detail, routingMethod string, tagIDs []uuid.UUID, waitActions []action.Action, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -1907,6 +1984,81 @@ func (m *MockServiceHandler) RecordingfileGet(u *customer.Customer, id uuid.UUID
 func (mr *MockServiceHandlerMockRecorder) RecordingfileGet(u, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingfileGet", reflect.TypeOf((*MockServiceHandler)(nil).RecordingfileGet), u, id)
+}
+
+// RouteCreate mocks base method.
+func (m *MockServiceHandler) RouteCreate(ctx context.Context, u *customer.Customer, providerID uuid.UUID, priority int, target string) (*route.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteCreate", ctx, u, providerID, priority, target)
+	ret0, _ := ret[0].(*route.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteCreate indicates an expected call of RouteCreate.
+func (mr *MockServiceHandlerMockRecorder) RouteCreate(ctx, u, providerID, priority, target interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteCreate", reflect.TypeOf((*MockServiceHandler)(nil).RouteCreate), ctx, u, providerID, priority, target)
+}
+
+// RouteDelete mocks base method.
+func (m *MockServiceHandler) RouteDelete(ctx context.Context, u *customer.Customer, routeID uuid.UUID) (*route.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteDelete", ctx, u, routeID)
+	ret0, _ := ret[0].(*route.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteDelete indicates an expected call of RouteDelete.
+func (mr *MockServiceHandlerMockRecorder) RouteDelete(ctx, u, routeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteDelete", reflect.TypeOf((*MockServiceHandler)(nil).RouteDelete), ctx, u, routeID)
+}
+
+// RouteGet mocks base method.
+func (m *MockServiceHandler) RouteGet(ctx context.Context, u *customer.Customer, routeID uuid.UUID) (*route.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteGet", ctx, u, routeID)
+	ret0, _ := ret[0].(*route.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteGet indicates an expected call of RouteGet.
+func (mr *MockServiceHandlerMockRecorder) RouteGet(ctx, u, routeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGet", reflect.TypeOf((*MockServiceHandler)(nil).RouteGet), ctx, u, routeID)
+}
+
+// RouteGets mocks base method.
+func (m *MockServiceHandler) RouteGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*route.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteGets", ctx, u, size, token)
+	ret0, _ := ret[0].([]*route.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteGets indicates an expected call of RouteGets.
+func (mr *MockServiceHandlerMockRecorder) RouteGets(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGets", reflect.TypeOf((*MockServiceHandler)(nil).RouteGets), ctx, u, size, token)
+}
+
+// RouteUpdate mocks base method.
+func (m *MockServiceHandler) RouteUpdate(ctx context.Context, u *customer.Customer, routeID, providerID uuid.UUID, priority int, target string) (*route.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteUpdate", ctx, u, routeID, providerID, priority, target)
+	ret0, _ := ret[0].(*route.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteUpdate indicates an expected call of RouteUpdate.
+func (mr *MockServiceHandlerMockRecorder) RouteUpdate(ctx, u, routeID, providerID, priority, target interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteUpdate", reflect.TypeOf((*MockServiceHandler)(nil).RouteUpdate), ctx, u, routeID, providerID, priority, target)
 }
 
 // TagCreate mocks base method.
