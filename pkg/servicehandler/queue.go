@@ -12,13 +12,13 @@ import (
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 )
 
-// queueGet validates the queue's ownership and returns the agent info.
+// queueGet validates the queue's ownership and returns the queue info.
 func (h *serviceHandler) queueGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "queueGet",
 			"customer_id": u.ID,
-			"agent_id":    id,
+			"queue_id":    id,
 		},
 	)
 
@@ -31,7 +31,7 @@ func (h *serviceHandler) queueGet(ctx context.Context, u *cscustomer.Customer, i
 	log.WithField("queue", tmp).Debug("Received result.")
 
 	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Info("The user has no permission for this agent.")
+		log.Info("The user has no permission for this queue.")
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -48,7 +48,7 @@ func (h *serviceHandler) QueueGet(u *cscustomer.Customer, queueID uuid.UUID) (*q
 		"func":        "QueueGet",
 		"customer_id": u.ID,
 		"username":    u.Username,
-		"agent_id":    queueID,
+		"queue_id":    queueID,
 	})
 
 	res, err := h.queueGet(ctx, u, queueID)
