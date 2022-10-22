@@ -49,27 +49,6 @@ var (
 
 	// dialroutes
 	regV1DialroutesGet = regexp.MustCompile(`/v1/dialroutes\?`)
-
-	// // chats
-	// regV1Chats                   = regexp.MustCompile("/v1/chats$")
-	// regV1ChatsGet                = regexp.MustCompile(`/v1/chats\?`)
-	// regV1ChatsID                 = regexp.MustCompile("/v1/chats/" + regUUID + "$")
-	// regV1ChatsIDOnwerID          = regexp.MustCompile("/v1/chats/" + regUUID + "/owner_id$")
-	// regV1ChatsIDParticipantIDs   = regexp.MustCompile("/v1/chats/" + regUUID + "/participant_ids$")
-	// regV1ChatsIDParticipantIDsID = regexp.MustCompile("/v1/chats/" + regUUID + "/participant_ids/" + regUUID + "$")
-
-	// // chatrooms
-	// regV1ChatroomsGet = regexp.MustCompile(`/v1/chatrooms\?`)
-	// regV1ChatroomsID  = regexp.MustCompile("/v1/chatrooms/" + regUUID + "$")
-
-	// // messagechats
-	// regV1Messagechats    = regexp.MustCompile("/v1/messagechats$")
-	// regV1MessagechatsGet = regexp.MustCompile(`/v1/messagechats\?`)
-	// regV1MessagechatsID  = regexp.MustCompile("/v1/messagechats/" + regUUID + "$")
-
-	// // messagechatrooms
-	// regV1MessagechatroomsGet = regexp.MustCompile(`/v1/messagechatrooms\?`)
-	// regV1MessagechatroomsID  = regexp.MustCompile("/v1/messagechatrooms/" + regUUID + "$")
 )
 
 var (
@@ -221,75 +200,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		requestType = "/providers/<provider-id>"
 		response, err = h.v1ProvidersIDDelete(ctx, m)
 
-	// providers
+	// dialroute
 	case regV1DialroutesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/dialroutes"
 		response, err = h.v1DialroutesGet(ctx, m)
-
-	// case regV1ChatsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-	// 	requestType = "/chats/<chat-id>"
-	// 	response, err = h.v1ChatsIDPut(ctx, m)
-
-	// // chats/<chat-id>/owner_id
-	// case regV1ChatsIDOnwerID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-	// 	requestType = "/chats/<chat-id>/owner_id"
-	// 	response, err = h.v1ChatsIDOwnerIDPut(ctx, m)
-
-	// // chats/<chat-id>/participant_ids
-	// case regV1ChatsIDParticipantIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	requestType = "/chats/<chat-id>/participant_ids"
-	// 	response, err = h.v1ChatsIDParticipantIDsPost(ctx, m)
-
-	// // chats/<chat-id>/participant_ids/<participant-id>
-	// case regV1ChatsIDParticipantIDsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-	// 	requestType = "/chats/<chat-id>/participant_ids/<participant-id>"
-	// 	response, err = h.v1ChatsIDParticipantIDsIDDelete(ctx, m)
-
-	// // chatrooms
-	// case regV1ChatroomsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/chatrooms"
-	// 	response, err = h.v1ChatroomsGet(ctx, m)
-
-	// // chatrooms/<chatroom-id>
-	// case regV1ChatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/chatrooms/<chatroom-id>"
-	// 	response, err = h.v1ChatroomsIDGet(ctx, m)
-
-	// case regV1ChatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-	// 	requestType = "/chatrooms/<chatroom-id>"
-	// 	response, err = h.v1ChatroomsIDDelete(ctx, m)
-
-	// // messagechats
-	// case regV1MessagechatsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/messagechats"
-	// 	response, err = h.v1MessagechatsGet(ctx, m)
-
-	// case regV1Messagechats.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	requestType = "/messagechats"
-	// 	response, err = h.v1MessagechatsPost(ctx, m)
-
-	// // messagechats/<messagechat-id>
-	// case regV1MessagechatsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/messagechats/<messagechat-id>"
-	// 	response, err = h.v1MessagechatsIDGet(ctx, m)
-
-	// case regV1MessagechatsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-	// 	requestType = "/messagechats/<messagechat-id>"
-	// 	response, err = h.v1MessagechatsIDDelete(ctx, m)
-
-	// // messagechatrooms
-	// case regV1MessagechatroomsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/messagechatrooms"
-	// 	response, err = h.v1MessagechatroomsGet(ctx, m)
-
-	// // messagechatrooms/<messagechatroom-id>
-	// case regV1MessagechatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-	// 	requestType = "/messagechatrooms/<messagechatroom-id>"
-	// 	response, err = h.v1MessagechatroomsIDGet(ctx, m)
-
-	// case regV1MessagechatroomsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-	// 	requestType = "/messagechatrooms/<messagechatroom-id>"
-	// 	response, err = h.v1MessagechatroomsIDDelete(ctx, m)
 
 	default:
 		logrus.WithFields(
