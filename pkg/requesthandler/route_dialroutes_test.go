@@ -21,8 +21,6 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 
 		customerID uuid.UUID
 		target     string
-		pageToken  string
-		pageSize   uint64
 
 		response *rabbitmqhandler.Response
 
@@ -35,8 +33,6 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 
 			uuid.FromStringOrNil("177ca524-52b6-11ed-bc27-67e42188fe83"),
 			"+82",
-			"2020-09-20 03:23:20.995000",
-			10,
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -46,7 +42,7 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 
 			"bin-manager.route-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/dialroutes?page_token=%s&page_size=10&customer_id=177ca524-52b6-11ed-bc27-67e42188fe83&target=%s", url.QueryEscape("2020-09-20 03:23:20.995000"), url.QueryEscape("+82")),
+				URI:      fmt.Sprintf("/v1/dialroutes?customer_id=177ca524-52b6-11ed-bc27-67e42188fe83&target=%s", url.QueryEscape("+82")),
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -71,7 +67,7 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RouteV1DialrouteGets(ctx, tt.customerID, tt.target, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RouteV1DialrouteGets(ctx, tt.customerID, tt.target)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
