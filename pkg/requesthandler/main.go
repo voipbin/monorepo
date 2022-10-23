@@ -614,6 +614,9 @@ type RequestHandler interface {
 	RegistrarV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
 
+	// route-manager dialroutes
+	RouteV1DialrouteGets(ctx context.Context, customerID uuid.UUID, target string, pageToken string, pageSize uint64) ([]rmroute.Route, error)
+
 	// route-manager providers
 	RouteV1ProviderCreate(ctx context.Context, provierType rmprovider.Type, hostname string, techPrefix string, techPostfix string, techHeaders map[string]string, name string, detail string) (*rmprovider.Provider, error)
 	RouteV1ProviderGet(ctx context.Context, providerID uuid.UUID) (*rmprovider.Provider, error)
