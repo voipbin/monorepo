@@ -15,8 +15,8 @@ import (
 // RouteV1DialrouteGets sends a request to route-manager
 // to getting a list of dialroute info.
 // it returns detail list of dialroute info if it succeed.
-func (r *requestHandler) RouteV1DialrouteGets(ctx context.Context, customerID uuid.UUID, target string, pageToken string, pageSize uint64) ([]rmroute.Route, error) {
-	uri := fmt.Sprintf("/v1/dialroutes?page_token=%s&page_size=%d&customer_id=%s&target=%s", url.QueryEscape(pageToken), pageSize, customerID, url.QueryEscape(target))
+func (r *requestHandler) RouteV1DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]rmroute.Route, error) {
+	uri := fmt.Sprintf("/v1/dialroutes?customer_id=%s&target=%s", customerID, url.QueryEscape(target))
 
 	res, err := r.sendRequestRoute(uri, rabbitmqhandler.RequestMethodGet, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
