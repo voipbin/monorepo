@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+
 	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/dbhandler"
 )
@@ -100,8 +101,8 @@ func Test_DialrouteGets(t *testing.T) {
 			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, tt.customerID, route.TargetAll).Return(tt.responseRoutesCustomerAll, nil)
 
 			// GetsByTarget for default route base
-			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, route.CustomerIDDefault, tt.target).Return(tt.responseRoutesDefaultTarget, nil)
-			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, route.CustomerIDDefault, route.TargetAll).Return(tt.responseRoutesDefaultAll, nil)
+			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, route.CustomerIDBasicRoute, tt.target).Return(tt.responseRoutesDefaultTarget, nil)
+			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, route.CustomerIDBasicRoute, route.TargetAll).Return(tt.responseRoutesDefaultAll, nil)
 
 			res, err := h.DialrouteGets(ctx, tt.customerID, tt.target)
 			if err != nil {

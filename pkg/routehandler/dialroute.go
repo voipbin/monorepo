@@ -26,7 +26,7 @@ func (h *routeHandler) DialrouteGets(ctx context.Context, customerID uuid.UUID, 
 	log.WithField("customer_route", customerRoutes).Debugf("Found customer routes")
 
 	// get default based route
-	defaultRoutes, err := h.GetsByTarget(ctx, route.CustomerIDDefault, target)
+	defaultRoutes, err := h.GetsByTarget(ctx, route.CustomerIDBasicRoute, target)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get default routes")
 	}

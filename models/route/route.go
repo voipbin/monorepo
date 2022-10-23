@@ -24,5 +24,5 @@ const (
 
 // list of defined customer id
 var (
-	CustomerIDDefault uuid.UUID = uuid.FromStringOrNil("efdcb8da-43cc-11ed-9b05-83b4ef0da730")
+	CustomerIDBasicRoute uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
 )
