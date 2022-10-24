@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/ttacon/libphonenumber"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -135,7 +136,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// get a endpoint destination
-	dialURI, err := h.getDialURI(ctx, destination)
+	dialURI, err := h.getDialURI(ctx, c.CustomerID, destination)
 	if err != nil {
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
 
@@ -181,8 +182,41 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 }
 
 // getDialURITel returns dial uri of the given tel type destination.
-func (h *callHandler) getDialURITel(ctx context.Context, destination commonaddress.Address) (string, error) {
-	res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx, constTransportUDP)
+func (h *callHandler) getDialURITel(ctx context.Context, customerID uuid.UUID, destination commonaddress.Address) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getDialURITel",
+		"destination": destination,
+	})
+
+	// parse number
+	n, err := libphonenumber.Parse(destination.Target, "US") // default country code is US.
+	if err != nil {
+		log.Errorf("Could not parse the libphonenumber. err: %v", err)
+		return "", err
+	}
+	target := fmt.Sprintf("+%d", *n.CountryCode)
+
+	// // send request
+	rs, err := h.reqHandler.RouteV1DialrouteGets(ctx, customerID, target)
+	if err != nil {
+		log.Errorf("Could not get dialroutes. err: %v", err)
+		return "", err
+	}
+
+	if len(rs) == 0 {
+		log.Errorf("Could not get correct dialroute.")
+		return "", fmt.Errorf("no availble dialroutes")
+	}
+
+	// get provider info. currently, we support only 1 dialroutes
+	pr, err := h.reqHandler.RouteV1ProviderGet(ctx, rs[0].ProviderID)
+	if err != nil {
+		log.Errorf("Could not get provider info. err: %v", err)
+		return "", err
+	}
+
+	// res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx, constTransportUDP)
+	res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, pr.Hostname, constTransportUDP)
 	return res, nil
 }
 
@@ -218,11 +252,11 @@ func (h *callHandler) getDialURIEndpoint(ctx context.Context, destination common
 }
 
 // getDialURI returns the given destination address's dial URI for Asterisk's dialing
-func (h *callHandler) getDialURI(ctx context.Context, destination commonaddress.Address) (string, error) {
+func (h *callHandler) getDialURI(ctx context.Context, customerID uuid.UUID, destination commonaddress.Address) (string, error) {
 
 	switch destination.Type {
 	case commonaddress.TypeTel:
-		return h.getDialURITel(ctx, destination)
+		return h.getDialURITel(ctx, customerID, destination)
 
 	case commonaddress.TypeEndpoint:
 		return h.getDialURIEndpoint(ctx, destination)
