@@ -14,8 +14,9 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
+	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
-	// address "gitlab.com/voipbin/bin-manager/call-manager.git/models/address"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -34,7 +35,11 @@ func Test_CreateCallOutgoing(t *testing.T) {
 		source      commonaddress.Address
 		destination commonaddress.Address
 
-		af                *fmactiveflow.Activeflow
+		af               *fmactiveflow.Activeflow
+		responseRoutes   []rmroute.Route
+		responseProvider *rmprovider.Provider
+
+		expectTarget      string
 		expectCall        *call.Call
 		expectEndpointDst string
 		expectVariables   map[string]string
@@ -64,6 +69,10 @@ func Test_CreateCallOutgoing(t *testing.T) {
 					ID: fmaction.IDStart,
 				},
 			},
+			[]rmroute.Route{},
+			nil,
+
+			"",
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
@@ -108,7 +117,7 @@ func Test_CreateCallOutgoing(t *testing.T) {
 			},
 			commonaddress.Address{
 				Type:       commonaddress.TypeTel,
-				Target:     "+123456789",
+				Target:     "+821121656521",
 				TargetName: "test target",
 			},
 
@@ -117,6 +126,16 @@ func Test_CreateCallOutgoing(t *testing.T) {
 					ID: fmaction.IDStart,
 				},
 			},
+			[]rmroute.Route{
+				{
+					ProviderID: uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
+				},
+			},
+			&rmprovider.Provider{
+				Hostname: "sip.telnyx.com",
+			},
+
+			"+82",
 			&call.Call{
 				ID:         uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 				CustomerID: uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
@@ -132,14 +151,14 @@ func Test_CreateCallOutgoing(t *testing.T) {
 				},
 				Destination: commonaddress.Address{
 					Type:       commonaddress.TypeTel,
-					Target:     "+123456789",
+					Target:     "+821121656521",
 					TargetName: "test target",
 				},
 				Action: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
 			},
-			"pjsip/call-out/sip:+123456789@sip.telnyx.com;transport=udp",
+			"pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
 			map[string]string{
 				"CALLERID(all)":                         "+99999888",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
@@ -172,6 +191,12 @@ func Test_CreateCallOutgoing(t *testing.T) {
 			// setVariables
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
+			if tt.destination.Type == commonaddress.TypeTel {
+				// getDialURI
+				mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.expectCall.CustomerID, tt.expectTarget).Return(tt.responseRoutes, nil)
+				mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.responseRoutes[0].ProviderID).Return(tt.responseProvider, nil)
+			}
+
 			if tt.masterCallID != uuid.Nil {
 				mockDB.EXPECT().CallTXStart(tt.masterCallID).Return(nil, &call.Call{}, nil)
 				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
@@ -199,20 +224,40 @@ func Test_CreateCallOutgoing(t *testing.T) {
 	}
 }
 
-func Test_GetEndpointDestinationTypeTel(t *testing.T) {
+func Test_getDialURITel(t *testing.T) {
 
 	tests := []struct {
-		name               string
-		destination        *commonaddress.Address
-		expectEndpointDest string
+		name string
+
+		customerID  uuid.UUID
+		destination *commonaddress.Address
+
+		responseRoutes   []rmroute.Route
+		responseProvider *rmprovider.Provider
+
+		expectTarget string
+		expectRes    string
 	}{
 		{
 			"normal",
+
+			uuid.FromStringOrNil("f7a14b8c-534c-11ed-9fb1-c7c376f2730b"),
 			&commonaddress.Address{
 				Type:   commonaddress.TypeTel,
-				Target: "+1234567890",
+				Target: "+821121656521",
 			},
-			"pjsip/call-out/sip:+1234567890@sip.telnyx.com;transport=udp",
+
+			[]rmroute.Route{
+				{
+					ProviderID: uuid.FromStringOrNil("8730a3da-5350-11ed-aa47-7f44741127c1"),
+				},
+			},
+			&rmprovider.Provider{
+				Hostname: "sip.telnyx.com",
+			},
+
+			"+82",
+			"pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
 		},
 	}
 
@@ -231,71 +276,44 @@ func Test_GetEndpointDestinationTypeTel(t *testing.T) {
 
 			ctx := context.Background()
 
-			res, err := h.getDialURI(ctx, *tt.destination)
+			mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.customerID, tt.expectTarget).Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.responseRoutes[0].ProviderID).Return(tt.responseProvider, nil)
+
+			res, err := h.getDialURI(ctx, tt.customerID, *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectEndpointDest {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectEndpointDest, res)
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func Test_GetEndpointDestinationTypeSIP(t *testing.T) {
+func Test_getDialURISIP(t *testing.T) {
 
 	tests := []struct {
-		name               string
-		destination        *commonaddress.Address
-		expectEndpointDest string
-	}{
-		{
-			"normal",
-			&commonaddress.Address{
-				Type:   commonaddress.TypeSIP,
-				Target: "test@test.com",
-			},
-			"pjsip/call-out/sip:test@test.com",
-		},
-	}
+		name string
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
-			}
-
-			ctx := context.Background()
-
-			res, err := h.getDialURI(ctx, *tt.destination)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if res != tt.expectEndpointDest {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectEndpointDest, res)
-			}
-		})
-	}
-}
-
-func Test_GetDialingURISIP(t *testing.T) {
-
-	tests := []struct {
-		name        string
+		customerID  uuid.UUID
 		destination *commonaddress.Address
 		expectRes   string
 	}{
 		{
 			"normal",
+
+			uuid.FromStringOrNil("22139104-534d-11ed-aba9-e73d8b8e1c43"),
+			&commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "test@test.com",
+			},
+			"pjsip/call-out/sip:test@test.com",
+		},
+		{
+			"normal",
+
+			uuid.FromStringOrNil("dfd086b2-534c-11ed-b905-93a3b56e1ae8"),
 			&commonaddress.Address{
 				Type:   commonaddress.TypeSIP,
 				Target: "test@test.com",
@@ -320,7 +338,7 @@ func Test_GetDialingURISIP(t *testing.T) {
 
 			ctx := context.Background()
 
-			res, err := h.getDialURI(ctx, *tt.destination)
+			res, err := h.getDialURI(ctx, tt.customerID, *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -332,61 +350,20 @@ func Test_GetDialingURISIP(t *testing.T) {
 	}
 }
 
-func Test_GetDialingURITel(t *testing.T) {
+func Test_getDialURIEndpoint(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		destination *commonaddress.Address
-		expectRes   string
-	}{
-		{
-			"normal",
-			&commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "+821100000001",
-			},
-			"pjsip/call-out/sip:+821100000001@sip.telnyx.com;transport=udp",
-		},
-	}
+		name string
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
-			}
-
-			ctx := context.Background()
-
-			res, err := h.getDialURI(ctx, *tt.destination)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if res != tt.expectRes {
-				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_GetDialURIExtension(t *testing.T) {
-
-	tests := []struct {
-		name        string
+		customerID  uuid.UUID
 		destination *commonaddress.Address
 		contacts    []*astcontact.AstContact
 		expectRes   string
 	}{
 		{
 			"normal",
+
+			uuid.FromStringOrNil("6f3fd136-534d-11ed-90a2-ff71219800e5"),
 			&commonaddress.Address{
 				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
@@ -414,6 +391,8 @@ func Test_GetDialURIExtension(t *testing.T) {
 		},
 		{
 			"2 contacts",
+
+			uuid.FromStringOrNil("791a3da4-534d-11ed-9f3a-c3d05994dec2"),
 			&commonaddress.Address{
 				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
@@ -458,6 +437,8 @@ func Test_GetDialURIExtension(t *testing.T) {
 		},
 		{
 			"transport ws",
+
+			uuid.FromStringOrNil("81ea0ff4-534d-11ed-af9b-8bfc8edf8627"),
 			&commonaddress.Address{
 				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
@@ -485,6 +466,8 @@ func Test_GetDialURIExtension(t *testing.T) {
 		},
 		{
 			"transport wss",
+
+			uuid.FromStringOrNil("89b5324a-534d-11ed-a9da-c3461944cf00"),
 			&commonaddress.Address{
 				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
@@ -529,7 +512,7 @@ func Test_GetDialURIExtension(t *testing.T) {
 
 			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.destination.Target).Return(tt.contacts, nil)
 
-			res, err := h.getDialURI(ctx, *tt.destination)
+			res, err := h.getDialURI(ctx, tt.customerID, *tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -541,15 +524,19 @@ func Test_GetDialURIExtension(t *testing.T) {
 	}
 }
 
-func Test_GetDialURIEndpointError(t *testing.T) {
+func Test_getDialURIError(t *testing.T) {
 
 	tests := []struct {
-		name        string
+		name string
+
+		customerID  uuid.UUID
 		destination *commonaddress.Address
 		contacts    []*astcontact.AstContact
 	}{
 		{
 			"no contact",
+
+			uuid.FromStringOrNil("9c1d4850-534d-11ed-87aa-bb08e4fa1db5"),
 			&commonaddress.Address{
 				Type:   commonaddress.TypeEndpoint,
 				Target: "test@test.sip.voipbin.net",
@@ -575,7 +562,7 @@ func Test_GetDialURIEndpointError(t *testing.T) {
 
 			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.destination.Target).Return(tt.contacts, nil)
 
-			_, err := h.getDialURI(context.Background(), *tt.destination)
+			_, err := h.getDialURI(ctx, tt.customerID, *tt.destination)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}

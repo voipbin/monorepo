@@ -57,10 +57,10 @@ const (
 )
 
 // fixed trunks
-const (
-	trunkTwilio = "voipbin.pstn.twilio.com" //nolint:varcheck,deadcode // this is ok
-	trunkTelnyx = "sip.telnyx.com"
-)
+// const (
+// trunkTwilio = "voipbin.pstn.twilio.com" //nolint:varcheck,deadcode // this is ok
+// trunkTelnyx = "sip.telnyx.com"
+// )
 
 // default max timeout for each services. sec.
 const (
