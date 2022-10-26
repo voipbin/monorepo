@@ -64,8 +64,11 @@ func routesGET(c *gin.Context) {
 		log.Debugf("Invalid requested page size. Set to max. page_size: %d", pageSize)
 	}
 
+	// get customerID
+	customerID := uuid.FromStringOrNil(req.CustomerID)
+
 	// get tmps
-	tmps, err := serviceHandler.RouteGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.RouteGets(c.Request.Context(), &u, customerID, pageSize, req.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get routes info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -131,6 +134,7 @@ func routesPOST(c *gin.Context) {
 	res, err := serviceHandler.RouteCreate(
 		c.Request.Context(),
 		&u,
+		req.CustomerID,
 		req.ProviderID,
 		req.Priority,
 		req.Target,
