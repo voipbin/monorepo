@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/providerhandler"
 	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/routehandler"
@@ -45,7 +46,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"79f2705e-b57f-4957-8ad6-6e162802b115","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":""}]`),
+				Data:       []byte(`[{"id":"79f2705e-b57f-4957-8ad6-6e162802b115","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -71,7 +72,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"ea23a015-6d11-4014-894d-2aaa96cbd851","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":""},{"id":"3bb96c6e-1526-4628-806a-dc780b43a82a","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":""}]`),
+				Data:       []byte(`[{"id":"ea23a015-6d11-4014-894d-2aaa96cbd851","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"3bb96c6e-1526-4628-806a-dc780b43a82a","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{

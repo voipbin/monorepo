@@ -19,6 +19,7 @@ type WebhookMessage struct {
 	// timestamp
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event
@@ -34,6 +35,7 @@ func (h *Route) ConvertWebhookMessage() *WebhookMessage {
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
+		TMDelete: h.TMDelete,
 	}
 }
 

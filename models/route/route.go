@@ -15,6 +15,7 @@ type Route struct {
 	// timestamp
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
 }
 
 // list of defined target

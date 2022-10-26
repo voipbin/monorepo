@@ -41,6 +41,7 @@ func Test_RouteCreate(t *testing.T) {
 				Target:     "all",
 				TMCreate:   "2020-04-18 03:22:17.995000",
 				TMUpdate:   "2020-04-18 03:22:17.995000",
+				TMDelete:   DefaultTimeStamp,
 			},
 
 			&route.Route{
@@ -51,6 +52,7 @@ func Test_RouteCreate(t *testing.T) {
 				Target:     "all",
 				TMCreate:   "2020-04-18 03:22:17.995000",
 				TMUpdate:   "2020-04-18 03:22:17.995000",
+				TMDelete:   DefaultTimeStamp,
 			},
 		},
 	}
@@ -106,12 +108,14 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 					TMCreate:   "2020-04-18 03:22:17.995000",
 					TMUpdate:   "2020-04-18 03:22:17.995000",
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("40335d58-4336-11ed-b1ec-57f4e8d28783"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 					TMCreate:   "2020-05-18 03:22:17.995000",
 					TMUpdate:   "2020-05-18 03:22:17.995000",
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 
@@ -124,12 +128,14 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 					TMCreate:   "2020-05-18 03:22:17.995000",
 					TMUpdate:   "2020-05-18 03:22:17.995000",
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("4004e982-4336-11ed-99fc-53e93440d555"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 					TMCreate:   "2020-04-18 03:22:17.995000",
 					TMUpdate:   "2020-04-18 03:22:17.995000",
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 		},
@@ -188,6 +194,7 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 					Priority:   2,
 					TMCreate:   "2020-05-18 03:22:17.995000",
 					TMUpdate:   "2020-05-18 03:22:17.995000",
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("b07cc8aa-4337-11ed-9c1f-6f01ee46218f"),
@@ -196,6 +203,7 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 					Priority:   1,
 					TMCreate:   "2020-04-18 03:22:17.995000",
 					TMUpdate:   "2020-04-18 03:22:17.995000",
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 
@@ -210,6 +218,7 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 					Priority:   1,
 					TMCreate:   "2020-04-18 03:22:17.995000",
 					TMUpdate:   "2020-04-18 03:22:17.995000",
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("b0af5b76-4337-11ed-b068-3394fb21fec1"),
@@ -218,6 +227,7 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 					Priority:   2,
 					TMCreate:   "2020-05-18 03:22:17.995000",
 					TMUpdate:   "2020-05-18 03:22:17.995000",
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 		},
@@ -292,12 +302,15 @@ func Test_RouteDelete(t *testing.T) {
 			}
 
 			mockCache.EXPECT().RouteGet(ctx, tt.route.ID).Return(nil, fmt.Errorf("error"))
-			// mockCache.EXPECT().FlowSet(ctx, gomock.Any()).Return(nil)
-			_, err := h.RouteGet(ctx, tt.route.ID)
-			if err == nil {
+			mockCache.EXPECT().RouteSet(ctx, gomock.Any()).Return(nil)
+			res, err := h.RouteGet(ctx, tt.route.ID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			if res.TMDelete == DefaultTimeStamp {
+				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
+			}
 		})
 	}
 }
