@@ -29,7 +29,7 @@ func (h *serviceHandler) routeGet(ctx context.Context, u *cscustomer.Customer, r
 	}
 	log.WithField("route", tmp).Debug("Received result.")
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
 		log.Info("The user has no permission for this route.")
 		return nil, fmt.Errorf("user has no permission")
 	}
@@ -61,10 +61,10 @@ func (h *serviceHandler) RouteGet(ctx context.Context, u *cscustomer.Customer, r
 // RouteGets sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteGets",
-		"customer_id": u.ID,
+		"customer_id": customerID,
 		"username":    u.Username,
 		"size":        size,
 		"token":       token,
@@ -74,7 +74,12 @@ func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, 
 		token = getCurTime()
 	}
 
-	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, u.ID, token, size)
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
+		log.Info("The user has no permission for this route.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, customerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get routes from the route-manager. err: %v", err)
 		return nil, err
@@ -95,20 +100,26 @@ func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, 
 func (h *serviceHandler) RouteCreate(
 	ctx context.Context,
 	u *cscustomer.Customer,
+	customerID uuid.UUID,
 	providerID uuid.UUID,
 	priority int,
 	target string,
 ) (*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteCreate",
-		"customer_id": u.ID,
+		"customer_id": customerID,
 		"username":    u.Username,
 		"provider_id": providerID,
 	})
 
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
+		log.Info("The user has no permission for this route.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
 	tmp, err := h.reqHandler.RouteV1RouteCreate(
 		ctx,
-		u.ID,
+		customerID,
 		providerID,
 		priority,
 		target,

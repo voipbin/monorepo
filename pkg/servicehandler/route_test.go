@@ -7,11 +7,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+
+	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
 func Test_RouteGet(t *testing.T) {
@@ -81,9 +82,11 @@ func Test_RouteGets(t *testing.T) {
 	type test struct {
 		name string
 
-		customer  *cscustomer.Customer
-		pageToken string
-		pageSize  uint64
+		customer *cscustomer.Customer
+
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		responseRoutes []rmroute.Route
 		expectRes      []*rmroute.WebhookMessage
@@ -94,21 +97,22 @@ func Test_RouteGets(t *testing.T) {
 			"normal",
 
 			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
 			},
+
+			uuid.FromStringOrNil("3ebe976f-ecca-436a-a2d3-bc0c75501882"),
 			"2021-03-01 01:00:00.995000",
 			10,
 
 			[]rmroute.Route{
 				{
-					ID:         uuid.FromStringOrNil("99a7ea66-d257-4b5c-8be3-47ddd6373c95"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+					ID: uuid.FromStringOrNil("99a7ea66-d257-4b5c-8be3-47ddd6373c95"),
 				},
 			},
 			[]*rmroute.WebhookMessage{
 				{
-					ID:         uuid.FromStringOrNil("99a7ea66-d257-4b5c-8be3-47ddd6373c95"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+					ID: uuid.FromStringOrNil("99a7ea66-d257-4b5c-8be3-47ddd6373c95"),
 				},
 			},
 		},
@@ -128,9 +132,9 @@ func Test_RouteGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
 
-			res, err := h.RouteGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.RouteGets(ctx, tt.customer, tt.customerID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -149,6 +153,7 @@ func Test_RouteCreate(t *testing.T) {
 
 		customer *cscustomer.Customer
 
+		customerID uuid.UUID
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -162,20 +167,20 @@ func Test_RouteCreate(t *testing.T) {
 			"normal",
 
 			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
 			},
 
+			uuid.FromStringOrNil("cf7339a3-fb3b-44ff-aedd-2b999f89fd7b"),
 			uuid.FromStringOrNil("bfe600b7-e496-4c00-84e4-e9ae05e7b829"),
 			1,
 			"+82",
 
 			&rmroute.Route{
-				ID:         uuid.FromStringOrNil("5bbbe36b-ec7b-480d-8bb8-28dc43328269"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID: uuid.FromStringOrNil("5bbbe36b-ec7b-480d-8bb8-28dc43328269"),
 			},
 			&rmroute.WebhookMessage{
-				ID:         uuid.FromStringOrNil("5bbbe36b-ec7b-480d-8bb8-28dc43328269"),
-				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID: uuid.FromStringOrNil("5bbbe36b-ec7b-480d-8bb8-28dc43328269"),
 			},
 		},
 	}
@@ -197,7 +202,7 @@ func Test_RouteCreate(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1RouteCreate(
 				ctx,
-				tt.customer.ID,
+				tt.customerID,
 				tt.providerID,
 				tt.priority,
 				tt.target,
@@ -206,6 +211,7 @@ func Test_RouteCreate(t *testing.T) {
 			res, err := h.RouteCreate(
 				ctx,
 				tt.customer,
+				tt.customerID,
 				tt.providerID,
 				tt.priority,
 				tt.target,
@@ -238,7 +244,8 @@ func Test_RouteDelete(t *testing.T) {
 			"normal",
 
 			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
 			},
 			uuid.FromStringOrNil("15700708-0f25-4d46-b72e-1d489abc2cea"),
 
@@ -304,7 +311,8 @@ func Test_RouteUpdate(t *testing.T) {
 			"normal",
 
 			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
 			},
 
 			uuid.FromStringOrNil("88c8938c-8dd3-4fcf-887f-c0e026912a6b"),
