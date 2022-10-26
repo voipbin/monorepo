@@ -29,10 +29,11 @@ func Test_routesGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer  cscustomer.Customer
-		reqQuery  string
-		pageSize  uint64
-		pageToken string
+		customer   cscustomer.Customer
+		customerID uuid.UUID
+		reqQuery   string
+		pageSize   uint64
+		pageToken  string
 
 		resRoutes []*rmroute.WebhookMessage
 		expectRes string
@@ -43,7 +44,8 @@ func Test_routesGet(t *testing.T) {
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
-			"/v1.0/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			uuid.FromStringOrNil("de748080-7939-4625-a929-459c09a08448"),
+			"/v1.0/routes?customer_id=de748080-7939-4625-a929-459c09a08448&page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			10,
 			"2020-09-20 03:23:20.995000",
 
@@ -60,7 +62,8 @@ func Test_routesGet(t *testing.T) {
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
-			"/v1.0/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			uuid.FromStringOrNil("0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260"),
+			"/v1.0/routes?customer_id=0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260&page_size=10&page_token=2020-09-20%2003:23:20.995000",
 			10,
 			"2020-09-20 03:23:20.995000",
 
@@ -101,7 +104,7 @@ func Test_routesGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteGets(req.Context(), &tt.customer, tt.pageSize, tt.pageToken).Return(tt.resRoutes, nil)
+			mockSvc.EXPECT().RouteGets(req.Context(), &tt.customer, tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resRoutes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -133,6 +136,7 @@ func Test_routesPost(t *testing.T) {
 
 			"/v1.0/routes",
 			request.BodyRoutesPOST{
+				CustomerID: uuid.FromStringOrNil("04303d61-d8c9-477c-8b54-254af0cb499f"),
 				ProviderID: uuid.FromStringOrNil("a7efc236-5166-11ed-bdea-631379fb1515"),
 				Priority:   1,
 				Target:     "+82",
@@ -172,6 +176,7 @@ func Test_routesPost(t *testing.T) {
 			mockSvc.EXPECT().RouteCreate(
 				req.Context(),
 				&tt.customer,
+				tt.reqBody.CustomerID,
 				tt.reqBody.ProviderID,
 				tt.reqBody.Priority,
 				tt.reqBody.Target,

@@ -365,10 +365,11 @@ type ServiceHandler interface {
 
 	// route handlers
 	RouteGet(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*rmroute.WebhookMessage, error)
-	RouteGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmroute.WebhookMessage, error)
+	RouteGets(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, size uint64, token string) ([]*rmroute.WebhookMessage, error)
 	RouteCreate(
 		ctx context.Context,
 		u *cscustomer.Customer,
+		customerID uuid.UUID,
 		providerID uuid.UUID,
 		priority int,
 		target string,
