@@ -258,7 +258,8 @@ func (h *handler) ProviderDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
+	curTime := GetCurTime()
+	if _, err := h.db.Exec(q, curTime, curTime, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ProviderDelete. err: %v", err)
 	}
 

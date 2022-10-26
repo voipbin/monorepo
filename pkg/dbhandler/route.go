@@ -23,7 +23,8 @@ const (
 		target,
 
 		tm_create,
-		tm_update
+		tm_update,
+		tm_delete
 	from
 		routes
 	`
@@ -43,6 +44,7 @@ func (h *handler) routeGetFromRow(row *sql.Rows) (*route.Route, error) {
 
 		&res.TMCreate,
 		&res.TMUpdate,
+		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. providerGetFromRow. err: %v", err)
 	}
@@ -63,13 +65,13 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 		target,
 
 		tm_create,
-		tm_update
-
+		tm_update,
+		tm_delete
 	) values(
 		?, ?,
 		?, ?,
 		?,
-		?, ?
+		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
 	if err != nil {
@@ -88,6 +90,7 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 
 		r.TMCreate,
 		r.TMUpdate,
+		r.TMDelete,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. ProviderCreate. err: %v", err)
@@ -190,14 +193,15 @@ func (h *handler) RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUI
 	q := fmt.Sprintf(`
 		%s
 		where
-			customer_id = ?
+			tm_delete >= ?
+			and customer_id = ?
 			and tm_create < ?
 		order by
 			tm_create desc, id desc
 		limit ?
 	`, routeSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, limit)
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RouteGetsByCustomerID. err: %v", err)
 	}
@@ -223,13 +227,14 @@ func (h *handler) RouteGetsByCustomerIDWithTarget(ctx context.Context, customerI
 	q := fmt.Sprintf(`
 		%s
 		where
-			customer_id = ?
+			tm_delete >= ?
+			and customer_id = ?
 			and target = ?
 		order by
 			priority asc
 	`, routeSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), target)
+	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), target)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RouteGetsByCustomerIDWithTarget. err: %v", err)
 	}
@@ -251,12 +256,15 @@ func (h *handler) RouteGetsByCustomerIDWithTarget(ctx context.Context, customerI
 // RouteDelete deletes the given route
 func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
-	delete from routes
+	update routes set
+		tm_update = ?,
+		tm_update = ?
 	where
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, id.Bytes()); err != nil {
+	curTime := GetCurTime()
+	if _, err := h.db.Exec(q, curTime, curTime, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. RouteDelete. err: %v", err)
 	}
 

@@ -49,6 +49,7 @@ func (h *routeHandler) Create(
 
 		TMCreate: dbhandler.GetCurTime(),
 		TMUpdate: dbhandler.DefaultTimeStamp,
+		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 	log.WithField("route", r).Debug("Creating a new route.")
 

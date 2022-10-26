@@ -11,6 +11,7 @@ create table routes(
   -- timestamps
   tm_create datetime(6),  -- create
   tm_update datetime(6),  -- update
+  tm_delete datetime(6),  -- delete
 
   primary key(id)
 );
