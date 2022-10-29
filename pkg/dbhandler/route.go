@@ -257,7 +257,7 @@ func (h *handler) RouteGetsByCustomerIDWithTarget(ctx context.Context, customerI
 func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
 	update routes set
-		tm_update = ?,
+		tm_delete = ?,
 		tm_update = ?
 	where
 		id = ?
