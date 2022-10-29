@@ -194,7 +194,10 @@ func Test_ProviderDelete(t *testing.T) {
 			"normal",
 
 			&provider.Provider{
-				ID: uuid.FromStringOrNil("2396620a-432f-11ed-9c2e-37f76ce929df"),
+				ID:       uuid.FromStringOrNil("2396620a-432f-11ed-9c2e-37f76ce929df"),
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}

@@ -277,6 +277,7 @@ func Test_RouteDelete(t *testing.T) {
 				ID:       uuid.FromStringOrNil("76fc1f26-4338-11ed-bd70-1ba6021f2c4c"),
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
