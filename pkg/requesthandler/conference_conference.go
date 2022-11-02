@@ -19,7 +19,7 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID.String())
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, conferenceType)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -74,7 +74,7 @@ func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, confe
 func (r *requestHandler) ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferences, requestTimeoutDefault, delay, ContentTypeJSON, []byte(""))
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferences, requestTimeoutDefault, delay, ContentTypeJSON, []byte(""))
 	switch {
 	case err != nil:
 		return err
@@ -122,7 +122,7 @@ func (r *requestHandler) ConferenceV1ConferenceCreate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -160,7 +160,7 @@ func (r *requestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uu
 		return nil, err
 	}
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestConference(uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

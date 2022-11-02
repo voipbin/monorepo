@@ -29,7 +29,7 @@ func (r *requestHandler) WebhookV1WebhookSend(ctx context.Context, customerID uu
 		return err
 	}
 
-	res, err := r.sendRequestWebhook(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWebhook(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (r *requestHandler) WebhookV1WebhookSendToDestination(ctx context.Context, 
 		return err
 	}
 
-	res, err := r.sendRequestWebhook(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestWebhook(uri, rabbitmqhandler.RequestMethodPost, resourceWebhookWebhooks, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

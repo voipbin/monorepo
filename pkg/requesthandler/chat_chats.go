@@ -41,7 +41,7 @@ func (r *requestHandler) ChatV1ChatCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodPost, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -66,7 +66,7 @@ func (r *requestHandler) ChatV1ChatCreate(
 func (r *requestHandler) ChatV1ChatGet(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error) {
 	uri := fmt.Sprintf("/v1/chats/%s", chatID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodGet, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -91,7 +91,7 @@ func (r *requestHandler) ChatV1ChatGet(ctx context.Context, chatID uuid.UUID) (*
 func (r *requestHandler) ChatV1ChatGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatchat.Chat, error) {
 	uri := fmt.Sprintf("/v1/chats?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodGet, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -116,7 +116,7 @@ func (r *requestHandler) ChatV1ChatGetsByCustomerID(ctx context.Context, custome
 func (r *requestHandler) ChatV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error) {
 	uri := fmt.Sprintf("/v1/chats/%s", chatID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodDelete, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -150,7 +150,7 @@ func (r *requestHandler) ChatV1ChatUpdateBasicInfo(ctx context.Context, id uuid.
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodPut, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -183,7 +183,7 @@ func (r *requestHandler) ChatV1ChatUpdateOwnerID(ctx context.Context, id uuid.UU
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodPut, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -216,7 +216,7 @@ func (r *requestHandler) ChatV1ChatAddParticipantID(ctx context.Context, id uuid
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodPost, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -240,7 +240,7 @@ func (r *requestHandler) ChatV1ChatAddParticipantID(ctx context.Context, id uuid
 func (r *requestHandler) ChatV1ChatRemoveParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error) {
 	uri := fmt.Sprintf("/v1/chats/%s/participant_ids/%s", id, participantID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodDelete, resourceChatChats, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
