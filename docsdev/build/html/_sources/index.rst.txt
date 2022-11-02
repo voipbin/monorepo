@@ -30,6 +30,8 @@ Welcome to voipbin's documentation!
    webhook
    customer
    chat
+   provider
+   route
    variable
    websocket
    common
