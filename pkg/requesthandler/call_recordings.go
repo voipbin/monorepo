@@ -18,7 +18,7 @@ import (
 func (r *requestHandler) CallV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(token), size, customerID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -43,7 +43,7 @@ func (r *requestHandler) CallV1RecordingGets(ctx context.Context, customerID uui
 func (r *requestHandler) CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodGet, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

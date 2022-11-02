@@ -18,7 +18,7 @@ import (
 func (r *requestHandler) ChatV1MessagechatroomGetsByChatroomID(ctx context.Context, chatroomID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechatroom.Messagechatroom, error) {
 	uri := fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=%d&chatroom_id=%s", url.QueryEscape(pageToken), pageSize, chatroomID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -43,7 +43,7 @@ func (r *requestHandler) ChatV1MessagechatroomGetsByChatroomID(ctx context.Conte
 func (r *requestHandler) ChatV1MessagechatroomGet(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error) {
 	uri := fmt.Sprintf("/v1/messagechatrooms/%s", messagechatroomID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodGet, resourceChatMessagechatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -68,7 +68,7 @@ func (r *requestHandler) ChatV1MessagechatroomGet(ctx context.Context, messagech
 func (r *requestHandler) ChatV1MessagechatroomDelete(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error) {
 	uri := fmt.Sprintf("/v1/messagechatrooms/%s", messagechatroomID)
 
-	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatMessagechatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodDelete, resourceChatMessagechatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

@@ -28,7 +28,7 @@ func (r *requestHandler) TranscribeV1CallRecordingCreate(ctx context.Context, cu
 		return nil, err
 	}
 
-	res, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeCallRecordings, timeout, delay, ContentTypeJSON, m)
+	res, err := r.sendRequestTranscribe(uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeCallRecordings, timeout, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

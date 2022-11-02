@@ -16,7 +16,7 @@ func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint st
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (r *requestHandler) RegistrarV1ContactUpdate(ctx context.Context, endpoint 
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCallChannelsHealth, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(uri, rabbitmqhandler.RequestMethodPut, resourceCallChannelsHealth, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

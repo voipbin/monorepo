@@ -17,7 +17,7 @@ import (
 func (r *requestHandler) QueueV1QueuecallReferenceGet(ctx context.Context, referenceID uuid.UUID) (*qmqueuecallreference.QueuecallReference, error) {
 	uri := fmt.Sprintf("/v1/queuecallreferences/%s", referenceID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecallreferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecallreferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

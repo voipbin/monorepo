@@ -35,7 +35,7 @@ func (r *requestHandler) AgentV1TagCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPost, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -60,7 +60,7 @@ func (r *requestHandler) AgentV1TagCreate(
 func (r *requestHandler) AgentV1TagGet(ctx context.Context, id uuid.UUID) (*amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags/%s", id)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodGet, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -85,7 +85,7 @@ func (r *requestHandler) AgentV1TagGet(ctx context.Context, id uuid.UUID) (*amta
 func (r *requestHandler) AgentV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodGet, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -120,7 +120,7 @@ func (r *requestHandler) AgentV1TagUpdate(ctx context.Context, id uuid.UUID, nam
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodPut, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -145,7 +145,7 @@ func (r *requestHandler) AgentV1TagUpdate(ctx context.Context, id uuid.UUID, nam
 func (r *requestHandler) AgentV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags/%s", id)
 
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAgent(uri, rabbitmqhandler.RequestMethodDelete, resourceAgentTags, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

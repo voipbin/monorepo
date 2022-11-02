@@ -24,7 +24,7 @@ func (r *requestHandler) CallV1ConfbridgeCreate(ctx context.Context, confbridgeT
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -47,7 +47,7 @@ func (r *requestHandler) CallV1ConfbridgeCreate(ctx context.Context, confbridgeT
 func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, conferenceID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s", conferenceID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -66,7 +66,7 @@ func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, conferenceI
 func (r *requestHandler) CallV1ConfbridgeCallKick(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s/calls/%s", conferenceID, callID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -85,7 +85,7 @@ func (r *requestHandler) CallV1ConfbridgeCallKick(ctx context.Context, conferenc
 func (r *requestHandler) CallV1ConfbridgeCallAdd(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/confbridges/%s/calls/%s", conferenceID, callID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestCall(uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

@@ -47,7 +47,7 @@ func (r *requestHandler) OutdialV1OutdialtargetCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestOutdial(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceOutdialOutdialTargets, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPost, resourceOutdialOutdialTargets, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (r *requestHandler) OutdialV1OutdialtargetGetsAvailable(
 		limit,
 	)
 
-	tmp, err := r.sendRequestOutdial(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodGet, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (r *requestHandler) OutdialV1OutdialtargetGetsAvailable(
 func (r *requestHandler) OutdialV1OutdialtargetDelete(ctx context.Context, outdialtargetID uuid.UUID) (*omoutdialtarget.OutdialTarget, error) {
 	uri := fmt.Sprintf("/v1/outdialtargets/%s", outdialtargetID)
 
-	tmp, err := r.sendRequestOutdial(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceOutdialOutdialTargets, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodDelete, resourceOutdialOutdialTargets, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -133,7 +133,7 @@ func (r *requestHandler) OutdialV1OutdialtargetDelete(ctx context.Context, outdi
 func (r *requestHandler) OutdialV1OutdialtargetGetsByOutdialID(ctx context.Context, outdialtargetID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdialtarget.OutdialTarget, error) {
 	uri := fmt.Sprintf("/v1/outdials/%s/targets?page_token=%s&page_size=%d", outdialtargetID, url.QueryEscape(pageToken), pageSize)
 
-	res, err := r.sendRequestOutdial(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodGet, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -157,7 +157,7 @@ func (r *requestHandler) OutdialV1OutdialtargetGet(ctx context.Context, outdialt
 
 	uri := fmt.Sprintf("/v1/outdialtargets/%s", outdialtargetID)
 
-	tmp, err := r.sendRequestOutdial(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceOutdialOutdialTargets, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodGet, resourceOutdialOutdialTargets, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (r *requestHandler) OutdialV1OutdialtargetUpdateStatusProgressing(ctx conte
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestOutdial(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPost, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -227,7 +227,7 @@ func (r *requestHandler) OutdialV1OutdialtargetUpdateStatus(ctx context.Context,
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestOutdial(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestOutdial(uri, rabbitmqhandler.RequestMethodPut, resourceOutdialOutdials, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

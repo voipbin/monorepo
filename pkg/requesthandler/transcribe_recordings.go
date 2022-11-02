@@ -29,7 +29,7 @@ func (r *requestHandler) TranscribeV1RecordingCreate(ctx context.Context, custom
 		return nil, err
 	}
 
-	res, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceStorageRecording, 60000, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestTranscribe(uri, rabbitmqhandler.RequestMethodPost, resourceStorageRecording, 60000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
