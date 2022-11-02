@@ -125,7 +125,7 @@ func Test_queuesGet(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/queues?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().QueueGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
+			mockSvc.EXPECT().QueueGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -203,6 +203,7 @@ func Test_queuesPost(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().QueueCreate(
+				req.Context(),
 				&tt.customer,
 				tt.req.Name,
 				tt.req.Detail,
@@ -286,7 +287,7 @@ func Test_queuesIDGet(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/queues/%s", tt.resQueue.ID)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().QueueGet(&tt.customer, tt.resQueue.ID).Return(tt.resQueue, nil)
+			mockSvc.EXPECT().QueueGet(req.Context(), &tt.customer, tt.resQueue.ID).Return(tt.resQueue, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -337,7 +338,7 @@ func Test_queuesIDDelete(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/queues/%s", tt.queueID)
 			req, _ := http.NewRequest("DELETE", reqQuery, nil)
 
-			mockSvc.EXPECT().QueueDelete(&tt.customer, tt.queueID).Return(&qmqueue.WebhookMessage{}, nil)
+			mockSvc.EXPECT().QueueDelete(req.Context(), &tt.customer, tt.queueID).Return(&qmqueue.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -392,9 +393,8 @@ func Test_queuesIDPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdate(&tt.customer, tt.queueID, tt.queueName, tt.detail).Return(&qmqueue.WebhookMessage{}, nil)
-
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			mockSvc.EXPECT().QueueUpdate(req.Context(), &tt.customer, tt.queueID, tt.queueName, tt.detail).Return(&qmqueue.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -449,9 +449,8 @@ func Test_queuesIDTagIDsPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateTagIDs(&tt.customer, tt.queueID, tt.tagIDs).Return(&qmqueue.WebhookMessage{}, nil)
-
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			mockSvc.EXPECT().QueueUpdateTagIDs(req.Context(), &tt.customer, tt.queueID, tt.tagIDs).Return(&qmqueue.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -504,9 +503,8 @@ func Test_queuesIDRoutingMethodPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateRoutingMethod(&tt.customer, tt.queueID, tt.routingMethod).Return(&qmqueue.WebhookMessage{}, nil)
-
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			mockSvc.EXPECT().QueueUpdateRoutingMethod(req.Context(), &tt.customer, tt.queueID, tt.routingMethod).Return(&qmqueue.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -567,9 +565,8 @@ func Test_queuesIDActionsPut(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().QueueUpdateActions(&tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(&qmqueue.WebhookMessage{}, nil)
-
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			mockSvc.EXPECT().QueueUpdateActions(req.Context(), &tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(&qmqueue.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

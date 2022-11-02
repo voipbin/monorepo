@@ -52,7 +52,7 @@ func transcribesPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create a transcribe
-	res, err := serviceHandler.TranscribeCreate(&u, req.RecordingID, req.Language)
+	res, err := serviceHandler.TranscribeCreate(c.Request.Context(), &u, req.RecordingID, req.Language)
 	if err != nil {
 		log.Errorf("Could not create a transcribe. err: %v", err)
 		c.AbortWithStatus(400)

@@ -115,10 +115,9 @@ func Test_conferencesPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceCreate(&tt.customer, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(tt.request))
-
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ConferenceCreate(req.Context(), &tt.customer, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -174,9 +173,8 @@ func TestConferencesIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ConferenceGet(&tt.customer, tt.id).Return(tt.conference, nil)
-
 			req, _ := http.NewRequest("GET", tt.requestURI, nil)
+			mockSvc.EXPECT().ConferenceGet(req.Context(), &tt.customer, tt.id).Return(tt.conference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -228,7 +226,7 @@ func Test_conferencesIDDELETE(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
 
-			mockSvc.EXPECT().ConferenceDelete(&tt.customer, tt.id).Return(nil)
+			mockSvc.EXPECT().ConferenceDelete(req.Context(), &tt.customer, tt.id).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

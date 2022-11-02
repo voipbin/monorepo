@@ -42,8 +42,7 @@ func (h *serviceHandler) messageGet(ctx context.Context, u *cscustomer.Customer,
 // MessageGets sends a request to getting a list of messages
 // It sends a request to the message-manager to getting a list of messages.
 // it returns list of messages if it succeed.
-func (h *serviceHandler) MessageGets(u *cscustomer.Customer, size uint64, token string) ([]*mmmessage.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) MessageGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageGets",
 		"customer_id": u.ID,
@@ -72,8 +71,7 @@ func (h *serviceHandler) MessageGets(u *cscustomer.Customer, size uint64, token 
 // MessageSend handles message send request.
 // It sends a request to the message-manager to create(send) a new message.
 // it returns created message information if it succeed.
-func (h *serviceHandler) MessageSend(u *cscustomer.Customer, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) MessageSend(ctx context.Context, u *cscustomer.Customer, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageSend",
 		"customer_id": u.ID,
@@ -99,8 +97,7 @@ func (h *serviceHandler) MessageSend(u *cscustomer.Customer, source *commonaddre
 // MessageGet handles message get request.
 // It sends a request to the message-manager to get a existed message.
 // it returns a message information if it succeed.
-func (h *serviceHandler) MessageGet(u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) MessageGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageGet",
 		"customer_id": u.ID,
@@ -128,8 +125,7 @@ func (h *serviceHandler) MessageGet(u *cscustomer.Customer, id uuid.UUID) (*mmme
 // MessageDelete handles message delete request.
 // It sends a request to the message-manager to get a existed message.
 // it returns a message information if it succeed.
-func (h *serviceHandler) MessageDelete(u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) MessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageDelete",
 		"customer_id": u.ID,

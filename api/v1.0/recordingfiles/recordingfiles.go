@@ -49,7 +49,7 @@ func recordingfilesIDGET(c *gin.Context) {
 	log.Debug("Executing recordingfilesIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	url, err := serviceHandler.RecordingfileGet(&u, id)
+	url, err := serviceHandler.RecordingfileGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a recordingfile. err: %v", err)
 		c.AbortWithStatus(400)

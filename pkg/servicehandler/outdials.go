@@ -40,8 +40,7 @@ func (h *serviceHandler) outdialGet(ctx context.Context, u *cscustomer.Customer,
 }
 
 // OutdialCreate is a service handler for outdial creation.
-func (h *serviceHandler) OutdialCreate(u *cscustomer.Customer, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialCreate(ctx context.Context, u *cscustomer.Customer, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"campaign_id": campaignID,
@@ -61,8 +60,7 @@ func (h *serviceHandler) OutdialCreate(u *cscustomer.Customer, campaignID uuid.U
 
 // OutdialGetsByCustomerID gets the list of outdials of the given customer id.
 // It returns list of outdials if it succeed.
-func (h *serviceHandler) OutdialGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialGetsByCustomerID",
 		"customer_id": u.ID,
@@ -94,8 +92,7 @@ func (h *serviceHandler) OutdialGetsByCustomerID(u *cscustomer.Customer, size ui
 }
 
 // OutdialDelete deletes the outdial.
-func (h *serviceHandler) OutdialDelete(u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -122,8 +119,7 @@ func (h *serviceHandler) OutdialDelete(u *cscustomer.Customer, id uuid.UUID) (*o
 
 // OutdialGet gets the outdial of the given id.
 // It returns outdial if it succeed.
-func (h *serviceHandler) OutdialGet(u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -143,8 +139,7 @@ func (h *serviceHandler) OutdialGet(u *cscustomer.Customer, id uuid.UUID) (*omou
 
 // OutdialUpdateBasicInfo updates the outdial's basic info.
 // It returns updated outdial if it succeed.
-func (h *serviceHandler) OutdialUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*omoutdial.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*omoutdial.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialUpdateBasicInfo",
 		"customer_id": u.ID,
@@ -172,8 +167,7 @@ func (h *serviceHandler) OutdialUpdateBasicInfo(u *cscustomer.Customer, id uuid.
 
 // OutdialUpdateCampaignID updates the outdial's campaignID info.
 // It returns updated outdial if it succeed.
-func (h *serviceHandler) OutdialUpdateCampaignID(u *cscustomer.Customer, id, campaignID uuid.UUID) (*omoutdial.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialUpdateCampaignID(ctx context.Context, u *cscustomer.Customer, id, campaignID uuid.UUID) (*omoutdial.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialUpdateCampaignID",
 		"customer_id": u.ID,
@@ -202,8 +196,7 @@ func (h *serviceHandler) OutdialUpdateCampaignID(u *cscustomer.Customer, id, cam
 
 // OutdialUpdateData updates the outdial's data info.
 // It returns updated outdial if it succeed.
-func (h *serviceHandler) OutdialUpdateData(u *cscustomer.Customer, id uuid.UUID, data string) (*omoutdial.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialUpdateData(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, data string) (*omoutdial.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialUpdateData",
 		"customer_id": u.ID,

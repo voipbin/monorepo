@@ -40,7 +40,7 @@ func loginPost(c *gin.Context) {
 	log.Debugf("Logging in.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	token, err := serviceHandler.AuthLogin(req.Username, req.Password)
+	token, err := serviceHandler.AuthLogin(c.Request.Context(), req.Username, req.Password)
 	if err != nil {
 		log.Debugf("Login failed. err: %v", err)
 		c.AbortWithStatus(400)
@@ -80,7 +80,7 @@ func loginAgent(c *gin.Context) {
 	log.Debugf("Logging in.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	token, err := serviceHandler.AuthLogin(body.Username, body.Password)
+	token, err := serviceHandler.AuthLogin(c.Request.Context(), body.Username, body.Password)
 	if err != nil {
 		log.Debugf("Login failed. err: %v", err)
 		c.AbortWithStatus(400)

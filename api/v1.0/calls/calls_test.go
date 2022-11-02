@@ -96,7 +96,7 @@ func TestCallsPOST(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallCreate(&tt.customer, tt.req.FlowID, tt.req.Actions, &tt.req.Source, tt.req.Destinations).Return(tt.resCall, nil)
+			mockSvc.EXPECT().CallCreate(req.Context(), &tt.customer, tt.req.FlowID, tt.req.Actions, &tt.req.Source, tt.req.Destinations).Return(tt.resCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -191,7 +191,7 @@ func TestCallsGET(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/calls?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().CallGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
+			mockSvc.EXPECT().CallGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -247,7 +247,7 @@ func TestCallsIDGET(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/calls/%s", tt.resCall.ID)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().CallGet(&tt.customer, tt.resCall.ID).Return(tt.resCall, nil)
+			mockSvc.EXPECT().CallGet(req.Context(), &tt.customer, tt.resCall.ID).Return(tt.resCall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

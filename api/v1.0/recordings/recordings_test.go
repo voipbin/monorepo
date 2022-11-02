@@ -60,8 +60,8 @@ func TestRecordingsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().RecordingGet(&tt.customer, tt.recording.ID).Return(tt.recording, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/recordings/%s", tt.recording.ID), nil)
+			mockSvc.EXPECT().RecordingGet(req.Context(), &tt.customer, tt.recording.ID).Return(tt.recording, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

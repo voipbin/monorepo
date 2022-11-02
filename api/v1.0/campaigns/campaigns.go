@@ -54,7 +54,7 @@ func campaignsPOST(c *gin.Context) {
 
 	// create a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignCreate(&u, req.Name, req.Detail, req.Type, req.ServiceLevel, req.EndHandle, req.Actions, req.OutplanID, req.OutdialID, req.QueueID, req.NextCampaignID)
+	res, err := serviceHandler.CampaignCreate(c.Request.Context(), &u, req.Name, req.Detail, req.Type, req.ServiceLevel, req.EndHandle, req.Actions, req.OutplanID, req.OutdialID, req.QueueID, req.NextCampaignID)
 	if err != nil {
 		log.Errorf("Could not create a campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -115,7 +115,7 @@ func campaignsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get campaign
-	campaigns, err := serviceHandler.CampaignGetsByCustomerID(&u, pageSize, req.PageToken)
+	campaigns, err := serviceHandler.CampaignGetsByCustomerID(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a campaign list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -173,7 +173,7 @@ func campaignsIDGET(c *gin.Context) {
 	log.Debug("Executing campaignsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignGet(&u, id)
+	res, err := serviceHandler.CampaignGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -221,7 +221,7 @@ func campaignsIDDELETE(c *gin.Context) {
 
 	// delete an campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignDelete(&u, id)
+	res, err := serviceHandler.CampaignDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -278,7 +278,7 @@ func campaignsIDPUT(c *gin.Context) {
 
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignUpdateBasicInfo(&u, id, req.Name, req.Detail)
+	res, err := serviceHandler.CampaignUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -335,7 +335,7 @@ func campaignsIDStatusPUT(c *gin.Context) {
 
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignUpdateStatus(&u, id, req.Status)
+	res, err := serviceHandler.CampaignUpdateStatus(c.Request.Context(), &u, id, req.Status)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -392,7 +392,7 @@ func campaignsIDServiceLevelPUT(c *gin.Context) {
 
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignUpdateServiceLevel(&u, id, req.ServiceLevel)
+	res, err := serviceHandler.CampaignUpdateServiceLevel(c.Request.Context(), &u, id, req.ServiceLevel)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -449,7 +449,7 @@ func campaignsIDActionsPUT(c *gin.Context) {
 
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignUpdateActions(&u, id, req.Actions)
+	res, err := serviceHandler.CampaignUpdateActions(c.Request.Context(), &u, id, req.Actions)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -506,7 +506,7 @@ func campaignsIDResourceInfoPUT(c *gin.Context) {
 
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignUpdateResourceInfo(&u, id, req.OutplanID, req.OutdialID, req.QueueID)
+	res, err := serviceHandler.CampaignUpdateResourceInfo(c.Request.Context(), &u, id, req.OutplanID, req.OutdialID, req.QueueID)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -563,7 +563,7 @@ func campaignsIDNextCampaignIDPUT(c *gin.Context) {
 
 	// update a campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaignUpdateNextCampaignID(&u, id, req.NextCampaignID)
+	res, err := serviceHandler.CampaignUpdateNextCampaignID(c.Request.Context(), &u, id, req.NextCampaignID)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -630,7 +630,7 @@ func campaignsIDCampaigncallsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get campaigncalls
-	campaigncalls, err := serviceHandler.CampaigncallGetsByCampaignID(&u, id, pageSize, req.PageToken)
+	campaigncalls, err := serviceHandler.CampaigncallGetsByCampaignID(c.Request.Context(), &u, id, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a campaign list. err: %v", err)
 		c.AbortWithStatus(400)

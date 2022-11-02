@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -59,10 +60,11 @@ func Test_MessageGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.MessageGets(tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.MessageGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -122,10 +124,11 @@ func Test_MessageGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGet(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.MessageGet(tt.customer, tt.id)
+			res, err := h.MessageGet(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -189,9 +192,10 @@ func Test_MessageSend(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageSend(gomock.Any(), uuid.Nil, tt.customer.ID, tt.source, tt.destinations, tt.text).Return(tt.response, nil)
-			res, err := h.MessageSend(tt.customer, tt.source, tt.destinations, tt.text)
+			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.Nil, tt.customer.ID, tt.source, tt.destinations, tt.text).Return(tt.response, nil)
+			res, err := h.MessageSend(ctx, tt.customer, tt.source, tt.destinations, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -245,11 +249,12 @@ func Test_MessageDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageGet(gomock.Any(), tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().MessageV1MessageDelete(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageDelete(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.MessageDelete(tt.customer, tt.id)
+			res, err := h.MessageDelete(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
