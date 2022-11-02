@@ -17,7 +17,7 @@ import (
 func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID) (*smbucketrecording.BucketRecording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	res, err := r.sendRequestStorage(uri, rabbitmqhandler.RequestMethodGet, resourceStorageRecording, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceStorageRecording, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
