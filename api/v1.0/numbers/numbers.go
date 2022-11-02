@@ -63,7 +63,7 @@ func numbersGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get numbers
-	numbers, err := serviceHandler.NumberGets(&u, pageSize, req.PageToken)
+	numbers, err := serviceHandler.NumberGets(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a order number list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -122,7 +122,7 @@ func numbersIDGET(c *gin.Context) {
 
 	// get order number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.NumberGet(&u, id)
+	res, err := serviceHandler.NumberGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get an order number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -172,7 +172,7 @@ func numbersPOST(c *gin.Context) {
 
 	// create a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberCreate(&u, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
+	numb, err := serviceHandler.NumberCreate(c.Request.Context(), &u, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create the number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -220,7 +220,7 @@ func numbersIDDELETE(c *gin.Context) {
 
 	// delete order number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.NumberDelete(&u, id)
+	res, err := serviceHandler.NumberDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete an order number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -275,7 +275,7 @@ func numbersIDPUT(c *gin.Context) {
 
 	// update a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberUpdate(&u, id, req.Name, req.Detail)
+	numb, err := serviceHandler.NumberUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -330,7 +330,7 @@ func numbersIDFlowIDPUT(c *gin.Context) {
 
 	// update a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberUpdateFlowIDs(&u, id, req.CallFlowID, req.MessageFlowID)
+	numb, err := serviceHandler.NumberUpdateFlowIDs(c.Request.Context(), &u, id, req.CallFlowID, req.MessageFlowID)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)

@@ -55,7 +55,7 @@ func callsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create call
-	res, err := serviceHandler.CallCreate(&u, req.FlowID, req.Actions, &req.Source, req.Destinations)
+	res, err := serviceHandler.CallCreate(c.Request.Context(), &u, req.FlowID, req.Actions, &req.Source, req.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
@@ -105,7 +105,7 @@ func callsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// hangup the call
-	err := serviceHandler.CallDelete(&u, id)
+	err := serviceHandler.CallDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not hangup the call. err: %v", err)
 		c.AbortWithStatus(400)
@@ -167,7 +167,7 @@ func callsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get calls
-	calls, err := serviceHandler.CallGets(&u, pageSize, requestParam.PageToken)
+	calls, err := serviceHandler.CallGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -225,7 +225,7 @@ func callsIDGET(c *gin.Context) {
 	log.Debug("Executing callsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CallGet(&u, id)
+	res, err := serviceHandler.CallGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a call. err: %v", err)
 		c.AbortWithStatus(400)

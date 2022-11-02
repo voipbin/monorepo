@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -43,9 +44,11 @@ func TestAvailableNumberGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().NumberV1AvailableNumberGets(gomock.Any(), tt.customer.ID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
+			ctx := context.Background()
 
-			_, err := h.AvailableNumberGets(tt.customer, tt.limit, tt.countryCode)
+			mockReq.EXPECT().NumberV1AvailableNumberGets(ctx, tt.customer.ID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
+
+			_, err := h.AvailableNumberGets(ctx, tt.customer, tt.limit, tt.countryCode)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

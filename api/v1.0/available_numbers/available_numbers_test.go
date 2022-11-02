@@ -70,8 +70,8 @@ func TestAvailableNumbersGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().AvailableNumberGets(&tt.customer, tt.pageSize, tt.countryCode).Return(tt.resAvailableNumbers, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/available_numbers?page_size=%d&customer_id=%s&country_code=%s", tt.pageSize, tt.customer.ID, tt.countryCode), nil)
+			mockSvc.EXPECT().AvailableNumberGets(req.Context(), &tt.customer, tt.pageSize, tt.countryCode).Return(tt.resAvailableNumbers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

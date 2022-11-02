@@ -13,8 +13,7 @@ import (
 )
 
 // FlowCreate is a service handler for flow creation.
-func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) FlowCreate(ctx context.Context, u *cscustomer.Customer, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FlowCreate",
 		"customer_id": u.ID,
@@ -34,8 +33,7 @@ func (h *serviceHandler) FlowCreate(u *cscustomer.Customer, name, detail string,
 }
 
 // FlowDelete deletes the flow of the given id.
-func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) FlowDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FlowDelete",
 		"customer_id": u.ID,
@@ -68,8 +66,7 @@ func (h *serviceHandler) FlowDelete(u *cscustomer.Customer, id uuid.UUID) (*fmfl
 
 // FlowGet gets the flow of the given id.
 // It returns flow if it succeed.
-func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) FlowGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FlowGet",
 		"customer_id": u.ID,
@@ -97,8 +94,7 @@ func (h *serviceHandler) FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.
 
 // FlowGets gets the list of flow of the given customer id.
 // It returns list of flows if it succeed.
-func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) FlowGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FlowGets",
 		"customer_id": u.ID,
@@ -131,8 +127,7 @@ func (h *serviceHandler) FlowGets(u *cscustomer.Customer, size uint64, token str
 
 // FlowUpdate updates the flow info.
 // It returns updated flow if it succeed.
-func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) FlowUpdate(ctx context.Context, u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FlowUpdate",
 		"customer_id": u.ID,
@@ -166,8 +161,7 @@ func (h *serviceHandler) FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fm
 
 // FlowUpdateActions updates the flow's actions.
 // It returns updated flow if it succeed.
-func (h *serviceHandler) FlowUpdateActions(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) FlowUpdateActions(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FlowUpdateActions",
 		"customer_id": u.ID,

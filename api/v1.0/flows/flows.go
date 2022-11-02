@@ -54,7 +54,7 @@ func flowsPOST(c *gin.Context) {
 
 	// create a flow
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FlowCreate(&u, req.Name, req.Detail, req.Actions, true)
+	res, err := serviceHandler.FlowCreate(c.Request.Context(), &u, req.Name, req.Detail, req.Actions, true)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -115,7 +115,7 @@ func flowsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get flows
-	flows, err := serviceHandler.FlowGets(&u, pageSize, req.PageToken)
+	flows, err := serviceHandler.FlowGets(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a flow list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -173,7 +173,7 @@ func flowsIDGET(c *gin.Context) {
 	log.Debug("Executing flowsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FlowGet(&u, id)
+	res, err := serviceHandler.FlowGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a flow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -237,7 +237,7 @@ func flowsIDPUT(c *gin.Context) {
 
 	// update a flow
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FlowUpdate(&u, f)
+	res, err := serviceHandler.FlowUpdate(c.Request.Context(), &u, f)
 	if err != nil {
 		log.Errorf("Could not update the flow. err: %v", err)
 		c.AbortWithStatus(400)
@@ -285,7 +285,7 @@ func flowsIDDELETE(c *gin.Context) {
 
 	// delete a flow
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.FlowDelete(&u, id)
+	res, err := serviceHandler.FlowDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete the flow. err: %v", err)
 		c.AbortWithStatus(400)

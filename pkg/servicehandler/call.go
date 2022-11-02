@@ -16,8 +16,7 @@ import (
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallCreate",
 		"customer_id": u.ID,
@@ -34,7 +33,7 @@ func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, ac
 	targetFlowID := flowID
 	if targetFlowID == uuid.Nil {
 		log.Debugf("The flowID is null. Creating a new temp flow for call dialing.")
-		f, err := h.FlowCreate(u, "tmp", "tmp outbound flow", actions, false)
+		f, err := h.FlowCreate(ctx, u, "tmp", "tmp outbound flow", actions, false)
 		if err != nil {
 			log.Errorf("Could not create a flow for outoing call. err: %v", err)
 			return nil, err
@@ -62,8 +61,7 @@ func (h *serviceHandler) CallCreate(u *cscustomer.Customer, flowID uuid.UUID, ac
 // CallGet sends a request to call-manager
 // to getting a call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CallGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -92,8 +90,7 @@ func (h *serviceHandler) CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmc
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallGets(u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -125,8 +122,7 @@ func (h *serviceHandler) CallGets(u *cscustomer.Customer, size uint64, token str
 // CallDelete sends a request to call-manager
 // to hangup the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallDelete(u *cscustomer.Customer, callID uuid.UUID) error {
-	ctx := context.Background()
+func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,

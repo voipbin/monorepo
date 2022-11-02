@@ -14,8 +14,7 @@ import (
 // NumberGets sends a request to getting a list of numbers
 // It sends a request to the number-manager to getting a list of numbers.
 // it returns list of numbers if it succeed.
-func (h *serviceHandler) NumberGets(u *cscustomer.Customer, size uint64, token string) ([]*nmnumber.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) NumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -43,8 +42,7 @@ func (h *serviceHandler) NumberGets(u *cscustomer.Customer, size uint64, token s
 // NumberCreate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberCreate(u *cscustomer.Customer, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) NumberCreate(ctx context.Context, u *cscustomer.Customer, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -70,8 +68,7 @@ func (h *serviceHandler) NumberCreate(u *cscustomer.Customer, num string, callFl
 // NumberGet handles number get request.
 // It sends a request to the number-manager to get a existed number.
 // it returns got number information if it succeed.
-func (h *serviceHandler) NumberGet(u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) NumberGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -104,8 +101,7 @@ func (h *serviceHandler) NumberGet(u *cscustomer.Customer, id uuid.UUID) (*nmnum
 // NumberDelete handles number delete request.
 // It sends a request to the number-manager to delete a existed number.
 // it returns deleted number information if it succeed.
-func (h *serviceHandler) NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) NumberDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -144,8 +140,7 @@ func (h *serviceHandler) NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*nm
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) NumberUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"number_id":   id,
@@ -183,8 +178,7 @@ func (h *serviceHandler) NumberUpdate(u *cscustomer.Customer, id uuid.UUID, name
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdateFlowIDs(u *cscustomer.Customer, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, u *cscustomer.Customer, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"number_id":   id,

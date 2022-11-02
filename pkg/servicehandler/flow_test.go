@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -64,9 +65,10 @@ func TestFlowCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
-			res, err := h.FlowCreate(tt.customer, tt.flowName, tt.detail, tt.actions, tt.persist)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customer.ID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.persist).Return(tt.response, nil)
+			res, err := h.FlowCreate(ctx, tt.customer, tt.flowName, tt.detail, tt.actions, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -124,11 +126,12 @@ func TestFlowDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FlowV1FlowDelete(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.flowID).Return(tt.response, nil)
 
-			res, err := h.FlowDelete(tt.customer, tt.flowID)
+			res, err := h.FlowDelete(ctx, tt.customer, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -218,10 +221,11 @@ func TestFlowGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
 
-			res, err := h.FlowGet(tt.customer, tt.flowID)
+			res, err := h.FlowGet(ctx, tt.customer, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -336,10 +340,11 @@ func TestFlowGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGets(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGets(ctx, tt.customer.ID, fmflow.TypeFlow, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.FlowGets(tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.FlowGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -403,6 +408,7 @@ func TestFlowUpdate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
 			f := &fmflow.Flow{
 				ID:      tt.flowID,
@@ -411,9 +417,9 @@ func TestFlowUpdate(t *testing.T) {
 				Actions: tt.actions,
 			}
 
-			mockReq.EXPECT().FlowV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FlowV1FlowUpdate(gomock.Any(), f).Return(tt.response, nil)
-			res, err := h.FlowUpdate(tt.customer, f)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowUpdate(ctx, f).Return(tt.response, nil)
+			res, err := h.FlowUpdate(ctx, tt.customer, f)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -472,10 +478,11 @@ func Test_FlowUpdateActions(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(gomock.Any(), tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FlowV1FlowUpdateActions(gomock.Any(), tt.flowID, tt.actions).Return(tt.response, nil)
-			res, err := h.FlowUpdateActions(tt.customer, tt.flowID, tt.actions)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.flowID, tt.actions).Return(tt.response, nil)
+			res, err := h.FlowUpdateActions(ctx, tt.customer, tt.flowID, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

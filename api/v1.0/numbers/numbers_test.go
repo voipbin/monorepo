@@ -73,8 +73,8 @@ func TestNumbersGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
 			req, _ := http.NewRequest("GET", tt.uri, nil)
+			mockSvc.EXPECT().NumberGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resNumbers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -126,8 +126,8 @@ func TestNumbersIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberGet(&tt.customer, tt.numberID).Return(tt.resNumber, nil)
 			req, _ := http.NewRequest("GET", tt.uri, nil)
+			mockSvc.EXPECT().NumberGet(req.Context(), &tt.customer, tt.numberID).Return(tt.resNumber, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -188,8 +188,8 @@ func TestNumbersIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberDelete(&tt.customer, tt.numberID).Return(tt.responseNumber, nil)
 			req, _ := http.NewRequest("DELETE", tt.uri, nil)
+			mockSvc.EXPECT().NumberDelete(req.Context(), &tt.customer, tt.numberID).Return(tt.responseNumber, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -241,8 +241,6 @@ func TestNumbersPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberCreate(&tt.customer, tt.requestBody.Number, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID, tt.requestBody.Name, tt.requestBody.Detail)
-
 			// create body
 			body, err := json.Marshal(tt.requestBody)
 			if err != nil {
@@ -250,6 +248,7 @@ func TestNumbersPOST(t *testing.T) {
 			}
 			req, _ := http.NewRequest("POST", tt.uri, bytes.NewBuffer(body))
 
+			mockSvc.EXPECT().NumberCreate(req.Context(), &tt.customer, tt.requestBody.Number, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID, tt.requestBody.Name, tt.requestBody.Detail)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -306,8 +305,6 @@ func TestNumbersIDPUT(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberUpdate(&tt.customer, tt.id, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.resNumber, nil)
-
 			// create body
 			body, err := json.Marshal(tt.requestBody)
 			if err != nil {
@@ -315,6 +312,7 @@ func TestNumbersIDPUT(t *testing.T) {
 			}
 			req, _ := http.NewRequest("PUT", tt.uri, bytes.NewBuffer(body))
 
+			mockSvc.EXPECT().NumberUpdate(req.Context(), &tt.customer, tt.id, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.resNumber, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -371,8 +369,6 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().NumberUpdateFlowIDs(&tt.customer, tt.id, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID).Return(tt.resNumber, nil)
-
 			// create body
 			body, err := json.Marshal(tt.requestBody)
 			if err != nil {
@@ -380,6 +376,7 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 			}
 			req, _ := http.NewRequest("PUT", tt.uri, bytes.NewBuffer(body))
 
+			mockSvc.EXPECT().NumberUpdateFlowIDs(req.Context(), &tt.customer, tt.id, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID).Return(tt.resNumber, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

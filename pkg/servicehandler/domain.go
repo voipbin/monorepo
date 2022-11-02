@@ -38,8 +38,7 @@ func (h *serviceHandler) domainGet(ctx context.Context, u *cscustomer.Customer, 
 }
 
 // DomainCreate is a service handler for flow creation.
-func (h *serviceHandler) DomainCreate(u *cscustomer.Customer, domainName, name, detail string) (*rmdomain.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) DomainCreate(ctx context.Context, u *cscustomer.Customer, domainName, name, detail string) (*rmdomain.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"domain_name": domainName,
@@ -58,8 +57,7 @@ func (h *serviceHandler) DomainCreate(u *cscustomer.Customer, domainName, name, 
 }
 
 // DomainDelete deletes the domain of the given id.
-func (h *serviceHandler) DomainDelete(u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) DomainDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -85,8 +83,7 @@ func (h *serviceHandler) DomainDelete(u *cscustomer.Customer, id uuid.UUID) (*rm
 
 // DomainGet gets the domain of the given id.
 // It returns domain if it succeed.
-func (h *serviceHandler) DomainGet(u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) DomainGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -107,8 +104,7 @@ func (h *serviceHandler) DomainGet(u *cscustomer.Customer, id uuid.UUID) (*rmdom
 
 // DomainGets gets the list of domains of the given customer id.
 // It returns list of domains if it succeed.
-func (h *serviceHandler) DomainGets(u *cscustomer.Customer, size uint64, token string) ([]*rmdomain.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) DomainGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmdomain.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"fucn":        "DomainGets",
 		"customer_id": u.ID,
@@ -141,8 +137,7 @@ func (h *serviceHandler) DomainGets(u *cscustomer.Customer, size uint64, token s
 
 // DomainUpdate updates the flow info.
 // It returns updated domain if it succeed.
-func (h *serviceHandler) DomainUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*rmdomain.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) DomainUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*rmdomain.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,

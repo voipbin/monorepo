@@ -51,7 +51,7 @@ func domainsPOST(c *gin.Context) {
 
 	// create a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	domain, err := serviceHandler.DomainCreate(&u, req.DomainName, req.Name, req.Detail)
+	domain, err := serviceHandler.DomainCreate(c.Request.Context(), &u, req.DomainName, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a domain. err: %v", err)
 		c.AbortWithStatus(400)
@@ -112,7 +112,7 @@ func domainsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get domains
-	domains, err := serviceHandler.DomainGets(&u, pageSize, req.PageToken)
+	domains, err := serviceHandler.DomainGets(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a domain list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -170,7 +170,7 @@ func domainsIDGET(c *gin.Context) {
 	log.Debug("Executing domainsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.DomainGet(&u, id)
+	res, err := serviceHandler.DomainGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a domain. err: %v", err)
 		c.AbortWithStatus(400)
@@ -224,7 +224,7 @@ func domainsIDPUT(c *gin.Context) {
 
 	// update a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.DomainUpdate(&u, id, req.Name, req.Detail)
+	res, err := serviceHandler.DomainUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the domain. err: %v", err)
 		c.AbortWithStatus(400)
@@ -271,7 +271,7 @@ func domainsIDDELETE(c *gin.Context) {
 
 	// delete a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.DomainDelete(&u, id)
+	res, err := serviceHandler.DomainDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete the domain. err: %v", err)
 		c.AbortWithStatus(400)

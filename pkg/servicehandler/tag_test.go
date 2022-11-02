@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -53,10 +54,11 @@ func TestTagCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagCreate(gomock.Any(), tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1TagCreate(ctx, tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
 
-			res, err := h.TagCreate(tt.customer, tt.tagName, tt.detail)
+			res, err := h.TagCreate(ctx, tt.customer, tt.tagName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -137,10 +139,11 @@ func TestTagGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagGets(gomock.Any(), tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1TagGets(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
 
-			res, err := h.TagGets(tt.customer, tt.size, tt.token)
+			res, err := h.TagGets(ctx, tt.customer, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -191,10 +194,11 @@ func TestTagGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagGet(gomock.Any(), tt.tagID).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1TagGet(ctx, tt.tagID).Return(tt.response, nil)
 
-			res, err := h.TagGet(tt.customer, tt.tagID)
+			res, err := h.TagGet(ctx, tt.customer, tt.tagID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -245,11 +249,12 @@ func TestTagDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
-			mockReq.EXPECT().AgentV1TagDelete(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().AgentV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().AgentV1TagDelete(ctx, tt.tagID).Return(tt.resTagGet, nil)
 
-			res, err := h.TagDelete(tt.customer, tt.tagID)
+			res, err := h.TagDelete(ctx, tt.customer, tt.tagID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -304,11 +309,12 @@ func TestTagUpdate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagGet(gomock.Any(), tt.tagID).Return(tt.resTagGet, nil)
-			mockReq.EXPECT().AgentV1TagUpdate(gomock.Any(), tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().AgentV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().AgentV1TagUpdate(ctx, tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
 
-			res, err := h.TagUpdate(tt.customer, tt.tagID, tt.tagName, tt.detail)
+			res, err := h.TagUpdate(ctx, tt.customer, tt.tagID, tt.tagName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

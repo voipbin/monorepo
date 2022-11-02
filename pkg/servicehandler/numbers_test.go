@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -57,10 +58,11 @@ func TestOrderNumberGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.NumberGets(tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.NumberGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -120,10 +122,11 @@ func TestOrderNumberGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.NumberGet(tt.customer, tt.id)
+			res, err := h.NumberGet(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -179,10 +182,11 @@ func TestOrderNumberGetError(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.response, nil)
 
-			_, err := h.NumberGet(tt.customer, tt.id)
+			_, err := h.NumberGet(ctx, tt.customer, tt.id)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
@@ -238,9 +242,10 @@ func TestNumberCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberCreate(gomock.Any(), tt.customer.ID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
-			res, err := h.NumberCreate(tt.customer, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
+			mockReq.EXPECT().NumberV1NumberCreate(ctx, tt.customer.ID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
+			res, err := h.NumberCreate(ctx, tt.customer, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -310,11 +315,12 @@ func TestNumberDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NumberV1NumberDelete(gomock.Any(), tt.id).Return(tt.responseDelete, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NumberV1NumberDelete(ctx, tt.id).Return(tt.responseDelete, nil)
 
-			res, err := h.NumberDelete(tt.customer, tt.id)
+			res, err := h.NumberDelete(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -389,11 +395,12 @@ func TestNumberUpdate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NumberV1NumberUpdateBasicInfo(gomock.Any(), tt.id, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NumberV1NumberUpdateBasicInfo(ctx, tt.id, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
 
-			res, err := h.NumberUpdate(tt.customer, tt.id, tt.numberName, tt.detail)
+			res, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -455,10 +462,11 @@ func TestNumberUpdateError(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
 
-			_, err := h.NumberUpdate(tt.customer, tt.id, tt.numberName, tt.detail)
+			_, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.numberName, tt.detail)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}

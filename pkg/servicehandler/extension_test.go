@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -65,10 +66,11 @@ func TestExtensionCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionCreate(gomock.Any(), tt.customer.ID, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionCreate(ctx, tt.customer.ID, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(tt.response, nil)
 
-			res, err := h.ExtensionCreate(tt.customer, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail)
+			res, err := h.ExtensionCreate(ctx, tt.customer, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -142,10 +144,11 @@ func TestExtensionUpdate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGet(gomock.Any(), tt.id).Return(&rmextension.Extension{CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988")}, nil)
-			mockReq.EXPECT().RegistrarV1ExtensionUpdate(gomock.Any(), tt.id, tt.extName, tt.detail, tt.password).Return(tt.response, nil)
-			res, err := h.ExtensionUpdate(tt.customer, tt.id, tt.extName, tt.detail, tt.password)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.id).Return(&rmextension.Extension{CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988")}, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extName, tt.detail, tt.password).Return(tt.response, nil)
+			res, err := h.ExtensionUpdate(ctx, tt.customer, tt.id, tt.extName, tt.detail, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -212,11 +215,12 @@ func TestExtensionDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
-			mockReq.EXPECT().RegistrarV1ExtensionDelete(gomock.Any(), tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionDelete(ctx, tt.extensionID).Return(tt.response, nil)
 
-			res, err := h.ExtensionDelete(tt.customer, tt.extensionID)
+			res, err := h.ExtensionDelete(ctx, tt.customer, tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -278,9 +282,10 @@ func TestExtensionGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGet(gomock.Any(), tt.extensionID).Return(tt.response, nil)
-			res, err := h.ExtensionGet(tt.customer, tt.extensionID)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.extensionID).Return(tt.response, nil)
+			res, err := h.ExtensionGet(ctx, tt.customer, tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -362,10 +367,11 @@ func TestExtensionGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGets(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.ExtensionGets(tt.customer, tt.domainID, tt.pageSize, tt.pageToken)
+			res, err := h.ExtensionGets(ctx, tt.customer, tt.domainID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
