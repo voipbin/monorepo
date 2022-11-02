@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -59,11 +60,12 @@ func TestRecordingfileGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGet(gomock.Any(), tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().StorageV1RecordingGet(gomock.Any(), tt.response.ID).Return(tt.responseST, nil)
+			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().StorageV1RecordingGet(ctx, tt.response.ID).Return(tt.responseST, nil)
 
-			res, err := h.RecordingfileGet(tt.customer, tt.id)
+			res, err := h.RecordingfileGet(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -54,7 +54,7 @@ func outplansPOST(c *gin.Context) {
 
 	// create a outplan
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutplanCreate(&u, req.Name, req.Detail, req.Source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
+	res, err := serviceHandler.OutplanCreate(c.Request.Context(), &u, req.Name, req.Detail, req.Source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
 	if err != nil {
 		log.Errorf("Could not create a outplan. err: %v", err)
 		c.AbortWithStatus(400)
@@ -115,7 +115,7 @@ func outplansGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get outplan
-	outplans, err := serviceHandler.OutplanGetsByCustomerID(&u, pageSize, req.PageToken)
+	outplans, err := serviceHandler.OutplanGetsByCustomerID(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a outplan list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -173,7 +173,7 @@ func outplansIDGET(c *gin.Context) {
 	log.Debug("Executing outplansIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutplanGet(&u, id)
+	res, err := serviceHandler.OutplanGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a outplan. err: %v", err)
 		c.AbortWithStatus(400)
@@ -221,7 +221,7 @@ func outplansIDDELETE(c *gin.Context) {
 
 	// delete an outplan
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutplanDelete(&u, id)
+	res, err := serviceHandler.OutplanDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete the outplan. err: %v", err)
 		c.AbortWithStatus(400)
@@ -278,7 +278,7 @@ func outplansIDPUT(c *gin.Context) {
 
 	// update a outplan
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutplanUpdateBasicInfo(&u, id, req.Name, req.Detail)
+	res, err := serviceHandler.OutplanUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the outplan. err: %v", err)
 		c.AbortWithStatus(400)
@@ -335,7 +335,7 @@ func outplansIDDialInfoPUT(c *gin.Context) {
 
 	// update a outplan
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.OutplanUpdateDialInfo(&u, id, req.Source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
+	res, err := serviceHandler.OutplanUpdateDialInfo(c.Request.Context(), &u, id, req.Source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
 	if err != nil {
 		log.Errorf("Could not update the outplan. err: %v", err)
 		c.AbortWithStatus(400)

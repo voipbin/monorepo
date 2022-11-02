@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -159,8 +160,10 @@ func TestConferenceCreate(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().ConferenceV1ConferenceCreate(gomock.Any(), tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
-			res, err := h.ConferenceCreate(tt.customer, tt.confType, tt.confName, tt.confDetail, tt.preActions, tt.postActions)
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceCreate(ctx, tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
+			res, err := h.ConferenceCreate(ctx, tt.customer, tt.confType, tt.confName, tt.confDetail, tt.preActions, tt.postActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -213,10 +216,12 @@ func TestConferenceDelete(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(gomock.Any(), tt.confID).Return(tt.cfConference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceDelete(gomock.Any(), tt.confID).Return(nil)
+			ctx := context.Background()
 
-			err := h.ConferenceDelete(tt.customer, tt.confID)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.confID).Return(tt.cfConference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceDelete(ctx, tt.confID).Return(nil)
+
+			err := h.ConferenceDelete(ctx, tt.customer, tt.confID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -276,8 +281,10 @@ func TestConferenceGets(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().ConferenceV1ConferenceGets(gomock.Any(), tt.customer.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
-			res, err := h.ConferenceGets(tt.customer, tt.limit, tt.token)
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGets(ctx, tt.customer.ID, tt.token, tt.limit, "conference").Return(tt.response, nil)
+			res, err := h.ConferenceGets(ctx, tt.customer, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -354,8 +361,10 @@ func TestConferenceGet(t *testing.T) {
 				dbHandler:  mockDB,
 			}
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(gomock.Any(), tt.id).Return(tt.response, nil)
-			res, err := h.ConferenceGet(tt.customer, tt.id)
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.id).Return(tt.response, nil)
+			res, err := h.ConferenceGet(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

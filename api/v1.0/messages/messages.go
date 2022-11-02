@@ -64,7 +64,7 @@ func messagesGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get messages
-	messages, err := serviceHandler.MessageGets(&u, pageSize, req.PageToken)
+	messages, err := serviceHandler.MessageGets(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get messages list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -125,7 +125,7 @@ func messagesPOST(c *gin.Context) {
 
 	// create a message
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.MessageSend(&u, req.Source, req.Destinations, req.Text)
+	res, err := serviceHandler.MessageSend(c.Request.Context(), &u, req.Source, req.Destinations, req.Text)
 	if err != nil {
 		log.Errorf("Could not send the message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -173,7 +173,7 @@ func messagesIDDELETE(c *gin.Context) {
 
 	// delete message
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.MessageDelete(&u, id)
+	res, err := serviceHandler.MessageDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete a message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -221,7 +221,7 @@ func messagesIDGET(c *gin.Context) {
 
 	// get message
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.MessageGet(&u, id)
+	res, err := serviceHandler.MessageGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get an message. err: %v", err)
 		c.AbortWithStatus(400)

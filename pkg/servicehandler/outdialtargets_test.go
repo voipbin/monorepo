@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -125,10 +126,11 @@ func Test_OutdialtargetCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
-			mockReq.EXPECT().OutdialV1OutdialtargetCreate(gomock.Any(), tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4).Return(tt.response, nil)
-			res, err := h.OutdialtargetCreate(tt.customer, tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetCreate(ctx, tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4).Return(tt.response, nil)
+			res, err := h.OutdialtargetCreate(ctx, tt.customer, tt.outdialID, tt.outdialtargetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -188,10 +190,11 @@ func Test_OutdialtargetGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
-			mockReq.EXPECT().OutdialV1OutdialtargetGet(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
-			res, err := h.OutdialtargetGet(tt.customer, tt.outdialID, tt.outdialtargetID)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetGet(ctx, tt.outdialtargetID).Return(tt.response, nil)
+			res, err := h.OutdialtargetGet(ctx, tt.customer, tt.outdialID, tt.outdialtargetID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -256,11 +259,12 @@ func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
-			mockReq.EXPECT().OutdialV1OutdialtargetGetsByOutdialID(gomock.Any(), tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetGetsByOutdialID(ctx, tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.OutdialtargetGetsByOutdialID(tt.customer, tt.outdialID, tt.pageSize, tt.pageToken)
+			res, err := h.OutdialtargetGetsByOutdialID(ctx, tt.customer, tt.outdialID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -326,11 +330,12 @@ func Test_OutdialtargetDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(gomock.Any(), tt.outdialID).Return(tt.responseOutdial, nil)
-			mockReq.EXPECT().OutdialV1OutdialtargetGet(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
-			mockReq.EXPECT().OutdialV1OutdialtargetDelete(gomock.Any(), tt.outdialtargetID).Return(tt.response, nil)
-			res, err := h.OutdialtargetDelete(tt.customer, tt.outdialID, tt.outdialtargetID)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetGet(ctx, tt.outdialtargetID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetDelete(ctx, tt.outdialtargetID).Return(tt.response, nil)
+			res, err := h.OutdialtargetDelete(ctx, tt.customer, tt.outdialID, tt.outdialtargetID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

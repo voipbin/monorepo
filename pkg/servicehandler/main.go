@@ -78,19 +78,20 @@ type ServiceHandler interface {
 	AgentUpdateTagIDs(ctx context.Context, u *cscustomer.Customer, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error)
 
 	// auth handlers
-	AuthLogin(username, password string) (string, error)
+	AuthLogin(ctx context.Context, username, password string) (string, error)
 
 	// available numbers
-	AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
+	AvailableNumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
 
 	// call handlers
-	CallCreate(u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, error)
-	CallGet(u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
-	CallGets(u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error)
-	CallDelete(u *cscustomer.Customer, callID uuid.UUID) error
+	CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, error)
+	CallGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
+	CallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error)
+	CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error
 
 	// campaign handlers
 	CampaignCreate(
+		ctx context.Context,
 		u *cscustomer.Customer,
 		name string,
 		detail string,
@@ -103,20 +104,20 @@ type ServiceHandler interface {
 		queueID uuid.UUID,
 		nextCampaignID uuid.UUID,
 	) (*cacampaign.WebhookMessage, error)
-	CampaignGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*cacampaign.WebhookMessage, error)
-	CampaignGet(u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error)
-	CampaignDelete(u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateStatus(u *cscustomer.Customer, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateServiceLevel(u *cscustomer.Customer, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateActions(u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateResourceInfo(u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error)
-	CampaignUpdateNextCampaignID(u *cscustomer.Customer, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.WebhookMessage, error)
+	CampaignGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cacampaign.WebhookMessage, error)
+	CampaignGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error)
+	CampaignDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateStatus(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateServiceLevel(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateActions(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateResourceInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error)
+	CampaignUpdateNextCampaignID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.WebhookMessage, error)
 
 	// campaigncall handlers
-	CampaigncallGetsByCampaignID(u *cscustomer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error)
-	CampaigncallGet(u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error)
-	CampaigncallDelete(u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error)
+	CampaigncallGetsByCampaignID(ctx context.Context, u *cscustomer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error)
+	CampaigncallGet(ctx context.Context, u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error)
+	CampaigncallDelete(ctx context.Context, u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error)
 
 	// chat handlers
 	ChatCreate(
@@ -161,10 +162,10 @@ type ServiceHandler interface {
 	ChatroommessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
 
 	// conference handlers
-	ConferenceCreate(u *cscustomer.Customer, confType cfconference.Type, name, detail string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
-	ConferenceDelete(u *cscustomer.Customer, confID uuid.UUID) error
-	ConferenceGet(u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error)
-	ConferenceGets(u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
+	ConferenceCreate(ctx context.Context, u *cscustomer.Customer, confType cfconference.Type, name, detail string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
+	ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error
+	ConferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error)
+	ConferenceGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
 
 	// conferencecall handlers
 	ConferencecallGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconferencecall.WebhookMessage, error)
@@ -213,52 +214,53 @@ type ServiceHandler interface {
 	CustomerUpdatePermissionIDs(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)
 
 	// domain handlers
-	DomainCreate(u *cscustomer.Customer, domainName, name, detail string) (*rmdomain.WebhookMessage, error)
-	DomainDelete(u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error)
-	DomainGet(u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error)
-	DomainGets(u *cscustomer.Customer, size uint64, token string) ([]*rmdomain.WebhookMessage, error)
-	DomainUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*rmdomain.WebhookMessage, error)
+	DomainCreate(ctx context.Context, u *cscustomer.Customer, domainName, name, detail string) (*rmdomain.WebhookMessage, error)
+	DomainDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error)
+	DomainGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error)
+	DomainGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmdomain.WebhookMessage, error)
+	DomainUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*rmdomain.WebhookMessage, error)
 
 	// extension handlers
-	ExtensionCreate(u *cscustomer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.WebhookMessage, error)
-	ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
-	ExtensionGet(u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
-	ExtensionGets(u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
-	ExtensionUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
+	ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.WebhookMessage, error)
+	ExtensionDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
+	ExtensionGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
+	ExtensionGets(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
+	ExtensionUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
 
 	// flow handlers
-	FlowCreate(u *cscustomer.Customer, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
-	FlowDelete(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
-	FlowGet(u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
-	FlowGets(u *cscustomer.Customer, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
-	FlowUpdate(u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error)
+	FlowCreate(ctx context.Context, u *cscustomer.Customer, name, detail string, actions []fmaction.Action, persist bool) (*fmflow.WebhookMessage, error)
+	FlowDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
+	FlowGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
+	FlowGets(ctx context.Context, u *cscustomer.Customer, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
+	FlowUpdate(ctx context.Context, u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error)
 
 	// message handlers
-	MessageDelete(u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
-	MessageGets(u *cscustomer.Customer, size uint64, token string) ([]*mmmessage.WebhookMessage, error)
-	MessageGet(u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
-	MessageSend(u *cscustomer.Customer, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error)
+	MessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
+	MessageGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*mmmessage.WebhookMessage, error)
+	MessageGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
+	MessageSend(ctx context.Context, u *cscustomer.Customer, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error)
 
 	// order numbers handler
-	NumberCreate(u *cscustomer.Customer, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
-	NumberGet(u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
-	NumberGets(u *cscustomer.Customer, size uint64, token string) ([]*nmnumber.WebhookMessage, error)
-	NumberDelete(u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
-	NumberUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
-	NumberUpdateFlowIDs(u *cscustomer.Customer, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberCreate(ctx context.Context, u *cscustomer.Customer, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
+	NumberGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*nmnumber.WebhookMessage, error)
+	NumberDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
+	NumberUpdateFlowIDs(ctx context.Context, u *cscustomer.Customer, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
 
 	// outdials
-	OutdialCreate(u *cscustomer.Customer, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error)
-	OutdialGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error)
-	OutdialDelete(u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error)
-	OutdialGet(u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error)
-	OutdialtargetGetsByOutdialID(u *cscustomer.Customer, outdialID uuid.UUID, size uint64, token string) ([]*omoutdialtarget.WebhookMessage, error)
-	OutdialUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*omoutdial.WebhookMessage, error)
-	OutdialUpdateCampaignID(u *cscustomer.Customer, id, campaignID uuid.UUID) (*omoutdial.WebhookMessage, error)
-	OutdialUpdateData(u *cscustomer.Customer, id uuid.UUID, data string) (*omoutdial.WebhookMessage, error)
+	OutdialCreate(ctx context.Context, u *cscustomer.Customer, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error)
+	OutdialGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*omoutdial.WebhookMessage, error)
+	OutdialDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error)
+	OutdialGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*omoutdial.WebhookMessage, error)
+	OutdialtargetGetsByOutdialID(ctx context.Context, u *cscustomer.Customer, outdialID uuid.UUID, size uint64, token string) ([]*omoutdialtarget.WebhookMessage, error)
+	OutdialUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*omoutdial.WebhookMessage, error)
+	OutdialUpdateCampaignID(ctx context.Context, u *cscustomer.Customer, id, campaignID uuid.UUID) (*omoutdial.WebhookMessage, error)
+	OutdialUpdateData(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, data string) (*omoutdial.WebhookMessage, error)
 
 	// outdialtargets
 	OutdialtargetCreate(
+		ctx context.Context,
 		u *cscustomer.Customer,
 		outdialID uuid.UUID,
 		name string,
@@ -270,10 +272,11 @@ type ServiceHandler interface {
 		destination3 *commonaddress.Address,
 		destination4 *commonaddress.Address,
 	) (*omoutdialtarget.WebhookMessage, error)
-	OutdialtargetGet(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
-	OutdialtargetDelete(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
+	OutdialtargetGet(ctx context.Context, u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
+	OutdialtargetDelete(ctx context.Context, u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error)
 
 	OutplanCreate(
+		ctx context.Context,
 		u *cscustomer.Customer,
 		name string,
 		detail string,
@@ -286,11 +289,12 @@ type ServiceHandler interface {
 		maxTryCount3 int,
 		maxTryCount4 int,
 	) (*caoutplan.WebhookMessage, error)
-	OutplanDelete(u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error)
-	OutplanGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*caoutplan.WebhookMessage, error)
-	OutplanGet(u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error)
-	OutplanUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error)
+	OutplanDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error)
+	OutplanGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*caoutplan.WebhookMessage, error)
+	OutplanGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error)
+	OutplanUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error)
 	OutplanUpdateDialInfo(
+		ctx context.Context,
 		u *cscustomer.Customer,
 		id uuid.UUID,
 		source *commonaddress.Address,
@@ -332,9 +336,10 @@ type ServiceHandler interface {
 	) (*rmprovider.WebhookMessage, error)
 
 	// queue handlers
-	QueueGet(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
-	QueueGets(u *cscustomer.Customer, size uint64, token string) ([]*qmqueue.WebhookMessage, error)
+	QueueGet(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
+	QueueGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*qmqueue.WebhookMessage, error)
 	QueueCreate(
+		ctx context.Context,
 		u *cscustomer.Customer,
 		name string,
 		detail string,
@@ -344,11 +349,11 @@ type ServiceHandler interface {
 		timeoutWait int,
 		timeoutService int,
 	) (*qmqueue.WebhookMessage, error)
-	QueueDelete(u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
-	QueueUpdate(u *cscustomer.Customer, queueID uuid.UUID, name, detail string) (*qmqueue.WebhookMessage, error)
-	QueueUpdateTagIDs(u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error)
-	QueueUpdateRoutingMethod(u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error)
-	QueueUpdateActions(u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error)
+	QueueDelete(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
+	QueueUpdate(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, name, detail string) (*qmqueue.WebhookMessage, error)
+	QueueUpdateTagIDs(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error)
+	QueueUpdateRoutingMethod(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error)
+	QueueUpdateActions(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error)
 
 	// queuecall handlers
 	QueuecallGet(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
@@ -357,11 +362,11 @@ type ServiceHandler interface {
 	QueuecallDeleteByReferenceID(ctx context.Context, u *cscustomer.Customer, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
 
 	// recording handlers
-	RecordingGet(u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error)
-	RecordingGets(u *cscustomer.Customer, size uint64, token string) ([]*cmrecording.WebhookMessage, error)
+	RecordingGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error)
+	RecordingGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmrecording.WebhookMessage, error)
 
 	// recordingfile handlers
-	RecordingfileGet(u *cscustomer.Customer, id uuid.UUID) (string, error)
+	RecordingfileGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (string, error)
 
 	// route handlers
 	RouteGet(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*rmroute.WebhookMessage, error)
@@ -378,14 +383,14 @@ type ServiceHandler interface {
 	RouteUpdate(ctx context.Context, u *cscustomer.Customer, routeID, providerID uuid.UUID, priority int, target string) (*rmroute.WebhookMessage, error)
 
 	// tag handlers
-	TagCreate(u *cscustomer.Customer, name string, detail string) (*amtag.WebhookMessage, error)
-	TagDelete(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
-	TagGet(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
-	TagGets(u *cscustomer.Customer, size uint64, token string) ([]*amtag.WebhookMessage, error)
-	TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*amtag.WebhookMessage, error)
+	TagCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string) (*amtag.WebhookMessage, error)
+	TagDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
+	TagGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
+	TagGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*amtag.WebhookMessage, error)
+	TagUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*amtag.WebhookMessage, error)
 
 	// transcribe handlers
-	TranscribeCreate(u *cscustomer.Customer, referencdID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error)
+	TranscribeCreate(ctx context.Context, u *cscustomer.Customer, referencdID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error)
 
 	WebsockCreate(ctx context.Context, u *cscustomer.Customer, w http.ResponseWriter, r *http.Request) error
 }

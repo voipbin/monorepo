@@ -14,6 +14,7 @@ import (
 
 // OutplanCreate is a service handler for outplan creation.
 func (h *serviceHandler) OutplanCreate(
+	ctx context.Context,
 	u *cscustomer.Customer,
 	name string,
 	detail string,
@@ -26,7 +27,6 @@ func (h *serviceHandler) OutplanCreate(
 	maxTryCount3 int,
 	maxTryCount4 int,
 ) (*caoutplan.WebhookMessage, error) {
-	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanCreate",
 		"customer_id": u.ID,
@@ -45,8 +45,7 @@ func (h *serviceHandler) OutplanCreate(
 }
 
 // OutplanDelete deletes the outplan.
-func (h *serviceHandler) OutplanDelete(u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutplanDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanDelete",
 		"customer_id": u.ID,
@@ -80,8 +79,7 @@ func (h *serviceHandler) OutplanDelete(u *cscustomer.Customer, id uuid.UUID) (*c
 
 // OutplanGetsByCustomerID gets the list of outplans of the given customer id.
 // It returns list of outplans if it succeed.
-func (h *serviceHandler) OutplanGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*caoutplan.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -113,8 +111,7 @@ func (h *serviceHandler) OutplanGetsByCustomerID(u *cscustomer.Customer, size ui
 
 // OutplanGet gets the outplan of the given id.
 // It returns outplan if it succeed.
-func (h *serviceHandler) OutplanGet(u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutplanGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanGet",
 		"customer_id": u.ID,
@@ -142,8 +139,7 @@ func (h *serviceHandler) OutplanGet(u *cscustomer.Customer, id uuid.UUID) (*caou
 
 // OutplanUpdateBasicInfo updates the outplan's basic info.
 // It returns updated outplan if it succeed.
-func (h *serviceHandler) OutplanUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanUpdateBasicInfo",
 		"customer_id": u.ID,
@@ -178,6 +174,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(u *cscustomer.Customer, id uuid.
 // OutplanUpdateDialInfo updates the outplan's dial info.
 // It returns updated outplan if it succeed.
 func (h *serviceHandler) OutplanUpdateDialInfo(
+	ctx context.Context,
 	u *cscustomer.Customer,
 	id uuid.UUID,
 	source *commonaddress.Address,
@@ -189,7 +186,6 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 	maxTryCount3 int,
 	maxTryCount4 int,
 ) (*caoutplan.WebhookMessage, error) {
-	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanUpdateBasicInfo",
 		"customer_id": u.ID,

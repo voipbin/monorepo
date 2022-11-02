@@ -66,7 +66,7 @@ func queuesGET(c *gin.Context) {
 	}
 
 	// get tmps
-	tmps, err := serviceHandler.QueueGets(&u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.QueueGets(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get queues info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -130,6 +130,7 @@ func queuesPOST(c *gin.Context) {
 
 	// create
 	res, err := serviceHandler.QueueCreate(
+		c.Request.Context(),
 		&u,
 		req.Name,
 		req.Detail,
@@ -191,7 +192,7 @@ func queuesIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	res, err := serviceHandler.QueueDelete(&u, id)
+	res, err := serviceHandler.QueueDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Infof("Could not get the delete the queue info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -239,7 +240,7 @@ func queuesIDGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	res, err := serviceHandler.QueueGet(&u, id)
+	res, err := serviceHandler.QueueGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Infof("Could not get the queue info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -296,7 +297,7 @@ func queuesIDPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.QueueUpdate(&u, id, req.Name, req.Detail)
+	res, err := serviceHandler.QueueUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		c.AbortWithStatus(400)
@@ -353,7 +354,7 @@ func queuesIDTagIDsPUT(c *gin.Context) {
 
 	// update the queue
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.QueueUpdateTagIDs(&u, id, req.TagIDs)
+	res, err := serviceHandler.QueueUpdateTagIDs(c.Request.Context(), &u, id, req.TagIDs)
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -409,7 +410,7 @@ func queuesIDRoutingMethodPUT(c *gin.Context) {
 
 	// update the queue
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.QueueUpdateRoutingMethod(&u, id, qmqueue.RoutingMethod(req.RoutingMethod))
+	res, err := serviceHandler.QueueUpdateRoutingMethod(c.Request.Context(), &u, id, qmqueue.RoutingMethod(req.RoutingMethod))
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		c.AbortWithStatus(400)
@@ -465,7 +466,7 @@ func queuesIDActionsPUT(c *gin.Context) {
 
 	// update the queue
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.QueueUpdateActions(&u, id, req.WaitActions, req.TimeoutWait, req.TimeoutService)
+	res, err := serviceHandler.QueueUpdateActions(c.Request.Context(), &u, id, req.WaitActions, req.TimeoutWait, req.TimeoutService)
 	if err != nil {
 		log.Errorf("Could not update the queue's action handle. err: %v", err)
 		c.AbortWithStatus(400)

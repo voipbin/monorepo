@@ -75,9 +75,9 @@ func TestDomainsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().DomainCreate(&tt.customer, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&rmdomain.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/domains", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().DomainCreate(req.Context(), &tt.customer, tt.requestBody.DomainName, tt.requestBody.Name, tt.requestBody.Detail).Return(&rmdomain.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -137,8 +137,8 @@ func TestDomainsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().DomainGet(&tt.customer, tt.domain.ID).Return(tt.expectDomain, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/domains/%s", tt.domain.ID), nil)
+			mockSvc.EXPECT().DomainGet(req.Context(), &tt.customer, tt.domain.ID).Return(tt.expectDomain, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -206,9 +206,9 @@ func TestDomainsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().DomainUpdate(&tt.customer, tt.domainID, tt.domainN, tt.detail).Return(&rmdomain.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/domains/"+tt.domainID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().DomainUpdate(req.Context(), &tt.customer, tt.domainID, tt.domainN, tt.detail).Return(&rmdomain.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -254,8 +254,8 @@ func TestDomainsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().DomainDelete(&tt.customer, tt.domainID).Return(&rmdomain.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/domains/%s", tt.domainID), nil)
+			mockSvc.EXPECT().DomainDelete(req.Context(), &tt.customer, tt.domainID).Return(&rmdomain.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

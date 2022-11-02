@@ -63,7 +63,7 @@ func recordingsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get recordings
-	recordings, err := serviceHandler.RecordingGets(&u, pageSize, requestParam.PageToken)
+	recordings, err := serviceHandler.RecordingGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
 	if err != nil {
 		logrus.Errorf("Could not get a recordings. err: %v", err)
 		c.AbortWithStatus(400)
@@ -121,7 +121,7 @@ func recordingsIDGET(c *gin.Context) {
 	log.Debug("Executing recordingsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.RecordingGet(&u, id)
+	res, err := serviceHandler.RecordingGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a recording info. err: %v", err)
 		c.AbortWithStatus(400)

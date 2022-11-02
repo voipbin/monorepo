@@ -62,8 +62,8 @@ func TestRecordingfilesIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().RecordingfileGet(&tt.customer, tt.recording.ID).Return(tt.downloadURL, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/recordingfiles/%s", tt.recording.ID), nil)
+			mockSvc.EXPECT().RecordingfileGet(req.Context(), &tt.customer, tt.recording.ID).Return(tt.downloadURL, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusTemporaryRedirect || w.Result().Header["Location"][0] != tt.downloadURL {

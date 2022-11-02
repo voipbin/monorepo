@@ -84,7 +84,7 @@ func TestTagsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagCreate(&tt.customer, tt.tagName, tt.detail).Return(tt.res, nil)
+			mockSvc.EXPECT().TagCreate(req.Context(), &tt.customer, tt.tagName, tt.detail).Return(tt.res, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -169,9 +169,8 @@ func TestTagsGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().TagGets(&tt.customer, tt.pageSize, tt.pageToken).Return(tt.resAgents, nil)
-
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			mockSvc.EXPECT().TagGets(req.Context(), &tt.customer, tt.pageSize, tt.pageToken).Return(tt.resAgents, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -224,7 +223,7 @@ func TestTagsDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagDelete(&tt.customer, tt.agentID).Return(&amtag.WebhookMessage{}, nil)
+			mockSvc.EXPECT().TagDelete(req.Context(), &tt.customer, tt.agentID).Return(&amtag.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -280,7 +279,7 @@ func TestTagsIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagGet(&tt.customer, tt.agentID).Return(tt.response, nil)
+			mockSvc.EXPECT().TagGet(req.Context(), &tt.customer, tt.agentID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -338,7 +337,7 @@ func TestTagsIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagUpdate(&tt.customer, tt.agentID, tt.tagName, tt.detail).Return(&amtag.WebhookMessage{}, nil)
+			mockSvc.EXPECT().TagUpdate(req.Context(), &tt.customer, tt.agentID, tt.tagName, tt.detail).Return(&amtag.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

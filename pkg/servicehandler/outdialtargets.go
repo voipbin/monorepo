@@ -15,6 +15,7 @@ import (
 // OutdialtargetCreate creates a new outdialtarget.
 // It returns created outdialtarget if it succeed.
 func (h *serviceHandler) OutdialtargetCreate(
+	ctx context.Context,
 	u *cscustomer.Customer,
 	outdialID uuid.UUID,
 	name string,
@@ -26,7 +27,6 @@ func (h *serviceHandler) OutdialtargetCreate(
 	destination3 *commonaddress.Address,
 	destination4 *commonaddress.Address,
 ) (*omoutdialtarget.WebhookMessage, error) {
-	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialtargetCreate",
 		"customer_id": u.ID,
@@ -67,8 +67,7 @@ func (h *serviceHandler) OutdialtargetCreate(
 
 // OutdialtargetGet gets an outdialtarget.
 // It returns outdialtarget if it succeed.
-func (h *serviceHandler) OutdialtargetGet(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialtargetGet(ctx context.Context, u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialtargetGet",
 		"customer_id": u.ID,
@@ -103,8 +102,7 @@ func (h *serviceHandler) OutdialtargetGet(u *cscustomer.Customer, outdialID uuid
 
 // OutdialtargetGetsByOutdialID gets the list of outdialtargets of the given outdial id.
 // It returns list of outdialtargets if it succeed.
-func (h *serviceHandler) OutdialtargetGetsByOutdialID(u *cscustomer.Customer, outdialID uuid.UUID, size uint64, token string) ([]*omoutdialtarget.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, u *cscustomer.Customer, outdialID uuid.UUID, size uint64, token string) ([]*omoutdialtarget.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialtargetGetsByOutdialID",
 		"customer_id": u.ID,
@@ -144,8 +142,7 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(u *cscustomer.Customer, ou
 
 // OutdialtargetDelete deletes an outdialtarget.
 // It returns deleted outdialtarget if it succeed.
-func (h *serviceHandler) OutdialtargetDelete(u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, u *cscustomer.Customer, outdialID uuid.UUID, outdialtargetID uuid.UUID) (*omoutdialtarget.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutdialtargetDelete",
 		"customer_id": u.ID,

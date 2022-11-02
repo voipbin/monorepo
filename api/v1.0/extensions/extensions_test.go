@@ -90,9 +90,9 @@ func TestExtensionsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().ExtensionCreate(&tt.customer, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(&rmextension.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/extensions", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ExtensionCreate(req.Context(), &tt.customer, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(&rmextension.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -148,8 +148,8 @@ func TestExtensionsGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ExtensionGets(&tt.customer, tt.DomainID, uint64(10), "").Return(tt.expectExt, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/extensions?domain_id=%s", tt.DomainID), nil)
+			mockSvc.EXPECT().ExtensionGets(req.Context(), &tt.customer, tt.DomainID, uint64(10), "").Return(tt.expectExt, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -211,8 +211,8 @@ func TestExtensionsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ExtensionGet(&tt.customer, tt.ext.ID).Return(tt.expectExt, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/extensions/%s", tt.ext.ID), nil)
+			mockSvc.EXPECT().ExtensionGet(req.Context(), &tt.customer, tt.ext.ID).Return(tt.expectExt, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -282,9 +282,9 @@ func TestExtensionsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().ExtensionUpdate(&tt.customer, tt.extID, tt.extName, tt.detail, tt.password).Return(&rmextension.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/extensions/"+tt.extID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ExtensionUpdate(req.Context(), &tt.customer, tt.extID, tt.extName, tt.detail, tt.password).Return(&rmextension.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -329,8 +329,8 @@ func TestExtensionsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().ExtensionDelete(&tt.customer, tt.extID).Return(&rmextension.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/extensions/%s", tt.extID), nil)
+			mockSvc.EXPECT().ExtensionDelete(req.Context(), &tt.customer, tt.extID).Return(&rmextension.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

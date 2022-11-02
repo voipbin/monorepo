@@ -89,9 +89,9 @@ func TestFlowsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowCreate(&tt.customer, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Actions, true).Return(tt.resFlow, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/flows", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.customer, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Actions, true).Return(tt.resFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -157,8 +157,8 @@ func TestFlowsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().FlowGet(&tt.customer, tt.flow.ID).Return(tt.expectFlow, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/flows/%s", tt.flow.ID), nil)
+			mockSvc.EXPECT().FlowGet(req.Context(), &tt.customer, tt.flow.ID).Return(tt.expectFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -231,9 +231,9 @@ func TestFlowsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().FlowUpdate(&tt.customer, tt.requestFlow).Return(&fmflow.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().FlowUpdate(req.Context(), &tt.customer, tt.requestFlow).Return(&fmflow.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -276,8 +276,8 @@ func TestFlowsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().FlowDelete(&tt.customer, tt.flowID).Return(&fmflow.WebhookMessage{}, nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/flows/%s", tt.flowID), nil)
+			mockSvc.EXPECT().FlowDelete(req.Context(), &tt.customer, tt.flowID).Return(&fmflow.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

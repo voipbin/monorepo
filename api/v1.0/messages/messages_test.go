@@ -75,8 +75,8 @@ func Test_MessagesGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().MessageGets(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.responseGets, nil)
 			req, _ := http.NewRequest("GET", tt.uri, nil)
+			mockSvc.EXPECT().MessageGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.responseGets, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -128,8 +128,8 @@ func Test_MessagesIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().MessageGet(&tt.customer, tt.messageID).Return(tt.responseGet, nil)
 			req, _ := http.NewRequest("GET", tt.uri, nil)
+			mockSvc.EXPECT().MessageGet(req.Context(), &tt.customer, tt.messageID).Return(tt.responseGet, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -190,8 +190,8 @@ func Test_messagesIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().MessageDelete(&tt.customer, tt.messageID).Return(tt.responseDelete, nil)
 			req, _ := http.NewRequest("DELETE", tt.uri, nil)
+			mockSvc.EXPECT().MessageDelete(req.Context(), &tt.customer, tt.messageID).Return(tt.responseDelete, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -250,14 +250,14 @@ func Test_messagesPOST(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().MessageSend(&tt.customer, tt.requestBody.Source, tt.requestBody.Destinations, tt.requestBody.Text).Return(&message.WebhookMessage{}, nil)
-
 			// create body
 			body, err := json.Marshal(tt.requestBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 			req, _ := http.NewRequest("POST", tt.uri, bytes.NewBuffer(body))
+
+			mockSvc.EXPECT().MessageSend(req.Context(), &tt.customer, tt.requestBody.Source, tt.requestBody.Destinations, tt.requestBody.Text).Return(&message.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

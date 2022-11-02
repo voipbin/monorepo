@@ -11,8 +11,7 @@ import (
 // AvailableNumberGets sends a handles available number get
 // It sends a request to the number-manager to getting a list of calls.
 // it returns list of available numbers if it succeed.
-func (h *serviceHandler) AvailableNumberGets(u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AvailableNumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  u.ID,
 		"username":     u.Username,
