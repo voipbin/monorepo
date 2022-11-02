@@ -106,7 +106,7 @@ func Test_outdialsGET(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/outdials?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().OutdialGetsByCustomerID(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutdials, nil)
+			mockSvc.EXPECT().OutdialGetsByCustomerID(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -173,9 +173,9 @@ func Test_outdialsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().OutdialCreate(&tt.customer, tt.requestBody.CampaignID, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Data).Return(tt.response, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/outdials", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().OutdialCreate(req.Context(), &tt.customer, tt.requestBody.CampaignID, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Data).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -224,8 +224,8 @@ func Test_outdialsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OutdialGet(&tt.customer, tt.outdialID).Return(tt.response, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/outdials/%s", tt.outdialID), nil)
+			mockSvc.EXPECT().OutdialGet(req.Context(), &tt.customer, tt.outdialID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -273,8 +273,8 @@ func Test_outdialsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OutdialDelete(&tt.customer, tt.outdialID).Return(tt.response, nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/outdials/%s", tt.outdialID), nil)
+			mockSvc.EXPECT().OutdialDelete(req.Context(), &tt.customer, tt.outdialID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -335,9 +335,9 @@ func Test_outdialsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().OutdialUpdateBasicInfo(&tt.customer, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/outdials/"+tt.outdialID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().OutdialUpdateBasicInfo(req.Context(), &tt.customer, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -397,9 +397,9 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().OutdialUpdateCampaignID(&tt.customer, tt.outdialID, tt.requestBody.CampaignID).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/outdials/"+tt.outdialID.String()+"/campaign_id", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().OutdialUpdateCampaignID(req.Context(), &tt.customer, tt.outdialID, tt.requestBody.CampaignID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -459,9 +459,9 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().OutdialUpdateData(&tt.customer, tt.outdialID, tt.requestBody.Data).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/outdials/"+tt.outdialID.String()+"/data", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().OutdialUpdateData(req.Context(), &tt.customer, tt.outdialID, tt.requestBody.Data).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -546,9 +546,9 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().OutdialtargetCreate(&tt.customer, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Data, tt.requestBody.Destination0, tt.requestBody.Destination1, tt.requestBody.Destination2, tt.requestBody.Destination3, tt.requestBody.Destination4).Return(tt.response, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/outdials/"+tt.outdialID.String()+"/targets", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().OutdialtargetCreate(req.Context(), &tt.customer, tt.outdialID, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Data, tt.requestBody.Destination0, tt.requestBody.Destination1, tt.requestBody.Destination2, tt.requestBody.Destination3, tt.requestBody.Destination4).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -602,9 +602,9 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OutdialtargetGet(&tt.customer, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
 			req, _ := http.NewRequest("GET", "/v1.0/outdials/"+tt.outdialID.String()+"/targets/"+tt.outdialtargetID.String(), nil)
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().OutdialtargetGet(req.Context(), &tt.customer, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -658,9 +658,9 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OutdialtargetDelete(&tt.customer, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
 			req, _ := http.NewRequest("DELETE", "/v1.0/outdials/"+tt.outdialID.String()+"/targets/"+tt.outdialtargetID.String(), nil)
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().OutdialtargetDelete(req.Context(), &tt.customer, tt.outdialID, tt.outdialtargetID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -756,7 +756,7 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().OutdialtargetGetsByOutdialID(&tt.customer, tt.outdialID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdialtargets, nil)
+			mockSvc.EXPECT().OutdialtargetGetsByOutdialID(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdialtargets, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

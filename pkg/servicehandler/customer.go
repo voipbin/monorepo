@@ -76,7 +76,6 @@ func (h *serviceHandler) CustomerCreate(
 
 // UserGet returns customer info of given customerID.
 func (h *serviceHandler) CustomerGet(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
-
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "CustomerGet",

@@ -74,9 +74,9 @@ func TestTranscribesPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().TranscribeCreate(&tt.customer, tt.requestBody.RecordingID, tt.requestBody.Language).Return(tt.trans, nil)
 			req, _ := http.NewRequest("POST", "/v1.0/transcribes", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().TranscribeCreate(req.Context(), &tt.customer, tt.requestBody.RecordingID, tt.requestBody.Language).Return(tt.trans, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

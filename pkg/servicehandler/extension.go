@@ -39,8 +39,7 @@ func (h *serviceHandler) extensionGet(ctx context.Context, u *cscustomer.Custome
 }
 
 // ExtensionCreate is a service handler for flow creation.
-func (h *serviceHandler) ExtensionCreate(u *cscustomer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"domain_id":   domainID,
@@ -61,8 +60,7 @@ func (h *serviceHandler) ExtensionCreate(u *cscustomer.Customer, ext, password s
 }
 
 // ExtensionDelete deletes the extension of the given id.
-func (h *serviceHandler) ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) ExtensionDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  u.ID,
 		"username":     u.Username,
@@ -88,8 +86,7 @@ func (h *serviceHandler) ExtensionDelete(u *cscustomer.Customer, id uuid.UUID) (
 
 // ExtensionGet gets the extension of the given id.
 // It returns extension if it succeed.
-func (h *serviceHandler) ExtensionGet(u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) ExtensionGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  u.ID,
 		"username":     u.Username,
@@ -109,8 +106,7 @@ func (h *serviceHandler) ExtensionGet(u *cscustomer.Customer, id uuid.UUID) (*rm
 
 // ExtensionGets gets the list of extensions of the given customer id.
 // It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionGets(u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) ExtensionGets(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ExtensionGets",
 		"customer_id": u.ID,
@@ -142,8 +138,7 @@ func (h *serviceHandler) ExtensionGets(u *cscustomer.Customer, domainID uuid.UUI
 
 // ExtesnionUpdate updates the extension info.
 // It returns updated extension if it succeed.
-func (h *serviceHandler) ExtensionUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) ExtensionUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ExtensionUpdate",
 		"customer_id":  u.ID,

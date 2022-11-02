@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -135,15 +136,16 @@ func TestCallCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
 			targetFlowID := tt.flowID
 			if targetFlowID == uuid.Nil {
 				targetFlowID = uuid.Must(uuid.NewV4())
-				mockReq.EXPECT().FlowV1FlowCreate(gomock.Any(), tt.customer.ID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(&fmflow.Flow{ID: targetFlowID}, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customer.ID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(&fmflow.Flow{ID: targetFlowID}, nil)
 			}
-			mockReq.EXPECT().CallV1CallsCreate(gomock.Any(), tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations).Return(tt.responseCall, nil)
 
-			res, err := h.CallCreate(tt.customer, tt.flowID, tt.actions, tt.source, tt.destinations)
+			res, err := h.CallCreate(ctx, tt.customer, tt.flowID, tt.actions, tt.source, tt.destinations)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -189,11 +191,12 @@ func TestCallDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(gomock.Any(), tt.callID).Return(tt.call, nil)
-			mockReq.EXPECT().CallV1CallHangup(gomock.Any(), tt.callID).Return(nil, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.call, nil)
+			mockReq.EXPECT().CallV1CallHangup(ctx, tt.callID).Return(nil, nil)
 
-			if err := h.CallDelete(tt.customer, tt.callID); err != nil {
+			if err := h.CallDelete(ctx, tt.customer, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

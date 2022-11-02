@@ -54,7 +54,7 @@ func tagsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
-	res, err := serviceHandler.TagCreate(&u, req.Name, req.Detail)
+	res, err := serviceHandler.TagCreate(c.Request.Context(),&u, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a new tag. err: %v", err)
 		c.AbortWithStatus(400)
@@ -107,7 +107,7 @@ func tagsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	res, err := serviceHandler.TagDelete(&u, id)
+	res, err := serviceHandler.TagDelete(c.Request.Context(),&u, id)
 	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -160,7 +160,7 @@ func tagsIDGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	res, err := serviceHandler.TagGet(&u, id)
+	res, err := serviceHandler.TagGet(c.Request.Context(),&u, id)
 	if err != nil {
 		log.Infof("Could not get the tag info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -224,7 +224,7 @@ func tagsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get tmps
-	tmps, err := serviceHandler.TagGets(&u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.TagGets(c.Request.Context(),&u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -292,7 +292,7 @@ func tagsIDPUT(c *gin.Context) {
 
 	// update the tag
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.TagUpdate(&u, id, req.Name, req.Detail)
+	res, err := serviceHandler.TagUpdate(c.Request.Context(),&u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the tag. err: %v", err)
 		c.AbortWithStatus(400)

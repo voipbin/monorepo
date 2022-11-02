@@ -98,7 +98,10 @@ func Test_campaignsPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().CampaignCreate(
+				req.Context(),
 				&tt.customer,
 				tt.reqBody.Name,
 				tt.reqBody.Detail,
@@ -111,8 +114,6 @@ func Test_campaignsPOST(t *testing.T) {
 				tt.reqBody.QueueID,
 				tt.reqBody.NextCampaignID,
 			).Return(tt.response, nil)
-			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -209,9 +210,9 @@ func Test_campaignsGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().CampaignGetsByCustomerID(&tt.customer, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
-
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			mockSvc.EXPECT().CampaignGetsByCustomerID(req.Context(), &tt.customer, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
+
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -271,8 +272,8 @@ func Test_campaignsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().CampaignGet(&tt.customer, tt.campaignID).Return(tt.responseCampaign, nil)
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			mockSvc.EXPECT().CampaignGet(req.Context(), &tt.customer, tt.campaignID).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -333,8 +334,8 @@ func Test_campaignsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().CampaignDelete(&tt.customer, tt.campaignID).Return(tt.responseCampaign, nil)
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
+			mockSvc.EXPECT().CampaignDelete(req.Context(), &tt.customer, tt.campaignID).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -405,9 +406,9 @@ func Test_campaignsIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateBasicInfo(&tt.customer, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.Name, tt.reqBody.Detail).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -471,9 +472,9 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateStatus(&tt.customer, tt.campaignID, tt.reqBody.Status).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().CampaignUpdateStatus(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.Status).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -537,9 +538,9 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateServiceLevel(&tt.customer, tt.campaignID, tt.reqBody.ServiceLevel).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().CampaignUpdateServiceLevel(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.ServiceLevel).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -607,9 +608,9 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateActions(&tt.customer, tt.outdialID, tt.reqBody.Actions).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().CampaignUpdateActions(req.Context(), &tt.customer, tt.outdialID, tt.reqBody.Actions).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -675,9 +676,9 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateResourceInfo(&tt.customer, tt.campaignID, tt.reqBody.OutplanID, tt.reqBody.OutdialID, tt.reqBody.QueueID).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.OutplanID, tt.reqBody.OutdialID, tt.reqBody.QueueID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -741,9 +742,9 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().CampaignUpdateNextCampaignID(&tt.customer, tt.campaignID, tt.requestBody.NextCampaignID).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), &tt.customer, tt.campaignID, tt.requestBody.NextCampaignID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -838,10 +839,9 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			// reqQuery := fmt.Sprintf("/v1.0/campaigns?page_size=%d&page_token=%s", tt.reqBody.PageSize, tt.reqBody.PageToken)
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CampaigncallGetsByCampaignID(&tt.customer, tt.campaignID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
+			mockSvc.EXPECT().CampaigncallGetsByCampaignID(req.Context(), &tt.customer, tt.campaignID, tt.reqBody.PageSize, tt.reqBody.PageToken).Return(tt.resOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -89,7 +89,10 @@ func Test_outplansPOST(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
+			req, _ := http.NewRequest("POST", "/v1.0/outplans", bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().OutplanCreate(
+				req.Context(),
 				&tt.customer,
 				tt.requestBody.Name,
 				tt.requestBody.Detail,
@@ -102,8 +105,6 @@ func Test_outplansPOST(t *testing.T) {
 				tt.requestBody.MaxTryCount3,
 				tt.requestBody.MaxTryCount4,
 			).Return(tt.response, nil)
-			req, _ := http.NewRequest("POST", "/v1.0/outplans", bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -192,7 +193,7 @@ func Test_outplansGET(t *testing.T) {
 			reqQuery := fmt.Sprintf("/v1.0/outplans?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
 			req, _ := http.NewRequest("GET", reqQuery, nil)
 
-			mockSvc.EXPECT().OutplanGetsByCustomerID(&tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutplans, nil)
+			mockSvc.EXPECT().OutplanGetsByCustomerID(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resOutplans, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -245,8 +246,8 @@ func Test_outplansIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OutplanGet(&tt.customer, tt.outplanID).Return(tt.response, nil)
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/outplans/%s", tt.outplanID), nil)
+			mockSvc.EXPECT().OutplanGet(req.Context(), &tt.customer, tt.outplanID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -294,8 +295,8 @@ func Test_outplansIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().OutplanDelete(&tt.customer, tt.outplanID).Return(tt.response, nil)
 			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/outplans/%s", tt.outplanID), nil)
+			mockSvc.EXPECT().OutplanDelete(req.Context(), &tt.customer, tt.outplanID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -356,9 +357,9 @@ func Test_outplansIDPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			mockSvc.EXPECT().OutplanUpdateBasicInfo(&tt.customer, tt.outplanID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
 			req, _ := http.NewRequest("PUT", "/v1.0/outplans/"+tt.outplanID.String(), bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().OutplanUpdateBasicInfo(req.Context(), &tt.customer, tt.outplanID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -428,7 +429,10 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
+			req, _ := http.NewRequest("PUT", "/v1.0/outplans/"+tt.outplanID.String()+"/dial_info", bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().OutplanUpdateDialInfo(
+				req.Context(),
 				&tt.customer,
 				tt.outplanID,
 				tt.requestBody.Source,
@@ -440,8 +444,6 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 				tt.requestBody.MaxTryCount3,
 				tt.requestBody.MaxTryCount4,
 			).Return(tt.response, nil)
-			req, _ := http.NewRequest("PUT", "/v1.0/outplans/"+tt.outplanID.String()+"/dial_info", bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

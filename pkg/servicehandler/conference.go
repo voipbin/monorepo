@@ -42,8 +42,7 @@ func (h *serviceHandler) conferenceGet(ctx context.Context, u *cscustomer.Custom
 
 // ConferenceGet gets the conference.
 // It returns conference info if it succeed.
-func (h *serviceHandler) ConferenceGet(u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) ConferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -63,8 +62,7 @@ func (h *serviceHandler) ConferenceGet(u *cscustomer.Customer, id uuid.UUID) (*c
 
 // ConferenceGets gets the list of conference.
 // It returns list of calls if it succeed.
-func (h *serviceHandler) ConferenceGets(u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) ConferenceGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -95,6 +93,7 @@ func (h *serviceHandler) ConferenceGets(u *cscustomer.Customer, size uint64, tok
 
 // ConferenceCreate is a service handler for conference creating.
 func (h *serviceHandler) ConferenceCreate(
+	ctx context.Context,
 	u *cscustomer.Customer,
 	confType cfconference.Type,
 	name string,
@@ -102,7 +101,6 @@ func (h *serviceHandler) ConferenceCreate(
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*cfconference.WebhookMessage, error) {
-	ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"customer_id":  u.ID,
@@ -127,8 +125,7 @@ func (h *serviceHandler) ConferenceCreate(
 }
 
 // ConferenceDelete is a service handler for conference creating.
-func (h *serviceHandler) ConferenceDelete(u *cscustomer.Customer, confID uuid.UUID) error {
-	ctx := context.Background()
+func (h *serviceHandler) ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"customer_id": u.ID,

@@ -11,8 +11,7 @@ import (
 )
 
 // AuthLogin generate jwt token of an customer
-func (h *serviceHandler) AuthLogin(username, password string) (string, error) {
-	ctx := context.Background()
+func (h *serviceHandler) AuthLogin(ctx context.Context, username, password string) (string, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":     "AuthLogin",

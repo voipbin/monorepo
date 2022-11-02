@@ -41,8 +41,7 @@ func (h *serviceHandler) campaigncallGet(ctx context.Context, u *cscustomer.Cust
 
 // CampaigncallGetsByCampaignID gets the list of campaigncalls of the given campaign id.
 // It returns list of campaigncalls if it succeed.
-func (h *serviceHandler) CampaigncallGetsByCampaignID(u *cscustomer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *cscustomer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaigncallGetsByCampaignID",
 		"customer_id": u.ID,
@@ -82,8 +81,7 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(u *cscustomer.Customer, ca
 
 // CampaigncallGet gets the campaigncall of the given id.
 // It returns campaigncall if it succeed.
-func (h *serviceHandler) CampaigncallGet(u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaigncallGet(ctx context.Context, u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CampaigncallGet",
 		"customer_id":     u.ID,
@@ -102,8 +100,7 @@ func (h *serviceHandler) CampaigncallGet(u *cscustomer.Customer, campaigncallID 
 }
 
 // CampaigncallDelete deletes the campaigncall.
-func (h *serviceHandler) CampaigncallDelete(u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaigncallDelete(ctx context.Context, u *cscustomer.Customer, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CampaigncallDelete",
 		"customer_id":     u.ID,

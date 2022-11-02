@@ -61,7 +61,7 @@ func availableNumbersGET(c *gin.Context) {
 
 	// get service and available numbers
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	availableNumbers, err := serviceHandler.AvailableNumberGets(&u, pageSize, countryCode)
+	availableNumbers, err := serviceHandler.AvailableNumberGets(c.Request.Context(), &u, pageSize, countryCode)
 	if err != nil {
 		logrus.Errorf("Could not get available numbers. err: %v", err)
 		c.AbortWithStatus(400)

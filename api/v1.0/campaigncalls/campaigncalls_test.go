@@ -64,8 +64,8 @@ func Test_campaigncallsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().CampaigncallGet(&tt.customer, tt.campaigncallID).Return(tt.response, nil)
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			mockSvc.EXPECT().CampaigncallGet(req.Context(), &tt.customer, tt.campaigncallID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -116,8 +116,8 @@ func Test_campaigncallsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			mockSvc.EXPECT().CampaigncallDelete(&tt.customer, tt.campaigncallID).Return(tt.response, nil)
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
+			mockSvc.EXPECT().CampaigncallDelete(req.Context(), &tt.customer, tt.campaigncallID).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

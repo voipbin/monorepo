@@ -41,8 +41,7 @@ func (h *serviceHandler) tagGet(ctx context.Context, u *cscustomer.Customer, tag
 // TagCreate sends a request to agent-manager
 // to creating a tag.
 // it returns created tag info if it succeed.
-func (h *serviceHandler) TagCreate(u *cscustomer.Customer, name string, detail string) (*amtag.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) TagCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string) (*amtag.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"username":    u.Username,
@@ -64,8 +63,7 @@ func (h *serviceHandler) TagCreate(u *cscustomer.Customer, name string, detail s
 
 // AgentGet sends a request to agent-manager
 // to getting a tag.
-func (h *serviceHandler) TagGet(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) TagGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagGet",
 		"customer_id": u.ID,
@@ -86,8 +84,7 @@ func (h *serviceHandler) TagGet(u *cscustomer.Customer, id uuid.UUID) (*amtag.We
 
 // TagGets sends a request to agent-manager
 // to getting a list of tags.
-func (h *serviceHandler) TagGets(u *cscustomer.Customer, size uint64, token string) ([]*amtag.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) TagGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*amtag.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagGets",
 		"customer_id": u.ID,
@@ -111,8 +108,7 @@ func (h *serviceHandler) TagGets(u *cscustomer.Customer, size uint64, token stri
 
 // TagDelete sends a request to call-manager
 // to delete the tag.
-func (h *serviceHandler) TagDelete(u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) TagDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagDelete",
 		"customer_id": u.ID,
@@ -141,8 +137,7 @@ func (h *serviceHandler) TagDelete(u *cscustomer.Customer, id uuid.UUID) (*amtag
 
 // TagUpdate sends a request to call-manager
 // to update the tag.
-func (h *serviceHandler) TagUpdate(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*amtag.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) TagUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*amtag.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagUpdate",
 		"customer_id": u.ID,

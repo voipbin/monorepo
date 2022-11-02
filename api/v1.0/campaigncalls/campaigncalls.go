@@ -48,7 +48,7 @@ func campaigncallsIDGET(c *gin.Context) {
 	log.Debug("Executing campaignsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaigncallGet(&u, id)
+	res, err := serviceHandler.CampaigncallGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -96,7 +96,7 @@ func campaigncallsIDDELETE(c *gin.Context) {
 
 	// delete an campaign
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CampaigncallDelete(&u, id)
+	res, err := serviceHandler.CampaigncallDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete the campaigncall. err: %v", err)
 		c.AbortWithStatus(400)

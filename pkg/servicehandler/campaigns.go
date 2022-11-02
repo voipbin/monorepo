@@ -42,6 +42,7 @@ func (h *serviceHandler) campaignGet(ctx context.Context, u *cscustomer.Customer
 
 // CampaignCreate is a service handler for campaign creation.
 func (h *serviceHandler) CampaignCreate(
+	ctx context.Context,
 	u *cscustomer.Customer,
 	name string,
 	detail string,
@@ -54,7 +55,6 @@ func (h *serviceHandler) CampaignCreate(
 	queueID uuid.UUID,
 	nextCampaignID uuid.UUID,
 ) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignCreate",
 		"customer_id": u.ID,
@@ -88,8 +88,7 @@ func (h *serviceHandler) CampaignCreate(
 
 // CampaignGetsByCustomerID gets the list of campaigns of the given customer id.
 // It returns list of campaigns if it succeed.
-func (h *serviceHandler) CampaignGetsByCustomerID(u *cscustomer.Customer, size uint64, token string) ([]*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignGetsByCustomerID",
 		"customer_id": u.ID,
@@ -122,8 +121,7 @@ func (h *serviceHandler) CampaignGetsByCustomerID(u *cscustomer.Customer, size u
 
 // CampaignGet gets the campaign of the given id.
 // It returns campaign if it succeed.
-func (h *serviceHandler) CampaignGet(u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignGet",
 		"customer_id": u.ID,
@@ -143,8 +141,7 @@ func (h *serviceHandler) CampaignGet(u *cscustomer.Customer, id uuid.UUID) (*cac
 }
 
 // CampaignDelete deletes the campaign.
-func (h *serviceHandler) CampaignDelete(u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignDelete",
 		"customer_id": u.ID,
@@ -172,8 +169,7 @@ func (h *serviceHandler) CampaignDelete(u *cscustomer.Customer, id uuid.UUID) (*
 
 // CampaignUpdateBasicInfo updates the campaign's basic info.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateBasicInfo(u *cscustomer.Customer, id uuid.UUID, name, detail string) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignUpdateBasicInfo",
 		"customer_id": u.ID,
@@ -201,8 +197,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(u *cscustomer.Customer, id uuid
 
 // CampaignUpdateStatus updates the campaign's status.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateStatus(u *cscustomer.Customer, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignUpdateStatus(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignUpdateStatus",
 		"customer_id": u.ID,
@@ -230,8 +225,7 @@ func (h *serviceHandler) CampaignUpdateStatus(u *cscustomer.Customer, id uuid.UU
 
 // CampaignUpdateServiceLevel updates the campaign's service level.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateServiceLevel(u *cscustomer.Customer, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignUpdateServiceLevel(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignUpdateServiceLevel",
 		"customer_id": u.ID,
@@ -259,8 +253,7 @@ func (h *serviceHandler) CampaignUpdateServiceLevel(u *cscustomer.Customer, id u
 
 // CampaignUpdateActions updates the campaign's actions.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateActions(u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignUpdateActions(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, actions []fmaction.Action) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignUpdateActions",
 		"customer_id": u.ID,
@@ -288,8 +281,7 @@ func (h *serviceHandler) CampaignUpdateActions(u *cscustomer.Customer, id uuid.U
 
 // CampaignUpdateResourceInfo updates the campaign's resource_info.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateResourceInfo(u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, outplanID uuid.UUID, outdialID uuid.UUID, queueID uuid.UUID) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignUpdateResourceInfo",
 		"customer_id": u.ID,
@@ -317,8 +309,7 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(u *cscustomer.Customer, id u
 
 // CampaignUpdateNextCampaignID updates the campaign's next_campaign_id.
 // It returns updated campaign if it succeed.
-func (h *serviceHandler) CampaignUpdateNextCampaignID(u *cscustomer.Customer, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) CampaignUpdateNextCampaignID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaignUpdateNextCampaignID",
 		"customer_id": u.ID,

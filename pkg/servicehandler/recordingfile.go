@@ -11,8 +11,7 @@ import (
 )
 
 // RecordingfileGet returns downloadable url for recording
-func (h *serviceHandler) RecordingfileGet(u *cscustomer.Customer, id uuid.UUID) (string, error) {
-	ctx := context.Background()
+func (h *serviceHandler) RecordingfileGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (string, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"customer_id": u.ID,

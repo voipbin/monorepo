@@ -52,7 +52,7 @@ func extensionsPOST(c *gin.Context) {
 
 	// create a extension
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	ext, err := serviceHandler.ExtensionCreate(&u, req.Extension, req.Password, req.DomainID, req.Name, req.Detail)
+	ext, err := serviceHandler.ExtensionCreate(c.Request.Context(), &u, req.Extension, req.Password, req.DomainID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -115,7 +115,7 @@ func extensionsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get extensions
-	exts, err := serviceHandler.ExtensionGets(&u, domainID, pageSize, req.PageToken)
+	exts, err := serviceHandler.ExtensionGets(c.Request.Context(), &u, domainID, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a extensions list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -173,7 +173,7 @@ func extensionsIDGET(c *gin.Context) {
 	log.Debug("Executing extensionsIDGET.")
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ExtensionGet(&u, id)
+	res, err := serviceHandler.ExtensionGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get the extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -230,7 +230,7 @@ func extensionsIDPUT(c *gin.Context) {
 
 	// update
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ExtensionUpdate(&u, id, req.Name, req.Detail, req.Password)
+	res, err := serviceHandler.ExtensionUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.Password)
 	if err != nil {
 		log.Errorf("Could not update the extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -278,7 +278,7 @@ func extensionsIDDELETE(c *gin.Context) {
 
 	// delete a domain
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ExtensionDelete(&u, id)
+	res, err := serviceHandler.ExtensionDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)

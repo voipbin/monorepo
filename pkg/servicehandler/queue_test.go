@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -60,10 +61,11 @@ func Test_QueueGets(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGets(gomock.Any(), tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGets(ctx, tt.customer.ID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.QueueGets(tt.customer, tt.pageSize, tt.pageToken)
+			res, err := h.QueueGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -123,10 +125,11 @@ func Test_QueueGet(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(gomock.Any(), tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.id).Return(tt.response, nil)
 
-			res, err := h.QueueGet(tt.customer, tt.id)
+			res, err := h.QueueGet(ctx, tt.customer, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -200,9 +203,10 @@ func Test_QueueCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
 			mockReq.EXPECT().QueueV1QueueCreate(
-				gomock.Any(),
+				ctx,
 				tt.customer.ID,
 				tt.queueName,
 				tt.detail,
@@ -214,6 +218,7 @@ func Test_QueueCreate(t *testing.T) {
 			).Return(tt.response, nil)
 
 			res, err := h.QueueCreate(
+				ctx,
 				tt.customer,
 				tt.queueName,
 				tt.detail,
@@ -278,11 +283,12 @@ func Test_QueueDelete(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueDelete(gomock.Any(), tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueDelete(ctx, tt.queueID).Return(tt.response, nil)
 
-			res, err := h.QueueDelete(tt.customer, tt.queueID)
+			res, err := h.QueueDelete(ctx, tt.customer, tt.queueID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -343,11 +349,12 @@ func Test_QueueUpdate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueUpdate(gomock.Any(), tt.queueID, tt.queueName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueUpdate(ctx, tt.queueID, tt.queueName, tt.detail).Return(tt.response, nil)
 
-			res, err := h.QueueUpdate(tt.customer, tt.queueID, tt.queueName, tt.detail)
+			res, err := h.QueueUpdate(ctx, tt.customer, tt.queueID, tt.queueName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -428,11 +435,12 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueUpdateTagIDs(gomock.Any(), tt.queueID, tt.tagIDs).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueUpdateTagIDs(ctx, tt.queueID, tt.tagIDs).Return(tt.response, nil)
 
-			res, err := h.QueueUpdateTagIDs(tt.customer, tt.queueID, tt.tagIDs)
+			res, err := h.QueueUpdateTagIDs(ctx, tt.customer, tt.queueID, tt.tagIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -509,11 +517,12 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueUpdateRoutingMethod(gomock.Any(), tt.queueID, tt.routingMethod).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueUpdateRoutingMethod(ctx, tt.queueID, tt.routingMethod).Return(tt.response, nil)
 
-			res, err := h.QueueUpdateRoutingMethod(tt.customer, tt.queueID, tt.routingMethod)
+			res, err := h.QueueUpdateRoutingMethod(ctx, tt.customer, tt.queueID, tt.routingMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -579,11 +588,12 @@ func Test_QueueUpdateActions(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(gomock.Any(), tt.queueID).Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueUpdateActions(gomock.Any(), tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueUpdateActions(ctx, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(tt.response, nil)
 
-			res, err := h.QueueUpdateActions(tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService)
+			res, err := h.QueueUpdateActions(ctx, tt.customer, tt.queueID, tt.waitActions, tt.timeoutWait, tt.timeoutService)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

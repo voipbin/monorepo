@@ -1,6 +1,7 @@
 package servicehandler
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -70,11 +71,12 @@ func TestTranscribeCreate(t *testing.T) {
 				reqHandler: mockReq,
 				dbHandler:  mockDB,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGet(gomock.Any(), tt.referenceID).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().TranscribeV1RecordingCreate(gomock.Any(), tt.customer.ID, tt.referenceID, tt.language).Return(tt.response, nil)
+			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.referenceID).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().TranscribeV1RecordingCreate(ctx, tt.customer.ID, tt.referenceID, tt.language).Return(tt.response, nil)
 
-			res, err := h.TranscribeCreate(tt.customer, tt.referenceID, tt.language)
+			res, err := h.TranscribeCreate(ctx, tt.customer, tt.referenceID, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

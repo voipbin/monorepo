@@ -14,8 +14,7 @@ import (
 // TranscribeCreate sends a request to transcribe-manager
 // to generate a recording-transcribe
 // it returns transcribe if it succeed.
-func (h *serviceHandler) TranscribeCreate(u *cscustomer.Customer, recordingID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error) {
-	ctx := context.Background()
+func (h *serviceHandler) TranscribeCreate(ctx context.Context, u *cscustomer.Customer, recordingID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id":  u.ID,
 		"reference_id": recordingID,
