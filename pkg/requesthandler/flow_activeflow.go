@@ -28,7 +28,7 @@ func (r *requestHandler) FlowV1ActiveflowCreate(ctx context.Context, id, flowID 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (r *requestHandler) FlowV1ActiveflowDelete(ctx context.Context, id uuid.UUI
 
 	uri := fmt.Sprintf("/v1/activeflows/%s", id)
 
-	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodDelete, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (r *requestHandler) FlowV1ActiveflowGetNextAction(ctx context.Context, id, 
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (r *requestHandler) FlowV1ActiveflowUpdateForwardActionID(ctx context.Conte
 		return err
 	}
 
-	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPut, resourceFlowActiveFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceFlowActiveFlows, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (r *requestHandler) FlowV1ActiveflowExecute(ctx context.Context, id uuid.UU
 
 	uri := fmt.Sprintf("/v1/activeflows/%s/execute", id)
 
-	res, err := r.sendRequestFlow(uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err

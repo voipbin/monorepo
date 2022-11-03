@@ -51,7 +51,7 @@ func (r *requestHandler) CampaignV1OutplanCreate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPost, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (r *requestHandler) CampaignV1OutplanCreate(
 func (r *requestHandler) CampaignV1OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -99,7 +99,7 @@ func (r *requestHandler) CampaignV1OutplanGetsByCustomerID(ctx context.Context, 
 func (r *requestHandler) CampaignV1OutplanGet(ctx context.Context, id uuid.UUID) (*caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans/%s", id)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodGet, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -123,7 +123,7 @@ func (r *requestHandler) CampaignV1OutplanGet(ctx context.Context, id uuid.UUID)
 func (r *requestHandler) CampaignV1OutplanDelete(ctx context.Context, outplanID uuid.UUID) (*caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans/%s", outplanID)
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodDelete, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -158,7 +158,7 @@ func (r *requestHandler) CampaignV1OutplanUpdateBasicInfo(ctx context.Context, i
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -210,7 +210,7 @@ func (r *requestHandler) CampaignV1OutplanUpdateDialInfo(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCampaign(uri, rabbitmqhandler.RequestMethodPut, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCampaignOutplans, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

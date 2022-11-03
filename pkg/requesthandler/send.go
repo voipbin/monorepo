@@ -15,7 +15,7 @@ import (
 //
 // timeout: timeout(ms)
 // delayed: delay request(ms)
-func (r *requestHandler) sendRequest(queue string, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequest(ctx context.Context, queue string, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
 	// creat a request message
 	req := &rabbitmqhandler.Request{
@@ -33,20 +33,20 @@ func (r *requestHandler) sendRequest(queue string, uri string, method rabbitmqha
 	})
 	log.Debugf("Sending a request. queue: %s, method: %s, uri: %s", queue, method, uri)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(timeout))
+	cctx, cancel := context.WithTimeout(ctx, time.Millisecond*time.Duration(timeout))
 	defer cancel()
 
 	switch {
 	case delayed > 0:
 		// send scheduled message.
 		// we don't expect the response message here.
-		if err := r.sendDelayedRequest(ctx, queue, resource, delayed, req); err != nil {
+		if err := r.sendDelayedRequest(cctx, queue, resource, delayed, req); err != nil {
 			return nil, fmt.Errorf("could not publish the delayed request. err: %v", err)
 		}
 		return nil, nil
 
 	default:
-		res, err := r.sendDirectRequest(ctx, queue, resource, req)
+		res, err := r.sendDirectRequest(cctx, queue, resource, req)
 		if err != nil {
 			return nil, fmt.Errorf("could not publish the RPC. err: %v", err)
 		}
@@ -84,154 +84,154 @@ func (r *requestHandler) sendDelayedRequest(ctx context.Context, queue string, r
 // SendARIRequest send a request to the Asterisk-proxy and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestAst(asteriskID, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestAst(ctx context.Context, asteriskID, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
 	// create target
 	target := fmt.Sprintf("asterisk.%s.request", asteriskID)
 
-	return r.sendRequest(target, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, target, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestFlow send a request to the flow-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestFlow(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestFlow(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueFlow, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueFlow, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestTTS send a request to the tts-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestTTS(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestTTS(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueTTS, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueTTS, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestWebhook send a request to the webhook-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestWebhook(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestWebhook(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueWebhook, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueWebhook, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestCall send a request to the call-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestCall(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestCall(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueCall, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueCall, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestRegistrar send a request to the registrar-manager and return the response
-func (r *requestHandler) sendRequestRegistrar(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestRegistrar(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueRegistrar, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueRegistrar, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestNumber send a request to the number-manager and return the response
-func (r *requestHandler) sendRequestNumber(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestNumber(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueNumber, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueNumber, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestConference send a request to the conference-manager and return the response
-func (r *requestHandler) sendRequestConference(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestConference(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueConference, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueConference, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestTranscribe send a request to the transcribe-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestTranscribe(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestTranscribe(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueTranscribe, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueTranscribe, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestStorage send a request to the storage-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestStorage(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestStorage(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueStorage, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueStorage, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestUser send a request to the user-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestUser(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestUser(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueUser, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueUser, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestAgent send a request to the agent-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestAgent(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestAgent(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueAgent, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueAgent, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestQueue send a request to the queue-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestQueue(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestQueue(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueQueue, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueQueue, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestCustomer send a request to the customer-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestCustomer(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestCustomer(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueCustomer, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueCustomer, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestMessage send a request to the message-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestMessage(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestMessage(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueMessage, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueMessage, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestOutdial send a request to the outdial-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestOutdial(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestOutdial(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueOutdial, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueOutdial, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestCampaign send a request to the campaign-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestCampaign(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestCampaign(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueCampaign, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueCampaign, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestConversation send a request to the conversation-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestConversation(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestConversation(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueConversation, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueConversation, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestChat send a request to the chat-manager and return the response
 // timeout millisecond
 // delayed millisecond
-func (r *requestHandler) sendRequestChat(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestChat(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueChat, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueChat, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // sendRequestRoute send a request to the route-manager and return the response
-func (r *requestHandler) sendRequestRoute(uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+func (r *requestHandler) sendRequestRoute(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
 
-	return r.sendRequest(queueRoute, uri, method, resource, timeout, delayed, dataType, data)
+	return r.sendRequest(ctx, queueRoute, uri, method, resource, timeout, delayed, dataType, data)
 }

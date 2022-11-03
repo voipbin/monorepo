@@ -18,7 +18,7 @@ import (
 func (r *requestHandler) ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error) {
 	uri := fmt.Sprintf("/v1/chatrooms/%s", chatroomID)
 
-	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodGet, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -43,7 +43,7 @@ func (r *requestHandler) ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.
 func (r *requestHandler) ChatV1ChatroomGetsByOwnerID(ctx context.Context, ownerID uuid.UUID, pageToken string, pageSize uint64) ([]chatchatroom.Chatroom, error) {
 	uri := fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=%d&owner_id=%s", url.QueryEscape(pageToken), pageSize, ownerID)
 
-	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodGet, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -68,7 +68,7 @@ func (r *requestHandler) ChatV1ChatroomGetsByOwnerID(ctx context.Context, ownerI
 func (r *requestHandler) ChatV1ChatroomDelete(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error) {
 	uri := fmt.Sprintf("/v1/chatrooms/%s", chatroomID)
 
-	tmp, err := r.sendRequestChat(uri, rabbitmqhandler.RequestMethodDelete, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatChatrooms, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
