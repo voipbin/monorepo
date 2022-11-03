@@ -18,7 +18,7 @@ func (r *requestHandler) NumberV1NumberGetByNumber(ctx context.Context, num stri
 
 	uri := fmt.Sprintf("/v1/numbers/%s", url.QueryEscape(num))
 
-	tmp, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (r *requestHandler) NumberV1NumberGetByNumber(ctx context.Context, num stri
 func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", numberID)
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -65,7 +65,7 @@ func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UU
 func (r *requestHandler) NumberV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -88,7 +88,7 @@ func (r *requestHandler) NumberV1NumberGets(ctx context.Context, customerID uuid
 func (r *requestHandler) NumberV1NumberFlowDelete(ctx context.Context, flowID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/number_flows/%s", flowID)
 
-	tmp, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -122,7 +122,7 @@ func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uu
 		return nil, err
 	}
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodPost, resourceNumberNumbers, 15000, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceNumberNumbers, 15000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -146,7 +146,7 @@ func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uu
 func (r *requestHandler) NumberV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -180,7 +180,7 @@ func (r *requestHandler) NumberV1NumberUpdateBasicInfo(ctx context.Context, id u
 		return nil, err
 	}
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -214,7 +214,7 @@ func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id, cal
 		return nil, err
 	}
 
-	res, err := r.sendRequestNumber(uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

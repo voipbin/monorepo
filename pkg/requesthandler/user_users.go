@@ -18,7 +18,7 @@ import (
 func (r *requestHandler) UserV1UserGets(ctx context.Context, pageToken string, pageSize uint64) ([]umuser.User, error) {
 	uri := fmt.Sprintf("/v1/users?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestUser(uri, rabbitmqhandler.RequestMethodGet, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestUser(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -43,7 +43,7 @@ func (r *requestHandler) UserV1UserGets(ctx context.Context, pageToken string, p
 func (r *requestHandler) UserV1UserGet(ctx context.Context, id uint64) (*umuser.User, error) {
 	uri := fmt.Sprintf("/v1/users/%d", id)
 
-	tmp, err := r.sendRequestUser(uri, rabbitmqhandler.RequestMethodGet, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestUser(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -68,7 +68,7 @@ func (r *requestHandler) UserV1UserGet(ctx context.Context, id uint64) (*umuser.
 func (r *requestHandler) UserV1UserDelete(ctx context.Context, id uint64) error {
 	uri := fmt.Sprintf("/v1/users/%d", id)
 
-	tmp, err := r.sendRequestUser(uri, rabbitmqhandler.RequestMethodDelete, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestUser(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return err
@@ -104,7 +104,7 @@ func (r *requestHandler) UserV1UserCreate(ctx context.Context, timeout int, user
 		return nil, err
 	}
 
-	res, err := r.sendRequestUser(uri, rabbitmqhandler.RequestMethodPost, resourceUserUsers, timeout, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestUser(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceUserUsers, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -139,7 +139,7 @@ func (r *requestHandler) UserV1UserLogin(ctx context.Context, timeout int, usern
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestUser(uri, rabbitmqhandler.RequestMethodPost, resourceUserUsers, timeout, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestUser(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceUserUsers, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -174,7 +174,7 @@ func (r *requestHandler) UserV1UserUpdateBasicInfo(ctx context.Context, userID u
 		return err
 	}
 
-	res, err := r.sendRequestUser(uri, rabbitmqhandler.RequestMethodPut, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestUser(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -203,7 +203,7 @@ func (r *requestHandler) UserV1UserUpdatePermission(ctx context.Context, userID 
 		return err
 	}
 
-	res, err := r.sendRequestUser(uri, rabbitmqhandler.RequestMethodPut, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestUser(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceUserUsers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -233,7 +233,7 @@ func (r *requestHandler) UserV1UserUpdatePassword(ctx context.Context, timeout i
 		return err
 	}
 
-	res, err := r.sendRequestUser(uri, rabbitmqhandler.RequestMethodPut, resourceUserUsers, timeout, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestUser(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceUserUsers, timeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
