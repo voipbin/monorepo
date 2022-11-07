@@ -2,7 +2,6 @@ package callhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
@@ -41,7 +39,6 @@ const (
 // domains
 const (
 	domainConference  = "conference.voipbin.net"
-	domainSIPService  = "sip-service.voipbin.net"
 	domainPSTNService = "pstn.voipbin.net"
 )
 
@@ -49,7 +46,6 @@ const (
 const (
 	domainTypeNone       = "none"
 	domainTypeConference = "conference"
-	domainTypeSIPService = "sip"
 	domainTypePSTN       = "pstn"
 )
 
@@ -63,12 +59,6 @@ const (
 // trunkTwilio = "voipbin.pstn.twilio.com" //nolint:varcheck,deadcode // this is ok
 // trunkTelnyx = "sip.telnyx.com"
 // )
-
-// default max timeout for each services. sec.
-const (
-	defaultMaxTimeoutEcho       = "300" // maximum call duration for service echo. 5 min
-	defaultMaxTimeoutSipService = "300" // maximum call duration for service sip-service. 5 min
-)
 
 // default sip service option variables
 const (
@@ -295,9 +285,6 @@ func (h *callHandler) startHandlerContextIncomingCall(ctx context.Context, cn *c
 	case domainTypeConference:
 		return h.typeConferenceStart(ctx, cn, data)
 
-	case domainTypeSIPService:
-		return h.typeSipServiceStart(ctx, cn, data)
-
 	case domainTypePSTN:
 		return h.typeFlowStart(ctx, cn, data)
 
@@ -426,9 +413,6 @@ func getDomainTypeIncomingCall(domain string) string {
 	switch domain {
 	case domainConference:
 		return domainTypeConference
-
-	case domainSIPService:
-		return domainTypeSIPService
 
 	case domainPSTNService:
 		return domainTypePSTN
@@ -634,221 +618,4 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 	}
 
 	return h.ActionNext(ctx, c)
-}
-
-// typeSipServiceStart handles sip-service calltype request.
-func (h *callHandler) typeSipServiceStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"channel":  cn.ID,
-			"asterisk": cn.AsteriskID,
-		})
-	log.Debugf("Starting the sip-service. source: %s, destinaiton: %s", cn.SourceNumber, cn.DestinationNumber)
-
-	// set absolute timeout for 300 sec
-	log.Debugf("Setting absolute timeout for sip-service type call")
-	if err := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService); err != nil {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
-		return fmt.Errorf("could not set a timeout for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-
-	id := uuid.Must(uuid.NewV4())
-
-	// create call bridge
-	callBridgeID, err := h.addCallBridge(ctx, cn, bridge.ReferenceTypeCall, id)
-	if err != nil {
-		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
-		return fmt.Errorf("could not add the channel to the join bridge. err: %v", err)
-	}
-
-	source := commonaddress.CreateAddressByChannelSource(cn)
-	destination := commonaddress.CreateAddressByChannelDestination(cn)
-	status := call.GetStatusByChannelState(cn.State)
-
-	c, err := h.Create(
-		ctx,
-
-		id,
-		uuid.Nil,
-
-		cn.AsteriskID,
-		cn.ID,
-		callBridgeID,
-
-		uuid.Nil,
-		uuid.Nil,
-		uuid.Nil,
-		call.TypeSipService,
-
-		uuid.Nil,
-		[]uuid.UUID{},
-
-		uuid.Nil,
-		[]uuid.UUID{},
-
-		source,
-		destination,
-
-		status,
-
-		data,
-		fmaction.Action{},
-		call.DirectionIncoming,
-
-		uuid.Nil,
-		[]rmroute.Route{},
-	)
-
-	if err != nil {
-		log.Errorf("Could not create a call info. Hangup the call. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
-		_ = h.reqHandler.AstBridgeDelete(ctx, cn.AsteriskID, callBridgeID)
-		return fmt.Errorf("could not create a call for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-	log = log.WithFields(
-		logrus.Fields{
-			"call":      c.ID,
-			"type":      c.Type,
-			"direction": c.Direction,
-		})
-	log.Debug("Created a call.")
-
-	// get action for sip-service
-	act, err := h.getSipServiceAction(ctx, c, cn)
-	if err != nil {
-		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("could not get action handle for sip-service. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
-	}
-
-	// execute action
-	if err := h.ActionExecute(ctx, c, act); err != nil {
-		log.Errorf("Could not execte the action. Hanging up the call. action: %s", act.Type)
-		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
-		return fmt.Errorf("could not get execute the action. channel: %s, asterisk: %s, call: %s, err: %v", cn.ID, cn.AsteriskID, c.ID, err)
-	}
-
-	return nil
-}
-
-// getSipServiceAction returns sip-service action handler by the call's destination.
-func (h *callHandler) getSipServiceAction(ctx context.Context, c *call.Call, cn *channel.Channel) (*fmaction.Action, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "getSipServiceAction",
-		"call_id":    c.ID,
-		"channel_id": cn.ID,
-	})
-	log.Debugf("Getting an action for sip-service. call_id: %s, channel_id: %s, destination: %s", c.ID, cn.ID, cn.DestinationNumber)
-
-	var res *fmaction.Action
-	switch c.Destination.Target {
-
-	// answer
-	case string(fmaction.TypeAnswer):
-		// create an option for action answer
-		option := fmaction.OptionAnswer{}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", fmaction.TypeAnswer, err)
-		}
-
-		// create an action
-		res = &fmaction.Action{
-			ID:     fmaction.IDStart,
-			Type:   fmaction.TypeAnswer,
-			Option: opt,
-		}
-
-	// confbridge_join
-	case string(fmaction.TypeConfbridgeJoin):
-		option := fmaction.OptionConfbridgeJoin{
-			ConfbridgeID: uuid.FromStringOrNil(DefaultSipServiceOptionConfbridgeID),
-		}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", fmaction.TypeConferenceJoin, err)
-		}
-
-		// create an action
-		res = &fmaction.Action{
-			ID:     fmaction.IDStart,
-			Type:   fmaction.TypeConfbridgeJoin,
-			Option: opt,
-		}
-
-	// echo
-	case string(fmaction.TypeEcho):
-		// create default option for echo
-		option := fmaction.OptionEcho{
-			Duration: 180 * 1000, // duration 180 sec
-		}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option echo. action: %s, err: %v", fmaction.TypeEcho, err)
-		}
-
-		// create an action
-		res = &fmaction.Action{
-			ID:     fmaction.IDStart,
-			Type:   fmaction.TypeEcho,
-			Option: opt,
-		}
-
-	// play
-	case string(fmaction.TypePlay):
-		// answer the call first
-		if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
-			return nil, fmt.Errorf("could not answer the call. err: %v", err)
-		}
-
-		option := fmaction.OptionPlay{
-			StreamURLs: []string{"https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"},
-		}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", fmaction.TypePlay, err)
-		}
-
-		// create an action
-		res = &fmaction.Action{
-			ID:     fmaction.IDStart,
-			Type:   fmaction.TypePlay,
-			Option: opt,
-		}
-
-	// stream_echo
-	case string(fmaction.TypeStreamEcho):
-		option := fmaction.OptionStreamEcho{
-			Duration: 180 * 1000,
-		}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option. action: %s, err: %v", fmaction.TypeStreamEcho, err)
-		}
-
-		// create an action
-		res = &fmaction.Action{
-			ID:     fmaction.IDStart,
-			Type:   fmaction.TypeStreamEcho,
-			Option: opt,
-		}
-
-	// default
-	default:
-		log.Errorf("Could not find correct sip-service handler. Hangup the call. call_id: %s, destination: %s", c.ID, c.Destination.Target)
-		option := fmaction.OptionHangup{}
-		opt, err := json.Marshal(option)
-		if err != nil {
-			return nil, fmt.Errorf("could not marshal the option echo. action: %s, err: %v", fmaction.TypeEcho, err)
-		}
-
-		// create an action
-		res = &fmaction.Action{
-			ID:     fmaction.IDStart,
-			Type:   fmaction.TypeHangup,
-			Option: opt,
-		}
-	}
-
-	return res, nil
 }
