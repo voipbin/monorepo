@@ -1,6 +1,6 @@
 package arieventlistenhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package arieventlistenhandler -destination ./mock_arieventlistenhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package arieventlistenhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"github.com/prometheus/client_golang/prometheus"

@@ -9,7 +9,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Hangup Hangup the call
@@ -111,7 +110,7 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 
 	// update call status
 	log.Debugf("Updating call status for hangup. status: %v", status)
-	if err := h.db.CallSetStatus(ctx, c.ID, status, dbhandler.GetCurTime()); err != nil {
+	if err := h.db.CallSetStatus(ctx, c.ID, status, h.util.GetCurTime()); err != nil {
 		// update status failed, just write log here. No need error handle here.
 		log.Errorf("Could not update the call status for hangup. status: %v, err: %v", status, err)
 		return err

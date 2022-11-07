@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_UpdateStatusRinging(t *testing.T) {
@@ -201,17 +202,21 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:          mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
 			}
 
 			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
 
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)

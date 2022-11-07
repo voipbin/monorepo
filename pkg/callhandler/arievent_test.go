@@ -15,9 +15,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
-func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
+func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -59,17 +60,21 @@ func TestARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
+				util:          mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotfiy,
 			}
 
 			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer)
@@ -224,7 +229,7 @@ func TestARIChannelDestroyedContextTypeConference(t *testing.T) {
 	}
 }
 
-func TestARIPlaybackFinished(t *testing.T) {
+func Test_ARIPlaybackFinished(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -257,10 +262,12 @@ func TestARIPlaybackFinished(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:       mockUtil,
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
@@ -271,6 +278,7 @@ func TestARIPlaybackFinished(t *testing.T) {
 				Option: []byte(`{}`),
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 
 			// action next part.

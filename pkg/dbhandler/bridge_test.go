@@ -15,10 +15,6 @@ import (
 )
 
 func TestBridgeCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
 		name      string
@@ -81,6 +77,11 @@ func TestBridgeCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())

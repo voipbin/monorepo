@@ -397,7 +397,7 @@ func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID st
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, bridgeID, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, bridgeID, h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. callSetBridgeID. err: %v", err)
 	}
@@ -422,7 +422,7 @@ func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStat
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, call.StatusRinging, GetCurTime(), tmStatus, id.Bytes())
+	_, err := h.db.Exec(q, call.StatusRinging, h.util.GetCurTime(), tmStatus, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetStatusRinging. err: %v", err)
 	}
@@ -447,7 +447,7 @@ func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tm
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, call.StatusProgressing, GetCurTime(), tmStatus, id.Bytes())
+	_, err := h.db.Exec(q, call.StatusProgressing, h.util.GetCurTime(), tmStatus, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. callSetStatusProgressing. err: %v", err)
 	}
@@ -471,7 +471,7 @@ func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.S
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. callSetStatus. err: %v", err)
 	}
@@ -573,7 +573,7 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, flowID.Bytes(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, flowID.Bytes(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetFlowID. err: %v", err)
 	}
@@ -598,7 +598,7 @@ func (h *handler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, confbridgeID.Bytes(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, confbridgeID.Bytes(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetConfbridgeID. err: %v", err)
 	}
@@ -628,7 +628,7 @@ func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *fmact
 		return err
 	}
 
-	_, err = h.db.Exec(q, tmpAction, GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpAction, h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetAction. err: %v", err)
 	}
@@ -714,7 +714,7 @@ func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uu
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, chainedCallID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, chainedCallID.String(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
 	}
@@ -746,7 +746,7 @@ func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, chainedCallID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, chainedCallID.String(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
 	}
@@ -771,7 +771,7 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, callID.Bytes(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, callID.Bytes(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetMasterCallID. err: %v", err)
 	}
@@ -793,7 +793,7 @@ func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uu
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetRecordID. err: %v", err)
 	}
@@ -819,7 +819,7 @@ func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID u
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.String(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddRecordIDs. err: %v", err)
 	}
@@ -884,7 +884,7 @@ func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID
 		id = ?
 	`
 
-	_, err := tx.Exec(q, chainedCallID.String(), GetCurTime(), id.Bytes())
+	_, err := tx.Exec(q, chainedCallID.String(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
 	}
@@ -916,7 +916,7 @@ func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.U
 		id = ?
 	`
 
-	_, err := tx.Exec(q, chainedCallID.String(), GetCurTime(), id.Bytes())
+	_, err := tx.Exec(q, chainedCallID.String(), h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
 	}
