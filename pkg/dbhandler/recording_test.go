@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_RecordingCreate(t *testing.T) {
@@ -104,6 +105,8 @@ func Test_RecordingGets(t *testing.T) {
 
 					AsteriskID: "3e:50:6b:43:bb:30",
 					ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
+
+					TMCreate: "2020-04-18 03:22:17.995000",
 				},
 				{
 					ID:          uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
@@ -115,6 +118,8 @@ func Test_RecordingGets(t *testing.T) {
 
 					AsteriskID: "3e:50:6b:43:bb:30",
 					ChannelID:  "d09176ba-878e-11eb-a3f1-8743bd4202ae",
+
+					TMCreate: "2020-04-18 03:22:18.995000",
 				},
 			},
 		},
@@ -131,7 +136,11 @@ func Test_RecordingGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := &handler{
+				util:  util.NewUtil(),
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
@@ -140,15 +149,9 @@ func Test_RecordingGets(t *testing.T) {
 				_ = h.RecordingCreate(ctx, recording)
 			}
 
-			res, err := h.RecordingGets(context.Background(), tt.customerID, 10, GetCurTime())
+			res, err := h.RecordingGets(ctx, tt.customerID, 10, h.util.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			for _, recording := range res {
-				recording.TMCreate = ""
-				recording.TMUpdate = ""
-				recording.TMDelete = ""
 			}
 
 			for i, j := len(res)-1, 0; i >= 0; i, j = i-1, j+1 {

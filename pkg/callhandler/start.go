@@ -16,7 +16,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // StasisStart event's context types
@@ -316,7 +315,7 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 	log = log.WithField("call_id", callID.String())
 
 	// update call's asterisk id
-	if err := h.db.CallSetAsteriskID(context.Background(), callID, cn.AsteriskID, dbhandler.GetCurTime()); err != nil {
+	if err := h.db.CallSetAsteriskID(context.Background(), callID, cn.AsteriskID, h.util.GetCurTime()); err != nil {
 		log.Errorf("Could not set call id to the channel. err: %v", err)
 		return fmt.Errorf("could not set asterisk id to call. channel: %s, asterisk: %s", cn.ID, cn.AsteriskID)
 	}
@@ -389,7 +388,7 @@ func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, re
 	})
 
 	// create join bridge
-	bridgeID := uuid.Must(uuid.NewV4())
+	bridgeID := h.util.CreateUUID()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", referenceType, referenceID)
 	if errBridge := h.reqHandler.AstBridgeCreate(ctx, cn.AsteriskID, bridgeID.String(), bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
 		log.Errorf("Could not create a bridge for external media. error: %v", errBridge)
@@ -434,7 +433,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 		})
 	log.Debugf("Starting the conference to joining. source: %s", cn.SourceNumber)
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.util.CreateUUID()
 	log = log.WithField("call_id", id)
 
 	// get conference info
@@ -534,7 +533,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 		})
 	log.Debugf("Starting the flow incoming call handler. source: %s, destinaiton: %s", cn.SourceNumber, cn.DestinationNumber)
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.util.CreateUUID()
 	log = log.WithField("call_id", id)
 
 	// get number info

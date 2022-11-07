@@ -13,6 +13,7 @@ import (
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_startServiceFromAMD(t *testing.T) {
@@ -79,15 +80,19 @@ func Test_startServiceFromAMD(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:       mockUtil,
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
 
 			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
 
 			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channel.ID).Return(tt.responseAMD, nil)
 

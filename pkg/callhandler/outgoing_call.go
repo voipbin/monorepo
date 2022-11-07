@@ -15,7 +15,6 @@ import (
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 const (
@@ -144,7 +143,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing call. err: %v", err)
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 
@@ -173,7 +172,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
 
 		// hangup
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 		return nil, err
@@ -204,7 +203,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	if err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, channelID, appArgs, dialURI, "", "", "", variables); err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 		return nil, err

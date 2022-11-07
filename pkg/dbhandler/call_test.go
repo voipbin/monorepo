@@ -6,16 +6,16 @@ import (
 	"reflect"
 	"testing"
 
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
-
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_CallCreate(t *testing.T) {
@@ -224,14 +224,18 @@ func Test_CallGets(t *testing.T) {
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
-	h := NewHandler(dbTest, mockCache)
+	h := &handler{
+		util:  util.NewUtil(),
+		db:    dbTest,
+		cache: mockCache,
+	}
 	mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 	_ = h.CallCreate(context.Background(), &call.Call{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295")})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.CallGets(context.Background(), tt.customerID, 10, GetCurTime())
+			res, err := h.CallGets(context.Background(), tt.customerID, 10, h.util.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

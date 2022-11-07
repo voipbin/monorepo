@@ -25,7 +25,7 @@ func NewUtil() Util {
 }
 
 // GetCurTime return current utc time string
-func (h *util) GetCurTime() string {
+func GetCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")
 
@@ -33,11 +33,26 @@ func (h *util) GetCurTime() string {
 }
 
 // GetCurTimeRFC3339 return current utc time string in a RFC3339 format
-func (h *util) GetCurTimeRFC3339() string {
+func GetCurTimeRFC3339() string {
 	return time.Now().UTC().Format(time.RFC3339)
 }
 
 // CreateUUID returns a new uuid v4
-func (h *util) CreateUUID() uuid.UUID {
+func CreateUUID() uuid.UUID {
 	return uuid.Must(uuid.NewV4())
+}
+
+// GetCurTime return current utc time string
+func (h *util) GetCurTime() string {
+	return GetCurTime()
+}
+
+// GetCurTimeRFC3339 return current utc time string in a RFC3339 format
+func (h *util) GetCurTimeRFC3339() string {
+	return GetCurTimeRFC3339()
+}
+
+// CreateUUID returns a new uuid v4
+func (h *util) CreateUUID() uuid.UUID {
+	return CreateUUID()
 }

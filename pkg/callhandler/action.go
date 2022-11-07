@@ -15,7 +15,6 @@ import (
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Redirect options for timeout action
@@ -87,7 +86,7 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call, a *fmacti
 	var err error
 
 	// set current time
-	a.TMExecute = dbhandler.GetCurTime()
+	a.TMExecute = h.util.GetCurTime()
 
 	// set action
 	if errSetAction := h.setAction(c, a); errSetAction != nil {
@@ -588,6 +587,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		TMStart: defaultTimeStamp,
 		TMEnd:   defaultTimeStamp,
 
+		TMCreate: h.util.GetCurTime(),
 		TMUpdate: defaultTimeStamp,
 		TMDelete: defaultTimeStamp,
 	}
