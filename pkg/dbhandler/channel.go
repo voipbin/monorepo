@@ -55,6 +55,72 @@ const (
 	`
 )
 
+// channelGetFromRow gets the channel from the row.
+func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
+	var data sql.NullString
+	var stasisData sql.NullString
+
+	res := &channel.Channel{}
+	if err := row.Scan(
+		&res.AsteriskID,
+		&res.ID,
+		&res.Name,
+		&res.Type,
+		&res.Tech,
+
+		&res.SIPCallID,
+		&res.SIPTransport,
+
+		&res.SourceName,
+		&res.SourceNumber,
+		&res.DestinationName,
+		&res.DestinationNumber,
+
+		&res.State,
+		&data,
+		&res.StasisName,
+		&stasisData,
+		&res.BridgeID,
+		&res.PlaybackID,
+
+		&res.DialResult,
+		&res.HangupCause,
+
+		&res.Direction,
+
+		&res.TMCreate,
+		&res.TMUpdate,
+
+		&res.TMAnswer,
+		&res.TMRinging,
+		&res.TMEnd,
+	); err != nil {
+		return nil, fmt.Errorf("channelGetFromRow: Could not scan the row. err: %v", err)
+	}
+
+	// Data
+	if data.Valid {
+		if err := json.Unmarshal([]byte(data.String), &res.Data); err != nil {
+			return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the data. err: %v", err)
+		}
+	}
+	if res.Data == nil {
+		res.Data = map[string]interface{}{}
+	}
+
+	// StasisData
+	if stasisData.Valid {
+		if err := json.Unmarshal([]byte(stasisData.String), &res.StasisData); err != nil {
+			return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the stasis data. err: %v", err)
+		}
+	}
+	if res.StasisData == nil {
+		res.StasisData = map[string]string{}
+	}
+
+	return res, nil
+}
+
 // ChannelCreate creates new channel record and returns the created channel record.
 func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 	q := `insert into channels(
@@ -171,65 +237,6 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 
 	// set to the cache
 	_ = h.ChannelSetToCache(ctx, res)
-
-	return res, nil
-}
-
-// channelGetFromRow gets the channel from the row.
-func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
-	var data string
-	var stasisData string
-	res := &channel.Channel{}
-	if err := row.Scan(
-		&res.AsteriskID,
-		&res.ID,
-		&res.Name,
-		&res.Type,
-		&res.Tech,
-
-		&res.SIPCallID,
-		&res.SIPTransport,
-
-		&res.SourceName,
-		&res.SourceNumber,
-		&res.DestinationName,
-		&res.DestinationNumber,
-
-		&res.State,
-		&data,
-		&res.StasisName,
-		&stasisData,
-		&res.BridgeID,
-		&res.PlaybackID,
-
-		&res.DialResult,
-		&res.HangupCause,
-
-		&res.Direction,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-
-		&res.TMAnswer,
-		&res.TMRinging,
-		&res.TMEnd,
-	); err != nil {
-		return nil, fmt.Errorf("channelGetFromRow: Could not scan the row. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
-		return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the data. err: %v", err)
-	}
-	if res.Data == nil {
-		res.Data = make(map[string]interface{})
-	}
-
-	if err := json.Unmarshal([]byte(stasisData), &res.StasisData); err != nil {
-		return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the stasis data. err: %v", err)
-	}
-	if res.StasisData == nil {
-		res.StasisData = map[string]string{}
-	}
 
 	return res, nil
 }

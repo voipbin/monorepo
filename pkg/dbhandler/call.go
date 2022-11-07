@@ -7,7 +7,9 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 )
@@ -41,6 +43,9 @@ const (
 		hangup_by,
 		hangup_reason,
 
+		dialroute_id,
+		dialroutes,
+
 		tm_create,
 		tm_update,
 
@@ -55,12 +60,14 @@ const (
 
 // callGetFromRow gets the call from the row.
 func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
-	var chainedCallIDs string
-	var recordingIDs string
-	var data string
-	var source string
-	var destination string
-	var action string
+	var chainedCallIDs sql.NullString
+	var recordingIDs sql.NullString
+	var data sql.NullString
+	var source sql.NullString
+	var destination sql.NullString
+	var action sql.NullString
+	var dialroutes sql.NullString
+
 	res := &call.Call{}
 	if err := row.Scan(
 		&res.ID,
@@ -88,6 +95,9 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.HangupBy,
 		&res.HangupReason,
 
+		&res.DialrouteID,
+		&dialroutes,
+
 		&res.TMCreate,
 		&res.TMUpdate,
 
@@ -98,31 +108,71 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		return nil, fmt.Errorf("could not scan the row. callGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(chainedCallIDs), &res.ChainedCallIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
+	// ChainedCallIDs
+	if chainedCallIDs.Valid {
+		if err := json.Unmarshal([]byte(chainedCallIDs.String), &res.ChainedCallIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
+		}
 	}
 	if res.ChainedCallIDs == nil {
 		res.ChainedCallIDs = []uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(recordingIDs), &res.RecordingIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the recording_ids. callGetFromRow. err: %v", err)
+	// RecordingIDs
+	if recordingIDs.Valid {
+		if err := json.Unmarshal([]byte(recordingIDs.String), &res.RecordingIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the recording_ids. callGetFromRow. err: %v", err)
+		}
 	}
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
+	// Source
+	if source.Valid {
+		if err := json.Unmarshal([]byte(source.String), &res.Source); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the source. callGetFromRow. err: %v", err)
+		}
+	} else {
+		res.Source = address.Address{}
 	}
-	if err := json.Unmarshal([]byte(action), &res.Action); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the action. callGetFromRow. err: %v", err)
+
+	// Destination
+	if destination.Valid {
+		if err := json.Unmarshal([]byte(destination.String), &res.Destination); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the destination. callGetFromRow. err: %v", err)
+		}
+	} else {
+		res.Destination = address.Address{}
 	}
-	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. callGetFromRow. err: %v", err)
+
+	// Data
+	if data.Valid {
+		if err := json.Unmarshal([]byte(data.String), &res.Data); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the data. callGetFromRow. err: %v", err)
+		}
 	}
-	if err := json.Unmarshal([]byte(destination), &res.Destination); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the destination. callGetFromRow. err: %v", err)
+	if res.Data == nil {
+		res.Data = map[string]string{}
+	}
+
+	// Action
+	if action.Valid {
+		if err := json.Unmarshal([]byte(action.String), &res.Action); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the action. callGetFromRow. err: %v", err)
+		}
+	} else {
+		res.Action = fmaction.Action{}
+	}
+
+	// Dialroutes
+	if dialroutes.Valid {
+		if err := json.Unmarshal([]byte(dialroutes.String), &res.Dialroutes); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the dialroutes. callGetFromRow. err: %v", err)
+		}
+	}
+	if res.Dialroutes == nil {
+		res.Dialroutes = []rmroute.Route{}
 	}
 
 	return res, nil
@@ -159,9 +209,11 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		hangup_by,
 		hangup_reason,
 
+		dialroute_id,
+		dialroutes,
+
 		tm_create,
 		tm_update,
-
 		tm_progressing,
 		tm_ringing,
 		tm_hangup
@@ -172,7 +224,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,
 		?, ?,
-		?, ?, ?
+		?, ?, ?, ?, ?
 		)`
 
 	if c.ChainedCallIDs == nil {
@@ -211,6 +263,11 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		return fmt.Errorf("could not marshal action. CallCreate. err: %v", err)
 	}
 
+	tmpDialroutes, err := json.Marshal(c.Dialroutes)
+	if err != nil {
+		return fmt.Errorf("could not marshal dialroutes. CallCreate. err: %v", err)
+	}
+
 	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
@@ -238,6 +295,9 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.Direction,
 		c.HangupBy,
 		c.HangupReason,
+
+		c.DialrouteID.Bytes(),
+		tmpDialroutes,
 
 		c.TMCreate,
 		c.TMUpdate,
@@ -433,7 +493,7 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 
 	// validate changable status
 	if !call.IsUpdatableStatus(c.Status, status) {
-		return fmt.Errorf("The given status is not updatable. old: %s, new: %s", c.Status, status)
+		return fmt.Errorf("the given status is not updatable. old: %s, new: %s", c.Status, status)
 	}
 
 	switch status {

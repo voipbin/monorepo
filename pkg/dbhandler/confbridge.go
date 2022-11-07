@@ -35,9 +35,8 @@ const (
 
 // confbridgeGetFromRow gets the confbridge from the row.
 func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, error) {
-
-	var recordingIDs string
-	var channelCallIDs string
+	var recordingIDs sql.NullString
+	var channelCallIDs sql.NullString
 
 	res := &confbridge.Confbridge{}
 	if err := row.Scan(
@@ -57,15 +56,21 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 		return nil, fmt.Errorf("could not scan the row. confbridgeGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(channelCallIDs), &res.ChannelCallIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the callChannelIDs. confbridgeGetFromRow. err: %v", err)
+	// ChannelCallIDs
+	if channelCallIDs.Valid {
+		if err := json.Unmarshal([]byte(channelCallIDs.String), &res.ChannelCallIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the callChannelIDs. confbridgeGetFromRow. err: %v", err)
+		}
 	}
 	if res.ChannelCallIDs == nil {
 		res.ChannelCallIDs = map[string]uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(recordingIDs), &res.RecordingIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the recordingIDs. confbridgeGetFromRow. err: %v", err)
+	// RecordingIDs
+	if recordingIDs.Valid {
+		if err := json.Unmarshal([]byte(recordingIDs.String), &res.RecordingIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the recordingIDs. confbridgeGetFromRow. err: %v", err)
+		}
 	}
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}

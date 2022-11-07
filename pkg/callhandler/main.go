@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -21,7 +22,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 // CallHandler is interface for service handle
@@ -65,6 +66,7 @@ type CallHandler interface {
 
 // callHandler structure for service handle
 type callHandler struct {
+	util              util.Util
 	reqHandler        requesthandler.RequestHandler
 	db                dbhandler.DBHandler
 	cache             cachehandler.CacheHandler
@@ -173,6 +175,7 @@ func init() {
 func NewCallHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) CallHandler {
 
 	h := &callHandler{
+		util:              util.NewUtil(),
 		reqHandler:        r,
 		notifyHandler:     n,
 		db:                db,

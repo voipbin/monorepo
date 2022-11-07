@@ -6,11 +6,13 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/ttacon/libphonenumber"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -80,10 +82,11 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 
 	// check destination type
 	if destination.Type != commonaddress.TypeSIP && destination.Type != commonaddress.TypeTel {
+		log.Errorf("Wrong destination type to call. destination_type: %s", destination.Type)
 		return nil, fmt.Errorf("the destination type must be sip or tel")
 	}
 
-	// create active-flow
+	// create activeflow
 	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, flowID, fmactiveflow.ReferenceTypeCall, id)
 	if err != nil {
 		af = &fmactiveflow.Activeflow{}
@@ -91,25 +94,54 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 	log.Debugf("Created active-flow. active-flow: %v", af)
 
-	channelID := uuid.Must(uuid.NewV4()).String()
-	cTmp := &call.Call{
-		ID:           id,
-		CustomerID:   customerID,
-		ChannelID:    channelID,
-		FlowID:       flowID,
-		ActiveFlowID: af.ID,
-		Type:         call.TypeFlow,
-		Status:       call.StatusDialing,
-		Direction:    call.DirectionOutgoing,
-		Source:       source,
-		Destination:  destination,
-		Action:       af.CurrentAction,
-
-		TMCreate: dbhandler.GetCurTime(),
+	// get dialroutes
+	dialroutes, err := h.getDialroutes(ctx, customerID, &destination)
+	if err != nil {
+		log.Errorf("Could not generate the dialroute. err: %v", err)
+		return nil, errors.Wrap(err, "could not generate the dialroutes")
 	}
 
+	// get dialrouteID
+	dialrouteID := uuid.Nil
+	if len(dialroutes) > 0 {
+		dialrouteID = dialroutes[0].ID
+	}
+
+	channelID := h.util.CreateUUID().String()
+
 	// create a call
-	c, err := h.create(ctx, cTmp)
+	c, err := h.Create(
+		ctx,
+
+		id,
+		customerID,
+
+		"",
+		channelID,
+		"",
+
+		flowID,
+		af.ID,
+		uuid.Nil,
+		call.TypeFlow,
+
+		uuid.Nil,
+		[]uuid.UUID{},
+
+		uuid.Nil,
+		[]uuid.UUID{},
+
+		&source,
+		&destination,
+		call.StatusDialing,
+		map[string]string{},
+
+		af.CurrentAction,
+		call.DirectionOutgoing,
+
+		dialrouteID,
+		dialroutes,
+	)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing call. err: %v", err)
 		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, dbhandler.GetCurTime()); err != nil {
@@ -136,7 +168,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 
 	// get a endpoint destination
-	dialURI, err := h.getDialURI(ctx, c.CustomerID, destination)
+	dialURI, err := h.getDialURI(ctx, c)
 	if err != nil {
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
 
@@ -182,48 +214,41 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 }
 
 // getDialURITel returns dial uri of the given tel type destination.
-func (h *callHandler) getDialURITel(ctx context.Context, customerID uuid.UUID, destination commonaddress.Address) (string, error) {
+func (h *callHandler) getDialURITel(ctx context.Context, c *call.Call) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "getDialURITel",
-		"destination": destination,
+		"func":    "getDialURITel",
+		"call_id": c.ID,
 	})
 
-	// parse number
-	n, err := libphonenumber.Parse(destination.Target, "US") // default country code is US.
-	if err != nil {
-		log.Errorf("Could not parse the libphonenumber. err: %v", err)
-		return "", err
-	}
-	target := fmt.Sprintf("+%d", *n.CountryCode)
-
-	// // send request
-	rs, err := h.reqHandler.RouteV1DialrouteGets(ctx, customerID, target)
-	if err != nil {
-		log.Errorf("Could not get dialroutes. err: %v", err)
-		return "", err
+	providerID := uuid.Nil
+	for _, dialroute := range c.Dialroutes {
+		if dialroute.ID == c.DialrouteID {
+			providerID = dialroute.ProviderID
+			break
+		}
 	}
 
-	if len(rs) == 0 {
-		log.Errorf("Could not get correct dialroute.")
-		return "", fmt.Errorf("no availble dialroutes")
+	if providerID == uuid.Nil {
+		log.Debugf("No available dialroute left.")
+		return "", nil
 	}
 
-	// get provider info. currently, we support only 1 dialroutes
-	pr, err := h.reqHandler.RouteV1ProviderGet(ctx, rs[0].ProviderID)
+	// get provider info
+	pr, err := h.reqHandler.RouteV1ProviderGet(ctx, providerID)
 	if err != nil {
 		log.Errorf("Could not get provider info. err: %v", err)
 		return "", err
 	}
 
-	// res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, trunkTelnyx, constTransportUDP)
-	res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, destination.Target, pr.Hostname, constTransportUDP)
+	res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, c.Destination.Target, pr.Hostname, constTransportUDP)
+
 	return res, nil
 }
 
 // getDialURISIP returns dial uri of the given sip type destination.
-func (h *callHandler) getDialURISIP(ctx context.Context, destination commonaddress.Address) (string, error) {
-	endpoint := destination.Target
-	if !strings.HasPrefix(destination.Target, "sip:") && !strings.HasPrefix(destination.Target, "sips:") {
+func (h *callHandler) getDialURISIP(ctx context.Context, c *call.Call) (string, error) {
+	endpoint := c.Destination.Target
+	if !strings.HasPrefix(c.Destination.Target, "sip:") && !strings.HasPrefix(c.Destination.Target, "sips:") {
 		endpoint = "sip:" + endpoint
 	}
 
@@ -232,10 +257,10 @@ func (h *callHandler) getDialURISIP(ctx context.Context, destination commonaddre
 }
 
 // getDialURIEndpoint returns dial uri of the given extension type destination.
-func (h *callHandler) getDialURIEndpoint(ctx context.Context, destination commonaddress.Address) (string, error) {
+func (h *callHandler) getDialURIEndpoint(ctx context.Context, c *call.Call) (string, error) {
 
 	// get contacts
-	contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, destination.Target)
+	contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, c.Destination.Target)
 	if err != nil {
 		return "", fmt.Errorf("could not get contacts info. target: err: %v", err)
 	}
@@ -252,17 +277,17 @@ func (h *callHandler) getDialURIEndpoint(ctx context.Context, destination common
 }
 
 // getDialURI returns the given destination address's dial URI for Asterisk's dialing
-func (h *callHandler) getDialURI(ctx context.Context, customerID uuid.UUID, destination commonaddress.Address) (string, error) {
+func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, error) {
 
-	switch destination.Type {
+	switch c.Destination.Type {
 	case commonaddress.TypeTel:
-		return h.getDialURITel(ctx, customerID, destination)
+		return h.getDialURITel(ctx, c)
 
 	case commonaddress.TypeEndpoint:
-		return h.getDialURIEndpoint(ctx, destination)
+		return h.getDialURIEndpoint(ctx, c)
 
 	case commonaddress.TypeSIP:
-		return h.getDialURISIP(ctx, destination)
+		return h.getDialURISIP(ctx, c)
 
 	default:
 		return "", fmt.Errorf("unsupported address type")
@@ -306,6 +331,34 @@ func (h *callHandler) createCallOutgoingAgent(ctx context.Context, customerID, f
 		}
 
 		res = append(res, c)
+	}
+
+	return res, nil
+}
+
+// getDialroutes generates dialroutes for outgoing call
+func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]rmroute.Route, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "generateDialroutes",
+	})
+
+	if destination.Type != commonaddress.TypeTel {
+		return []rmroute.Route{}, nil
+	}
+
+	// parse number
+	n, err := libphonenumber.Parse(destination.Target, "US") // default country code is US.
+	if err != nil {
+		log.Errorf("Could not parse the libphonenumber. err: %v", err)
+		return nil, err
+	}
+	target := fmt.Sprintf("+%d", *n.CountryCode)
+
+	// send request
+	res, err := h.reqHandler.RouteV1DialrouteGets(ctx, customerID, target)
+	if err != nil {
+		log.Errorf("Could not get dialroutes. err: %v", err)
+		return nil, err
 	}
 
 	return res, nil

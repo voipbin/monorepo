@@ -13,12 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
 
-func TestRecordingCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
+func Test_RecordingCreate(t *testing.T) {
 	type test struct {
 		name string
 
@@ -58,6 +53,11 @@ func TestRecordingCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().RecordingSet(gomock.Any(), gomock.Any()).Return(nil)
@@ -80,12 +80,7 @@ func TestRecordingCreate(t *testing.T) {
 	}
 }
 
-func TestRecordingGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
+func Test_RecordingGets(t *testing.T) {
 
 	type test struct {
 		name string
@@ -132,6 +127,12 @@ func TestRecordingGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
 			ctx := context.Background()
 
 			for _, recording := range tt.recordings {

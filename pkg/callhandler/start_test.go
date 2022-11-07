@@ -21,6 +21,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_GetTypeContextIncomingCall(t *testing.T) {
@@ -109,11 +110,13 @@ func Test_TypeSipServiceStartSvcEcho(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:          mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -127,6 +130,7 @@ func Test_TypeSipServiceStartSvcEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
 			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockUtil.EXPECT().GetCurTime().Return("2021-02-19 06:32:14.621")
 			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
@@ -197,11 +201,13 @@ func Test_TypeConferenceStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:          mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -217,6 +223,7 @@ func Test_TypeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.conference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.activeFlow, nil)
 
+			mockUtil.EXPECT().GetCurTime().Return("2020-04-18 03:22:17.995000")
 			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
@@ -278,11 +285,13 @@ func Test_TypeSipServiceStartSvcAnswer(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:          mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -306,6 +315,7 @@ func Test_TypeSipServiceStartSvcAnswer(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutEcho).Return(nil)
 			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockUtil.EXPECT().GetCurTime().Return("2020-04-18T03:22:17.995000")
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.All()).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
@@ -367,11 +377,13 @@ func Test_TypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:          mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -384,6 +396,7 @@ func Test_TypeSipServiceStartSvcStreamEcho(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
 			mockReq.EXPECT().AstBridgeCreate(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockUtil.EXPECT().GetCurTime().Return("")
 			mockDB.EXPECT().CallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
@@ -443,12 +456,14 @@ func Test_TypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &callHandler{
+				util:              mockUtil,
 				reqHandler:        mockReq,
 				notifyHandler:     mockNotify,
 				db:                mockDB,
@@ -463,6 +478,7 @@ func Test_TypeSipServiceStartSvcConfbridgeJoin(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
 			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockUtil.EXPECT().GetCurTime().Return("")
 			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
@@ -523,11 +539,13 @@ func Test_TypeSipServiceStartSvcPlay(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:          mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -542,6 +560,7 @@ func Test_TypeSipServiceStartSvcPlay(t *testing.T) {
 			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "TIMEOUT(absolute)", defaultMaxTimeoutSipService).Return(nil)
 			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockUtil.EXPECT().GetCurTime().Return("")
 			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallCreated, tt.call)
@@ -659,11 +678,13 @@ func Test_TypeFlowStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
+				util:          mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -678,6 +699,7 @@ func Test_TypeFlowStart(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.numb.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.af, nil)
 			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockUtil.EXPECT().GetCurTime().Return("")
 			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallCreated, tt.call)

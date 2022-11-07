@@ -33,6 +33,10 @@ create table calls(
   hangup_by         varchar(16),    -- local/remote/empty for not sure.
   hangup_reason     varchar(16),    -- reason
 
+  -- dialroute
+  dialroute_id  binary(16),
+  dialroutes    json,
+
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --
