@@ -13,20 +13,26 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
 
-func TestConfbridgeCreateAndGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_ConfbridgeCreateAndGet(t *testing.T) {
 
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	type test struct {
+	tests := []struct {
 		name string
 
 		confbridge       *confbridge.Confbridge
 		expectConfbridge *confbridge.Confbridge
-	}
+	}{
+		{
+			"empty",
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
+			},
+			&confbridge.Confbridge{
+				ID:             uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
+				ChannelCallIDs: map[string]uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+			},
+		},
 
-	tests := []test{
 		{
 			"normal type connect",
 			&confbridge.Confbridge{
@@ -80,6 +86,10 @@ func TestConfbridgeCreateAndGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 			ctx := context.Background()
 
@@ -102,11 +112,7 @@ func TestConfbridgeCreateAndGet(t *testing.T) {
 	}
 }
 
-func TestConfbridgeGetByBridgeID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 
 	type test struct {
 		name string
@@ -135,6 +141,10 @@ func TestConfbridgeGetByBridgeID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 			ctx := context.Background()
 
@@ -156,10 +166,6 @@ func TestConfbridgeGetByBridgeID(t *testing.T) {
 }
 
 func TestConfbridgeSetRecordID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
 		name             string
@@ -186,6 +192,10 @@ func TestConfbridgeSetRecordID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().ConfbridgeSet(gomock.Any(), gomock.Any())

@@ -21,9 +21,9 @@ func TestBridgeCreate(t *testing.T) {
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
-		name         string
-		bridge       *bridge.Bridge
-		expectBridge *bridge.Bridge
+		name      string
+		bridge    *bridge.Bridge
+		expectRes *bridge.Bridge
 	}
 
 	tests := []test{
@@ -95,8 +95,8 @@ func TestBridgeCreate(t *testing.T) {
 				t.Errorf("Wrong match. BridgeGet expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectBridge, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectBridge, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

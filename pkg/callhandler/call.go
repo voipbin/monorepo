@@ -5,27 +5,105 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-// create creates a call record. All of call creation process need to use this.
-func (h *callHandler) create(ctx context.Context, c *call.Call) (*call.Call, error) {
+// Create creates a call record.
+func (h *callHandler) Create(
+	ctx context.Context,
 
-	// set default time stamp
-	c.TMUpdate = dbhandler.DefaultTimeStamp
-	c.TMRinging = dbhandler.DefaultTimeStamp
-	c.TMProgressing = dbhandler.DefaultTimeStamp
-	c.TMHangup = dbhandler.DefaultTimeStamp
+	id uuid.UUID,
+	customerID uuid.UUID,
+
+	asteriskID string,
+	channelID string,
+	bridgeID string,
+
+	flowID uuid.UUID,
+	activeflowID uuid.UUID,
+	confbridgeID uuid.UUID,
+
+	callType call.Type,
+
+	masterCallID uuid.UUID,
+	chainedcallIDs []uuid.UUID,
+
+	recordingID uuid.UUID,
+	recordingIDs []uuid.UUID,
+
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
+
+	status call.Status,
+	data map[string]string,
+
+	action fmaction.Action,
+	direction call.Direction,
+
+	dialrouteID uuid.UUID,
+	dialroutes []rmroute.Route,
+) (*call.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "Create",
+			"id":          id,
+			"customer_id": customerID,
+		},
+	)
+
+	c := &call.Call{
+		ID:           id,
+		CustomerID:   customerID,
+		
+		AsteriskID:   asteriskID,
+		ChannelID:    channelID,
+		BridgeID:     bridgeID,
+		FlowID:       flowID,
+		ActiveFlowID: activeflowID,
+		ConfbridgeID: confbridgeID,
+		Type:         callType,
+
+		MasterCallID:   masterCallID,
+		ChainedCallIDs: chainedcallIDs,
+
+		RecordingID:  recordingID,
+		RecordingIDs: recordingIDs,
+
+		Source:      *source,
+		Destination: *destination,
+
+		Status:       status,
+		Data:         data,
+		Action:       action,
+		Direction:    direction,
+		HangupBy:     call.HangupByNone,
+		HangupReason: call.HangupReasonNone,
+
+		DialrouteID: dialrouteID,
+		Dialroutes:  dialroutes,
+
+		TMCreate:      h.util.GetCurTime(),
+		TMUpdate:      dbhandler.DefaultTimeStamp,
+		TMProgressing: dbhandler.DefaultTimeStamp,
+		TMRinging:     dbhandler.DefaultTimeStamp,
+		TMHangup:      dbhandler.DefaultTimeStamp,
+	}
+	log.WithField("call", c).Debugf("Creating a new call. call_id: %s", c.ID)
 
 	if err := h.db.CallCreate(ctx, c); err != nil {
+		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
 	}
 	promCallCreateTotal.WithLabelValues(string(c.Direction), string(c.Type)).Inc()
 
 	res, err := h.db.CallGet(ctx, c.ID)
 	if err != nil {
+		log.Errorf("Could not get a created call. err: %v", err)
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallCreated, res)
@@ -37,8 +115,8 @@ func (h *callHandler) create(ctx context.Context, c *call.Call) (*call.Call, err
 func (h *callHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":    "Gets",
-			"user_id": customerID,
+			"func":        "Gets",
+			"customer_id": customerID,
 		},
 	)
 

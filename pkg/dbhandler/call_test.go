@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -17,377 +18,166 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
 
-func TestCallCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallCreate(t *testing.T) {
 
 	type test struct {
-		name       string
-		call       call.Call
-		expectCall call.Call
+		name      string
+		call      *call.Call
+		expectRes *call.Call
 	}
 
 	tests := []test{
 		{
-			"test normal",
-			call.Call{
-				ID:         uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				FlowID:     uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
-				Type:       call.TypeFlow,
-
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-			call.Call{
-				ID:         uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				FlowID:     uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
-				Type:       call.TypeFlow,
-
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-		},
-		{
-			"test normal has source address type sip",
-			call.Call{
-				ID:         uuid.FromStringOrNil("18d8ede6-2825-11eb-a86b-776ac82155a9"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "bd610e10-84ed-11ea-b6e1-ef9d10ec3de6",
-				FlowID:     uuid.FromStringOrNil("1909503a-2825-11eb-bfc4-037a1ce4266d"),
-				Type:       call.TypeFlow,
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-			call.Call{
-				ID:         uuid.FromStringOrNil("18d8ede6-2825-11eb-a86b-776ac82155a9"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "bd610e10-84ed-11ea-b6e1-ef9d10ec3de6",
-				FlowID:     uuid.FromStringOrNil("1909503a-2825-11eb-bfc4-037a1ce4266d"),
-				Type:       call.TypeFlow,
-
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-		},
-		{
-			"master added",
-			call.Call{
-				ID:           uuid.FromStringOrNil("2ccc1846-2825-11eb-9f11-b726cca84f01"),
+			"have all",
+			&call.Call{
+				ID:           uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
+				CustomerID:   uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
 				AsteriskID:   "3e:50:6b:43:bb:30",
-				ChannelID:    "c1372760-24be-11eb-b93e-37379c2c7946",
-				FlowID:       uuid.FromStringOrNil("2cf51cb4-2825-11eb-8570-a702ca449c69"),
+				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
+				BridgeID:     "fe27852c-90c3-4f60-b357-69c44b605e6e",
+				FlowID:       uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
+				ActiveFlowID: uuid.FromStringOrNil("b41cfc24-5380-4c41-88ca-d22e95624445"),
+				ConfbridgeID: uuid.FromStringOrNil("33115c61-1e97-486f-a337-f212f15a7284"),
 				Type:         call.TypeFlow,
-				MasterCallID: uuid.FromStringOrNil("cf3c6046-24be-11eb-8b61-074f38be56e4"),
 
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-			call.Call{
-				ID:           uuid.FromStringOrNil("2ccc1846-2825-11eb-9f11-b726cca84f01"),
-				AsteriskID:   "3e:50:6b:43:bb:30",
-				ChannelID:    "c1372760-24be-11eb-b93e-37379c2c7946",
-				FlowID:       uuid.FromStringOrNil("2cf51cb4-2825-11eb-8570-a702ca449c69"),
-				Type:         call.TypeFlow,
-				MasterCallID: uuid.FromStringOrNil("cf3c6046-24be-11eb-8b61-074f38be56e4"),
-
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-		},
-		{
-			"single chained call",
-			call.Call{
-				ID:           uuid.FromStringOrNil("48aaf91a-2825-11eb-b53f-a3bebb6068ff"),
-				AsteriskID:   "3e:50:6b:43:bb:30",
-				ChannelID:    "06eed97e-24bf-11eb-b88a-8702e77eda81",
-				FlowID:       uuid.FromStringOrNil("4f7f22de-2825-11eb-9275-6b7355831f44"),
-				Type:         call.TypeFlow,
-				MasterCallID: uuid.FromStringOrNil("0bfa246e-24bf-11eb-b919-3b6404fdc87b"),
+				MasterCallID: uuid.FromStringOrNil("d6fc5d4d-ad03-47e1-8453-a6e6a975304f"),
 				ChainedCallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("10e34906-24bf-11eb-b3dd-63551f2b9bde"),
+					uuid.FromStringOrNil("d6fc5d4d-ad03-47e1-8453-a6e6a975304f"),
 				},
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-			call.Call{
-				ID:           uuid.FromStringOrNil("48aaf91a-2825-11eb-b53f-a3bebb6068ff"),
-				AsteriskID:   "3e:50:6b:43:bb:30",
-				ChannelID:    "06eed97e-24bf-11eb-b88a-8702e77eda81",
-				FlowID:       uuid.FromStringOrNil("4f7f22de-2825-11eb-9275-6b7355831f44"),
-				Type:         call.TypeFlow,
-				MasterCallID: uuid.FromStringOrNil("0bfa246e-24bf-11eb-b919-3b6404fdc87b"),
-				ChainedCallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("10e34906-24bf-11eb-b3dd-63551f2b9bde"),
-				},
-
-				RecordingIDs: []uuid.UUID{},
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-		},
-		{
-			"many chained calls",
-			call.Call{
-				ID:           uuid.FromStringOrNil("70500456-2825-11eb-8faf-532e189bf57a"),
-				AsteriskID:   "3e:50:6b:43:bb:30",
-				ChannelID:    "3272b8cc-24bf-11eb-affd-af1cf6f0f7bb",
-				FlowID:       uuid.FromStringOrNil("70d2dbba-2825-11eb-bcb0-23917aa80568"),
-				Type:         call.TypeFlow,
-				MasterCallID: uuid.FromStringOrNil("32c01ec8-24bf-11eb-9e91-9b0246fc5e76"),
-				ChainedCallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("32f84884-24bf-11eb-a097-93f53734f1c9"),
-					uuid.FromStringOrNil("3323a3b2-24bf-11eb-9955-27bf0b4927b7"),
-				},
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-			call.Call{
-				ID:           uuid.FromStringOrNil("70500456-2825-11eb-8faf-532e189bf57a"),
-				AsteriskID:   "3e:50:6b:43:bb:30",
-				ChannelID:    "3272b8cc-24bf-11eb-affd-af1cf6f0f7bb",
-				FlowID:       uuid.FromStringOrNil("70d2dbba-2825-11eb-bcb0-23917aa80568"),
-				Type:         call.TypeFlow,
-				MasterCallID: uuid.FromStringOrNil("32c01ec8-24bf-11eb-9e91-9b0246fc5e76"),
-				ChainedCallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("32f84884-24bf-11eb-a097-93f53734f1c9"),
-					uuid.FromStringOrNil("3323a3b2-24bf-11eb-9955-27bf0b4927b7"),
-				},
-
-				RecordingIDs: []uuid.UUID{},
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-		},
-		{
-			"recording id",
-			call.Call{
-				ID:         uuid.FromStringOrNil("ac1bde4c-2825-11eb-8bb0-7b1bf9f52aae"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "ac484f86-2825-11eb-ad4b-875fe44310be",
-				FlowID:     uuid.FromStringOrNil("accf3884-2825-11eb-b70b-33d61a1589dc"),
-				Type:       call.TypeFlow,
-
-				RecordingID: uuid.FromStringOrNil("acf747a2-2825-11eb-ac11-37bc826b0ba6"),
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-			call.Call{
-				ID:         uuid.FromStringOrNil("ac1bde4c-2825-11eb-8bb0-7b1bf9f52aae"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "ac484f86-2825-11eb-ad4b-875fe44310be",
-				FlowID:     uuid.FromStringOrNil("accf3884-2825-11eb-b70b-33d61a1589dc"),
-				Type:       call.TypeFlow,
-
-				ChainedCallIDs: []uuid.UUID{},
-
-				RecordingID:  uuid.FromStringOrNil("acf747a2-2825-11eb-ac11-37bc826b0ba6"),
-				RecordingIDs: []uuid.UUID{},
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-			},
-		},
-		{
-			"record channel id with record files",
-			call.Call{
-				ID:         uuid.FromStringOrNil("defd8180-2825-11eb-a4bf-db97150ede4d"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "df22857a-2825-11eb-a7a0-cb1a28bdfc48",
-				FlowID:     uuid.FromStringOrNil("df48368a-2825-11eb-99c3-c77c66d82570"),
-				Type:       call.TypeFlow,
-
-				RecordingID: uuid.FromStringOrNil("df718b70-2825-11eb-b7b4-5f3b1137dd3c"),
+				RecordingID: uuid.FromStringOrNil("b73f769d-7b59-49a3-b8f2-23aad17ba476"),
 				RecordingIDs: []uuid.UUID{
-					uuid.FromStringOrNil("df718b70-2825-11eb-b7b4-5f3b1137dd3c"),
+					uuid.FromStringOrNil("b73f769d-7b59-49a3-b8f2-23aad17ba476"),
 				},
 
 				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000001",
+					TargetName: "source",
+					Name:       "test source name",
+					Detail:     "test source detail",
 				},
-				Destination: commonaddress.Address{},
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000002",
+					TargetName: "destination",
+					Name:       "test destination name",
+					Detail:     "test destination detail",
+				},
 
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
+				Status: call.StatusHangup,
+				Data: map[string]string{
+					"context": "call-in",
+					"domain":  "pstn.voipbin.net",
+				},
+				Action: fmaction.Action{
+					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				},
+				Direction:    call.DirectionIncoming,
+				HangupBy:     call.HangupByLocal,
+				HangupReason: call.HangupReasonNormal,
+
+				DialrouteID: uuid.FromStringOrNil("60679904-f101-4b8a-802f-14e563808376"),
+				Dialroutes: []rmroute.Route{
+					{
+						ID: uuid.FromStringOrNil("60679904-f101-4b8a-802f-14e563808376"),
+					},
+				},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+
+				TMProgressing: "2020-04-18T03:22:17.995000",
+				TMRinging:     "2020-04-18T03:22:17.995000",
+				TMHangup:      DefaultTimeStamp,
 			},
-			call.Call{
-				ID:         uuid.FromStringOrNil("defd8180-2825-11eb-a4bf-db97150ede4d"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "df22857a-2825-11eb-a7a0-cb1a28bdfc48",
-				FlowID:     uuid.FromStringOrNil("df48368a-2825-11eb-99c3-c77c66d82570"),
-				Type:       call.TypeFlow,
+			&call.Call{
+				ID:           uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
+				CustomerID:   uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+				AsteriskID:   "3e:50:6b:43:bb:30",
+				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
+				BridgeID:     "fe27852c-90c3-4f60-b357-69c44b605e6e",
+				FlowID:       uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
+				ActiveFlowID: uuid.FromStringOrNil("b41cfc24-5380-4c41-88ca-d22e95624445"),
+				ConfbridgeID: uuid.FromStringOrNil("33115c61-1e97-486f-a337-f212f15a7284"),
+				Type:         call.TypeFlow,
 
-				ChainedCallIDs: []uuid.UUID{},
-
-				RecordingID: uuid.FromStringOrNil("df718b70-2825-11eb-b7b4-5f3b1137dd3c"),
+				MasterCallID: uuid.FromStringOrNil("d6fc5d4d-ad03-47e1-8453-a6e6a975304f"),
+				ChainedCallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("d6fc5d4d-ad03-47e1-8453-a6e6a975304f"),
+				},
+				RecordingID: uuid.FromStringOrNil("b73f769d-7b59-49a3-b8f2-23aad17ba476"),
 				RecordingIDs: []uuid.UUID{
-					uuid.FromStringOrNil("df718b70-2825-11eb-b7b4-5f3b1137dd3c"),
+					uuid.FromStringOrNil("b73f769d-7b59-49a3-b8f2-23aad17ba476"),
 				},
 
 				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000001",
+					TargetName: "source",
+					Name:       "test source name",
+					Detail:     "test source detail",
 				},
-				Destination: commonaddress.Address{},
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000002",
+					TargetName: "destination",
+					Name:       "test destination name",
+					Detail:     "test destination detail",
+				},
 
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
+				Status: call.StatusHangup,
+				Data: map[string]string{
+					"context": "call-in",
+					"domain":  "pstn.voipbin.net",
+				},
+				Action: fmaction.Action{
+					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				},
+				Direction:    call.DirectionIncoming,
+				HangupBy:     call.HangupByLocal,
+				HangupReason: call.HangupReasonNormal,
+
+				DialrouteID: uuid.FromStringOrNil("60679904-f101-4b8a-802f-14e563808376"),
+				Dialroutes: []rmroute.Route{
+					{
+						ID: uuid.FromStringOrNil("60679904-f101-4b8a-802f-14e563808376"),
+					},
+				},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+
+				TMProgressing: "2020-04-18T03:22:17.995000",
+				TMRinging:     "2020-04-18T03:22:17.995000",
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 		{
-			"with customer id",
-			call.Call{
-				ID:         uuid.FromStringOrNil("30607dac-620a-11eb-9b3e-b30fef1626e1"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "4f1aa3f8-620a-11eb-bd96-7fd2b868f199",
-				FlowID:     uuid.FromStringOrNil("539a82cc-620a-11eb-b09f-2f48e3c7a7e3"),
-				Type:       call.TypeFlow,
-				CustomerID: uuid.FromStringOrNil("4b36334a-7f43-11ec-82ac-4ff789a055d8"),
+			"empty",
 
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
+			&call.Call{
+				ID: uuid.FromStringOrNil("64e31a36-b6fc-4df5-9a66-48f68ad60a70"),
 			},
-			call.Call{
-				ID:         uuid.FromStringOrNil("30607dac-620a-11eb-9b3e-b30fef1626e1"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "4f1aa3f8-620a-11eb-bd96-7fd2b868f199",
-				FlowID:     uuid.FromStringOrNil("539a82cc-620a-11eb-b09f-2f48e3c7a7e3"),
-				Type:       call.TypeFlow,
-				CustomerID: uuid.FromStringOrNil("4b36334a-7f43-11ec-82ac-4ff789a055d8"),
-
+			&call.Call{
+				ID:             uuid.FromStringOrNil("64e31a36-b6fc-4df5-9a66-48f68ad60a70"),
 				ChainedCallIDs: []uuid.UUID{},
-
-				RecordingIDs: []uuid.UUID{},
-
-				Source: commonaddress.Address{
-					Type: commonaddress.TypeSIP,
-				},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
+				RecordingIDs:   []uuid.UUID{},
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallCreate(context.Background(), &tt.call); err != nil {
+			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -399,18 +189,14 @@ func TestCallCreate(t *testing.T) {
 			}
 			t.Logf("Created call. call: %v", res)
 
-			if reflect.DeepEqual(tt.expectCall, *res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func TestCallGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallGets(t *testing.T) {
 
 	type test struct {
 		name string
@@ -433,6 +219,11 @@ func TestCallGets(t *testing.T) {
 	}
 
 	// creates calls for test
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
 	h := NewHandler(dbTest, mockCache)
 	mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 	_ = h.CallCreate(context.Background(), &call.Call{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295")})
@@ -452,47 +243,36 @@ func TestCallGets(t *testing.T) {
 	}
 }
 
-func TestCallSetStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
+func Test_CallSetStatus(t *testing.T) {
 	type test struct {
-		name     string
+		name string
+
 		id       uuid.UUID
-		flowID   uuid.UUID
 		status   call.Status
 		tmUpdate string
 
-		call       *call.Call
-		expectCall call.Call
+		call      *call.Call
+		expectRes *call.Call
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			uuid.Must(uuid.NewV4()),
-			uuid.Must(uuid.NewV4()),
+
+			uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
 			call.StatusProgressing,
 			"2020-04-18T03:22:18.995000",
-			&call.Call{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
 
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
+			&call.Call{
+				ID: uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
-			call.Call{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
+			&call.Call{
+				ID: uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -502,6 +282,9 @@ func TestCallSetStatus(t *testing.T) {
 
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionIncoming,
+				Data:      map[string]string{},
+
+				Dialroutes: []rmroute.Route{},
 
 				TMCreate:      "2020-04-18T03:22:17.995000",
 				TMProgressing: "2020-04-18T03:22:18.995000",
@@ -511,45 +294,43 @@ func TestCallSetStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := NewHandler(dbTest, mockCache)
 
-			tt.call.ID = tt.id
-			tt.call.FlowID = tt.flowID
-			tt.expectCall.ID = tt.id
-			tt.expectCall.FlowID = tt.flowID
-			tt.expectCall.TMUpdate = tt.tmUpdate
+			ctx := context.Background()
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallCreate(context.Background(), tt.call); err != nil {
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.id).Return(tt.call, nil)
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetStatus(context.Background(), tt.id, tt.status, tt.tmUpdate); err != nil {
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetStatus(ctx, tt.id, tt.status, tt.tmUpdate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			res, err := h.CallGet(context.Background(), tt.call.ID)
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			tt.expectCall.TMUpdate = res.TMUpdate
-			if reflect.DeepEqual(tt.expectCall, *res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+			tt.expectRes.TMUpdate = res.TMUpdate
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func TestCallGetByChannelID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallGetByChannelID(t *testing.T) {
 
 	type test struct {
 		name   string
@@ -570,9 +351,6 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChannelID:  "2505d858-8687-11ea-8723-d35628256201",
 				Type:       call.TypeFlow,
 
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
 
@@ -586,11 +364,10 @@ func TestCallGetByChannelID(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
+				Status:     call.StatusRinging,
+				Direction:  call.DirectionIncoming,
+				Data:       map[string]string{},
+				Dialroutes: []rmroute.Route{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
@@ -625,10 +402,11 @@ func TestCallGetByChannelID(t *testing.T) {
 				Source: commonaddress.Address{
 					Type: commonaddress.TypeSIP,
 				},
-				Destination: commonaddress.Address{},
 
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
+				Status:     call.StatusRinging,
+				Direction:  call.DirectionIncoming,
+				Data:       map[string]string{},
+				Dialroutes: []rmroute.Route{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
@@ -637,6 +415,10 @@ func TestCallGetByChannelID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			tt.call.ID = tt.id
@@ -662,11 +444,7 @@ func TestCallGetByChannelID(t *testing.T) {
 	}
 }
 
-func TestCallCallSetHangup(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallCallSetHangup(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -715,6 +493,8 @@ func TestCallCallSetHangup(t *testing.T) {
 
 				HangupReason: call.HangupReasonNormal,
 				HangupBy:     call.HangupByLocal,
+				Data:         map[string]string{},
+				Dialroutes:   []rmroute.Route{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:18.995000",
@@ -725,6 +505,10 @@ func TestCallCallSetHangup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			tt.call.ID = tt.id
@@ -755,11 +539,7 @@ func TestCallCallSetHangup(t *testing.T) {
 	}
 }
 
-func TestCallSetFlowID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallSetFlowID(t *testing.T) {
 
 	type test struct {
 		name   string
@@ -801,8 +581,10 @@ func TestCallSetFlowID(t *testing.T) {
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
 
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
+				Status:     call.StatusRinging,
+				Direction:  call.DirectionIncoming,
+				Data:       map[string]string{},
+				Dialroutes: []rmroute.Route{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
@@ -811,6 +593,10 @@ func TestCallSetFlowID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
@@ -838,11 +624,7 @@ func TestCallSetFlowID(t *testing.T) {
 	}
 }
 
-func TestCallSetConfbridgeID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallSetConfbridgeID(t *testing.T) {
 
 	type test struct {
 		name         string
@@ -884,8 +666,10 @@ func TestCallSetConfbridgeID(t *testing.T) {
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
 
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
+				Status:     call.StatusRinging,
+				Direction:  call.DirectionIncoming,
+				Data:       map[string]string{},
+				Dialroutes: []rmroute.Route{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
@@ -894,6 +678,10 @@ func TestCallSetConfbridgeID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
@@ -921,11 +709,7 @@ func TestCallSetConfbridgeID(t *testing.T) {
 	}
 }
 
-func TestCallSetAction(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallSetAction(t *testing.T) {
 
 	type test struct {
 		name   string
@@ -977,13 +761,14 @@ func TestCallSetAction(t *testing.T) {
 					Type:   fmaction.TypeEcho,
 					Option: []byte(`{"duration":180}`),
 				},
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
+				Status:     call.StatusRinging,
+				Direction:  call.DirectionIncoming,
+				Data:       map[string]string{},
+				Dialroutes: []rmroute.Route{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 		},
-
 		{
 			"echo option empty",
 			&call.Call{
@@ -1023,8 +808,10 @@ func TestCallSetAction(t *testing.T) {
 					ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),
 					Type: fmaction.TypeEcho,
 				},
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
+				Status:     call.StatusRinging,
+				Direction:  call.DirectionIncoming,
+				Data:       map[string]string{},
+				Dialroutes: []rmroute.Route{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
@@ -1033,6 +820,10 @@ func TestCallSetAction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
@@ -1060,11 +851,7 @@ func TestCallSetAction(t *testing.T) {
 	}
 }
 
-func TestCallSetMasterCallID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallSetMasterCallID(t *testing.T) {
 
 	type test struct {
 		name         string
@@ -1092,6 +879,8 @@ func TestCallSetMasterCallID(t *testing.T) {
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
 				MasterCallID:   uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 				TMCreate:       "2020-04-18T03:22:17.995000",
 			},
@@ -1109,13 +898,18 @@ func TestCallSetMasterCallID(t *testing.T) {
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
-				TMCreate:       "2020-04-18T03:22:17.995000",
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{}, TMCreate: "2020-04-18T03:22:17.995000",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
@@ -1143,11 +937,7 @@ func TestCallSetMasterCallID(t *testing.T) {
 	}
 }
 
-func TestCallSetRecordID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_CallSetRecordID(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -1175,6 +965,8 @@ func TestCallSetRecordID(t *testing.T) {
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
 
 				RecordingID: uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
 				TMCreate:    "2020-04-18T03:22:17.995000",
@@ -1193,6 +985,8 @@ func TestCallSetRecordID(t *testing.T) {
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
@@ -1201,6 +995,10 @@ func TestCallSetRecordID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := NewHandler(dbTest, mockCache)
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())

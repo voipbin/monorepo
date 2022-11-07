@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -125,7 +125,7 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = errors.New("Record not found")
+	ErrNotFound = errors.New("record not found")
 )
 
 // list of default values
@@ -144,6 +144,7 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 }
 
 // GetCurTime return current utc time string
+// TODO: need to be replaced with h.GetCurTime()
 func GetCurTime() string {
 	now := time.Now().UTC().String()
 	res := strings.TrimSuffix(now, " +0000 UTC")

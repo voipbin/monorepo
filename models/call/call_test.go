@@ -1,14 +1,9 @@
 package call
 
 import (
-	"reflect"
 	"testing"
 
-	uuid "github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 func TestIsUpdatableStatus(t *testing.T) {
@@ -126,76 +121,6 @@ func TestCalculateHangupBy(t *testing.T) {
 			if ret := CalculateHangupBy(tt.lastStatus); ret != tt.expectHangupby {
 				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectHangupby, ret)
 			}
-		})
-	}
-}
-
-func TestNewCallByChannel(t *testing.T) {
-	type test struct {
-		name              string
-		customerID        uuid.UUID
-		ariChannelCreated string
-		channelType       Type
-		direction         Direction
-		data              map[string]string
-
-		expectCall *Call
-	}
-
-	tests := []test{
-		{
-			"normal",
-			uuid.FromStringOrNil("fc76c9cc-7f42-11ec-bdfd-bf439d0e729c"),
-			`{"type":"ChannelCreated","timestamp":"2020-05-02T20:56:51.498+0000","channel":{"id":"1588453011.231","name":"PJSIP/in-voipbin-00000074","state":"Ring","caller":{"name":"","number":"3001"},"connected":{"name":"","number":""},"accountcode":"","dialplan":{"context":"in-voipbin","exten":"9901146812420898","priority":1,"app_name":"","app_data":""},"creationtime":"2020-05-02T20:56:51.498+0000","language":"en"},"asterisk_id":"42:01:0a:a4:00:03","application":"voipbin"}`,
-			TypeSipService,
-			DirectionIncoming,
-			map[string]string{},
-
-			&Call{
-				AsteriskID: "42:01:0a:a4:00:03",
-				CustomerID: uuid.FromStringOrNil("fc76c9cc-7f42-11ec-bdfd-bf439d0e729c"),
-				ChannelID:  "1588453011.231",
-				FlowID:     uuid.Nil,
-				Type:       TypeSipService,
-
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-
-				Status: StatusRinging,
-
-				Direction: DirectionIncoming,
-
-				TMCreate: "2020-05-02T20:56:51.498",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			_, event, err := ari.Parse([]byte(tt.ariChannelCreated))
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			eventChannel := event.(*ari.ChannelCreated)
-			channel := channel.NewChannelByChannelCreated(eventChannel)
-
-			c := NewCallByChannel(channel, tt.customerID, tt.channelType, tt.direction, tt.data)
-			if c == nil {
-				t.Errorf("Wrong match. expect: not nil, got: nil")
-				return
-			}
-
-			c.ID = uuid.Nil
-			c.Source = commonaddress.Address{}
-			c.Destination = commonaddress.Address{}
-			c.Data = nil
-
-			if reflect.DeepEqual(*c, *tt.expectCall) != true {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, c)
-			}
-
 		})
 	}
 }

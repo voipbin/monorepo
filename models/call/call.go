@@ -7,23 +7,26 @@ import (
 	uuid "github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
 // Call struct represent asterisk's channel information
 type Call struct {
 	// identity
-	ID           uuid.UUID `json:"id"`
-	CustomerID   uuid.UUID `json:"customer_id"`
-	AsteriskID   string    `json:"asterisk_id"`
-	ChannelID    string    `json:"channel_id"`
-	BridgeID     string    `json:"bridge_id"`      // call bridge id
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
+
+	AsteriskID string `json:"asterisk_id"`
+	ChannelID  string `json:"channel_id"`
+	BridgeID   string `json:"bridge_id"` // call bridge id
+
 	FlowID       uuid.UUID `json:"flow_id"`        // flow id
 	ActiveFlowID uuid.UUID `json:"active_flow_id"` // active flow id
 	ConfbridgeID uuid.UUID `json:"confbridge_id"`  // currently joined confbridge id.
-	Type         Type      `json:"type"`           // call type
+
+	Type Type `json:"type"` // call type
 
 	// etc info
 	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
@@ -42,6 +45,10 @@ type Call struct {
 	Direction    Direction         `json:"direction"`
 	HangupBy     HangupBy          `json:"hangup_by"`
 	HangupReason HangupReason      `json:"hangup_reason"`
+
+	// dialroute(valid only tel type outgoing call)
+	DialrouteID uuid.UUID       `json:"dialroute_id"` // dialroute id(current use)
+	Dialroutes  []rmroute.Route `json:"dialroutes"`   // list of dialroutes for dialing.
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -90,6 +97,7 @@ type HangupBy string
 
 // List of CallHangupBy
 const (
+	HangupByNone   HangupBy = ""       // no one hangup yet.
 	HangupByRemote HangupBy = "remote" // remote end hangup the call first.
 	HangupByLocal  HangupBy = "local"  // local end hangup the call first.
 )
@@ -99,6 +107,7 @@ type HangupReason string
 
 // List of CallHangupReason
 const (
+	HangupReasonNone     HangupReason = ""
 	HangupReasonNormal   HangupReason = "normal"   // the call has ended after answer.
 	HangupReasonFailed   HangupReason = "failed"   // the call attempt(signal) was not reached to the phone network.
 	HangupReasonBusy     HangupReason = "busy"     // the destination is on the line with another caller.
@@ -133,80 +142,6 @@ func (h *Call) Matches(x interface{}) bool {
 
 func (h *Call) String() string {
 	return fmt.Sprintf("%v", *h)
-}
-
-// NewCall creates a call struct and return it.
-func NewCall(
-	id uuid.UUID,
-	customerID uuid.UUID,
-	asteriskID string,
-	channelID string,
-	flowID uuid.UUID,
-	cType Type,
-
-	source *commonaddress.Address,
-	destination *commonaddress.Address,
-
-	status Status,
-	data map[string]string,
-	direction Direction,
-
-	tmCreate string,
-) *Call {
-
-	c := &Call{
-		ID:         id,
-		CustomerID: customerID,
-		AsteriskID: asteriskID,
-		ChannelID:  channelID,
-		FlowID:     flowID,
-		Type:       cType,
-
-		ChainedCallIDs: []uuid.UUID{},
-		RecordingIDs:   []uuid.UUID{},
-
-		Source:      *source,
-		Destination: *destination,
-
-		Status:    status,
-		Data:      data,
-		Direction: direction,
-
-		TMCreate: tmCreate,
-	}
-
-	return c
-}
-
-// NewCallByChannel creates a Call and return it.
-func NewCallByChannel(cn *channel.Channel, customerID uuid.UUID, cType Type, direction Direction, data map[string]string) *Call {
-	// create a call
-	source := commonaddress.CreateAddressByChannelSource(cn)
-	destination := commonaddress.CreateAddressByChannelDestination(cn)
-	status := GetStatusByChannelState(cn.State)
-
-	c := &Call{
-		ID:         uuid.Must(uuid.NewV4()),
-		CustomerID: customerID,
-		AsteriskID: cn.AsteriskID,
-		ChannelID:  cn.ID,
-		FlowID:     uuid.Nil,
-		Type:       cType,
-
-		ChainedCallIDs: []uuid.UUID{},
-		RecordingIDs:   []uuid.UUID{},
-
-		Source:      *source,
-		Destination: *destination,
-
-		Status:    status,
-		Data:      data,
-		Direction: direction,
-
-		TMCreate: string(cn.TMCreate),
-	}
-
-	return c
 }
 
 // GetStatusByChannelState return Status by the ChannelState.
