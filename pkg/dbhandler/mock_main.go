@@ -434,6 +434,20 @@ func (mr *MockDBHandlerMockRecorder) CallSetFlowID(ctx, id, flowID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetFlowID", reflect.TypeOf((*MockDBHandler)(nil).CallSetFlowID), ctx, id, flowID)
 }
 
+// CallSetForRouteFailover mocks base method.
+func (m *MockDBHandler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetForRouteFailover", ctx, id, channelID, dialrouteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetForRouteFailover indicates an expected call of CallSetForRouteFailover.
+func (mr *MockDBHandlerMockRecorder) CallSetForRouteFailover(ctx, id, channelID, dialrouteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetForRouteFailover", reflect.TypeOf((*MockDBHandler)(nil).CallSetForRouteFailover), ctx, id, channelID, dialrouteID)
+}
+
 // CallSetHangup mocks base method.
 func (m *MockDBHandler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error {
 	m.ctrl.T.Helper()

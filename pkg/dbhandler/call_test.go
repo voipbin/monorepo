@@ -247,6 +247,82 @@ func Test_CallGets(t *testing.T) {
 	}
 }
 
+func Test_CallSetBridgeID(t *testing.T) {
+	type test struct {
+		name string
+
+		call *call.Call
+
+		id       uuid.UUID
+		bridgeID string
+
+		expectRes *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("853a2b18-5f8b-11ed-ba64-d35836e18de8"),
+			},
+
+			uuid.FromStringOrNil("853a2b18-5f8b-11ed-ba64-d35836e18de8"),
+			"c6d46f04-5f89-11ed-98b2-57f1fabc3cf4",
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("853a2b18-5f8b-11ed-ba64-d35836e18de8"),
+
+				BridgeID: "c6d46f04-5f89-11ed-98b2-57f1fabc3cf4",
+
+				ChainedCallIDs: []uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+
+				Data: map[string]string{},
+
+				Dialroutes: []rmroute.Route{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetBridgeID(ctx, tt.id, tt.bridgeID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			// mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			tt.expectRes.TMCreate = res.TMCreate
+			tt.expectRes.TMUpdate = res.TMUpdate
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_CallSetStatus(t *testing.T) {
 	type test struct {
 		name string
@@ -1025,6 +1101,84 @@ func Test_CallSetRecordID(t *testing.T) {
 			res.TMUpdate = ""
 			if reflect.DeepEqual(*tt.expectCall, *res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
+			}
+		})
+	}
+}
+
+func Test_CallSetForRouteFailover(t *testing.T) {
+
+	type test struct {
+		name string
+		call *call.Call
+
+		id          uuid.UUID
+		channelID   string
+		dialrouteID uuid.UUID
+
+		expectRes *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Call{
+				ID:         uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ChannelID:  "54144112-6036-11ed-9492-5b86fbbf6672",
+				Type:       call.TypeFlow,
+				TMCreate:   "2020-04-18T03:22:17.995000",
+			},
+
+			uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
+			"06372bc6-6036-11ed-bd92-7793e1da99bd",
+			uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
+
+			&call.Call{
+				ID:             uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
+				AsteriskID:     "",
+				ChannelID:      "06372bc6-6036-11ed-bd92-7793e1da99bd",
+				Type:           call.TypeFlow,
+				ChainedCallIDs: []uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+				Data:           map[string]string{},
+				DialrouteID:    uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
+				Dialroutes:     []rmroute.Route{},
+				TMCreate:       "2020-04-18T03:22:17.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := NewHandler(dbTest, mockCache)
+
+			ctx := context.Background()
+
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			res.TMUpdate = ""
+			if reflect.DeepEqual(*tt.expectRes, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

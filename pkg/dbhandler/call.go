@@ -804,6 +804,33 @@ func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uu
 	return nil
 }
 
+// CallSetForRouteFailover sets the call for route failover.
+func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error {
+	// prepare
+	q := `
+	update calls set
+		asterisk_id = '',
+		bridge_id = '',
+
+		channel_id = ?,
+		dialroute_id = ?,
+
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, channelID, dialrouteID.Bytes(), h.util.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetForRouteFailover. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.CallUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // CallAddRecordIDs adds the given recording_id into the recording_ids.
 func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare

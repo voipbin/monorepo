@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -30,6 +31,18 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	if err := h.reqHandler.AstBridgeDelete(ctx, c.AsteriskID, c.BridgeID); err != nil {
 		// we don't care the error here. just write the log.
 		log.Errorf("Could not remove the bridge. err: %v", err)
+	}
+
+	// determine route-failover required
+	if h.isRetryable(ctx, c, cn) {
+		// retry the dial
+
+		tmp, err := h.createFailoverChannel(ctx, c)
+		if err == nil {
+			log.Debugf("Created route failover channel succesfully. channel_id: %s", tmp.ChannelID)
+			return nil
+		}
+		log.Errorf("Could not create a failover channel. Continue to hangup process. err: %v", err)
 	}
 
 	// calculate hangup_reason, hangup_by
@@ -124,4 +137,60 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 	}
 
 	return nil
+}
+
+// isRetryable returns true if the given call is dial retryable
+func (h *callHandler) isRetryable(ctx context.Context, c *call.Call, cn *channel.Channel) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"call_id":      c.ID,
+		"channel_id":   cn.ID,
+		"hangup_cause": cn.HangupCause,
+	})
+
+	// check the direction. the only outgoing calls are retryable
+	if c.Direction != call.DirectionOutgoing {
+		log.Debugf("The direction is not outgoing. Not retryable. direction: %s", c.Direction)
+		return false
+	}
+
+	// check destination's type
+	if c.Destination.Type != commonaddress.TypeTel {
+		log.Debugf("The destination type is not tel type. type: %s", c.Destination.Type)
+		return false
+	}
+
+	// check the channel cause code is retryable
+	notRetryableCodes := []ari.ChannelCause{
+		ari.ChannelCauseNormalClearing,
+		ari.ChannelCauseUserBusy,
+		ari.ChannelCauseNoAnswer,
+		ari.ChannelCauseCallRejected,
+		ari.ChannelCauseAnsweredElsewhere,
+
+		ari.ChannelCauseCallDurationTimeout,
+		ari.ChannelCauseCallAMD,
+	}
+	for _, code := range notRetryableCodes {
+		if code == cn.HangupCause {
+			log.Debugf("The")
+			return false
+		}
+	}
+
+	// check call's status
+	if c.Status != call.StatusRinging && c.Status != call.StatusDialing {
+		return false
+	}
+
+	// check call's dialroute
+	_, err := h.getNextDialroute(ctx, c)
+	if err != nil {
+		// no more dialroute left
+		log.Debugf("The call has no dialroute left to dial. call_id: %s", c.ID)
+		return false
+	}
+
+	log.Debugf("The call is dial retryable. call_id: %s", c.ID)
+
+	return true
 }

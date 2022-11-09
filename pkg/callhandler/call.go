@@ -57,9 +57,9 @@ func (h *callHandler) Create(
 	)
 
 	c := &call.Call{
-		ID:           id,
-		CustomerID:   customerID,
-		
+		ID:         id,
+		CustomerID: customerID,
+
 		AsteriskID:   asteriskID,
 		ChannelID:    channelID,
 		BridgeID:     bridgeID,
@@ -144,6 +144,30 @@ func (h *callHandler) Get(ctx context.Context, id uuid.UUID) (*call.Call, error)
 		log.Errorf("Could not get call. err: %v", err)
 		return nil, err
 	}
+
+	return res, nil
+}
+
+// updateForRouteFailover updates the call for route failover
+func (h *callHandler) updateForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "updateForRouteFailover",
+			"call_id": id,
+		},
+	)
+
+	if errSet := h.db.CallSetForRouteFailover(ctx, id, channelID, dialrouteID); errSet != nil {
+		log.Errorf("Could not update the call. err: %v", errSet)
+		return nil, errSet
+	}
+
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call info. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallUpdated, res)
 
 	return res, nil
 }
