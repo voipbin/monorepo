@@ -60,6 +60,7 @@ type DBHandler interface {
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
 	CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	CallSetToCache(ctx context.Context, call *call.Call) error
+	CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error
 	CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
 	CallTXFinish(tx *sql.Tx, commit bool)
 	CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
@@ -144,12 +145,3 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	}
 	return h
 }
-
-// // GetCurTime return current utc time string
-// // TODO: need to be replaced with h.GetCurTime()
-// func GetCurTime() string {
-// 	now := time.Now().UTC().String()
-// 	res := strings.TrimSuffix(now, " +0000 UTC")
-
-// 	return res
-// }

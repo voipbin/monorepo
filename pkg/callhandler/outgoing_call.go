@@ -85,6 +85,19 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 		return nil, fmt.Errorf("the destination type must be sip or tel")
 	}
 
+	// get dialroutes
+	dialroutes := []rmroute.Route{}
+	dialrouteID := uuid.Nil
+	if destination.Type == commonaddress.TypeTel {
+		var err error
+		dialroutes, err = h.getDialroutes(ctx, customerID, &destination)
+		if err != nil || len(dialroutes) == 0 {
+			log.Errorf("Could not get the dialroute. err: %v", err)
+			return nil, errors.Wrap(err, "could not get the dialroutes")
+		}
+		dialrouteID = dialroutes[0].ID
+	}
+
 	// create activeflow
 	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, flowID, fmactiveflow.ReferenceTypeCall, id)
 	if err != nil {
@@ -93,19 +106,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	}
 	log.Debugf("Created active-flow. active-flow: %v", af)
 
-	// get dialroutes
-	dialroutes, err := h.getDialroutes(ctx, customerID, &destination)
-	if err != nil {
-		log.Errorf("Could not generate the dialroute. err: %v", err)
-		return nil, errors.Wrap(err, "could not generate the dialroutes")
-	}
-
-	// get dialrouteID
-	dialrouteID := uuid.Nil
-	if len(dialroutes) > 0 {
-		dialrouteID = dialroutes[0].ID
-	}
-
+	// create channel id
 	channelID := h.util.CreateUUID().String()
 
 	// create a call
@@ -146,7 +147,6 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
-
 		return nil, err
 	}
 
@@ -166,46 +166,9 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 		log.WithField("call", tmp).Debugf("Added chained call id. master_call_id: %s, call_id: %s", masterCallID, c.ID)
 	}
 
-	// get a endpoint destination
-	dialURI, err := h.getDialURI(ctx, c)
-	if err != nil {
-		log.Errorf("Could not create a destination endpoint. err: %v", err)
-
-		// hangup
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
-		return nil, err
-	}
-
-	// get sdp-transport
-	sdpTransport := h.getEndpointSDPTransport(dialURI)
-	log.Debugf("Endpoint detail. endpoint_destination: %s, sdp_transport: %s", dialURI, sdpTransport)
-
-	// create a source endpoint
-	var endpointSrc string
-	if source.Type == commonaddress.TypeTel {
-		endpointSrc = source.Target
-	} else {
-		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", source.TargetName, source.Target)
-	}
-
-	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, c.ID)
-
-	// set variables
-	variables := map[string]string{
-		"CALLERID(all)":                         endpointSrc,
-		"PJSIP_HEADER(add,VBOUT-SDP_Transport)": sdpTransport,
-	}
-
-	// create a channel
-	if err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, channelID, appArgs, dialURI, "", "", "", variables); err != nil {
-		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
-
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
+	// create a channel for the call
+	if err := h.createChannel(ctx, c); err != nil {
+		log.Errorf("Could not create channel. err: %v", err)
 		return nil, err
 	}
 
@@ -229,7 +192,7 @@ func (h *callHandler) getDialURITel(ctx context.Context, c *call.Call) (string, 
 
 	if providerID == uuid.Nil {
 		log.Debugf("No available dialroute left.")
-		return "", nil
+		return "", fmt.Errorf("no available dialroute left")
 	}
 
 	// get provider info
@@ -361,4 +324,109 @@ func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, d
 	}
 
 	return res, nil
+}
+
+// createChannel creates a new channel for outgoing call
+func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "createChannel",
+		"call_id": c.ID,
+	})
+
+	// get a endpoint destination
+	dialURI, err := h.getDialURI(ctx, c)
+	if err != nil {
+		log.Errorf("Could not create a destination endpoint. err: %v", err)
+
+		// hangup
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
+			log.Errorf("Could not hangup the call. err: %v", err)
+		}
+		return err
+	}
+
+	// get sdp-transport
+	sdpTransport := h.getEndpointSDPTransport(dialURI)
+	log.Debugf("Endpoint detail. endpoint_destination: %s, sdp_transport: %s", dialURI, sdpTransport)
+
+	// create a source endpoint
+	var endpointSrc string
+	if c.Source.Type == commonaddress.TypeTel {
+		endpointSrc = c.Source.Target
+	} else {
+		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", c.Source.TargetName, c.Source.Target)
+	}
+
+	// set app args
+	appArgs := fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, c.ID)
+
+	// set variables
+	variables := map[string]string{
+		"CALLERID(all)":                         endpointSrc,
+		"PJSIP_HEADER(add,VBOUT-SDP_Transport)": sdpTransport,
+	}
+
+	// create a channel
+	if err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", variables); err != nil {
+		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
+
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
+			log.Errorf("Could not hangup the call. err: %v", err)
+		}
+		return err
+	}
+
+	return nil
+}
+
+// createFailoverChannel creates a new channel for outgoing call(failover)
+func (h *callHandler) createFailoverChannel(ctx context.Context, c *call.Call) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "createFailoverChannel",
+		"call_id": c.ID,
+	})
+
+	// get next dialroute
+	dialroute, err := h.getNextDialroute(ctx, c)
+	if err != nil {
+		log.Errorf("Could not get next dialroute. err: %v", err)
+		return nil, err
+	}
+	dialrouteID := dialroute.ID
+
+	// create a new channel id
+	channelID := h.util.CreateUUID().String()
+
+	// update call
+	cc, err := h.updateForRouteFailover(ctx, c.ID, channelID, dialrouteID)
+	if err != nil {
+		log.Errorf("Could not update the call for route failover. err: %v", err)
+		return nil, err
+	}
+	log.WithField("call", cc).Debugf("Updated call for route failover. call_id: %s", cc.ID)
+
+	if errCreate := h.createChannel(ctx, cc); errCreate != nil {
+		log.Errorf("Could not create a channel for routefailover. err: %v", err)
+		return nil, errCreate
+	}
+
+	return cc, nil
+}
+
+// getNextDialroute returns the next available dialroute.
+func (h *callHandler) getNextDialroute(ctx context.Context, c *call.Call) (*rmroute.Route, error) {
+	// get next dialroute
+	idx := 0
+	for _, dialroute := range c.Dialroutes {
+		if dialroute.ID == c.DialrouteID {
+			break
+		}
+		idx++
+	}
+	if idx >= (len(c.Dialroutes) - 1) {
+		// no more dialroute left
+		return nil, fmt.Errorf("no more dialroute left to dial")
+	}
+
+	return &c.Dialroutes[idx+1], nil
 }

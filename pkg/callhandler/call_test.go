@@ -18,74 +18,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
-// func Test_create(t *testing.T) {
-
-// 	tests := []struct {
-// 		name          string
-// 		call          *call.Call
-// 		expectReqCall *call.Call
-// 		expectRes     *call.Call
-// 	}{
-// 		{
-// 			"normal",
-// 			&call.Call{
-// 				ID:     uuid.FromStringOrNil("0a9b21ca-992d-11ec-b0ad-f3426b2148d6"),
-// 				Status: call.StatusProgressing,
-// 			},
-// 			&call.Call{
-// 				ID:            uuid.FromStringOrNil("0a9b21ca-992d-11ec-b0ad-f3426b2148d6"),
-// 				Status:        call.StatusProgressing,
-// 				TMUpdate:      dbhandler.DefaultTimeStamp,
-// 				TMRinging:     dbhandler.DefaultTimeStamp,
-// 				TMProgressing: dbhandler.DefaultTimeStamp,
-// 				TMHangup:      dbhandler.DefaultTimeStamp,
-// 			},
-
-// 			&call.Call{
-// 				ID:            uuid.FromStringOrNil("0a9b21ca-992d-11ec-b0ad-f3426b2148d6"),
-// 				Status:        call.StatusProgressing,
-// 				TMUpdate:      dbhandler.DefaultTimeStamp,
-// 				TMRinging:     dbhandler.DefaultTimeStamp,
-// 				TMProgressing: dbhandler.DefaultTimeStamp,
-// 				TMHangup:      dbhandler.DefaultTimeStamp,
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-// 			h := &callHandler{
-// 				reqHandler:    mockReq,
-// 				db:            mockDB,
-// 				notifyHandler: mockNotify,
-// 			}
-
-// 			ctx := context.Background()
-
-// 			mockDB.EXPECT().CallCreate(ctx, tt.expectReqCall).Return(nil)
-// 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.expectReqCall, nil)
-// 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectReqCall.CustomerID, call.EventTypeCallCreated, tt.expectReqCall)
-
-// 			res, err := h.create(ctx, tt.call)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if !reflect.DeepEqual(res, tt.expectRes) {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-// 			}
-
-// 		})
-// 	}
-// }
-
 func Test_Create(t *testing.T) {
 
 	tests := []struct {
@@ -393,6 +325,127 @@ func Test_Gets(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
+		})
+	}
+}
+
+func Test_Get(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseCall *call.Call
+
+		expectRes *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("c6f7c4be-5f88-11ed-80b9-77499d0c9a7f"),
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("c6f7c4be-5f88-11ed-80b9-77499d0c9a7f"),
+			},
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("c6f7c4be-5f88-11ed-80b9-77499d0c9a7f"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+
+			res, err := h.Get(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_updateForRouteFailover(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		channelID   string
+		dialrouteID uuid.UUID
+
+		responseCall *call.Call
+
+		expectRes *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("0e1af58c-5f89-11ed-a56c-6f3d298423f3"),
+			"0e4c56ea-5f89-11ed-8a18-67f5bbf3fe51",
+			uuid.FromStringOrNil("0e7a16e8-5f89-11ed-96a3-5b7043ec9708"),
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("0e1af58c-5f89-11ed-a56c-6f3d298423f3"),
+			},
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("0e1af58c-5f89-11ed-a56c-6f3d298423f3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
+
+			res, err := h.updateForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
 		})
 	}
 }
