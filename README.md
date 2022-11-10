@@ -34,7 +34,8 @@ Usage of ./api-manager:
   -ssl_cert string
         Cert key file for ssl connection. (default "./etc/ssl/cert.pem")
   -ssl_private string
-        Private key file for ssl connection. (default "./etc/ssl/prikey.pem")```
+        Private key file for ssl connection. (default "./etc/ssl/prikey.pem")
+```
 
 # SSL
 * See detial at `./etc/ssl`.
