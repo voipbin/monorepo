@@ -138,7 +138,7 @@ func (r *requestHandler) AstChannelVariableSet(ctx context.Context, asteriskID, 
 }
 
 // AstChannelCreate sends the request for create a channel
-func (r *requestHandler) AstChannelCreate(ctx context.Context, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error {
+func (r *requestHandler) AstChannelCreate(ctx context.Context, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) (*cmchannel.Channel, error) {
 	uri := "/ari/channels/create"
 
 	type Data struct {
@@ -163,21 +163,28 @@ func (r *requestHandler) AstChannelCreate(ctx context.Context, asteriskID, chann
 		variables,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, uri, rabbitmqhandler.RequestMethodPost, resourceAstChannels, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAst(ctx, asteriskID, uri, rabbitmqhandler.RequestMethodPost, resourceAstChannels, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, err
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
-	return nil
+
+	tmpChannel, err := cmari.ParseChannel([]byte(tmp.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	res := cmchannel.NewChannelByARIChannel(tmpChannel)
+	return res, nil
 }
 
 // AstChannelCreateSnoop sends the request for create a snoop channel
-func (r *requestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper cmchannel.SnoopDirection) error {
+func (r *requestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper cmchannel.SnoopDirection) (*cmchannel.Channel, error) {
 	url := fmt.Sprintf("/ari/channels/%s/snoop", channelID)
 
 	type Data struct {
@@ -196,38 +203,45 @@ func (r *requestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, 
 		snoopID,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsSnoop, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsSnoop, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, err
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
-	return nil
+
+	tmpChannel, err := cmari.ParseChannel([]byte(tmp.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	res := cmchannel.NewChannelByARIChannel(tmpChannel)
+	return res, nil
 }
 
 // AstChannelGet gets the Asterisk's channel defail
 func (r *requestHandler) AstChannelGet(ctx context.Context, asteriskID, channelID string) (*cmchannel.Channel, error) {
 	url := fmt.Sprintf("/ari/channels/%s", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodGet, resourceAstChannels, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodGet, resourceAstChannels, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	tmpChannel, err := cmari.ParseChannel([]byte(res.Data))
+	tmpChannel, err := cmari.ParseChannel([]byte(tmp.Data))
 	if err != nil {
 		return nil, err
 	}
 
-	channel := cmchannel.NewChannelByARIChannel(tmpChannel)
-	return channel, nil
+	res := cmchannel.NewChannelByARIChannel(tmpChannel)
+	return res, nil
 }
 
 // AstChannelDTMF sends the dtmf request
