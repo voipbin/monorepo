@@ -389,10 +389,14 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 		spy        cmchannel.SnoopDirection
 		whisper    cmchannel.SnoopDirection
 
+		responseChannel *rabbitmqhandler.Response
+
 		expectURI    string
 		expectQueue  string
 		expectMethod rabbitmqhandler.RequestMethod
 		expectData   []byte
+
+		expectRes *cmchannel.Channel
 	}{
 		{
 			"have all item",
@@ -403,10 +407,22 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			cmchannel.SnoopDirectionIn,
 			cmchannel.SnoopDirectionIn,
 
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"1e5eaa2b-ae8b-412c-b85b-c9d25e70d365"}`),
+			},
+
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmqhandler.RequestMethodPost,
 			[]byte(`{"spy":"in","whisper":"in","app":"voipbin","appArgs":"test","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`),
+
+			&cmchannel.Channel{
+				ID:         "1e5eaa2b-ae8b-412c-b85b-c9d25e70d365",
+				Data:       map[string]interface{}{},
+				StasisData: map[string]string{},
+			},
 		},
 		{
 			"whisper is none",
@@ -417,10 +433,22 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			cmchannel.SnoopDirectionIn,
 			cmchannel.SnoopDirectionNone,
 
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"1a367dd8-9635-426c-8f76-3bcafdd71b3c"}`),
+			},
+
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmqhandler.RequestMethodPost,
 			[]byte(`{"spy":"in","app":"voipbin","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`),
+
+			&cmchannel.Channel{
+				ID:         "1a367dd8-9635-426c-8f76-3bcafdd71b3c",
+				Data:       map[string]interface{}{},
+				StasisData: map[string]string{},
+			},
 		},
 		{
 			"Spy is none",
@@ -431,10 +459,22 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			cmchannel.SnoopDirectionNone,
 			cmchannel.SnoopDirectionBoth,
 
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"17dea6c7-ce67-452d-82dd-97afabe6f0ee"}`),
+			},
+
 			"/ari/channels/a7d0241e-8dd0-11ea-9b06-7b0ced5bf93d/snoop",
 			"asterisk.00:11:22:33:44:55.request",
 			rabbitmqhandler.RequestMethodPost,
 			[]byte(`{"whisper":"both","app":"voipbin","snoopId":"acc09eea-8dd0-11ea-99ba-e311d0dcd408"}`),
+
+			&cmchannel.Channel{
+				ID:         "17dea6c7-ce67-452d-82dd-97afabe6f0ee",
+				Data:       map[string]interface{}{},
+				StasisData: map[string]string{},
+			},
 		},
 	}
 
@@ -448,6 +488,8 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 				sock: mockSock,
 			}
 
+			ctx := context.Background()
+
 			mockSock.EXPECT().PublishRPC(
 				gomock.Any(),
 				tt.expectQueue,
@@ -457,11 +499,15 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 					DataType: ContentTypeJSON,
 					Data:     tt.expectData,
 				},
-			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+			).Return(tt.responseChannel, nil)
 
-			err := reqHandler.AstChannelCreateSnoop(context.Background(), tt.asteriskID, tt.channelID, tt.snoopID, tt.appArgs, tt.spy, tt.whisper)
+			res, err := reqHandler.AstChannelCreateSnoop(ctx, tt.asteriskID, tt.channelID, tt.snoopID, tt.appArgs, tt.spy, tt.whisper)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -636,6 +682,8 @@ func Test_AstChannelCreate(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+
+		expectRes *cmchannel.Channel
 	}{
 		{
 			"normal test",
@@ -649,6 +697,7 @@ func Test_AstChannelCreate(t *testing.T) {
 			nil,
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				Data:       []byte(`{"id":"e28258f0-4267-475c-99a3-348bc580f9dd"}`),
 			},
 
 			"asterisk.00:11:22:33:44:55.request",
@@ -657,6 +706,12 @@ func Test_AstChannelCreate(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"endpoint":"PJSIP/call-out/sip:test@test.com:5060","app":"voipbin","channelId":"adf2ec1a-9ee6-11ea-9d2e-33da3e3b92a3"}`),
+			},
+
+			&cmchannel.Channel{
+				ID:         "e28258f0-4267-475c-99a3-348bc580f9dd",
+				Data:       map[string]interface{}{},
+				StasisData: map[string]string{},
 			},
 		},
 		{
@@ -671,6 +726,7 @@ func Test_AstChannelCreate(t *testing.T) {
 			map[string]string{"CALLERID(all)": "+123456789"},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				Data:       []byte(`{"id":"186d1169-ff9a-4b91-84cd-011585a63dc4"}`),
 			},
 
 			"asterisk.00:11:22:33:44:55.request",
@@ -679,6 +735,12 @@ func Test_AstChannelCreate(t *testing.T) {
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"endpoint":"PJSIP/call-out/sip:test@test.com:5060","app":"voipbin","channelId":"0a2628dc-0853-11eb-811f-ebaf03ba1ba6","variables":{"CALLERID(all)":"+123456789"}}`),
+			},
+
+			&cmchannel.Channel{
+				ID:         "186d1169-ff9a-4b91-84cd-011585a63dc4",
+				Data:       map[string]interface{}{},
+				StasisData: map[string]string{},
 			},
 		}}
 
@@ -694,9 +756,13 @@ func Test_AstChannelCreate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			err := reqHandler.AstChannelCreate(context.Background(), tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
+			res, err := reqHandler.AstChannelCreate(context.Background(), tt.asterisk, tt.channelID, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

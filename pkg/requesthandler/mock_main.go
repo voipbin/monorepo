@@ -466,11 +466,12 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelContinue(ctx, asteriskID, ch
 }
 
 // AstChannelCreate mocks base method.
-func (m *MockRequestHandler) AstChannelCreate(ctx context.Context, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) error {
+func (m *MockRequestHandler) AstChannelCreate(ctx context.Context, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats string, variables map[string]string) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstChannelCreate", ctx, asteriskID, channelID, appArgs, endpoint, otherChannelID, originator, formats, variables)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AstChannelCreate indicates an expected call of AstChannelCreate.
@@ -480,11 +481,12 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelCreate(ctx, asteriskID, chan
 }
 
 // AstChannelCreateSnoop mocks base method.
-func (m *MockRequestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) error {
+func (m *MockRequestHandler) AstChannelCreateSnoop(ctx context.Context, asteriskID, channelID, snoopID, appArgs string, spy, whisper channel.SnoopDirection) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AstChannelCreateSnoop", ctx, asteriskID, channelID, snoopID, appArgs, spy, whisper)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AstChannelCreateSnoop indicates an expected call of AstChannelCreateSnoop.
