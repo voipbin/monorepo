@@ -18,6 +18,7 @@ import (
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
@@ -158,7 +159,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 			}
 
-			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
@@ -330,7 +331,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
 
-			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
@@ -785,7 +786,7 @@ func Test_createChannel(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
-			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, tt.call.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables).Return(nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, tt.call.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			if err := h.createChannel(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -925,7 +926,7 @@ func Test_createFailoverChannel(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
-			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, tt.responseCall.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables).Return(nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, requesthandler.AsteriskIDCall, tt.responseCall.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			res, err := h.createFailoverChannel(ctx, tt.call)
 			if err != nil {

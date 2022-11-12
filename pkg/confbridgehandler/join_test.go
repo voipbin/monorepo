@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -192,7 +193,7 @@ func Test_Join(t *testing.T) {
 			mockDB.EXPECT().BridgeGet(ctx, gomock.Any()).Return(tt.bridge, nil)
 			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.bridge.AsteriskID).Return("test.com", nil)
 
-			mockReq.EXPECT().AstChannelCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", "", tt.expectReqVariables).Return(nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", "", tt.expectReqVariables).Return(&channel.Channel{}, nil)
 
 			if err := h.Join(ctx, tt.confbridge.ID, tt.call.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

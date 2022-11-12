@@ -348,7 +348,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 
 			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().RecordingCreate(ctx, gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallSetRecordID(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallAddRecordIDs(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
@@ -739,7 +739,7 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 			mockDB.EXPECT().ExternalMediaGet(ctx, tt.call.ID).Return(nil, nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().AstBridgeCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
 			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
@@ -816,7 +816,7 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 	}
 }
 
-func TestActionExecuteAMD(t *testing.T) {
+func Test_actionExecuteAMD(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -882,7 +882,7 @@ func TestActionExecuteAMD(t *testing.T) {
 			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
 
 			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallApplicationAMDSet(ctx, gomock.Any(), tt.expectAMD).Return(nil)
 
 			if tt.expectAMD.Async == true {
@@ -895,7 +895,7 @@ func TestActionExecuteAMD(t *testing.T) {
 	}
 }
 
-func TestCleanCurrentAction(t *testing.T) {
+func Test_cleanCurrentAction(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -987,7 +987,7 @@ func TestCleanCurrentAction(t *testing.T) {
 	}
 }
 
-func TestActionNext(t *testing.T) {
+func Test_ActionNext(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -1050,7 +1050,7 @@ func TestActionNext(t *testing.T) {
 	}
 }
 
-func TestActionNextForce(t *testing.T) {
+func Test_ActionNextForce(t *testing.T) {
 
 	tests := []struct {
 		name    string
