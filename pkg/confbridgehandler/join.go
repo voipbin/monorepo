@@ -125,11 +125,12 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 
 	// create a another channel with joining context
 	channelID := uuid.Must(uuid.NewV4())
-	if err := h.reqHandler.AstChannelCreate(ctx, c.AsteriskID, channelID.String(), args, dialDestination, "", "vp8", "", variables); err != nil {
+	tmp, err := h.reqHandler.AstChannelCreate(ctx, c.AsteriskID, channelID.String(), args, dialDestination, "", "vp8", "", variables)
+	if err != nil {
 		log.Errorf("Could not create a channel for joining. err: %v", err)
 		return err
 	}
-	log.Debugf("Created a join channel for conference joining. id: %s", channelID)
+	log.WithField("channel", tmp).Debugf("Created a join channel for conference joining. channel_id: %s", tmp.ID)
 
 	return nil
 }

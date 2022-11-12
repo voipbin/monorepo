@@ -367,7 +367,8 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 	}
 
 	// create a channel
-	if err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", variables); err != nil {
+	tmp, err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", variables)
+	if err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 
 		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
@@ -375,6 +376,7 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 		}
 		return err
 	}
+	log.WithField("channel", tmp).Debugf("Created a new channel. channel_id: %s", tmp.ID)
 
 	return nil
 }

@@ -610,10 +610,12 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 	)
 
 	// create a snoop channel
-	if err := h.reqHandler.AstChannelCreateSnoop(ctx, rec.AsteriskID, c.ChannelID, rec.ChannelID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionNone); err != nil {
+	tmp, err := h.reqHandler.AstChannelCreateSnoop(ctx, rec.AsteriskID, c.ChannelID, rec.ChannelID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionNone)
+	if err != nil {
 		log.Errorf("Could not create a snoop channel for recroding. err: %v", err)
 		return fmt.Errorf("could not create snoop chanel for recrod. err: %v", err)
 	}
+	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
 
 	// set record channel id
 	if err := h.db.CallSetRecordID(ctx, c.ID, recordingID); err != nil {
@@ -836,10 +838,12 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call, act *f
 	)
 
 	snoopID := uuid.Must(uuid.NewV4())
-	if errSnoop := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionBoth); errSnoop != nil {
-		log.Errorf("Could not create a snoop channel for the AMD. error: %v", errSnoop)
-		return errSnoop
+	tmp, err := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionBoth)
+	if err != nil {
+		log.Errorf("Could not create a snoop channel for the AMD. error: %v", err)
+		return err
 	}
+	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
 
 	// create callapplication info
 	app := &callapplication.AMD{

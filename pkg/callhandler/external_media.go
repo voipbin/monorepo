@@ -51,10 +51,12 @@ func (h *callHandler) ExternalMediaStart(ctx context.Context, callID uuid.UUID, 
 		bridgeID,
 	)
 	snoopID := uuid.Must(uuid.NewV4())
-	if errSnoop := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth); errSnoop != nil {
-		log.Errorf("Could not create a snoop channel for the external media. error: %v", errSnoop)
-		return nil, errSnoop
+	tmp, err := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth)
+	if err != nil {
+		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
+		return nil, err
 	}
+	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
 
 	// create a external media channel
 	// set data
