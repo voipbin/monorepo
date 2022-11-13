@@ -9,40 +9,40 @@ import (
 // Channel struct represent asterisk's channel information
 type Channel struct {
 	// identity
-	ID         string
-	AsteriskID string
-	Name       string
-	Type       Type
-	Tech       Tech
+	ID         string `json:"id"`
+	AsteriskID string `json:"asterisk_id"`
+	Name       string `json:"name"`
+	Type       Type   `json:"type"`
+	Tech       Tech   `json:"tech"`
 
 	// sip information
-	SIPCallID    string       // sip's call id
-	SIPTransport SIPTransport // sip's transport
+	SIPCallID    string       `json:"sip_call_id"`   // sip's call id
+	SIPTransport SIPTransport `json:"sip_transport"` // sip's transport
 
 	// source/destination
-	SourceName        string
-	SourceNumber      string
-	DestinationName   string
-	DestinationNumber string
+	SourceName        string `json:"source_name"`
+	SourceNumber      string `json:"source_number"`
+	DestinationName   string `json:"destination_name"`
+	DestinationNumber string `json:"destination_number"`
 
-	State      ari.ChannelState
-	Data       map[string]interface{}
-	StasisName string            // stasis name
-	StasisData map[string]string // stasis data
-	BridgeID   string
-	PlaybackID string // playback id
+	State      ari.ChannelState       `json:"state"`
+	Data       map[string]interface{} `json:"data"`
+	StasisName string                 `json:"stasis_name"` // stasis name
+	StasisData map[string]string      `json:"stasis_data"` // stasis data
+	BridgeID   string                 `json:"bridge_id"`
+	PlaybackID string                 `json:"playback_id"` // playback id
 
-	DialResult  string
-	HangupCause ari.ChannelCause
+	DialResult  string           `json:"dial_result"`
+	HangupCause ari.ChannelCause `json:"hangup_cause"`
 
-	Direction Direction
+	Direction Direction `json:"direction"`
 
-	TMCreate string
-	TMUpdate string
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
 
-	TMAnswer  string
-	TMRinging string
-	TMEnd     string
+	TMAnswer  string `json:"tm_answer"`
+	TMRinging string `json:"tm_ringing"`
+	TMEnd     string `json:"tm_end"`
 }
 
 // Tech represent channel's technology

@@ -24,6 +24,7 @@ const (
 func (h *callHandler) ExternalMediaStart(ctx context.Context, callID uuid.UUID, isCallMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":    "ExternalMediaStart",
 			"call_id": callID,
 		},
 	)
