@@ -72,6 +72,8 @@ func initPrometheus(namespace string) {
 // NotifyHandler intreface
 type NotifyHandler interface {
 	PublishEvent(ctx context.Context, eventType string, data interface{})
+	PublishEventRaw(ctx context.Context, eventType string, dataType string, data []byte)
+
 	PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage)
 	PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage)
 }
