@@ -85,6 +85,18 @@ func (mr *MockNotifyHandlerMockRecorder) PublishEvent(ctx, eventType, data inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockNotifyHandler)(nil).PublishEvent), ctx, eventType, data)
 }
 
+// PublishEventRaw mocks base method.
+func (m *MockNotifyHandler) PublishEventRaw(ctx context.Context, eventType, dataType string, data []byte) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "PublishEventRaw", ctx, eventType, dataType, data)
+}
+
+// PublishEventRaw indicates an expected call of PublishEventRaw.
+func (mr *MockNotifyHandlerMockRecorder) PublishEventRaw(ctx, eventType, dataType, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEventRaw", reflect.TypeOf((*MockNotifyHandler)(nil).PublishEventRaw), ctx, eventType, dataType, data)
+}
+
 // PublishWebhook mocks base method.
 func (m *MockNotifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
 	m.ctrl.T.Helper()

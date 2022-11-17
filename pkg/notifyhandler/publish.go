@@ -58,6 +58,22 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 	}
 }
 
+// PublishEventRaw publishes the raw event to the event queue.
+func (h *notifyHandler) PublishEventRaw(ctx context.Context, eventType string, dataType string, data []byte) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "PublishEventRaw",
+			"evnet_type": eventType,
+			"data_type":  dataType,
+		},
+	)
+
+	if err := h.publishEvent(eventType, dataType, data, requestTimeoutDefault, 0); err != nil {
+		log.Errorf("Could not publish the call event. err: %v", err)
+		return
+	}
+}
+
 // PublishEvent publishes event to the event queue.
 func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data interface{}) {
 	log := logrus.WithFields(

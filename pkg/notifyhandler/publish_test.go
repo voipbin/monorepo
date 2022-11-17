@@ -90,7 +90,7 @@ func Test_PublishWebhookEvent(t *testing.T) {
 	}
 }
 
-func TestPublishWebhook(t *testing.T) {
+func Test_PublishWebhook(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -165,22 +165,7 @@ func TestPublishWebhook(t *testing.T) {
 	}
 }
 
-func TestPublishEvent(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	exchangeDelay := ""
-	exchangeNotify := "bin-manager.call-manager.event"
-
-	h := &notifyHandler{
-		sock:           mockSock,
-		reqHandler:     mockReq,
-		exchangeDelay:  exchangeDelay,
-		exchangeNotify: exchangeNotify,
-		publisher:      testPublisher,
-	}
+func Test_PublishEvent(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -207,11 +192,82 @@ func TestPublishEvent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			exchangeDelay := ""
+			exchangeNotify := "bin-manager.call-manager.event"
+
+			h := &notifyHandler{
+				sock:           mockSock,
+				reqHandler:     mockReq,
+				exchangeDelay:  exchangeDelay,
+				exchangeNotify: exchangeNotify,
+				publisher:      testPublisher,
+			}
 
 			tt.expectEvent.Data, _ = json.Marshal(tt.event)
 			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
 
 			h.PublishEvent(context.Background(), tt.eventType, tt.event)
+
+			time.Sleep(time.Millisecond * 1000)
+		})
+	}
+}
+
+func Test_PublishEventRaw(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		eventType string
+		dataType  string
+		data      []byte
+
+		expectEvent *rabbitmqhandler.Event
+	}{
+		{
+			"normal",
+
+			"test_created",
+			"application/json",
+			[]byte(`{"type":"ChannelCreated"}`),
+
+			&rabbitmqhandler.Event{
+				Type:      "test_created",
+				Publisher: testPublisher,
+				DataType:  "application/json",
+				Data:      []byte(`{"type":"ChannelCreated"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			exchangeDelay := ""
+			exchangeNotify := "bin-manager.call-manager.event"
+
+			h := &notifyHandler{
+				sock:           mockSock,
+				reqHandler:     mockReq,
+				exchangeDelay:  exchangeDelay,
+				exchangeNotify: exchangeNotify,
+				publisher:      testPublisher,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishExchangeEvent(h.exchangeNotify, "", tt.expectEvent)
+
+			h.PublishEventRaw(ctx, tt.eventType, tt.dataType, tt.data)
 
 			time.Sleep(time.Millisecond * 1000)
 		})
