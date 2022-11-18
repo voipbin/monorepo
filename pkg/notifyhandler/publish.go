@@ -105,6 +105,8 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 			"type":      eventType,
 			"data_type": dataType,
 			"data":      data,
+			"timeout":   timeout,
+			"delay":     delay,
 		},
 	)
 	log.Debugf("Publishing the event. type: %s", eventType)
@@ -139,7 +141,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	promNotifyTotal.WithLabelValues(evt.Type).Inc()
 	log.WithFields(logrus.Fields{
 		"event": evt,
-	}).Debugf("Published event. type: %s", evt.Type)
+	}).Debugf("Published event. queue_name: %s, event_publisher: %s, event_type: %s, data_type: %s", h.exchangeNotify, evt.Publisher, evt.Type, evt.DataType)
 
 	return nil
 
