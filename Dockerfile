@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=19.4.1
+ARG ASTERISK_VERSION=20.0.0
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 
 RUN apt-get update
