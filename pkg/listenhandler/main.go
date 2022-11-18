@@ -6,8 +6,6 @@ import (
 
 	"github.com/ivahaev/amigo"
 	"github.com/sirupsen/logrus"
-
-	// "gitlab.com/voipbin/voip/asterisk-proxy/pkg/rabbitmq"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -58,8 +56,13 @@ func NewListenHandler(
 
 // Run runs the listen handler.
 func (h *listenHandler) Run() error {
+	log := logrus.New().WithField("func", "Run")
 
-	go h.listenRun()
+	go func() {
+		if err := h.listenRun(); err != nil {
+			log.Errorf("Could not exeucte the listen handler: %v", err)
+		}
+	}()
 
 	return nil
 }

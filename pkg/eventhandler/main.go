@@ -3,7 +3,8 @@ package eventhandler
 import (
 	"github.com/gorilla/websocket"
 	"github.com/ivahaev/amigo"
-
+	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -13,9 +14,7 @@ type EventHandler interface {
 }
 
 type eventHandler struct {
-	// rabbitmq settings
-	rabbitSock              rabbitmqhandler.Rabbit
-	rabbitQueuePublishEvent string
+	notifyhandler notifyhandler.NotifyHandler
 
 	// ari settings
 	ariAddr         string // ari target address
@@ -35,6 +34,7 @@ func init() {
 
 // NewEventHandler returns eventhandler
 func NewEventHandler(
+	notifyHandler notifyhandler.NotifyHandler,
 	rabbitSock rabbitmqhandler.Rabbit,
 	rabbitQueuePublishEvents string,
 	ariAddr string,
@@ -45,8 +45,7 @@ func NewEventHandler(
 	amiEventFilter []string,
 ) EventHandler {
 	handler := &eventHandler{
-		rabbitSock:              rabbitSock,
-		rabbitQueuePublishEvent: rabbitQueuePublishEvents,
+		notifyhandler: notifyHandler,
 
 		ariAddr:         ariAddr,
 		ariAccount:      ariAccount,
@@ -61,7 +60,12 @@ func NewEventHandler(
 }
 
 func (h *eventHandler) Run() error {
-	go h.eventARIRun()
+	log := logrus.New().WithField("func", "Run")
+	go func() {
+		if err := h.eventARIRun(); err != nil {
+			log.Errorf("Could not run eventARIRun correctly. err: %v", err)
+		}
+	}()
 
 	return nil
 }
