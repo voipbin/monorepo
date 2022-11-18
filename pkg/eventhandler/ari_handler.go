@@ -1,17 +1,18 @@
 package eventhandler
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
-
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func (h *eventHandler) eventARIRun() error {
+	ctx := context.Background()
+
 	for {
 		// connect to Asterisk ARI
 		err := h.eventARIConnect()
@@ -25,7 +26,7 @@ func (h *eventHandler) eventARIRun() error {
 
 		// receive ARI events
 		for {
-			if err := h.eventARIReceive(); err != nil {
+			if err := h.eventARIReceive(ctx); err != nil {
 				logrus.Errorf("Could not recv the ARI event. err: %v", err)
 				break
 			}
@@ -62,28 +63,20 @@ func (h *eventHandler) eventARIConnect() error {
 }
 
 // handleARIEevnt reads the event from the websocket and send it to the rabbitsock.
-func (h *eventHandler) eventARIReceive() error {
+func (h *eventHandler) eventARIReceive(ctx context.Context) error {
+	log := logrus.WithField("func", "eventARIReceive")
+
 	// receive ARI events
 	msgType, msgStr, err := h.ariSock.ReadMessage()
 	if err != nil {
-		logrus.Errorf("Could not read message. msgType: %d, err: %v", msgType, err)
+		log.Errorf("Could not read message. msgType: %d, err: %v", msgType, err)
 		return err
 	}
-	logrus.Debugf("Recevied message. msgType: %s", msgStr)
+	log.Debugf("Recevied message. msgType: %s", msgStr)
 
-	// create a event for message send
-	event := &rabbitmqhandler.Event{
-		Type:     "ari_event",
-		DataType: "application/json",
-		Data:     msgStr,
-	}
-
-	// send it to rabbitmq
-	if err := h.rabbitSock.PublishEvent(h.rabbitQueuePublishEvent, event); err != nil {
-		logrus.Errorf("Could not send the message to the rabbitmq. queue: %s, err: %v", h.rabbitQueuePublishEvent, err)
-		return err
-	}
-	logrus.Debugf("Sent message. queue: %s, msgType: %s", h.rabbitQueuePublishEvent, msgStr)
+	// notify
+	h.notifyhandler.PublishEventRaw(ctx, "ari_event", "application/json", msgStr)
+	log.WithField("event", msgStr).Debugf("Published ari event. event_type: %d", msgType)
 
 	return nil
 }

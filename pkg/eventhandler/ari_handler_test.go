@@ -8,8 +8,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
-
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
@@ -50,15 +48,13 @@ func TestEventARIRun(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockRabbit := rabbitmqhandler.NewMockRabbit(mc)
-
 	// create mock asterisk
 	addr := "127.0.0.1:8080"
 	mockAsterisk(addr)
 
 	eventHandler := eventHandler{
-		rabbitSock: mockRabbit,
-		ariAddr:    "127.0.0.1:8080",
+		// rabbitSock: mockRabbit,
+		ariAddr: "127.0.0.1:8080",
 	}
 
 	if err := eventHandler.eventARIConnect(); err != nil {
