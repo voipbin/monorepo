@@ -18,12 +18,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventlistenhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/subscribehandler"
 )
 
 // channels
@@ -32,9 +32,10 @@ var chDone = make(chan bool, 1)
 
 // args for rabbitmq
 var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueARIEvent = flag.String("rabbit_queue_arievent", "asterisk.all.event", "rabbitmq asterisk ari event queue name.")
 var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.call-manager.request", "rabbitmq queue name for request listen")
 
+var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "asterisk.all.event", "comma separated rabbitmq exchange name for subscribe")
+var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.call-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 var rabbitExchangeNotify = flag.String("rabbit_exchange_notify", "bin-manager.call-manager.event", "rabbitmq exchange name for event notify")
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
@@ -151,7 +152,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler)
 
 	// run ari event listener
-	if err := runARIEventListen(rabbitSock, ariEventHandler); err != nil {
+	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, ariEventHandler); err != nil {
 		return err
 	}
 
@@ -163,12 +164,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	return nil
 }
 
-// runARIEventListen runs the ARI event listen service
-func runARIEventListen(rabbitSock rabbitmqhandler.Rabbit, ariEventHandler arieventhandler.ARIEventHandler) error {
-	ariEventListenHandler := arieventlistenhandler.NewARIEventListenHandler(rabbitSock, ariEventHandler)
+// runSubscribe runs the ARI event listen service
+func runSubscribe(serviceName string, rabbitSock rabbitmqhandler.Rabbit, subscribeQueue string, subscribeTargets string, ariEventHandler arieventhandler.ARIEventHandler) error {
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(serviceName, rabbitSock, subscribeQueue, subscribeTargets, ariEventHandler)
 
 	// run
-	if err := ariEventListenHandler.Run(*rabbitQueueARIEvent, serviceName); err != nil {
+	if err := ariEventListenHandler.Run(); err != nil {
 		logrus.Errorf("Could not run the ari event listen handler correctly. err: %v", err)
 	}
 
