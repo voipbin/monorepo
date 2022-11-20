@@ -1,44 +1,34 @@
-package arieventlistenhandler
+package subscribehandler
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 )
 
-// processEvent processes received ARI event
-func (h *ariEventListenHandler) processEvent(m *rabbitmqhandler.Event) error {
+// processEventAsteriskProxy handles the events from the asterisk-proxy.
+func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"event": m,
+			"func":      "processEventAsteriskProxy",
+			"publisher": m.Publisher,
+			"type":      m.Type,
 		},
 	)
-
-	if m.Type != "ari_event" {
-		return fmt.Errorf("wrong event type received. type: %s", m.Type)
-	}
 
 	// parse
 	event, evt, err := ari.Parse([]byte(m.Data))
 	if err != nil {
-		return fmt.Errorf("could not parse the message. err: %v", err)
-
+		log.Errorf("Could not parse the ari event. err: %v", err)
+		return errors.Wrapf(err, "could not parse the message")
 	}
-
-	log = log.WithFields(
-		logrus.Fields{
-			"asterisk": event.AsteriskID,
-			"type":     event.Type,
-		},
-	)
-
-	log.Debugf("Received ARI event. type: %s", event.Type)
-	promARIEventTotal.WithLabelValues(string(event.Type), event.AsteriskID).Inc()
+	log = log.WithFields(logrus.Fields{"event_type": event.Type})
+	log.WithField("event", event).Debugf("Received ARI event. event_type: %s", event.Type)
 
 	// processMap maps ARIEvent name and event handler.
 	var processMap = map[ari.EventType]func(context.Context, interface{}) error{
@@ -60,23 +50,21 @@ func (h *ariEventListenHandler) processEvent(m *rabbitmqhandler.Event) error {
 		ari.EventTypeStasisStart:          h.ariEventHandler.EventHandlerStasisStart,
 	}
 
+	// get handler
 	handler := processMap[event.Type]
 	if handler == nil {
 		// no handler
+		log.Debugf("No handler registered for event. event_type: %s", event.Type)
 		return nil
 	}
 
+	// execute handler
 	start := time.Now()
-
-	ctx := context.Background()
-	err = handler(ctx, evt)
-	elapsed := time.Since(start)
-
-	promARIProcessTime.WithLabelValues(event.AsteriskID, string(event.Type)).Observe(float64(elapsed.Milliseconds()))
-
-	if err != nil {
-		return fmt.Errorf("could not process the ari event correctly. err: %v", err)
+	if errHandler := handler(ctx, evt); errHandler != nil {
+		log.Errorf("Could not handle the asterisk-proxy event. err: %v", err)
 	}
+	elapsed := time.Since(start)
+	promARIProcessTime.WithLabelValues(event.AsteriskID, string(event.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	return nil
 }
