@@ -14,9 +14,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 type flowHandler struct {
+	util          util.Util
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -55,6 +57,7 @@ func NewFlowHandler(
 	activeflowHandler activeflowhandler.ActiveflowHandler,
 ) FlowHandler {
 	h := &flowHandler{
+		util:          util.NewUtil(),
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,

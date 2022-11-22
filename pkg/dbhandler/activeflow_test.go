@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 func Test_ActiveflowCreate(t *testing.T) {
@@ -60,8 +61,6 @@ func Test_ActiveflowCreate(t *testing.T) {
 						Type: action.TypeAnswer,
 					},
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
 			},
 		},
 	}
@@ -71,14 +70,17 @@ func Test_ActiveflowCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -93,6 +95,9 @@ func Test_ActiveflowCreate(t *testing.T) {
 			t.Logf("Created activeflow. activeflow: %v", res)
 			t.Logf("Expect: %v", tt.af)
 
+			res.TMCreate = ""
+			res.TMUpdate = ""
+			res.TMDelete = ""
 			if reflect.DeepEqual(tt.af, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.af, res)
 			}
@@ -145,8 +150,6 @@ func Test_ActiveflowUpdate(t *testing.T) {
 
 				ExecuteCount:    0,
 				ExecutedActions: []action.Action{},
-
-				TMCreate: "2020-04-18 03:22:17.995000",
 			},
 			updateActiveflow: &activeflow.Activeflow{
 				ID: uuid.FromStringOrNil("7b55d582-ace6-11ec-a6de-b7dda3562854"),
@@ -201,13 +204,16 @@ func Test_ActiveflowUpdate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
 
 			ctx := context.Background()
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
 
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.activeflow); err != nil {
@@ -226,7 +232,9 @@ func Test_ActiveflowUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			tt.updateActiveflow.TMCreate = res.TMCreate
 			tt.updateActiveflow.TMUpdate = res.TMUpdate
+			tt.updateActiveflow.TMDelete = res.TMDelete
 			if reflect.DeepEqual(tt.updateActiveflow, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.activeflow, res)
 			}
@@ -277,7 +285,6 @@ func Test_ActiveflowDelete(t *testing.T) {
 				ForwardActionID: uuid.FromStringOrNil("7b08f758-ace6-11ec-a13c-5b27004a9376"),
 				ExecuteCount:    1,
 				ExecutedActions: []action.Action{},
-				TMCreate:        "2020-04-18 03:22:17.995000",
 			},
 		},
 	}
@@ -287,26 +294,30 @@ func Test_ActiveflowDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
 
 			ctx := context.Background()
 
-			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockCache.EXPECT().ActiveflowSet(ctx, gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockCache.EXPECT().ActiveflowSet(ctx, gomock.Any())
 			if err := h.ActiveflowDelete(ctx, tt.af.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ActiveflowGet(gomock.Any(), tt.af.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockCache.EXPECT().ActiveflowGet(ctx, tt.af.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ActiveflowSet(ctx, gomock.Any()).Return(nil)
 			res, err := h.ActiveflowGet(ctx, tt.af.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -337,12 +348,10 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("49c467e0-add1-11ec-b88b-87989662b8c0"),
 					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
-					TMDelete:   DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("4a107676-add1-11ec-ad99-33457dadbc35"),
 					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
-					TMDelete:   DefaultTimeStamp,
 				},
 			},
 
@@ -350,11 +359,13 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("4a107676-add1-11ec-ad99-33457dadbc35"),
 					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
+					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("49c467e0-add1-11ec-b88b-87989662b8c0"),
 					CustomerID: uuid.FromStringOrNil("4a40ebee-add1-11ec-8a67-9b84be9fbfb5"),
+					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 			},
@@ -367,8 +378,10 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
@@ -376,13 +389,16 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, activeflow := range tt.activeflows {
+				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 				mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 				if err := h.ActiveflowCreate(ctx, &activeflow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			flows, err := h.ActiveflowGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
+			// time.Sleep(time.Microsecond * 100)
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			flows, err := h.ActiveflowGetsByCustomerID(ctx, tt.customerID, h.util.GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

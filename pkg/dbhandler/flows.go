@@ -105,9 +105,9 @@ func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 
 		tmpActions,
 
-		f.TMCreate,
-		f.TMUpdate,
-		f.TMDelete,
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. FlowCreate. err: %v", err)
@@ -302,7 +302,7 @@ func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, name, detail str
 		return fmt.Errorf("could not marshal actions. FlowUpdate. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, name, detail, tmpActions, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, tmpActions, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowUpdate. err: %v", err)
 	}
 
@@ -322,7 +322,8 @@ func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
+	ts := h.util.GetCurTime()
+	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowDelete. err: %v", err)
 	}
 
@@ -347,7 +348,7 @@ func (h *handler) FlowUpdateActions(ctx context.Context, id uuid.UUID, actions [
 		return fmt.Errorf("could not marshal actions. FlowUpdateActions. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, tmpActions, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, tmpActions, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. FlowUpdateActions. err: %v", err)
 	}
 

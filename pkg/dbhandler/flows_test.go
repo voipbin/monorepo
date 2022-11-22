@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 func Test_FlowCreate(t *testing.T) {
@@ -25,17 +26,17 @@ func Test_FlowCreate(t *testing.T) {
 		{
 			"have no actions",
 			&flow.Flow{
-				ID:       uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
-				Name:     "test flow name",
-				Detail:   "test flow detail",
-				TMCreate: "2020-04-18 03:22:17.995000",
+				ID:     uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
+				Name:   "test flow name",
+				Detail: "test flow detail",
 			},
 			&flow.Flow{
 				ID:       uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				Persist:  true,
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -50,7 +51,6 @@ func Test_FlowCreate(t *testing.T) {
 						Type: action.TypeEcho,
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&flow.Flow{
 				ID:      uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
@@ -63,7 +63,8 @@ func Test_FlowCreate(t *testing.T) {
 						Type: action.TypeEcho,
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -79,7 +80,6 @@ func Test_FlowCreate(t *testing.T) {
 						Option: []byte(`{"duration":180}`),
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&flow.Flow{
 				ID:      uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
@@ -93,7 +93,8 @@ func Test_FlowCreate(t *testing.T) {
 						Option: []byte(`{"duration":180}`),
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -103,14 +104,17 @@ func Test_FlowCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -168,6 +172,7 @@ func Test_FlowGets(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 					Name:       "test2",
 					Persist:    true,
+					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
@@ -175,6 +180,7 @@ func Test_FlowGets(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("9610650e-7f46-11ec-bef4-9f1afed0c6ef"),
 					Name:       "test1",
 					Persist:    true,
+					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 			},
@@ -186,8 +192,10 @@ func Test_FlowGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
@@ -195,19 +203,20 @@ func Test_FlowGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, flow := range tt.flows {
+				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
 				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 				if err := h.FlowCreate(ctx, &flow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			res, err := h.FlowGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
+			res, err := h.FlowGetsByCustomerID(ctx, tt.customerID, util.GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			for _, flow := range res {
-				flow.TMCreate = ""
+			for _, f := range res {
+				f.TMCreate = ""
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
@@ -258,6 +267,7 @@ func Test_FlowGetsByType(t *testing.T) {
 					Type:       flow.TypeFlow,
 					Name:       "test2",
 					Persist:    true,
+					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 				{
@@ -266,6 +276,7 @@ func Test_FlowGetsByType(t *testing.T) {
 					Type:       flow.TypeFlow,
 					Name:       "test1",
 					Persist:    true,
+					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
 			},
@@ -277,8 +288,10 @@ func Test_FlowGetsByType(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
@@ -286,19 +299,20 @@ func Test_FlowGetsByType(t *testing.T) {
 			ctx := context.Background()
 
 			for _, flow := range tt.flows {
+				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 				if err := h.FlowCreate(ctx, &flow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			flows, err := h.FlowGetsByType(ctx, tt.customerID, tt.flowType, GetCurTime(), tt.limit)
+			flows, err := h.FlowGetsByType(ctx, tt.customerID, tt.flowType, util.GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			for _, flow := range flows {
-				flow.TMCreate = ""
+			for _, f := range flows {
+				f.TMCreate = ""
 			}
 
 			if reflect.DeepEqual(flows, tt.expectRes) != true {
@@ -391,16 +405,23 @@ func Test_FlowUpdate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowUpdate(context.Background(), tt.flow.ID, tt.flowName, tt.detail, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -415,6 +436,7 @@ func Test_FlowUpdate(t *testing.T) {
 
 			res.TMUpdate = ""
 			res.TMCreate = ""
+			res.TMDelete = ""
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -521,16 +543,23 @@ func Test_FlowUpdateActions(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowUpdateActions(ctx, tt.flow.ID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -543,8 +572,9 @@ func Test_FlowUpdateActions(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
 			res.TMCreate = ""
+			res.TMUpdate = ""
+			res.TMDelete = ""
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

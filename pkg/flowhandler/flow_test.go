@@ -14,9 +14,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
-func Test_FlowCreate(t *testing.T) {
+func Test_Create(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -84,10 +85,12 @@ func Test_FlowCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			h := &flowHandler{
+				util:          mockUtil,
 				db:            mockDB,
 				actionHandler: mockAction,
 				notifyHandler: mockNotify,
@@ -96,12 +99,14 @@ func Test_FlowCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
+
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			if tt.persist == true {
-				mockDB.EXPECT().FlowCreate(gomock.Any(), gomock.Any()).Return(nil)
-				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
+				mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).Return(nil)
+				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)
 			} else {
-				mockDB.EXPECT().FlowSetToCache(gomock.Any(), gomock.Any()).Return(nil)
-				mockDB.EXPECT().FlowGet(gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
+				mockDB.EXPECT().FlowSetToCache(ctx, gomock.Any()).Return(nil)
+				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)
 			}
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, tt.responseFlow)
 
@@ -148,7 +153,7 @@ func Test_FlowGet(t *testing.T) {
 	}
 }
 
-func Test_FlowDelete(t *testing.T) {
+func Test_Delete(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -198,7 +203,7 @@ func Test_FlowDelete(t *testing.T) {
 	}
 }
 
-func Test_FlowGets(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -235,7 +240,7 @@ func Test_FlowGets(t *testing.T) {
 	}
 }
 
-func Test_FlowUpdate(t *testing.T) {
+func Test_Update(t *testing.T) {
 
 	tests := []struct {
 		name string

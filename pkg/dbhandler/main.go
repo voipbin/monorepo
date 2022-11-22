@@ -6,8 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -16,12 +14,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
-	// common
-	GetCurTime() string
 
 	// activeflow
 	ActiveflowCreate(ctx context.Context, af *activeflow.Activeflow) error
@@ -47,6 +44,7 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
+	util  util.Util
 	db    *sql.DB
 	cache cachehandler.CacheHandler
 }
@@ -64,20 +62,9 @@ const (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
+		util:  util.NewUtil(),
 		db:    db,
 		cache: cache,
 	}
 	return h
-}
-
-func (h *handler) GetCurTime() string {
-	return GetCurTime()
-}
-
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
