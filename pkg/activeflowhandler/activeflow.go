@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new activeflow
@@ -38,7 +37,7 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 	}
 
 	// create activeflow
-	curTime := dbhandler.GetCurTime()
+	// curTime := h.util.GetCurTime()
 	tmpAF := &activeflow.Activeflow{
 		ID: activeflowID,
 
@@ -68,9 +67,9 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 		ExecuteCount:    0,
 		ExecutedActions: []action.Action{},
 
-		TMCreate: curTime,
-		TMUpdate: curTime,
-		TMDelete: dbhandler.DefaultTimeStamp,
+		// TMCreate: curTime,
+		// TMUpdate: curTime,
+		// TMDelete: dbhandler.DefaultTimeStamp,
 	}
 	if err := h.db.ActiveflowCreate(ctx, tmpAF); err != nil {
 		log.Errorf("Could not create the active flow. err: %v", err)
@@ -170,7 +169,6 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	af.ForwardStackID = stack.IDEmpty
 	af.ForwardActionID = action.IDEmpty
 	af.ExecuteCount++
-	af.TMUpdate = dbhandler.GetCurTime()
 
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active-flow's current action. err: %v", err)
