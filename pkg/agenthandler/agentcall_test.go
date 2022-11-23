@@ -86,7 +86,7 @@ func TestAgentCallAnswered(t *testing.T) {
 				if callID == tt.agentCall.ID {
 					continue
 				}
-				mockReq.EXPECT().CMV1CallHangup(gomock.Any(), callID).Return(nil, nil)
+				mockReq.EXPECT().CallV1CallHangup(gomock.Any(), callID).Return(nil, nil)
 			}
 
 			if err := h.AgentCallAnswered(ctx, tt.call); err != nil {

@@ -709,7 +709,7 @@ func Test_AgentDial(t *testing.T) {
 			mockDB.EXPECT().AgentDialCreate(gomock.Any(), gomock.Any()).Return(nil)
 			for _, addr := range tt.agent.Addresses {
 				callID := uuid.Must(uuid.NewV4())
-				mockReq.EXPECT().CMV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, &addr).Return(&call.Call{ID: callID}, nil)
+				mockReq.EXPECT().CallV1CallCreateWithID(gomock.Any(), gomock.Any(), tt.agent.CustomerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, &addr).Return(&call.Call{ID: callID}, nil)
 			}
 
 			_, err := h.AgentDial(ctx, tt.id, tt.source, tt.flowID, tt.masterCallID)

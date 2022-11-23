@@ -133,10 +133,6 @@ func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, us
 		Permission: permission,
 		TagIDs:     tags,
 		Addresses:  addresses,
-
-		TMCreate: getCurTime(),
-		TMUpdate: defaultTimeStamp,
-		TMDelete: defaultTimeStamp,
 	}
 	log = log.WithField("agent_id", id)
 
@@ -418,7 +414,7 @@ func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *comm
 
 	// dial
 	for i, address := range ag.Addresses {
-		c, err := h.reqHandler.CMV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, flowID, uuid.Nil, masterCallID, source, &address)
+		c, err := h.reqHandler.CallV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, flowID, uuid.Nil, masterCallID, source, &address)
 		if err != nil {
 			log.Errorf("Could not create a call. err: %v", err)
 			continue

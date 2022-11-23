@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/util"
 )
 
 func TestTagCreate(t *testing.T) {
@@ -129,7 +130,7 @@ func TestTagGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TagGets(ctx, tt.customerID, tt.size, GetCurTime())
+			res, err := h.TagGets(ctx, tt.customerID, tt.size, util.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

@@ -12,9 +12,10 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/util"
 )
 
-func TestAgentCreate(t *testing.T) {
+func Test_AgentCreate(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -27,7 +28,6 @@ func TestAgentCreate(t *testing.T) {
 				ID:           uuid.FromStringOrNil("4f6a7348-4b42-11ec-80ba-13dbc38fe32c"),
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("4f6a7348-4b42-11ec-80ba-13dbc38fe32c"),
@@ -35,7 +35,8 @@ func TestAgentCreate(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
 				Addresses:    []commonaddress.Address{},
-				TMCreate:     "2020-04-18T03:22:17.995000",
+				TMUpdate:     DefaultTimeStamp,
+				TMDelete:     DefaultTimeStamp,
 			},
 		},
 		{
@@ -51,7 +52,6 @@ func TestAgentCreate(t *testing.T) {
 						Name:   "",
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
@@ -65,7 +65,8 @@ func TestAgentCreate(t *testing.T) {
 						Name:   "",
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -86,7 +87,6 @@ func TestAgentCreate(t *testing.T) {
 						Name:   "",
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
@@ -105,7 +105,8 @@ func TestAgentCreate(t *testing.T) {
 						Name:   "",
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -116,7 +117,6 @@ func TestAgentCreate(t *testing.T) {
 				Username:     "test4",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
-				TMCreate:     "2020-04-18T03:22:17.995000",
 			},
 			&agent.Agent{
 				ID:           uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
@@ -125,7 +125,8 @@ func TestAgentCreate(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
 				Addresses:    []commonaddress.Address{},
-				TMCreate:     "2020-04-18T03:22:17.995000",
+				TMUpdate:     DefaultTimeStamp,
+				TMDelete:     DefaultTimeStamp,
 			},
 		},
 	}
@@ -152,6 +153,7 @@ func TestAgentCreate(t *testing.T) {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
+			tt.expectRes.TMCreate = res.TMCreate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -159,7 +161,7 @@ func TestAgentCreate(t *testing.T) {
 	}
 }
 
-func TestAgentDelete(t *testing.T) {
+func Test_AgentDelete(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -211,6 +213,7 @@ func TestAgentDelete(t *testing.T) {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
+			tt.expectRes.TMCreate = res.TMCreate
 			tt.expectRes.TMUpdate = res.TMUpdate
 			tt.expectRes.TMDelete = res.TMDelete
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -220,7 +223,7 @@ func TestAgentDelete(t *testing.T) {
 	}
 }
 
-func TestAgentGets(t *testing.T) {
+func Test_AgentGets(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -238,18 +241,27 @@ func TestAgentGets(t *testing.T) {
 					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 					Username:     "test2",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-					TMCreate:     "2020-04-18T03:22:17.995000",
 				},
 				{
 					ID:           uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
 					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
 					Username:     "test3",
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-					TMCreate:     "2020-04-18T03:22:17.994000",
 				},
 			},
 			2,
 			[]*agent.Agent{
+				{
+					ID:           uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
+					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
+					Username:     "test3",
+					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+					TagIDs:       []uuid.UUID{},
+					Addresses:    []commonaddress.Address{},
+
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
+				},
 				{
 					ID:           uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
 					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
@@ -257,16 +269,8 @@ func TestAgentGets(t *testing.T) {
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
 					Addresses:    []commonaddress.Address{},
-					TMCreate:     "2020-04-18T03:22:17.995000",
-				},
-				{
-					ID:           uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
-					CustomerID:   uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac"),
-					Username:     "test3",
-					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-					TagIDs:       []uuid.UUID{},
-					Addresses:    []commonaddress.Address{},
-					TMCreate:     "2020-04-18T03:22:17.994000",
+					TMUpdate:     DefaultTimeStamp,
+					TMDelete:     DefaultTimeStamp,
 				},
 			},
 		},
@@ -277,21 +281,31 @@ func TestAgentGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			for _, u := range tt.data {
+				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 				if err := h.AgentCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			res, err := h.AgentGets(ctx, tt.customerID, tt.size, GetCurTime())
+			res, err := h.AgentGets(ctx, tt.customerID, tt.size, util.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
+			}
+
+			for _, tmp := range res {
+				tmp.TMCreate = ""
 			}
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -301,7 +315,7 @@ func TestAgentGets(t *testing.T) {
 	}
 }
 
-func TestAgentSetAddresses(t *testing.T) {
+func Test_AgentSetAddresses(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -357,6 +371,7 @@ func TestAgentSetAddresses(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}

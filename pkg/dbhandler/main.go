@@ -6,8 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -17,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/util"
 )
 
 // DBHandler interface
@@ -57,6 +56,7 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
+	util  util.Util
 	db    *sql.DB
 	cache cachehandler.CacheHandler
 }
@@ -74,16 +74,9 @@ const (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
+		util:  util.NewUtil(),
 		db:    db,
 		cache: cache,
 	}
 	return h
-}
-
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
