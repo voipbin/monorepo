@@ -23,11 +23,6 @@ const (
 	maxAgentCount = 999 // maximum agent numbers
 )
 
-// List of default values
-const (
-	defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
-)
-
 // AgentHandler interface
 type AgentHandler interface {
 	AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)

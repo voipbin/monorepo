@@ -46,7 +46,7 @@ func (h *agentHandler) AgentCallAnswered(ctx context.Context, c *cmcall.Call) er
 			continue
 		}
 
-		tmpCall, err := h.reqHandler.CMV1CallHangup(ctx, callID)
+		tmpCall, err := h.reqHandler.CallV1CallHangup(ctx, callID)
 		if err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 			continue
