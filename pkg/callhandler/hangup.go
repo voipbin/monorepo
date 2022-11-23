@@ -172,7 +172,7 @@ func (h *callHandler) isRetryable(ctx context.Context, c *call.Call, cn *channel
 	}
 	for _, code := range notRetryableCodes {
 		if code == cn.HangupCause {
-			log.Debugf("The")
+			log.Debugf("The hangup code is not retryable. code: %d", cn.HangupCause)
 			return false
 		}
 	}
