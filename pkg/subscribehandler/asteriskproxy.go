@@ -61,7 +61,7 @@ func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *rab
 	// execute handler
 	start := time.Now()
 	if errHandler := handler(ctx, evt); errHandler != nil {
-		log.Errorf("Could not handle the asterisk-proxy event. err: %v", err)
+		log.Errorf("Could not handle the asterisk-proxy event. err: %v", errHandler)
 	}
 	elapsed := time.Since(start)
 	promARIProcessTime.WithLabelValues(event.AsteriskID, string(event.Type)).Observe(float64(elapsed.Milliseconds()))
