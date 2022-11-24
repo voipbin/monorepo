@@ -115,16 +115,17 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	// get target action
 	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, actionID, false)
 	if err != nil {
-		log.Errorf("Could not find forward action in the stacks.")
+		log.Errorf("Could not find forward action in the stacks. err: %v", err)
 		return fmt.Errorf("forward action not found")
 	}
 
 	// update active flow
 	af.ForwardStackID = targetStackID
 	af.ForwardActionID = targetAction.ID
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow.")
-		return err
+	log.Debugf("Updating activeflow's foward action. forward_stack_id: %s, forward_action_id: %s", targetStackID, targetAction.ID)
+	if errUpdate := h.db.ActiveflowUpdate(ctx, af); errUpdate != nil {
+		log.Errorf("Could not update the active flow. err :%v", errUpdate)
+		return errUpdate
 	}
 
 	// send action next
