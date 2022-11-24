@@ -58,7 +58,7 @@ func (h *queueHandler) Join(
 	}
 
 	// get call
-	c, err := h.reqHandler.CMV1CallGet(ctx, referenceID)
+	c, err := h.reqHandler.CallV1CallGet(ctx, referenceID)
 	if err != nil {
 		log.Errorf("Could not get reference info. err: %v", err)
 		return nil, fmt.Errorf("reference info not found")
@@ -70,7 +70,7 @@ func (h *queueHandler) Join(
 	log.WithField("source", source).Debugf("Source address info.")
 
 	// create conference
-	cf, err := h.reqHandler.CFV1ConferenceCreate(ctx, q.CustomerID, cfconference.TypeQueue, "conference for queue", "", 86400, nil, []fmaction.Action{}, []fmaction.Action{})
+	cf, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, q.CustomerID, cfconference.TypeQueue, "conference for queue", "", 86400, nil, []fmaction.Action{}, []fmaction.Action{})
 	if err != nil {
 		log.Errorf("Could not create the conference. err: %v", err)
 		return nil, err

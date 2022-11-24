@@ -32,7 +32,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, qc *queuecall.Queuecall,
 
 	// dial to the agent
 	log.WithField("agent", agent).Debugf("Dialing the agent. agent_id: %s", agent.ID)
-	agentDial, err := h.reqHandler.AMV1AgentDial(ctx, agent.ID, &qc.Source, f.ID, qc.ReferenceID)
+	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, agent.ID, &qc.Source, f.ID, qc.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not dial to the agent. Send the request again with 1 sec delay. err: %v", err)
 		return nil, err
@@ -49,7 +49,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, qc *queuecall.Queuecall,
 
 	// forward the action.
 	log.Debugf("Setting the forward action id. forward_action_id: %s", qc.ForwardActionID)
-	if err := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ForwardActionID, true); err != nil {
+	if err := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ForwardActionID, true); err != nil {
 		log.Errorf("Could not forward the active flow. err: %v", err)
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, custome
 	}
 
 	// create a flow for agent dial.
-	res, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", actions, false)
+	res, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create the flow. err: %v", err)
 		return nil, err

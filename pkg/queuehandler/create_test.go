@@ -180,7 +180,7 @@ func Test_createQueueFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.customerID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", tt.flowActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", tt.flowActions, false).Return(tt.responseFlow, nil)
 
 			res, err := h.createQueueFlow(ctx, tt.customerID, tt.queueID, tt.conferenceID, tt.waitActions)
 			if err != nil {

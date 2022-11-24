@@ -103,7 +103,7 @@ func Test_Kick(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
-			mockReq.EXPECT().FMV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceID, tt.responseQueuecall.ExitActionID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceID, tt.responseQueuecall.ExitActionID, true).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockDB.EXPECT().QueuecallSetDurationWaiting(ctx, tt.responseQueuecall.ID, gomock.Any()).Return(nil)
 				mockDB.EXPECT().QueuecallDelete(ctx, tt.responseQueuecall.ID, queuecall.StatusAbandoned, gomock.Any()).Return(nil)
@@ -112,7 +112,7 @@ func Test_Kick(t *testing.T) {
 			}
 
 			// deleteVariables
-			mockReq.EXPECT().FMV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			res, err := h.Kick(ctx, tt.queuecallID)
 			if err != nil {
@@ -192,14 +192,14 @@ func Test_KickByReferenceID(t *testing.T) {
 
 			// Kick
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecallReference.CurrentQueuecallID).Return(tt.responseQueuecall, nil)
-			mockReq.EXPECT().FMV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceID, tt.responseQueuecall.ExitActionID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceID, tt.responseQueuecall.ExitActionID, true).Return(nil)
 			mockDB.EXPECT().QueuecallSetDurationWaiting(ctx, tt.responseQueuecall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallDelete(ctx, tt.responseQueuecall.ID, queuecall.StatusAbandoned, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
 
 			// deleteVariables
-			mockReq.EXPECT().FMV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			res, err := h.KickByReferenceID(ctx, tt.referenceID)
 			if err != nil {

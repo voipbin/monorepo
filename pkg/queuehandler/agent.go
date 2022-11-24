@@ -26,7 +26,7 @@ func (h *queueHandler) GetAgents(ctx context.Context, id uuid.UUID, status amage
 	// get agents
 	switch status {
 	case amagent.StatusNone:
-		res, err := h.reqHandler.AMV1AgentGetsByTagIDs(ctx, q.CustomerID, q.TagIDs)
+		res, err := h.reqHandler.AgentV1AgentGetsByTagIDs(ctx, q.CustomerID, q.TagIDs)
 		if err != nil {
 			log.Errorf("Could not get agents. err: %v", err)
 			return nil, err
@@ -35,7 +35,7 @@ func (h *queueHandler) GetAgents(ctx context.Context, id uuid.UUID, status amage
 		return res, nil
 
 	default:
-		res, err := h.reqHandler.AMV1AgentGetsByTagIDsAndStatus(ctx, q.CustomerID, q.TagIDs, status)
+		res, err := h.reqHandler.AgentV1AgentGetsByTagIDsAndStatus(ctx, q.CustomerID, q.TagIDs, status)
 		if err != nil {
 			log.Errorf("Could not get agents. err: %v", err)
 			return nil, err

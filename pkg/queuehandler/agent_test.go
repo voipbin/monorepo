@@ -100,9 +100,9 @@ func Test_GetAgents(t *testing.T) {
 			mockDB.EXPECT().QueueGet(ctx, tt.id).Return(tt.responseQueue, nil)
 
 			if tt.status == amagent.StatusNone {
-				mockReq.EXPECT().AMV1AgentGetsByTagIDs(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs).Return(tt.responseAgents, nil)
+				mockReq.EXPECT().AgentV1AgentGetsByTagIDs(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs).Return(tt.responseAgents, nil)
 			} else {
-				mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs, tt.status).Return(tt.responseAgents, nil)
+				mockReq.EXPECT().AgentV1AgentGetsByTagIDsAndStatus(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs, tt.status).Return(tt.responseAgents, nil)
 			}
 
 			res, err := h.GetAgents(ctx, tt.id, tt.status)

@@ -79,10 +79,10 @@ func Test_Execute(t *testing.T) {
 
 			// GetAgents
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
-			mockReq.EXPECT().AMV1AgentGetsByTagIDsAndStatus(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs, amagent.StatusAvailable).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGetsByTagIDsAndStatus(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs, amagent.StatusAvailable).Return(tt.responseAgent, nil)
 
 			mockQueuecall.EXPECT().Execute(ctx, tt.responseQueuecall[0], gomock.Any()).Return(&queuecall.Queuecall{}, nil)
-			mockReq.EXPECT().QMV1QueueExecuteRun(ctx, tt.queueID, 100)
+			mockReq.EXPECT().QueueV1QueueExecuteRun(ctx, tt.queueID, 100)
 
 			h.Execute(ctx, tt.queueID)
 		})

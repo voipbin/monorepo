@@ -41,7 +41,7 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 	qcs, err := h.queuecallHandler.GetsByQueueIDAndStatus(ctx, id, queuecall.StatusWaiting, 1, dbhandler.GetCurTime())
 	if err != nil {
 		log.Errorf("Could not get queuecalls. err: %v", err)
-		_ = h.reqHandler.QMV1QueueExecuteRun(ctx, id, defaultExecuteDelay) // retry after 1 sec.
+		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay) // retry after 1 sec.
 		return
 	}
 
@@ -61,11 +61,11 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 	agents, err := h.GetAgents(ctx, q.ID, amagent.StatusAvailable)
 	if err != nil {
 		log.Errorf("Could not get available agents. Send the queue execution request again with 1 sec delay. err: %v", err)
-		_ = h.reqHandler.QMV1QueueExecuteRun(ctx, id, defaultExecuteDelay)
+		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay)
 		return
 	} else if len(agents) == 0 {
 		log.Info("No available agent now. Send the queue execution request again with 1 sec delay.")
-		_ = h.reqHandler.QMV1QueueExecuteRun(ctx, id, defaultExecuteDelay)
+		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay)
 		return
 	}
 
@@ -77,8 +77,8 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 
 	default:
 		log.Errorf("Unsupported routing method. Exit from the queue. routing_method: %s", q.RoutingMethod)
-		if err := h.reqHandler.FMV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ExitActionID, true); err != nil {
-			log.Errorf("Could not forward the call. err: %v", err)
+		if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ExitActionID, true); errForward != nil {
+			log.Errorf("Could not forward the call. err: %v", errForward)
 		}
 		return
 	}
@@ -86,10 +86,10 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 	tmp, err := h.queuecallHandler.Execute(ctx, qc, &targetAgent)
 	if err != nil {
 		log.Errorf("Could not handle the queuecall execution correctly. err: %v", err)
-		_ = h.reqHandler.QMV1QueueExecuteRun(ctx, id, defaultExecuteDelay)
+		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay)
 		return
 	}
 	log.WithField("queuecall", tmp).Debugf("Executed queuecall correctly. queue_id: %s, queuecall_id: %s", q.ID, tmp.ID)
 
-	_ = h.reqHandler.QMV1QueueExecuteRun(ctx, id, 100)
+	_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, 100)
 }
