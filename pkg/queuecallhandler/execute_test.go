@@ -83,13 +83,13 @@ func Test_Execute(t *testing.T) {
 			ctx := context.Background()
 
 			// generateFlowForAgentCall
-			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.queuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.queuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().AMV1AgentDial(ctx, tt.agent.ID, &tt.queuecall.Source, tt.responseFlow.ID, tt.queuecall.ReferenceID).Return(tt.responseAgentDial, nil)
+			mockReq.EXPECT().AgentV1AgentDial(ctx, tt.agent.ID, &tt.queuecall.Source, tt.responseFlow.ID, tt.queuecall.ReferenceID).Return(tt.responseAgentDial, nil)
 			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.queuecall.ID, tt.agent.ID).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.queuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.queuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.queuecall)
-			mockReq.EXPECT().FMV1ActiveflowUpdateForwardActionID(ctx, tt.queuecall.ReferenceActiveflowID, tt.queuecall.ForwardActionID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.queuecall.ReferenceActiveflowID, tt.queuecall.ForwardActionID, true).Return(nil)
 
 			res, err := h.Execute(ctx, tt.queuecall, tt.agent)
 			if err != nil {
@@ -150,7 +150,7 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", tt.expectActions, false).Return(tt.responseFlow, nil)
 
 			res, err := h.generateFlowForAgentCall(ctx, tt.customerID, tt.conferenceID)
 			if err != nil {

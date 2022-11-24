@@ -76,7 +76,7 @@ func Test_setVariables(t *testing.T) {
 			}
 
 			for key, value := range variables {
-				mockReq.EXPECT().FMV1VariableSetVariable(ctx, tt.queuecall.ReferenceActiveflowID, key, value).Return(nil)
+				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.queuecall.ReferenceActiveflowID, key, value).Return(nil)
 			}
 
 			if err := h.setVariables(ctx, tt.queue, tt.queuecall); err != nil {
@@ -147,7 +147,7 @@ func Test_deleteVariables(t *testing.T) {
 			}
 
 			for _, key := range variables {
-				mockReq.EXPECT().FMV1VariableDeleteVariable(ctx, tt.queuecall.ReferenceActiveflowID, key).Return(nil)
+				mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, tt.queuecall.ReferenceActiveflowID, key).Return(nil)
 			}
 
 			if err := h.deleteVariables(ctx, tt.queuecall); err != nil {

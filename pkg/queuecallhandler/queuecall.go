@@ -168,7 +168,7 @@ func (h *queuecallHandler) Create(
 
 	// send the queuecall timeout-wait
 	if res.TimeoutWait > 0 {
-		if errTiemout := h.reqHandler.QMV1QueuecallTimeoutWait(ctx, res.ID, res.TimeoutWait); errTiemout != nil {
+		if errTiemout := h.reqHandler.QueueV1QueuecallTimeoutWait(ctx, res.ID, res.TimeoutWait); errTiemout != nil {
 			log.Errorf("Could not send the timeout-wait request. err: %v", errTiemout)
 		}
 	}
@@ -222,7 +222,7 @@ func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID
 
 	// send queue execute update request
 	go func() {
-		_, _ = h.reqHandler.QMV1QueueUpdateExecute(context.Background(), res.QueueID, queue.ExecuteRun)
+		_, _ = h.reqHandler.QueueV1QueueUpdateExecute(context.Background(), res.QueueID, queue.ExecuteRun)
 	}()
 
 	return res, nil

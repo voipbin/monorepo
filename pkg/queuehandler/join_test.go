@@ -115,10 +115,10 @@ func Test_Join(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueueGet(gomock.Any(), tt.queueID).Return(tt.queue, nil)
-			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.referenceID).Return(tt.call, nil)
+			mockReq.EXPECT().CallV1CallGet(gomock.Any(), tt.referenceID).Return(tt.call, nil)
 
-			mockReq.EXPECT().CFV1ConferenceCreate(ctx, tt.queue.CustomerID, cfconference.TypeQueue, gomock.Any(), gomock.Any(), 86400, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseConference, nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.queue.CustomerID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceCreate(ctx, tt.queue.CustomerID, cfconference.TypeQueue, gomock.Any(), gomock.Any(), 86400, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseConference, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(gomock.Any(), tt.queue.CustomerID, fmflow.TypeQueue, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(tt.responseFlow, nil)
 
 			var source commonaddress.Address
 			if tt.call.Direction == cmcall.DirectionIncoming {
@@ -151,7 +151,7 @@ func Test_Join(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 			if tt.responseQueue.Execute == queue.ExecuteStop {
 				mockDB.EXPECT().QueueSetExecute(ctx, tt.queueID, queue.ExecuteRun).Return(tt.responseQueue, nil)
-				mockReq.EXPECT().QMV1QueueExecuteRun(ctx, tt.responseQueue.ID, 100)
+				mockReq.EXPECT().QueueV1QueueExecuteRun(ctx, tt.responseQueue.ID, 100)
 			}
 
 			res, err := h.Join(ctx, tt.queueID, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, tt.exitActionID)

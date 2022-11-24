@@ -75,7 +75,7 @@ func (h *queuecallHandler) Joined(ctx context.Context, referenceID, conferenceID
 
 	// send the queuecall timeout-service
 	if qc.TimeoutService > 0 {
-		if err := h.reqHandler.QMV1QueuecallTimeoutService(ctx, qc.ID, qc.TimeoutService); err != nil {
+		if err := h.reqHandler.QueueV1QueuecallTimeoutService(ctx, qc.ID, qc.TimeoutService); err != nil {
 			log.Errorf("Could not send the timeout-service request. err: %v", err)
 		}
 	}

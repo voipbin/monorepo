@@ -94,7 +94,7 @@ func Test_Joined(t *testing.T) {
 			mockDB.EXPECT().QueueIncreaseTotalServicedCount(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID)
 
 			if tt.responseQueuecall.TimeoutService > 0 {
-				mockReq.EXPECT().QMV1QueuecallTimeoutService(ctx, tt.responseQueuecall.ID, tt.responseQueuecall.TimeoutService).Return(nil)
+				mockReq.EXPECT().QueueV1QueuecallTimeoutService(ctx, tt.responseQueuecall.ID, tt.responseQueuecall.TimeoutService).Return(nil)
 			}
 
 			h.Joined(ctx, tt.referenceID, tt.conferenceID)

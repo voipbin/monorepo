@@ -84,7 +84,7 @@ func (h *queuecallHandler) Leaved(ctx context.Context, referenceID, conferenceID
 	}
 
 	// delete conference
-	if errConference := h.reqHandler.CFV1ConferenceDelete(ctx, qc.ConferenceID); errConference != nil {
+	if errConference := h.reqHandler.ConferenceV1ConferenceDelete(ctx, qc.ConferenceID); errConference != nil {
 		log.Errorf("Could not delete the conference. err: %v", errConference)
 	}
 }

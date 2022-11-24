@@ -360,10 +360,10 @@ func Test_Create(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.queuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.queuecall)
 
 			// setVariables
-			mockReq.EXPECT().FMV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			if tt.queue.WaitTimeout > 0 {
-				mockReq.EXPECT().QMV1QueuecallTimeoutWait(gomock.Any(), gomock.Any(), tt.queue.WaitTimeout).Return(nil)
+				mockReq.EXPECT().QueueV1QueuecallTimeoutWait(gomock.Any(), gomock.Any(), tt.queue.WaitTimeout).Return(nil)
 			}
 
 			res, err := h.Create(
@@ -484,7 +484,7 @@ func Test_UpdateStatusWaiting(t *testing.T) {
 			mockDB.EXPECT().QueuecallSetStatusWaiting(ctx, tt.queuecallID).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallWaiting, tt.responseQueuecall)
-			mockReq.EXPECT().QMV1QueueUpdateExecute(ctx, tt.responseQueuecall.QueueID, queue.ExecuteRun).Return(&queue.Queue{}, nil).AnyTimes()
+			mockReq.EXPECT().QueueV1QueueUpdateExecute(ctx, tt.responseQueuecall.QueueID, queue.ExecuteRun).Return(&queue.Queue{}, nil).AnyTimes()
 
 			res, err := h.UpdateStatusWaiting(ctx, tt.queuecallID)
 			if err != nil {

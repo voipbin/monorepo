@@ -22,7 +22,7 @@ func (h *queuecallHandler) setVariables(ctx context.Context, q *queue.Queue, qc 
 	}
 
 	for key, value := range variables {
-		if err := h.reqHandler.FMV1VariableSetVariable(ctx, qc.ReferenceActiveflowID, key, value); err != nil {
+		if err := h.reqHandler.FlowV1VariableSetVariable(ctx, qc.ReferenceActiveflowID, key, value); err != nil {
 			return err
 		}
 	}
@@ -44,7 +44,7 @@ func (h *queuecallHandler) deleteVariables(ctx context.Context, qc *queuecall.Qu
 	}
 
 	for _, key := range keys {
-		if err := h.reqHandler.FMV1VariableDeleteVariable(ctx, qc.ReferenceActiveflowID, key); err != nil {
+		if err := h.reqHandler.FlowV1VariableDeleteVariable(ctx, qc.ReferenceActiveflowID, key); err != nil {
 			return err
 		}
 	}
