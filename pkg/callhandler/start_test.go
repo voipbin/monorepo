@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -195,7 +196,6 @@ func Test_typeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseConference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.responseActiveflow, nil)
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
@@ -204,11 +204,13 @@ func Test_typeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			// action next part.
-			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
+			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
 			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-			mockDB.EXPECT().CallSetAction(ctx, gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
 
 			if err := h.StartCallHandle(ctx, tt.channel, tt.data); err != nil {
@@ -356,7 +358,6 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumber.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseUUIDCall).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
@@ -365,11 +366,12 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			// action next part.
-			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, tt.responseCall.ActiveFlowID, fmaction.IDStart).Return(&fmaction.Action{Type: fmaction.TypeHangup}, nil)
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-			mockDB.EXPECT().CallSetAction(ctx, gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
 
 			if err := h.StartCallHandle(ctx, tt.channel, tt.data); err != nil {

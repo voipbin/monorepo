@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
@@ -27,17 +28,16 @@ func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {
 	tests := []struct {
 		name               string
 		call               *call.Call
-		action             *fmaction.Action
 		expectConfbridgeID uuid.UUID
 	}{
 		{
 			"normal",
 			&call.Call{
 				ID: uuid.FromStringOrNil("ed1620aa-3e6e-11ec-902b-170b2849173a"),
-			},
-			&fmaction.Action{
-				Type:   fmaction.TypeConfbridgeJoin,
-				Option: []byte(`{"confbridge_id":"3f5ff42c-3e6e-11ec-8c17-039eb294368c"}`),
+				Action: fmaction.Action{
+					Type:   fmaction.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"3f5ff42c-3e6e-11ec-8c17-039eb294368c"}`),
+				},
 			},
 			uuid.FromStringOrNil("3f5ff42c-3e6e-11ec-8c17-039eb294368c"),
 		},
@@ -62,11 +62,8 @@ func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockConfbridge.EXPECT().Join(ctx, tt.expectConfbridgeID, tt.call.ID)
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -76,16 +73,17 @@ func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {
 func Test_ActionExecute_actionExecuteStreamEcho(t *testing.T) {
 
 	tests := []struct {
-		name   string
-		call   *call.Call
-		action *fmaction.Action
+		name string
+		call *call.Call
 	}{
 		{
 			"empty option",
-			&call.Call{},
-			&fmaction.Action{
-				Type:   fmaction.TypeStreamEcho,
-				Option: []byte(`{}`),
+			&call.Call{
+				ID: uuid.FromStringOrNil("741a0f32-6bb2-11ed-bf34-9b3f75da5e87"),
+				Action: fmaction.Action{
+					Type:   fmaction.TypeStreamEcho,
+					Option: []byte(`{}`),
+				},
 			},
 		},
 	}
@@ -107,12 +105,9 @@ func Test_ActionExecute_actionExecuteStreamEcho(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockReq.EXPECT().AstChannelContinue(ctx, tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
-			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, gomock.Any(), tt.action).Return(nil)
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, gomock.Any(), &tt.call.Action).Return(nil)
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -122,10 +117,8 @@ func Test_ActionExecute_actionExecuteStreamEcho(t *testing.T) {
 func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 
 	tests := []struct {
-		name         string
-		call         *call.Call
-		action       *fmaction.Action
-		expectAction *fmaction.Action
+		name string
+		call *call.Call
 	}{
 		{
 			"empty option",
@@ -133,15 +126,10 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 				ID:         uuid.FromStringOrNil("4371b0d6-df48-11ea-9a8c-177968c165e9"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "5b21353a-df48-11ea-8207-6fc0fa36a3fe",
-			},
-			&fmaction.Action{
-				Type:   fmaction.TypeAnswer,
-				Option: []byte(`{}`),
-			},
-			&fmaction.Action{
-				Type:   fmaction.TypeAnswer,
-				ID:     uuid.Nil,
-				Option: []byte(`{}`),
+				Action: fmaction.Action{
+					Type:   fmaction.TypeAnswer,
+					Option: []byte(`{}`),
+				},
 			},
 		},
 	}
@@ -163,12 +151,9 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.expectAction).Return(nil)
 			mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -244,7 +229,6 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 		name string
 
 		call           *call.Call
-		action         *fmaction.Action
 		expectSSML     string
 		expectGender   string
 		expectLanguage string
@@ -258,12 +242,12 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 				ID:         uuid.FromStringOrNil("5e9f3946-2188-11eb-9d74-bf4bf1239da3"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "61a1345a-2188-11eb-ba52-af82c1239d8f",
-			},
-			&fmaction.Action{
-				Type: fmaction.TypeTalk,
-				ID:   uuid.FromStringOrNil("5c9cd6be-2195-11eb-a9c9-bfc91ac88411"),
+				Action: fmaction.Action{
+					Type: fmaction.TypeTalk,
+					ID:   uuid.FromStringOrNil("5c9cd6be-2195-11eb-a9c9-bfc91ac88411"),
 
-				Option: []byte(`{"text":"hello world","gender":"male","language":"en-US"}`),
+					Option: []byte(`{"text":"hello world","gender":"male","language":"en-US"}`),
+				},
 			},
 			`hello world`,
 			"male",
@@ -290,16 +274,13 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			if tt.call.Status != call.StatusProgressing {
 				mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			}
 			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tt.expectGender, tt.expectLanguage, 10000).Return(tt.filename, nil)
-			mockReq.EXPECT().AstChannelPlay(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.action.ID, tt.expectURI, "").Return(nil)
+			mockReq.EXPECT().AstChannelPlay(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.call.Action.ID, tt.expectURI, "").Return(nil)
 
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -309,9 +290,8 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 
 	tests := []struct {
-		name   string
-		call   *call.Call
-		action *fmaction.Action
+		name string
+		call *call.Call
 	}{
 		{
 			"default",
@@ -319,10 +299,10 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 				ID:         uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "bfd0e668-2a77-11eb-9993-e72b323b1801",
-			},
-			&fmaction.Action{
-				Type: fmaction.TypeRecordingStart,
-				ID:   uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
+				Action: fmaction.Action{
+					Type: fmaction.TypeRecordingStart,
+					ID:   uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
+				},
 			},
 		},
 	}
@@ -344,15 +324,13 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockDB.EXPECT().RecordingCreate(ctx, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallSetRecordID(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallAddRecordIDs(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -364,7 +342,6 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 	tests := []struct {
 		name   string
 		call   *call.Call
-		action *fmaction.Action
 		record *recording.Recording
 	}{
 		{
@@ -374,10 +351,10 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 				AsteriskID:  "42:01:0a:a4:00:05",
 				ChannelID:   "5293419a-2b9e-11eb-bfa6-97a4312177f2",
 				RecordingID: uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
-			},
-			&fmaction.Action{
-				Type: fmaction.TypeRecordingStop,
-				ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
+				Action: fmaction.Action{
+					Type: fmaction.TypeRecordingStop,
+					ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
+				},
 			},
 			&recording.Recording{
 				ID:         uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
@@ -404,14 +381,11 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.call.RecordingID).Return(tt.record, nil)
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -424,7 +398,6 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 		name     string
 		call     *call.Call
 		duration int
-		action   *fmaction.Action
 
 		responseVariable *variable.Variable
 	}{
@@ -434,14 +407,13 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
+					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: []byte(`{"duration":1000, "length": 3}`),
+				},
 			},
 			1000,
-			&fmaction.Action{
-				Type:   fmaction.TypeDigitsReceive,
-				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "length": 3}`),
-			},
-
 			&variable.Variable{
 				Variables: map[string]string{},
 			},
@@ -452,13 +424,13 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
+					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: []byte(`{"duration":1000, "length": 3, "key": "1234567"}`),
+				},
 			},
 			1000,
-			&fmaction.Action{
-				Type:   fmaction.TypeDigitsReceive,
-				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "length": 3, "key": "1234567"}`),
-			},
 
 			&variable.Variable{
 				Variables: map[string]string{},
@@ -483,13 +455,10 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.call.ActiveFlowID).Return(tt.responseVariable, nil)
-			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, tt.duration, tt.action).Return(nil)
+			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, tt.duration, &tt.call.Action).Return(nil)
 
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -503,8 +472,6 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 
 		responseCall     *call.Call
 		responseVariable *variable.Variable
-
-		action *fmaction.Action
 	}{
 		{
 			"length qualified",
@@ -514,18 +481,17 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				ActiveFlowID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
 				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
+					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: []byte(`{"duration":1000, "length": 3}`),
+				},
 			},
 			&variable.Variable{
 				ID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
 				Variables: map[string]string{
 					variableCallDigits: "123",
 				},
-			},
-
-			&fmaction.Action{
-				Type:   fmaction.TypeDigitsReceive,
-				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "length": 3}`),
 			},
 		},
 		{
@@ -536,18 +502,17 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				ActiveFlowID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
 				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
+					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: []byte(`{"duration":1000, "length": 3, "key": "#"}`),
+				},
 			},
 			&variable.Variable{
 				ID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
 				Variables: map[string]string{
 					variableCallDigits: "#",
 				},
-			},
-
-			&fmaction.Action{
-				Type:   fmaction.TypeDigitsReceive,
-				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "length": 3, "key": "#"}`),
 			},
 		},
 		{
@@ -558,18 +523,17 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 				ActiveFlowID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
 				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsReceive,
+					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
+					Option: []byte(`{"duration":1000, "length": 3, "key": "1234567*"}`),
+				},
 			},
 			&variable.Variable{
 				ID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
 				Variables: map[string]string{
 					variableCallDigits: "*",
 				},
-			},
-
-			&fmaction.Action{
-				Type:   fmaction.TypeDigitsReceive,
-				ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
-				Option: []byte(`{"duration":1000, "length": 3, "key": "1234567*"}`),
 			},
 		},
 	}
@@ -591,13 +555,10 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.responseCall.ID, tt.action).Return(nil)
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveFlowID).Return(tt.responseVariable, nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.responseCall.ID, false).Return(nil)
 
-			if err := h.ActionExecute(ctx, tt.responseCall, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.responseCall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -609,7 +570,6 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 	tests := []struct {
 		name           string
 		call           *call.Call
-		action         *fmaction.Action
 		expectDigits   string
 		expectDuration int
 		expectInterval int
@@ -621,12 +581,13 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 				ID:         uuid.FromStringOrNil("50270fae-69bf-11eb-a0a7-273260ea280c"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "5daefc0e-69bf-11eb-9e3a-b7d9a5988373",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsSend,
+					ID:     uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
+					Option: []byte(`{"digits":"12345", "duration": 500, "interval": 500}`),
+				},
 			},
-			&fmaction.Action{
-				Type:   fmaction.TypeDigitsSend,
-				ID:     uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
-				Option: []byte(`{"digits":"12345", "duration": 500, "interval": 500}`),
-			},
+
 			"12345",
 			500,
 			500,
@@ -638,12 +599,13 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 				ID:         uuid.FromStringOrNil("49a66b38-69c0-11eb-b96c-d799dd21ba8f"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "49e625de-69c0-11eb-891d-db5407ae4982",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeDigitsSend,
+					ID:     uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
+					Option: []byte(`{"digits":"1", "duration": 500, "interval": 500}`),
+				},
 			},
-			&fmaction.Action{
-				Type:   fmaction.TypeDigitsSend,
-				ID:     uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
-				Option: []byte(`{"digits":"1", "duration": 500, "interval": 500}`),
-			},
+
 			"1",
 			500,
 			500,
@@ -668,13 +630,10 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockReq.EXPECT().AstChannelDTMF(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.expectDigits, tt.expectDuration, 0, tt.expectInterval, 0)
-			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, tt.expectTimeout, tt.action)
+			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, tt.expectTimeout, &tt.call.Action)
 
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -684,9 +643,8 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 
 	tests := []struct {
-		name   string
-		call   *call.Call
-		action *fmaction.Action
+		name string
+		call *call.Call
 
 		expectHost           string
 		expectEncapsulation  string
@@ -701,12 +659,13 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 				ID:         uuid.FromStringOrNil("3ba00ae0-02f8-11ec-863a-abd78c8246c4"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "4455e2f4-02f8-11ec-acf9-43a391fce607",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeExternalMediaStart,
+					ID:     uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
+					Option: []byte(`{"external_host":"example.com","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both","data":""}`),
+				},
 			},
-			&fmaction.Action{
-				Type:   fmaction.TypeExternalMediaStart,
-				ID:     uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
-				Option: []byte(`{"external_host":"example.com","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both","data":""}`),
-			},
+
 			"example.com",
 			"rtp",
 			"udp",
@@ -733,9 +692,6 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().ExternalMediaGet(ctx, tt.call.ID).Return(nil, nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockReq.EXPECT().AstBridgeCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
@@ -743,7 +699,7 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.call.AsteriskID, gomock.Any(), tt.expectHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -755,7 +711,6 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 	tests := []struct {
 		name     string
 		call     *call.Call
-		action   *fmaction.Action
 		extMedia *externalmedia.ExternalMedia
 	}{
 		{
@@ -764,11 +719,12 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 				ID:         uuid.FromStringOrNil("50b8cb46-1aa5-11ec-9b1e-7b766955c7d1"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "4455e2f4-02f8-11ec-acf9-43a391fce607",
+				Action: fmaction.Action{
+					Type: fmaction.TypeExternalMediaStop,
+					ID:   uuid.FromStringOrNil("50ff55d4-1aa5-11ec-8d4e-7fc834754547"),
+				},
 			},
-			&fmaction.Action{
-				Type: fmaction.TypeExternalMediaStop,
-				ID:   uuid.FromStringOrNil("50ff55d4-1aa5-11ec-8d4e-7fc834754547"),
-			},
+
 			&externalmedia.ExternalMedia{
 				CallID:         uuid.FromStringOrNil("50b8cb46-1aa5-11ec-9b1e-7b766955c7d1"),
 				AsteriskID:     "42:01:0a:a4:00:05",
@@ -802,14 +758,11 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockDB.EXPECT().ExternalMediaGet(ctx, tt.call.ID).Return(tt.extMedia, nil)
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0)
 			mockDB.EXPECT().ExternalMediaDelete(ctx, tt.extMedia.CallID).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -819,9 +772,8 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 func Test_actionExecuteAMD(t *testing.T) {
 
 	tests := []struct {
-		name   string
-		call   *call.Call
-		action *fmaction.Action
+		name string
+		call *call.Call
 
 		expectAMD *callapplication.AMD
 	}{
@@ -831,12 +783,13 @@ func Test_actionExecuteAMD(t *testing.T) {
 				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeAMD,
+					ID:     uuid.FromStringOrNil("f681c108-19b6-11ec-bc57-635de4310a4b"),
+					Option: []byte(`{"machine_handle":"hangup"}`),
+				},
 			},
-			&fmaction.Action{
-				Type:   fmaction.TypeAMD,
-				ID:     uuid.FromStringOrNil("f681c108-19b6-11ec-bc57-635de4310a4b"),
-				Option: []byte(`{"machine_handle":"hangup"}`),
-			},
+
 			&callapplication.AMD{
 				CallID:        uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
 				MachineHandle: "hangup",
@@ -848,12 +801,13 @@ func Test_actionExecuteAMD(t *testing.T) {
 				ID:         uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "7da1b4fc-19b9-11ec-948e-7f9ca90957a1",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeAMD,
+					ID:     uuid.FromStringOrNil("7dba7df2-19b9-11ec-b426-17e356fbf5e3"),
+					Option: []byte(`{"machine_handle":"hangup","sync":true}`),
+				},
 			},
-			&fmaction.Action{
-				Type:   fmaction.TypeAMD,
-				ID:     uuid.FromStringOrNil("7dba7df2-19b9-11ec-b426-17e356fbf5e3"),
-				Option: []byte(`{"machine_handle":"hangup","sync":true}`),
-			},
+
 			&callapplication.AMD{
 				CallID:        uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
 				MachineHandle: "hangup",
@@ -879,16 +833,13 @@ func Test_actionExecuteAMD(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(ctx, tt.call.ID, tt.action).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallApplicationAMDSet(ctx, gomock.Any(), tt.expectAMD).Return(nil)
 
 			if tt.expectAMD.Async == true {
 				mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 			}
-			if err := h.ActionExecute(ctx, tt.call, tt.action); err != nil {
+			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -990,10 +941,11 @@ func Test_cleanCurrentAction(t *testing.T) {
 func Test_ActionNext(t *testing.T) {
 
 	tests := []struct {
-		name    string
-		call    *call.Call
-		channel *channel.Channel
-		act     *fmaction.Action
+		name           string
+		call           *call.Call
+		channel        *channel.Channel
+		responseAction *fmaction.Action
+		responseCall   *call.Call
 	}{
 		{
 			"normal",
@@ -1006,7 +958,7 @@ func Test_ActionNext(t *testing.T) {
 				ActiveFlowID: uuid.FromStringOrNil("01603928-a7bb-11ec-86d6-57ce9c598437"),
 				Action: fmaction.Action{
 					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
-					Type: fmaction.TypeAnswer,
+					Type: fmaction.TypeTalk,
 				},
 			},
 			&channel.Channel{
@@ -1017,68 +969,16 @@ func Test_ActionNext(t *testing.T) {
 			&fmaction.Action{
 				ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
 			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := util.NewMockUtil(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
-			}
-
-			ctx := context.Background()
-
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
-			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.act, nil)
-			mockReq.EXPECT().CallV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
-
-			if err := h.ActionNext(ctx, tt.call); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_ActionNextForce(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		call    *call.Call
-		channel *channel.Channel
-		act     *fmaction.Action
-	}{
-		{
-			"normal",
 			&call.Call{
 				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
 				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
-				ActiveFlowID: uuid.FromStringOrNil("10bf10ce-a7bb-11ec-8327-3f6d5d146557"),
+				ActiveFlowID: uuid.FromStringOrNil("01603928-a7bb-11ec-86d6-57ce9c598437"),
 				Action: fmaction.Action{
-					ID:   uuid.FromStringOrNil("c9bc39a0-583b-11ec-b0c4-2373b012eba7"),
-					Type: fmaction.TypeAnswer,
+					ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
 				},
-			},
-			&channel.Channel{
-				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
-				AsteriskID: "42:01:0a:a4:00:05",
-				PlaybackID: "44a07af0-5837-11ec-bdce-6bfc534e86b7",
-			},
-			&fmaction.Action{
-				ID: uuid.FromStringOrNil("fe96418e-583b-11ec-93d8-738261aee2c9"),
 			},
 		},
 	}
@@ -1091,30 +991,27 @@ func Test_ActionNextForce(t *testing.T) {
 			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				util:          mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.responseAction, nil)
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockDB.EXPECT().CallSetActionAndActionNextHold(ctx, tt.call.ID, tt.responseAction, false).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
-			if tt.channel.PlaybackID != "" {
-				mockReq.EXPECT().AstPlaybackStop(gomock.Any(), tt.channel.AsteriskID, tt.channel.PlaybackID)
-			} else if tt.call.ConfbridgeID != uuid.Nil {
-				mockConf.EXPECT().Kick(gomock.Any(), tt.call.ConfbridgeID, tt.call.ID).Return(nil)
-			} else {
-				mockReq.EXPECT().FlowV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.act, nil)
-				mockReq.EXPECT().CallV1CallActionNext(gomock.Any(), tt.call.ID, false).Return(nil)
-				mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, tt.act).Return(nil)
-			}
+			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 
-			if err := h.ActionNextForce(ctx, tt.call); err != nil {
+			if err := h.ActionNext(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

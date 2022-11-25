@@ -74,19 +74,22 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
-
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil).AnyTimes()
-
+			mockDB.EXPECT().CallSetStatusProgressing(gomock.Any(), tt.call.ID)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
 			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallAnswered, tt.call)
 			if tt.call.Direction != call.DirectionIncoming {
 				// handleSIPCallID
 				mockReq.EXPECT().AstChannelVariableGet(ctx, tt.channel.AsteriskID, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
 				mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
 
-				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any())
+				// ActionNext
+				// we hangup the call because the flow_id is not set
+				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{}, nil)
+				mockDB.EXPECT().CallSetStatus(gomock.Any(), gomock.Any(), gomock.Any())
+				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{}, nil)
+				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 				mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
 			}
 
@@ -97,7 +100,7 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 	}
 }
 
-func TestARIChannelStateChangeStatusRinging(t *testing.T) {
+func Test_ARIChannelStateChangeStatusRinging(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -138,9 +141,10 @@ func TestARIChannelStateChangeStatusRinging(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusRinging, tt.channel.TMRinging)
+			mockDB.EXPECT().CallSetStatusRinging(gomock.Any(), tt.call.ID)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
 
+			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
 			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallRinging, tt.call)
 
 			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
@@ -236,6 +240,8 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 		channel    *channel.Channel
 		call       *call.Call
 		playbackID string
+
+		responseCall *call.Call
 	}{
 		{
 			"normal",
@@ -254,6 +260,14 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 				ActiveFlowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
 			},
 			"77a82874-e7dd-11ea-9647-27054cd71830",
+
+			&call.Call{
+				ID:           uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
+				AsteriskID:   "42:01:0a:a4:00:03",
+				Action:       action.Action{},
+				FlowID:       uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
+				ActiveFlowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
+			},
 		},
 	}
 
@@ -265,28 +279,27 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				util:          mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
-			returnAction := action.Action{
-				Type:   action.TypeHangup,
-				Option: []byte(`{}`),
-			}
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 
 			// action next part.
-			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(&returnAction, nil)
-			mockDB.EXPECT().CallSetAction(gomock.Any(), tt.call.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, call.StatusTerminating, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstChannelHangup(gomock.Any(), tt.call.AsteriskID, tt.call.ChannelID, ari.ChannelCauseNormalClearing, 0)
+			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(&action.Action{}, nil)
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+			mockDB.EXPECT().CallSetActionAndActionNextHold(gomock.Any(), tt.call.ID, gomock.Any(), false).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
+			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 
 			if err := h.ARIPlaybackFinished(ctx, tt.channel, tt.playbackID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -25,15 +25,9 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 		return fmt.Errorf("status change is not possible. call: %s, old_status: %s, new_status: %s", c.ID, c.Status, call.StatusRinging)
 	}
 
-	// update status
-	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusRinging, cn.TMRinging); err != nil {
-		log.Errorf("Could not update the call status. err: %v", err)
-		return err
-	}
-
-	res, err := h.db.CallGet(ctx, c.ID)
+	res, err := h.UpdateStatus(ctx, c.ID, call.StatusRinging)
 	if err != nil {
-		log.Errorf("Could not get updated call info. err: %v", err)
+		log.Errorf("Could not update the call status. err: %v", err)
 		return err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallRinging, res)
@@ -56,15 +50,9 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		return fmt.Errorf("status change is not possible. call: %s, old_status: %s, new_status: %s", c.ID, c.Status, call.StatusProgressing)
 	}
 
-	// update status
-	if err := h.db.CallSetStatus(ctx, c.ID, call.StatusProgressing, cn.TMAnswer); err != nil {
-		log.Errorf("Could not update the call status. err: %v", err)
-		return err
-	}
-
-	res, err := h.db.CallGet(ctx, c.ID)
+	res, err := h.UpdateStatus(ctx, c.ID, call.StatusProgressing)
 	if err != nil {
-		log.Errorf("Could not get updated call info. err: %v", err)
+		log.Errorf("Could not update the call status. err: %v", err)
 		return err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallAnswered, res)

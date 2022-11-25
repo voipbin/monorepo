@@ -21,8 +21,10 @@ import (
 func Test_CallCreate(t *testing.T) {
 
 	type test struct {
-		name      string
-		call      *call.Call
+		name            string
+		call            *call.Call
+		responseCurTime string
+
 		expectRes *call.Call
 	}
 
@@ -82,14 +84,9 @@ func Test_CallCreate(t *testing.T) {
 						ID: uuid.FromStringOrNil("60679904-f101-4b8a-802f-14e563808376"),
 					},
 				},
-
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
-
-				TMProgressing: "2020-04-18T03:22:17.995000",
-				TMRinging:     "2020-04-18T03:22:17.995000",
-				TMHangup:      DefaultTimeStamp,
 			},
+			"2020-04-18T03:22:17.995000",
+
 			&call.Call{
 				ID:           uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
 				CustomerID:   uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
@@ -144,11 +141,10 @@ func Test_CallCreate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
-
-				TMProgressing: "2020-04-18T03:22:17.995000",
-				TMRinging:     "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMRinging:     DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 			},
 		},
@@ -158,12 +154,20 @@ func Test_CallCreate(t *testing.T) {
 			&call.Call{
 				ID: uuid.FromStringOrNil("64e31a36-b6fc-4df5-9a66-48f68ad60a70"),
 			},
+			"2020-04-18T03:22:17.995000",
+
 			&call.Call{
 				ID:             uuid.FromStringOrNil("64e31a36-b6fc-4df5-9a66-48f68ad60a70"),
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
+
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMRinging:     DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -174,15 +178,24 @@ func Test_CallCreate(t *testing.T) {
 			defer mc.Finish()
 
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			mockUtil := util.NewMockUtil(mc)
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallCreate(context.Background(), tt.call); err != nil {
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -253,8 +266,9 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 		call *call.Call
 
-		id       uuid.UUID
-		bridgeID string
+		id              uuid.UUID
+		bridgeID        string
+		responseCurTime string
 
 		expectRes *call.Call
 	}
@@ -269,6 +283,7 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 			uuid.FromStringOrNil("853a2b18-5f8b-11ed-ba64-d35836e18de8"),
 			"c6d46f04-5f89-11ed-98b2-57f1fabc3cf4",
+			"2020-04-18T03:22:17.995000",
 
 			&call.Call{
 				ID: uuid.FromStringOrNil("853a2b18-5f8b-11ed-ba64-d35836e18de8"),
@@ -281,6 +296,13 @@ func Test_CallSetBridgeID(t *testing.T) {
 				Data: map[string]string{},
 
 				Dialroutes: []rmroute.Route{},
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -290,32 +312,36 @@ func Test_CallSetBridgeID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetBridgeID(ctx, tt.id, tt.bridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			// mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			tt.expectRes.TMCreate = res.TMCreate
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -327,30 +353,32 @@ func Test_CallSetStatus(t *testing.T) {
 	type test struct {
 		name string
 
-		id       uuid.UUID
-		status   call.Status
-		tmUpdate string
+		call *call.Call
 
-		call      *call.Call
+		id     uuid.UUID
+		status call.Status
+
+		responseCurtime string
+
 		expectRes *call.Call
 	}
 
 	tests := []test{
 		{
-			"test normal",
-
-			uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
-			call.StatusProgressing,
-			"2020-04-18T03:22:18.995000",
+			"status terminating",
 
 			&call.Call{
 				ID: uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
+
+			uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
+			call.StatusTerminating,
+
+			"2020-04-18 03:22:17.995000",
+
 			&call.Call{
 				ID: uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
 
@@ -360,14 +388,18 @@ func Test_CallSetStatus(t *testing.T) {
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
 
-				Status:    call.StatusProgressing,
+				Status:    call.StatusTerminating,
 				Direction: call.DirectionIncoming,
 				Data:      map[string]string{},
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMProgressing: "2020-04-18T03:22:18.995000",
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+
+				TMProgressing: DefaultTimeStamp,
+				TMRinging:     DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -377,21 +409,26 @@ func Test_CallSetStatus(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
-			mockCache.EXPECT().CallSet(ctx, gomock.Any())
-			if err := h.CallSetStatus(ctx, tt.id, tt.status, tt.tmUpdate); err != nil {
+			if err := h.CallSetStatus(ctx, tt.id, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -402,9 +439,8 @@ func Test_CallSetStatus(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -413,32 +449,35 @@ func Test_CallSetStatus(t *testing.T) {
 func Test_CallGetByChannelID(t *testing.T) {
 
 	type test struct {
-		name   string
-		id     uuid.UUID
-		flowID uuid.UUID
+		name string
+		call call.Call
 
-		call       call.Call
-		expectCall call.Call
+		channelID string
+
+		responseCurtime string
+		expectCall      call.Call
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			uuid.Must(uuid.NewV4()),
-			uuid.Must(uuid.NewV4()),
 			call.Call{
+				ID:         uuid.FromStringOrNil("5462dfbe-6bc8-11ed-b128-57813cbc586f"),
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "2505d858-8687-11ea-8723-d35628256201",
+				ChannelID:  "54963ab2-6bc8-11ed-9acd-8325f591cc80",
 				Type:       call.TypeFlow,
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
+
+			"54963ab2-6bc8-11ed-9acd-8325f591cc80",
+
+			"2020-04-18T03:22:17.995000",
 			call.Call{
+				ID:         uuid.FromStringOrNil("5462dfbe-6bc8-11ed-b128-57813cbc586f"),
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "2505d858-8687-11ea-8723-d35628256201",
+				ChannelID:  "54963ab2-6bc8-11ed-9acd-8325f591cc80",
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
@@ -449,16 +488,19 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Data:       map[string]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      DefaultTimeStamp,
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 		{
 			"test normal has source address type sip",
-			uuid.Must(uuid.NewV4()),
-			uuid.Must(uuid.NewV4()),
 			call.Call{
+				ID:         uuid.FromStringOrNil("79dc4e7e-6bc8-11ed-a082-2f57dba9cd50"),
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "2aa510da-8687-11ea-b1b4-3f62cf9e4def",
+				ChannelID:  "79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
 				Type:       call.TypeFlow,
 
 				Source: commonaddress.Address{
@@ -468,12 +510,15 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
+
+			"79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
+
+			"2020-04-18T03:22:17.995000",
 			call.Call{
+				ID:         uuid.FromStringOrNil("79dc4e7e-6bc8-11ed-a082-2f57dba9cd50"),
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "2aa510da-8687-11ea-b1b4-3f62cf9e4def",
+				ChannelID:  "79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
 				Type:       call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
@@ -488,7 +533,11 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Data:       map[string]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      DefaultTimeStamp,
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -498,53 +547,55 @@ func Test_CallGetByChannelID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
 
-			tt.call.ID = tt.id
-			tt.call.FlowID = tt.flowID
-			tt.expectCall.ID = tt.id
-			tt.expectCall.FlowID = tt.flowID
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallCreate(context.Background(), &tt.call); err != nil {
+			if err := h.CallCreate(ctx, &tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.CallGetByChannelID(context.Background(), tt.call.ChannelID)
+			res, err := h.CallGetByChannelID(ctx, tt.call.ChannelID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-			t.Logf("Created call. call: %v", res)
 
 			if reflect.DeepEqual(tt.expectCall, *res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
 			}
 		})
 	}
 }
 
-func Test_CallCallSetHangup(t *testing.T) {
+func Test_CallSetHangup(t *testing.T) {
 
 	type test struct {
-		name     string
+		name string
+		call *call.Call
+
 		id       uuid.UUID
 		reason   call.HangupReason
 		hangupBy call.HangupBy
-		tmUpdate string
 
-		call       *call.Call
+		responseCurTime string
+
 		expectCall call.Call
 	}
 
 	tests := []test{
 		{
 			"test normal",
-			uuid.Must(uuid.NewV4()),
-			call.HangupReasonNormal,
-			call.HangupByLocal,
-			"2020-04-18T03:22:18.995000",
 			&call.Call{
+				ID:         uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
@@ -557,7 +608,15 @@ func Test_CallCallSetHangup(t *testing.T) {
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
+
+			uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
+			call.HangupReasonNormal,
+			call.HangupByLocal,
+
+			"2020-04-18T03:22:18.995000",
+
 			call.Call{
+				ID:         uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:       call.TypeFlow,
@@ -576,9 +635,12 @@ func Test_CallCallSetHangup(t *testing.T) {
 				Data:         map[string]string{},
 				Dialroutes:   []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:18.995000",
 				TMUpdate: "2020-04-18T03:22:18.995000",
-				TMHangup: "2020-04-18T03:22:18.995000",
+
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      "2020-04-18T03:22:18.995000",
 			},
 		},
 	}
@@ -588,20 +650,22 @@ func Test_CallCallSetHangup(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
-			tt.call.ID = tt.id
-			tt.expectCall.ID = tt.id
-			tt.expectCall.TMUpdate = tt.tmUpdate
-
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetHangup(context.Background(), tt.id, tt.reason, tt.hangupBy, tt.tmUpdate); err != nil {
+			if err := h.CallSetHangup(context.Background(), tt.id, tt.reason, tt.hangupBy, tt.responseCurTime); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -613,7 +677,7 @@ func Test_CallCallSetHangup(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectCall, *res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
 			}
 		})
 	}
@@ -622,9 +686,12 @@ func Test_CallCallSetHangup(t *testing.T) {
 func Test_CallSetFlowID(t *testing.T) {
 
 	type test struct {
-		name   string
+		name string
+		call *call.Call
+
 		flowID uuid.UUID
-		call   *call.Call
+
+		responseCurTime string
 
 		expectCall *call.Call
 	}
@@ -632,41 +699,29 @@ func Test_CallSetFlowID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 			&call.Call{
-				ID:         uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
-
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
+				ID: uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
 			},
+
+			uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
+
+			"2020-04-18T03:22:17.995000",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
+				ID: uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
 				FlowID: uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-
-				Status:     call.StatusRinging,
-				Direction:  call.DirectionIncoming,
 				Data:       map[string]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -676,29 +731,37 @@ func Test_CallSetFlowID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallCreate(context.Background(), tt.call); err != nil {
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetFlowID(context.Background(), tt.call.ID, tt.flowID); err != nil {
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetFlowID(ctx, tt.call.ID, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			res, err := h.CallGet(context.Background(), tt.call.ID)
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
 			if reflect.DeepEqual(tt.expectCall, res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
 			}
 		})
 	}
@@ -707,9 +770,12 @@ func Test_CallSetFlowID(t *testing.T) {
 func Test_CallSetConfbridgeID(t *testing.T) {
 
 	type test struct {
-		name         string
+		name string
+		call *call.Call
+
 		confbridgeID uuid.UUID
-		call         *call.Call
+
+		responseCurTime string
 
 		expectCall *call.Call
 	}
@@ -717,41 +783,29 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 			&call.Call{
-				ID:         uuid.FromStringOrNil("56ca1f9c-9358-11ea-8dd7-472b84a9f7d4"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
-
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-
-				Status:    call.StatusRinging,
-				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
+				ID: uuid.FromStringOrNil("56ca1f9c-9358-11ea-8dd7-472b84a9f7d4"),
 			},
+
+			uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
+			"2020-04-18T03:22:17.995000",
+
 			&call.Call{
-				ID:         uuid.FromStringOrNil("56ca1f9c-9358-11ea-8dd7-472b84a9f7d4"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
+				ID: uuid.FromStringOrNil("56ca1f9c-9358-11ea-8dd7-472b84a9f7d4"),
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 
 				ConfbridgeID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-
-				Status:     call.StatusRinging,
-				Direction:  call.DirectionIncoming,
 				Data:       map[string]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -761,14 +815,21 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetConfbridgeID(context.Background(), tt.call.ID, tt.confbridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -781,7 +842,6 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
 			if reflect.DeepEqual(tt.expectCall, res) == false {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
 			}
@@ -789,12 +849,16 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 	}
 }
 
-func Test_CallSetAction(t *testing.T) {
+func Test_CallSetActionAndActionNextHold(t *testing.T) {
 
 	type test struct {
-		name   string
-		call   *call.Call
+		name string
+		call *call.Call
+
 		action *fmaction.Action
+		hold   bool
+
+		responseCurTime string
 
 		expectCall *call.Call
 	}
@@ -814,15 +878,15 @@ func Test_CallSetAction(t *testing.T) {
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&fmaction.Action{
 				ID:     uuid.FromStringOrNil("dc455d64-8d02-11ea-9d6e-0b6fe8f7bdc6"),
 				Type:   fmaction.TypeEcho,
 				Option: []byte(`{"duration":180}`),
 			},
+			false,
 
+			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:         uuid.FromStringOrNil("1d55d302-8d02-11ea-992f-53a0113a8a9b"),
 				AsteriskID: "3e:50:6b:43:bb:30",
@@ -841,12 +905,17 @@ func Test_CallSetAction(t *testing.T) {
 					Type:   fmaction.TypeEcho,
 					Option: []byte(`{"duration":180}`),
 				},
-				Status:     call.StatusRinging,
-				Direction:  call.DirectionIncoming,
-				Data:       map[string]string{},
-				Dialroutes: []rmroute.Route{},
+				ActionNextHold: false,
+				Status:         call.StatusRinging,
+				Direction:      call.DirectionIncoming,
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 		{
@@ -863,14 +932,14 @@ func Test_CallSetAction(t *testing.T) {
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
-
-				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			&fmaction.Action{
 				ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),
 				Type: fmaction.TypeEcho,
 			},
+			false,
 
+			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:         uuid.FromStringOrNil("964b060e-8d04-11ea-bc42-93d5d0871556"),
 				AsteriskID: "3e:50:6b:43:bb:30",
@@ -888,12 +957,17 @@ func Test_CallSetAction(t *testing.T) {
 					ID:   uuid.FromStringOrNil("a1e3ff02-8d04-11ea-b30b-9fb57c4036f4"),
 					Type: fmaction.TypeEcho,
 				},
-				Status:     call.StatusRinging,
-				Direction:  call.DirectionIncoming,
-				Data:       map[string]string{},
-				Dialroutes: []rmroute.Route{},
+				ActionNextHold: false,
+				Status:         call.StatusRinging,
+				Direction:      call.DirectionIncoming,
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -903,27 +977,35 @@ func Test_CallSetAction(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallCreate(context.Background(), tt.call); err != nil {
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetAction(context.Background(), tt.call.ID, tt.action); err != nil {
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetActionAndActionNextHold(ctx, tt.call.ID, tt.action, tt.hold); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			res, err := h.CallGet(context.Background(), tt.call.ID)
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
 			if reflect.DeepEqual(*tt.expectCall, *res) == false {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
 			}
@@ -938,6 +1020,8 @@ func Test_CallSetMasterCallID(t *testing.T) {
 		call         *call.Call
 		masterCallID uuid.UUID
 
+		responseCurTime string
+
 		expectCall *call.Call
 	}
 
@@ -949,9 +1033,10 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "14daba5c-24fc-11eb-8f58-8b798baaf553",
 				Type:       call.TypeFlow,
-				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 			uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
+
+			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:             uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
 				AsteriskID:     "3e:50:6b:43:bb:30",
@@ -962,24 +1047,36 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 				MasterCallID:   uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
-				TMCreate:       "2020-04-18T03:22:17.995000",
+
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 		{
 			"set nil",
 			&call.Call{
-				ID:       uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
-				Type:     call.TypeFlow,
-				TMCreate: "2020-04-18T03:22:17.995000",
+				ID:   uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
+				Type: call.TypeFlow,
 			},
 			uuid.Nil,
+
+			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:             uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 				Data:           map[string]string{},
-				Dialroutes:     []rmroute.Route{}, TMCreate: "2020-04-18T03:22:17.995000",
+				Dialroutes:     []rmroute.Route{},
+
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -989,27 +1086,35 @@ func Test_CallSetMasterCallID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallCreate(context.Background(), tt.call); err != nil {
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetMasterCallID(context.Background(), tt.call.ID, tt.masterCallID); err != nil {
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetMasterCallID(ctx, tt.call.ID, tt.masterCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			res, err := h.CallGet(context.Background(), tt.call.ID)
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
 			if reflect.DeepEqual(*tt.expectCall, *res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
 			}
@@ -1024,7 +1129,8 @@ func Test_CallSetRecordID(t *testing.T) {
 		call     *call.Call
 		reocrdID uuid.UUID
 
-		expectCall *call.Call
+		responseCurTime string
+		expectCall      *call.Call
 	}
 
 	tests := []test{
@@ -1038,6 +1144,8 @@ func Test_CallSetRecordID(t *testing.T) {
 				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 			uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
+
+			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:             uuid.FromStringOrNil("46ab9ad8-282b-11eb-82c3-6782faf5e030"),
 				AsteriskID:     "3e:50:6b:43:bb:30",
@@ -1049,7 +1157,12 @@ func Test_CallSetRecordID(t *testing.T) {
 				Dialroutes:     []rmroute.Route{},
 
 				RecordingID: uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
-				TMCreate:    "2020-04-18T03:22:17.995000",
+
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 		{
@@ -1060,6 +1173,8 @@ func Test_CallSetRecordID(t *testing.T) {
 				TMCreate: "2020-04-18T03:22:17.995000",
 			},
 			uuid.Nil,
+
+			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:             uuid.FromStringOrNil("7b3e197e-282b-11eb-956d-4feb054947db"),
 				Type:           call.TypeFlow,
@@ -1068,7 +1183,11 @@ func Test_CallSetRecordID(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -1078,27 +1197,35 @@ func Test_CallSetRecordID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallCreate(context.Background(), tt.call); err != nil {
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetRecordID(context.Background(), tt.call.ID, tt.reocrdID); err != nil {
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetRecordID(ctx, tt.call.ID, tt.reocrdID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			res, err := h.CallGet(context.Background(), tt.call.ID)
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
 			if reflect.DeepEqual(*tt.expectCall, *res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
 			}
@@ -1116,6 +1243,8 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 		channelID   string
 		dialrouteID uuid.UUID
 
+		responseCurTime string
+
 		expectRes *call.Call
 	}
 
@@ -1127,13 +1256,13 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelID:  "54144112-6036-11ed-9492-5b86fbbf6672",
 				Type:       call.TypeFlow,
-				TMCreate:   "2020-04-18T03:22:17.995000",
 			},
 
 			uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
 			"06372bc6-6036-11ed-bd92-7793e1da99bd",
 			uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
 
+			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:             uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
 				AsteriskID:     "",
@@ -1144,7 +1273,12 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 				Data:           map[string]string{},
 				DialrouteID:    uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
 				Dialroutes:     []rmroute.Route{},
-				TMCreate:       "2020-04-18T03:22:17.995000",
+
+				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMUpdate:      "2020-04-18T03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
 			},
 		},
 	}
@@ -1154,16 +1288,23 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1176,9 +1317,111 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
 			if reflect.DeepEqual(*tt.expectRes, *res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallSetActionNextHold(t *testing.T) {
+
+	type test struct {
+		name string
+
+		call *call.Call
+		hold bool
+
+		responseCurTime string
+
+		expectCall *call.Call
+	}
+
+	tests := []test{
+		{
+			"set true",
+			&call.Call{
+				ID: uuid.FromStringOrNil("b347a946-6bab-11ed-845d-3fd878a04427"),
+			},
+			true,
+
+			"2020-04-18 03:22:17.995000",
+			&call.Call{
+				ID:             uuid.FromStringOrNil("b347a946-6bab-11ed-845d-3fd878a04427"),
+				ActionNextHold: true,
+				ChainedCallIDs: []uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
+
+				TMCreate:      "2020-04-18 03:22:17.995000",
+				TMUpdate:      "2020-04-18 03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
+			},
+		},
+		{
+			"set false",
+			&call.Call{
+				ID: uuid.FromStringOrNil("10ecffc8-6bad-11ed-89dd-7bd54d2b1b6b"),
+			},
+			false,
+
+			"2020-04-18 03:22:17.995000",
+			&call.Call{
+				ID:             uuid.FromStringOrNil("10ecffc8-6bad-11ed-89dd-7bd54d2b1b6b"),
+				ActionNextHold: false,
+				ChainedCallIDs: []uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
+
+				TMCreate:      "2020-04-18 03:22:17.995000",
+				TMUpdate:      "2020-04-18 03:22:17.995000",
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := util.NewMockUtil(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetActionNextHold(ctx, tt.call.ID, tt.hold); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectCall, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
 			}
 		})
 	}

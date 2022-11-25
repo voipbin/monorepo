@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -83,11 +84,13 @@ func Test_startServiceFromAMD(t *testing.T) {
 			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				util:          mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
@@ -98,7 +101,9 @@ func Test_startServiceFromAMD(t *testing.T) {
 
 			if tt.responseAMD.MachineHandle == callapplication.AMDMachineHandleHangup && tt.data["amd_status"] == amdStatusMachine {
 				mockDB.EXPECT().CallGet(ctx, tt.responseAMD.CallID).Return(&call.Call{}, nil)
-				mockDB.EXPECT().CallSetStatus(ctx, gomock.Any(), call.StatusTerminating, gomock.Any()).Return(nil)
+				mockDB.EXPECT().CallSetStatus(ctx, gomock.Any(), call.StatusTerminating).Return(nil)
+				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{}, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 				mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), ari.ChannelCauseCallAMD, 0).Return(nil)
 			} else {
 				if !tt.responseAMD.Async {
