@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -10,7 +11,6 @@ import (
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Create creates a call record.
@@ -86,12 +86,6 @@ func (h *callHandler) Create(
 
 		DialrouteID: dialrouteID,
 		Dialroutes:  dialroutes,
-
-		TMCreate:      h.util.GetCurTime(),
-		TMUpdate:      dbhandler.DefaultTimeStamp,
-		TMProgressing: dbhandler.DefaultTimeStamp,
-		TMRinging:     dbhandler.DefaultTimeStamp,
-		TMHangup:      dbhandler.DefaultTimeStamp,
 	}
 	log.WithField("call", c).Debugf("Creating a new call. call_id: %s", c.ID)
 
@@ -200,4 +194,79 @@ func (h *callHandler) CallHealthCheck(ctx context.Context, id uuid.UUID, retryCo
 		log.Errorf("Could not send the call health check request. err: %v", err)
 		return
 	}
+}
+
+// updateActionNextHold sets the action next hold
+func (h *callHandler) updateActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error {
+
+	// set hold
+	if err := h.db.CallSetActionNextHold(ctx, id, hold); err != nil {
+		return fmt.Errorf("could not set action next hold. call_id: %s, err: %v", id, err)
+	}
+
+	return nil
+}
+
+// updateActionAndActionNextHold sets the action to the call
+func (h *callHandler) updateActionAndActionNextHold(ctx context.Context, id uuid.UUID, a *fmaction.Action) (*call.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "setAction",
+			"call_id": id,
+		},
+	)
+
+	// set action
+	if err := h.db.CallSetActionAndActionNextHold(ctx, id, a, false); err != nil {
+		return nil, fmt.Errorf("could not set the action for call. call_id: %s, err: %v", id, err)
+	}
+
+	// get updated call
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallUpdated, res)
+
+	promCallActionTotal.WithLabelValues(string(a.Type)).Inc()
+
+	return res, nil
+}
+
+// UpdateStatus sets the action to the call
+func (h *callHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "updateStatus",
+			"call_id": id,
+			"status":  status,
+		},
+	)
+
+	var err error
+	switch status {
+	case call.StatusRinging:
+		err = h.db.CallSetStatusRinging(ctx, id)
+
+	case call.StatusProgressing:
+		err = h.db.CallSetStatusProgressing(ctx, id)
+
+	default:
+		err = h.db.CallSetStatus(ctx, id, status)
+	}
+	if err != nil {
+		log.Errorf("Could not update the call status. call_id: %s, status: %v, err: %v", id, status, err)
+		return nil, err
+	}
+
+	// get updated call
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallUpdated, res)
+
+	return res, nil
 }

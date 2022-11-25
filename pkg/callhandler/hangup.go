@@ -123,14 +123,15 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 
 	// update call status
 	log.Debugf("Updating call status for hangup. status: %v", status)
-	if err := h.db.CallSetStatus(ctx, c.ID, status, h.util.GetCurTime()); err != nil {
+	cc, err := h.UpdateStatus(ctx, c.ID, status)
+	if err != nil {
 		// update status failed, just write log here. No need error handle here.
 		log.Errorf("Could not update the call status for hangup. status: %v, err: %v", status, err)
 		return err
 	}
 
 	// send hangup request
-	if err := h.reqHandler.AstChannelHangup(ctx, c.AsteriskID, c.ChannelID, cause, 0); err != nil {
+	if err := h.reqHandler.AstChannelHangup(ctx, cc.AsteriskID, cc.ChannelID, cause, 0); err != nil {
 		// Send hangup request has failed. Something really wrong.
 		log.Errorf("Could not send the hangup request for call hangup. err: %v", err)
 		return err

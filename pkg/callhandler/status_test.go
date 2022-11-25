@@ -50,8 +50,9 @@ func Test_UpdateStatusRinging(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusRinging, tt.channel.TMRinging).Return(nil)
+			mockDB.EXPECT().CallSetStatusRinging(ctx, tt.call.ID).Return(nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallRinging, tt.call)
 
 			if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err != nil {
@@ -216,10 +217,9 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
-
-			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusProgressing, tt.channel.TMAnswer).Return(nil)
+			mockDB.EXPECT().CallSetStatusProgressing(ctx, tt.call.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallAnswered, tt.call)
 
 			if tt.call.Direction != call.DirectionIncoming {
@@ -228,7 +228,9 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
 
 				mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, gomock.Any(), gomock.Any())
+				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, gomock.Any())
+				mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 				mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
 			}
 

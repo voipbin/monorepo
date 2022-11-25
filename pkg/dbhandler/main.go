@@ -50,14 +50,18 @@ type DBHandler interface {
 	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error)
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
-	CallSetAction(ctx context.Context, id uuid.UUID, action *fmaction.Action) error
+	CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error
+	CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error
 	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
 	CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
-	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
+	// CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
+	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error
+	CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error
+	CallSetStatusRinging(ctx context.Context, id uuid.UUID) error
 	CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	CallSetToCache(ctx context.Context, call *call.Call) error
 	CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error

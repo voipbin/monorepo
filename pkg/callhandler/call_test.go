@@ -54,7 +54,6 @@ func Test_Create(t *testing.T) {
 
 		expectCall *call.Call
 
-		responseTime string
 		responseCall *call.Call
 
 		expectRes *call.Call
@@ -182,7 +181,6 @@ func Test_Create(t *testing.T) {
 				TMHangup:      dbhandler.DefaultTimeStamp,
 			},
 
-			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
 				CustomerID: uuid.FromStringOrNil("dc375314-5d15-11ed-afd7-b3f36cf2d4a6"),
@@ -214,7 +212,6 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseTime)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)

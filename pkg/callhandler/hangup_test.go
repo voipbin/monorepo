@@ -95,6 +95,7 @@ func Test_Hangup(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowDelete(ctx, tt.call.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
 
 			for _, chainedCallID := range tt.call.ChainedCallIDs {
+				// Hangingup
 				tmpCall := &call.Call{
 					AsteriskID: "80:fa:5b:5e:da:81",
 					ChannelID:  "b0c8ac74-1779-11ec-8038-fbb981f4ed27",
@@ -103,9 +104,15 @@ func Test_Hangup(t *testing.T) {
 				}
 
 				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
-				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating, gomock.Any()).Return(nil)
+
+				// updateStatus
+				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating).Return(nil)
+				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
+				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, gomock.Any())
+
 				mockReq.EXPECT().AstChannelHangup(ctx, tmpCall.AsteriskID, tmpCall.ChannelID, ari.ChannelCauseNormalClearing, 0)
 			}
+
 			if err := h.Hangup(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -230,7 +237,12 @@ func Test_HanginUp(t *testing.T) {
 			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
 
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, tt.expectCallStatus, gomock.Any()).Return(nil)
+
+			// updateStatus
+			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, tt.expectCallStatus).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
+
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.cause, 0).Return(nil)
 
 			if err := h.HangingUp(ctx, tt.call.ID, tt.cause); err != nil {

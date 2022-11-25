@@ -38,7 +38,6 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseUUIDChannel uuid.UUID
-		responseCurTime     string
 
 		expectDialrouteTarget string
 		expectCall            *call.Call
@@ -70,7 +69,6 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("80d67b3a-5f3b-11ed-a709-0f2943ef0184"),
-			"2021-02-19 06:32:14.621",
 
 			"",
 			&call.Call{
@@ -138,7 +136,6 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannel)
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
@@ -189,7 +186,6 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseRoutes      []rmroute.Route
 		responseUUIDChannel uuid.UUID
-		responseCurTime     string
 		responseProvider    *rmprovider.Provider
 
 		expectDialrouteTarget string
@@ -230,7 +226,6 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				},
 			},
 			uuid.FromStringOrNil("d948969e-5de3-11ed-94f5-137ec429b6b6"),
-			"2021-02-19 06:32:14.621",
 			&rmprovider.Provider{
 				Hostname: "sip.telnyx.com",
 			},
@@ -308,7 +303,6 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.expectCall.CustomerID, tt.expectDialrouteTarget).Return(tt.responseRoutes, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannel)
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)

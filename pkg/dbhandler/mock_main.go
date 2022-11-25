@@ -364,18 +364,32 @@ func (mr *MockDBHandlerMockRecorder) CallRemoveChainedCallID(ctx, id, chainedCal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallRemoveChainedCallID", reflect.TypeOf((*MockDBHandler)(nil).CallRemoveChainedCallID), ctx, id, chainedCallID)
 }
 
-// CallSetAction mocks base method.
-func (m *MockDBHandler) CallSetAction(ctx context.Context, id uuid.UUID, action *action.Action) error {
+// CallSetActionAndActionNextHold mocks base method.
+func (m *MockDBHandler) CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *action.Action, hold bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSetAction", ctx, id, action)
+	ret := m.ctrl.Call(m, "CallSetActionAndActionNextHold", ctx, id, action, hold)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CallSetAction indicates an expected call of CallSetAction.
-func (mr *MockDBHandlerMockRecorder) CallSetAction(ctx, id, action interface{}) *gomock.Call {
+// CallSetActionAndActionNextHold indicates an expected call of CallSetActionAndActionNextHold.
+func (mr *MockDBHandlerMockRecorder) CallSetActionAndActionNextHold(ctx, id, action, hold interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetAction", reflect.TypeOf((*MockDBHandler)(nil).CallSetAction), ctx, id, action)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetActionAndActionNextHold", reflect.TypeOf((*MockDBHandler)(nil).CallSetActionAndActionNextHold), ctx, id, action, hold)
+}
+
+// CallSetActionNextHold mocks base method.
+func (m *MockDBHandler) CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetActionNextHold", ctx, id, hold)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetActionNextHold indicates an expected call of CallSetActionNextHold.
+func (mr *MockDBHandlerMockRecorder) CallSetActionNextHold(ctx, id, hold interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetActionNextHold", reflect.TypeOf((*MockDBHandler)(nil).CallSetActionNextHold), ctx, id, hold)
 }
 
 // CallSetAsteriskID mocks base method.
@@ -491,17 +505,45 @@ func (mr *MockDBHandlerMockRecorder) CallSetRecordID(ctx, id, recordID interface
 }
 
 // CallSetStatus mocks base method.
-func (m *MockDBHandler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error {
+func (m *MockDBHandler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSetStatus", ctx, id, status, tmUpdate)
+	ret := m.ctrl.Call(m, "CallSetStatus", ctx, id, status)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallSetStatus indicates an expected call of CallSetStatus.
-func (mr *MockDBHandlerMockRecorder) CallSetStatus(ctx, id, status, tmUpdate interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CallSetStatus(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetStatus", reflect.TypeOf((*MockDBHandler)(nil).CallSetStatus), ctx, id, status, tmUpdate)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetStatus", reflect.TypeOf((*MockDBHandler)(nil).CallSetStatus), ctx, id, status)
+}
+
+// CallSetStatusProgressing mocks base method.
+func (m *MockDBHandler) CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetStatusProgressing", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetStatusProgressing indicates an expected call of CallSetStatusProgressing.
+func (mr *MockDBHandlerMockRecorder) CallSetStatusProgressing(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetStatusProgressing", reflect.TypeOf((*MockDBHandler)(nil).CallSetStatusProgressing), ctx, id)
+}
+
+// CallSetStatusRinging mocks base method.
+func (m *MockDBHandler) CallSetStatusRinging(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetStatusRinging", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetStatusRinging indicates an expected call of CallSetStatusRinging.
+func (mr *MockDBHandlerMockRecorder) CallSetStatusRinging(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetStatusRinging", reflect.TypeOf((*MockDBHandler)(nil).CallSetStatusRinging), ctx, id)
 }
 
 // CallSetToCache mocks base method.

@@ -39,7 +39,9 @@ const (
 		status,
 		data,
 		action,
+		action_next_hold,
 		direction,
+
 		hangup_by,
 		hangup_reason,
 
@@ -91,7 +93,9 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.Status,
 		&data,
 		&action,
+		&res.ActionNextHold,
 		&res.Direction,
+
 		&res.HangupBy,
 		&res.HangupReason,
 
@@ -205,7 +209,9 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		status,
 		data,
 		action,
+		action_next_hold,
 		direction,
+
 		hangup_by,
 		hangup_reason,
 
@@ -222,7 +228,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?,
+		?, ?,
 		?, ?,
 		?, ?, ?, ?, ?
 		)`
@@ -292,19 +299,21 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.Status,
 		tmpData,
 		tmpAction,
+		c.ActionNextHold,
 		c.Direction,
+
 		c.HangupBy,
 		c.HangupReason,
 
 		c.DialrouteID.Bytes(),
 		tmpDialroutes,
 
-		c.TMCreate,
-		c.TMUpdate,
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
 
-		c.TMProgressing,
-		c.TMRinging,
-		c.TMHangup,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. CallCreate. err: %v", err)
@@ -408,8 +417,8 @@ func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID st
 	return nil
 }
 
-// callSetStatusRinging sets the call status to ringing
-func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStatus string) error {
+// CallSetStatusRinging sets the call status to ringing
+func (h *handler) CallSetStatusRinging(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
@@ -422,7 +431,8 @@ func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStat
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, call.StatusRinging, h.util.GetCurTime(), tmStatus, id.Bytes())
+	ts := h.util.GetCurTime()
+	_, err := h.db.Exec(q, call.StatusRinging, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetStatusRinging. err: %v", err)
 	}
@@ -433,8 +443,8 @@ func (h *handler) callSetStatusRinging(ctx context.Context, id uuid.UUID, tmStat
 	return nil
 }
 
-// callSetStatusProgressing sets the call status to progressing
-func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tmStatus string) error {
+// CallSetStatusProgressing sets the call status to progressing
+func (h *handler) CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
@@ -447,9 +457,10 @@ func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tm
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, call.StatusProgressing, h.util.GetCurTime(), tmStatus, id.Bytes())
+	ts := h.util.GetCurTime()
+	_, err := h.db.Exec(q, call.StatusProgressing, ts, ts, id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. callSetStatusProgressing. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetStatusProgressing. err: %v", err)
 	}
 
 	// update the cache
@@ -458,8 +469,8 @@ func (h *handler) callSetStatusProgressing(ctx context.Context, id uuid.UUID, tm
 	return nil
 }
 
-// callSetStatus sets the call status without update the timestamp for status
-func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error {
+// CallSetStatus sets the call status without update the timestamp for status
+func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error {
 	// prepare
 	q := `
 	update
@@ -473,37 +484,13 @@ func (h *handler) callSetStatus(ctx context.Context, id uuid.UUID, status call.S
 
 	_, err := h.db.Exec(q, status, h.util.GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. callSetStatus. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetStatus. err: %v", err)
 	}
 
 	// update the cache
 	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
-}
-
-// CallSetStatus sets the call status
-func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmStatus string) error {
-
-	// get call info
-	c, err := h.CallGet(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	// validate changable status
-	if !call.IsUpdatableStatus(c.Status, status) {
-		return fmt.Errorf("the given status is not updatable. old: %s, new: %s", c.Status, status)
-	}
-
-	switch status {
-	case call.StatusRinging:
-		return h.callSetStatusRinging(ctx, id, tmStatus)
-	case call.StatusProgressing:
-		return h.callSetStatusProgressing(ctx, id, tmStatus)
-	default:
-		return h.callSetStatus(ctx, id, status)
-	}
 }
 
 // CallSetAsteriskID sets the call aserisk_id
@@ -610,7 +597,7 @@ func (h *handler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid
 }
 
 // CallSetAction sets the call status
-func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *fmaction.Action) error {
+func (h *handler) CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error {
 
 	// prepare
 	q := `
@@ -618,6 +605,7 @@ func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *fmact
 		calls
 	set
 		action = ?,
+		action_next_hold = ?,
 		tm_update = ?
 	where
 		id = ?
@@ -628,9 +616,9 @@ func (h *handler) CallSetAction(ctx context.Context, id uuid.UUID, action *fmact
 		return err
 	}
 
-	_, err = h.db.Exec(q, tmpAction, h.util.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpAction, hold, h.util.GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. CallSetAction. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetActionAndActionNextHold. err: %v", err)
 	}
 
 	// update the cache
@@ -950,6 +938,28 @@ func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.U
 
 	// update the cache
 	_ = h.CallUpdateToCache(context.Background(), id)
+
+	return nil
+}
+
+// CallSetActionNextHold sets the action_next_hold.
+func (h *handler) CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error {
+	// prepare
+	q := `
+	update calls set
+		action_next_hold = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, hold, h.util.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetActionNextHold. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }
