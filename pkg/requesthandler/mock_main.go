@@ -844,17 +844,17 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallsCreate(ctx, customerID, flo
 }
 
 // CallV1ChannelHealth mocks base method.
-func (m *MockRequestHandler) CallV1ChannelHealth(ctx context.Context, asteriskID, channelID string, delay, retryCount, retryCountMax int) error {
+func (m *MockRequestHandler) CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1ChannelHealth", ctx, asteriskID, channelID, delay, retryCount, retryCountMax)
+	ret := m.ctrl.Call(m, "CallV1ChannelHealth", ctx, channelID, delay, retryCount, retryCountMax)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallV1ChannelHealth indicates an expected call of CallV1ChannelHealth.
-func (mr *MockRequestHandlerMockRecorder) CallV1ChannelHealth(ctx, asteriskID, channelID, delay, retryCount, retryCountMax interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1ChannelHealth(ctx, channelID, delay, retryCount, retryCountMax interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ChannelHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ChannelHealth), ctx, asteriskID, channelID, delay, retryCount, retryCountMax)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ChannelHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ChannelHealth), ctx, channelID, delay, retryCount, retryCountMax)
 }
 
 // CallV1ConfbridgeCallAdd mocks base method.
