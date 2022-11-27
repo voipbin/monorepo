@@ -58,7 +58,6 @@ type DBHandler interface {
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
-	// CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status, tmUpdate string) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error
 	CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error
 	CallSetStatusRinging(ctx context.Context, id uuid.UUID) error
@@ -73,7 +72,7 @@ type DBHandler interface {
 
 	// channels
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
-	ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error
+	ChannelEnd(ctx context.Context, id string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error)
@@ -89,7 +88,8 @@ type DBHandler interface {
 	ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error
 	ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
 	ChannelSetStasis(ctx context.Context, id, stasis string) error
-	ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error
+	ChannelSetStateAnswer(ctx context.Context, id string, state ari.ChannelState) error
+	ChannelSetStateRinging(ctx context.Context, id string, state ari.ChannelState) error
 	ChannelSetType(ctx context.Context, id string, cType channel.Type) error
 	ChannelSetToCache(ctx context.Context, channel *channel.Channel) error
 	ChannelUpdateToCache(ctx context.Context, id string) error

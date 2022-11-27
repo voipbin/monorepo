@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 )
 
@@ -32,15 +33,14 @@ type listenHandler struct {
 	rabbitSock        rabbitmqhandler.Rabbit
 	callHandler       callhandler.CallHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
+	channelHandler    channelhandler.ChannelHandler
 }
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 	regAny  = "(.*)"
 
-	// v1
-	// asterisks
-	regV1AsterisksIDChannelsIDHealth = regexp.MustCompile("/v1/asterisks/" + regAny + "/channels/" + regAny + "/health-check")
+	//// v1
 
 	// calls
 	regV1Calls                    = regexp.MustCompile("/v1/calls$")
@@ -53,6 +53,9 @@ var (
 	regV1CallsIDChainedCallIDs    = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids$")
 	regV1CallsIDChainedCallIDsIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids/" + regUUID + "$")
 	regV1CallsIDExternalMedia     = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media$")
+
+	// channels
+	regV1ChannelsIDHealth = regexp.MustCompile("/v1/channels/" + regUUID + "/health-check$")
 
 	// confbridges
 	regV1Confbridges          = regexp.MustCompile("/v1/confbridges$")
@@ -98,11 +101,13 @@ func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	callHandler callhandler.CallHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
+	channelHandler channelhandler.ChannelHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:        rabbitSock,
 		callHandler:       callHandler,
 		confbridgeHandler: confbridgeHandler,
+		channelHandler:    channelHandler,
 	}
 
 	return h
@@ -171,14 +176,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// v1
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
-	////////////
-	// asterisks
-	////////////
-	// POST /asterisks/<asterisk-id>channels/<channel-id>/health-check
-	case regV1AsterisksIDChannelsIDHealth.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1AsterisksIDChannelsIDHealthPost(ctx, m)
-		requestType = "/v1/asterisks/channels/health-check"
-
 	////////
 	// calls
 	////////
@@ -246,6 +243,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Calls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsPost(ctx, m)
 		requestType = "/v1/calls"
+
+	////////////
+	// channels
+	////////////
+	// POST /channels/<channel-id>/health-check
+	case regV1ChannelsIDHealth.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ChannelsIDHealthPost(ctx, m)
+		requestType = "/v1/channels/<channel-id>/health-check"
 
 	//////////////
 	// confbridges

@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
@@ -163,10 +164,10 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 func Test_ActionTimeoutNext(t *testing.T) {
 
 	tests := []struct {
-		name    string
-		call    *call.Call
-		action  *fmaction.Action
-		channel *channel.Channel
+		name            string
+		call            *call.Call
+		action          *fmaction.Action
+		responseChannel *channel.Channel
 	}{
 		{
 			"normal",
@@ -203,17 +204,19 @@ func Test_ActionTimeoutNext(t *testing.T) {
 			mockUtil := util.NewMockUtil(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				util:           mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.call.ChannelID).Return(tt.channel, nil)
+			mockChannel.EXPECT().Get(ctx, tt.call.ChannelID).Return(tt.responseChannel, nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 
 			if err := h.ActionTimeout(ctx, tt.call.ID, tt.action); err != nil {
@@ -325,6 +328,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTimeRFC3339().Return(util.GetCurTimeRFC3339())
 			mockDB.EXPECT().RecordingCreate(ctx, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallSetRecordID(ctx, tt.call.ID, gomock.Any()).Return(nil)
@@ -849,10 +853,10 @@ func Test_actionExecuteAMD(t *testing.T) {
 func Test_cleanCurrentAction(t *testing.T) {
 
 	tests := []struct {
-		name      string
-		call      *call.Call
-		channel   *channel.Channel
-		expectRes bool
+		name            string
+		call            *call.Call
+		responseChannel *channel.Channel
+		expectRes       bool
 	}{
 		{
 			"playback has set",
@@ -908,22 +912,24 @@ func Test_cleanCurrentAction(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockConf := confbridgehandler.NewMockConfbridgeHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
 				reqHandler:        mockReq,
 				db:                mockDB,
 				confbridgeHandler: mockConf,
+				channelHandler:    mockChannel,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.call.ChannelID).Return(tt.channel, nil)
-			if tt.channel.PlaybackID != "" {
-				mockReq.EXPECT().AstPlaybackStop(gomock.Any(), tt.channel.AsteriskID, tt.channel.PlaybackID)
+			mockChannel.EXPECT().Get(ctx, tt.call.ChannelID).Return(tt.responseChannel, nil)
+			if tt.responseChannel.PlaybackID != "" {
+				mockReq.EXPECT().AstPlaybackStop(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.PlaybackID)
 			}
 
 			if tt.call.ConfbridgeID != uuid.Nil {
-				mockConf.EXPECT().Kick(gomock.Any(), tt.call.ConfbridgeID, tt.call.ID).Return(nil)
+				mockConf.EXPECT().Kick(ctx, tt.call.ConfbridgeID, tt.call.ID).Return(nil)
 			}
 
 			res, err := h.cleanCurrentAction(ctx, tt.call)

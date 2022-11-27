@@ -142,7 +142,7 @@ func NewChannelByStasisStart(e *ari.StasisStart) *Channel {
 
 // NewChannelByARIChannel returns partial of channel struct
 func NewChannelByARIChannel(e *ari.Channel) *Channel {
-	tech := getTech(e.Name)
+	tech := GetTech(e.Name)
 	c := &Channel{
 		ID:   e.ID,
 		Name: e.Name,
@@ -164,8 +164,8 @@ func NewChannelByARIChannel(e *ari.Channel) *Channel {
 	return c
 }
 
-// getTech returns tech from channel name
-func getTech(name string) Tech {
+// GetTech returns tech from channel name
+func GetTech(name string) Tech {
 	res := strings.Split(name, "/")
 	if len(res) < 1 {
 		return TechNone

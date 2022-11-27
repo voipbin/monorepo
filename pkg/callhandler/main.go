@@ -5,7 +5,6 @@ package callhandler
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -19,7 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
@@ -34,7 +33,6 @@ type CallHandler interface {
 	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error
 	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
 
-	ChannelHealthCheck(ctx context.Context, asteriskID string, channelID string, retryCount int, retryCountMax int, delay int)
 	CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount int, delay int)
 
 	DigitsGet(ctx context.Context, id uuid.UUID) (string, error)
@@ -71,8 +69,8 @@ type callHandler struct {
 	util              util.Util
 	reqHandler        requesthandler.RequestHandler
 	db                dbhandler.DBHandler
-	cache             cachehandler.CacheHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
+	channelHandler    channelhandler.ChannelHandler
 	notifyHandler     notifyhandler.NotifyHandler
 }
 
@@ -174,23 +172,24 @@ func init() {
 }
 
 // NewCallHandler returns new service handler
-func NewCallHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) CallHandler {
+func NewCallHandler(
+	r requesthandler.RequestHandler,
+	n notifyhandler.NotifyHandler,
+	db dbhandler.DBHandler,
+	conf confbridgehandler.ConfbridgeHandler,
+	ch channelhandler.ChannelHandler,
+) CallHandler {
 
 	h := &callHandler{
 		util:              util.NewUtil(),
 		reqHandler:        r,
 		notifyHandler:     n,
 		db:                db,
-		cache:             cache,
-		confbridgeHandler: confbridgehandler.NewConfbridgeHandler(r, n, db, cache),
+		confbridgeHandler: conf,
+		channelHandler:    ch,
 	}
 
 	return h
-}
-
-// getCurTime return current utc time string
-func getCurTimeRFC3339() string {
-	return time.Now().UTC().Format(time.RFC3339)
 }
 
 // getContextType returns CONTEXT's type

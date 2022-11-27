@@ -36,7 +36,7 @@ func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) (boo
 	)
 
 	// get channel
-	cn, err := h.db.ChannelGet(ctx, c.ChannelID)
+	cn, err := h.channelHandler.Get(ctx, c.ChannelID)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
 		return false, err
@@ -250,7 +250,7 @@ func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *fm
 	}
 
 	// get channel
-	cn, err := h.db.ChannelGet(ctx, c.ChannelID)
+	cn, err := h.channelHandler.Get(ctx, c.ChannelID)
 	if err != nil {
 		log.Errorf("Could not get channel info. channel_id: %s, err: %v", c.ChannelID, err)
 		return err
@@ -564,7 +564,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 	}
 
 	recordingID := uuid.Must(uuid.NewV4())
-	recordingName := fmt.Sprintf("call_%s_%s", c.ID, getCurTimeRFC3339())
+	recordingName := fmt.Sprintf("call_%s_%s", c.ID, h.util.GetCurTimeRFC3339())
 	filename := fmt.Sprintf("%s.%s", recordingName, format)
 	channelID := uuid.Must(uuid.NewV4()).String()
 

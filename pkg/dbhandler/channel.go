@@ -205,12 +205,12 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 
 		c.Direction,
 
-		c.TMCreate,
-		c.TMUpdate,
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
 
-		c.TMAnswer,
-		c.TMRinging,
-		c.TMEnd,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("ChannelCreate: Could not execute query. err: %v", err)
@@ -386,35 +386,46 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 	return nil
 }
 
-func (h *handler) ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error {
+// ChannelSetStateAnswer sets the given channel's state and tm_answer
+func (h *handler) ChannelSetStateAnswer(ctx context.Context, id string, state ari.ChannelState) error {
 
-	var q string
-	switch state {
-	case ari.ChannelStateUp:
-		q = `
-		update channels set
-			state = ?,
-			tm_update = ?,
-			tm_answer = ?
-		where
-			id = ?
-		`
-	case ari.ChannelStateRing, ari.ChannelStateRinging:
-		q = `
-		update channels set
-			state = ?,
-			tm_update = ?,
-			tm_ringing = ?
-		where
-			id = ?
-		`
-	default:
-		return fmt.Errorf("no match state. ChannelSetState. state: %s", state)
+	q := `
+	update channels set
+		state = ?,
+		tm_update = ?,
+		tm_answer = ?
+	where
+		id = ?
+	`
+
+	ts := h.util.GetCurTime()
+	_, err := h.db.Exec(q, state, ts, ts, id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetStateUp. err: %v", err)
 	}
 
-	_, err := h.db.Exec(q, string(state), timestamp, timestamp, id)
+	// update the cache
+	_ = h.ChannelUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ChannelSetStateRinging sets the given channel's state and tm_ringing
+func (h *handler) ChannelSetStateRinging(ctx context.Context, id string, state ari.ChannelState) error {
+
+	q := `
+	update channels set
+		state = ?,
+		tm_update = ?,
+		tm_ringing = ?
+	where
+		id = ?
+	`
+
+	ts := h.util.GetCurTime()
+	_, err := h.db.Exec(q, state, ts, ts, id)
 	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetState. err: %v", err)
+		return fmt.Errorf("could not execute. ChannelSetStateRinging. err: %v", err)
 	}
 
 	// update the cache
@@ -556,7 +567,7 @@ func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackI
 }
 
 // ChannelEnd updates the channel end.
-func (h *handler) ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error {
+func (h *handler) ChannelEnd(ctx context.Context, id string, hangup ari.ChannelCause) error {
 	// prepare
 	q := `
 	update channels set
@@ -567,7 +578,8 @@ func (h *handler) ChannelEnd(ctx context.Context, id, timestamp string, hangup a
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, hangup, timestamp, timestamp, id)
+	ts := h.util.GetCurTime()
+	_, err := h.db.Exec(q, hangup, ts, ts, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelEnd. err: %v", err)
 	}
