@@ -210,18 +210,6 @@ func (mr *MockCallHandlerMockRecorder) ChainedCallIDRemove(ctx, id, chainedCallI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChainedCallIDRemove", reflect.TypeOf((*MockCallHandler)(nil).ChainedCallIDRemove), ctx, id, chainedCallID)
 }
 
-// ChannelHealthCheck mocks base method.
-func (m *MockCallHandler) ChannelHealthCheck(ctx context.Context, asteriskID, channelID string, retryCount, retryCountMax, delay int) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ChannelHealthCheck", ctx, asteriskID, channelID, retryCount, retryCountMax, delay)
-}
-
-// ChannelHealthCheck indicates an expected call of ChannelHealthCheck.
-func (mr *MockCallHandlerMockRecorder) ChannelHealthCheck(ctx, asteriskID, channelID, retryCount, retryCountMax, delay interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelHealthCheck", reflect.TypeOf((*MockCallHandler)(nil).ChannelHealthCheck), ctx, asteriskID, channelID, retryCount, retryCountMax, delay)
-}
-
 // CreateCallOutgoing mocks base method.
 func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination address.Address) (*call.Call, error) {
 	m.ctrl.T.Helper()

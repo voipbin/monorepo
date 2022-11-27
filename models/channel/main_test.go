@@ -44,7 +44,7 @@ func TestGetTech(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := getTech(tt.testName)
+			res := GetTech(tt.testName)
 			if res != tt.expectTech {
 				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectTech, res)
 			}

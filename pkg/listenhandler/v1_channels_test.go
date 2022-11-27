@@ -7,19 +7,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 )
 
-func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:  mockSock,
-		callHandler: mockCall,
-	}
+func Test_processV1ChannelsIDHealthPost(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -42,7 +33,7 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 			10000,
 
 			&rabbitmqhandler.Request{
-				URI:    "/v1/asterisks/42%3A01%3A0a%3Aa4%3A00%3A05/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
+				URI:    "/v1/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
 				Method: rabbitmqhandler.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`),
 			},
@@ -51,8 +42,20 @@ func TestProcessV1ChannelsIDHealthPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockCall.EXPECT().ChannelHealthCheck(gomock.Any(), tt.asteriskID, tt.channelID, tt.retryCount, tt.retryCountMax, tt.delay)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
+			mockChannel.EXPECT().HealthCheck(gomock.Any(), tt.channelID, tt.retryCount, tt.retryCountMax, tt.delay)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

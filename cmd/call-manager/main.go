@@ -20,6 +20,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
@@ -147,9 +148,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
-	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache)
+	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
-	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler)
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler)
+	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler)
 
 	// run ari event listener
 	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, ariEventHandler); err != nil {
@@ -157,7 +159,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}
 
 	// run request listener
-	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler); err != nil {
+	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler, channelHandler); err != nil {
 		return err
 	}
 
@@ -177,8 +179,13 @@ func runSubscribe(serviceName string, rabbitSock rabbitmqhandler.Rabbit, subscri
 }
 
 // runRequestListen runs the request listen service
-func runRequestListen(rabbitSock rabbitmqhandler.Rabbit, callHandler callhandler.CallHandler, confbridgeHandler confbridgehandler.ConfbridgeHandler) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler)
+func runRequestListen(
+	rabbitSock rabbitmqhandler.Rabbit,
+	callHandler callhandler.CallHandler,
+	confbridgeHandler confbridgehandler.ConfbridgeHandler,
+	channelHandler channelhandler.ChannelHandler,
+) error {
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

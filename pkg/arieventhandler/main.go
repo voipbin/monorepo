@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -52,6 +52,7 @@ type eventHandler struct {
 	notifyHandler     notifyhandler.NotifyHandler
 	callHandler       callhandler.CallHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
+	channelHandler    channelhandler.ChannelHandler
 }
 
 // List of default values
@@ -65,25 +66,7 @@ const (
 	EventTypeRecordingFinished string = "recording_finished" // recording has finished
 )
 
-var (
-	metricsNamespace = "call_manager"
-
-	promChannelTransportAndDirection = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "channel_transport_direction_total",
-			Help:      "Total number of channel's transport and direction.",
-		},
-		[]string{"transport", "direction"},
-	)
-)
-
-func init() {
-	prometheus.MustRegister(
-		promChannelTransportAndDirection,
-	)
-
-}
+func init() {}
 
 // NewEventHandler create EventHandler
 func NewEventHandler(
@@ -94,6 +77,7 @@ func NewEventHandler(
 	notifyHandler notifyhandler.NotifyHandler,
 	callHandler callhandler.CallHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
+	channelHandler channelhandler.ChannelHandler,
 ) ARIEventHandler {
 	h := &eventHandler{
 		rabbitSock:        sock,
@@ -103,6 +87,7 @@ func NewEventHandler(
 		notifyHandler:     notifyHandler,
 		callHandler:       callHandler,
 		confbridgeHandler: confbridgeHandler,
+		channelHandler:    channelHandler,
 	}
 
 	return h

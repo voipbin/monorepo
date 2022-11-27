@@ -645,17 +645,17 @@ func (mr *MockDBHandlerMockRecorder) ChannelCreate(ctx, channel interface{}) *go
 }
 
 // ChannelEnd mocks base method.
-func (m *MockDBHandler) ChannelEnd(ctx context.Context, id, timestamp string, hangup ari.ChannelCause) error {
+func (m *MockDBHandler) ChannelEnd(ctx context.Context, id string, hangup ari.ChannelCause) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelEnd", ctx, id, timestamp, hangup)
+	ret := m.ctrl.Call(m, "ChannelEnd", ctx, id, hangup)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelEnd indicates an expected call of ChannelEnd.
-func (mr *MockDBHandlerMockRecorder) ChannelEnd(ctx, id, timestamp, hangup interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelEnd(ctx, id, hangup interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelEnd", reflect.TypeOf((*MockDBHandler)(nil).ChannelEnd), ctx, id, timestamp, hangup)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelEnd", reflect.TypeOf((*MockDBHandler)(nil).ChannelEnd), ctx, id, hangup)
 }
 
 // ChannelGet mocks base method.
@@ -873,18 +873,32 @@ func (mr *MockDBHandlerMockRecorder) ChannelSetStasisNameAndStasisData(ctx, id, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStasisNameAndStasisData", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStasisNameAndStasisData), ctx, id, stasisName, stasisData)
 }
 
-// ChannelSetState mocks base method.
-func (m *MockDBHandler) ChannelSetState(ctx context.Context, id, timestamp string, state ari.ChannelState) error {
+// ChannelSetStateAnswer mocks base method.
+func (m *MockDBHandler) ChannelSetStateAnswer(ctx context.Context, id string, state ari.ChannelState) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSetState", ctx, id, timestamp, state)
+	ret := m.ctrl.Call(m, "ChannelSetStateAnswer", ctx, id, state)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChannelSetState indicates an expected call of ChannelSetState.
-func (mr *MockDBHandlerMockRecorder) ChannelSetState(ctx, id, timestamp, state interface{}) *gomock.Call {
+// ChannelSetStateAnswer indicates an expected call of ChannelSetStateAnswer.
+func (mr *MockDBHandlerMockRecorder) ChannelSetStateAnswer(ctx, id, state interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetState", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetState), ctx, id, timestamp, state)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStateAnswer", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStateAnswer), ctx, id, state)
+}
+
+// ChannelSetStateRinging mocks base method.
+func (m *MockDBHandler) ChannelSetStateRinging(ctx context.Context, id string, state ari.ChannelState) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetStateRinging", ctx, id, state)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetStateRinging indicates an expected call of ChannelSetStateRinging.
+func (mr *MockDBHandlerMockRecorder) ChannelSetStateRinging(ctx, id, state interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetStateRinging", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetStateRinging), ctx, id, state)
 }
 
 // ChannelSetToCache mocks base method.

@@ -12,29 +12,38 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestEventHandlerChannelCreated(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockSvc,
-	}
-
+func Test_EventHandlerChannelCreated(t *testing.T) {
 	tests := []struct {
-		name    string
-		event   *ari.ChannelCreated
-		channel *channel.Channel
+		name  string
+		event *ari.ChannelCreated
+
+		expectID                string
+		expectAsteriskID        string
+		expectName              string
+		expectChannelType       channel.Type
+		expectTech              channel.Tech
+		expectSIPCallID         string
+		expectSIPTransport      channel.SIPTransport
+		expectSourceName        string
+		expectSourceNumber      string
+		expectDestinationName   string
+		expectDestinationNumber string
+		expectState             ari.ChannelState
+		expectData              map[string]interface{}
+		expectStasisName        string
+		expectStasisData        map[string]string
+		expectBridgeID          string
+		expectPlaybackID        string
+		expectDialResult        string
+		expectHangupCause       ari.ChannelCause
+		expectDirection         channel.Direction
+
+		responseChannel *channel.Channel
 	}{
 		{
 			"normal",
@@ -62,6 +71,33 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 					},
 				},
 			},
+
+			"1587307080.49",
+			"42:01:0a:a4:00:05",
+			"PJSIP/in-voipbin-00000030",
+			channel.TypeNone,
+			channel.TechPJSIP,
+
+			"",
+			channel.SIPTransportNone,
+
+			"",
+			"68025",
+			"",
+			"011441332323027",
+
+			ari.ChannelStateRing,
+			map[string]interface{}{},
+
+			"",
+			map[string]string{},
+
+			"",
+			"",
+			"",
+			ari.ChannelCauseUnknown,
+			channel.DirectionNone,
+
 			&channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:05",
 				ID:         "1587307080.49",
@@ -71,11 +107,49 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			cn := &channel.Channel{}
-			mockDB.EXPECT().ChannelCreate(gomock.Any(), gomock.AssignableToTypeOf(cn)).Return(nil)
-			mockRequest.EXPECT().CallV1ChannelHealth(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, gomock.Any(), gomock.Any(), gomock.Any())
+			mockChannel.EXPECT().Create(
+				ctx,
+				tt.expectID,
+				tt.expectAsteriskID,
+				tt.expectName,
+				tt.expectChannelType,
+				tt.expectTech,
+				tt.expectSIPCallID,
+				tt.expectSIPTransport,
+				tt.expectSourceName,
+				tt.expectSourceNumber,
+				tt.expectDestinationName,
+				tt.expectDestinationNumber,
+				tt.expectState,
+				tt.expectData,
+				tt.expectStasisName,
+				tt.expectStasisData,
+				tt.expectBridgeID,
+				tt.expectPlaybackID,
+				tt.expectDialResult,
+				tt.expectHangupCause,
+				tt.expectDirection,
+			).Return(tt.responseChannel, nil)
+			mockRequest.EXPECT().CallV1ChannelHealth(gomock.Any(), tt.responseChannel.ID, gomock.Any(), gomock.Any(), gomock.Any())
 
 			if err := h.EventHandlerChannelCreated(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -84,26 +158,13 @@ func TestEventHandlerChannelCreated(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelDestroyed(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerChannelDestroyed(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		event *ari.ChannelDestroyed
 
 		expectChannelID string
-		expectTimestamp string
 		expectHangup    ari.ChannelCause
 	}{
 		{
@@ -133,20 +194,36 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 				CauseTxt: "Switching equipment congestion",
 				Cause:    42,
 			},
+
 			"1587315778.885",
-			"2020-04-19T17:02:58.651",
 			ari.ChannelCauseSwitchCongestion,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
 			cn := &channel.Channel{}
-			mockDB.EXPECT().ChannelEnd(gomock.Any(), tt.expectChannelID, tt.expectTimestamp, tt.expectHangup).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(cn, nil)
-			mockCall.EXPECT().ARIChannelDestroyed(gomock.Any(), cn).Return(nil)
+			mockChannel.EXPECT().Delete(ctx, tt.expectChannelID, tt.expectHangup).Return(cn, nil)
+			mockCall.EXPECT().ARIChannelDestroyed(ctx, cn).Return(nil)
 
 			if err := h.EventHandlerChannelDestroyed(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -155,28 +232,16 @@ func TestEventHandlerChannelDestroyed(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelStateChange(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockSvc,
-	}
+func Test_EventHandlerChannelStateChange(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		event *ari.ChannelStateChange
 
+		responseChannel *channel.Channel
+
 		expectChannelID string
-		expectTmUpdate  string
-		expactState     ari.ChannelState
+		expectState     ari.ChannelState
 	}{
 		{
 			"normal",
@@ -206,19 +271,35 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 				},
 			},
 
+			&channel.Channel{},
+
 			"1587842233.10218",
-			"2020-04-25T19:17:13.786",
 			ari.ChannelStateUp,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetState(gomock.Any(), tt.expectChannelID, tt.expectTmUpdate, tt.expactState).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(nil, nil)
-			mockSvc.EXPECT().ARIChannelStateChange(gomock.Any(), nil).Return(nil)
+			mockChannel.EXPECT().UpdateState(ctx, tt.expectChannelID, tt.expectState).Return(tt.responseChannel, nil)
+			mockCall.EXPECT().ARIChannelStateChange(ctx, tt.responseChannel).Return(nil)
 
 			if err := h.EventHandlerChannelStateChange(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -227,23 +308,7 @@ func TestEventHandlerChannelStateChange(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelEnteredBridge(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
-
-	h := eventHandler{
-		db:                mockDB,
-		rabbitSock:        mockSock,
-		reqHandler:        mockRequest,
-		callHandler:       mockCall,
-		confbridgeHandler: mockConfbridge,
-	}
+func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 
 	type test struct {
 		name    string
@@ -403,13 +468,31 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := eventHandler{
+				db:                mockDB,
+				rabbitSock:        mockSock,
+				reqHandler:        mockRequest,
+				callHandler:       mockCall,
+				confbridgeHandler: mockConfbridge,
+				channelHandler:    mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, defaultExistTimeout).Return(true)
+			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, tt.bridge.ID).Return(tt.channel, nil)
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.ID, tt.bridge.ID)
 			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
+
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
 
 			if tt.channel.Type == channel.TypeConfbridge {
@@ -423,23 +506,7 @@ func TestEventHandlerChannelEnteredBridge(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelLeftBridge(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
-
-	h := eventHandler{
-		db:                mockDB,
-		rabbitSock:        mockSock,
-		reqHandler:        mockRequest,
-		callHandler:       mockCall,
-		confbridgeHandler: mockConfbridge,
-	}
+func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -647,21 +714,38 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := eventHandler{
+				db:                mockDB,
+				rabbitSock:        mockSock,
+				reqHandler:        mockRequest,
+				callHandler:       mockCall,
+				confbridgeHandler: mockConfbridge,
+				channelHandler:    mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelIsExist(tt.channel.ID, defaultExistTimeout).Return(true)
+			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, "").Return(tt.channel, nil)
 			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().ChannelSetBridgeID(gomock.Any(), tt.channel.ID, "")
-			mockDB.EXPECT().BridgeRemoveChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
+			mockDB.EXPECT().BridgeRemoveChannelID(ctx, tt.bridge.ID, tt.channel.ID).Return(nil)
+			mockDB.EXPECT().BridgeGet(ctx, tt.bridge.ID).Return(tt.bridge, nil)
 
 			switch tt.bridge.ReferenceType {
 			case bridge.ReferenceTypeConfbridge, bridge.ReferenceTypeConfbridgeSnoop:
-				mockConfbridge.EXPECT().ARIChannelLeftBridge(gomock.Any(), tt.channel, tt.bridge).Return(nil)
+				mockConfbridge.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.bridge).Return(nil)
 
 			case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
-				mockCall.EXPECT().ARIChannelLeftBridge(gomock.Any(), tt.channel, tt.bridge).Return(nil)
+				mockCall.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.bridge).Return(nil)
 			}
 
 			if err := h.EventHandlerChannelLeftBridge(ctx, tt.event); err != nil {
@@ -671,27 +755,14 @@ func TestEventHandlerChannelLeftBridge(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelDtmfReceived(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerChannelDtmfReceived(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		event    *ari.ChannelDtmfReceived
-		channel  *channel.Channel
-		digit    string
-		duration int
+		name            string
+		event           *ari.ChannelDtmfReceived
+		responseChannel *channel.Channel
+		expectDigit     string
+		expectDuration  int
 	}{
 		{
 			"normal",
@@ -735,10 +806,26 @@ func TestEventHandlerChannelDtmfReceived(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
-			mockCall.EXPECT().ARIChannelDtmfReceived(gomock.Any(), tt.channel, tt.digit, tt.duration).Return(nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseChannel.ID).Return(tt.responseChannel, nil)
+			mockCall.EXPECT().ARIChannelDtmfReceived(ctx, tt.responseChannel, tt.expectDigit, tt.expectDuration).Return(nil)
 
 			if err := h.EventHandlerChannelDtmfReceived(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -747,20 +834,7 @@ func TestEventHandlerChannelDtmfReceived(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelVarsetDirection(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerChannelVarsetDirection(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -877,10 +951,25 @@ func TestEventHandlerChannelVarsetDirection(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetDirection(gomock.Any(), tt.channel.ID, tt.direction).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
+			mockChannel.EXPECT().SetDirection(ctx, tt.channel.ID, tt.direction).Return(nil)
 			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -888,20 +977,7 @@ func TestEventHandlerChannelVarsetDirection(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelVarsetSIPTransport(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerChannelVarsetSIPTransport(t *testing.T) {
 
 	tests := []struct {
 		name         string
@@ -973,10 +1049,25 @@ func TestEventHandlerChannelVarsetSIPTransport(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetSIPTransport(gomock.Any(), tt.channel.ID, tt.sipTransport).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(tt.channel, nil)
+			mockChannel.EXPECT().SetSIPTransport(ctx, tt.channel.ID, tt.sipTransport).Return(nil)
 			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -984,20 +1075,7 @@ func TestEventHandlerChannelVarsetSIPTransport(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelVarsetSIPCallID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerChannelVarsetSIPCallID(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -1024,9 +1102,25 @@ func TestEventHandlerChannelVarsetSIPCallID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetSIPCallID(gomock.Any(), tt.channel.ID, tt.sipCallID).Return(nil)
+			mockChannel.EXPECT().SetSIPCallID(ctx, tt.channel.ID, tt.sipCallID).Return(nil)
 			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -1034,20 +1128,7 @@ func TestEventHandlerChannelVarsetSIPCallID(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelVarsetSIPDataItem(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerChannelVarsetSIPDataItem(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -1092,9 +1173,25 @@ func TestEventHandlerChannelVarsetSIPDataItem(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetDataItem(gomock.Any(), tt.channel.ID, tt.key, tt.value).Return(nil)
+			mockChannel.EXPECT().SetDataItem(ctx, tt.channel.ID, tt.key, tt.value).Return(nil)
 			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -1102,20 +1199,7 @@ func TestEventHandlerChannelVarsetSIPDataItem(t *testing.T) {
 	}
 }
 
-func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerChannelVarsetVBTYPE(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -1191,9 +1275,25 @@ func TestEventHandlerChannelVarsetVBTYPE(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetType(gomock.Any(), tt.channel.ID, tt.cType).Return(nil)
+			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, tt.cType).Return(nil)
 			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -121,7 +121,6 @@ func (h *callHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint6
 	}
 
 	return res, nil
-
 }
 
 // Get returns call.
