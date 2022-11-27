@@ -417,7 +417,7 @@ type RequestHandler interface {
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 
 	// call-manager channel
-	CallV1ChannelHealth(ctx context.Context, asteriskID, channelID string, delay, retryCount, retryCountMax int) error
+	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error
 
 	// call-manager confbridge
 	CallV1ConfbridgeCreate(ctx context.Context, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)

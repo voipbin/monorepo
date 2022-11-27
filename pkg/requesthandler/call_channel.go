@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // CallV1ChannelHealth sends the request for channel health-check
-func (r *requestHandler) CallV1ChannelHealth(ctx context.Context, asteriskID, channelID string, delay, retryCount, retryCountMax int) error {
-	encodeAsteriskID := url.QueryEscape(asteriskID)
-	uri := fmt.Sprintf("/v1/asterisks/%s/channels/%s/health-check", encodeAsteriskID, channelID)
+func (r *requestHandler) CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error {
+	uri := fmt.Sprintf("/v1/channels/%s/health-check", channelID)
 
 	type Data struct {
 		RetryCount    int `json:"retry_count"`
