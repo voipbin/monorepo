@@ -264,3 +264,65 @@ func TestCallsIDGET(t *testing.T) {
 		})
 	}
 }
+
+func Test_callsIDDELETE(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+		callID   uuid.UUID
+
+		responseCall *cmcall.WebhookMessage
+
+		expectRes string
+	}{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+
+			"/v1.0/calls/72709904-719c-11ed-94f7-b78b75ad5dce",
+			uuid.FromStringOrNil("72709904-719c-11ed-94f7-b78b75ad5dce"),
+
+			&cmcall.WebhookMessage{
+				ID: uuid.FromStringOrNil("72709904-719c-11ed-94f7-b78b75ad5dce"),
+			},
+
+			`{"id":"72709904-719c-11ed-94f7-b78b75ad5dce","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
+			mockSvc.EXPECT().CallDelete(req.Context(), &tt.customer, tt.callID).Return(tt.responseCall, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
