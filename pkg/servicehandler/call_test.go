@@ -165,6 +165,8 @@ func TestCallDelete(t *testing.T) {
 		customer *cscustomer.Customer
 		callID   uuid.UUID
 		call     *cmcall.Call
+
+		expectRes *cmcall.WebhookMessage
 	}{
 		{
 			"normal",
@@ -173,6 +175,11 @@ func TestCallDelete(t *testing.T) {
 			},
 			uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
 			&cmcall.Call{
+				ID:         uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+
+			&cmcall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
@@ -194,10 +201,15 @@ func TestCallDelete(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.call, nil)
-			mockReq.EXPECT().CallV1CallHangup(ctx, tt.callID).Return(nil, nil)
+			mockReq.EXPECT().CallV1CallHangup(ctx, tt.callID).Return(tt.call, nil)
 
-			if err := h.CallDelete(ctx, tt.customer, tt.callID); err != nil {
+			res, err := h.CallDelete(ctx, tt.customer, tt.callID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
 			}
 		})
 	}
