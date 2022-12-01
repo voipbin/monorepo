@@ -105,14 +105,14 @@ func callsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// hangup the call
-	err := serviceHandler.CallDelete(c.Request.Context(), &u, id)
+	res, err := serviceHandler.CallDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not hangup the call. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // callsGET handles GET /calls request.
