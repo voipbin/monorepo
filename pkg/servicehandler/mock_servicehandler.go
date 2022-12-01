@@ -250,11 +250,12 @@ func (mr *MockServiceHandlerMockRecorder) CallCreate(ctx, u, flowID, actions, so
 }
 
 // CallDelete mocks base method.
-func (m *MockServiceHandler) CallDelete(ctx context.Context, u *customer.Customer, callID uuid.UUID) error {
+func (m *MockServiceHandler) CallDelete(ctx context.Context, u *customer.Customer, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallDelete", ctx, u, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CallDelete indicates an expected call of CallDelete.

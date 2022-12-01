@@ -122,8 +122,9 @@ func (h *serviceHandler) CallGets(ctx context.Context, u *cscustomer.Customer, s
 // CallDelete sends a request to call-manager
 // to hangup the call.
 // it returns call if it succeed.
-func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "CallDelete",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"call_id":     callID,
@@ -133,21 +134,25 @@ func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer,
 	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// check call's ownership
 	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != c.CustomerID {
 		log.Info("The user has no permission for this call.")
-		return fmt.Errorf("customer has no permission")
+		return nil, fmt.Errorf("customer has no permission")
 	}
 
 	// send request
-	if _, err := h.reqHandler.CallV1CallHangup(ctx, callID); err != nil {
+	cc, err := h.reqHandler.CallV1CallHangup(ctx, callID)
+	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	// convert
+	res := cc.ConvertWebhookMessage()
+
+	return res, nil
 }
