@@ -61,7 +61,7 @@ func (h *confbridgeHandler) destroyBridge(ctx context.Context, bridgeID string) 
 	}
 
 	// hang up all the channels in the bridge
-	br, err := h.db.BridgeGet(ctx, bridgeID)
+	br, err := h.bridgeHandler.Get(ctx, bridgeID)
 	if err != nil {
 		log.Errorf("Could not get bridge info. err: %v", err)
 		return err

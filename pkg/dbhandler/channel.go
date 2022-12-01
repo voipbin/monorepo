@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -239,86 +238,6 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 	_ = h.ChannelSetToCache(ctx, res)
 
 	return res, nil
-}
-
-// ChannelIsExist returns true if the channel exist within timeout.
-func (h *handler) ChannelIsExist(id string, timeout time.Duration) bool {
-	// check the channel is exists
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	_, err := h.ChannelGetUntilTimeout(ctx, id)
-
-	return err == nil
-}
-
-// ChannelGetUntilTimeoutWithStasis gets the stasis channel until the ctx is timed out.
-func (h *handler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error) {
-
-	chanRes := make(chan *channel.Channel)
-	chanStop := make(chan bool)
-
-	go func() {
-		for {
-			select {
-			case <-chanStop:
-				return
-
-			default:
-				tmp, err := h.ChannelGet(ctx, id)
-				if err != nil || tmp.StasisName == "" {
-					time.Sleep(defaultDelayTimeout)
-					continue
-				}
-
-				chanRes <- tmp
-				return
-			}
-		}
-	}()
-
-	select {
-	case res := <-chanRes:
-		return res, nil
-
-	case <-ctx.Done():
-		chanStop <- true
-		return nil, fmt.Errorf("could not get channel. err: tiemout")
-	}
-}
-
-// ChannelGetUntilTimeout gets the channel until the ctx is timed out.
-func (h *handler) ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error) {
-
-	chanRes := make(chan *channel.Channel)
-	chanStop := make(chan bool)
-
-	go func() {
-		for {
-			select {
-			case <-chanStop:
-				return
-
-			default:
-				tmp, err := h.ChannelGet(ctx, id)
-				if err != nil {
-					time.Sleep(defaultDelayTimeout)
-					continue
-				}
-
-				chanRes <- tmp
-				return
-			}
-		}
-	}()
-
-	select {
-	case res := <-chanRes:
-		return res, nil
-	case <-ctx.Done():
-		chanStop <- true
-		return nil, fmt.Errorf("could not get channel. err: tiemout")
-	}
 }
 
 // ChannelSetData sets the data

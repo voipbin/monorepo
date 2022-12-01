@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
@@ -149,9 +150,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
-	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache)
+	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
+	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, bridgeHandler)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler)
-	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler)
+	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler)
 
 	// run ari event listener
 	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, ariEventHandler); err != nil {

@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 const contextCallJoin = "call-join"
@@ -25,7 +26,7 @@ func (h *confbridgeHandler) createEndpointTarget(ctx context.Context, cb *confbr
 	)
 
 	// get bridge
-	bridge, err := h.db.BridgeGet(ctx, cb.BridgeID)
+	bridge, err := h.bridgeHandler.Get(ctx, cb.BridgeID)
 	if err != nil {
 		log.Errorf("Could not get bridgie info. bridge: %s, err: %v", cb.BridgeID, err)
 		return "", err
@@ -142,13 +143,13 @@ func (h *confbridgeHandler) isBridgeExist(ctx context.Context, id string) bool {
 		return false
 	}
 
-	br, err := h.db.BridgeGet(ctx, id)
+	br, err := h.bridgeHandler.Get(ctx, id)
 	if err != nil {
 		logrus.Debugf("Could not get bridge info from the database. Consider this bridge does not exist. bridge: %s, err: %v", id, err)
 		return false
 	}
 
-	if br.TMDelete < defaultTimeStamp {
+	if br.TMDelete < dbhandler.DefaultTimeStamp {
 		logrus.WithFields(
 			logrus.Fields{
 				"bridge": br,
@@ -185,12 +186,7 @@ func (h *confbridgeHandler) createConfbridgeBridgeWithTimeout(ctx context.Contex
 		return err
 	}
 
-	// set timeout
-	tmpCTX, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	// get created bridge info within timeout
-	br, err := h.db.BridgeGetUntilTimeout(tmpCTX, bridgeID)
+	br, err := h.bridgeHandler.GetWithTimeout(ctx, bridgeID, timeout)
 	if err != nil {
 		log.Errorf("Could not get a created bridge within timeout. err: %v", err)
 		return err

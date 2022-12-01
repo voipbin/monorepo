@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 )
@@ -135,9 +134,9 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		b.ReferenceType,
 		b.ReferenceID.Bytes(),
 
-		b.TMCreate,
-		b.TMUpdate,
-		b.TMDelete,
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeCreate. err: %v", err)
@@ -228,7 +227,7 @@ func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, err
 }
 
 // BridgeEnd updates the bridge end.
-func (h *handler) BridgeEnd(ctx context.Context, id, timestamp string) error {
+func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 	// prepare
 	q := `
 	update bridges set
@@ -238,7 +237,8 @@ func (h *handler) BridgeEnd(ctx context.Context, id, timestamp string) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, h.util.GetCurTime(), timestamp, id)
+	ts := h.util.GetCurTime()
+	_, err := h.db.Exec(q, ts, ts, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeEnd. err: %v", err)
 	}
@@ -305,48 +305,4 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 	_ = h.BridgeUpdateToCache(ctx, id)
 
 	return nil
-}
-
-// BridgeGetUntilTimeout gets the bridge until the ctx is timed out.
-func (h *handler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error) {
-
-	chanRes := make(chan *bridge.Bridge)
-	chanStop := make(chan bool)
-
-	go func() {
-		for {
-			select {
-			case <-chanStop:
-				return
-
-			default:
-				tmp, err := h.BridgeGet(ctx, id)
-				if err != nil {
-					time.Sleep(defaultDelayTimeout)
-					continue
-				}
-				chanRes <- tmp
-				return
-			}
-		}
-	}()
-
-	select {
-	case res := <-chanRes:
-		return res, nil
-	case <-ctx.Done():
-		chanStop <- true
-		return nil, fmt.Errorf("could not get a bridge. BridgeGetUntilTimeout. err: %v", ctx.Err())
-	}
-}
-
-// BridgeIsExist returns true if the bridge exist within timeout.
-func (h *handler) BridgeIsExist(id string, timeout time.Duration) bool {
-	// check the channel is exists
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	_, err := h.BridgeGetUntilTimeout(ctx, id)
-
-	return err == nil
 }

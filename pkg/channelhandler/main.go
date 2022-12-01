@@ -4,6 +4,7 @@ package channelhandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
@@ -47,6 +48,7 @@ type ChannelHandler interface {
 		direction channel.Direction,
 	) (*channel.Channel, error)
 	Get(ctx context.Context, id string) (*channel.Channel, error)
+	GetWithTimeout(ctx context.Context, id string, timeout time.Duration) (*channel.Channel, error)
 	Delete(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)
 	SetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	SetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
@@ -67,6 +69,11 @@ type channelHandler struct {
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 }
+
+// list of default values
+const (
+	defaultDelayTimeout = time.Millisecond * 150
+)
 
 var (
 	metricsNamespace = "call_manager"

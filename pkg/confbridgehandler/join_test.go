@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -50,16 +51,18 @@ func Test_createEndpointTarget(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := confbridgeHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
-				cache:      mockCache,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				bridgeHandler: mockBridge,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeGet(ctx, tt.confbridge.BridgeID).Return(tt.bridge, nil)
+			mockBridge.EXPECT().Get(ctx, tt.confbridge.BridgeID).Return(tt.bridge, nil)
 			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.bridge.AsteriskID).Return(tt.asteriskAddress, nil)
 
 			res, err := h.createEndpointTarget(ctx, tt.confbridge)
@@ -100,7 +103,7 @@ func Test_Join(t *testing.T) {
 			&bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "a5c525ec-dca0-11ea-b139-17780451d9da",
-				TMDelete:   defaultTimeStamp,
+				TMDelete:   dbhandler.DefaultTimeStamp,
 			},
 
 			map[string]string{
@@ -122,7 +125,7 @@ func Test_Join(t *testing.T) {
 			&bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "214c8606-38e4-11ec-8960-0fff1696a6b1",
-				TMDelete:   defaultTimeStamp,
+				TMDelete:   dbhandler.DefaultTimeStamp,
 			},
 
 			map[string]string{
@@ -145,7 +148,7 @@ func Test_Join(t *testing.T) {
 			&bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "732f7480-972e-11ec-bce4-0f6c7a174b02",
-				TMDelete:   defaultTimeStamp,
+				TMDelete:   dbhandler.DefaultTimeStamp,
 			},
 
 			map[string]string{
@@ -164,12 +167,14 @@ func Test_Join(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := confbridgeHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				cache:         mockCache,
 				notifyHandler: mockNotify,
+				bridgeHandler: mockBridge,
 			}
 
 			ctx := context.Background()
@@ -181,16 +186,16 @@ func Test_Join(t *testing.T) {
 				mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			}
 			if tt.confbridge.BridgeID != "" {
-				mockDB.EXPECT().BridgeGet(ctx, tt.confbridge.BridgeID).Return(tt.bridge, nil)
+				mockBridge.EXPECT().Get(ctx, tt.confbridge.BridgeID).Return(tt.bridge, nil)
 				mockReq.EXPECT().AstBridgeGet(ctx, tt.bridge.AsteriskID, tt.bridge.ID).Return(tt.bridge, nil)
 			} else {
 				// todo: check bridge creation
 				mockReq.EXPECT().AstBridgeCreate(ctx, requesthandler.AsteriskIDConference, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing}).Return(nil)
-				mockDB.EXPECT().BridgeGetUntilTimeout(gomock.Any(), gomock.Any()).Return(tt.bridge, nil)
+				mockBridge.EXPECT().GetWithTimeout(ctx, gomock.Any(), gomock.Any()).Return(tt.bridge, nil)
 				mockDB.EXPECT().ConfbridgeSetBridgeID(ctx, gomock.Any(), tt.bridge.ID).Return(nil)
 				mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
 			}
-			mockDB.EXPECT().BridgeGet(ctx, gomock.Any()).Return(tt.bridge, nil)
+			mockBridge.EXPECT().Get(ctx, tt.confbridge.BridgeID).Return(tt.bridge, nil)
 			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.bridge.AsteriskID).Return("test.com", nil)
 
 			mockReq.EXPECT().AstChannelCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), gomock.Any(), "", "vp8", "", tt.expectReqVariables).Return(&channel.Channel{}, nil)

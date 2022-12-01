@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Create is handy function for creating a confbridge.
@@ -28,9 +29,9 @@ func (h *confbridgeHandler) Create(ctx context.Context, confbridgeType confbridg
 		RecordingIDs:   []uuid.UUID{},
 		ChannelCallIDs: map[string]uuid.UUID{},
 
-		TMCreate: getCurTime(),
-		TMUpdate: defaultTimeStamp,
-		TMDelete: defaultTimeStamp,
+		TMCreate: h.util.GetCurTime(),
+		TMUpdate: dbhandler.DefaultTimeStamp,
+		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	// create a confbridge

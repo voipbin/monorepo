@@ -5,8 +5,6 @@ package confbridgehandler
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -16,13 +14,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-)
-
-// List of default values
-const (
-	defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 // Contexts of confbridge types
@@ -48,10 +43,12 @@ type ConfbridgeHandler interface {
 
 // confbridgeHandler structure for service handle
 type confbridgeHandler struct {
+	util          util.Util
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
 	cache         cachehandler.CacheHandler
+	bridgeHandler bridgehandler.BridgeHandler
 }
 
 var (
@@ -91,24 +88,24 @@ func init() {
 }
 
 // NewConfbridgeHandler returns new service handler
-func NewConfbridgeHandler(req requesthandler.RequestHandler, notify notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) ConfbridgeHandler {
+func NewConfbridgeHandler(
+	req requesthandler.RequestHandler,
+	notify notifyhandler.NotifyHandler,
+	db dbhandler.DBHandler,
+	cache cachehandler.CacheHandler,
+	bridgeHandler bridgehandler.BridgeHandler,
+) ConfbridgeHandler {
 
 	h := &confbridgeHandler{
+		util:          util.NewUtil(),
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,
 		cache:         cache,
+		bridgeHandler: bridgeHandler,
 	}
 
 	return h
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
 
 // generateBridgeName generates the bridge name for the confbridge

@@ -41,7 +41,7 @@ func Test_Joined(t *testing.T) {
 			&bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
-				TMDelete:   defaultTimeStamp,
+				TMDelete:   dbhandler.DefaultTimeStamp,
 			},
 			uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
 			uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),

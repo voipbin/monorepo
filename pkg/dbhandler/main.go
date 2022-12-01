@@ -6,7 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	uuid "github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -28,12 +27,10 @@ type DBHandler interface {
 	// bridges
 	BridgeAddChannelID(ctx context.Context, id, channelID string) error
 	BridgeCreate(ctx context.Context, b *bridge.Bridge) error
-	BridgeEnd(ctx context.Context, id, timestamp string) error
+	BridgeEnd(ctx context.Context, id string) error
 	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error)
-	BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error)
-	BridgeIsExist(id string, timeout time.Duration) bool
 	BridgeRemoveChannelID(ctx context.Context, id, channelID string) error
 	BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error
 	BridgeUpdateToCache(ctx context.Context, id string) error
@@ -76,9 +73,6 @@ type DBHandler interface {
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelIsExist(id string, timeout time.Duration) bool
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
 	ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error
 	ChannelSetStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) error
@@ -136,8 +130,7 @@ var (
 
 // list of default values
 const (
-	defaultDelayTimeout = time.Millisecond * 150
-	DefaultTimeStamp    = "9999-01-01 00:00:00.000000" //nolint:varcheck,deadcode // this is fine
+	DefaultTimeStamp = "9999-01-01 00:00:00.000000" //nolint:varcheck,deadcode // this is fine
 )
 
 // NewHandler creates DBHandler

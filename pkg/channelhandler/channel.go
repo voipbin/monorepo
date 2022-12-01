@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -306,4 +307,39 @@ func (h *channelHandler) UpdateBridgeID(ctx context.Context, id string, bridgeID
 	}
 
 	return res, nil
+}
+
+// GetWithTimeout gets the channel with for given timeout.
+func (h *channelHandler) GetWithTimeout(ctx context.Context, id string, timeout time.Duration) (*channel.Channel, error) {
+	cctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	chanRes := make(chan *channel.Channel)
+	chanStop := make(chan bool)
+
+	go func() {
+		for {
+			select {
+			case <-chanStop:
+				return
+
+			default:
+				tmp, err := h.Get(cctx, id)
+				if err != nil {
+					time.Sleep(defaultDelayTimeout)
+					continue
+				}
+				chanRes <- tmp
+				return
+			}
+		}
+	}()
+
+	select {
+	case res := <-chanRes:
+		return res, nil
+	case <-cctx.Done():
+		chanStop <- true
+		return nil, fmt.Errorf("could not get a channel within timeout. GetUntilTimeout. err: %v", cctx.Err())
+	}
 }
