@@ -8,7 +8,6 @@ import (
 	context "context"
 	sql "database/sql"
 	reflect "reflect"
-	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -75,17 +74,17 @@ func (mr *MockDBHandlerMockRecorder) BridgeCreate(ctx, b interface{}) *gomock.Ca
 }
 
 // BridgeEnd mocks base method.
-func (m *MockDBHandler) BridgeEnd(ctx context.Context, id, timestamp string) error {
+func (m *MockDBHandler) BridgeEnd(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BridgeEnd", ctx, id, timestamp)
+	ret := m.ctrl.Call(m, "BridgeEnd", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // BridgeEnd indicates an expected call of BridgeEnd.
-func (mr *MockDBHandlerMockRecorder) BridgeEnd(ctx, id, timestamp interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) BridgeEnd(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeEnd", reflect.TypeOf((*MockDBHandler)(nil).BridgeEnd), ctx, id, timestamp)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeEnd", reflect.TypeOf((*MockDBHandler)(nil).BridgeEnd), ctx, id)
 }
 
 // BridgeGet mocks base method.
@@ -131,35 +130,6 @@ func (m *MockDBHandler) BridgeGetFromDB(ctx context.Context, id string) (*bridge
 func (mr *MockDBHandlerMockRecorder) BridgeGetFromDB(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).BridgeGetFromDB), ctx, id)
-}
-
-// BridgeGetUntilTimeout mocks base method.
-func (m *MockDBHandler) BridgeGetUntilTimeout(ctx context.Context, id string) (*bridge.Bridge, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BridgeGetUntilTimeout", ctx, id)
-	ret0, _ := ret[0].(*bridge.Bridge)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BridgeGetUntilTimeout indicates an expected call of BridgeGetUntilTimeout.
-func (mr *MockDBHandlerMockRecorder) BridgeGetUntilTimeout(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeGetUntilTimeout", reflect.TypeOf((*MockDBHandler)(nil).BridgeGetUntilTimeout), ctx, id)
-}
-
-// BridgeIsExist mocks base method.
-func (m *MockDBHandler) BridgeIsExist(id string, timeout time.Duration) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BridgeIsExist", id, timeout)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// BridgeIsExist indicates an expected call of BridgeIsExist.
-func (mr *MockDBHandlerMockRecorder) BridgeIsExist(id, timeout interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeIsExist", reflect.TypeOf((*MockDBHandler)(nil).BridgeIsExist), id, timeout)
 }
 
 // BridgeRemoveChannelID mocks base method.
@@ -701,50 +671,6 @@ func (m *MockDBHandler) ChannelGetFromDB(ctx context.Context, id string) (*chann
 func (mr *MockDBHandlerMockRecorder) ChannelGetFromDB(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetFromDB), ctx, id)
-}
-
-// ChannelGetUntilTimeout mocks base method.
-func (m *MockDBHandler) ChannelGetUntilTimeout(ctx context.Context, id string) (*channel.Channel, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelGetUntilTimeout", ctx, id)
-	ret0, _ := ret[0].(*channel.Channel)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChannelGetUntilTimeout indicates an expected call of ChannelGetUntilTimeout.
-func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeout(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeout", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeout), ctx, id)
-}
-
-// ChannelGetUntilTimeoutWithStasis mocks base method.
-func (m *MockDBHandler) ChannelGetUntilTimeoutWithStasis(ctx context.Context, id string) (*channel.Channel, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelGetUntilTimeoutWithStasis", ctx, id)
-	ret0, _ := ret[0].(*channel.Channel)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChannelGetUntilTimeoutWithStasis indicates an expected call of ChannelGetUntilTimeoutWithStasis.
-func (mr *MockDBHandlerMockRecorder) ChannelGetUntilTimeoutWithStasis(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetUntilTimeoutWithStasis", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetUntilTimeoutWithStasis), ctx, id)
-}
-
-// ChannelIsExist mocks base method.
-func (m *MockDBHandler) ChannelIsExist(id string, timeout time.Duration) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelIsExist", id, timeout)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// ChannelIsExist indicates an expected call of ChannelIsExist.
-func (mr *MockDBHandlerMockRecorder) ChannelIsExist(id, timeout interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelIsExist", reflect.TypeOf((*MockDBHandler)(nil).ChannelIsExist), id, timeout)
 }
 
 // ChannelSetBridgeID mocks base method.

@@ -7,6 +7,7 @@ package channelhandler
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -79,6 +80,21 @@ func (m *MockChannelHandler) Get(ctx context.Context, id string) (*channel.Chann
 func (mr *MockChannelHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockChannelHandler)(nil).Get), ctx, id)
+}
+
+// GetWithTimeout mocks base method.
+func (m *MockChannelHandler) GetWithTimeout(ctx context.Context, id string, timeout time.Duration) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWithTimeout", ctx, id, timeout)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWithTimeout indicates an expected call of GetWithTimeout.
+func (mr *MockChannelHandlerMockRecorder) GetWithTimeout(ctx, id, timeout interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWithTimeout", reflect.TypeOf((*MockChannelHandler)(nil).GetWithTimeout), ctx, id, timeout)
 }
 
 // HealthCheck mocks base method.

@@ -11,29 +11,31 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestEventHandlerBridgeCreated(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerBridgeCreated(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		event       *ari.BridgeCreated
-		expectEvent *bridge.Bridge
+		name  string
+		event *ari.BridgeCreated
+
+		expectAsteriskID    string
+		expectID            string
+		expectName          string
+		expectType          bridge.Type
+		expectTech          bridge.Tech
+		expectClass         string
+		expectCreator       string
+		expectVideoMode     string
+		expectVideoSourceID string
+		expectChannelIDs    []string
+		expectReferenceType bridge.ReferenceType
+		expectReferenceID   uuid.UUID
+
+		responseBridge *bridge.Bridge
 	}{
 		{
 			"normal",
@@ -61,32 +63,61 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 				},
 			},
 
+			"42:01:0a:a4:00:05",
+			"4625f6e6-6330-48ea-9d93-5cca714322b3",
+			"echo",
+			bridge.TypeMixing,
+			bridge.TechSimple,
+			"stasis",
+			"Stasis",
+			"none",
+			"",
+			[]string{},
+			bridge.ReferenceTypeUnknown,
+			uuid.Nil,
+
 			&bridge.Bridge{
-				ID:         "4625f6e6-6330-48ea-9d93-5cca714322b3",
-				AsteriskID: "42:01:0a:a4:00:05",
-				Name:       "echo",
-				Type:       bridge.TypeMixing,
-				Tech:       bridge.TechSimple,
-				Class:      "stasis",
-				Creator:    "Stasis",
-				VideoMode:  "none",
-
-				ChannelIDs: []string{},
-
-				ReferenceType: bridge.ReferenceTypeUnknown,
-				ReferenceID:   uuid.Nil,
-
-				TMCreate: "2020-05-09T12:41:43.591",
-				TMUpdate: defaultTimeStamp,
-				TMDelete: defaultTimeStamp,
+				ID: "4625f6e6-6330-48ea-9d93-5cca714322b3",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := eventHandler{
+				db:            mockDB,
+				rabbitSock:    mockSock,
+				reqHandler:    mockRequest,
+				callHandler:   mockCall,
+				bridgeHandler: mockBridge,
+			}
+
 			ctx := context.Background()
-			mockDB.EXPECT().BridgeCreate(gomock.Any(), tt.expectEvent)
+
+			mockBridge.EXPECT().Create(
+				ctx,
+				tt.expectAsteriskID,
+				tt.expectID,
+				tt.expectName,
+				tt.expectType,
+				tt.expectTech,
+				tt.expectClass,
+				tt.expectCreator,
+				tt.expectVideoMode,
+				tt.expectVideoSourceID,
+				tt.expectChannelIDs,
+				tt.expectReferenceType,
+				tt.expectReferenceID,
+			).Return(tt.responseBridge, nil)
 
 			if err := h.EventHandlerBridgeCreated(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -95,26 +126,16 @@ func TestEventHandlerBridgeCreated(t *testing.T) {
 	}
 }
 
-func TestEventHandlerBridgeDestroyed(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
+func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 
 	tests := []struct {
-		name            string
+		name string
+
 		event           *ari.BridgeDestroyed
 		expectBridgeID  string
 		expectTimestamp string
+
+		responseBridge *bridge.Bridge
 	}{
 		{
 			"normal",
@@ -144,15 +165,36 @@ func TestEventHandlerBridgeDestroyed(t *testing.T) {
 			},
 			"17174a5e-91f6-11ea-b637-fb223e63cedf",
 			"2020-05-04T00:27:59.747",
+
+			&bridge.Bridge{
+				ID: "17174a5e-91f6-11ea-b637-fb223e63cedf",
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := eventHandler{
+				db:            mockDB,
+				rabbitSock:    mockSock,
+				reqHandler:    mockRequest,
+				callHandler:   mockCall,
+				bridgeHandler: mockBridge,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeIsExist(tt.expectBridgeID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().BridgeEnd(gomock.Any(), tt.expectBridgeID, tt.expectTimestamp)
+			mockBridge.EXPECT().GetWithTimeout(ctx, tt.expectBridgeID, defaultExistTimeout).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().Delete(ctx, tt.expectBridgeID).Return(tt.responseBridge, nil)
 
 			if err := h.EventHandlerBridgeDestroyed(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

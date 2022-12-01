@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
@@ -53,12 +54,8 @@ type eventHandler struct {
 	callHandler       callhandler.CallHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
 	channelHandler    channelhandler.ChannelHandler
+	bridgeHandler     bridgehandler.BridgeHandler
 }
-
-// List of default values
-const (
-	defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
-)
 
 // list of event types
 const (
@@ -78,6 +75,7 @@ func NewEventHandler(
 	callHandler callhandler.CallHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
+	brideHandler bridgehandler.BridgeHandler,
 ) ARIEventHandler {
 	h := &eventHandler{
 		rabbitSock:        sock,
@@ -88,6 +86,7 @@ func NewEventHandler(
 		callHandler:       callHandler,
 		confbridgeHandler: confbridgeHandler,
 		channelHandler:    channelHandler,
+		bridgeHandler:     brideHandler,
 	}
 
 	return h

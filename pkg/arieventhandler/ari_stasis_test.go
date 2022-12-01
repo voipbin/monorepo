@@ -11,23 +11,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func TestEventHandlerStasisStart(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
 
 	tests := []struct {
 		name  string
@@ -36,6 +24,8 @@ func TestEventHandlerStasisStart(t *testing.T) {
 		expectChannelID  string
 		expactStasisData map[string]string
 		expectStasisname string
+
+		responseChannel *channel.Channel
 	}{
 		{
 			"normal",
@@ -78,18 +68,39 @@ func TestEventHandlerStasisStart(t *testing.T) {
 				"source":  "213.127.79.161",
 			},
 			"voipbin",
+
+			&channel.Channel{
+				ID:   "1587774438.2390",
+				Name: "PJSIP/in-voipbin-00000948",
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				callHandler:    mockCall,
+				channelHandler: mockChannel,
+			}
 
 			ctx := context.Background()
 
 			channel := &channel.Channel{
 				Data: map[string]interface{}{},
 			}
-			mockDB.EXPECT().ChannelIsExist(tt.expectChannelID, gomock.Any()).Return(true)
+
+			mockChannel.EXPECT().GetWithTimeout(ctx, tt.expectChannelID, defaultExistTimeout).Return(tt.responseChannel, nil)
 			mockDB.EXPECT().ChannelSetStasisNameAndStasisData(gomock.Any(), tt.expectChannelID, tt.expectStasisname, tt.expactStasisData).Return(nil)
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(channel, nil)
 			mockCall.EXPECT().ARIStasisStart(gomock.Any(), channel, tt.expactStasisData).Return(nil)

@@ -20,11 +20,13 @@ func (h *eventHandler) EventHandlerStasisStart(ctx context.Context, evt interfac
 			"stasis_name": e.Application,
 		})
 
-	if !h.db.ChannelIsExist(e.Channel.ID, defaultExistTimeout) {
+	tmp, err := h.channelHandler.GetWithTimeout(ctx, e.Channel.ID, defaultExistTimeout)
+	if err != nil {
 		log.Error("The given channel is not in our database.")
 		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)
 		return fmt.Errorf("no channel found")
 	}
+	log.WithField("channel", tmp).Debugf("Found channel info. channel_id: %s", tmp.ID)
 
 	// get stasis name and stasis data
 	stasisName := e.Application

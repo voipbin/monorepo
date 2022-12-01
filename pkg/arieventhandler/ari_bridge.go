@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -13,14 +15,33 @@ import (
 // EventHandlerBridgeCreated handles BridgeCreated ari event.
 func (h *eventHandler) EventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.BridgeCreated)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "EventHandlerBridgeCreated",
+		"asterisk_id": e.AsteriskID,
+		"bridge_id":   e.Bridge.ID,
+	})
 
-	b := bridge.NewBridgeByBridgeCreated(e)
-
-	b.TMUpdate = defaultTimeStamp
-	b.TMDelete = defaultTimeStamp
-	if err := h.db.BridgeCreate(ctx, b); err != nil {
+	br, err := h.bridgeHandler.Create(
+		ctx,
+		e.AsteriskID,
+		e.Bridge.ID,
+		e.Bridge.Name,
+		bridge.Type(e.Bridge.BridgeType),
+		bridge.Tech(e.Bridge.Technology),
+		e.Bridge.BridgeClass,
+		e.Bridge.Creator,
+		e.Bridge.VideoMode,
+		e.Bridge.VideoSourceID,
+		[]string{},
+		bridge.ReferenceTypeUnknown,
+		uuid.Nil,
+	)
+	if err != nil {
+		log.Errorf("Could not create a new bridge. err: %v", err)
 		return err
 	}
+
+	log.WithField("bridge", br).Debugf("Created a new bridge. bridge_id: %s", br.ID)
 
 	return nil
 }
@@ -37,14 +58,18 @@ func (h *eventHandler) EventHandlerBridgeDestroyed(ctx context.Context, evt inte
 			"stasis":   e.Application,
 		})
 
-	if !h.db.BridgeIsExist(e.Bridge.ID, defaultExistTimeout) {
+	br, err := h.bridgeHandler.GetWithTimeout(ctx, e.Bridge.ID, defaultExistTimeout)
+	if err != nil {
 		log.Error("The given bridge is not in our database.")
 		return fmt.Errorf("no bridge found")
 	}
 
-	if err := h.db.BridgeEnd(ctx, e.Bridge.ID, string(e.Timestamp)); err != nil {
+	tmp, err := h.bridgeHandler.Delete(ctx, br.ID)
+	if err != nil {
+		log.Errorf("Coudl not delete the bridge. err: %v", err)
 		return err
 	}
+	log.WithField("bridge", tmp).Debugf("Deleted bridge. bridge_id: %s", tmp.ID)
 
 	return nil
 }

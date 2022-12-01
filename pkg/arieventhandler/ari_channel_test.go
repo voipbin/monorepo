@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
@@ -477,6 +478,7 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := eventHandler{
 				db:                mockDB,
@@ -485,15 +487,14 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
 				channelHandler:    mockChannel,
+				bridgeHandler:     mockBridge,
 			}
 
 			ctx := context.Background()
 
 			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, tt.bridge.ID).Return(tt.channel, nil)
-			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().BridgeAddChannelID(gomock.Any(), tt.bridge.ID, tt.channel.ID)
-
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(tt.bridge, nil)
+			mockBridge.EXPECT().GetWithTimeout(ctx, tt.bridge.ID, defaultExistTimeout).Return(tt.bridge, nil)
+			mockBridge.EXPECT().AddChannelID(ctx, tt.bridge.ID, tt.channel.ID).Return(tt.bridge, nil)
 
 			if tt.channel.Type == channel.TypeConfbridge {
 				mockConfbridge.EXPECT().ARIChannelEnteredBridge(gomock.Any(), tt.channel, tt.bridge).Return(nil)
@@ -723,6 +724,7 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := eventHandler{
 				db:                mockDB,
@@ -731,14 +733,14 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 				callHandler:       mockCall,
 				confbridgeHandler: mockConfbridge,
 				channelHandler:    mockChannel,
+				bridgeHandler:     mockBridge,
 			}
 
 			ctx := context.Background()
 
 			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, "").Return(tt.channel, nil)
-			mockDB.EXPECT().BridgeIsExist(tt.bridge.ID, defaultExistTimeout).Return(true)
-			mockDB.EXPECT().BridgeRemoveChannelID(ctx, tt.bridge.ID, tt.channel.ID).Return(nil)
-			mockDB.EXPECT().BridgeGet(ctx, tt.bridge.ID).Return(tt.bridge, nil)
+			mockBridge.EXPECT().GetWithTimeout(ctx, tt.bridge.ID, defaultExistTimeout).Return(tt.bridge, nil)
+			mockBridge.EXPECT().RemoveChannelID(ctx, tt.bridge.ID, tt.channel.ID).Return(tt.bridge, nil)
 
 			switch tt.bridge.ReferenceType {
 			case bridge.ReferenceTypeConfbridge, bridge.ReferenceTypeConfbridgeSnoop:
