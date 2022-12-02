@@ -37,7 +37,6 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 	}
 
 	// create activeflow
-	// curTime := h.util.GetCurTime()
 	tmpAF := &activeflow.Activeflow{
 		ID: activeflowID,
 
@@ -66,10 +65,6 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 
 		ExecuteCount:    0,
 		ExecutedActions: []action.Action{},
-
-		// TMCreate: curTime,
-		// TMUpdate: curTime,
-		// TMDelete: dbhandler.DefaultTimeStamp,
 	}
 	if err := h.db.ActiveflowCreate(ctx, tmpAF); err != nil {
 		log.Errorf("Could not create the active flow. err: %v", err)
@@ -85,14 +80,14 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 	log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
 
 	// get created active flow
-	af, err := h.db.ActiveflowGet(ctx, activeflowID)
+	res, err := h.db.ActiveflowGet(ctx, activeflowID)
 	if err != nil {
 		log.Errorf("Could not get created active flow. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveflowCreated, af)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowCreated, res)
 
-	return af, nil
+	return res, nil
 }
 
 // SetForwardActionID sets the forward action id of the call.
@@ -171,9 +166,9 @@ func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUI
 	af.ForwardActionID = action.IDEmpty
 	af.ExecuteCount++
 
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active-flow's current action. err: %v", err)
-		return nil, err
+	if errUpdate := h.db.ActiveflowUpdate(ctx, af); errUpdate != nil {
+		log.Errorf("Could not update the active-flow's current action. err: %v", errUpdate)
+		return nil, errUpdate
 	}
 
 	// get updated activeflow
@@ -200,26 +195,30 @@ func (h *activeflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activefl
 	}
 
 	// get deleted activeflow
-	af, err := h.db.ActiveflowGet(ctx, id)
+	res, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get activeflow. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveflowDeleted, af)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowDeleted, res)
 
-	return af, nil
+	return res, nil
 }
 
 // Get returns activeflow
 func (h *activeflowHandler) Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
-	log := logrus.WithField("func", "Get")
-	resFlow, err := h.db.ActiveflowGet(ctx, id)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Get",
+		"activeflow_id": id,
+	})
+
+	res, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get activeflow. err: %v", err)
 		return nil, err
 	}
 
-	return resFlow, nil
+	return res, nil
 }
 
 // FlowGets returns list of activeflows
