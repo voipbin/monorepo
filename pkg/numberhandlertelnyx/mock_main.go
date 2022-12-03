@@ -68,12 +68,11 @@ func (mr *MockNumberHandlerTelnyxMockRecorder) GetAvailableNumbers(countyCode, l
 }
 
 // ReleaseNumber mocks base method.
-func (m *MockNumberHandlerTelnyx) ReleaseNumber(ctx context.Context, num *number.Number) (*number.Number, error) {
+func (m *MockNumberHandlerTelnyx) ReleaseNumber(ctx context.Context, num *number.Number) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReleaseNumber", ctx, num)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ReleaseNumber indicates an expected call of ReleaseNumber.

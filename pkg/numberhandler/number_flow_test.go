@@ -11,21 +11,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/util"
 )
 
-func TestRemoveNumbersFlowID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
-
-	h := numberHandler{
-		reqHandler:       mockReq,
-		db:               mockDB,
-		numHandlerTelnyx: mockTelnyx,
-	}
+func Test_RemoveNumbersFlowID(t *testing.T) {
 
 	type test struct {
 		name               string
@@ -71,13 +60,29 @@ func TestRemoveNumbersFlowID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := util.NewMockUtil(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			h := numberHandler{
+				util:                mockUtil,
+				reqHandler:          mockReq,
+				db:                  mockDB,
+				numberHandlerTelnyx: mockTelnyx,
+			}
+
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockDB.EXPECT().NumberGetsByCallFlowID(gomock.Any(), tt.flowID, gomock.Any(), gomock.Any()).Return(tt.numbersCallFlow, nil)
 			for _, num := range tt.numbersCallFlow {
 				mockDB.EXPECT().NumberUpdateCallFlowID(gomock.Any(), num.ID, uuid.Nil)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 			mockDB.EXPECT().NumberGetsByMessageFlowID(gomock.Any(), tt.flowID, gomock.Any(), gomock.Any()).Return(tt.numbersMessageFlow, nil)
 			for _, num := range tt.numbersMessageFlow {
 				mockDB.EXPECT().NumberUpdateMessageFlowID(gomock.Any(), num.ID, uuid.Nil)

@@ -111,18 +111,6 @@ func Test_CreateNumber(t *testing.T) {
 }
 
 func TestReleaseNumber(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockExternal := requestexternal.NewMockRequestExternal(mc)
-
-	h := numberHandlerTelnyx{
-		reqHandler:      mockReq,
-		db:              mockDB,
-		requestExternal: mockExternal,
-	}
 
 	type test struct {
 		name   string
@@ -141,13 +129,25 @@ func TestReleaseNumber(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockExternal := requestexternal.NewMockRequestExternal(mc)
+
+			h := numberHandlerTelnyx{
+				reqHandler:      mockReq,
+				db:              mockDB,
+				requestExternal: mockExternal,
+			}
+
 			ctx := context.Background()
 
 			mockExternal.EXPECT().TelnyxPhoneNumbersIDDelete(tt.number.ProviderReferenceID)
-			mockDB.EXPECT().NumberDelete(gomock.Any(), tt.number.ID)
-			mockDB.EXPECT().NumberGet(gomock.Any(), tt.number.ID)
-			_, err := h.ReleaseNumber(ctx, tt.number)
-			if err != nil {
+			// mockDB.EXPECT().NumberDelete(gomock.Any(), tt.number.ID)
+			// mockDB.EXPECT().NumberGet(gomock.Any(), tt.number.ID)
+			if err := h.ReleaseNumber(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

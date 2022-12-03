@@ -1,5 +1,7 @@
 package listenhandler
 
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
 import (
 	"fmt"
 	"net/url"

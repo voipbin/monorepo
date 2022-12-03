@@ -5,8 +5,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 )
 
 // RemoveNumbersFlowID removes the flow_id from the all of Numbers
@@ -20,7 +18,8 @@ func (h *numberHandler) RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUI
 
 	// removing call_flow_id
 	for {
-		numbs, err := h.db.NumberGetsByCallFlowID(ctx, flowID, 100, dbhandler.GetCurTime())
+		ts := h.util.GetCurTime()
+		numbs, err := h.db.NumberGetsByCallFlowID(ctx, flowID, 100, ts)
 		if err != nil || len(numbs) <= 0 {
 			break
 		}
@@ -40,7 +39,8 @@ func (h *numberHandler) RemoveNumbersFlowID(ctx context.Context, flowID uuid.UUI
 
 	// removing message_flow_id
 	for {
-		numbs, err := h.db.NumberGetsByMessageFlowID(ctx, flowID, 100, dbhandler.GetCurTime())
+		ts := h.util.GetCurTime()
+		numbs, err := h.db.NumberGetsByMessageFlowID(ctx, flowID, 100, ts)
 		if err != nil || len(numbs) <= 0 {
 			break
 		}

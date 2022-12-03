@@ -32,7 +32,7 @@ func (h *listenHandler) processV1NumbersPost(req *rabbitmqhandler.Request) (*rab
 		},
 	)
 
-	numb, err := h.numberHandler.CreateNumber(ctx, reqData.CustomerID, reqData.Number, reqData.CallFlowID, reqData.MessageFlowID, reqData.Name, reqData.Detail)
+	numb, err := h.numberHandler.Create(ctx, reqData.CustomerID, reqData.Number, reqData.CallFlowID, reqData.MessageFlowID, reqData.Name, reqData.Detail)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil
@@ -68,7 +68,7 @@ func (h *listenHandler) processV1NumbersIDDelete(req *rabbitmqhandler.Request) (
 	log.Debugf("Executing processV1OrderNumbersIDDelete. number: %s", id)
 
 	ctx := context.Background()
-	number, err := h.numberHandler.ReleaseNumber(ctx, id)
+	number, err := h.numberHandler.Delete(ctx, id)
 	if err != nil {
 		log.Debugf("Could not delete the number. number: %s, err: %v", id, err)
 		return simpleResponse(500), nil
@@ -104,7 +104,7 @@ func (h *listenHandler) processV1NumbersIDGet(req *rabbitmqhandler.Request) (*ra
 	log.Debugf("Executing processV1OrderNumbersIDGet. number: %s", id)
 
 	ctx := context.Background()
-	number, err := h.numberHandler.GetNumber(ctx, id)
+	number, err := h.numberHandler.Get(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a number. number: %s, err: %v", id, err)
 		return simpleResponse(500), nil
@@ -184,7 +184,7 @@ func (h *listenHandler) processV1NumbersNumberGet(req *rabbitmqhandler.Request) 
 	log.Debugf("Executing processV1OrderNumbersNumberGet. number: %s", num)
 
 	ctx := context.Background()
-	number, err := h.numberHandler.GetNumberByNumber(ctx, num)
+	number, err := h.numberHandler.GetByNumber(ctx, num)
 	if err != nil {
 		log.Debugf("Could not get a number. number: %s, err: %v", num, err)
 		return simpleResponse(500), nil
@@ -228,7 +228,7 @@ func (h *listenHandler) processV1NumbersGet(req *rabbitmqhandler.Request) (*rabb
 	})
 
 	ctx := context.Background()
-	numbers, err := h.numberHandler.GetNumbers(ctx, customerID, pageSize, pageToken)
+	numbers, err := h.numberHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get numbers. err: %v", err)
 		return simpleResponse(500), nil

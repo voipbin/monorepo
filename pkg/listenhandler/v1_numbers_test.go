@@ -12,17 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
 )
 
-func TestProcessV1NumbersPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockNumber := numberhandler.NewMockNumberHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:    mockSock,
-		numberHandler: mockNumber,
-	}
+func Test_processV1NumbersPost(t *testing.T) {
 
 	type test struct {
 		name string
@@ -80,8 +70,18 @@ func TestProcessV1NumbersPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockNumber.EXPECT().CreateNumber(gomock.Any(), tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.createdNumber, nil)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:    mockSock,
+				numberHandler: mockNumber,
+			}
+
+			mockNumber.EXPECT().Create(gomock.Any(), tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.createdNumber, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -147,7 +147,7 @@ func TestProcessV1NumbersIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().ReleaseNumber(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			mockNumber.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -213,7 +213,7 @@ func TestProcessV1NumbersIDGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetNumber(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			mockNumber.EXPECT().Get(gomock.Any(), tt.id).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -279,7 +279,7 @@ func TestProcessV1NumbersNumberGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetNumberByNumber(gomock.Any(), tt.num).Return(tt.resultData, nil)
+			mockNumber.EXPECT().GetByNumber(gomock.Any(), tt.num).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -395,7 +395,7 @@ func TestProcessV1NumbersGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetNumbers(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
+			mockNumber.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

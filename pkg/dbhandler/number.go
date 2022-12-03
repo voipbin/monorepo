@@ -32,6 +32,7 @@ const (
 		emergency_enabled,
 
 		tm_purchase,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -64,6 +65,7 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 		&res.EmergencyEnabled,
 
 		&res.TMPurchase,
+
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
@@ -96,6 +98,7 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		emergency_enabled,
 
 		tm_purchase,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -106,7 +109,8 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		?, ?,
 		?,
 		?, ?,
-		?, ?, ?, ?
+		?,
+		?, ?, ?
 		)`
 
 	_, err := h.db.Exec(q,
@@ -129,9 +133,10 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		n.EmergencyEnabled,
 
 		n.TMPurchase,
-		n.TMCreate,
-		n.TMUpdate,
-		n.TMDelete,
+
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. NumberCreate. err: %v", err)
@@ -409,8 +414,8 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 			id = ?
 		`
 
-	curTime := GetCurTime()
-	_, err := h.db.Exec(q, string(number.StatusDeleted), curTime, curTime, id.Bytes())
+	ts := h.util.GetCurTime()
+	_, err := h.db.Exec(q, string(number.StatusDeleted), ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. NumberDelete. err: %v", err)
 	}
@@ -435,7 +440,7 @@ func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 	_, err := h.db.Exec(q,
 		name,
 		detail,
-		GetCurTime(),
+		h.util.GetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -462,7 +467,7 @@ func (h *handler) NumberUpdateFlowID(ctx context.Context, id, callFlowID, messag
 	_, err := h.db.Exec(q,
 		callFlowID.Bytes(),
 		messageFlowID.Bytes(),
-		GetCurTime(),
+		h.util.GetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -487,7 +492,7 @@ func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UU
 
 	_, err := h.db.Exec(q,
 		flowID.Bytes(),
-		GetCurTime(),
+		h.util.GetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -512,7 +517,7 @@ func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid
 
 	_, err := h.db.Exec(q,
 		flowID.Bytes(),
-		GetCurTime(),
+		h.util.GetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
