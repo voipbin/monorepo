@@ -30,43 +30,46 @@ var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
 // args for rabbitmq
-var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.number-manager.request", "rabbitmq queue name for request listen")
-var rabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.number-manager.event", "rabbitmq queue name for event notify")
-var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
+var argRabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672", "rabbitmq service address.")
+var argRabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.number-manager.request", "rabbitmq queue name for request listen")
+var argRabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.number-manager.event", "rabbitmq queue name for event notify")
+var argRabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
 // args for prometheus
-var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
-var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
+var argPromEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
+var argPromListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
 
 // args for database
-var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for number-manager.")
+var argDBDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for number-manager.")
 
 // args for redis
-var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
-var redisPassword = flag.String("redis_password", "", "redis password")
-var redisDB = flag.Int("redis_db", 1, "redis database.")
+var argRedisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
+var argRedisPassword = flag.String("redis_password", "", "redis password")
+var argRedisDB = flag.Int("redis_db", 1, "redis database.")
 
 func main() {
 	log := logrus.WithField("func", "main")
-	log.Debugf("Starting number-manager.")
+	log.Debugf("Hello world. Starting number-manager.")
 
 	// connect to database
-	sqlDB, err := sql.Open("mysql", *dbDSN)
+	sqlDB, err := sql.Open("mysql", *argDBDSN)
 	if err != nil {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
 	defer sqlDB.Close()
 
-	// connect to cache
-	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
-	if err := cache.Connect(); err != nil {
-		log.Errorf("Could not connect to cache server. err: %v", err)
+	// create db handler
+	db, err := createDBHandler(sqlDB, *argRedisAddr, *argRedisPassword, *argRedisDB)
+	if err != nil {
+		log.Errorf("Could not create dbhandler. err: %v", err)
 		return
 	}
 
-	if errRun := run(sqlDB, cache); errRun != nil {
+	// create rabbit sock
+	sock := createRabbitSock(*argRabbitAddr)
+
+	if errRun := run(db, sock); errRun != nil {
 		log.Errorf("The run returned error. err: %v", errRun)
 	}
 	<-chDone
@@ -83,7 +86,7 @@ func init() {
 	initSignal()
 
 	// init prometheus setting
-	initProm(*promEndpoint, *promListenAddr)
+	initProm(*argPromEndpoint, *argPromListenAddr)
 
 	logrus.Info("init finished.")
 }
@@ -123,9 +126,36 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-// run runs the call-manager
-func run(db *sql.DB, cache cachehandler.CacheHandler) error {
-	if err := runListen(db, cache); err != nil {
+// createDBHandler create the dbhandler and returns created dbhandler.
+// it connects to the database and cache.
+func createDBHandler(sqlDB *sql.DB, redisAddr, redisPassword string, redisDB int) (dbhandler.DBHandler, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "createDBHandler",
+	})
+
+	// connect to cache
+	cache := cachehandler.NewHandler(redisAddr, redisPassword, redisDB)
+	if err := cache.Connect(); err != nil {
+		log.Errorf("Could not connect to cache server. err: %v", err)
+		return nil, err
+	}
+
+	// create dbhandler
+	res := dbhandler.NewHandler(sqlDB, cache)
+	return res, nil
+}
+
+// createRabbitSock create rabbitmq socket
+func createRabbitSock(rabbitAddr string) rabbitmqhandler.Rabbit {
+	res := rabbitmqhandler.NewRabbit(rabbitAddr)
+	res.Connect()
+
+	return res
+}
+
+// run runs the service
+func run(db dbhandler.DBHandler, sock rabbitmqhandler.Rabbit) error {
+	if err := runListen(db, sock); err != nil {
 		return err
 	}
 
@@ -133,22 +163,16 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
-
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+func runListen(db dbhandler.DBHandler, sock rabbitmqhandler.Rabbit) error {
 
 	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
+	reqHandler := requesthandler.NewRequestHandler(sock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sock, reqHandler, *argRabbitExchangeDelay, *argRabbitExchangeNotify, serviceName)
 	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, numberHandler)
+	listenHandler := listenhandler.NewListenHandler(sock, numberHandler)
 
 	// run
-	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
+	if err := listenHandler.Run(*argRabbitQueueListen, *argRabbitExchangeDelay); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 

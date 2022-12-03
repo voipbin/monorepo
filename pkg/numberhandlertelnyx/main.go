@@ -1,6 +1,6 @@
 package numberhandlertelnyx
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package numberhandlertelnyx -destination ./mock_numberhandlertelnyx.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package numberhandlertelnyx -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -19,7 +19,7 @@ import (
 type NumberHandlerTelnyx interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
 	CreateNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error)
-	ReleaseNumber(ctx context.Context, num *number.Number) (*number.Number, error)
+	ReleaseNumber(ctx context.Context, num *number.Number) error
 }
 
 // numberHandlerTelnyx structure for service handle

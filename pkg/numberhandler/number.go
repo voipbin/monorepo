@@ -8,14 +8,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 )
 
-// CreateNumber creates a new order numbers of given numbers
-func (h *numberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
+// Create creates a new order numbers of given numbers
+func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":          "CreateNumber",
+			"func":          "Create",
 			"customer_id":   customerID,
 			"flow_id":       callFlowID,
 			"target_number": num,
@@ -24,23 +23,20 @@ func (h *numberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, 
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
 	// use telnyx as a default
-	tmp, err := h.numHandlerTelnyx.CreateNumber(customerID, num, callFlowID, name, detail)
+	tmp, err := h.numberHandlerTelnyx.CreateNumber(customerID, num, callFlowID, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a number from the telnyx. err: %v", err)
 		return nil, fmt.Errorf("could not create a number from the telnyx. err: %v", err)
 	}
 
 	// add info
-	tmp.ID = uuid.Must(uuid.NewV4())
+	tmp.ID = h.util.CreateUUID()
 	tmp.CustomerID = customerID
 	tmp.CallFlowID = callFlowID
 	tmp.MessageFlowID = messageFlowID
 	tmp.Name = name
 	tmp.Detail = detail
 
-	tmp.TMCreate = dbhandler.GetCurTime()
-	tmp.TMUpdate = dbhandler.DefaultTimeStamp
-	tmp.TMDelete = dbhandler.DefaultTimeStamp
 	log.WithField("number", tmp).Debugf("Creating a number record. number: %s", tmp.Number)
 
 	// insert into db
@@ -60,39 +56,60 @@ func (h *numberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, 
 	return res, err
 }
 
-// ReleaseNumber release/deleted an existed ordered number
-func (h *numberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
+// Delete release/deleted an existed ordered number
+func (h *numberHandler) Delete(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "ReleaseNumber",
+		"func":      "Delete",
 		"number_id": id,
 	})
-	log.Debugf("ReleaseNumber. number_id: %s", id)
+	log.Debugf("Deleting the number. number_id: %s", id)
 
 	num, err := h.db.NumberGet(ctx, id)
 	if err != nil {
 		logrus.Errorf("Could not get order number info. number: %s, err: %v", id, err)
 		return nil, err
 	}
-	log.Debugf("Release number info. number: %s", num.Number)
+	log.Debugf("Deleting number info. number: %s", num.Number)
 
-	res, err := h.numHandlerTelnyx.ReleaseNumber(ctx, num)
+	// send delete request by provider
+	switch num.ProviderName {
+	case number.ProviderNameTelnyx:
+		err = h.numberHandlerTelnyx.ReleaseNumber(ctx, num)
+
+	default:
+		err = fmt.Errorf("unsupported number provider. provider_name: %s", num.ProviderName)
+	}
+
 	if err != nil {
 		log.Errorf("Could not release the number. err: %v", err)
+	}
+
+	// delete from the database
+	if errDelete := h.db.NumberDelete(ctx, id); errDelete != nil {
+		log.Errorf("Could not delete the number from the db. number_id: %s, err: %v", id, errDelete)
+		return nil, errDelete
+	}
+
+	// get deleted number
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted number. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberDeleted, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, number.EventTypeNumberDeleted, res)
 
 	return res, nil
 }
 
-// GetNumberByNumber returns number info of the given number
-func (h *numberHandler) GetNumberByNumber(ctx context.Context, num string) (*number.Number, error) {
+// GetByNumber returns number info of the given number
+func (h *numberHandler) GetByNumber(ctx context.Context, num string) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":          "GetByNumber",
 			"number_number": num,
 		},
 	)
-	log.Debugf("GetNumberByNumber. number: %s", num)
+	log.Debugf("Getting a number by number. number: %s", num)
 
 	number, err := h.db.NumberGetByNumber(ctx, num)
 	if err != nil {
@@ -103,14 +120,14 @@ func (h *numberHandler) GetNumberByNumber(ctx context.Context, num string) (*num
 	return number, nil
 }
 
-// GetNumber returns number info of the given id
-func (h *numberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
+// Get returns number info of the given id
+func (h *numberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":      "Get",
 			"number_id": id,
 		},
 	)
-	log.Debugf("GetNumber. number: %s", id)
 
 	number, err := h.db.NumberGet(ctx, id)
 	if err != nil {
@@ -121,17 +138,18 @@ func (h *numberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*number.Nu
 	return number, nil
 }
 
-// GetNumbers returns list of numbers info of the given customer_id
-func (h *numberHandler) GetNumbers(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
+// GetsByCustomerID returns list of numbers info of the given customer_id
+func (h *numberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":        "GetsByCustomerID",
 			"customer_id": customerID,
 		},
 	)
 	log.Debugf("GetNumbers. customer_id: %s", customerID)
 
 	if pageToken == "" {
-		pageToken = dbhandler.GetCurTime()
+		pageToken = h.util.GetCurTime()
 	}
 
 	numbers, err := h.db.NumberGets(ctx, customerID, pageSize, pageToken)
@@ -164,7 +182,7 @@ func (h *numberHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberUpdated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, number.EventTypeNumberUpdated, res)
 
 	return res, nil
 }
@@ -191,7 +209,7 @@ func (h *numberHandler) UpdateFlowID(ctx context.Context, id, callFlowID, messag
 		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberUpdated, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, number.EventTypeNumberUpdated, res)
 
 	return res, nil
 }

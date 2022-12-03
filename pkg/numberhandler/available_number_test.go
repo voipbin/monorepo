@@ -22,9 +22,9 @@ func TestGetAvailableNumbersTelnyx(t *testing.T) {
 	mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 
 	h := numberHandler{
-		reqHandler:       mockReq,
-		db:               mockDB,
-		numHandlerTelnyx: mockTelnyx,
+		reqHandler:          mockReq,
+		db:                  mockDB,
+		numberHandlerTelnyx: mockTelnyx,
 	}
 
 	type test struct {

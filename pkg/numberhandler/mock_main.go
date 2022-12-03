@@ -37,19 +37,49 @@ func (m *MockNumberHandler) EXPECT() *MockNumberHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateNumber mocks base method.
-func (m *MockNumberHandler) CreateNumber(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
+// Create mocks base method.
+func (m *MockNumberHandler) Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumber", ctx, customerID, num, callFlowID, messageFlowID, name, detail)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, num, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateNumber indicates an expected call of CreateNumber.
-func (mr *MockNumberHandlerMockRecorder) CreateNumber(ctx, customerID, num, callFlowID, messageFlowID, name, detail interface{}) *gomock.Call {
+// Create indicates an expected call of Create.
+func (mr *MockNumberHandlerMockRecorder) Create(ctx, customerID, num, callFlowID, messageFlowID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandler)(nil).CreateNumber), ctx, customerID, num, callFlowID, messageFlowID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockNumberHandler)(nil).Create), ctx, customerID, num, callFlowID, messageFlowID, name, detail)
+}
+
+// Delete mocks base method.
+func (m *MockNumberHandler) Delete(ctx context.Context, id uuid.UUID) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockNumberHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockNumberHandler)(nil).Delete), ctx, id)
+}
+
+// Get mocks base method.
+func (m *MockNumberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockNumberHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockNumberHandler)(nil).Get), ctx, id)
 }
 
 // GetAvailableNumbers mocks base method.
@@ -67,64 +97,34 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableNumbers), countyCode, limit)
 }
 
-// GetNumber mocks base method.
-func (m *MockNumberHandler) GetNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
+// GetByNumber mocks base method.
+func (m *MockNumberHandler) GetByNumber(ctx context.Context, num string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNumber", ctx, id)
+	ret := m.ctrl.Call(m, "GetByNumber", ctx, num)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetNumber indicates an expected call of GetNumber.
-func (mr *MockNumberHandlerMockRecorder) GetNumber(ctx, id interface{}) *gomock.Call {
+// GetByNumber indicates an expected call of GetByNumber.
+func (mr *MockNumberHandlerMockRecorder) GetByNumber(ctx, num interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNumber", reflect.TypeOf((*MockNumberHandler)(nil).GetNumber), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByNumber", reflect.TypeOf((*MockNumberHandler)(nil).GetByNumber), ctx, num)
 }
 
-// GetNumberByNumber mocks base method.
-func (m *MockNumberHandler) GetNumberByNumber(ctx context.Context, num string) (*number.Number, error) {
+// GetsByCustomerID mocks base method.
+func (m *MockNumberHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNumberByNumber", ctx, num)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetNumberByNumber indicates an expected call of GetNumberByNumber.
-func (mr *MockNumberHandlerMockRecorder) GetNumberByNumber(ctx, num interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNumberByNumber", reflect.TypeOf((*MockNumberHandler)(nil).GetNumberByNumber), ctx, num)
-}
-
-// GetNumbers mocks base method.
-func (m *MockNumberHandler) GetNumbers(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNumbers", ctx, customerID, pageSize, pageToken)
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, pageSize, pageToken)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetNumbers indicates an expected call of GetNumbers.
-func (mr *MockNumberHandlerMockRecorder) GetNumbers(ctx, customerID, pageSize, pageToken interface{}) *gomock.Call {
+// GetsByCustomerID indicates an expected call of GetsByCustomerID.
+func (mr *MockNumberHandlerMockRecorder) GetsByCustomerID(ctx, customerID, pageSize, pageToken interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetNumbers), ctx, customerID, pageSize, pageToken)
-}
-
-// ReleaseNumber mocks base method.
-func (m *MockNumberHandler) ReleaseNumber(ctx context.Context, id uuid.UUID) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReleaseNumber", ctx, id)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReleaseNumber indicates an expected call of ReleaseNumber.
-func (mr *MockNumberHandlerMockRecorder) ReleaseNumber(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseNumber", reflect.TypeOf((*MockNumberHandler)(nil).ReleaseNumber), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockNumberHandler)(nil).GetsByCustomerID), ctx, customerID, pageSize, pageToken)
 }
 
 // RemoveNumbersFlowID mocks base method.

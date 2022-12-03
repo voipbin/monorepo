@@ -36,6 +36,18 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
+// Close mocks base method.
+func (m *MockDBHandler) Close() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Close")
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockDBHandlerMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockDBHandler)(nil).Close))
+}
+
 // NumberCreate mocks base method.
 func (m *MockDBHandler) NumberCreate(ctx context.Context, n *number.Number) error {
 	m.ctrl.T.Helper()

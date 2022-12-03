@@ -39,7 +39,7 @@ func (h *numberHandlerTelnyx) CreateNumber(customerID uuid.UUID, num string, flo
 }
 
 // ReleaseNumber release an existed order number from the telnyx
-func (h *numberHandlerTelnyx) ReleaseNumber(ctx context.Context, number *number.Number) (*number.Number, error) {
+func (h *numberHandlerTelnyx) ReleaseNumber(ctx context.Context, number *number.Number) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":   "ReleaseNumber",
@@ -51,7 +51,7 @@ func (h *numberHandlerTelnyx) ReleaseNumber(ctx context.Context, number *number.
 	phoneNumber, err := h.requestExternal.TelnyxPhoneNumbersIDDelete(number.ProviderReferenceID)
 	if err != nil {
 		log.Errorf("Could not delete the number from the telnyx. number: %s, err: %v", number.ID, err)
-		return nil, err
+		return err
 	}
 	log.WithFields(
 		logrus.Fields{
@@ -59,18 +59,19 @@ func (h *numberHandlerTelnyx) ReleaseNumber(ctx context.Context, number *number.
 		},
 	).Debugf("Release the number from the telnyx correctly. number: %s", number.ID)
 
-	// delete from the database
-	if err := h.db.NumberDelete(ctx, number.ID); err != nil {
-		log.Errorf("Could not delete the number from the db. number: %s, err: %v", number.ID, err)
-		return nil, err
-	}
+	return nil
+	// // delete from the database
+	// if err := h.db.NumberDelete(ctx, number.ID); err != nil {
+	// 	log.Errorf("Could not delete the number from the db. number: %s, err: %v", number.ID, err)
+	// 	return nil, err
+	// }
 
-	// get deleted number
-	res, err := h.db.NumberGet(ctx, number.ID)
-	if err != nil {
-		log.Errorf("Could not get deleted number info. number: %s, err: %v", number.ID, err)
-		return nil, err
-	}
+	// // get deleted number
+	// res, err := h.db.NumberGet(ctx, number.ID)
+	// if err != nil {
+	// 	log.Errorf("Could not get deleted number info. number: %s, err: %v", number.ID, err)
+	// 	return nil, err
+	// }
 
-	return res, nil
+	// return res, nil
 }

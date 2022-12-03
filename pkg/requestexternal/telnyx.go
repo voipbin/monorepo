@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/request"
@@ -56,7 +56,7 @@ func (h *requestExternal) TelnyxAvailableNumberGets(countryCode, locality, admin
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read the response body. err: %v", err)
 	}
@@ -118,7 +118,7 @@ func (h *requestExternal) TelnyxNumberOrdersPost(numbers []string) (*telnyx.Orde
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read the response body. err: %v", err)
 	}
@@ -158,7 +158,7 @@ func (h *requestExternal) TelnyxPhoneNumbersIDGet(id string) (*telnyx.PhoneNumbe
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read the response body. err: %v", err)
 	}
@@ -198,7 +198,7 @@ func (h *requestExternal) TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNu
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read the response body. err: %v", err)
 	}
@@ -248,7 +248,7 @@ func (h *requestExternal) TelnyxPhoneNumbersGet(size uint, tag, number string) (
 		return nil, fmt.Errorf("could not get correct response. status: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read the response body. err: %v", err)
 	}
