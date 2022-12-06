@@ -1,6 +1,6 @@
-package numberhandlertelnyx
+package numberhandlertwilio
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package numberhandlertelnyx -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package numberhandlertwilio -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -15,22 +15,21 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
 )
 
-// telnyx
+//nolint:unused,varcheck,deadcode	// reserved
 const (
-	token              string = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
-	connectionID       string = "1943381594949551263"
-	messagingProfileID string = "40017f8e-49bd-4f16-9e3d-ef103f916228"
+	twilioSID   string = "AC3300cb9426b78c9ce48db86a755166f0"
+	twilioToken string = "58c603e14220f52553be7769b209f423"
 )
 
-// NumberHandlerTelnyx is interface for service handle
-type NumberHandlerTelnyx interface {
+// NumberHandlerTwilio is interface for service handle
+type NumberHandlerTwilio interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
 	CreateNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error)
 	ReleaseNumber(ctx context.Context, num *number.Number) error
 }
 
-// numberHandlerTelnyx structure for service handle
-type numberHandlerTelnyx struct {
+// numberHandlerTwilio structure for service handle
+type numberHandlerTwilio struct {
 	reqHandler requesthandler.RequestHandler
 	db         dbhandler.DBHandler
 
@@ -43,8 +42,8 @@ var (
 	promCreateTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
-			Name:      "telnyx_number_create_total",
-			Help:      "Total number of created number type by telnyx.",
+			Name:      "twilio_number_create_total",
+			Help:      "Total number of created number type by twilio.",
 		},
 		[]string{"type"},
 	)
@@ -57,11 +56,11 @@ func init() {
 }
 
 // NewNumberHandler returns new service handler
-func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler) NumberHandlerTelnyx {
+func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler) NumberHandlerTwilio {
 
 	reqExternal := requestexternal.NewRequestExternal()
 
-	h := &numberHandlerTelnyx{
+	h := &numberHandlerTwilio{
 		reqHandler:      r,
 		db:              db,
 		requestExternal: reqExternal,
