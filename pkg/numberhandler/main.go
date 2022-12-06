@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertwilio"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/util"
 )
 
@@ -42,6 +43,7 @@ type numberHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 
 	numberHandlerTelnyx numberhandlertelnyx.NumberHandlerTelnyx
+	numberHandlerTwilio numberhandlertwilio.NumberHandlerTwilio
 }
 
 var (
@@ -67,6 +69,7 @@ func init() {
 func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) NumberHandler {
 
 	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(r, db)
+	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(r, db)
 
 	h := &numberHandler{
 		util:          util.NewUtil(),
@@ -75,6 +78,7 @@ func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, n
 		notifyHandler: notifyHandler,
 
 		numberHandlerTelnyx: nHandlerTelnyx,
+		numberHandlerTwilio: nHandlerTwilio,
 	}
 
 	return h

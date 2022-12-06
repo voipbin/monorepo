@@ -76,6 +76,9 @@ func (h *numberHandler) Delete(ctx context.Context, id uuid.UUID) (*number.Numbe
 	case number.ProviderNameTelnyx:
 		err = h.numberHandlerTelnyx.ReleaseNumber(ctx, num)
 
+	case number.ProviderNameTwilio:
+		err = h.numberHandlerTwilio.ReleaseNumber(ctx, num)
+
 	default:
 		err = fmt.Errorf("unsupported number provider. provider_name: %s", num.ProviderName)
 	}

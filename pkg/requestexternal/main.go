@@ -8,20 +8,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
-// telnyx
-const (
-	telnyxToken              string = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
-	telnyxConnectionID       string = "1943381594949551263"
-	telnyxMessagingProfileID string = "40017f8e-49bd-4f16-9e3d-ef103f916228"
-)
-
-// twilio
-//nolint:deadcode,unused,varcheck // reserved
-const (
-	twilioSID   string = "AC3300cb9426b78c9ce48db86a755166f0"
-	twilioToken string = "58c603e14220f52553be7769b209f423"
-)
-
 var (
 	metricsNamespace = "number_manager"
 
@@ -48,13 +34,11 @@ func init() {
 type RequestExternal interface {
 
 	// telnyx
-	TelnyxAvailableNumberGets(countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error)
-
-	TelnyxNumberOrdersPost(numbers []string) (*telnyx.OrderNumber, error)
-
-	TelnyxPhoneNumbersGet(size uint, tag, number string) ([]*telnyx.PhoneNumber, error)
-	TelnyxPhoneNumbersIDGet(id string) (*telnyx.PhoneNumber, error)
-	TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNumber, error)
+	TelnyxAvailableNumberGets(token, countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error)
+	TelnyxNumberOrdersPost(token string, numbers []string, connectionID, profileID string) (*telnyx.OrderNumber, error)
+	TelnyxPhoneNumbersGet(token string, size uint, tag, number string) ([]*telnyx.PhoneNumber, error)
+	TelnyxPhoneNumbersIDGet(token, id string) (*telnyx.PhoneNumber, error)
+	TelnyxPhoneNumbersIDDelete(token, id string) (*telnyx.PhoneNumber, error)
 }
 
 type requestExternal struct{}

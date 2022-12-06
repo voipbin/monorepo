@@ -96,8 +96,8 @@ func Test_CreateNumber(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			numbers := []string{tt.number}
-			mockExternal.EXPECT().TelnyxNumberOrdersPost(numbers).Return(tt.responseOrder, nil)
-			mockExternal.EXPECT().TelnyxPhoneNumbersIDGet(tt.responseOrder.PhoneNumbers[0].ID).Return(tt.responseNumber, nil)
+			mockExternal.EXPECT().TelnyxNumberOrdersPost(token, numbers, connectionID, messagingProfileID).Return(tt.responseOrder, nil)
+			mockExternal.EXPECT().TelnyxPhoneNumbersIDGet(tt.responseOrder.PhoneNumbers[0].ID, token).Return(tt.responseNumber, nil)
 			res, err := h.CreateNumber(tt.customerID, tt.number, tt.flowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -144,7 +144,7 @@ func TestReleaseNumber(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockExternal.EXPECT().TelnyxPhoneNumbersIDDelete(tt.number.ProviderReferenceID)
+			mockExternal.EXPECT().TelnyxPhoneNumbersIDDelete(token, tt.number.ProviderReferenceID)
 			// mockDB.EXPECT().NumberDelete(gomock.Any(), tt.number.ID)
 			// mockDB.EXPECT().NumberGet(gomock.Any(), tt.number.ID)
 			if err := h.ReleaseNumber(ctx, tt.number); err != nil {

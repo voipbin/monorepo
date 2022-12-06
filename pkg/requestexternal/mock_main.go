@@ -35,76 +35,76 @@ func (m *MockRequestExternal) EXPECT() *MockRequestExternalMockRecorder {
 }
 
 // TelnyxAvailableNumberGets mocks base method.
-func (m *MockRequestExternal) TelnyxAvailableNumberGets(countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error) {
+func (m *MockRequestExternal) TelnyxAvailableNumberGets(token, countryCode, locality, administrativeArea string, limit uint) ([]*telnyx.AvailableNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TelnyxAvailableNumberGets", countryCode, locality, administrativeArea, limit)
+	ret := m.ctrl.Call(m, "TelnyxAvailableNumberGets", token, countryCode, locality, administrativeArea, limit)
 	ret0, _ := ret[0].([]*telnyx.AvailableNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TelnyxAvailableNumberGets indicates an expected call of TelnyxAvailableNumberGets.
-func (mr *MockRequestExternalMockRecorder) TelnyxAvailableNumberGets(countryCode, locality, administrativeArea, limit interface{}) *gomock.Call {
+func (mr *MockRequestExternalMockRecorder) TelnyxAvailableNumberGets(token, countryCode, locality, administrativeArea, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxAvailableNumberGets", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxAvailableNumberGets), countryCode, locality, administrativeArea, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxAvailableNumberGets", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxAvailableNumberGets), token, countryCode, locality, administrativeArea, limit)
 }
 
 // TelnyxNumberOrdersPost mocks base method.
-func (m *MockRequestExternal) TelnyxNumberOrdersPost(numbers []string) (*telnyx.OrderNumber, error) {
+func (m *MockRequestExternal) TelnyxNumberOrdersPost(token string, numbers []string, connectionID, profileID string) (*telnyx.OrderNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TelnyxNumberOrdersPost", numbers)
+	ret := m.ctrl.Call(m, "TelnyxNumberOrdersPost", token, numbers, connectionID, profileID)
 	ret0, _ := ret[0].(*telnyx.OrderNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TelnyxNumberOrdersPost indicates an expected call of TelnyxNumberOrdersPost.
-func (mr *MockRequestExternalMockRecorder) TelnyxNumberOrdersPost(numbers interface{}) *gomock.Call {
+func (mr *MockRequestExternalMockRecorder) TelnyxNumberOrdersPost(token, numbers, connectionID, profileID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxNumberOrdersPost", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxNumberOrdersPost), numbers)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxNumberOrdersPost", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxNumberOrdersPost), token, numbers, connectionID, profileID)
 }
 
 // TelnyxPhoneNumbersGet mocks base method.
-func (m *MockRequestExternal) TelnyxPhoneNumbersGet(size uint, tag, number string) ([]*telnyx.PhoneNumber, error) {
+func (m *MockRequestExternal) TelnyxPhoneNumbersGet(token string, size uint, tag, number string) ([]*telnyx.PhoneNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TelnyxPhoneNumbersGet", size, tag, number)
+	ret := m.ctrl.Call(m, "TelnyxPhoneNumbersGet", token, size, tag, number)
 	ret0, _ := ret[0].([]*telnyx.PhoneNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TelnyxPhoneNumbersGet indicates an expected call of TelnyxPhoneNumbersGet.
-func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersGet(size, tag, number interface{}) *gomock.Call {
+func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersGet(token, size, tag, number interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersGet", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersGet), size, tag, number)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersGet", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersGet), token, size, tag, number)
 }
 
 // TelnyxPhoneNumbersIDDelete mocks base method.
-func (m *MockRequestExternal) TelnyxPhoneNumbersIDDelete(id string) (*telnyx.PhoneNumber, error) {
+func (m *MockRequestExternal) TelnyxPhoneNumbersIDDelete(token, id string) (*telnyx.PhoneNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TelnyxPhoneNumbersIDDelete", id)
+	ret := m.ctrl.Call(m, "TelnyxPhoneNumbersIDDelete", token, id)
 	ret0, _ := ret[0].(*telnyx.PhoneNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TelnyxPhoneNumbersIDDelete indicates an expected call of TelnyxPhoneNumbersIDDelete.
-func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersIDDelete(id interface{}) *gomock.Call {
+func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersIDDelete(token, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersIDDelete", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersIDDelete), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersIDDelete", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersIDDelete), token, id)
 }
 
 // TelnyxPhoneNumbersIDGet mocks base method.
-func (m *MockRequestExternal) TelnyxPhoneNumbersIDGet(id string) (*telnyx.PhoneNumber, error) {
+func (m *MockRequestExternal) TelnyxPhoneNumbersIDGet(token, id string) (*telnyx.PhoneNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TelnyxPhoneNumbersIDGet", id)
+	ret := m.ctrl.Call(m, "TelnyxPhoneNumbersIDGet", token, id)
 	ret0, _ := ret[0].(*telnyx.PhoneNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TelnyxPhoneNumbersIDGet indicates an expected call of TelnyxPhoneNumbersIDGet.
-func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersIDGet(id interface{}) *gomock.Call {
+func (mr *MockRequestExternalMockRecorder) TelnyxPhoneNumbersIDGet(token, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersIDGet", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersIDGet), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TelnyxPhoneNumbersIDGet", reflect.TypeOf((*MockRequestExternal)(nil).TelnyxPhoneNumbersIDGet), token, id)
 }

@@ -21,14 +21,14 @@ func (h *numberHandlerTelnyx) CreateNumber(customerID uuid.UUID, num string, flo
 
 	// send a request to number providers
 	numbers := []string{num}
-	resOrder, err := h.requestExternal.TelnyxNumberOrdersPost(numbers)
+	resOrder, err := h.requestExternal.TelnyxNumberOrdersPost(token, numbers, connectionID, messagingProfileID)
 	if err != nil {
 		log.Errorf("Could not send the order request to the telnyx. err: %v", err)
 		return nil, err
 	}
 
 	// get ordered number
-	tmpNum, err := h.requestExternal.TelnyxPhoneNumbersIDGet(resOrder.PhoneNumbers[0].ID)
+	tmpNum, err := h.requestExternal.TelnyxPhoneNumbersIDGet(resOrder.PhoneNumbers[0].ID, token)
 	if err != nil {
 		log.Errorf("Could not get ordered number. phone_number_id: %s, err: %v", resOrder.PhoneNumbers[0].ID, err)
 		return nil, err
@@ -48,7 +48,7 @@ func (h *numberHandlerTelnyx) ReleaseNumber(ctx context.Context, number *number.
 	)
 
 	// delete the number from the telnyx
-	phoneNumber, err := h.requestExternal.TelnyxPhoneNumbersIDDelete(number.ProviderReferenceID)
+	phoneNumber, err := h.requestExternal.TelnyxPhoneNumbersIDDelete(token, number.ProviderReferenceID)
 	if err != nil {
 		log.Errorf("Could not delete the number from the telnyx. number: %s, err: %v", number.ID, err)
 		return err
@@ -60,18 +60,4 @@ func (h *numberHandlerTelnyx) ReleaseNumber(ctx context.Context, number *number.
 	).Debugf("Release the number from the telnyx correctly. number: %s", number.ID)
 
 	return nil
-	// // delete from the database
-	// if err := h.db.NumberDelete(ctx, number.ID); err != nil {
-	// 	log.Errorf("Could not delete the number from the db. number: %s, err: %v", number.ID, err)
-	// 	return nil, err
-	// }
-
-	// // get deleted number
-	// res, err := h.db.NumberGet(ctx, number.ID)
-	// if err != nil {
-	// 	log.Errorf("Could not get deleted number info. number: %s, err: %v", number.ID, err)
-	// 	return nil, err
-	// }
-
-	// return res, nil
 }

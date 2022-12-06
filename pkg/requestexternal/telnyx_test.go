@@ -10,6 +10,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal/models/telnyx"
 )
 
+const (
+	testToken     = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
+	testProfileID = "40017f8e-49bd-4f16-9e3d-ef103f916228"
+)
+
 func TestTelnyxAvailableNumberGets(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -42,7 +47,7 @@ func TestTelnyxAvailableNumberGets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			res, err := h.TelnyxAvailableNumberGets(tt.country, tt.locality, tt.administrativeArea, uint(tt.limit))
+			res, err := h.TelnyxAvailableNumberGets(testToken, tt.country, tt.locality, tt.administrativeArea, uint(tt.limit))
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -57,10 +62,6 @@ func TestTelnyxAvailableNumberGets(t *testing.T) {
 }
 
 func Test_TelnyxPhoneNumbersIDGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	h := requestExternal{}
 
 	tests := []struct {
 		name      string
@@ -87,7 +88,7 @@ func Test_TelnyxPhoneNumbersIDGet(t *testing.T) {
 				CallForwardingEnabled: true,
 				CNAMListingEnabled:    false,
 				CallRecordingEnabled:  false,
-				MessagingProfileID:    telnyxMessagingProfileID,
+				MessagingProfileID:    testProfileID,
 				MessagingProfileName:  "",
 				NumberBlockID:         "",
 				CreatedAt:             "2021-10-16T17:31:11.737Z",
@@ -97,8 +98,12 @@ func Test_TelnyxPhoneNumbersIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			res, err := h.TelnyxPhoneNumbersIDGet(tt.id)
+			h := requestExternal{}
+
+			res, err := h.TelnyxPhoneNumbersIDGet(testToken, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
