@@ -14,21 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 )
 
-func TestProcessV1ExtensionsPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDomain := domainhandler.NewMockDomainHandler(mc)
-	mockExtension := extensionhandler.NewMockExtensionHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:       mockSock,
-		reqHandler:       mockReq,
-		domainHandler:    mockDomain,
-		extensionHandler: mockExtension,
-	}
+func Test_processV1ExtensionsPost(t *testing.T) {
 
 	type test struct {
 		name         string
@@ -76,6 +62,19 @@ func TestProcessV1ExtensionsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				reqHandler:       mockReq,
+				domainHandler:    mockDomain,
+				extensionHandler: mockExtension,
+			}
 
 			mockExtension.EXPECT().ExtensionCreate(gomock.Any(), tt.reqExtension).Return(tt.resExtension, nil)
 			res, err := h.processRequest(tt.request)
@@ -90,21 +89,7 @@ func TestProcessV1ExtensionsPost(t *testing.T) {
 	}
 }
 
-func TestV1ExtensionsGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDomain := domainhandler.NewMockDomainHandler(mc)
-	mockExtension := extensionhandler.NewMockExtensionHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:       mockSock,
-		reqHandler:       mockReq,
-		domainHandler:    mockDomain,
-		extensionHandler: mockExtension,
-	}
+func Test_processV1ExtensionsGet(t *testing.T) {
 
 	type test struct {
 		name      string
@@ -166,6 +151,21 @@ func TestV1ExtensionsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				reqHandler:       mockReq,
+				domainHandler:    mockDomain,
+				extensionHandler: mockExtension,
+			}
+
 			mockExtension.EXPECT().ExtensionGetsByDomainID(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.exts, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -180,21 +180,7 @@ func TestV1ExtensionsGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1ExtensionsPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDomain := domainhandler.NewMockDomainHandler(mc)
-	mockExtension := extensionhandler.NewMockExtensionHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:       mockSock,
-		reqHandler:       mockReq,
-		domainHandler:    mockDomain,
-		extensionHandler: mockExtension,
-	}
+func Test_processV1ExtensionsPut(t *testing.T) {
 
 	type test struct {
 		name      string
@@ -236,6 +222,20 @@ func TestProcessV1ExtensionsPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				reqHandler:       mockReq,
+				domainHandler:    mockDomain,
+				extensionHandler: mockExtension,
+			}
 
 			mockExtension.EXPECT().ExtensionUpdate(gomock.Any(), tt.reqExt).Return(tt.resExt, nil)
 			res, err := h.processRequest(tt.request)
@@ -250,21 +250,7 @@ func TestProcessV1ExtensionsPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1ExtensionsIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDomain := domainhandler.NewMockDomainHandler(mc)
-	mockExtension := extensionhandler.NewMockExtensionHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:       mockSock,
-		reqHandler:       mockReq,
-		domainHandler:    mockDomain,
-		extensionHandler: mockExtension,
-	}
+func Test_processV1ExtensionsIDDelete(t *testing.T) {
 
 	type test struct {
 		name        string
@@ -297,6 +283,20 @@ func TestProcessV1ExtensionsIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				reqHandler:       mockReq,
+				domainHandler:    mockDomain,
+				extensionHandler: mockExtension,
+			}
 
 			mockExtension.EXPECT().ExtensionDelete(gomock.Any(), tt.extensionID).Return(tt.responseExtension, nil)
 			res, err := h.processRequest(tt.request)

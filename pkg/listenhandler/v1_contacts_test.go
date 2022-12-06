@@ -5,26 +5,14 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
 )
 
-func TestV1ContactsGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockContact := contacthandler.NewMockContactHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:     mockSock,
-		reqHandler:     mockReq,
-		contactHandler: mockContact,
-	}
+func Test_processV1ContactsGet(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -88,6 +76,19 @@ func TestV1ContactsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockContact := contacthandler.NewMockContactHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				reqHandler:     mockReq,
+				contactHandler: mockContact,
+			}
+
 			mockContact.EXPECT().ContactGetsByEndpoint(gomock.Any(), tt.endpoint).Return(tt.contacts, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -102,19 +103,7 @@ func TestV1ContactsGet(t *testing.T) {
 	}
 }
 
-func TestV1ContactsPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockContact := contacthandler.NewMockContactHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:     mockSock,
-		reqHandler:     mockReq,
-		contactHandler: mockContact,
-	}
+func Test_processV1ContactsPut(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -141,7 +130,18 @@ func TestV1ContactsPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// mockContact.EXPECT().ContactGetsByEndpoint(gomock.Any(), tt.endpoint).Return(tt.contacts, nil)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockContact := contacthandler.NewMockContactHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				reqHandler:     mockReq,
+				contactHandler: mockContact,
+			}
 
 			mockContact.EXPECT().ContactRefreshByEndpoint(gomock.Any(), tt.endpoint).Return(nil)
 			res, err := h.processRequest(tt.request)

@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/util"
 )
 
 // ExtensionHandler is interface for service handle
@@ -26,6 +27,7 @@ type ExtensionHandler interface {
 
 // extensionHandler structure for service handle
 type extensionHandler struct {
+	util          util.Util
 	reqHandler    requesthandler.RequestHandler
 	dbAst         dbhandler.DBHandler
 	dbBin         dbhandler.DBHandler
@@ -63,6 +65,7 @@ func init() {
 func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) ExtensionHandler {
 
 	h := &extensionHandler{
+		util:          util.NewUtil(),
 		reqHandler:    r,
 		dbAst:         dbAst,
 		dbBin:         dbBin,
