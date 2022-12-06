@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
 // ExtensionCreate creates a new extension
@@ -215,7 +214,7 @@ func (h *extensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domain
 	)
 
 	// get extensions
-	exts, err := h.ExtensionGetsByDomainID(ctx, domainID, dbhandler.GetCurTime(), 1000)
+	exts, err := h.ExtensionGetsByDomainID(ctx, domainID, h.util.GetCurTime(), 1000)
 	if err != nil {
 		logrus.Errorf("Could not get delete extensions")
 		return nil, err

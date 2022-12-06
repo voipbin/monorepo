@@ -80,13 +80,15 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		extension,
 		password,
 
-		tm_create
+		tm_create,
+		tm_update,
+		tm_delete
 	) values(
 		?, ?,
 		?, ?, ?,
 		?, ?, ?,
 		?, ?,
-		?
+		?, ?, ?
 	)
 	`
 
@@ -105,7 +107,9 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		b.Extension,
 		b.Password,
 
-		GetCurTime(),
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. ExtensionCreate. err: %v", err)
@@ -204,7 +208,7 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ExtensionDelete. err: %v", err)
 	}
@@ -231,7 +235,7 @@ func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) e
 		b.Name,
 		b.Detail,
 		b.Password,
-		GetCurTime(),
+		h.util.GetCurTime(),
 		b.ID.Bytes(),
 	)
 	if err != nil {
@@ -251,15 +255,15 @@ func (h *handler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUI
 	q := fmt.Sprintf(`
 		%s
 		where
-			tm_delete is null
-			and domain_id = ?
+			domain_id = ?
 			and tm_create < ?
+			and tm_delete >= ?
 		order by
 			tm_create desc, id desc
 		limit ?
 	`, extensionSelect)
 
-	rows, err := h.db.Query(q, domainID.Bytes(), token, limit)
+	rows, err := h.db.Query(q, domainID.Bytes(), token, DefaultTimeStamp, limit)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ExtensionGetsByDomainID. err: %v", err)
 	}

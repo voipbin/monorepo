@@ -6,7 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -18,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/util"
 )
 
 // list of const variables
@@ -67,6 +67,7 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
+	util  util.Util
 	db    *sql.DB
 	cache cachehandler.CacheHandler
 }
@@ -81,18 +82,11 @@ const defaultDelayTimeout = time.Millisecond * 150
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
+		util:  util.NewUtil(),
 		db:    db,
 		cache: cache,
 	}
 	return h
-}
-
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
 
 func getStringPointer(v string) *string {

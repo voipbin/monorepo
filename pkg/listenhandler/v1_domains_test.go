@@ -13,19 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 )
 
-func TestProcessV1DomainsPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDomain := domainhandler.NewMockDomainHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:    mockSock,
-		reqHandler:    mockReq,
-		domainHandler: mockDomain,
-	}
+func Test_processV1DomainsPost(t *testing.T) {
 
 	type test struct {
 		name string
@@ -70,6 +58,18 @@ func TestProcessV1DomainsPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:    mockSock,
+				reqHandler:    mockReq,
+				domainHandler: mockDomain,
+			}
 
 			mockDomain.EXPECT().Create(gomock.Any(), tt.customerID, tt.domainName, tt.domainN, tt.detail).Return(tt.resDomain, nil)
 			res, err := h.processRequest(tt.request)
@@ -84,19 +84,7 @@ func TestProcessV1DomainsPost(t *testing.T) {
 	}
 }
 
-func TestV1DomainsGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDomain := domainhandler.NewMockDomainHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:    mockSock,
-		reqHandler:    mockReq,
-		domainHandler: mockDomain,
-	}
+func Test_processV1DomainsGet(t *testing.T) {
 
 	type test struct {
 		name       string
@@ -158,6 +146,19 @@ func TestV1DomainsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:    mockSock,
+				reqHandler:    mockReq,
+				domainHandler: mockDomain,
+			}
+
 			mockDomain.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.domains, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -172,19 +173,7 @@ func TestV1DomainsGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1DomainsPut(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDomain := domainhandler.NewMockDomainHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:    mockSock,
-		reqHandler:    mockReq,
-		domainHandler: mockDomain,
-	}
+func Test_processV1DomainsPut(t *testing.T) {
 
 	type test struct {
 		name      string
@@ -235,7 +224,18 @@ func TestProcessV1DomainsPut(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:    mockSock,
+				reqHandler:    mockReq,
+				domainHandler: mockDomain,
+			}
 			mockDomain.EXPECT().Update(gomock.Any(), tt.id, tt.domainN, tt.detail).Return(tt.resDomain, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -249,19 +249,7 @@ func TestProcessV1DomainsPut(t *testing.T) {
 	}
 }
 
-func TestProcessV1DomainsDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDomain := domainhandler.NewMockDomainHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:    mockSock,
-		reqHandler:    mockReq,
-		domainHandler: mockDomain,
-	}
+func Test_processV1DomainsDelete(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -295,6 +283,18 @@ func TestProcessV1DomainsDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:    mockSock,
+				reqHandler:    mockReq,
+				domainHandler: mockDomain,
+			}
 
 			mockDomain.EXPECT().Delete(gomock.Any(), tt.domainID).Return(tt.responseDomain, nil)
 			res, err := h.processRequest(tt.request)

@@ -59,11 +59,13 @@ func (h *handler) DomainCreate(ctx context.Context, b *domain.Domain) error {
 		detail,
 		domain_name,
 
-		tm_create
+		tm_create,
+		tm_update,
+		tm_delete
 	) values(
 		?, ?,
 		?, ?, ?,
-		?
+		?, ?, ?
 	)
 	`
 
@@ -75,7 +77,9 @@ func (h *handler) DomainCreate(ctx context.Context, b *domain.Domain) error {
 		b.Detail,
 		b.DomainName,
 
-		GetCurTime(),
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. DomainCreate. err: %v", err)
@@ -90,7 +94,7 @@ func (h *handler) DomainCreate(ctx context.Context, b *domain.Domain) error {
 // domainGetFromDB returns Domain from the DB.
 func (h *handler) domainGetFromDB(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
-	q := fmt.Sprintf("%s where id = ? and tm_delete is null", domainSelect)
+	q := fmt.Sprintf("%s where id = ?", domainSelect)
 
 	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
@@ -171,7 +175,7 @@ func (h *handler) DomainUpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 	_, err := h.db.Exec(q,
 		name,
 		detail,
-		GetCurTime(),
+		h.util.GetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -206,9 +210,13 @@ func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, 
 // DomainGetByDomainName gets the domain by the given domain_name.
 func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
 
-	q := fmt.Sprintf("%s where domain_name = ? and tm_delete is NULL", domainSelect)
+	q := fmt.Sprintf(`%s
+		where
+			domain_name = ?
+			and tm_delete >= ?
+		`, domainSelect)
 
-	row, err := h.db.Query(q, domainName)
+	row, err := h.db.Query(q, domainName, DefaultTimeStamp)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. DomainGetByDomainName. err: %v", err)
 	}
@@ -233,15 +241,15 @@ func (h *handler) DomainGetsByCustomerID(ctx context.Context, customerID uuid.UU
 	q := fmt.Sprintf(`
 		%s
 		where
-			tm_delete is null
-			and customer_id = ?
+			customer_id = ?
 			and tm_create < ?
+			and tm_delete >= ?
 		order by
 			tm_create desc, id desc
 		limit ?
 	`, domainSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, limit)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, limit)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. DomainGetsByCustomerID. err: %v", err)
 	}
@@ -269,7 +277,7 @@ func (h *handler) DomainDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.util.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. DomainDelete. err: %v", err)
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new domain and returns a created domain info
@@ -45,10 +44,6 @@ func (h *domainHandler) Create(ctx context.Context, customerID uuid.UUID, domain
 		Name:       name,
 		Detail:     detail,
 		DomainName: domainName,
-
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	if err := h.dbBin.DomainCreate(ctx, d); err != nil {

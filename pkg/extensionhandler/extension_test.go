@@ -17,18 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
-func TestExtensionCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := &extensionHandler{
-		dbAst:         mockDBAst,
-		dbBin:         mockDBBin,
-		notifyHandler: mockNotify,
-	}
+func Test_ExtensionCreate(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -73,6 +62,18 @@ func TestExtensionCreate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &extensionHandler{
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
+		}
+
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().DomainGet(gomock.Any(), tt.ext.DomainID).Return(tt.domain, nil)
@@ -89,18 +90,7 @@ func TestExtensionCreate(t *testing.T) {
 	}
 }
 
-func TestExtensionUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := &extensionHandler{
-		dbAst:         mockDBAst,
-		dbBin:         mockDBBin,
-		notifyHandler: mockNotify,
-	}
+func Test_ExtensionUpdate(t *testing.T) {
 
 	type test struct {
 		name       string
@@ -148,6 +138,18 @@ func TestExtensionUpdate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &extensionHandler{
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
+		}
+
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.updateExt.ID).Return(tt.ext, nil)
@@ -162,18 +164,7 @@ func TestExtensionUpdate(t *testing.T) {
 	}
 }
 
-func TestExtensionDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := &extensionHandler{
-		dbAst:         mockDBAst,
-		dbBin:         mockDBBin,
-		notifyHandler: mockNotify,
-	}
+func Test_ExtensionDelete(t *testing.T) {
 
 	type test struct {
 		name string
@@ -212,6 +203,18 @@ func TestExtensionDelete(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &extensionHandler{
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
+		}
+
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
@@ -233,16 +236,7 @@ func TestExtensionDelete(t *testing.T) {
 	}
 }
 
-func TestExtensionGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	h := &extensionHandler{
-		dbAst: mockDBAst,
-		dbBin: mockDBBin,
-	}
+func Test_ExtensionGet(t *testing.T) {
 
 	type test struct {
 		name string
@@ -267,6 +261,16 @@ func TestExtensionGet(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		h := &extensionHandler{
+			dbAst: mockDBAst,
+			dbBin: mockDBBin,
+		}
+
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
@@ -282,16 +286,7 @@ func TestExtensionGet(t *testing.T) {
 	}
 }
 
-func TestExtensionGetsByDomainID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	h := &extensionHandler{
-		dbAst: mockDBAst,
-		dbBin: mockDBBin,
-	}
+func Test_ExtensionGetsByDomainID(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -324,6 +319,16 @@ func TestExtensionGetsByDomainID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		h := &extensionHandler{
+			dbAst: mockDBAst,
+			dbBin: mockDBBin,
+		}
+
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGetsByDomainID(gomock.Any(), tt.domainID, tt.token, uint64(10)).Return(tt.exts, nil)
