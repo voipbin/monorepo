@@ -166,9 +166,9 @@ func (h *handler) CampaignCreate(ctx context.Context, t *campaign.Campaign) erro
 
 		t.NextCampaignID.Bytes(),
 
-		t.TMCreate,
-		t.TMUpdate,
-		t.TMDelete,
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. CampaignCreate. err: %v", err)
@@ -256,7 +256,8 @@ func (h *handler) CampaignDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, GetCurTime(), GetCurTime(), id.Bytes()); err != nil {
+	ts := h.util.GetCurTime()
+	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignDelete. err: %v", err)
 	}
 
@@ -329,7 +330,7 @@ func (h *handler) CampaignUpdateBasicInfo(ctx context.Context, id uuid.UUID, nam
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateBasicInfo. err: %v", err)
 	}
 
@@ -351,7 +352,7 @@ func (h *handler) CampaignUpdateResourceInfo(ctx context.Context, id, outplanID,
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, outplanID.Bytes(), outdialID.Bytes(), queueID.Bytes(), GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, outplanID.Bytes(), outdialID.Bytes(), queueID.Bytes(), h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateResourceInfo. err: %v", err)
 	}
 
@@ -371,7 +372,7 @@ func (h *handler) CampaignUpdateNextCampaignID(ctx context.Context, id, nextCamp
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, nextCampaignID.Bytes(), GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, nextCampaignID.Bytes(), h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateNextCampaignID. err: %v", err)
 	}
 
@@ -391,7 +392,7 @@ func (h *handler) CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, status, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, status, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateStatus. err: %v", err)
 	}
 
@@ -412,7 +413,7 @@ func (h *handler) CampaignUpdateStatusAndExecute(ctx context.Context, id uuid.UU
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, status, execute, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, status, execute, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateStatusAndExecute. err: %v", err)
 	}
 
@@ -432,7 +433,7 @@ func (h *handler) CampaignUpdateExecute(ctx context.Context, id uuid.UUID, execu
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, execute, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, execute, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateExecute. err: %v", err)
 	}
 
@@ -452,7 +453,7 @@ func (h *handler) CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, serviceLevel, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, serviceLevel, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateServiceLevel. err: %v", err)
 	}
 
@@ -472,7 +473,7 @@ func (h *handler) CampaignUpdateEndHandle(ctx context.Context, id uuid.UUID, end
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, endHandle, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, endHandle, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateEndHandle. err: %v", err)
 	}
 
@@ -497,7 +498,7 @@ func (h *handler) CampaignUpdateActions(ctx context.Context, id uuid.UUID, actio
 		return fmt.Errorf("could not marshal the actions. CampaignUpdateActions. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, tmpActions, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, tmpActions, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateActions. err: %v", err)
 	}
 
@@ -517,7 +518,7 @@ func (h *handler) CampaignUpdateType(ctx context.Context, id uuid.UUID, campaign
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, campaignType, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, campaignType, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaignUpdateType. err: %v", err)
 	}
 

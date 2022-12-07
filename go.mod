@@ -1,6 +1,6 @@
 module gitlab.com/voipbin/bin-manager/campaign-manager.git
 
-go 1.17
+go 1.18
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5

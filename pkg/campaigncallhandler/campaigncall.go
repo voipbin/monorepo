@@ -8,7 +8,6 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new campaigncall
@@ -39,7 +38,6 @@ func (h *campaigncallHandler) Create(
 			"customer_id": customerID,
 		})
 
-	ts := dbhandler.GetCurTime()
 	id := uuid.Must(uuid.NewV4())
 	t := &campaigncall.Campaigncall{
 		ID:         id,
@@ -61,8 +59,6 @@ func (h *campaigncallHandler) Create(
 		Destination:      destination,
 		DestinationIndex: destinationIndex,
 		TryCount:         tryCount,
-		TMCreate:         ts,
-		TMUpdate:         ts,
 	}
 	log.WithField("campaigncall", t).Debug("Creating a new campaigncall.")
 

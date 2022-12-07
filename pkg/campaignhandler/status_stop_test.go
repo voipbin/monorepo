@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/util"
 )
 
 func Test_UpdateStatusStopping(t *testing.T) {
@@ -211,11 +212,13 @@ func Test_isStoppable(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
 			h := &campaignHandler{
+				util:                mockUtil,
 				db:                  mockDB,
 				notifyHandler:       mockNotify,
 				reqHandler:          mockReq,
@@ -227,6 +230,7 @@ func Test_isStoppable(t *testing.T) {
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 
 			if tt.response.Execute == campaign.ExecuteStop {
+				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
 				mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return(tt.responseCampaigncall, nil)
 			}
 

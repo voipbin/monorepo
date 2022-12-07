@@ -14,10 +14,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/util"
 )
 
 // campaignHandler defines
 type campaignHandler struct {
+	util          util.Util
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -70,6 +72,7 @@ func NewCampaignHandler(
 	outplanHandler outplanhandler.OutplanHandler,
 ) CampaignHandler {
 	h := &campaignHandler{
+		util:                util.NewUtil(),
 		db:                  db,
 		reqHandler:          reqHandler,
 		notifyHandler:       notifyHandler,
