@@ -12,13 +12,16 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/util"
 )
 
 func Test_OutplanCreate(t *testing.T) {
 	tests := []struct {
-		name      string
-		outplan   *outplan.Outplan
-		expectRes *outplan.Outplan
+		name    string
+		outplan *outplan.Outplan
+
+		responseCurTime string
+		expectRes       *outplan.Outplan
 	}{
 		{
 			"normal",
@@ -41,10 +44,10 @@ func Test_OutplanCreate(t *testing.T) {
 				MaxTryCount2: 3,
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
-				TMDelete:     DefaultTimeStamp,
 			},
+
+			"2020-04-18 03:22:17.995000",
+
 			&outplan.Outplan{
 				ID:         uuid.FromStringOrNil("504dbdd4-b3b5-11ec-b050-8f20b3a62441"),
 				CustomerID: uuid.FromStringOrNil("50745688-b3b5-11ec-91bd-c3d3ee057cb1"),
@@ -65,7 +68,7 @@ func Test_OutplanCreate(t *testing.T) {
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
 				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
+				TMUpdate:     DefaultTimeStamp,
 				TMDelete:     DefaultTimeStamp,
 			},
 		},
@@ -76,15 +79,18 @@ func Test_OutplanCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
 
 			ctx := context.Background()
 
-			mockCache.EXPECT().OutplanSet(ctx, tt.outplan).Return(nil)
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanCreate(context.Background(), tt.outplan); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -98,7 +104,7 @@ func Test_OutplanCreate(t *testing.T) {
 			t.Logf("Created outdial. outdial: %v", res)
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -109,6 +115,9 @@ func Test_OutplanDelete(t *testing.T) {
 	tests := []struct {
 		name    string
 		outplan *outplan.Outplan
+
+		responseCurTime string
+		expectRes       *outplan.Outplan
 	}{
 		{
 			"normal",
@@ -132,10 +141,33 @@ func Test_OutplanDelete(t *testing.T) {
 				MaxTryCount2: 3,
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
+			},
+
+			"2020-04-18 03:22:17.995000",
+			&outplan.Outplan{
+				ID:         uuid.FromStringOrNil("9a72c25e-b47f-11ec-8c84-fbce9a6f9ddf"),
+				CustomerID: uuid.FromStringOrNil("9aa97862-b47f-11ec-a611-5379cfa62666"),
+
+				Name:   "test name",
+				Detail: "test detail",
+
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+
+				DialTimeout: 30000,
+				TryInterval: 600000,
+
+				MaxTryCount0: 3,
+				MaxTryCount1: 3,
+				MaxTryCount2: 3,
+				MaxTryCount3: 3,
+				MaxTryCount4: 3,
 
 				TMCreate: "2020-04-18 03:22:17.995000",
 				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: "2020-04-18 03:22:17.995000",
 			},
 		},
 	}
@@ -145,15 +177,21 @@ func Test_OutplanDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
 
-			h := NewHandler(dbTest, mockCache)
-
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
 			if err := h.OutplanCreate(context.Background(), tt.outplan); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
 			if err := h.OutplanDelete(context.Background(), tt.outplan.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -166,8 +204,8 @@ func Test_OutplanDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == DefaultTimeStamp {
-				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -182,6 +220,9 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 		customerID uuid.UUID
 		token      string
 		limit      uint64
+
+		responseCurtime string
+		expectRes       []*outplan.Outplan
 	}{
 		{
 			"1 item",
@@ -206,16 +247,41 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					MaxTryCount2: 3,
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
-
-					TMCreate: "2020-04-18 03:22:17.995000",
-					TMUpdate: "2020-04-18 03:22:17.995000",
-					TMDelete: DefaultTimeStamp,
 				},
 			},
 
 			uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
 			"2022-04-18 03:22:17.995000",
 			100,
+
+			"2020-04-18 03:22:17.995000",
+			[]*outplan.Outplan{
+				{
+					ID:         uuid.FromStringOrNil("0b2e5afe-b3b7-11ec-90fb-0f96dcc8665c"),
+					CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
+
+					Name:   "test name",
+					Detail: "test detail",
+
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000001",
+					},
+
+					DialTimeout: 30000,
+					TryInterval: 600000,
+
+					MaxTryCount0: 3,
+					MaxTryCount1: 3,
+					MaxTryCount2: 3,
+					MaxTryCount3: 3,
+					MaxTryCount4: 3,
+
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
+				},
+			},
 		},
 		{
 			"2 items",
@@ -239,11 +305,35 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					MaxTryCount2: 3,
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
-
-					TMCreate: "2020-04-18 03:22:18.995000",
-					TMUpdate: "2020-04-18 03:22:17.995000",
-					TMDelete: DefaultTimeStamp,
 				},
+				{
+					ID:         uuid.FromStringOrNil("3792fa72-b3b8-11ec-94f5-ff4b74330ee9"),
+					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
+					Name:       "test name",
+					Detail:     "test detail",
+
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000001",
+					},
+
+					DialTimeout: 30000,
+					TryInterval: 600000,
+
+					MaxTryCount0: 3,
+					MaxTryCount1: 3,
+					MaxTryCount2: 3,
+					MaxTryCount3: 3,
+					MaxTryCount4: 3,
+				},
+			},
+
+			uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
+			"2022-04-18 03:22:17.995000",
+			100,
+
+			"2020-04-18 03:22:17.995000",
+			[]*outplan.Outplan{
 				{
 					ID:         uuid.FromStringOrNil("3792fa72-b3b8-11ec-94f5-ff4b74330ee9"),
 					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
@@ -265,14 +355,34 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 					MaxTryCount4: 3,
 
 					TMCreate: "2020-04-18 03:22:17.995000",
-					TMUpdate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
+				},
+				{
+					ID:         uuid.FromStringOrNil("373b3dc8-b3b8-11ec-b5ef-dfeccd01e42e"),
+					CustomerID: uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
+					Name:       "test name",
+					Detail:     "test detail",
+
+					Source: &commonaddress.Address{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000001",
+					},
+
+					DialTimeout: 30000,
+					TryInterval: 600000,
+
+					MaxTryCount0: 3,
+					MaxTryCount1: 3,
+					MaxTryCount2: 3,
+					MaxTryCount3: 3,
+					MaxTryCount4: 3,
+
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
 			},
-
-			uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
-			"2022-04-18 03:22:17.995000",
-			100,
 		},
 	}
 
@@ -281,8 +391,10 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
@@ -290,8 +402,9 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, p := range tt.outplans {
-				mockCache.EXPECT().OutplanSet(ctx, p).Return(nil)
-				if err := h.OutplanCreate(context.Background(), p); err != nil {
+				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurtime)
+				mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
+				if err := h.OutplanCreate(ctx, p); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
@@ -302,8 +415,8 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			}
 			t.Logf("Created outdial. outdial: %v", res)
 
-			if reflect.DeepEqual(tt.outplans, res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.outplans, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -317,7 +430,8 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 		outplanName string
 		detail      string
 
-		expectRes *outplan.Outplan
+		responseCurTime string
+		expectRes       *outplan.Outplan
 	}{
 		{
 			"normal",
@@ -340,15 +454,12 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				MaxTryCount2: 3,
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
-
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
 			},
 
 			"update name",
 			"update detail",
 
+			"2020-04-18 03:22:17.995000",
 			&outplan.Outplan{
 				ID:         uuid.FromStringOrNil("b231e8a0-b3d2-11ec-b78a-57bdcb8f39c3"),
 				CustomerID: uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
@@ -380,19 +491,23 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
 
 			ctx := context.Background()
 
-			mockCache.EXPECT().OutplanSet(ctx, tt.outplan).Return(nil)
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanCreate(context.Background(), tt.outplan); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanUpdateBasicInfo(ctx, tt.outplan.ID, tt.outplanName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -405,7 +520,6 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -427,7 +541,8 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 		maxTryCount3 int
 		maxTryCount4 int
 
-		expectRes *outplan.Outplan
+		responseCurTime string
+		expectRes       *outplan.Outplan
 	}{
 		{
 			"normal",
@@ -447,9 +562,6 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				MaxTryCount2: 3,
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
-				TMDelete:     DefaultTimeStamp,
 			},
 
 			&commonaddress.Address{
@@ -464,6 +576,7 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 			2,
 			2,
 
+			"2020-04-18 03:22:17.995000",
 			&outplan.Outplan{
 				ID:         uuid.FromStringOrNil("78f2b8de-b3ce-11ec-b4f4-e7c49d54d606"),
 				CustomerID: uuid.FromStringOrNil("d24cd7f8-b3b9-11ec-9c73-071ce4f4b4ed"),
@@ -492,19 +605,23 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := util.NewMockUtil(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
+				util:  mockUtil,
 				db:    dbTest,
 				cache: mockCache,
 			}
 
 			ctx := context.Background()
 
-			mockCache.EXPECT().OutplanSet(ctx, tt.outplan).Return(nil)
-			if err := h.OutplanCreate(context.Background(), tt.outplan); err != nil {
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
+			if err := h.OutplanCreate(ctx, tt.outplan); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanUpdateDialInfo(ctx, tt.outplan.ID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -517,7 +634,6 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

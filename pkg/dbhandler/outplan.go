@@ -139,9 +139,9 @@ func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
 		t.MaxTryCount3,
 		t.MaxTryCount4,
 
-		t.TMCreate,
-		t.TMUpdate,
-		t.TMDelete,
+		h.util.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. OutplanCreate. err: %v", err)
@@ -229,7 +229,7 @@ func (h *handler) OutplanDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := GetCurTime()
+	ts := h.util.GetCurTime()
 	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. OutplanDelete. err: %v", err)
 	}
@@ -303,7 +303,7 @@ func (h *handler) OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. OutplanUpdateBasicInfo. err: %v", err)
 	}
 
@@ -346,7 +346,7 @@ func (h *handler) OutplanUpdateDialInfo(
 		return fmt.Errorf("could not marshal source. OutplanCreate. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, tmpSource, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4, GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, tmpSource, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4, h.util.GetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. OutplanUpdateDialInfo. err: %v", err)
 	}
 

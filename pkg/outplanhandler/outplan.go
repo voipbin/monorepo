@@ -8,7 +8,6 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new outplan
@@ -35,7 +34,6 @@ func (h *outplanHandler) Create(
 			"customer_id": customerID,
 		})
 
-	ts := dbhandler.GetCurTime()
 	id := uuid.Must(uuid.NewV4())
 	t := &outplan.Outplan{
 		ID:         id,
@@ -54,10 +52,6 @@ func (h *outplanHandler) Create(
 		MaxTryCount2: maxTryCount2,
 		MaxTryCount3: maxTryCount3,
 		MaxTryCount4: maxTryCount4,
-
-		TMCreate: ts,
-		TMUpdate: ts,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 	log.WithField("outplan", t).Debug("Creating a new outplan.")
 

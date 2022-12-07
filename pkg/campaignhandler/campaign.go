@@ -10,7 +10,6 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new campaign
@@ -54,7 +53,6 @@ func (h *campaignHandler) Create(
 	}
 	log.WithField("flow", f).Debugf("Created a flow for campaign. flow_id: %s", f.ID)
 
-	ts := dbhandler.GetCurTime()
 	if id == uuid.Nil {
 		id = uuid.Must(uuid.NewV4())
 	}
@@ -74,9 +72,6 @@ func (h *campaignHandler) Create(
 		OutdialID:      outdialID,
 		QueueID:        queueID,
 		NextCampaignID: nextCampaignID,
-		TMCreate:       ts,
-		TMUpdate:       ts,
-		TMDelete:       dbhandler.DefaultTimeStamp,
 	}
 	log.WithField("campaign", t).Debug("Creating a new campaign.")
 

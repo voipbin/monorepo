@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/util"
 )
 
 // DBHandler interface for call_manager database handle
@@ -71,6 +72,7 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
+	util  util.Util
 	db    *sql.DB
 	cache cachehandler.CacheHandler
 }
@@ -88,19 +90,20 @@ const (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
+		util:  util.NewUtil(),
 		db:    db,
 		cache: cache,
 	}
 	return h
 }
 
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
+// // GetCurTime return current utc time string
+// func GetCurTime() string {
+// 	now := time.Now().UTC().String()
+// 	res := strings.TrimSuffix(now, " +0000 UTC")
 
-	return res
-}
+// 	return res
+// }
 
 // GetCurTimeAdd return current utc time string
 func GetCurTimeAdd(d time.Duration) string {
