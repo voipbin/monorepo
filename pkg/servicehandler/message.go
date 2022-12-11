@@ -22,7 +22,7 @@ func (h *serviceHandler) Message(ctx context.Context, uri string, m []byte) erro
 	}
 
 	log.WithField("request", req).Debugf("Created hook.")
-	if err := h.reqHandler.MMV1Hook(ctx, req); err != nil {
+	if err := h.reqHandler.MessageV1Hook(ctx, req); err != nil {
 		return err
 	}
 
