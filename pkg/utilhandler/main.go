@@ -16,7 +16,7 @@ type UtilHandler interface {
 
 type utilHandler struct{}
 
-// NewUtil defines
-func NewUtil() UtilHandler {
+// NewUtilHandler defines
+func NewUtilHandler() UtilHandler {
 	return &utilHandler{}
 }
