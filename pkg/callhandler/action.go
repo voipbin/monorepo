@@ -189,7 +189,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	log.WithField("action", nextAction).Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
 
 	// set action and action next hold
-	nextAction.TMExecute = h.util.GetCurTime()
+	nextAction.TMExecute = h.utilHandler.GetCurTime()
 	cc, err := h.updateActionAndActionNextHold(ctx, c.ID, nextAction)
 	if err != nil {
 		log.Errorf("Could not set the action for call. Move to the next action. err: %v", err)
@@ -564,7 +564,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 	}
 
 	recordingID := uuid.Must(uuid.NewV4())
-	recordingName := fmt.Sprintf("call_%s_%s", c.ID, h.util.GetCurTimeRFC3339())
+	recordingName := fmt.Sprintf("call_%s_%s", c.ID, h.utilHandler.GetCurTimeRFC3339())
 	filename := fmt.Sprintf("%s.%s", recordingName, format)
 	channelID := uuid.Must(uuid.NewV4()).String()
 
@@ -584,7 +584,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		TMStart: defaultTimeStamp,
 		TMEnd:   defaultTimeStamp,
 
-		TMCreate: h.util.GetCurTime(),
+		TMCreate: h.utilHandler.GetCurTime(),
 		TMUpdate: defaultTimeStamp,
 		TMDelete: defaultTimeStamp,
 	}

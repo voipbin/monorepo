@@ -8,6 +8,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 
@@ -21,7 +22,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {
@@ -49,13 +49,13 @@ func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := &callHandler{
-				util:              mockUtil,
+				utilHandler:       mockUtil,
 				reqHandler:        mockReq,
 				db:                mockDB,
 				confbridgeHandler: mockConfbridge,
@@ -94,14 +94,14 @@ func Test_ActionExecute_actionExecuteStreamEcho(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -140,14 +140,14 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -201,13 +201,13 @@ func Test_ActionTimeoutNext(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				util:           mockUtil,
+				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
 				channelHandler: mockChannel,
@@ -265,14 +265,14 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -315,20 +315,20 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
-			mockUtil.EXPECT().GetCurTimeRFC3339().Return(util.GetCurTimeRFC3339())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
+			mockUtil.EXPECT().GetCurTimeRFC3339().Return(utilhandler.GetCurTimeRFC3339())
 			mockDB.EXPECT().RecordingCreate(ctx, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallSetRecordID(ctx, tt.call.ID, gomock.Any()).Return(nil)
@@ -373,14 +373,14 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -447,14 +447,14 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -547,14 +547,14 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -622,14 +622,14 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -684,14 +684,14 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -750,14 +750,14 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -825,14 +825,14 @@ func Test_actionExecuteAMD(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:       mockUtil,
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -994,13 +994,13 @@ func Test_ActionNext(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
-				util:          mockUtil,
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
@@ -1010,7 +1010,7 @@ func Test_ActionNext(t *testing.T) {
 
 			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.responseAction, nil)
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockDB.EXPECT().CallSetActionAndActionNextHold(ctx, tt.call.ID, tt.responseAction, false).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)

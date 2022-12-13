@@ -9,11 +9,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 // ChannelHandler is interface for service handle
@@ -64,7 +64,7 @@ type ChannelHandler interface {
 
 // channelHandler structure for service handle
 type channelHandler struct {
-	util          util.Util
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -118,7 +118,7 @@ func init() {
 func NewChannelHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler) ChannelHandler {
 
 	h := &channelHandler{
-		util:          util.NewUtil(),
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    r,
 		notifyHandler: n,
 		db:            db,

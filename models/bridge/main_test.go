@@ -116,7 +116,7 @@ func TestParseBridgeName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := parseBridgeName(tt.bridgeName)
+			res := ParseBridgeName(tt.bridgeName)
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match. expact: %v, got: %v", tt.expectRes, res)
 			}

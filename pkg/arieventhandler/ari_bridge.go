@@ -21,6 +21,14 @@ func (h *eventHandler) EventHandlerBridgeCreated(ctx context.Context, evt interf
 		"bridge_id":   e.Bridge.ID,
 	})
 
+	// get reference_type
+	mapParse := bridge.ParseBridgeName(e.Bridge.Name)
+
+	referenceType := bridge.ReferenceTypeUnknown
+	if mapParse["reference_type"] != "" {
+		referenceType = bridge.ReferenceType(mapParse["reference_type"])
+	}
+
 	br, err := h.bridgeHandler.Create(
 		ctx,
 		e.AsteriskID,
@@ -33,7 +41,7 @@ func (h *eventHandler) EventHandlerBridgeCreated(ctx context.Context, evt interf
 		e.Bridge.VideoMode,
 		e.Bridge.VideoSourceID,
 		[]string{},
-		bridge.ReferenceTypeUnknown,
+		referenceType,
 		uuid.Nil,
 	)
 	if err != nil {

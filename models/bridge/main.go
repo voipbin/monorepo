@@ -96,8 +96,8 @@ func NewBridgeByBridgeCreated(e *ari.BridgeCreated) *Bridge {
 	return b
 }
 
-// parseBridgeName returns bridge name parse
-func parseBridgeName(bridgeName string) map[string]string {
+// ParseBridgeName returns bridge name parse
+func ParseBridgeName(bridgeName string) map[string]string {
 	res := map[string]string{}
 
 	if bridgeName == "" {
@@ -139,7 +139,7 @@ func NewBridgeByARIBridge(e *ari.Bridge) *Bridge {
 		ReferenceID:   uuid.Nil,
 	}
 
-	mapParse := parseBridgeName(b.Name)
+	mapParse := ParseBridgeName(b.Name)
 
 	// reference info
 	if mapParse["reference_type"] != "" {

@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
 func Test_ChannelCreate(t *testing.T) {
@@ -134,13 +134,13 @@ func Test_ChannelCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
@@ -203,13 +203,13 @@ func Test_ChannelGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
@@ -275,13 +275,13 @@ func Test_ChannelEnd(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
@@ -355,13 +355,13 @@ func Test_ChannelSetStateAnswer(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -462,13 +462,13 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -545,13 +545,13 @@ func Test_ChannelSetStasis(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			// prepare
@@ -697,13 +697,13 @@ func Test_ChannelSetType(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			// prepare
@@ -807,13 +807,13 @@ func Test_ChannelSetData(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			// prepare
@@ -922,13 +922,13 @@ func Test_ChannelSetDataAndStasis(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			// prepare
@@ -1028,13 +1028,13 @@ func Test_ChannelSetBridgeID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			// prepare
@@ -1211,13 +1211,13 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -1295,13 +1295,13 @@ func Test_ChannelSetSIPCallID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -1428,13 +1428,13 @@ func Test_ChannelSetDirection(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()

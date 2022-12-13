@@ -107,7 +107,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	log.Debugf("Created active-flow. active-flow: %v", af)
 
 	// create channel id
-	channelID := h.util.CreateUUID().String()
+	channelID := h.utilHandler.CreateUUID().String()
 
 	// create a call
 	c, err := h.Create(
@@ -144,7 +144,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing call. err: %v", err)
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.utilHandler.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 		return nil, err
@@ -339,7 +339,7 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
 
 		// hangup
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.utilHandler.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 		return err
@@ -371,7 +371,7 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 	if err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.util.GetCurTime()); err != nil {
+		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.utilHandler.GetCurTime()); err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
 		}
 		return err
@@ -397,7 +397,7 @@ func (h *callHandler) createFailoverChannel(ctx context.Context, c *call.Call) (
 	dialrouteID := dialroute.ID
 
 	// create a new channel id
-	channelID := h.util.CreateUUID().String()
+	channelID := h.utilHandler.CreateUUID().String()
 
 	// update call
 	cc, err := h.updateForRouteFailover(ctx, c.ID, channelID, dialrouteID)

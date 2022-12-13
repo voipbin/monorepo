@@ -8,11 +8,11 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_UpdateStatusRinging(t *testing.T) {
@@ -203,13 +203,13 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:          mockUtil,
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,

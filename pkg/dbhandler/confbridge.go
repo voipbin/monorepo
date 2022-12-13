@@ -252,7 +252,7 @@ func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, bridgeID, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, bridgeID, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetBridgeID. err: %v", err)
 	}
@@ -273,7 +273,7 @@ func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeDelete. err: %v", err)
 	}
@@ -295,7 +295,7 @@ func (h *handler) ConfbridgeSetRecordID(ctx context.Context, id uuid.UUID, recor
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetRecordID. err: %v", err)
 	}
@@ -321,7 +321,7 @@ func (h *handler) ConfbridgeAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddRecordIDs. err: %v", err)
 	}
@@ -347,7 +347,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, callID.String(), h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, callID.String(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
 	}
@@ -372,7 +372,7 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
 	}

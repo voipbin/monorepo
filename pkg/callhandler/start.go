@@ -315,7 +315,7 @@ func (h *callHandler) startHandlerContextOutgoingCall(cn *channel.Channel, data 
 	log = log.WithField("call_id", callID.String())
 
 	// update call's asterisk id
-	if err := h.db.CallSetAsteriskID(context.Background(), callID, cn.AsteriskID, h.util.GetCurTime()); err != nil {
+	if err := h.db.CallSetAsteriskID(context.Background(), callID, cn.AsteriskID, h.utilHandler.GetCurTime()); err != nil {
 		log.Errorf("Could not set call id to the channel. err: %v", err)
 		return fmt.Errorf("could not set asterisk id to call. channel: %s, asterisk: %s", cn.ID, cn.AsteriskID)
 	}
@@ -388,7 +388,7 @@ func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, re
 	})
 
 	// create join bridge
-	bridgeID := h.util.CreateUUID()
+	bridgeID := h.utilHandler.CreateUUID()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", referenceType, referenceID)
 	if errBridge := h.reqHandler.AstBridgeCreate(ctx, cn.AsteriskID, bridgeID.String(), bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
 		log.Errorf("Could not create a bridge for external media. error: %v", errBridge)
@@ -433,7 +433,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Chann
 		})
 	log.Debugf("Starting the conference to joining. source: %s", cn.SourceNumber)
 
-	id := h.util.CreateUUID()
+	id := h.utilHandler.CreateUUID()
 	log = log.WithField("call_id", id)
 
 	// get conference info
@@ -533,7 +533,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, da
 		})
 	log.Debugf("Starting the flow incoming call handler. source: %s, destinaiton: %s", cn.SourceNumber, cn.DestinationNumber)
 
-	id := h.util.CreateUUID()
+	id := h.utilHandler.CreateUUID()
 	log = log.WithField("call_id", id)
 
 	// get number info

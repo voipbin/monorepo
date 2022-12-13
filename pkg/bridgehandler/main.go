@@ -10,10 +10,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 // BridgeHandler is interface for service handle
@@ -47,7 +47,7 @@ type BridgeHandler interface {
 
 // bridgeHandler structure for service handle
 type bridgeHandler struct {
-	util          util.Util
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -91,7 +91,7 @@ func init() {
 func NewBridgeHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler) BridgeHandler {
 
 	h := &bridgeHandler{
-		util:          util.NewUtil(),
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    r,
 		notifyHandler: n,
 		db:            db,

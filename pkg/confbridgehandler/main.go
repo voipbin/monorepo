@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -17,7 +18,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 // Contexts of confbridge types
@@ -43,7 +43,7 @@ type ConfbridgeHandler interface {
 
 // confbridgeHandler structure for service handle
 type confbridgeHandler struct {
-	util          util.Util
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
@@ -97,7 +97,7 @@ func NewConfbridgeHandler(
 ) ConfbridgeHandler {
 
 	h := &confbridgeHandler{
-		util:          util.NewUtil(),
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,

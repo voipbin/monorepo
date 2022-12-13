@@ -9,13 +9,13 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
@@ -60,13 +60,13 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
-				util:          mockUtil,
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotfiy,
@@ -276,13 +276,13 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
-				util:          mockUtil,
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
@@ -295,7 +295,7 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 			// action next part.
 			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(&action.Action{}, nil)
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 			mockDB.EXPECT().CallSetActionAndActionNextHold(gomock.Any(), tt.call.ID, gomock.Any(), false).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.responseCall)

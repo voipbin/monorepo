@@ -10,6 +10,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -21,7 +22,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_GetTypeContextIncomingCall(t *testing.T) {
@@ -169,13 +169,13 @@ func Test_typeConferenceStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:          mockUtil,
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -206,7 +206,7 @@ func Test_typeConferenceStart(t *testing.T) {
 			// action next part.
 			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
@@ -335,13 +335,13 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:          mockUtil,
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -422,13 +422,13 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &callHandler{
-				util:          mockUtil,
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
@@ -436,7 +436,7 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 			mockDB.EXPECT().CallSetAsteriskID(ctx, tt.call.ID, tt.channel.AsteriskID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(nil)

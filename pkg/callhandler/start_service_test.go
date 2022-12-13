@@ -8,13 +8,13 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 func Test_startServiceFromAMD(t *testing.T) {
@@ -81,13 +81,13 @@ func Test_startServiceFromAMD(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &callHandler{
-				util:          mockUtil,
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
@@ -95,7 +95,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 
 			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channel.ID).Return(tt.responseAMD, nil)
 
