@@ -11,6 +11,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -21,7 +22,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
 )
 
 // CallHandler is interface for service handle
@@ -66,7 +66,7 @@ type CallHandler interface {
 
 // callHandler structure for service handle
 type callHandler struct {
-	util              util.Util
+	utilHandler       utilhandler.UtilHandler
 	reqHandler        requesthandler.RequestHandler
 	db                dbhandler.DBHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
@@ -181,7 +181,7 @@ func NewCallHandler(
 ) CallHandler {
 
 	h := &callHandler{
-		util:              util.NewUtil(),
+		utilHandler:       utilhandler.NewUtilHandler(),
 		reqHandler:        r,
 		notifyHandler:     n,
 		db:                db,

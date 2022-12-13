@@ -11,7 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/util"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
 func Test_RecordingCreate(t *testing.T) {
@@ -137,9 +137,9 @@ func Test_RecordingGets(t *testing.T) {
 
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := &handler{
-				util:  util.NewUtil(),
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: utilhandler.NewUtilHandler(),
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -149,7 +149,7 @@ func Test_RecordingGets(t *testing.T) {
 				_ = h.RecordingCreate(ctx, recording)
 			}
 
-			res, err := h.RecordingGets(ctx, tt.customerID, 10, h.util.GetCurTime())
+			res, err := h.RecordingGets(ctx, tt.customerID, 10, h.utilHandler.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

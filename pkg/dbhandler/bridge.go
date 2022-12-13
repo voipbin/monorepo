@@ -134,7 +134,7 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		b.ReferenceType,
 		b.ReferenceID.Bytes(),
 
-		h.util.GetCurTime(),
+		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -237,7 +237,7 @@ func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 		id = ?
 	`
 
-	ts := h.util.GetCurTime()
+	ts := h.utilHandler.GetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeEnd. err: %v", err)
@@ -264,7 +264,7 @@ func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, channelID, h.util.GetCurTime(), id)
+	_, err := h.db.Exec(q, channelID, h.utilHandler.GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeAddChannelID. err: %v", err)
 	}
@@ -296,7 +296,7 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, channelID, h.util.GetCurTime(), id)
+	_, err := h.db.Exec(q, channelID, h.utilHandler.GetCurTime(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeRemoveChannelID. err: %v", err)
 	}

@@ -29,7 +29,7 @@ func (h *confbridgeHandler) Create(ctx context.Context, confbridgeType confbridg
 		RecordingIDs:   []uuid.UUID{},
 		ChannelCallIDs: map[string]uuid.UUID{},
 
-		TMCreate: h.util.GetCurTime(),
+		TMCreate: h.utilHandler.GetCurTime(),
 		TMUpdate: dbhandler.DefaultTimeStamp,
 		TMDelete: dbhandler.DefaultTimeStamp,
 	}
