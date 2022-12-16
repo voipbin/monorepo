@@ -9,6 +9,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
@@ -36,6 +37,7 @@ type MessageHandler interface {
 
 // messageHandler defines
 type messageHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -49,6 +51,7 @@ func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHa
 	messageHandlerMessagebird := messagehandlermessagebird.NewMessageHandlerMessagebird(r, db)
 
 	return &messageHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
 		reqHandler:    r,
 		notifyHandler: n,

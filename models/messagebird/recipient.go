@@ -6,7 +6,6 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 )
 
 // Recipient defines
@@ -24,8 +23,7 @@ func (h *Recipient) ConvertTartget() *target.Target {
 			Type:   commonaddress.TypeTel,
 			Target: "+" + strconv.Itoa(h.Recipient),
 		},
-		Status:   target.Status(h.Status),
-		Parts:    h.MessagePartCount,
-		TMUpdate: dbhandler.GetCurTime(),
+		Status: target.Status(h.Status),
+		Parts:  h.MessagePartCount,
 	}
 }

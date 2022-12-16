@@ -114,7 +114,7 @@ func Test_Hook(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().NMV1NumberGetByNumber(ctx, tt.expectToNum).Return(tt.responseNumber, nil)
+			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.expectToNum).Return(tt.responseNumber, nil)
 
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
@@ -175,8 +175,8 @@ func Test_executeMessageFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, uuid.Nil, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.m.ID).Return(tt.expectRes, nil)
-			mockReq.EXPECT().FMV1ActiveflowExecute(ctx, tt.expectRes.ID).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.m.ID).Return(tt.expectRes, nil)
+			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.expectRes.ID).Return(nil)
 
 			res, err := h.executeMessageFlow(ctx, tt.m, tt.num)
 			if err != nil {

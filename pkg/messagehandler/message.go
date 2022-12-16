@@ -8,7 +8,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 )
 
 // Gets returns list of messges info of the given customer_id
@@ -22,7 +21,7 @@ func (h *messageHandler) Gets(ctx context.Context, customerID uuid.UUID, pageSiz
 	log.Debugf("Gets the messages. customer_id: %s", customerID)
 
 	if pageToken == "" {
-		pageToken = dbhandler.GetCurTime()
+		pageToken = h.utilHandler.GetCurTime()
 	}
 
 	res, err := h.db.MessageGets(ctx, customerID, pageSize, pageToken)
