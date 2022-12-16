@@ -8,7 +8,6 @@ import (
 
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	mmtarget "gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 )
 
 // Message defines
@@ -124,9 +123,5 @@ func (h *Message) ConvertMessage(id uuid.UUID, customerID uuid.UUID) *mmmessage.
 		Text:                h.Data.Payload.Text,
 		Medias:              []string{},
 		Direction:           mmmessage.DirectionInbound,
-
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 }

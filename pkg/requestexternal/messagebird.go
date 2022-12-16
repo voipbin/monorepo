@@ -2,7 +2,7 @@ package requestexternal
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -57,7 +57,7 @@ func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []s
 	}
 
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Errorf("Could not receive the response correctly. err: %v", err)
 		return nil, err

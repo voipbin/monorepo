@@ -9,7 +9,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 )
 
 // Send sends the message.
@@ -46,10 +45,6 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 		Text:      text,
 		Medias:    []string{},
 		Direction: message.DirectionOutbound,
-
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	// create a message

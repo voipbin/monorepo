@@ -13,7 +13,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/hooktelnyx"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 )
 
 // Hook handles hook message
@@ -73,7 +72,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	log = log.WithField("number", toNum)
 
 	// get number info
-	num, err := h.reqHandler.NMV1NumberGetByNumber(ctx, toNum)
+	num, err := h.reqHandler.NumberV1NumberGetByNumber(ctx, toNum)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, nil, err
@@ -83,9 +82,6 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	// convert to Message.
 	id := uuid.Must(uuid.NewV4())
 	msg := hm.ConvertMessage(id, num.CustomerID)
-	msg.TMCreate = dbhandler.GetCurTime()
-	msg.TMUpdate = dbhandler.DefaultTimeStamp
-	msg.TMDelete = dbhandler.DefaultTimeStamp
 	log = log.WithFields(logrus.Fields{
 		"message_id":  id,
 		"customer_id": num.CustomerID,
@@ -117,14 +113,14 @@ func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Mess
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FMV1ActiveflowCreate(ctx, uuid.Nil, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, m.ID)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)
 		return nil, err
 	}
 	log.WithField("activeflow", af).Debugf("Created activeflow. activeflow_id: %s", af.ID)
 
-	if errExecute := h.reqHandler.FMV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
+	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
 		log.Errorf("Could not execute the activeflow. err: %v", errExecute)
 		return nil, errExecute
 	}
