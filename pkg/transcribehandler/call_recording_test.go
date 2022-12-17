@@ -76,7 +76,7 @@ func TestCallRecording(t *testing.T) {
 			ctx := context.Background()
 
 			lang := getBCP47LanguageCode(tt.language)
-			mockReq.EXPECT().CMV1CallGet(gomock.Any(), tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(gomock.Any(), tt.callID).Return(tt.responseCall, nil)
 
 			for i, recordingID := range tt.responseCall.RecordingIDs {
 				mockGoogle.EXPECT().Recording(gomock.Any(), recordingID, lang).Return(&transcript.Transcript{}, nil)

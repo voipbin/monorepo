@@ -20,7 +20,7 @@ func (h *streamingHandler) Recording(ctx context.Context, recordingID uuid.UUID,
 	)
 
 	// send a request to storage-manager to get a media link
-	recording, err := h.reqHandler.SMV1RecordingGet(ctx, recordingID)
+	recording, err := h.reqHandler.StorageV1RecordingGet(ctx, recordingID)
 	if err != nil {
 		log.Errorf("Could not get recording info. err: %v", err)
 		return nil, err

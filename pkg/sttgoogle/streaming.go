@@ -46,7 +46,7 @@ func (h *streamingHandler) Start(ctx context.Context, tr *transcribe.Transcribe,
 	// create the external media
 	// send request to the call-manager
 	hostAddr := conn.LocalAddr().String()
-	tmp, err := h.reqHandler.CMV1CallAddExternalMedia(
+	tmp, err := h.reqHandler.CallV1CallAddExternalMedia(
 		ctx,
 		tr.ReferenceID,
 		hostAddr,

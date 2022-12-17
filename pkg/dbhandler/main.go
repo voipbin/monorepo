@@ -6,10 +6,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
@@ -28,8 +27,9 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
 }
 
 // List of default values
@@ -45,16 +45,17 @@ var (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		db:    db,
-		cache: cache,
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       cache,
 	}
 	return h
 }
 
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
+// // GetCurTime return current utc time string
+// func GetCurTime() string {
+// 	now := time.Now().UTC().String()
+// 	res := strings.TrimSuffix(now, " +0000 UTC")
 
-	return res
-}
+// 	return res
+// }

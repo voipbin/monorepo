@@ -25,7 +25,7 @@ func (h *transcribeHandler) CallRecording(ctx context.Context, customerID, callI
 	log.Debugf("Parsed BCP47 language code. lang: %s", lang)
 
 	// get call info
-	c, err := h.reqHandler.CMV1CallGet(ctx, callID)
+	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
 		return nil, err
 	}

@@ -114,9 +114,9 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 
 		tmpTranscripts,
 
-		t.TMCreate,
-		t.TMUpdate,
-		t.TMDelete,
+		h.utilHandler.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. TranscribeCreate. err: %v", err)
@@ -218,7 +218,7 @@ func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerDelete. err: %v", err)
 	}
@@ -249,7 +249,7 @@ func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *
 		return fmt.Errorf("could not marshal the transcripts. TranscribeAddTranscript. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, m, GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, m, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. TranscribeAddTranscript. err: %v", err)
 	}
