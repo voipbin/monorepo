@@ -9,7 +9,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 )
 
 // Get returns transcribe
@@ -61,10 +60,6 @@ func (h *transcribeHandler) Create(
 		Direction: direction,
 
 		Transcripts: tmpTranscripts,
-
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	if err := h.db.TranscribeCreate(ctx, tr); err != nil {
