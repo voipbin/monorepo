@@ -18,14 +18,14 @@ const (
 	select
 		id,
 		customer_id,
-		type,
+
+		reference_type,
 		reference_id,
 
+		status,
 		host_id,
 		language,
 		direction,
-
-		transcripts,
 
 		tm_create,
 		tm_update,
@@ -38,32 +38,24 @@ const (
 
 // transcribeGetFromRow gets the transcribe from the row.
 func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, error) {
-	var transcripts string
 	res := &transcribe.Transcribe{}
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
-		&res.Type,
+
+		&res.ReferenceType,
 		&res.ReferenceID,
 
+		&res.Status,
 		&res.HostID,
 		&res.Language,
 		&res.Direction,
-
-		&transcripts,
 
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. transcribeGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(transcripts), &res.Transcripts); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the transcripts. transcribeGetFromRow. err: %v", err)
-	}
-	if res.Transcripts == nil {
-		res.Transcripts = []transcript.Transcript{}
 	}
 
 	return res, nil
@@ -74,45 +66,37 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 	q := `insert into transcribes(
 		id,
 		customer_id,
-		type,
+
+		reference_type,
 		reference_id,
 
+		status,
 		host_id,
 		language,
 		direction,
-
-		transcripts,
 
 		tm_create,
 		tm_update,
 		tm_delete
 
 	) values(
+		?, ?,
+		?, ?,
 		?, ?, ?, ?,
-		?, ?, ?,
-		?,
 		?, ?, ?
 		)`
 
-	if t.Transcripts == nil {
-		t.Transcripts = []transcript.Transcript{}
-	}
-	tmpTranscripts, err := json.Marshal(t.Transcripts)
-	if err != nil {
-		return fmt.Errorf("could not marshal the transcripts. TranscribeCreate. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
+	_, err := h.db.Exec(q,
 		t.ID.Bytes(),
 		t.CustomerID.Bytes(),
-		t.Type,
+
+		t.ReferenceType,
 		t.ReferenceID.Bytes(),
 
+		t.Status,
 		t.HostID.Bytes(),
 		t.Language,
 		t.Direction,
-
-		tmpTranscripts,
 
 		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
@@ -131,7 +115,7 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 // transcribeUpdateToCache gets the transcribe from the DB and update the cache.
 func (h *handler) transcribeUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.TranscribeGetFromDB(ctx, id)
+	res, err := h.transcribeGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -172,7 +156,7 @@ func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.
 		return res, nil
 	}
 
-	res, err = h.TranscribeGetFromDB(ctx, id)
+	res, err = h.transcribeGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -183,8 +167,8 @@ func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.
 	return res, nil
 }
 
-// TranscribeGetFromDB returns transcribe from the DB.
-func (h *handler) TranscribeGetFromDB(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
+// transcribeGetFromDB returns transcribe from the DB.
+func (h *handler) transcribeGetFromDB(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", transcribeSelect)
@@ -255,6 +239,95 @@ func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *
 	}
 
 	// update the cache
+	_ = h.transcribeUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// TranscribeGetsByCustomerID returns a list of transcribes of the given customerID.
+func (h *handler) TranscribeGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error) {
+
+	// prepare
+	q := fmt.Sprintf(`%s
+		where
+			customer_id = ?
+			and tm_create < ?
+			and tm_delete >= ?
+		order by
+			tm_create
+		desc limit ?
+		`, transcribeSelect)
+
+	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. TranscribeGetsByCustomerID. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*transcribe.Transcribe{}
+	for rows.Next() {
+		u, err := h.transcribeGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. TranscribeGetsByCustomerID, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// TranscribeGetByReferenceIDAndLanguage returns transcribe of the given referenceid and language.
+func (h *handler) TranscribeGetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+
+	// prepare
+	q := fmt.Sprintf(`%s
+		where
+			reference_id = ?
+			and language = ?
+			and tm_delete >= ?
+		order by
+			tm_create
+		desc limit ?
+		`, transcribeSelect)
+
+	row, err := h.db.Query(q, referenceID.Bytes(), language, DefaultTimeStamp)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. TranscribeGetByReferenceIDAndLanguage. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.transcribeGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get transcribe. TranscribeGetByReferenceIDAndLanguage, err: %v", err)
+	}
+
+	return res, nil
+}
+
+// TranscribeSetStatus sets the transcribe's status
+func (h *handler) TranscribeSetStatus(ctx context.Context, id uuid.UUID, status transcribe.Status) error {
+
+	// prepare
+	q := `
+	update
+		transcribes
+	set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not query. TranscribeSetStatus. err: %v", err)
+	}
+
 	_ = h.transcribeUpdateToCache(ctx, id)
 
 	return nil

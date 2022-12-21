@@ -4,17 +4,17 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
-
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 )
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID           uuid.UUID        `json:"id"`
-	TranscribeID uuid.UUID        `json:"transcribe_id"`
-	Direction    common.Direction `json:"direction"` // direction. in/out
-	Message      string           `json:"message"`   // message
-	TMCreate     string           `json:"tm_create"` // timestamp
+	ID           uuid.UUID `json:"id"`
+	TranscribeID uuid.UUID `json:"transcribe_id"`
+	Direction    Direction `json:"direction"` // direction. in/out
+	Message      string    `json:"message"`   // message
+
+	TMTranscript string `json:"tm_transcript"`
+	TMCreate     string `json:"tm_create"` // timestamp
 }
 
 // ConvertWebhookMessage converts to the event
@@ -24,6 +24,7 @@ func (h *Transcript) ConvertWebhookMessage() *WebhookMessage {
 		TranscribeID: h.TranscribeID,
 		Direction:    h.Direction,
 		Message:      h.Message,
+		TMTranscript: h.TMTranscript,
 		TMCreate:     h.TMCreate,
 	}
 }
