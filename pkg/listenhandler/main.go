@@ -1,7 +1,6 @@
 package listenhandler
 
 import (
-	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -44,8 +43,8 @@ var (
 
 	// v1
 
-	// // call-recordings
-	// regV1CallRecordings = regexp.MustCompile("/v1/call_recordings")
+	// call-recordings
+	regV1CallRecordings = regexp.MustCompile("/v1/call_recordings")
 
 	// recordings
 	regV1Recordings = regexp.MustCompile("/v1/recordings")
@@ -55,8 +54,7 @@ var (
 	regV1StreamingsID = regexp.MustCompile("/v1/streamings/" + regUUID + "$")
 
 	// transcribes
-	regV1TranscribesGet = regexp.MustCompile(`/v1/transcribes\?`)
-	regV1TranscribesID  = regexp.MustCompile("/v1/transcribes/" + regUUID + "$")
+	regV1TranscribesID = regexp.MustCompile("/v1/transcribes/" + regUUID + "$")
 )
 
 var (
@@ -219,8 +217,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
-	ctx := context.Background()
-
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
 		uri = "could not unescape uri"
@@ -245,48 +241,38 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// recordings
 	////////////////////
 	// POST /recordings
-	// case regV1Recordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	response, err = h.processV1RecordingsPost(m)
-	// 	requestType = "/v1/recordings"
+	case regV1Recordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1RecordingsPost(m)
+		requestType = "/v1/recordings"
 
-	// ////////////////////
-	// // call-recordings
-	// ////////////////////
-	// // POST /call-recordings
-	// case regV1CallRecordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	response, err = h.processV1CallRecordingsPost(m)
-	// 	requestType = "/v1/call_recordings"
+	////////////////////
+	// call-recordings
+	////////////////////
+	// POST /call-recordings
+	case regV1CallRecordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallRecordingsPost(m)
+		requestType = "/v1/call_recordings"
 
 	////////////////////
 	// streamings
 	////////////////////
-	// // POST /streamings
-	// case regV1Streamings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	response, err = h.processV1StreamingsPost(m)
-	// 	requestType = "/v1/streamings"
+	// POST /streamings
+	case regV1Streamings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1StreamingsPost(m)
+		requestType = "/v1/streamings"
 
-	// // DELETE /streamings/<id>
-	// case regV1StreamingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-	// 	response, err = h.processV1StreamingsIDDelete(m)
-	// 	requestType = "/v1/streamings"
+	// DELETE /streamings/<id>
+	case regV1StreamingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1StreamingsIDDelete(m)
+		requestType = "/v1/streamings"
 
 	////////////////////
 	// transcribes
 	////////////////////
-	// GET /transcribes
-	case regV1TranscribesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1TranscribesGet(ctx, m)
-		requestType = "/v1/transcribes"
-
-	// GET /transcribes/<id>
-	case regV1TranscribesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1TranscribesIDGet(ctx, m)
-		requestType = "/v1/transcribes/<transcribe-id>"
-
-	// DELETE /transcribes/<id>
+	// DELETE /streamings/<id>
 	case regV1TranscribesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1TranscribesIDDelete(ctx, m)
-		requestType = "/v1/transcribes/<transcribe-id>"
+		response, err = h.processV1TranscribesIDDelete(m)
+		requestType = "/v1/tyranscribes"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

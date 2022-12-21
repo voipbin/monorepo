@@ -10,7 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcirpthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/sttgoogle"
 )
 
 func TestTranscribeStreamingsHandle(t *testing.T) {
@@ -20,13 +20,13 @@ func TestTranscribeStreamingsHandle(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
+	mockGoogle := sttgoogle.NewMockSTTGoogle(mc)
 
 	h := &transcribeHandler{
-		reqHandler:        mockReq,
-		db:                mockDB,
-		notifyHandler:     mockNotify,
-		transcriptHandler: mockGoogle,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		sttGoogle:     mockGoogle,
 
 		transcribeStreamingsMap: map[uuid.UUID][]*streaming.Streaming{},
 	}

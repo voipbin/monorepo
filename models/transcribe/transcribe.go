@@ -2,19 +2,23 @@ package transcribe
 
 import (
 	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 // Transcribe struct
 type Transcribe struct {
-	ID            uuid.UUID     `json:"id"`          // Transcribe id
-	CustomerID    uuid.UUID     `json:"customer_id"` // customer
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"` // call/conference/recording's id
+	ID          uuid.UUID `json:"id"`           // Transcribe id
+	CustomerID  uuid.UUID `json:"customer_id"`  // customer
+	Type        Type      `json:"type"`         // type
+	ReferenceID uuid.UUID `json:"reference_id"` // call/conference/recording's id
 
-	Status    Status    `json:"status"`
-	HostID    uuid.UUID `json:"host_id"`  // host id
-	Language  string    `json:"language"` // BCP47 type's language code. en-US
-	Direction Direction `json:"direction"`
+	HostID    uuid.UUID        `json:"host_id"`  // host id
+	Language  string           `json:"language"` // BCP47 type's language code. en-US
+	Direction common.Direction `json:"direction"`
+
+	Transcripts []transcript.Transcript `json:"transcripts"` // transcripts
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -22,74 +26,13 @@ type Transcribe struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// ReferenceType define
-type ReferenceType string
+// Type define
+type Type string
 
-// list of ReferenceType defines
+// list of Types
 const (
-	ReferenceTypeUnknown    ReferenceType = "unknown"
-	ReferenceTypeRecording  ReferenceType = "recording"
-	ReferenceTypeCall       ReferenceType = "call"
-	ReferenceTypeConference ReferenceType = "conference"
+	TypeUnknown    Type = "unknown"
+	TypeRecording  Type = "recording"
+	TypeCall       Type = "call"
+	TypeConference Type = "conference"
 )
-
-// Direction define
-type Direction string
-
-// list of Direction defines
-const (
-	DirectionBoth Direction = "both"
-	DirectionIn   Direction = "in"
-	DirectionOut  Direction = "out"
-)
-
-// Status defines
-type Status string
-
-// list of statuses
-const (
-	StatusInit        Status = "init"
-	StatusProgressing Status = "progressing"
-	StatusDone        Status = "done"
-)
-
-// IsUpdatableStatus returns true if the new status is updatable.
-func IsUpdatableStatus(oldStatus, newStatus Status) bool {
-
-	// |--------------------+---------------+-------------------+---------------+
-	// | old \ new          | StatusInit	| StatusProgressing	| StatusDone	|
-	// |--------------------+---------------+-------------------+---------------+
-	// | StatusInit         |      x        |         o         |       o       |
-	// |--------------------+---------------+-------------------+----------------
-	// | StatusProgressing  |      x        |         x         |       o       |
-	// |--------------------+---------------+-------------------+----------------
-	// | StatusDone         |      x        |         x         |       x       |
-	// |--------------------+---------------+-------------------+----------------
-
-	mapOldStatusInit := map[Status]bool{
-		StatusInit:        false,
-		StatusProgressing: true,
-		StatusDone:        true,
-	}
-	mapOldStatusProgressing := map[Status]bool{
-		StatusInit:        false,
-		StatusProgressing: false,
-		StatusDone:        true,
-	}
-	mapOldStatusDone := map[Status]bool{
-		StatusInit:        false,
-		StatusProgressing: false,
-		StatusDone:        false,
-	}
-
-	switch oldStatus {
-	case StatusInit:
-		return mapOldStatusInit[newStatus]
-	case StatusProgressing:
-		return mapOldStatusProgressing[newStatus]
-	case StatusDone:
-		return mapOldStatusDone[newStatus]
-	}
-
-	return false
-}

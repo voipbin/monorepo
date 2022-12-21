@@ -1,6 +1,6 @@
 package transcribehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package transcribehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package transcribehandler -destination ./mock_transcribehandler.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -10,13 +10,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"golang.org/x/text/language"
 
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcirpthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/sttgoogle"
 )
 
 // TranscribeHandler is interface for service handle
@@ -24,43 +25,31 @@ type TranscribeHandler interface {
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
-		referenceType transcribe.ReferenceType,
 		referenceID uuid.UUID,
+		transType transcribe.Type,
 		language string,
-		direction transcribe.Direction,
+		direction common.Direction,
+		transcripts []transcript.Transcript,
 	) (*transcribe.Transcribe, error)
 	Delete(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
-	GetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error)
-	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error)
 
-	// CallRecording(ctx context.Context, customerID, callID uuid.UUID, language string) ([]*transcribe.Transcribe, error)
+	CallRecording(ctx context.Context, customerID, callID uuid.UUID, language string) ([]*transcribe.Transcribe, error)
 
-	// Recording(ctx context.Context, customerID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error)
+	Recording(ctx context.Context, customerID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error)
 
-	// StreamingTranscribeStart(ctx context.Context, customerID uuid.UUID, referenceID uuid.UUID, transType transcribe.Type, language string) (*transcribe.Transcribe, error)
-	// StreamingTranscribeStop(ctx context.Context, id uuid.UUID) error
-
-	TranscribingStart(
-		ctx context.Context,
-		customerID uuid.UUID,
-		referenceType transcribe.ReferenceType,
-		referenceID uuid.UUID,
-		language string,
-		direction transcribe.Direction,
-	) (*transcribe.Transcribe, error)
-	TranscribingStop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
+	StreamingTranscribeStart(ctx context.Context, customerID uuid.UUID, referenceID uuid.UUID, transType transcribe.Type, language string) (*transcribe.Transcribe, error)
+	StreamingTranscribeStop(ctx context.Context, id uuid.UUID) error
 }
 
 // transcribeHandler structure for service handle
 type transcribeHandler struct {
-	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	hostID            uuid.UUID
-	transcriptHandler transcirpthandler.TranscriptHandler
+	hostID    uuid.UUID
+	sttGoogle sttgoogle.STTGoogle
 
 	transcribeStreamingsMap map[uuid.UUID][]*streaming.Streaming
 	transcribeStreamingsMu  sync.Mutex
@@ -95,16 +84,15 @@ func NewTranscribeHandler(
 	hostID uuid.UUID,
 ) TranscribeHandler {
 
-	sttGoogle := transcirpthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, credentialPath)
+	sttGoogle := sttgoogle.NewSTTGoogle(reqHandler, db, notifyHandler, credentialPath)
 
 	h := &transcribeHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            db,
 		notifyHandler: notifyHandler,
 
-		hostID:            hostID,
-		transcriptHandler: sttGoogle,
+		hostID:    hostID,
+		sttGoogle: sttGoogle,
 
 		transcribeStreamingsMap: map[uuid.UUID][]*streaming.Streaming{},
 	}
