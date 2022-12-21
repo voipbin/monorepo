@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 // WebhookMessage defines
@@ -11,12 +13,11 @@ type WebhookMessage struct {
 	ID         uuid.UUID `json:"id"`          // Transcribe id
 	CustomerID uuid.UUID `json:"customer_id"` // customer
 
-	ReferenceType ReferenceType `json:"reference_type"` // reference's type
-	ReferenceID   uuid.UUID     `json:"reference_id"`   // call/conference/recording's id
-
-	Status   Status    `json:"status"`
-	HostID   uuid.UUID `json:"host_id"`  // host id
-	Language string    `json:"language"` // BCP47 type's language code. en-US
+	Type        Type                        `json:"type"`         // type
+	ReferenceID uuid.UUID                   `json:"reference_id"` // call/conference/recording's id
+	HostID      uuid.UUID                   `json:"host_id"`      // host id
+	Language    string                      `json:"language"`     // BCP47 type's language code. en-US
+	Transcripts []transcript.WebhookMessage `json:"transcripts"`  // transcripts
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -27,16 +28,21 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Transcribe) ConvertWebhookMessage() *WebhookMessage {
 
+	transcripts := []transcript.WebhookMessage{}
+	for _, t := range h.Transcripts {
+		tmp := t.ConvertWebhookMessage()
+		transcripts = append(transcripts, *tmp)
+	}
+
 	return &WebhookMessage{
 		ID:         h.ID,
 		CustomerID: h.CustomerID,
 
-		ReferenceType: h.ReferenceType,
-		ReferenceID:   h.ReferenceID,
-
-		Status:   h.Status,
-		HostID:   h.HostID,
-		Language: h.Language,
+		Type:        h.Type,
+		ReferenceID: h.ReferenceID,
+		HostID:      h.HostID,
+		Language:    h.Language,
+		Transcripts: transcripts,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

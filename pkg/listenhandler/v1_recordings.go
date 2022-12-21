@@ -1,39 +1,50 @@
 package listenhandler
 
-// // processV1RecordingsPost handles POST /v1/recordings request
-// // It creates a new speech-to-text.
-// func (h *listenHandler) processV1RecordingsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-// 	ctx := context.Background()
-// 	uriItems := strings.Split(m.URI, "/")
-// 	if len(uriItems) < 3 {
-// 		return simpleResponse(400), nil
-// 	}
+import (
+	"context"
+	"encoding/json"
+	"strings"
 
-// 	var reqData request.V1DataRecordingsPost
-// 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-// 		// same call-id is already exsit
-// 		logrus.Errorf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
-// 		return simpleResponse(400), nil
-// 	}
+	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-// 	// do transcribe
-// 	s, err := h.transcribeHandler.Recording(ctx, reqData.CustomerID, reqData.ReferenceID, reqData.Language)
-// 	if err != nil {
-// 		logrus.Errorf("Could not create transcribe. err: %v", err)
-// 		return simpleResponse(500), nil
-// 	}
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
+)
 
-// 	d, err := json.Marshal(s)
-// 	if err != nil {
-// 		logrus.Errorf("Could not marshal the data. err: %v", err)
-// 		return simpleResponse(500), nil
-// 	}
+// processV1RecordingsPost handles POST /v1/recordings request
+// It creates a new speech-to-text.
+func (h *listenHandler) processV1RecordingsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	ctx := context.Background()
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 3 {
+		return simpleResponse(400), nil
+	}
 
-// 	res := &rabbitmqhandler.Response{
-// 		StatusCode: 200,
-// 		DataType:   "application/json",
-// 		Data:       d,
-// 	}
+	var reqData request.V1DataRecordingsPost
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		// same call-id is already exsit
+		logrus.Errorf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
 
-// 	return res, nil
-// }
+	// do transcribe
+	s, err := h.transcribeHandler.Recording(ctx, reqData.CustomerID, reqData.ReferenceID, reqData.Language)
+	if err != nil {
+		logrus.Errorf("Could not create transcribe. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	d, err := json.Marshal(s)
+	if err != nil {
+		logrus.Errorf("Could not marshal the data. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       d,
+	}
+
+	return res, nil
+}

@@ -11,7 +11,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -78,33 +77,4 @@ func (m *MockCacheHandler) TranscribeSet(ctx context.Context, trans *transcribe.
 func (mr *MockCacheHandlerMockRecorder) TranscribeSet(ctx, trans interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeSet", reflect.TypeOf((*MockCacheHandler)(nil).TranscribeSet), ctx, trans)
-}
-
-// TranscriptGet mocks base method.
-func (m *MockCacheHandler) TranscriptGet(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscriptGet", ctx, id)
-	ret0, _ := ret[0].(*transcript.Transcript)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TranscriptGet indicates an expected call of TranscriptGet.
-func (mr *MockCacheHandlerMockRecorder) TranscriptGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptGet", reflect.TypeOf((*MockCacheHandler)(nil).TranscriptGet), ctx, id)
-}
-
-// TranscriptSet mocks base method.
-func (m *MockCacheHandler) TranscriptSet(ctx context.Context, trans *transcript.Transcript) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscriptSet", ctx, trans)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TranscriptSet indicates an expected call of TranscriptSet.
-func (mr *MockCacheHandlerMockRecorder) TranscriptSet(ctx, trans interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptSet", reflect.TypeOf((*MockCacheHandler)(nil).TranscriptSet), ctx, trans)
 }

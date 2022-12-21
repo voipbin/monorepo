@@ -6,11 +6,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
-// Recording transcribe the recoring
-// returns created transcribe
+// Recording transcribe the recoring and send the webhook
 func (h *transcribeHandler) Recording(ctx context.Context, customerID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -19,43 +20,24 @@ func (h *transcribeHandler) Recording(ctx context.Context, customerID uuid.UUID,
 		},
 	)
 
-	// check if the given recording's transcribe is already exist
-	tmp, err := h.GetByReferenceIDAndLanguage(ctx, recordingID, language)
-	if err == nil {
-		// we have a transcribe already
-		log.Debugf("Found existing transcribe. transcribe_id: %s", tmp.ID)
-		return tmp, nil
-	}
-
-	// create transcribing
-	tr, err := h.Create(
-		ctx,
-		customerID,
-		transcribe.ReferenceTypeRecording,
-		recordingID,
-		language,
-		transcribe.DirectionBoth,
-	)
-	if err != nil {
-		log.Errorf("Could not create the transcribe. err: %v", err)
-		return nil, err
-	}
-	log.WithField("transcribe", tr).Debugf("Created transcribe. transcribe_id: %s", tr.ID)
+	lang := getBCP47LanguageCode(language)
+	log.Debugf("Parsed BCP47 language code. lang: %s", lang)
 
 	// transcribe the recording
-	trsc, err := h.transcriptHandler.Recording(ctx, customerID, tr.ID, recordingID, language)
+	tmp, err := h.sttGoogle.Recording(ctx, recordingID, lang)
 	if err != nil {
 		log.Errorf("Coudl not transcribe the recording. err: %v", err)
 		return nil, err
 	}
-	log.WithField("transcript", trsc).Debugf("Transcripted the recording. transcribe_id: %s, transcript_id: %s", tr.ID, trsc.ID)
+	transcripts := []transcript.Transcript{*tmp}
 
-	// transcribe done
-	res, err := h.UpdateStatus(ctx, tr.ID, transcribe.StatusDone)
+	// create the transcribe
+	res, err := h.Create(ctx, customerID, recordingID, transcribe.TypeRecording, lang, common.DirectionBoth, transcripts)
 	if err != nil {
-		log.Errorf("Could not update the status. err: %v", err)
+		log.Errorf("Could not create the transcribe. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, transcribe.EventTypeTranscribeCreated, res)
 
 	return res, nil
 }

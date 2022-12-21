@@ -3,10 +3,10 @@ package streaming
 import (
 	"net"
 
-	speechpb "cloud.google.com/go/speech/apiv1/speechpb"
 	"github.com/gofrs/uuid"
+	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 )
 
 // Streaming defines current streaming detail
@@ -15,7 +15,7 @@ type Streaming struct {
 	TranscribeID uuid.UUID                                `json:"transcribe_id"`
 	CustomerID   uuid.UUID                                `json:"customer_id"`
 	Language     string                                   `json:"language"`
-	Direction    transcript.Direction                     `json:"direction"`
+	Direction    common.Direction                         `json:"direction"`
 	Conn         *net.UDPConn                             `json:"-"`
 	Stream       speechpb.Speech_StreamingRecognizeClient `json:"-"`
 }

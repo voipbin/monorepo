@@ -9,15 +9,28 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcirpthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/sttgoogle"
 )
 
-func Test_Get(t *testing.T) {
+func TestGet(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockGoogle := sttgoogle.NewMockSTTGoogle(mc)
+
+	h := &transcribeHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		sttGoogle:     mockGoogle,
+	}
 
 	tests := []struct {
 		name string
@@ -33,21 +46,6 @@ func Test_Get(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
-
-			h := &transcribeHandler{
-				reqHandler:        mockReq,
-				db:                mockDB,
-				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
-			}
-
 			ctx := context.Background()
 
 			mockDB.EXPECT().TranscribeGet(gomock.Any(), tt.id).Return(&transcribe.Transcribe{}, nil)
@@ -60,182 +58,42 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetByReferenceIDAndLanguage(t *testing.T) {
+func TestCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	tests := []struct {
-		name string
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockGoogle := sttgoogle.NewMockSTTGoogle(mc)
 
-		referenceID uuid.UUID
-		language    string
-
-		responseTranscribe *transcribe.Transcribe
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("2fd5bd08-7f6c-11ed-8d71-67bb37305dd8"),
-			"en-US",
-
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("300196f8-7f6c-11ed-95d7-1f1fecd1ebc5"),
-			},
-		},
+	h := &transcribeHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		sttGoogle:     mockGoogle,
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
-
-			h := &transcribeHandler{
-				reqHandler:        mockReq,
-				db:                mockDB,
-				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, tt.referenceID, tt.language).Return(tt.responseTranscribe, nil)
-			_, err := h.GetByReferenceIDAndLanguage(ctx, tt.referenceID, tt.language)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		customerID uuid.UUID
-		size       uint64
-		token      string
-
-		responseTranscribes []*transcribe.Transcribe
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("2fd5bd08-7f6c-11ed-8d71-67bb37305dd8"),
-			10,
-			"2020-05-03%2021:35:02.809",
-
-			[]*transcribe.Transcribe{
-				{
-					ID: uuid.FromStringOrNil("300196f8-7f6c-11ed-95d7-1f1fecd1ebc5"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
-
-			h := &transcribeHandler{
-				reqHandler:        mockReq,
-				db:                mockDB,
-				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().TranscribeGetsByCustomerID(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseTranscribes, nil)
-			_, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-		})
-	}
-}
-
-func Test_Create(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customerID    uuid.UUID
-		referenceType transcribe.ReferenceType
-		referenceID   uuid.UUID
-		language      string
-		direction     common.Direction
-
-		responseUUID       uuid.UUID
-		responseTranscribe *transcribe.Transcribe
-
-		expectTranscribe *transcribe.Transcribe
-	}{
-		{
-			"normal type call",
-
 			uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
-			transcribe.ReferenceTypeCall,
-			uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
-			"en-US",
-			common.DirectionBoth,
-
-			uuid.FromStringOrNil("5f9b7a2e-7f6b-11ed-ac8e-f38841b7998b"),
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("5f9b7a2e-7f6b-11ed-ac8e-f38841b7998b"),
-			},
-
-			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("5f9b7a2e-7f6b-11ed-ac8e-f38841b7998b"),
-				CustomerID:    uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
-				ReferenceType: transcribe.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
-				Status:        transcribe.StatusInit,
-				HostID:        testHostID,
-				Language:      "en-US",
-				Direction:     transcribe.DirectionBoth,
-			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTranscript := transcirpthandler.NewMockTranscriptHandler(mc)
-
-			h := &transcribeHandler{
-				utilHandler:       mockUtil,
-				reqHandler:        mockReq,
-				db:                mockDB,
-				notifyHandler:     mockNotify,
-				transcriptHandler: mockTranscript,
-
-				hostID: testHostID,
-			}
-
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
-			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe).Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.responseUUID).Return(tt.responseTranscribe, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
-			_, err := h.Create(ctx, tt.customerID, transcribe.ReferenceTypeCall, tt.referenceID, "en-US", transcribe.DirectionBoth)
+			mockDB.EXPECT().TranscribeCreate(gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().TranscribeGet(gomock.Any(), gomock.Any()).Return(&transcribe.Transcribe{CustomerID: tt.customerID}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.customerID, transcribe.EventTypeTranscribeCreated, gomock.Any())
+			_, err := h.Create(ctx, tt.customerID, uuid.Nil, transcribe.TypeCall, "en-US", common.DirectionBoth, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -244,7 +102,21 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func TestDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockGoogle := sttgoogle.NewMockSTTGoogle(mc)
+
+	h := &transcribeHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		sttGoogle:     mockGoogle,
+	}
 
 	tests := []struct {
 		name string
@@ -270,90 +142,13 @@ func Test_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
-
-			h := &transcribeHandler{
-				reqHandler:        mockReq,
-				db:                mockDB,
-				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
-			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, transcribe.EventTypeTranscribeDeleted, gomock.Any())
+			mockDB.EXPECT().TranscribeDelete(gomock.Any(), tt.id).Return(nil)
+			mockDB.EXPECT().TranscribeGet(gomock.Any(), tt.id).Return(tt.responseTranscribe, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), transcribe.EventTypeTranscribeDeleted, gomock.Any())
 
 			res, err := h.Delete(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-
-		})
-	}
-}
-
-func Test_UpdateStatus(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id     uuid.UUID
-		status transcribe.Status
-
-		responseTranscribe *transcribe.Transcribe
-		expectRes          *transcribe.Transcribe
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
-			transcribe.StatusProgressing,
-
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
-			},
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
-
-			h := &transcribeHandler{
-				reqHandler:        mockReq,
-				db:                mockDB,
-				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().TranscribeSetStatus(ctx, tt.id, tt.status).Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeProgressing, tt.responseTranscribe)
-
-			res, err := h.UpdateStatus(ctx, tt.id, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

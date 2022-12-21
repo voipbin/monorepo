@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 type handler struct {
@@ -26,9 +25,6 @@ type CacheHandler interface {
 
 	TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	TranscribeSet(ctx context.Context, trans *transcribe.Transcribe) error
-
-	TranscriptGet(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error)
-	TranscriptSet(ctx context.Context, trans *transcript.Transcript) error
 }
 
 // NewHandler creates DBHandler
