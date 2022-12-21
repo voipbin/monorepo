@@ -1,90 +1,76 @@
 package requesthandler
 
-import (
-	"context"
-	reflect "reflect"
-	"testing"
+// func Test_TranscribeV1RecordingPost(t *testing.T) {
 
-	"github.com/gofrs/uuid"
-	"github.com/golang/mock/gomock"
-	tscommon "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
-	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	tstranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+// 	tests := []struct {
+// 		name string
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-)
+// 		customerID  uuid.UUID
+// 		recordingID uuid.UUID
+// 		language    string
 
-func Test_TranscribeV1RecordingPost(t *testing.T) {
+// 		expectTarget  string
+// 		expectRequest *rabbitmqhandler.Request
+// 		response      *rabbitmqhandler.Response
 
-	tests := []struct {
-		name string
+// 		expectResult *tstranscribe.Transcribe
+// 	}{
+// 		{
+// 			"normal",
 
-		customerID  uuid.UUID
-		recordingID uuid.UUID
-		language    string
+// 			uuid.FromStringOrNil("7ce083de-8734-11ec-82e8-df2232923291"),
+// 			uuid.FromStringOrNil("138cbdc2-a3ea-11eb-9a91-3b876395af6e"),
+// 			"en-US",
 
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
+// 			"bin-manager.transcribe-manager.request",
+// 			&rabbitmqhandler.Request{
+// 				URI:      "/v1/recordings",
+// 				Method:   rabbitmqhandler.RequestMethodPost,
+// 				DataType: ContentTypeJSON,
+// 				Data:     []byte(`{"customer_id":"7ce083de-8734-11ec-82e8-df2232923291","reference_id":"138cbdc2-a3ea-11eb-9a91-3b876395af6e","language":"en-US"}`),
+// 			},
+// 			&rabbitmqhandler.Response{
+// 				StatusCode: 200,
+// 				DataType:   "application/json",
+// 				Data:       []byte(`{"id":"10e438e2-a3eb-11eb-889c-975ac37d96fe","customer_id":"7ce083de-8734-11ec-82e8-df2232923291","type":"recording","reference_id":"138cbdc2-a3ea-11eb-9a91-3b876395af6e","language":"en-US","webhook_uri":"","webhook_method":"","transcripts":[{"direction":"both","message":"Hello, this is voipbin. Thank you."}]}`),
+// 			},
+// 			&tstranscribe.Transcribe{
+// 				ID:          uuid.FromStringOrNil("10e438e2-a3eb-11eb-889c-975ac37d96fe"),
+// 				CustomerID:  uuid.FromStringOrNil("7ce083de-8734-11ec-82e8-df2232923291"),
+// 				Type:        tstranscribe.TypeRecording,
+// 				ReferenceID: uuid.FromStringOrNil("138cbdc2-a3ea-11eb-9a91-3b876395af6e"),
+// 				Language:    "en-US",
+// 				Transcripts: []tstranscript.Transcript{
+// 					{
+// 						Direction: tscommon.DirectionBoth,
+// 						Message:   "Hello, this is voipbin. Thank you.",
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}
 
-		expectResult *tstranscribe.Transcribe
-	}{
-		{
-			"normal",
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			uuid.FromStringOrNil("7ce083de-8734-11ec-82e8-df2232923291"),
-			uuid.FromStringOrNil("138cbdc2-a3ea-11eb-9a91-3b876395af6e"),
-			"en-US",
+// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			reqHandler := requestHandler{
+// 				sock: mockSock,
+// 			}
 
-			"bin-manager.transcribe-manager.request",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/recordings",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"7ce083de-8734-11ec-82e8-df2232923291","reference_id":"138cbdc2-a3ea-11eb-9a91-3b876395af6e","language":"en-US"}`),
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"10e438e2-a3eb-11eb-889c-975ac37d96fe","customer_id":"7ce083de-8734-11ec-82e8-df2232923291","type":"recording","reference_id":"138cbdc2-a3ea-11eb-9a91-3b876395af6e","language":"en-US","webhook_uri":"","webhook_method":"","transcripts":[{"direction":"both","message":"Hello, this is voipbin. Thank you."}]}`),
-			},
-			&tstranscribe.Transcribe{
-				ID:          uuid.FromStringOrNil("10e438e2-a3eb-11eb-889c-975ac37d96fe"),
-				CustomerID:  uuid.FromStringOrNil("7ce083de-8734-11ec-82e8-df2232923291"),
-				Type:        tstranscribe.TypeRecording,
-				ReferenceID: uuid.FromStringOrNil("138cbdc2-a3ea-11eb-9a91-3b876395af6e"),
-				Language:    "en-US",
-				Transcripts: []tstranscript.Transcript{
-					{
-						Direction: tscommon.DirectionBoth,
-						Message:   "Hello, this is voipbin. Thank you.",
-					},
-				},
-			},
-		},
-	}
+// 			ctx := context.Background()
+// 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 			res, err := reqHandler.TranscribeV1RecordingCreate(ctx, tt.customerID, tt.recordingID, tt.language)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
-
-			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.TranscribeV1RecordingCreate(ctx, tt.customerID, tt.recordingID, tt.language)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectResult, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
-			}
-		})
-	}
-}
+// 			if reflect.DeepEqual(tt.expectResult, res) == false {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+// 			}
+// 		})
+// 	}
+// }

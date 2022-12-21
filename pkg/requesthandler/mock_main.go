@@ -54,7 +54,6 @@ import (
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
-	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	user "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
@@ -3177,51 +3176,6 @@ func (m *MockRequestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid
 func (mr *MockRequestHandlerMockRecorder) TTSV1SpeecheCreate(ctx, callID, text, gender, language, timeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeecheCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeecheCreate), ctx, callID, text, gender, language, timeout)
-}
-
-// TranscribeV1CallRecordingCreate mocks base method.
-func (m *MockRequestHandler) TranscribeV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]transcribe.Transcribe, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1CallRecordingCreate", ctx, customerID, callID, language, timeout, delay)
-	ret0, _ := ret[0].([]transcribe.Transcribe)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TranscribeV1CallRecordingCreate indicates an expected call of TranscribeV1CallRecordingCreate.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1CallRecordingCreate(ctx, customerID, callID, language, timeout, delay interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1CallRecordingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1CallRecordingCreate), ctx, customerID, callID, language, timeout, delay)
-}
-
-// TranscribeV1RecordingCreate mocks base method.
-func (m *MockRequestHandler) TranscribeV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1RecordingCreate", ctx, customerID, recordingID, language)
-	ret0, _ := ret[0].(*transcribe.Transcribe)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TranscribeV1RecordingCreate indicates an expected call of TranscribeV1RecordingCreate.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1RecordingCreate(ctx, customerID, recordingID, language interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1RecordingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1RecordingCreate), ctx, customerID, recordingID, language)
-}
-
-// TranscribeV1StreamingCreate mocks base method.
-func (m *MockRequestHandler) TranscribeV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType transcribe.Type, language string) (*transcribe.Transcribe, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1StreamingCreate", ctx, customerID, referenceID, referenceType, language)
-	ret0, _ := ret[0].(*transcribe.Transcribe)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TranscribeV1StreamingCreate indicates an expected call of TranscribeV1StreamingCreate.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1StreamingCreate(ctx, customerID, referenceID, referenceType, language interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1StreamingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1StreamingCreate), ctx, customerID, referenceID, referenceType, language)
 }
 
 // UserV1UserCreate mocks base method.

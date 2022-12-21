@@ -51,7 +51,6 @@ import (
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
-	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
@@ -647,10 +646,10 @@ type RequestHandler interface {
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error)
 
-	// transcribe-manager
-	TranscribeV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]tstranscribe.Transcribe, error)
-	TranscribeV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType tstranscribe.Type, language string) (*tstranscribe.Transcribe, error)
-	TranscribeV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*tstranscribe.Transcribe, error)
+	// // transcribe-manager
+	// TranscribeV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]tstranscribe.Transcribe, error)
+	// TranscribeV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType tstranscribe.Type, language string) (*tstranscribe.Transcribe, error)
+	// TranscribeV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*tstranscribe.Transcribe, error)
 
 	// user-manager
 	UserV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission umuser.Permission) (*umuser.User, error)
