@@ -1,21 +1,19 @@
-package sttgoogle
+package transcirpthandler
 
 import (
 	"context"
 	"time"
 
-	"github.com/gofrs/uuid"
+	speechpb "cloud.google.com/go/speech/apiv1/speechpb"
 	"github.com/sirupsen/logrus"
-	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/rtphandler"
 )
 
 // transcribeStart starts the transcribe the RTP stream.
-func (h *streamingHandler) transcribeStart(ctx context.Context, st *streaming.Streaming) {
+func (h *transcriptHandler) transcribeStart(ctx context.Context, st *streaming.Streaming) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "transcribeStart",
@@ -65,7 +63,7 @@ func (h *streamingHandler) transcribeStart(ctx context.Context, st *streaming.St
 }
 
 // transcribeInit initiates streaming transcribe.
-func (h *streamingHandler) transcribeInit(ctx context.Context, stream speechpb.Speech_StreamingRecognizeClient, language string) error {
+func (h *transcriptHandler) transcribeInit(ctx context.Context, stream speechpb.Speech_StreamingRecognizeClient, language string) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":     "transcribeInit",
@@ -97,7 +95,7 @@ func (h *streamingHandler) transcribeInit(ctx context.Context, stream speechpb.S
 }
 
 // transcribeResultHandler handles transcript result from the google stt
-func (h *streamingHandler) transcribeResultHandler(
+func (h *transcriptHandler) transcribeResultHandler(
 	ctx context.Context,
 	st *streaming.Streaming,
 ) {
@@ -134,26 +132,19 @@ func (h *streamingHandler) transcribeResultHandler(
 		t2 := time.Now()
 		t3 := t2.Sub(t1)
 		tmGap := time.Time{}.Add(t3)
-		tmp := &transcript.Transcript{
-			ID:           uuid.Must(uuid.NewV4()),
-			CustomerID:   st.CustomerID,
-			TranscribeID: st.TranscribeID,
-			Direction:    st.Direction,
-			Message:      message,
-			TMCreate:     tmGap.Format("15:04:05.000"),
-		}
-		if errAdd := h.db.TranscribeAddTranscript(ctx, st.TranscribeID, tmp); errAdd != nil {
-			log.Errorf("Could not add the transcript. err: %v", errAdd)
+
+		// create
+		tmp, err := h.Create(ctx, st.CustomerID, st.TranscribeID, st.Direction, message, tmGap.Format("2006-01-02 15:04:05.00000"))
+		if err != nil {
+			log.Errorf("Could not create transript. err: %v", err)
+			continue
 		}
 		log.WithField("transcript", tmp).Debugf("Created transcript. transcribe_id: %s, direction: %s", tmp.TranscribeID, tmp.Direction)
-
-		// send transcript
-		h.notifyHandler.PublishWebhookEvent(ctx, tmp.CustomerID, transcript.EventTypeTranscriptCreated, tmp)
 	}
 }
 
 // transcribeFromBucket transcribes from the bucket file
-func (h *streamingHandler) transcribeFromBucket(ctx context.Context, mediaLink string, language string) (*transcript.Transcript, error) {
+func (h *transcriptHandler) transcribeFromBucket(ctx context.Context, mediaLink string, language string) (*transcript.Transcript, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":       "transcribeFromBucket",
@@ -200,9 +191,9 @@ func (h *streamingHandler) transcribeFromBucket(ctx context.Context, mediaLink s
 	message := resp.Results[0].Alternatives[0].Transcript
 	ts := "0000-00-00 00:00:00.00000"
 	res := &transcript.Transcript{
-		Direction: common.DirectionBoth,
-		Message:   message,
-		TMCreate:  ts,
+		Direction:    transcript.DirectionBoth,
+		Message:      message,
+		TMTranscript: ts,
 	}
 
 	return res, nil

@@ -1,4 +1,4 @@
-package sttgoogle
+package transcirpthandler
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // serveListen starts the UDP listen.
-func (h *streamingHandler) serveListen() (*net.UDPConn, error) {
+func (h *transcriptHandler) serveListen() (*net.UDPConn, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "serveListen",
