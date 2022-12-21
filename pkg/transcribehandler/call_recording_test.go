@@ -1,98 +1,82 @@
 package transcribehandler
 
-import (
-	"context"
-	"reflect"
-	"testing"
+// func Test_CallRecording(t *testing.T) {
 
-	"github.com/gofrs/uuid"
-	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+// 	tests := []struct {
+// 		name string
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/sttgoogle"
-)
+// 		customerID uuid.UUID
+// 		callID     uuid.UUID
+// 		language   string
 
-func TestCallRecording(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// 		responseCall        *cmcall.Call
+// 		responseTranscribes []*transcribe.Transcribe
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockGoogle := sttgoogle.NewMockSTTGoogle(mc)
+// 		expectRes []*transcribe.Transcribe
+// 	}{
+// 		{
+// 			"normal",
 
-	h := &transcribeHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-		sttGoogle:     mockGoogle,
-	}
+// 			uuid.FromStringOrNil("419841c6-825d-11ec-823f-13ee3d677a1b"),
+// 			uuid.FromStringOrNil("74582ca6-877c-11ec-937d-b3dc9da5953a"),
+// 			"en-US",
 
-	tests := []struct {
-		name string
+// 			&cmcall.Call{
+// 				RecordingIDs: []uuid.UUID{
+// 					uuid.FromStringOrNil("a9e88118-877c-11ec-a30b-b7af76bdce58"),
+// 				},
+// 			},
+// 			[]*transcribe.Transcribe{
+// 				{
+// 					ID: uuid.FromStringOrNil("564bbd4e-877d-11ec-84cc-978116c3fab9"),
+// 				},
+// 			},
 
-		customerID uuid.UUID
-		callID     uuid.UUID
-		language   string
+// 			[]*transcribe.Transcribe{
+// 				{
+// 					ID: uuid.FromStringOrNil("564bbd4e-877d-11ec-84cc-978116c3fab9"),
+// 				},
+// 			},
+// 		},
+// 	}
 
-		responseCall        *cmcall.Call
-		responseTranscribes []*transcribe.Transcribe
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-		expectRes []*transcribe.Transcribe
-	}{
-		{
-			"normal",
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockTranscript := transcirpthandler.NewMockTranscriptHandler(mc)
 
-			uuid.FromStringOrNil("419841c6-825d-11ec-823f-13ee3d677a1b"),
-			uuid.FromStringOrNil("74582ca6-877c-11ec-937d-b3dc9da5953a"),
-			"en-US",
+// 			h := &transcribeHandler{
+// 				reqHandler:        mockReq,
+// 				db:                mockDB,
+// 				notifyHandler:     mockNotify,
+// 				transcriptHandler: mockTranscript,
+// 			}
 
-			&cmcall.Call{
-				RecordingIDs: []uuid.UUID{
-					uuid.FromStringOrNil("a9e88118-877c-11ec-a30b-b7af76bdce58"),
-				},
-			},
-			[]*transcribe.Transcribe{
-				{
-					ID: uuid.FromStringOrNil("564bbd4e-877d-11ec-84cc-978116c3fab9"),
-				},
-			},
+// 			ctx := context.Background()
 
-			[]*transcribe.Transcribe{
-				{
-					ID: uuid.FromStringOrNil("564bbd4e-877d-11ec-84cc-978116c3fab9"),
-				},
-			},
-		},
-	}
+// 			lang := getBCP47LanguageCode(tt.language)
+// 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+// 			for i, recordingID := range tt.responseCall.RecordingIDs {
+// 				mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(nil)
+// 				mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribes[i], nil)
+// 				mockTranscript.EXPECT().Recording(ctx, tt.customerID, tt.responseTranscribes[i].ID, recordingID, lang).Return(&transcript.Transcript{}, nil)
+// 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribes[i].CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribes[i])
+// 			}
 
-			lang := getBCP47LanguageCode(tt.language)
-			mockReq.EXPECT().CallV1CallGet(gomock.Any(), tt.callID).Return(tt.responseCall, nil)
+// 			res, err := h.CallRecording(ctx, tt.customerID, tt.callID, tt.language)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			for i, recordingID := range tt.responseCall.RecordingIDs {
-				mockGoogle.EXPECT().Recording(gomock.Any(), recordingID, lang).Return(&transcript.Transcript{}, nil)
-				mockDB.EXPECT().TranscribeCreate(gomock.Any(), gomock.Any()).Return(nil)
-				mockDB.EXPECT().TranscribeGet(gomock.Any(), gomock.Any()).Return(tt.responseTranscribes[i], nil)
-				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseTranscribes[i].CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribes[i])
-			}
-
-			res, err := h.CallRecording(ctx, tt.customerID, tt.callID, tt.language)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			if !reflect.DeepEqual(res, tt.expectRes) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }

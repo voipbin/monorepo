@@ -1,4 +1,4 @@
-package sttgoogle
+package transcirpthandler
 
 import (
 	"context"
@@ -7,13 +7,13 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 // Start starts the streaming transcribe with the given direction.
-func (h *streamingHandler) Start(ctx context.Context, tr *transcribe.Transcribe, direction common.Direction) (*streaming.Streaming, error) {
+func (h *transcriptHandler) Start(ctx context.Context, tr *transcribe.Transcribe, direction transcript.Direction) (*streaming.Streaming, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "Start",
@@ -24,8 +24,8 @@ func (h *streamingHandler) Start(ctx context.Context, tr *transcribe.Transcribe,
 	)
 
 	// currently, support calltype only
-	if tr.Type != transcribe.TypeCall {
-		return nil, fmt.Errorf("no support transcribe type. type: %s", tr.Type)
+	if tr.ReferenceType != transcribe.ReferenceTypeCall {
+		return nil, fmt.Errorf("no support transcribe type. type: %s", tr.ReferenceType)
 	}
 
 	// start rtp listen
@@ -81,7 +81,7 @@ func (h *streamingHandler) Start(ctx context.Context, tr *transcribe.Transcribe,
 }
 
 // Stop stops streaming transcribe.
-func (h *streamingHandler) Stop(ctx context.Context, st *streaming.Streaming) error {
+func (h *transcriptHandler) Stop(ctx context.Context, st *streaming.Streaming) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "Stop",

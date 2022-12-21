@@ -13,19 +13,149 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
 
-func TestProcessV1TranscribesIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_processV1TranscribesGet(t *testing.T) {
 
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
 
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		reqHandler:        mockReq,
-		transcribeHandler: mockTranscribe,
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
+
+		responseTranscribes []*transcribe.Transcribe
+		expectRes           *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=079ffd84-7f68-11ed-ae05-430c9b75ab3b",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			uuid.FromStringOrNil("079ffd84-7f68-11ed-ae05-430c9b75ab3b"),
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*transcribe.Transcribe{
+				{
+					ID:         uuid.FromStringOrNil("0710ac06-7f68-11ed-b2cd-877b6dca8ac7"),
+					CustomerID: uuid.FromStringOrNil("079ffd84-7f68-11ed-ae05-430c9b75ab3b"),
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"0710ac06-7f68-11ed-b2cd-877b6dca8ac7","customer_id":"079ffd84-7f68-11ed-ae05-430c9b75ab3b","type":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			"2 items",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=871275ba-7f68-11ed-a6e2-dbc6d9a383d9",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*transcribe.Transcribe{
+				{
+					ID:         uuid.FromStringOrNil("873a8eec-7f68-11ed-9c2b-5f1311cc5a88"),
+					CustomerID: uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("876112b0-7f68-11ed-bf8c-074e301a66da"),
+					CustomerID: uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"873a8eec-7f68-11ed-9c2b-5f1311cc5a88","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","type":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"876112b0-7f68-11ed-bf8c-074e301a66da","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","type":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
 	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				transcribeHandler: mockTranscribe,
+			}
+
+			mockTranscribe.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.responseTranscribes, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_processV1TranscribesIDGet(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseTranscribe *transcribe.Transcribe
+		expectRes          *rabbitmqhandler.Response
+	}{
+		{
+			"basic",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/transcribes/06db1ed2-7f69-11ed-a6fe-83fb6c80964d",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&transcribe.Transcribe{
+				ID:         uuid.FromStringOrNil("06db1ed2-7f69-11ed-a6fe-83fb6c80964d"),
+				CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"06db1ed2-7f69-11ed-a6fe-83fb6c80964d","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","type":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				transcribeHandler: mockTranscribe,
+			}
+
+			mockTranscribe.EXPECT().Get(gomock.Any(), tt.responseTranscribe.ID).Return(tt.responseTranscribe, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1TranscribesIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -54,13 +184,25 @@ func TestProcessV1TranscribesIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a4f388dc-86ab-11ec-8d14-9bd962288757","customer_id":"00000000-0000-0000-0000-000000000000","type":"","reference_id":"00000000-0000-0000-0000-000000000000","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","transcripts":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a4f388dc-86ab-11ec-8d14-9bd962288757","customer_id":"00000000-0000-0000-0000-000000000000","type":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				reqHandler:        mockReq,
+				transcribeHandler: mockTranscribe,
+			}
 
 			mockTranscribe.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTranscribe, nil)
 

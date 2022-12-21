@@ -1,6 +1,6 @@
-package sttgoogle
+package transcirpthandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package sttgoogle -destination ./mock_sttgoogle.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package transcirpthandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -9,15 +9,15 @@ import (
 	"time"
 
 	speech "cloud.google.com/go/speech/apiv1"
+	speechpb "cloud.google.com/go/speech/apiv1/speechpb"
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"google.golang.org/api/option"
-	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
@@ -47,8 +47,9 @@ const (
 	defaultAudioChannelCount = 1
 )
 
-// streamingHandler structure for streaming handler
-type streamingHandler struct {
+// transcriptHandler structure for streaming handler
+type transcriptHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -60,31 +61,41 @@ type streamingHandler struct {
 var (
 	metricsNamespace = "transcribe_manager"
 
-	promSttCreateTotal = prometheus.NewCounterVec(
+	promTranscriptCreateTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
-			Name:      "sttgoogle_transcribe_create_total",
+			Name:      "transcript_transcript_create_total",
 			Help:      "Total number of created transcribe type.",
 		},
 		[]string{"type"},
 	)
 )
 
-// STTGoogle defines
-type STTGoogle interface {
-	Start(ctx context.Context, tr *transcribe.Transcribe, direction common.Direction) (*streaming.Streaming, error)
+// TranscriptHandler defines
+type TranscriptHandler interface {
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		transcribeID uuid.UUID,
+		direction transcript.Direction,
+		message string,
+		tmTranscript string,
+	) (*transcript.Transcript, error)
+
+	Start(ctx context.Context, tr *transcribe.Transcribe, direction transcript.Direction) (*streaming.Streaming, error)
 	Stop(ctx context.Context, st *streaming.Streaming) error
 
-	Recording(ctx context.Context, recordingID uuid.UUID, language string) (*transcript.Transcript, error)
+	Recording(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, recordingID uuid.UUID, language string) (*transcript.Transcript, error)
 }
 
-// NewSTTGoogle returns sttgoogle interface
-func NewSTTGoogle(
+// NewTranscriptHandler returns sttgoogle interface
+func NewTranscriptHandler(
 	reqHandler requesthandler.RequestHandler,
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+
 	credentialPath string,
-) STTGoogle {
+) TranscriptHandler {
 
 	// create client speech
 	clientSpeech, err := speech.NewClient(context.Background(), option.WithCredentialsFile(credentialPath))
@@ -93,7 +104,8 @@ func NewSTTGoogle(
 		return nil
 	}
 
-	return &streamingHandler{
+	return &transcriptHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            db,
 		notifyHandler: notifyHandler,
@@ -105,7 +117,7 @@ func init() {
 	defaultListenIP = getListenIP()
 
 	prometheus.MustRegister(
-		promSttCreateTotal,
+		promTranscriptCreateTotal,
 	)
 }
 

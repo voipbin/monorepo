@@ -5,6 +5,6 @@ const (
 	EventTypeTranscribeCreated string = "transcribe_created"
 	EventTypeTranscribeDeleted string = "transcribe_deleted"
 
-	EventTypeTranscribeStarted string = "transcribe_started"
-	EventTypeTranscribeStopped string = "transcribe_stopped"
+	EventTypeTranscribeProgressing string = "transcribe_progressing"
+	EventTypeTranscribeDone        string = "transcribe_done"
 )
