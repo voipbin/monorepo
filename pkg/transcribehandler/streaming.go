@@ -6,75 +6,94 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
 // StreamingTranscribeStart starts the streaming transcribe
-func (h *transcribeHandler) StreamingTranscribeStart(ctx context.Context, customerID uuid.UUID, referenceID uuid.UUID, transType transcribe.Type, language string) (*transcribe.Transcribe, error) {
+func (h *transcribeHandler) StreamingTranscribeStart(
+	ctx context.Context,
+	customerID uuid.UUID,
+	referenceType transcribe.ReferenceType,
+	referenceID uuid.UUID,
+	language string,
+	direction transcribe.Direction,
+) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":         "StreamingTranscribeStart",
-			"reference_id": referenceID,
-			"type":         transType,
+			"func":           "StreamingTranscribeStart",
+			"reference_type": referenceType,
+			"reference_id":   referenceID,
 		},
 	)
-	lang := getBCP47LanguageCode(language)
-	log.Debugf("Parsed BCP47 language code. lang: %s", lang)
 
-	tr, err := h.Create(ctx, customerID, referenceID, transType, lang, common.DirectionBoth, nil)
+	// create transcribing
+	res, err := h.Create(
+		ctx,
+		customerID,
+		referenceType,
+		referenceID,
+		language,
+		direction,
+	)
 	if err != nil {
-		log.Errorf("Could not create transcribe. err: %v", err)
+		log.Errorf("Could not create the transcribe. err: %v", err)
 		return nil, err
 	}
-	log.WithField("transcribe", tr).Debugf("Created transcribe. transcribe_id: %s", tr.ID)
+	log.WithField("transcribe", res).Debugf("Created transcribe. transcribe_id: %s", res.ID)
 
-	h.notifyHandler.PublishWebhookEvent(ctx, tr.CustomerID, transcribe.EventTypeTranscribeStarted, tr)
-
-	// create streamings
+	// start transcript streaming
 	streamings := []*streaming.Streaming{}
-	for _, dir := range []common.Direction{common.DirectionIn, common.DirectionOut} {
+
+	directions := []transcript.Direction{transcript.Direction(direction)}
+	if direction == transcribe.DirectionBoth {
+		directions = []transcript.Direction{transcript.DirectionIn, transcript.DirectionOut}
+	}
+	// if targets[0] ==
+	// if targets
+
+	for _, dir := range directions {
 
 		// currently, we hanve only google's stt
-		st, err := h.sttGoogle.Start(ctx, tr, dir)
+		st, err := h.transcriptHandler.Start(ctx, res, dir)
 		if err != nil {
 			log.Errorf("Could not start the streaming stt. direction: %s, err: %v", dir, err)
 			return nil, err
 		}
 		streamings = append(streamings, st)
 	}
-	h.addTranscribeStreamings(tr.ID, streamings)
+	h.addTranscribeStreamings(res.ID, streamings)
 
-	return tr, nil
+	return res, nil
 }
 
 // StreamingTranscribeStop stops streaming transcribe.
-func (h *transcribeHandler) StreamingTranscribeStop(ctx context.Context, transcribeID uuid.UUID) error {
+func (h *transcribeHandler) StreamingTranscribeStop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "StreamingTranscribeStop",
-			"transcribe_id": transcribeID,
+			"transcribe_id": id,
 		},
 	)
 
 	// get streamings
-	streamings := h.getTranscribeStreamings(transcribeID)
+	streamings := h.getTranscribeStreamings(id)
 
 	// stop and delete the streamings
 	for _, st := range streamings {
-		if errStop := h.sttGoogle.Stop(ctx, st); errStop != nil {
+		if errStop := h.transcriptHandler.Stop(ctx, st); errStop != nil {
 			log.Errorf("Could not stop the streaming. err: %v", errStop)
 		}
 	}
-	h.deleteTranscribeStreamings(transcribeID)
+	h.deleteTranscribeStreamings(id)
 
-	res, err := h.db.TranscribeGet(ctx, transcribeID)
+	res, err := h.UpdateStatus(ctx, id, transcribe.StatusDone)
 	if err != nil {
-		log.Errorf("Could not get deleted transcribe. err: %v", err)
-		return err
+		log.Errorf("Could not update the status. err: %v", err)
+		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, transcribe.EventTypeTranscribeStopped, res)
+	log.WithField("transcribe", res).Debugf("Updated transcribe status done. transcribe_id: %s", id)
 
-	return nil
+	return res, nil
 }
