@@ -16,7 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcirpthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 var (
@@ -56,7 +56,7 @@ func Test_Recording(t *testing.T) {
 				ReferenceType: transcribe.ReferenceTypeRecording,
 				ReferenceID:   uuid.FromStringOrNil("60f9f97e-7f69-11ed-9ae8-b727fc26712d"),
 
-				Status:    transcribe.StatusInit,
+				Status:    transcribe.StatusProgressing,
 				HostID:    testHostID,
 				Language:  "en-US",
 				Direction: transcribe.DirectionBoth,
@@ -76,7 +76,7 @@ func Test_Recording(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTranscript := transcirpthandler.NewMockTranscriptHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				utilHandler:       mockUtil,

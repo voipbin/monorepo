@@ -16,7 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcirpthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 // TranscribeHandler is interface for service handle
@@ -33,13 +33,6 @@ type TranscribeHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	GetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error)
-
-	// CallRecording(ctx context.Context, customerID, callID uuid.UUID, language string) ([]*transcribe.Transcribe, error)
-
-	// Recording(ctx context.Context, customerID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error)
-
-	// StreamingTranscribeStart(ctx context.Context, customerID uuid.UUID, referenceID uuid.UUID, transType transcribe.Type, language string) (*transcribe.Transcribe, error)
-	// StreamingTranscribeStop(ctx context.Context, id uuid.UUID) error
 
 	TranscribingStart(
 		ctx context.Context,
@@ -60,7 +53,7 @@ type transcribeHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 
 	hostID            uuid.UUID
-	transcriptHandler transcirpthandler.TranscriptHandler
+	transcriptHandler transcripthandler.TranscriptHandler
 
 	transcribeStreamingsMap map[uuid.UUID][]*streaming.Streaming
 	transcribeStreamingsMu  sync.Mutex
@@ -91,12 +84,9 @@ func NewTranscribeHandler(
 	reqHandler requesthandler.RequestHandler,
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
-	credentialPath string,
+	transcriptHandler transcripthandler.TranscriptHandler,
 	hostID uuid.UUID,
 ) TranscribeHandler {
-
-	sttGoogle := transcirpthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, credentialPath)
-
 	h := &transcribeHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
@@ -104,7 +94,7 @@ func NewTranscribeHandler(
 		notifyHandler: notifyHandler,
 
 		hostID:            hostID,
-		transcriptHandler: sttGoogle,
+		transcriptHandler: transcriptHandler,
 
 		transcribeStreamingsMap: map[uuid.UUID][]*streaming.Streaming{},
 	}

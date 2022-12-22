@@ -13,7 +13,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcirpthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 func Test_Get(t *testing.T) {
@@ -38,7 +38,7 @@ func Test_Get(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
+			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				reqHandler:        mockReq,
@@ -89,7 +89,7 @@ func Test_GetByReferenceIDAndLanguage(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
+			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				reqHandler:        mockReq,
@@ -143,7 +143,7 @@ func Test_Gets(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
+			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				reqHandler:        mockReq,
@@ -199,7 +199,7 @@ func Test_Create(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
 				ReferenceType: transcribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
-				Status:        transcribe.StatusInit,
+				Status:        transcribe.StatusProgressing,
 				HostID:        testHostID,
 				Language:      "en-US",
 				Direction:     transcribe.DirectionBoth,
@@ -216,7 +216,7 @@ func Test_Create(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockTranscript := transcirpthandler.NewMockTranscriptHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				utilHandler:       mockUtil,
@@ -275,7 +275,7 @@ func Test_Delete(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
+			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				reqHandler:        mockReq,
@@ -337,7 +337,7 @@ func Test_UpdateStatus(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
+			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				reqHandler:        mockReq,

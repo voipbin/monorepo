@@ -11,7 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
-// Create creates a new transcribe
+// TranscribingStart start a live transcribe
 func (h *transcribeHandler) TranscribingStart(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -49,7 +49,7 @@ func (h *transcribeHandler) TranscribingStart(
 		}
 
 	case transcribe.ReferenceTypeCall:
-		res, err = h.StreamingTranscribeStart(ctx, customerID, referenceType, referenceID, lang, direction)
+		res, err = h.streamingTranscribeStart(ctx, customerID, referenceType, referenceID, lang, direction)
 		if err != nil {
 			log.Errorf("Could not transcribe the call reference type. err: %v", err)
 			return nil, err
@@ -59,12 +59,6 @@ func (h *transcribeHandler) TranscribingStart(
 		log.Errorf("Unsupported reference type. reference_type: %s", referenceType)
 		return nil, fmt.Errorf("unsupported reference type. reference_type: %s", referenceType)
 	}
-
-	// res, err := h.Get(ctx, tmp.ID)
-	// if err != nil {
-	// 	log.Errorf("Could not get transcribe info. err: %v", err)
-	// 	return nil, err
-	// }
 
 	return res, nil
 }
@@ -85,14 +79,14 @@ func (h *transcribeHandler) TranscribingStop(ctx context.Context, id uuid.UUID) 
 		return nil, err
 	}
 
-	if !transcribe.IsUpdatableStatus(tmp.Status, transcribe.StatusDone) {
+	if tmp.Status != transcribe.StatusProgressing {
 		log.Errorf("Invalid status. old_status: %s, new_status: %s", tmp.Status, transcribe.StatusDone)
 		return nil, fmt.Errorf("invalid status")
 	}
 
 	switch tmp.ReferenceType {
 	case transcribe.ReferenceTypeCall:
-		return h.StreamingTranscribeStop(ctx, tmp.ID)
+		return h.streamingTranscribeStop(ctx, tmp.ID)
 
 	case transcribe.ReferenceTypeConference:
 		log.Errorf("Not implemented reference type. reference_type: %s", tmp.ReferenceType)
@@ -120,7 +114,7 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 			log.Errorf("Could not get reference info. type: %s", referenceType)
 			return false
 		}
-		if tmp.Status == cmcall.StatusHangup {
+		if tmp.Status != cmcall.StatusProgressing {
 			return false
 		}
 

@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 // pagination parameters
@@ -37,30 +38,24 @@ type listenHandler struct {
 
 	reqHandler        requesthandler.RequestHandler
 	transcribeHandler transcribehandler.TranscribeHandler
+	transcriptHandler transcripthandler.TranscriptHandler
 }
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// v1
-
-	// // call-recordings
-	// regV1CallRecordings = regexp.MustCompile("/v1/call_recordings")
-
-	// recordings
-	regV1Recordings = regexp.MustCompile("/v1/recordings")
-
-	// streamings
-	regV1Streamings   = regexp.MustCompile("/v1/streamings$")
-	regV1StreamingsID = regexp.MustCompile("/v1/streamings/" + regUUID + "$")
-
 	// transcribes
-	regV1TranscribesGet = regexp.MustCompile(`/v1/transcribes\?`)
-	regV1TranscribesID  = regexp.MustCompile("/v1/transcribes/" + regUUID + "$")
+	regV1TranscribesGet    = regexp.MustCompile(`/v1/transcribes\?`)
+	regV1TranscribesID     = regexp.MustCompile("/v1/transcribes/" + regUUID + "$")
+	regV1TranscribesIDStop = regexp.MustCompile("/v1/transcribes/" + regUUID + "/stop$")
+
+	// transcripts
+	regV1TranscriptsGet = regexp.MustCompile(`/v1/transcripts\?`)
 )
 
 var (
-	metricsNamespace = "number_manager"
+	metricsNamespace = "transcribe_manager"
 
 	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -94,12 +89,14 @@ func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	reqHandler requesthandler.RequestHandler,
 	transcribeHandler transcribehandler.TranscribeHandler,
+	transcriptHandler transcripthandler.TranscriptHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		hostID:            hostID,
 		rabbitSock:        rabbitSock,
 		reqHandler:        reqHandler,
 		transcribeHandler: transcribeHandler,
+		transcriptHandler: transcriptHandler,
 	}
 
 	return h
@@ -242,35 +239,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	////////////////////
-	// recordings
-	////////////////////
-	// POST /recordings
-	// case regV1Recordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	response, err = h.processV1RecordingsPost(m)
-	// 	requestType = "/v1/recordings"
-
-	// ////////////////////
-	// // call-recordings
-	// ////////////////////
-	// // POST /call-recordings
-	// case regV1CallRecordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	response, err = h.processV1CallRecordingsPost(m)
-	// 	requestType = "/v1/call_recordings"
-
-	////////////////////
-	// streamings
-	////////////////////
-	// // POST /streamings
-	// case regV1Streamings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-	// 	response, err = h.processV1StreamingsPost(m)
-	// 	requestType = "/v1/streamings"
-
-	// // DELETE /streamings/<id>
-	// case regV1StreamingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-	// 	response, err = h.processV1StreamingsIDDelete(m)
-	// 	requestType = "/v1/streamings"
-
-	////////////////////
 	// transcribes
 	////////////////////
 	// GET /transcribes
@@ -278,15 +246,28 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1TranscribesGet(ctx, m)
 		requestType = "/v1/transcribes"
 
-	// GET /transcribes/<id>
+	// GET /transcribes/<transcribe-id>
 	case regV1TranscribesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1TranscribesIDGet(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>"
 
-	// DELETE /transcribes/<id>
+	// DELETE /transcribes/<transcribe-id>
 	case regV1TranscribesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1TranscribesIDDelete(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>"
+
+	// POST /transcribe/<transcribe-id>/stop
+	case regV1TranscribesIDStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1TranscribesIDStopPost(ctx, m)
+		requestType = "/v1/transcribes/<transcribe-id>/stop"
+
+	////////////////////
+	// transcripts
+	////////////////////
+	// GET /transcripts
+	case regV1TranscriptsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1TranscriptsGet(ctx, m)
+		requestType = "/v1/transcripts"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

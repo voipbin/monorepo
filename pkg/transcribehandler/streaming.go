@@ -11,8 +11,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
-// StreamingTranscribeStart starts the streaming transcribe
-func (h *transcribeHandler) StreamingTranscribeStart(
+// streamingTranscribeStart starts the streaming transcribe
+func (h *transcribeHandler) streamingTranscribeStart(
 	ctx context.Context,
 	customerID uuid.UUID,
 	referenceType transcribe.ReferenceType,
@@ -22,9 +22,11 @@ func (h *transcribeHandler) StreamingTranscribeStart(
 ) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":           "StreamingTranscribeStart",
+			"func":           "streamingTranscribeStart",
 			"reference_type": referenceType,
 			"reference_id":   referenceID,
+			"language":       language,
+			"direction":      direction,
 		},
 	)
 
@@ -50,8 +52,6 @@ func (h *transcribeHandler) StreamingTranscribeStart(
 	if direction == transcribe.DirectionBoth {
 		directions = []transcript.Direction{transcript.DirectionIn, transcript.DirectionOut}
 	}
-	// if targets[0] ==
-	// if targets
 
 	for _, dir := range directions {
 
@@ -68,11 +68,11 @@ func (h *transcribeHandler) StreamingTranscribeStart(
 	return res, nil
 }
 
-// StreamingTranscribeStop stops streaming transcribe.
-func (h *transcribeHandler) StreamingTranscribeStop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
+// streamingTranscribeStop stops streaming transcribe.
+func (h *transcribeHandler) streamingTranscribeStop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":          "StreamingTranscribeStop",
+			"func":          "streamingTranscribeStop",
 			"transcribe_id": id,
 		},
 	)

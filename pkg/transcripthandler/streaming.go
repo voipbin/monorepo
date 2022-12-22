@@ -1,4 +1,4 @@
-package transcirpthandler
+package transcripthandler
 
 import (
 	"context"
@@ -75,7 +75,7 @@ func (h *transcriptHandler) Start(ctx context.Context, tr *transcribe.Transcribe
 	h.notifyHandler.PublishEvent(ctx, streaming.EventTypeStreamingStarted, res)
 
 	// start transcribe
-	go h.transcribeStart(ctx, res)
+	go h.processStart(ctx, res)
 
 	return res, nil
 }
