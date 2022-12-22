@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -24,7 +24,7 @@ func Test_TranscribeV1TranscribeGet(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectResult *tstranscribe.Transcribe
+		expectResult *tmtranscribe.Transcribe
 	}
 
 	tests := []test{
@@ -44,7 +44,7 @@ func Test_TranscribeV1TranscribeGet(t *testing.T) {
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"32b71878-8093-11ed-8578-775276ea57cf"}`),
 			},
-			&tstranscribe.Transcribe{
+			&tmtranscribe.Transcribe{
 				ID: uuid.FromStringOrNil("32b71878-8093-11ed-8578-775276ea57cf"),
 			},
 		},
@@ -161,6 +161,135 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_TranscribeV1TranscribeStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		referenceType tmtranscribe.ReferenceType
+		referenceID   uuid.UUID
+		language      string
+		direction     transcribe.Direction
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectRes *tmtranscribe.Transcribe
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("2ab9c63a-8227-11ed-928b-1b90501adbe2"),
+			tmtranscribe.ReferenceTypeCall,
+			uuid.FromStringOrNil("2ae8944c-8227-11ed-acb4-c3e23ea3a2a4"),
+			"en-US",
+			transcribe.DirectionBoth,
+
+			"bin-manager.transcribe-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/transcribes",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"2ab9c63a-8227-11ed-928b-1b90501adbe2","reference_type":"call","reference_id":"2ae8944c-8227-11ed-acb4-c3e23ea3a2a4","language":"en-US","direction":"both"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2b13a4ca-8227-11ed-8bad-b7bb9aa7f185"}`),
+			},
+			&tmtranscribe.Transcribe{
+				ID: uuid.FromStringOrNil("2b13a4ca-8227-11ed-8bad-b7bb9aa7f185"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.TranscribeV1TranscribeStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_TranscribeV1TranscribeStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		transcribeID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectRes *tmtranscribe.Transcribe
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("2622b04a-8228-11ed-98f0-6bfc284cdb95"),
+
+			"bin-manager.transcribe-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/transcribes/2622b04a-8228-11ed-98f0-6bfc284cdb95/stop",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2622b04a-8228-11ed-98f0-6bfc284cdb95"}`),
+			},
+			&tmtranscribe.Transcribe{
+				ID: uuid.FromStringOrNil("2622b04a-8228-11ed-98f0-6bfc284cdb95"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.TranscribeV1TranscribeStop(ctx, tt.transcribeID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})

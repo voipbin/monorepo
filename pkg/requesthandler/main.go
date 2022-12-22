@@ -51,6 +51,8 @@ import (
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
@@ -195,8 +197,8 @@ const (
 
 	resourceStorageRecording resource = "storage/recording"
 
-	resourceTranscribeStreamings     = "transcribe/streamings"
-	resourceTranscribeCallRecordings = "transcribe/call-recordings"
+	resourceTranscribeTranscribes = "transcribe/transcribes"
+	resourceTranscribeTranscripts = "transcribe/transcripts"
 
 	resourceTTSSpeeches resource = "tts/speeches"
 
@@ -647,9 +649,19 @@ type RequestHandler interface {
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error)
 
 	// // transcribe-manager
-	// TranscribeV1CallRecordingCreate(ctx context.Context, customerID, callID uuid.UUID, language string, timeout, delay int) ([]tstranscribe.Transcribe, error)
-	// TranscribeV1StreamingCreate(ctx context.Context, customerID, referenceID uuid.UUID, referenceType tstranscribe.Type, language string) (*tstranscribe.Transcribe, error)
-	// TranscribeV1RecordingCreate(ctx context.Context, customerID, recordingID uuid.UUID, language string) (*tstranscribe.Transcribe, error)
+	TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
+	TranscribeV1TranscribeGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tmtranscribe.Transcribe, error)
+	TranscribeV1TranscribeStart(
+		ctx context.Context,
+		customerID uuid.UUID,
+		referenceType tmtranscribe.ReferenceType,
+		referenceID uuid.UUID,
+		language string,
+		direction tmtranscribe.Direction,
+	) (*tmtranscribe.Transcribe, error)
+	TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
+	TranscribeV1TranscribeDelete(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
+	TranscribeV1TranscriptGets(ctx context.Context, transcribeID uuid.UUID) ([]tmtranscript.Transcript, error)
 
 	// user-manager
 	UserV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission umuser.Permission) (*umuser.User, error)

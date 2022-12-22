@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tmrequest "gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler/models/request"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -43,7 +44,7 @@ func (r *requestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcri
 func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceTranscribeTranscribes, 30000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -60,4 +61,98 @@ func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, custome
 	}
 
 	return res, nil
+}
+
+// TranscribeV1TranscribeStart sends a request to transcribe-manager
+// to create and starts a transcribe.
+// it returns created transcribe info if it succeed.
+func (r *requestHandler) TranscribeV1TranscribeStart(
+	ctx context.Context,
+	customerID uuid.UUID,
+	referenceType tmtranscribe.ReferenceType,
+	referenceID uuid.UUID,
+	language string,
+	direction tmtranscribe.Direction,
+) (*tmtranscribe.Transcribe, error) {
+	uri := "/v1/transcribes"
+
+	data := &tmrequest.V1DataTranscribesPost{
+		CustomerID:    customerID,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+		Language:      language,
+		Direction:     direction,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeTranscribes, 30000, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res tmtranscribe.Transcribe
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// TranscribeV1TranscribeStop sends a request to transcribe-manager
+// to stops a live transcribe.
+// it returns stopped transcribe info if it succeed.
+func (r *requestHandler) TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
+	uri := fmt.Sprintf("/v1/transcribes/%s/stop", transcribeID)
+
+	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeTranscribes, 30000, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res tmtranscribe.Transcribe
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// TranscribeV1TranscribeDelete sends a request to transcribe-manager
+// to deleting the transcribe.
+func (r *requestHandler) TranscribeV1TranscribeDelete(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
+	uri := fmt.Sprintf("/v1/transcribes/%s", transcribeID)
+
+	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceTranscribeTranscribes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res tmtranscribe.Transcribe
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
