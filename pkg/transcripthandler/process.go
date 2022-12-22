@@ -1,4 +1,4 @@
-package transcirpthandler
+package transcripthandler
 
 import (
 	"context"
@@ -12,11 +12,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/rtphandler"
 )
 
-// transcribeStart starts the transcribe the RTP stream.
-func (h *transcriptHandler) transcribeStart(ctx context.Context, st *streaming.Streaming) {
+// processStart starts the transcribe the RTP stream.
+func (h *transcriptHandler) processStart(ctx context.Context, st *streaming.Streaming) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":          "transcribeStart",
+			"func":          "processStart",
 			"transcribe_id": st.TranscribeID,
 			"streaming_id":  st.ID,
 		},
@@ -35,13 +35,13 @@ func (h *transcriptHandler) transcribeStart(ctx context.Context, st *streaming.S
 	go rtpHandler.Serve()
 
 	// init transcribe
-	if errInit := h.transcribeInit(ctx, st.Stream, st.Language); errInit != nil {
+	if errInit := h.processInit(ctx, st.Stream, st.Language); errInit != nil {
 		log.Errorf("Could not initate the transcribeStream. err: %v", errInit)
 		return
 	}
 
 	// start result handle
-	go h.transcribeResultHandler(ctx, st)
+	go h.processResultHandler(ctx, st)
 
 	// start rtp forward
 	for {
@@ -62,11 +62,11 @@ func (h *transcriptHandler) transcribeStart(ctx context.Context, st *streaming.S
 	}
 }
 
-// transcribeInit initiates streaming transcribe.
-func (h *transcriptHandler) transcribeInit(ctx context.Context, stream speechpb.Speech_StreamingRecognizeClient, language string) error {
+// processInit initiates streaming transcribe.
+func (h *transcriptHandler) processInit(ctx context.Context, stream speechpb.Speech_StreamingRecognizeClient, language string) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":     "transcribeInit",
+			"func":     "processInit",
 			"language": language,
 		},
 	)
@@ -94,19 +94,19 @@ func (h *transcriptHandler) transcribeInit(ctx context.Context, stream speechpb.
 	return nil
 }
 
-// transcribeResultHandler handles transcript result from the google stt
-func (h *transcriptHandler) transcribeResultHandler(
+// processResultHandler handles transcript result from the google stt
+func (h *transcriptHandler) processResultHandler(
 	ctx context.Context,
 	st *streaming.Streaming,
 ) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":          "transcribeResultHandler",
+			"func":          "processResultHandler",
 			"transcribe_id": st.TranscribeID,
 			"streaming_id":  st.ID,
 		},
 	)
-	log.Debugf("Starting transcribeResultHandler.")
+	log.Debugf("Starting processResultHandler.")
 
 	t1 := time.Now()
 	for {
@@ -143,11 +143,11 @@ func (h *transcriptHandler) transcribeResultHandler(
 	}
 }
 
-// transcribeFromBucket transcribes from the bucket file
-func (h *transcriptHandler) transcribeFromBucket(ctx context.Context, mediaLink string, language string) (*transcript.Transcript, error) {
+// processFromBucket transcribes from the bucket file
+func (h *transcriptHandler) processFromBucket(ctx context.Context, mediaLink string, language string) (*transcript.Transcript, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":       "transcribeFromBucket",
+			"func":       "processFromBucket",
 			"media_link": mediaLink,
 		},
 	)

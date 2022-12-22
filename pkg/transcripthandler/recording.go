@@ -1,4 +1,4 @@
-package transcirpthandler
+package transcripthandler
 
 import (
 	"context"
@@ -28,7 +28,7 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	}
 
 	// transcribe
-	tmp, err := h.transcribeFromBucket(ctx, recording.BucketURI, language)
+	tmp, err := h.processFromBucket(ctx, recording.BucketURI, language)
 	if err != nil {
 		log.Errorf("Could not transcribe the recording. err: %v", err)
 		return nil, err

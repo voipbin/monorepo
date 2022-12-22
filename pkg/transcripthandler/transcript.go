@@ -1,4 +1,4 @@
-package transcirpthandler
+package transcripthandler
 
 import (
 	"context"
@@ -51,6 +51,24 @@ func (h *transcriptHandler) Create(
 	log.WithField("transcript", res).Debugf("Created a new transcript. transcript_id: %s, transcribe_id: %s", res.ID, res.TranscribeID)
 
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, transcript.EventTypeTranscriptCreated, res)
+
+	return res, nil
+}
+
+// Gets returns list of transcripts.
+func (h *transcriptHandler) Gets(ctx context.Context, transcribeID uuid.UUID) ([]*transcript.Transcript, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "Gets",
+			"transcribe_id": transcribeID,
+		},
+	)
+
+	res, err := h.db.TranscriptGetsByTranscribeID(ctx, transcribeID)
+	if err != nil {
+		log.Errorf("Could not get transcripts. err: %v", err)
+		return nil, err
+	}
 
 	return res, nil
 }

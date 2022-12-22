@@ -1,6 +1,6 @@
-package transcirpthandler
+package transcripthandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package transcirpthandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package transcripthandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -81,6 +81,7 @@ type TranscriptHandler interface {
 		message string,
 		tmTranscript string,
 	) (*transcript.Transcript, error)
+	Gets(ctx context.Context, transcribeID uuid.UUID) ([]*transcript.Transcript, error)
 
 	Start(ctx context.Context, tr *transcribe.Transcribe, direction transcript.Direction) (*streaming.Streaming, error)
 	Stop(ctx context.Context, st *streaming.Streaming) error

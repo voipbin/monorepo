@@ -1,4 +1,4 @@
-package transcirpthandler
+package transcripthandler
 
 import (
 	"context"
@@ -89,6 +89,73 @@ func Test_Create(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.responseTranscript) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseTranscript, res)
+			}
+		})
+	}
+}
+
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		transcribeID uuid.UUID
+
+		responseTranscripts []*transcript.Transcript
+
+		expectReqCreate []*transcript.Transcript
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("87d87c60-821a-11ed-a6e2-4f8ea6cd0a1d"),
+
+			[]*transcript.Transcript{
+				{
+					ID: uuid.FromStringOrNil("c33a05bc-821a-11ed-91e6-b34b3f52cdf9"),
+				},
+				{
+					ID: uuid.FromStringOrNil("c36d26b8-821a-11ed-aeae-83a320a63874"),
+				},
+			},
+
+			[]*transcript.Transcript{
+				{
+					ID: uuid.FromStringOrNil("c33a05bc-821a-11ed-91e6-b34b3f52cdf9"),
+				},
+				{
+					ID: uuid.FromStringOrNil("c36d26b8-821a-11ed-aeae-83a320a63874"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &transcriptHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().TranscriptGetsByTranscribeID(ctx, tt.transcribeID).Return(tt.responseTranscripts, nil)
+
+			res, err := h.Gets(ctx, tt.transcribeID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectReqCreate) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectReqCreate, res)
 			}
 		})
 	}

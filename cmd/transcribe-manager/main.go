@@ -23,6 +23,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 const serviceName = "transcribe-manager"
@@ -149,8 +150,9 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 
 	hostID := uuid.Must(uuid.NewV4())
-	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, *gcpCredential, hostID)
-	listenHandler := listenhandler.NewListenHandler(hostID, rabbitSock, reqHandler, transcribeHandler)
+	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler, *gcpCredential)
+	transcribeHandler := transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, hostID)
+	listenHandler := listenhandler.NewListenHandler(hostID, rabbitSock, reqHandler, transcribeHandler, transcriptHandler)
 
 	// run
 	listenVolatile := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)

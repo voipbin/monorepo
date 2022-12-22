@@ -1,4 +1,4 @@
-package transcirpthandler
+package transcripthandler
 
 import (
 	"fmt"

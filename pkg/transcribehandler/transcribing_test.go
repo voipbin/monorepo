@@ -7,18 +7,18 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
-func Test_streamingTranscribeStart(t *testing.T) {
+func Test_TranscribingStart_call(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -29,6 +29,7 @@ func Test_streamingTranscribeStart(t *testing.T) {
 		language      string
 		direction     transcribe.Direction
 
+		responseCall       *cmcall.Call
 		responseTranscribe *transcribe.Transcribe
 
 		expectRes *transcribe.Transcribe
@@ -36,18 +37,22 @@ func Test_streamingTranscribeStart(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("469b200c-8786-11ec-bd4f-bb7ae5541d57"),
+			uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
 			transcribe.ReferenceTypeCall,
-			uuid.FromStringOrNil("47b30720-8786-11ec-ac47-f37c07bbbef5"),
+			uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
 			"en-US",
 			transcribe.DirectionBoth,
 
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("49a3529c-8786-11ec-928e-bb8e9b925697"),
+			&cmcall.Call{
+				ID:     uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+				Status: cmcall.StatusProgressing,
 			},
 
 			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("49a3529c-8786-11ec-928e-bb8e9b925697"),
+				ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+			},
+			&transcribe.Transcribe{
+				ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
 			},
 		},
 	}
@@ -61,31 +66,30 @@ func Test_streamingTranscribeStart(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
 				utilHandler:       mockUtil,
 				reqHandler:        mockReq,
 				db:                mockDB,
 				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
+				transcriptHandler: mockTranscript,
 
 				transcribeStreamingsMap: map[uuid.UUID][]*streaming.Streaming{},
 			}
 
 			ctx := context.Background()
 
-			// create
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+
+			// streaming start
 			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
 			mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+			mockTranscript.EXPECT().Start(ctx, gomock.Any(), gomock.Any()).Return(&streaming.Streaming{}, nil).AnyTimes()
 
-			for _, direction := range []transcript.Direction{transcript.DirectionIn, transcript.DirectionOut} {
-				mockGoogle.EXPECT().Start(ctx, tt.responseTranscribe, direction).Return(&streaming.Streaming{}, nil)
-			}
-
-			res, err := h.streamingTranscribeStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
+			res, err := h.TranscribingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -93,18 +97,16 @@ func Test_streamingTranscribeStart(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
-
 		})
 	}
 }
 
-func Test_streamingTranscribeStop(t *testing.T) {
+func Test_TranscribingStop_call(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		transcribeID uuid.UUID
-		streamings   []*streaming.Streaming
+		id uuid.UUID
 
 		responseTranscribe *transcribe.Transcribe
 
@@ -113,22 +115,17 @@ func Test_streamingTranscribeStop(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("58ad260c-8789-11ec-87ad-63d573434c69"),
-			[]*streaming.Streaming{
-				{
-					ID: uuid.FromStringOrNil("d5824a14-8788-11ec-9e71-a7cedf6ca3e1"),
-				},
-				{
-					ID: uuid.FromStringOrNil("df402f8a-8788-11ec-a14b-af9efb78ed6a"),
-				},
-			},
+			uuid.FromStringOrNil("e28b21dc-8218-11ed-b54f-d394b81cda3b"),
 
 			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("58ad260c-8789-11ec-87ad-63d573434c69"),
+				ID:            uuid.FromStringOrNil("e28b21dc-8218-11ed-b54f-d394b81cda3b"),
+				ReferenceType: transcribe.ReferenceTypeCall,
+				Status:        transcribe.StatusProgressing,
 			},
-
 			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("58ad260c-8789-11ec-87ad-63d573434c69"),
+				ID:            uuid.FromStringOrNil("e28b21dc-8218-11ed-b54f-d394b81cda3b"),
+				ReferenceType: transcribe.ReferenceTypeCall,
+				Status:        transcribe.StatusProgressing,
 			},
 		},
 	}
@@ -138,39 +135,47 @@ func Test_streamingTranscribeStop(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &transcribeHandler{
+				utilHandler:       mockUtil,
 				reqHandler:        mockReq,
 				db:                mockDB,
 				notifyHandler:     mockNotify,
-				transcriptHandler: mockGoogle,
+				transcriptHandler: mockTranscript,
 
 				transcribeStreamingsMap: map[uuid.UUID][]*streaming.Streaming{},
 			}
 
 			ctx := context.Background()
 
-			h.addTranscribeStreamings(tt.transcribeID, tt.streamings)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 
-			for _, st := range tt.streamings {
-				mockGoogle.EXPECT().Stop(gomock.Any(), st).Return(nil)
-			}
+			// streamingTranscribeStop
+			mockDB.EXPECT().TranscribeSetStatus(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().TranscribeGet(gomock.Any(), gomock.Any()).Return(tt.responseTranscribe, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 
-			mockDB.EXPECT().TranscribeSetStatus(ctx, tt.transcribeID, transcribe.StatusDone).Return(nil)
-			mockDB.EXPECT().TranscribeGet(gomock.Any(), tt.transcribeID).Return(tt.responseTranscribe, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeDone, tt.responseTranscribe)
+			// mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 
-			res, err := h.streamingTranscribeStop(ctx, tt.transcribeID)
+			// // streaming start
+			// mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
+			// mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(nil)
+			// mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil)
+			// mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+			// mockTranscript.EXPECT().Start(ctx, gomock.Any(), gomock.Any()).Return(&streaming.Streaming{}, nil).AnyTimes()
+
+			res, err := h.TranscribingStop(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

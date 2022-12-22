@@ -49,7 +49,7 @@ type Status string
 
 // list of statuses
 const (
-	StatusInit        Status = "init"
+	// StatusInit        Status = "init"
 	StatusProgressing Status = "progressing"
 	StatusDone        Status = "done"
 )
@@ -57,35 +57,24 @@ const (
 // IsUpdatableStatus returns true if the new status is updatable.
 func IsUpdatableStatus(oldStatus, newStatus Status) bool {
 
-	// |--------------------+---------------+-------------------+---------------+
-	// | old \ new          | StatusInit	| StatusProgressing	| StatusDone	|
-	// |--------------------+---------------+-------------------+---------------+
-	// | StatusInit         |      x        |         o         |       o       |
-	// |--------------------+---------------+-------------------+----------------
-	// | StatusProgressing  |      x        |         x         |       o       |
-	// |--------------------+---------------+-------------------+----------------
-	// | StatusDone         |      x        |         x         |       x       |
-	// |--------------------+---------------+-------------------+----------------
+	// |--------------------+-------------------+---------------+
+	// | old \ new          | StatusProgressing	| StatusDone	|
+	// |--------------------+-------------------+---------------+
+	// | StatusProgressing  |         x         |       o       |
+	// |--------------------+---------------+-------------------+
+	// | StatusDone         |         x         |       x       |
+	// |--------------------+---------------+-------------------+
 
-	mapOldStatusInit := map[Status]bool{
-		StatusInit:        false,
-		StatusProgressing: true,
-		StatusDone:        true,
-	}
 	mapOldStatusProgressing := map[Status]bool{
-		StatusInit:        false,
 		StatusProgressing: false,
 		StatusDone:        true,
 	}
 	mapOldStatusDone := map[Status]bool{
-		StatusInit:        false,
 		StatusProgressing: false,
 		StatusDone:        false,
 	}
 
 	switch oldStatus {
-	case StatusInit:
-		return mapOldStatusInit[newStatus]
 	case StatusProgressing:
 		return mapOldStatusProgressing[newStatus]
 	case StatusDone:

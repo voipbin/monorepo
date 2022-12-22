@@ -10,7 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcirpthandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 func TestTranscribeStreamingsHandle(t *testing.T) {
@@ -20,7 +20,7 @@ func TestTranscribeStreamingsHandle(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockGoogle := transcirpthandler.NewMockTranscriptHandler(mc)
+	mockGoogle := transcripthandler.NewMockTranscriptHandler(mc)
 
 	h := &transcribeHandler{
 		reqHandler:        mockReq,
