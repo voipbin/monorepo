@@ -54,6 +54,8 @@ import (
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	user "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
@@ -3176,6 +3178,96 @@ func (m *MockRequestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid
 func (mr *MockRequestHandlerMockRecorder) TTSV1SpeecheCreate(ctx, callID, text, gender, language, timeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeecheCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeecheCreate), ctx, callID, text, gender, language, timeout)
+}
+
+// TranscribeV1TranscribeDelete mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscribeDelete(ctx context.Context, transcribeID uuid.UUID) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeDelete", ctx, transcribeID)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeV1TranscribeDelete indicates an expected call of TranscribeV1TranscribeDelete.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeDelete(ctx, transcribeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeDelete", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeDelete), ctx, transcribeID)
+}
+
+// TranscribeV1TranscribeGet mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeGet", ctx, transcribeID)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeV1TranscribeGet indicates an expected call of TranscribeV1TranscribeGet.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGet(ctx, transcribeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeGet", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeGet), ctx, transcribeID)
+}
+
+// TranscribeV1TranscribeGets mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscribeGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeGets", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeV1TranscribeGets indicates an expected call of TranscribeV1TranscribeGets.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeGets), ctx, customerID, pageToken, pageSize)
+}
+
+// TranscribeV1TranscribeStart mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscribeStart(ctx context.Context, customerID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeStart", ctx, customerID, referenceType, referenceID, language, direction)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeV1TranscribeStart indicates an expected call of TranscribeV1TranscribeStart.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStart(ctx, customerID, referenceType, referenceID, language, direction interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeStart", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeStart), ctx, customerID, referenceType, referenceID, language, direction)
+}
+
+// TranscribeV1TranscribeStop mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeStop", ctx, transcribeID)
+	ret0, _ := ret[0].(*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeV1TranscribeStop indicates an expected call of TranscribeV1TranscribeStop.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStop(ctx, transcribeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeStop", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeStop), ctx, transcribeID)
+}
+
+// TranscribeV1TranscriptGets mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscriptGets(ctx context.Context, transcribeID uuid.UUID) ([]transcript.Transcript, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeV1TranscriptGets", ctx, transcribeID)
+	ret0, _ := ret[0].([]transcript.Transcript)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeV1TranscriptGets indicates an expected call of TranscribeV1TranscriptGets.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscriptGets(ctx, transcribeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscriptGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscriptGets), ctx, transcribeID)
 }
 
 // UserV1UserCreate mocks base method.
