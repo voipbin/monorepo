@@ -13,6 +13,32 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
+// callGet validates the call's ownership and returns the call info.
+func (h *serviceHandler) callGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "callGet",
+			"customer_id":   u.ID,
+			"transcribe_id": callID,
+		},
+	)
+
+	// send request
+	res, err := h.reqHandler.CallV1CallGet(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get the call info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("call", res).Debug("Received result.")
+
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	return res, nil
+}
+
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call info if it succeed.
@@ -68,17 +94,12 @@ func (h *serviceHandler) CallGet(ctx context.Context, u *cscustomer.Customer, ca
 		"call_id":     callID,
 	})
 
-	// send request
-	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
+	// get call
+	c, err := h.callGet(ctx, u, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return nil, err
-	}
-
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != c.CustomerID {
-		log.Info("The user has no permission for this call.")
-		return nil, fmt.Errorf("user has no permission")
 	}
 
 	// convert
@@ -130,21 +151,15 @@ func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer,
 		"call_id":     callID,
 	})
 
-	// todo need to check the call's ownership
-	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
+	_, err := h.callGet(ctx, u, callID)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
 		return nil, err
 	}
 
-	// check call's ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != c.CustomerID {
-		log.Info("The user has no permission for this call.")
-		return nil, fmt.Errorf("customer has no permission")
-	}
-
 	// send request
-	cc, err := h.reqHandler.CallV1CallHangup(ctx, callID)
+	tmp, err := h.reqHandler.CallV1CallHangup(ctx, callID)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
@@ -152,7 +167,7 @@ func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer,
 	}
 
 	// convert
-	res := cc.ConvertWebhookMessage()
+	res := tmp.ConvertWebhookMessage()
 
 	return res, nil
 }
