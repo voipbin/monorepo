@@ -14,7 +14,7 @@ import (
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -639,7 +639,7 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow
 // actionHandleTranscribeRecording handles transcribe_recording
 func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "activeFlowHandleActionTranscribeRecording",
+		"func":           "actionHandleTranscribeRecording",
 		"activeflow_id":  af.ID,
 		"reference_type": af.ReferenceType,
 		"reference_id":   af.ReferenceID,
@@ -654,13 +654,27 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 		return err
 	}
 
-	// transcribe-recording
-	res, err := h.reqHandler.TranscribeV1CallRecordingCreate(ctx, af.CustomerID, af.ReferenceID, optRecordingToText.Language, 120000, 30)
+	if af.ReferenceType != activeflow.ReferenceTypeCall {
+		// nothing to do.
+		log.Errorf("Invalid reference type. Currently, support the call type only. reference_type: %s", af.ReferenceType)
+		return nil
+	}
+
+	c, err := h.reqHandler.CallV1CallGet(ctx, af.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
+		log.Errorf("Could not get the call. err: %s", err)
 		return err
 	}
-	log.WithField("transcribes", res).Debugf("Received transcribes.")
+
+	// transcribe the recordings
+	for _, recordingID := range c.RecordingIDs {
+		tmp, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, tmtranscribe.ReferenceTypeRecording, recordingID, optRecordingToText.Language, tmtranscribe.DirectionBoth)
+		if err != nil {
+			log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
+			return err
+		}
+		log.WithField("transcribes", tmp).Debugf("Transcribed the recording. transcribe_id: %s, recording_id: %s", tmp.ID, recordingID)
+	}
 
 	return nil
 }
@@ -668,7 +682,7 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 // actionHandleTranscribeStart handles transcribe_start
 func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "activeFlowHandleActionTranscribeStart",
+		"func":           "actionHandleTranscribeStart",
 		"activeflow_id":  af.ID,
 		"reference_type": af.ReferenceType,
 		"reference_id":   af.ReferenceID,
@@ -677,14 +691,19 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 
 	act := &af.CurrentAction
 
+	if af.ReferenceType != activeflow.ReferenceTypeCall {
+		log.Errorf("Unsupported reference type. reference_type: %s", af.ReferenceType)
+		return nil
+	}
+
 	var opt action.OptionTranscribeStart
 	if err := json.Unmarshal(act.Option, &opt); err != nil {
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return err
 	}
 
-	// transcribe-recording
-	trans, err := h.reqHandler.TranscribeV1StreamingCreate(ctx, af.CustomerID, af.ReferenceID, tstranscribe.TypeCall, opt.Language)
+	// transcribe start
+	trans, err := h.reqHandler.TranscribeV1TranscribeStart(ctx, af.CustomerID, tmtranscribe.ReferenceTypeCall, af.ReferenceID, opt.Language, tmtranscribe.DirectionBoth)
 	if err != nil {
 		log.Errorf("Could not handle the call recording to text correctly. err: %v", err)
 		return err
