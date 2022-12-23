@@ -1,6 +1,6 @@
 package servicehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package servicehandler -destination ./mock_servicehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package servicehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -43,6 +43,7 @@ import (
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
@@ -390,7 +391,13 @@ type ServiceHandler interface {
 	TagUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*amtag.WebhookMessage, error)
 
 	// transcribe handlers
-	TranscribeCreate(ctx context.Context, u *cscustomer.Customer, referencdID uuid.UUID, language string) (*tmtranscribe.WebhookMessage, error)
+	TranscribeGet(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
+	TranscribeGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error)
+	TranscribeStart(ctx context.Context, u *cscustomer.Customer, referenceType tmtranscribe.ReferenceType, referenceID uuid.UUID, language string, direction tmtranscribe.Direction) (*tmtranscribe.WebhookMessage, error)
+	TranscribeStop(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
+	TranscribeDelete(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
+
+	TranscriptGets(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error)
 
 	WebsockCreate(ctx context.Context, u *cscustomer.Customer, w http.ResponseWriter, r *http.Request) error
 }

@@ -1,8 +1,11 @@
 package response
 
-import "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+import (
+	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+)
 
-// BodyTranscribesPOST is response body define for POST /transcribes
-type BodyTranscribesPOST struct {
-	transcribe.Transcribe
+// BodyTranscribesGET is response body define for GET /transcripts
+type BodyTranscribesGET struct {
+	Result []*tmtranscribe.WebhookMessage `json:"result"`
+	Pagination
 }

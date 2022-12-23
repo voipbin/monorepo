@@ -31,6 +31,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/routes"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/tags"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/transcribes"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/transcripts"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/ws"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 )
@@ -68,5 +69,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	routes.ApplyRoutes(v1)
 	tags.ApplyRoutes(v1)
 	transcribes.ApplyRoutes(v1)
+	transcripts.ApplyRoutes(v1)
 	ws.ApplyRoutes(v1)
 }

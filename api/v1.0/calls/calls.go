@@ -14,7 +14,6 @@ import (
 
 // callsPOST handles POST /calls request.
 // It creates a temp flow and create a call with temp flow.
-
 // @Summary Make an outbound call
 // @Description dialing to destination
 // @Produce  json
@@ -67,7 +66,6 @@ func callsPOST(c *gin.Context) {
 
 // callsIDDelete handles DELETE /calls/<call-id> request.
 // It hangup the call.
-
 // @Summary Hangup the call
 // @Description Hangup the call of the given id
 // @Produce json
