@@ -19,6 +19,7 @@ import (
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
@@ -2769,6 +2770,8 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 		callID     uuid.UUID
 		customerID uuid.UUID
 		language   string
+
+		responseCall *cmcall.Call
 	}
 
 	tests := []test{
@@ -2776,8 +2779,9 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 			"normal",
 
 			&activeflow.Activeflow{
-				CustomerID:  uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
-				ReferenceID: uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
+				CustomerID:    uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("673ed4d8-9b42-11eb-bb79-ff02c5650f35"),
 					Type:   action.TypeTranscribeRecording,
@@ -2788,6 +2792,13 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 			uuid.FromStringOrNil("66e928da-9b42-11eb-8da0-3783064961f6"),
 			uuid.FromStringOrNil("321089b0-8795-11ec-907f-0bae67409ef6"),
 			"en-US",
+
+			&cmcall.Call{
+				RecordingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("01e4c8a0-82a3-11ed-b30e-8f633f969f44"),
+					uuid.FromStringOrNil("021e88e2-82a3-11ed-a3de-fba809f8b728"),
+				},
+			},
 		},
 	}
 
@@ -2805,7 +2816,12 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockReq.EXPECT().TranscribeV1CallRecordingCreate(ctx, tt.customerID, tt.callID, tt.language, 120000, 30).Return([]tstranscribe.Transcribe{}, nil)
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeflow.ReferenceID).Return(tt.responseCall, nil)
+			for _, recordingID := range tt.responseCall.RecordingIDs {
+				mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.activeflow.CustomerID, tmtranscribe.ReferenceTypeRecording, recordingID, tt.language, tmtranscribe.DirectionBoth).Return(&tmtranscribe.Transcribe{}, nil)
+			}
+
 			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -2821,7 +2837,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 
 		customerID    uuid.UUID
 		referenceID   uuid.UUID
-		referenceType tstranscribe.Type
+		referenceType tstranscribe.ReferenceType
 		language      string
 
 		response *tstranscribe.Transcribe
@@ -2831,8 +2847,9 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 		{
 			"normal",
 			&activeflow.Activeflow{
-				CustomerID:  uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
-				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+				CustomerID:    uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("0737bd5c-0c08-11ec-9ba8-3bc700c21fd4"),
 					Type:   action.TypeTranscribeStart,
@@ -2842,15 +2859,15 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 
 			uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			tstranscribe.TypeCall,
+			tstranscribe.ReferenceTypeCall,
 			"en-US",
 
 			&tstranscribe.Transcribe{
-				ID:          uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
-				Type:        tstranscribe.TypeCall,
-				ReferenceID: uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-				HostID:      uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
-				Language:    "en-US",
+				ID:            uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
+				ReferenceType: tstranscribe.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
+				HostID:        uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
+				Language:      "en-US",
 			},
 		},
 	}
@@ -2867,9 +2884,9 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 				db:         mockDB,
 				reqHandler: mockReq,
 			}
-
 			ctx := context.Background()
-			mockReq.EXPECT().TranscribeV1StreamingCreate(ctx, tt.customerID, tt.referenceID, tt.referenceType, tt.language).Return(tt.response, nil)
+
+			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.language, tmtranscribe.DirectionBoth).Return(tt.response, nil)
 			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
