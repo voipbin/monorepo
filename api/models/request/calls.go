@@ -10,11 +10,19 @@ import (
 type BodyCallsPOST struct {
 	Source       commonaddress.Address   `json:"source" binding:"required"`
 	Destinations []commonaddress.Address `json:"destinations" binding:"required"`
-	FlowID       uuid.UUID           `json:"flow_id"`
-	Actions      []fmaction.Action   `json:"actions"`
+	FlowID       uuid.UUID               `json:"flow_id"`
+	Actions      []fmaction.Action       `json:"actions"`
 }
 
 // ParamCallsGET is rquest param define for GET /calls
 type ParamCallsGET struct {
 	Pagination
+}
+
+// BodyCallsIDTranscribePOST is rquest body define for POST /calls/<call-id>/transcribe
+type BodyCallsIDTranscribePOST struct {
+	Source       commonaddress.Address   `json:"source" binding:"required"`
+	Destinations []commonaddress.Address `json:"destinations" binding:"required"`
+	FlowID       uuid.UUID               `json:"flow_id"`
+	Actions      []fmaction.Action       `json:"actions"`
 }

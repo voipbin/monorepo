@@ -11,6 +11,32 @@ import (
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
 
+// recordingGet validates the recording's ownership and returns the recording info.
+func (h *serviceHandler) recordingGet(ctx context.Context, u *cscustomer.Customer, recordingID uuid.UUID) (*cmrecording.Recording, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "recordingGet",
+			"customer_id":   u.ID,
+			"transcribe_id": recordingID,
+		},
+	)
+
+	// send request
+	res, err := h.reqHandler.CallV1RecordingGet(ctx, recordingID)
+	if err != nil {
+		log.Errorf("Could not get the call info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("recording", res).Debug("Received result.")
+
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
+		log.Info("The user has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	return res, nil
+}
+
 // RecordingGet returns downloadable url for recording
 func (h *serviceHandler) RecordingGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
 	log := logrus.WithFields(
@@ -21,21 +47,14 @@ func (h *serviceHandler) RecordingGet(ctx context.Context, u *cscustomer.Custome
 	)
 
 	// get recording info from call-manager
-	rec, err := h.reqHandler.CallV1RecordingGet(ctx, id)
+	rec, err := h.recordingGet(ctx, u, id)
 	if err != nil {
 		// no call info found
-		log.Infof("Could not get call info. err: %v", err)
+		log.Infof("Could not get recording info. err: %v", err)
 		return nil, err
 	}
 
-	// check the recording ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != rec.CustomerID {
-		log.Error("The user has no permission for this recording.")
-		return nil, fmt.Errorf("user has no permission")
-	}
-
 	res := rec.ConvertWebhookMessage()
-
 	return res, nil
 }
 
