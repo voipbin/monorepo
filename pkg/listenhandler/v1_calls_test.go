@@ -72,17 +72,6 @@ func TestProcessV1CallsIDGet(t *testing.T) {
 }
 
 func TestProcessV1CallsGet(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:  mockSock,
-		callHandler: mockCall,
-	}
-
 	tests := []struct {
 		name       string
 		request    *rabbitmqhandler.Request
@@ -142,6 +131,16 @@ func TestProcessV1CallsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
 
 			mockCall.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.calls, nil)
 			res, err := h.processRequest(tt.request)
