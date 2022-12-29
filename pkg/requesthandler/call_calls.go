@@ -224,29 +224,54 @@ func (r *requestHandler) CallV1CallGets(ctx context.Context, customerID uuid.UUI
 	return res, nil
 }
 
+// CallV1CallDelete sends a request to call-manager
+// to delete the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
+	uri := fmt.Sprintf("/v1/calls/%s", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 // CallV1CallHangup sends a request to call-manager
 // to hangup the call.
 // it returns error if something went wrong.
 func (r *requestHandler) CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
-	uri := fmt.Sprintf("/v1/calls/%s", callID)
+	uri := fmt.Sprintf("/v1/calls/%s/hangup", callID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var c cmcall.Call
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+	var res cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	return &res, nil
 }
 
 // CallV1CallAddChainedCall sends a request to call-manager

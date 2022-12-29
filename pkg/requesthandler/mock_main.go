@@ -726,6 +726,21 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallCreateWithID(ctx, id, custom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallCreateWithID), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination)
 }
 
+// CallV1CallDelete mocks base method.
+func (m *MockRequestHandler) CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallDelete", ctx, callID)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1CallDelete indicates an expected call of CallV1CallDelete.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallDelete(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallDelete", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallDelete), ctx, callID)
+}
+
 // CallV1CallGet mocks base method.
 func (m *MockRequestHandler) CallV1CallGet(ctx context.Context, callID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
