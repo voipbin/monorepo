@@ -411,6 +411,7 @@ type RequestHandler interface {
 	CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
 	CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *commonaddress.Address, destination []commonaddress.Address) ([]cmcall.Call, error)
 	CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *commonaddress.Address) (*cmcall.Call, error)
+	CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)

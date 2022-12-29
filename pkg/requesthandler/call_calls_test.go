@@ -638,7 +638,68 @@ func Test_CMCallRemoveChainedCall(t *testing.T) {
 	}
 }
 
-func Test_CMCallHangup(t *testing.T) {
+func Test_CallV1CallDelete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectResult  *cmcall.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("045c4e0d-7838-46bf-b28d-3aeaa943a53e"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"045c4e0d-7838-46bf-b28d-3aeaa943a53e"}`),
+			},
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/045c4e0d-7838-46bf-b28d-3aeaa943a53e",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: "application/json",
+			},
+			&cmcall.Call{
+				ID: uuid.FromStringOrNil("045c4e0d-7838-46bf-b28d-3aeaa943a53e"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1CallDelete(ctx, tt.callID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectResult, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectResult, *res)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallHangup(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -664,8 +725,8 @@ func Test_CMCallHangup(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/calls/fa0ddb32-25cd-11eb-a604-8b239b305055",
-				Method:   rabbitmqhandler.RequestMethodDelete,
+				URI:      "/v1/calls/fa0ddb32-25cd-11eb-a604-8b239b305055/hangup",
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 			},
 			&cmcall.Call{
