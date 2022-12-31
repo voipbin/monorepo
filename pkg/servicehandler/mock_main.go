@@ -295,6 +295,21 @@ func (mr *MockServiceHandlerMockRecorder) CallGets(ctx, u, size, token interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockServiceHandler)(nil).CallGets), ctx, u, size, token)
 }
 
+// CallHangup mocks base method.
+func (m *MockServiceHandler) CallHangup(ctx context.Context, u *customer.Customer, callID uuid.UUID) (*call.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallHangup", ctx, u, callID)
+	ret0, _ := ret[0].(*call.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallHangup indicates an expected call of CallHangup.
+func (mr *MockServiceHandlerMockRecorder) CallHangup(ctx, u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHangup", reflect.TypeOf((*MockServiceHandler)(nil).CallHangup), ctx, u, callID)
+}
+
 // CampaignCreate mocks base method.
 func (m *MockServiceHandler) CampaignCreate(ctx context.Context, u *customer.Customer, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
