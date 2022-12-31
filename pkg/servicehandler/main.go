@@ -89,6 +89,7 @@ type ServiceHandler interface {
 	CallGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
+	CallHangup(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 
 	// campaign handlers
 	CampaignCreate(
