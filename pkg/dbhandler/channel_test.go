@@ -8,11 +8,11 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
 func Test_ChannelCreate(t *testing.T) {
@@ -43,6 +43,7 @@ func Test_ChannelCreate(t *testing.T) {
 				StasisData: map[string]string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
 				TMUpdate:   DefaultTimeStamp,
+				TMDelete:   DefaultTimeStamp,
 				TMAnswer:   DefaultTimeStamp,
 				TMRinging:  DefaultTimeStamp,
 				TMEnd:      DefaultTimeStamp,
@@ -66,6 +67,7 @@ func Test_ChannelCreate(t *testing.T) {
 				StasisData: map[string]string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
 				TMUpdate:   DefaultTimeStamp,
+				TMDelete:   DefaultTimeStamp,
 				TMAnswer:   DefaultTimeStamp,
 				TMRinging:  DefaultTimeStamp,
 				TMEnd:      DefaultTimeStamp,
@@ -94,6 +96,7 @@ func Test_ChannelCreate(t *testing.T) {
 				StasisData: map[string]string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
 				TMUpdate:   DefaultTimeStamp,
+				TMDelete:   DefaultTimeStamp,
 				TMAnswer:   DefaultTimeStamp,
 				TMRinging:  DefaultTimeStamp,
 				TMEnd:      DefaultTimeStamp,
@@ -122,6 +125,7 @@ func Test_ChannelCreate(t *testing.T) {
 				},
 				TMCreate:  "2020-04-18T03:22:17.995000",
 				TMUpdate:  DefaultTimeStamp,
+				TMDelete:  DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
 				TMRinging: DefaultTimeStamp,
 				TMEnd:     DefaultTimeStamp,
@@ -188,11 +192,13 @@ func Test_ChannelGet(t *testing.T) {
 				ID:         "edcf72a4-8230-11ea-9f7f-ff89da373481",
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-18T03:22:17.995000",
-				TMUpdate:   DefaultTimeStamp,
 				TMRinging:  DefaultTimeStamp,
 				TMAnswer:   DefaultTimeStamp,
 				TMEnd:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -232,7 +238,7 @@ func Test_ChannelGet(t *testing.T) {
 	}
 }
 
-func Test_ChannelEnd(t *testing.T) {
+func Test_ChannelEndAndDelete(t *testing.T) {
 	type test struct {
 		name string
 
@@ -259,12 +265,14 @@ func Test_ChannelEnd(t *testing.T) {
 				Data:        map[string]interface{}{},
 				StasisData:  map[string]string{},
 				HangupCause: ari.ChannelCauseNormalClearing,
-				TMCreate:    "2020-04-18 03:22:17.995000",
-				TMUpdate:    "2020-04-18 03:22:17.995000",
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
 				TMEnd:     "2020-04-18 03:22:17.995000",
+
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: "2020-04-18 03:22:17.995000",
 			},
 		},
 	}
@@ -292,7 +300,7 @@ func Test_ChannelEnd(t *testing.T) {
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-			if err := h.ChannelEnd(context.Background(), tt.channel.ID, tt.hangup); err != nil {
+			if err := h.ChannelEndAndDelete(context.Background(), tt.channel.ID, tt.hangup); err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
 			}
 
@@ -304,7 +312,7 @@ func Test_ChannelEnd(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectChannel, resChannel) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectChannel, resChannel)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectChannel, resChannel)
 			}
 		})
 	}
@@ -340,11 +348,14 @@ func Test_ChannelSetStateAnswer(t *testing.T) {
 				State:      ari.ChannelStateUp,
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:23:20.995000",
-				TMUpdate:   "2020-04-20 03:23:20.995000",
-				TMAnswer:   "2020-04-20 03:23:20.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMAnswer:  "2020-04-20 03:23:20.995000",
+				TMRinging: DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:23:20.995000",
+				TMUpdate: "2020-04-20 03:23:20.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -423,11 +434,14 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:23:20.995000",
-				TMUpdate:   "2020-04-20 03:23:20.995000",
-				TMAnswer:   DefaultTimeStamp,
-				TMRinging:  "2020-04-20 03:23:20.995000",
-				TMEnd:      DefaultTimeStamp,
+
+				TMAnswer:  DefaultTimeStamp,
+				TMRinging: "2020-04-20 03:23:20.995000",
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:23:20.995000",
+				TMUpdate: "2020-04-20 03:23:20.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -447,11 +461,14 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:23:20.995000",
-				TMUpdate:   "2020-04-20 03:23:20.995000",
-				TMAnswer:   DefaultTimeStamp,
-				TMRinging:  "2020-04-20 03:23:20.995000",
-				TMEnd:      DefaultTimeStamp,
+
+				TMAnswer:  DefaultTimeStamp,
+				TMRinging: "2020-04-20 03:23:20.995000",
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:23:20.995000",
+				TMUpdate: "2020-04-20 03:23:20.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -530,11 +547,14 @@ func Test_ChannelSetStasis(t *testing.T) {
 				StasisName: "voipbin",
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -611,11 +631,14 @@ func Test_ChannelSetType(t *testing.T) {
 				Type:       channel.TypeNone,
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -635,11 +658,14 @@ func Test_ChannelSetType(t *testing.T) {
 				Type:       channel.TypeCall,
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -659,11 +685,14 @@ func Test_ChannelSetType(t *testing.T) {
 				Type:       channel.TypeConfbridge,
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -683,11 +712,14 @@ func Test_ChannelSetType(t *testing.T) {
 				Type:       channel.TypeJoin,
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -762,11 +794,14 @@ func Test_ChannelSetData(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -792,11 +827,14 @@ func Test_ChannelSetData(t *testing.T) {
 					"SIP_PRIVACY": "",
 				},
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -875,11 +913,14 @@ func Test_ChannelSetDataAndStasis(t *testing.T) {
 				Data:       map[string]interface{}{},
 				StasisName: "voipbin",
 				StasisData: map[string]string{},
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -907,11 +948,14 @@ func Test_ChannelSetDataAndStasis(t *testing.T) {
 					"SIP_CALLID":  "AWV705JjED",
 					"SIP_PRIVACY": "",
 				},
-				TMCreate:  "2020-04-20 03:22:17.995000",
-				TMUpdate:  "2020-04-20 03:22:17.995000",
+
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
 				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -989,11 +1033,14 @@ func Test_ChannelSetBridgeID(t *testing.T) {
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
 				BridgeID:   "",
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1013,11 +1060,14 @@ func Test_ChannelSetBridgeID(t *testing.T) {
 				Data:       map[string]interface{}{},
 				StasisData: map[string]string{},
 				BridgeID:   "506009d8-9177-11ea-8793-e70255f860f8",
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -1096,11 +1146,14 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				StasisData:   map[string]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportNone,
-				TMCreate:     "2020-04-20 03:22:17.995000",
-				TMUpdate:     "2020-04-20 03:22:17.995000",
-				TMRinging:    DefaultTimeStamp,
-				TMAnswer:     DefaultTimeStamp,
-				TMEnd:        DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1121,11 +1174,14 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				StasisData:   map[string]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportUDP,
-				TMCreate:     "2020-04-20 03:22:17.995000",
-				TMUpdate:     "2020-04-20 03:22:17.995000",
-				TMRinging:    DefaultTimeStamp,
-				TMAnswer:     DefaultTimeStamp,
-				TMEnd:        DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1146,11 +1202,14 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				StasisData:   map[string]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportTCP,
-				TMCreate:     "2020-04-20 03:22:17.995000",
-				TMUpdate:     "2020-04-20 03:22:17.995000",
-				TMRinging:    DefaultTimeStamp,
-				TMAnswer:     DefaultTimeStamp,
-				TMEnd:        DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1171,11 +1230,14 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				StasisData:   map[string]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportTLS,
-				TMCreate:     "2020-04-20 03:22:17.995000",
-				TMUpdate:     "2020-04-20 03:22:17.995000",
-				TMRinging:    DefaultTimeStamp,
-				TMAnswer:     DefaultTimeStamp,
-				TMEnd:        DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1196,11 +1258,14 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				StasisData:   map[string]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportWSS,
-				TMCreate:     "2020-04-20 03:22:17.995000",
-				TMUpdate:     "2020-04-20 03:22:17.995000",
-				TMRinging:    DefaultTimeStamp,
-				TMAnswer:     DefaultTimeStamp,
-				TMEnd:        DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -1280,11 +1345,14 @@ func Test_ChannelSetSIPCallID(t *testing.T) {
 				StasisData: map[string]string{},
 				BridgeID:   "",
 				SIPCallID:  "8b647c44-e46f-11ea-8015-97545f4bc809",
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -1364,11 +1432,14 @@ func Test_ChannelSetDirection(t *testing.T) {
 				StasisData: map[string]string{},
 				BridgeID:   "",
 				Direction:  channel.DirectionNone,
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1389,11 +1460,14 @@ func Test_ChannelSetDirection(t *testing.T) {
 				StasisData: map[string]string{},
 				BridgeID:   "",
 				Direction:  channel.DirectionIncoming,
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1414,11 +1488,14 @@ func Test_ChannelSetDirection(t *testing.T) {
 				StasisData: map[string]string{},
 				BridgeID:   "",
 				Direction:  channel.DirectionOutgoing,
-				TMCreate:   "2020-04-20 03:22:17.995000",
-				TMUpdate:   "2020-04-20 03:22:17.995000",
-				TMRinging:  DefaultTimeStamp,
-				TMAnswer:   DefaultTimeStamp,
-				TMEnd:      DefaultTimeStamp,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}

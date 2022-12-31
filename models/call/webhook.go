@@ -34,12 +34,13 @@ type WebhookMessage struct {
 	HangupReason HangupReason    `json:"hangup_reason"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-
 	TMProgressing string `json:"tm_progressing"`
 	TMRinging     string `json:"tm_ringing"`
 	TMHangup      string `json:"tm_hangup"`
+
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event
@@ -64,13 +65,14 @@ func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 		HangupBy:     h.HangupBy,
 		HangupReason: h.HangupReason,
 
+		TMRinging:     h.TMRinging,
+		TMProgressing: h.TMProgressing,
+		TMHangup:      h.TMHangup,
+
 		TMCreate:      h.TMCreate,
 		TMUpdate:      h.TMUpdate,
-		TMProgressing: h.TMProgressing,
-		TMRinging:     h.TMRinging,
-		TMHangup:      h.TMHangup,
+		TMDelete:      h.TMDelete,
 	}
-
 }
 
 // CreateWebhookEvent generate WebhookEvent

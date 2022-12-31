@@ -245,6 +245,20 @@ func (mr *MockDBHandlerMockRecorder) CallCreate(ctx, call interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockDBHandler)(nil).CallCreate), ctx, call)
 }
 
+// CallDelete mocks base method.
+func (m *MockDBHandler) CallDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallDelete indicates an expected call of CallDelete.
+func (mr *MockDBHandlerMockRecorder) CallDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallDelete", reflect.TypeOf((*MockDBHandler)(nil).CallDelete), ctx, id)
+}
+
 // CallGet mocks base method.
 func (m *MockDBHandler) CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -614,18 +628,18 @@ func (mr *MockDBHandlerMockRecorder) ChannelCreate(ctx, channel interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelCreate", reflect.TypeOf((*MockDBHandler)(nil).ChannelCreate), ctx, channel)
 }
 
-// ChannelEnd mocks base method.
-func (m *MockDBHandler) ChannelEnd(ctx context.Context, id string, hangup ari.ChannelCause) error {
+// ChannelEndAndDelete mocks base method.
+func (m *MockDBHandler) ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelEnd", ctx, id, hangup)
+	ret := m.ctrl.Call(m, "ChannelEndAndDelete", ctx, id, hangup)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ChannelEnd indicates an expected call of ChannelEnd.
-func (mr *MockDBHandlerMockRecorder) ChannelEnd(ctx, id, hangup interface{}) *gomock.Call {
+// ChannelEndAndDelete indicates an expected call of ChannelEndAndDelete.
+func (mr *MockDBHandlerMockRecorder) ChannelEndAndDelete(ctx, id, hangup interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelEnd", reflect.TypeOf((*MockDBHandler)(nil).ChannelEnd), ctx, id, hangup)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelEndAndDelete", reflect.TypeOf((*MockDBHandler)(nil).ChannelEndAndDelete), ctx, id, hangup)
 }
 
 // ChannelGet mocks base method.

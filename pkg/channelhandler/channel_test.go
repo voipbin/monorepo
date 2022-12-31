@@ -287,7 +287,7 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelEnd(ctx, tt.id, tt.cause).Return(nil)
+			mockDB.EXPECT().ChannelEndAndDelete(ctx, tt.id, tt.cause).Return(nil)
 			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(tt.responseChannel, nil)
 			res, err := h.Delete(ctx, tt.id, tt.cause)
 			if err != nil {

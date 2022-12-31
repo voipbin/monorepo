@@ -51,13 +51,14 @@ type Call struct {
 	DialrouteID uuid.UUID       `json:"dialroute_id"` // dialroute id(current use)
 	Dialroutes  []rmroute.Route `json:"dialroutes"`   // list of dialroutes for dialing.
 
+	TMRinging     string `json:"tm_ringing"`
+	TMProgressing string `json:"tm_progressing"`
+	TMHangup      string `json:"tm_hangup"`
+
 	// timestamp
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
-
-	TMProgressing string `json:"tm_progressing"`
-	TMRinging     string `json:"tm_ringing"`
-	TMHangup      string `json:"tm_hangup"`
+	TMDelete string `json:"tm_delete"`
 }
 
 // Type type

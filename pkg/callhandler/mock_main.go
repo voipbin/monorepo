@@ -240,6 +240,21 @@ func (mr *MockCallHandlerMockRecorder) CreateCallsOutgoing(ctx, customerID, flow
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallsOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallsOutgoing), ctx, customerID, flowID, masterCallID, source, destinations)
 }
 
+// Delete mocks base method.
+func (m *MockCallHandler) Delete(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCallHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCallHandler)(nil).Delete), ctx, id)
+}
+
 // DigitsGet mocks base method.
 func (m *MockCallHandler) DigitsGet(ctx context.Context, id uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()

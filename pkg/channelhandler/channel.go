@@ -121,7 +121,7 @@ func (h *channelHandler) Delete(ctx context.Context, id string, cause ari.Channe
 		},
 	)
 
-	if errEnd := h.db.ChannelEnd(ctx, id, cause); errEnd != nil {
+	if errEnd := h.db.ChannelEndAndDelete(ctx, id, cause); errEnd != nil {
 		log.Errorf("Could not end the channel. channel_id: %s, err: %v", id, errEnd)
 		return nil, errEnd
 	}

@@ -42,6 +42,7 @@ const (
 
 		tm_create,
 		tm_update,
+		tm_delete,
 
 		tm_answer,
 		tm_ringing,
@@ -58,6 +59,7 @@ const (
 func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 	var data sql.NullString
 	var stasisData sql.NullString
+	var tmDelete sql.NullString
 
 	res := &channel.Channel{}
 	if err := row.Scan(
@@ -89,6 +91,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 
 		&res.TMCreate,
 		&res.TMUpdate,
+		&tmDelete,
 
 		&res.TMAnswer,
 		&res.TMRinging,
@@ -115,6 +118,13 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 	}
 	if res.StasisData == nil {
 		res.StasisData = map[string]string{}
+	}
+
+	// TMDelete
+	if tmDelete.Valid {
+		res.TMDelete = tmDelete.String
+	} else {
+		res.TMDelete = DefaultTimeStamp
 	}
 
 	return res, nil
@@ -151,6 +161,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 
 		tm_create,
 		tm_update,
+		tm_delete,
 
 		tm_answer,
 		tm_ringing,
@@ -163,7 +174,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		?, ?, ?, ?, ?, ?,
 		?, ?,
 		?,
-		?, ?,
+		?, ?, ?,
 		?, ?, ?
 		)
 	`
@@ -205,6 +216,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		c.Direction,
 
 		h.utilHandler.GetCurTime(),
+		DefaultTimeStamp,
 		DefaultTimeStamp,
 
 		DefaultTimeStamp,
@@ -486,19 +498,20 @@ func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackI
 }
 
 // ChannelEnd updates the channel end.
-func (h *handler) ChannelEnd(ctx context.Context, id string, hangup ari.ChannelCause) error {
+func (h *handler) ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error {
 	// prepare
 	q := `
 	update channels set
 		hangup_cause = ?,
 		tm_update = ?,
-		tm_end = ?
+		tm_end = ?,
+		tm_delete = ?
 	where
 		id = ?
 	`
 
 	ts := h.utilHandler.GetCurTime()
-	_, err := h.db.Exec(q, hangup, ts, ts, id)
+	_, err := h.db.Exec(q, hangup, ts, ts, ts, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelEnd. err: %v", err)
 	}

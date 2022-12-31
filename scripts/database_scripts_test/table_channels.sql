@@ -32,6 +32,7 @@ create table channels(
   -- timestamps
   tm_create datetime(6),  -- created timestamp
   tm_update datetime(6),  -- last updated timestamp
+  tm_delete datetime(6),  -- destroyed timestamp
 
   tm_answer datetime(6),  -- answer timestamp
   tm_ringing datetime(6), -- rining timestamp

@@ -53,6 +53,7 @@ var (
 	regV1CallsIDChainedCallIDs    = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids$")
 	regV1CallsIDChainedCallIDsIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids/" + regUUID + "$")
 	regV1CallsIDExternalMedia     = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media$")
+	regV1CallsIDHangup            = regexp.MustCompile("/v1/calls/" + regUUID + "/hangup$")
 
 	// channels
 	regV1ChannelsIDHealth = regexp.MustCompile("/v1/channels/" + regUUID + "/health-check$")
@@ -157,7 +158,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
-	ctx := context.Background()
+	ctx :=  context.Background()
 
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
@@ -222,17 +223,22 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// GET /calls/<id>
 	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsIDGet(ctx, m)
-		requestType = "/v1/calls"
+		requestType = "/v1/calls/<call-id>"
 
 	// POST /calls/<id>
 	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDPost(ctx, m)
-		requestType = "/v1/calls"
+		requestType = "/v1/calls/<call-id>"
 
 	// DELETE /calls/<id>
 	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1CallsIDDelete(ctx, m)
-		requestType = "/v1/calls"
+		requestType = "/v1/calls/<call-id>"
+
+	// POST /calls/<id>/hangup
+	case regV1CallsIDHangup.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDHangupPost(ctx, m)
+		requestType = "/v1/calls/<call-id>/hangup"
 
 	// GET /calls
 	case regV1CallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
