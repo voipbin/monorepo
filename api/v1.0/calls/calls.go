@@ -65,7 +65,7 @@ func callsPOST(c *gin.Context) {
 }
 
 // callsIDDelete handles DELETE /calls/<call-id> request.
-// It hangup the call.
+// It deletes the call.
 // @Summary Hangup the call
 // @Description Hangup the call of the given id
 // @Produce json
@@ -224,6 +224,53 @@ func callsIDGET(c *gin.Context) {
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CallGet(c.Request.Context(), &u, id)
+	if err != nil {
+		log.Errorf("Could not get a call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// callsIDHangupPOST handles GET /calls/{id}/hangup request.
+// It returns detail call info.
+// @Summary Hangup the call.
+// @Description Returns detail call info of the given call id.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200 {object} call.Call
+// @Router /v1.0/calls/{id}/hangup [post]
+func callsIDHangupPOST(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "callsIDHangupPOST",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDHangupPOST.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.CallHangup(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a call. err: %v", err)
 		c.AbortWithStatus(400)
