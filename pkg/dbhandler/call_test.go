@@ -141,11 +141,13 @@ func Test_CallCreate(t *testing.T) {
 					},
 				},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMRinging:     DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -163,11 +165,13 @@ func Test_CallCreate(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMRinging:     DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -212,49 +216,209 @@ func Test_CallCreate(t *testing.T) {
 func Test_CallGets(t *testing.T) {
 
 	type test struct {
-		name string
+		name  string
+		calls []*call.Call
 
 		customerID uuid.UUID
-		minNum     int
+
+		responseCurTime string
+
+		expectRes []*call.Call
 	}
 
 	tests := []test{
 		{
 			"normal",
+			[]*call.Call{
+				{
+					ID:         uuid.FromStringOrNil("9e8a2df2-c8ea-4fea-b982-48103dd04a9e"),
+					CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("73b3938c-b79c-4712-8feb-d465bab28441"),
+					CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
+				},
+			},
 			uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
-			1,
+
+			"2020-04-18 03:22:17.995000",
+
+			[]*call.Call{
+				{
+					ID:         uuid.FromStringOrNil("9e8a2df2-c8ea-4fea-b982-48103dd04a9e"),
+					CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
+
+					ChainedCallIDs: []uuid.UUID{},
+					RecordingIDs:   []uuid.UUID{},
+					Data:           map[string]string{},
+					Dialroutes:     []rmroute.Route{},
+
+					TMProgressing: DefaultTimeStamp,
+					TMRinging:     DefaultTimeStamp,
+					TMHangup:      DefaultTimeStamp,
+
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
+				},
+				{
+					ID:         uuid.FromStringOrNil("73b3938c-b79c-4712-8feb-d465bab28441"),
+					CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
+
+					ChainedCallIDs: []uuid.UUID{},
+					RecordingIDs:   []uuid.UUID{},
+					Data:           map[string]string{},
+					Dialroutes:     []rmroute.Route{},
+
+					TMProgressing: DefaultTimeStamp,
+					TMRinging:     DefaultTimeStamp,
+					TMHangup:      DefaultTimeStamp,
+
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
+				},
+			},
 		},
 		{
 			"empty",
-			uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
-			0,
+			[]*call.Call{},
+
+			uuid.FromStringOrNil("cd1bc551-c4e8-45c8-a457-d41d65e1f18c"),
+
+			"2020-04-18 03:22:17.995000",
+			[]*call.Call{},
 		},
 	}
 
-	// creates calls for test
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	h := &handler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		db:          dbTest,
-		cache:       mockCache,
-	}
-	mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-	_ = h.CallCreate(context.Background(), &call.Call{ID: uuid.FromStringOrNil("1c6f0b6e-620b-11eb-bab1-e388ba38401b"), CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295")})
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// creates calls for test
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			res, err := h.CallGets(context.Background(), tt.customerID, 10, h.utilHandler.GetCurTime())
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			for _, c := range tt.calls {
+				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockCache.EXPECT().CallSet(ctx, gomock.Any())
+				_ = h.CallCreate(ctx, c)
+			}
+
+			res, err := h.CallGets(context.Background(), tt.customerID, 10, utilhandler.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if len(res) < tt.minNum {
-				t.Errorf("Wrong match. expect: %d, got: %v", tt.minNum, len(res))
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallGets_delete(t *testing.T) {
+
+	type test struct {
+		name  string
+		calls []*call.Call
+
+		customerID uuid.UUID
+
+		deleteCallIDs []uuid.UUID
+
+		responseCurTime string
+
+		expectRes []*call.Call
+	}
+
+	tests := []test{
+		{
+			"Create 2 calls but 1 call deleted",
+			[]*call.Call{
+				{
+					ID:         uuid.FromStringOrNil("e9decd77-1c77-4ef0-bb92-547fd40cd911"),
+					CustomerID: uuid.FromStringOrNil("c6cc16b0-03d5-4332-b1d5-0c0b68e29847"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("b4f1f04c-98bc-458c-8dad-726be07da49a"),
+					CustomerID: uuid.FromStringOrNil("c6cc16b0-03d5-4332-b1d5-0c0b68e29847"),
+				},
+			},
+			uuid.FromStringOrNil("c6cc16b0-03d5-4332-b1d5-0c0b68e29847"),
+
+			[]uuid.UUID{
+				uuid.FromStringOrNil("e9decd77-1c77-4ef0-bb92-547fd40cd911"),
+			},
+
+			"2020-04-18 03:22:17.995000",
+
+			[]*call.Call{
+				{
+					ID:         uuid.FromStringOrNil("b4f1f04c-98bc-458c-8dad-726be07da49a"),
+					CustomerID: uuid.FromStringOrNil("c6cc16b0-03d5-4332-b1d5-0c0b68e29847"),
+
+					ChainedCallIDs: []uuid.UUID{},
+					RecordingIDs:   []uuid.UUID{},
+					Data:           map[string]string{},
+					Dialroutes:     []rmroute.Route{},
+
+					TMProgressing: DefaultTimeStamp,
+					TMRinging:     DefaultTimeStamp,
+					TMHangup:      DefaultTimeStamp,
+
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// creates calls for test
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := &handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			for _, c := range tt.calls {
+				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockCache.EXPECT().CallSet(ctx, gomock.Any())
+				_ = h.CallCreate(ctx, c)
+			}
+
+			// delete
+			for _, id := range tt.deleteCallIDs {
+				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockCache.EXPECT().CallSet(ctx, gomock.Any())
+				_ = h.CallDelete(ctx, id)
+			}
+
+			res, err := h.CallGets(context.Background(), tt.customerID, 10, utilhandler.GetCurTime())
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -299,6 +463,7 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
@@ -396,6 +561,7 @@ func Test_CallSetStatus(t *testing.T) {
 
 				TMCreate: "2020-04-18 03:22:17.995000",
 				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 
 				TMProgressing: DefaultTimeStamp,
 				TMRinging:     DefaultTimeStamp,
@@ -488,11 +654,13 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Data:       map[string]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      DefaultTimeStamp,
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -533,11 +701,13 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Data:       map[string]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      DefaultTimeStamp,
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -635,12 +805,13 @@ func Test_CallSetHangup(t *testing.T) {
 				Data:         map[string]string{},
 				Dialroutes:   []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:18.995000",
-				TMUpdate: "2020-04-18T03:22:18.995000",
-
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      "2020-04-18T03:22:18.995000",
+
+				TMCreate: "2020-04-18T03:22:18.995000",
+				TMUpdate: "2020-04-18T03:22:18.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -717,11 +888,13 @@ func Test_CallSetFlowID(t *testing.T) {
 				Data:       map[string]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -801,11 +974,13 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 				Data:       map[string]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -911,11 +1086,13 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -963,11 +1140,13 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -1048,11 +1227,13 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				Dialroutes:     []rmroute.Route{},
 				MasterCallID:   uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1072,11 +1253,13 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -1158,11 +1341,13 @@ func Test_CallSetRecordID(t *testing.T) {
 
 				RecordingID: uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1183,11 +1368,13 @@ func Test_CallSetRecordID(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -1274,11 +1461,13 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 				DialrouteID:    uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
-				TMUpdate:      "2020-04-18T03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -1354,11 +1543,13 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      "2020-04-18 03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -1377,11 +1568,13 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				Data:           map[string]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      "2020-04-18 03:22:17.995000",
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -1422,6 +1615,92 @@ func Test_CallSetActionNextHold(t *testing.T) {
 
 			if reflect.DeepEqual(*tt.expectCall, *res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
+			}
+		})
+	}
+}
+
+func Test_CallDelete(t *testing.T) {
+
+	type test struct {
+		name string
+		call *call.Call
+
+		id uuid.UUID
+
+		responseCurTime string
+
+		expectRes call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Call{
+				ID: uuid.FromStringOrNil("407a8f3a-0fed-45b6-9587-a963e39c91ec"),
+			},
+
+			uuid.FromStringOrNil("407a8f3a-0fed-45b6-9587-a963e39c91ec"),
+			"2020-04-18T03:22:18.995000",
+
+			call.Call{
+				ID: uuid.FromStringOrNil("407a8f3a-0fed-45b6-9587-a963e39c91ec"),
+
+				ChainedCallIDs: []uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+
+				Source:      commonaddress.Address{},
+				Destination: commonaddress.Address{},
+
+				Data:       map[string]string{},
+				Dialroutes: []rmroute.Route{},
+
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:18.995000",
+				TMUpdate: "2020-04-18T03:22:18.995000",
+				TMDelete: "2020-04-18T03:22:18.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallDelete(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

@@ -269,3 +269,28 @@ func (h *callHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status cal
 
 	return res, nil
 }
+
+// Delete deletes the call
+func (h *callHandler) Delete(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "Delete",
+			"call_id": id,
+		},
+	)
+
+	if errDel := h.db.CallDelete(ctx, id); errDel != nil {
+		log.Errorf("Could not delete the call. err: %v", errDel)
+		return nil, errDel
+	}
+
+	// get deleted call
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallDeleted, res)
+
+	return res, nil
+}

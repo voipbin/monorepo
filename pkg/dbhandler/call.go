@@ -50,6 +50,7 @@ const (
 
 		tm_create,
 		tm_update,
+		tm_delete,
 
 		tm_progressing,
 		tm_ringing,
@@ -69,6 +70,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	var destination sql.NullString
 	var action sql.NullString
 	var dialroutes sql.NullString
+	var tmDelete sql.NullString
 
 	res := &call.Call{}
 	if err := row.Scan(
@@ -104,6 +106,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 
 		&res.TMCreate,
 		&res.TMUpdate,
+		&tmDelete,
 
 		&res.TMProgressing,
 		&res.TMRinging,
@@ -179,6 +182,13 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		res.Dialroutes = []rmroute.Route{}
 	}
 
+	// TMDelete
+	if tmDelete.Valid {
+		res.TMDelete = tmDelete.String
+	} else {
+		res.TMDelete = DefaultTimeStamp
+	}
+
 	return res, nil
 }
 
@@ -220,6 +230,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 		tm_create,
 		tm_update,
+		tm_delete,
+
 		tm_progressing,
 		tm_ringing,
 		tm_hangup
@@ -231,7 +243,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		?, ?, ?, ?, ?,
 		?, ?,
 		?, ?,
-		?, ?, ?, ?, ?
+		?, ?, ?,
+		?, ?, ?
 		)`
 
 	if c.ChainedCallIDs == nil {
@@ -310,6 +323,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 
 		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
+		DefaultTimeStamp,
 
 		DefaultTimeStamp,
 		DefaultTimeStamp,
@@ -372,9 +386,17 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 func (h *handler) CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", callSelect)
+	q := fmt.Sprintf(`%s
+		where
+			customer_id = ?
+			and tm_create < ?
+			and tm_delete >= ?
+		order by
+			tm_create desc
+		limit ?
+		`, callSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CallGets. err: %v", err)
 	}
@@ -956,6 +978,29 @@ func (h *handler) CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold 
 	_, err := h.db.Exec(q, hold, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetActionNextHold. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.CallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CallDelete deletes the call
+func (h *handler) CallDelete(ctx context.Context, id uuid.UUID) error {
+	//prepare
+	q := `
+	update calls set
+		tm_update = ?,
+		tm_delete = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallDelete. err: %v", err)
 	}
 
 	// update the cache

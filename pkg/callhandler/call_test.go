@@ -446,3 +446,63 @@ func Test_updateForRouteFailover(t *testing.T) {
 		})
 	}
 }
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseCall *call.Call
+
+		expectRes *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("2cbc3105-68a1-4fd9-95da-14c48add7e85"),
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("2cbc3105-68a1-4fd9-95da-14c48add7e85"),
+			},
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("2cbc3105-68a1-4fd9-95da-14c48add7e85"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallDeleted, tt.responseCall)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}

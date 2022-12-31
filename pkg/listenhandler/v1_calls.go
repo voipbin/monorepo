@@ -194,8 +194,8 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 	return res, nil
 }
 
-// processV1CallsIDDelete handles Delete /v1/calls/<id> request
-// It hangs up the exsited call.
+// processV1CallsIDDelete handles Post /v1/calls/<id> request
+// It hangs up the call.
 func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -208,6 +208,43 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqh
 			"id": id,
 		})
 	log.Debug("Executing processV1CallsIDDelete.")
+
+	// delete the call
+	tmp, err := h.callHandler.Delete(ctx, id)
+	if err != nil {
+		log.Debugf("Could not delete the call. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDHangupPost handles Post /v1/calls/<id>/hangup request
+// It hangs up the call.
+func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDHangupPost.")
 
 	// hanging up the call
 	if err := h.callHandler.HangingUp(ctx, id, ari.ChannelCauseNormalClearing); err != nil {

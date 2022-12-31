@@ -41,6 +41,7 @@ type DBHandler interface {
 	CallApplicationAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error)
 	CallApplicationAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error
 	CallCreate(ctx context.Context, call *call.Call) error
+	CallDelete(ctx context.Context, id uuid.UUID) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
 	CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error)
@@ -69,7 +70,7 @@ type DBHandler interface {
 
 	// channels
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
-	ChannelEnd(ctx context.Context, id string, hangup ari.ChannelCause) error
+	ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error)

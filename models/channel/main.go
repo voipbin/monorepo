@@ -37,12 +37,13 @@ type Channel struct {
 
 	Direction Direction `json:"direction"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-
 	TMAnswer  string `json:"tm_answer"`
 	TMRinging string `json:"tm_ringing"`
 	TMEnd     string `json:"tm_end"`
+
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
 }
 
 // Tech represent channel's technology

@@ -40,7 +40,7 @@ type CallHandler interface {
 
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error)
 	Get(ctx context.Context, id uuid.UUID) (*call.Call, error)
-
+	Delete(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error)
 
 	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)

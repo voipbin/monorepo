@@ -39,12 +39,13 @@ create table calls(
   dialroutes    json,
 
   -- timestamps
-  tm_create datetime(6),  --
-  tm_update datetime(6),  --
+  tm_create datetime(6),
+  tm_update datetime(6),
+  tm_delete datetime(6),
 
   tm_progressing  datetime(6), -- progrssing timestamp
   tm_ringing      datetime(6), -- rining timestamp
-  tm_hangup       datetime(6), -- end timestamp
+  tm_hangup       datetime(6), -- hangup timestamp
 
   primary key(id)
 );
