@@ -141,11 +141,43 @@ func (h *serviceHandler) CallGets(ctx context.Context, u *cscustomer.Customer, s
 }
 
 // CallDelete sends a request to call-manager
-// to hangup the call.
+// to delete the call.
 // it returns call if it succeed.
 func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallDelete",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"call_id":     callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return nil, err
+	}
+
+	// send request
+	tmp, err := h.reqHandler.CallV1CallDelete(ctx, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return nil, err
+	}
+
+	// convert
+	res := tmp.ConvertWebhookMessage()
+
+	return res, nil
+}
+
+// CallHangup sends a request to call-manager
+// to hangup the call.
+// it returns call if it succeed.
+func (h *serviceHandler) CallHangup(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CallHangup",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"call_id":     callID,
