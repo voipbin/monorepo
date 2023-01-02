@@ -25,6 +25,15 @@ spec:
           image: flow-manager-image
           command:
             - '/app/flow-manager'
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           args:
             - '-dbDSN'
             - 'bin-manager:398e02d8-8aaa-11ea-b1f6-9b65a2a4f3a3@tcp(10.126.80.5:3306)/bin_manager'
@@ -42,11 +51,13 @@ spec:
             - '10.164.15.220:6379'
             - '-redis_db'
             - '1'
-
           ports:
             - name: metrics
               protocol: "TCP"
               containerPort: 2112
+            - name: grpc
+              protocol: "TCP"
+              containerPort: 80
           resources:
             limits:
               cpu: "20m"
