@@ -69,7 +69,6 @@ func main() {
 		log.Errorf("Could not set the connection correctly. err: %v", err)
 		return
 	}
-
 	defer sqlDB.Close()
 
 	// connect to cache
@@ -79,8 +78,9 @@ func main() {
 		return
 	}
 
-	if err := run(sqlDB, cache); err != nil {
-		log.Errorf("Run func has finished. err: %v", err)
+	// run
+	if errRun := run(sqlDB, cache); errRun != nil {
+		log.Errorf("Could not run the process correctly. err: %v", errRun)
 	}
 	<-chDone
 }
