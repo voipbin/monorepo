@@ -35,7 +35,7 @@ $ alembic -c alembic.ini downgrade ae1027a6acf
 
 # Status check
 ```
-$ alembic current --verbose                                                                   7s
+$ alembic current --verbose
 INFO  [alembic.runtime.migration] Context impl MySQLImpl.
 INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
 Current revision(s) for mysql://bin-manager:XXXXX@10.126.80.5/bin_manager:
