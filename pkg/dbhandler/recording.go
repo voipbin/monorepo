@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
@@ -16,14 +17,17 @@ const (
 	select
 		id,
 		customer_id,
-		type,
+
+		reference_type,
 		reference_id,
 		status,
 		format,
-		filename,
+
+		recording_name,
+		filenames,
 
 		asterisk_id,
-		channel_id,
+		channel_ids,
 
 		tm_start,
 		tm_end,
@@ -39,18 +43,24 @@ const (
 
 // recordingGetFromRow gets the record from the row.
 func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, error) {
+	var filenames sql.NullString
+	var channelIDs sql.NullString
+
 	res := &recording.Recording{}
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
-		&res.Type,
+
+		&res.ReferenceType,
 		&res.ReferenceID,
 		&res.Status,
 		&res.Format,
-		&res.Filename,
+
+		&res.RecordingName,
+		&filenames,
 
 		&res.AsteriskID,
-		&res.ChannelID,
+		&channelIDs,
 
 		&res.TMStart,
 		&res.TMEnd,
@@ -62,6 +72,26 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 		return nil, fmt.Errorf("could not scan the row. recordingGetFromRow. err: %v", err)
 	}
 
+	// Filenames
+	if filenames.Valid {
+		if err := json.Unmarshal([]byte(filenames.String), &res.Filenames); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the recording_ids. callGetFromRow. err: %v", err)
+		}
+	}
+	if res.Filenames == nil {
+		res.Filenames = []string{}
+	}
+
+	// ChannelIDs
+	if channelIDs.Valid {
+		if err := json.Unmarshal([]byte(channelIDs.String), &res.ChannelIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the recording_ids. callGetFromRow. err: %v", err)
+		}
+	}
+	if res.ChannelIDs == nil {
+		res.ChannelIDs = []string{}
+	}
+
 	return res, nil
 }
 
@@ -70,14 +100,17 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 	q := `insert into recordings(
 		id,
 		customer_id,
-		type,
+
+		reference_type,
 		reference_id,
 		status,
 		format,
-		filename,
+
+		recording_name,
+        filenames,
 
 		asterisk_id,
-		channel_id,
+		channel_ids,
 
 		tm_start,
 		tm_end,
@@ -87,30 +120,45 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		tm_delete
 
 	) values(
-		?, ?, ?, ?, ?, ?, ?,
+		?, ?,
+		?, ?, ?, ?,
+		?, ?,
 		?, ?,
 		?, ?,
 		?, ?, ?
 	)`
 
-	_, err := h.db.Exec(q,
+	tmpFilenames, err := json.Marshal(c.Filenames)
+	if err != nil {
+		return fmt.Errorf("could not marshal Filenames. RecordingCreate. err: %v", err)
+	}
+
+	tmpChannelIDs, err := json.Marshal(c.ChannelIDs)
+	if err != nil {
+		return fmt.Errorf("could not marshal ChannelIDs. RecordingCreate. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
-		c.Type,
+
+		c.ReferenceType,
 		c.ReferenceID.Bytes(),
 		c.Status,
 		c.Format,
-		c.Filename,
+
+		c.RecordingName,
+		tmpFilenames,
 
 		c.AsteriskID,
-		c.ChannelID,
+		tmpChannelIDs,
 
 		c.TMStart,
 		c.TMEnd,
 
-		c.TMCreate,
-		c.TMUpdate,
-		c.TMDelete,
+		h.utilHandler.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. RecordingCreate. err: %v", err)
@@ -201,15 +249,15 @@ func (h *handler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Re
 	return res, nil
 }
 
-// RecordingGetByFilename gets the recording by the filename.
-func (h *handler) RecordingGetByFilename(ctx context.Context, filename string) (*recording.Recording, error) {
+// RecordingGetByRecordingName gets the recording by the recording_name.
+func (h *handler) RecordingGetByRecordingName(ctx context.Context, recordingName string) (*recording.Recording, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where filename = ?", recordingSelect)
+	q := fmt.Sprintf("%s where recording_name = ?", recordingSelect)
 
-	row, err := h.db.Query(q, filename)
+	row, err := h.db.Query(q, recordingName)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. RecordingGetByFilename. err: %v", err)
+		return nil, fmt.Errorf("could not query. RecordingGetByRecordingName. err: %v", err)
 	}
 	defer row.Close()
 
@@ -219,7 +267,7 @@ func (h *handler) RecordingGetByFilename(ctx context.Context, filename string) (
 
 	res, err := h.recordingGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get data. RecordingGetByFilename, err: %v", err)
+		return nil, fmt.Errorf("could not get data. RecordingGetByRecordingName, err: %v", err)
 	}
 
 	return res, nil
@@ -229,9 +277,14 @@ func (h *handler) RecordingGetByFilename(ctx context.Context, filename string) (
 func (h *handler) RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", recordingSelect)
+	q := fmt.Sprintf(`%s
+	where
+		customer_id = ?
+		and tm_create < ?
+		and tm_delete >= ?
+	order by tm_create desc limit ?`, recordingSelect)
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. RecordingGets. err: %v", err)
 	}

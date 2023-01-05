@@ -4,16 +4,19 @@ import "github.com/gofrs/uuid"
 
 // Recording struct represent record information
 type Recording struct {
-	ID          uuid.UUID `json:"id"`
-	CustomerID  uuid.UUID `json:"customer_id"`
-	Type        Type      `json:"type"`
-	ReferenceID uuid.UUID `json:"reference_id"`
-	Status      Status    `json:"status"`
-	Format      string    `json:"format"`
-	Filename    string    `json:"filename"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
-	AsteriskID string `json:"asterisk_id"`
-	ChannelID  string `json:"channel_id"`
+	ReferenceType ReferenceType `json:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id"`
+	Status        Status        `json:"status"`
+	Format        string        `json:"format"`
+
+	RecordingName string   `json:"recording_name"`
+	Filenames     []string `json:"filenames"`
+
+	AsteriskID string   `json:"asterisk_id"`
+	ChannelIDs []string `json:"channel_ids"` // snoop channel ids for recording
 
 	TMStart string `json:"tm_start"`
 	TMEnd   string `json:"tm_end"`
@@ -23,13 +26,13 @@ type Recording struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// Type type
-type Type string
+// ReferenceType type
+type ReferenceType string
 
-// List of types
+// List of reference types
 const (
-	TypeCall       Type = "call"       // call type.
-	TypeConference Type = "conference" // conference type.
+	ReferenceTypeCall       ReferenceType = "call"       // call type.
+	ReferenceTypeConference ReferenceType = "conference" // conference type.
 )
 
 // Status type

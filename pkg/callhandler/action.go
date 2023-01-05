@@ -15,6 +15,7 @@ import (
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Redirect options for timeout action
@@ -563,30 +564,60 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		format = option.Format
 	}
 
-	recordingID := uuid.Must(uuid.NewV4())
-	recordingName := fmt.Sprintf("call_%s_%s", c.ID, h.utilHandler.GetCurTimeRFC3339())
-	filename := fmt.Sprintf("%s.%s", recordingName, format)
-	channelID := uuid.Must(uuid.NewV4()).String()
+	recordingID := h.utilHandler.CreateUUID()
+	channelIDs := []string{}
+	filenames := []string{}
+	ts := h.utilHandler.GetCurTimeRFC3339()
+	recordingName := fmt.Sprintf("%s_%s_%s", recording.ReferenceTypeCall, c.ID, ts)
+	for _, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
+		// filenames
+		filename := fmt.Sprintf("%s_%s.%s", recordingName, direction, format)
+		filenames = append(filenames, filename)
+
+		// channel ids
+		channelID := h.utilHandler.CreateUUID().String()
+		channelIDs = append(channelIDs, channelID)
+
+		// set app args
+		appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_name=%s,direction=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
+			ContextRecording,
+			c.ID,
+			recordingID,
+			recordingName,
+			direction,
+			format,
+			option.EndOfSilence,
+			option.EndOfKey,
+			option.Duration,
+		)
+
+		// create a snoop channel
+		tmpChannel, err := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, channelID, appArgs, direction, channel.SnoopDirectionNone)
+		if err != nil {
+			log.Errorf("Could not create a snoop channel for recroding. err: %v", err)
+			return fmt.Errorf("could not create snoop chanel for recrod. err: %v", err)
+		}
+
+		log.WithField("channel", tmpChannel).Debugf("Created a snoop channel for recording. channel_id: %s", tmpChannel.ID)
+	}
 
 	// create a recording
 	rec := &recording.Recording{
-		ID:          recordingID,
-		CustomerID:  c.CustomerID,
-		Type:        recording.TypeCall,
-		ReferenceID: c.ID,
-		Status:      recording.StatusInitiating,
-		Format:      format,
-		Filename:    filename,
+		ID:         recordingID,
+		CustomerID: c.CustomerID,
+
+		ReferenceType: recording.ReferenceTypeCall,
+		ReferenceID:   c.ID,
+		Status:        recording.StatusInitiating,
+		Format:        format,
+		RecordingName: recordingName,
+		Filenames:     filenames,
 
 		AsteriskID: c.AsteriskID,
-		ChannelID:  channelID,
+		ChannelIDs: channelIDs,
 
-		TMStart: defaultTimeStamp,
-		TMEnd:   defaultTimeStamp,
-
-		TMCreate: h.utilHandler.GetCurTime(),
-		TMUpdate: defaultTimeStamp,
-		TMDelete: defaultTimeStamp,
+		TMStart: dbhandler.DefaultTimeStamp,
+		TMEnd:   dbhandler.DefaultTimeStamp,
 	}
 
 	if err := h.db.RecordingCreate(ctx, rec); err != nil {
@@ -594,27 +625,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		return fmt.Errorf("could not create the record. err: %v", err)
 	}
 
-	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_name=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
-		ContextRecording,
-		c.ID,
-		recordingID,
-		recordingName,
-		format,
-		option.EndOfSilence,
-		option.EndOfKey,
-		option.Duration,
-	)
-
-	// create a snoop channel
-	tmp, err := h.reqHandler.AstChannelCreateSnoop(ctx, rec.AsteriskID, c.ChannelID, rec.ChannelID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionNone)
-	if err != nil {
-		log.Errorf("Could not create a snoop channel for recroding. err: %v", err)
-		return fmt.Errorf("could not create snoop chanel for recrod. err: %v", err)
-	}
-	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
-
-	// set record channel id
+	// set recording id
 	if err := h.db.CallSetRecordID(ctx, c.ID, recordingID); err != nil {
 		log.Errorf("Could not set the record id to the call. err: %v", err)
 		return fmt.Errorf("could not set the record id to the call. err: %v", err)
@@ -653,17 +664,21 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 		}
 	}
 
-	// we don't do set empty call's recordid at here.
-	// setting the recordid will be done with RecordingFinished event.
+	// we don't set empty call's recordgid at here.
+	// setting the recordgid will be done with RecordingFinished event.
 
-	// get record
-	record, err := h.db.RecordingGet(ctx, c.RecordingID)
+	// get r
+	r, err := h.db.RecordingGet(ctx, c.RecordingID)
 	if err != nil {
 		log.Errorf("Could not get record info. But keep continue to next. err: %v", err)
 	} else {
-		// hangup the channel
-		if err := h.reqHandler.AstChannelHangup(ctx, record.AsteriskID, record.ChannelID, ari.ChannelCauseNormalClearing, 0); err != nil {
-			log.Errorf("Could not hangup the recording channel. err: %v", err)
+		log.WithField("recording", r).Debugf("Found recording info. recording_id: %s", r.ID)
+		for _, channelID := range r.ChannelIDs {
+			// hangup the channel
+			log.WithField("channel_id", channelID).Debugf("Hanging up the recording channel. channel_id: %s", channelID)
+			if errHangup := h.reqHandler.AstChannelHangup(ctx, r.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0); errHangup != nil {
+				log.Errorf("Could not hangup the recording channel. err: %v", errHangup)
+			}
 		}
 	}
 

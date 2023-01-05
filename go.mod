@@ -48,7 +48,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220628160222-ca61e7d2d60b // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	google.golang.org/genproto v0.0.0-20230104163317-caabf589fcbf // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
