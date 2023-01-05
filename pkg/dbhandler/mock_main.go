@@ -1141,19 +1141,19 @@ func (mr *MockDBHandlerMockRecorder) RecordingGet(ctx, id interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockDBHandler)(nil).RecordingGet), ctx, id)
 }
 
-// RecordingGetByFilename mocks base method.
-func (m *MockDBHandler) RecordingGetByFilename(ctx context.Context, filename string) (*recording.Recording, error) {
+// RecordingGetByRecordingName mocks base method.
+func (m *MockDBHandler) RecordingGetByRecordingName(ctx context.Context, recordingName string) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingGetByFilename", ctx, filename)
+	ret := m.ctrl.Call(m, "RecordingGetByRecordingName", ctx, recordingName)
 	ret0, _ := ret[0].(*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RecordingGetByFilename indicates an expected call of RecordingGetByFilename.
-func (mr *MockDBHandlerMockRecorder) RecordingGetByFilename(ctx, filename interface{}) *gomock.Call {
+// RecordingGetByRecordingName indicates an expected call of RecordingGetByRecordingName.
+func (mr *MockDBHandlerMockRecorder) RecordingGetByRecordingName(ctx, recordingName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGetByFilename", reflect.TypeOf((*MockDBHandler)(nil).RecordingGetByFilename), ctx, filename)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGetByRecordingName", reflect.TypeOf((*MockDBHandler)(nil).RecordingGetByRecordingName), ctx, recordingName)
 }
 
 // RecordingGets mocks base method.

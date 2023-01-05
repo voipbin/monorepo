@@ -158,7 +158,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
-	ctx :=  context.Background()
+	ctx := context.Background()
 
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
@@ -265,22 +265,22 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// DELETE /confbridges/<confbridge-id>/calls/<call-id>
 	case regV1ConfbridgesIDCallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConfbridgesIDCallsIDDelete(ctx, m)
-		requestType = "/v1/confbridges"
+		requestType = "/v1/confbridges/<confbridge-id>/calls/<call-id>"
 
 	// POST /confbridges/<confbridge-id>/calls/<call-id>
 	case regV1ConfbridgesIDCallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConfbridgesIDCallsIDPost(ctx, m)
-		requestType = "/v1/confbridges"
+		requestType = "/v1/confbridges/<confbridge-id>/calls/<call-id>"
 
 	// GET /confbridges/<confbridge-id>
 	case regV1ConfbridgesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ConfbridgesIDGet(ctx, m)
-		requestType = "/v1/confbridges"
+		requestType = "/v1/confbridges/<confbridge-id>"
 
 	// DELETE /confbridges/<confbridge-id>
 	case regV1ConfbridgesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConfbridgesIDDelete(ctx, m)
-		requestType = "/v1/confbridges"
+		requestType = "/v1/confbridges/<confbridge-id>"
 
 	// POST /confbridges
 	case regV1Confbridges.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
@@ -293,7 +293,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// GET /recordings/<recording-id>
 	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1RecordingsIDGet(ctx, m)
-		requestType = "/v1/recordings"
+		requestType = "/v1/recordings/<recording-id>"
 
 	// GET /recordings
 	case regV1Recordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:

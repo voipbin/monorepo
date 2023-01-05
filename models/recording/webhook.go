@@ -8,11 +8,12 @@ import (
 
 // WebhookMessage struct represent record information
 type WebhookMessage struct {
-	ID          uuid.UUID `json:"id"`
-	Type        Type      `json:"type"`
-	ReferenceID uuid.UUID `json:"reference_id"`
-	Status      Status    `json:"status"`
-	Format      string    `json:"format"`
+	ID uuid.UUID `json:"id"`
+
+	ReferenceType ReferenceType `json:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id"`
+	Status        Status        `json:"status"`
+	Format        string        `json:"format"`
 
 	TMStart string `json:"tm_start"`
 	TMEnd   string `json:"tm_end"`
@@ -25,16 +26,19 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Recording) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID:          h.ID,
-		Type:        h.Type,
-		ReferenceID: h.ReferenceID,
-		Status:      h.Status,
-		Format:      h.Format,
-		TMStart:     h.TMStart,
-		TMEnd:       h.TMEnd,
-		TMCreate:    h.TMCreate,
-		TMUpdate:    h.TMUpdate,
-		TMDelete:    h.TMDelete,
+		ID: h.ID,
+
+		ReferenceType: h.ReferenceType,
+		ReferenceID:   h.ReferenceID,
+		Status:        h.Status,
+		Format:        h.Format,
+
+		TMStart: h.TMStart,
+		TMEnd:   h.TMEnd,
+
+		TMCreate: h.TMCreate,
+		TMUpdate: h.TMUpdate,
+		TMDelete: h.TMDelete,
 	}
 }
 

@@ -126,7 +126,12 @@ func (h *callHandler) startHandlerContextFromServiceCall(ctx context.Context, cn
 
 // startHandlerContextRecording handles contextFromServiceCall context type of StasisStart event.
 func (h *callHandler) startHandlerContextRecording(ctx context.Context, cn *channel.Channel, data map[string]string) error {
-	logrus.Infof("Executing startHandlerContextRecording. channel: %s", cn.ID)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startHandlerContextRecording",
+		"asterisk_id": cn.AsteriskID,
+		"channel_id":  cn.ID,
+	})
+	log.Infof("Executing startHandlerContextRecording. channel_id: %s", cn.ID)
 
 	// set channel's type call.
 	if err := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeRecording)); err != nil {
@@ -141,13 +146,16 @@ func (h *callHandler) startHandlerContextRecording(ctx context.Context, cn *chan
 	silence, _ := strconv.Atoi(data["end_of_silence"])
 	endKey := data["end_of_key"]
 	callID := data["call_id"]
+	direction := data["direction"]
 
-	if err := h.reqHandler.AstChannelRecord(ctx, cn.AsteriskID, cn.ID, name, format, duration, silence, false, endKey, "fail"); err != nil {
-		logrus.Errorf("Could not start the recording. Destorying the chanel. err: %v", err)
-
+	// parse recording name
+	recordingName := fmt.Sprintf("%s_%s", name, direction)
+	if err := h.reqHandler.AstChannelRecord(ctx, cn.AsteriskID, cn.ID, recordingName, format, duration, silence, false, endKey, "fail"); err != nil {
+		log.Errorf("Could not start the recording. Destorying the chanel. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
+		return nil
 	}
-	logrus.Infof("Recording started. id: %s, name: %s, call: %s", id, name, callID)
+	log.Infof("Recording started. id: %s, name: %s, call: %s", id, recordingName, callID)
 
 	return nil
 }

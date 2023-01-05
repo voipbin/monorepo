@@ -8,46 +8,75 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
 func Test_RecordingCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		record       *recording.Recording
-		expectRecord *recording.Recording
+		recording *recording.Recording
+
+		responseCurTime string
+
+		expectRes *recording.Recording
 	}
 
 	tests := []test{
 		{
-			"normal",
+			"have all",
 			&recording.Recording{
-				ID:          uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
-				CustomerID:  uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
-				Type:        recording.TypeCall,
-				ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
-				Status:      recording.StatusRecording,
-				Format:      "wav",
-				Filename:    "call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000.wav",
+				ID:            uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
+				CustomerID:    uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
+				ReferenceType: recording.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
+				Status:        recording.StatusRecording,
+				Format:        "wav",
+				RecordingName: "call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000",
+				Filenames: []string{
+					"call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000_in.wav",
+					"call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000_out.wav",
+				},
 
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
+				ChannelIDs: []string{
+					"b10c2e84-2b59-11eb-b963-db658ca2c824",
+					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",
+				},
+
+				TMStart: "2020-04-18 03:22:18.995000",
+				TMEnd:   "2020-04-18 03:22:19.995000",
 			},
+
+			"2020-04-18 03:22:17.995000",
+
 			&recording.Recording{
-				ID:          uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
-				CustomerID:  uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
-				Type:        recording.TypeCall,
-				ReferenceID: uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
-				Status:      recording.StatusRecording,
-				Format:      "wav",
-				Filename:    "call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000.wav",
+				ID:            uuid.FromStringOrNil("b075f22a-2b59-11eb-aeee-eb56de01c1b1"),
+				CustomerID:    uuid.FromStringOrNil("de299b2e-7f43-11ec-b9c5-67885bdabb39"),
+				ReferenceType: recording.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("b1439856-2b59-11eb-89c1-678a053c5c86"),
+				Status:        recording.StatusRecording,
+				Format:        "wav",
+				RecordingName: "call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000",
+				Filenames: []string{
+					"call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000_in.wav",
+					"call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000_out.wav",
+				},
 
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
+				ChannelIDs: []string{
+					"b10c2e84-2b59-11eb-b963-db658ca2c824",
+					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",
+				},
+
+				TMStart:  "2020-04-18 03:22:18.995000",
+				TMEnd:    "2020-04-18 03:22:19.995000",
+				TMCreate: "2020-04-18 03:22:17.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -57,25 +86,41 @@ func Test_RecordingCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
-			h := NewHandler(dbTest, mockCache)
+			h := &handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
 
-			mockCache.EXPECT().RecordingSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.RecordingCreate(context.Background(), tt.record); err != nil {
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().RecordingSet(ctx, gomock.Any()).Return(nil)
+			if err := h.RecordingCreate(ctx, tt.recording); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().RecordingGet(gomock.Any(), tt.record.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().RecordingSet(gomock.Any(), gomock.Any()).Return(nil)
-			res, err := h.RecordingGet(context.Background(), tt.record.ID)
+			mockCache.EXPECT().RecordingGet(ctx, tt.recording.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().RecordingSet(ctx, gomock.Any()).Return(nil)
+			res, err := h.RecordingGet(ctx, tt.recording.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMCreate = ""
-			if reflect.DeepEqual(tt.expectRecord, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRecord, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+			resGetByRecordingName, err := h.RecordingGetByRecordingName(ctx, tt.recording.RecordingName)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, resGetByRecordingName) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, resGetByRecordingName)
 			}
 		})
 	}
@@ -88,6 +133,10 @@ func Test_RecordingGets(t *testing.T) {
 
 		customerID uuid.UUID
 		recordings []*recording.Recording
+
+		responseCurTime string
+
+		expectRes []*recording.Recording
 	}
 
 	tests := []test{
@@ -96,36 +145,51 @@ func Test_RecordingGets(t *testing.T) {
 			uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
 			[]*recording.Recording{
 				{
-					ID:          uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
-					CustomerID:  uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
-					Type:        recording.TypeCall,
-					ReferenceID: uuid.FromStringOrNil("77a43886-878d-11eb-b4d3-a373acdc4de4"),
-					Status:      recording.StatusRecording,
-					Format:      "wav",
-
-					AsteriskID: "3e:50:6b:43:bb:30",
-					ChannelID:  "b10c2e84-2b59-11eb-b963-db658ca2c824",
-
-					TMCreate: "2020-04-18 03:22:17.995000",
+					ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
+					CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
 				},
 				{
-					ID:          uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
-					CustomerID:  uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
-					Type:        recording.TypeCall,
-					ReferenceID: uuid.FromStringOrNil("ccca16ea-878e-11eb-98ff-f3dd532a2331"),
-					Status:      recording.StatusRecording,
-					Format:      "wav",
+					ID:         uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
+					CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+				},
+			},
 
-					AsteriskID: "3e:50:6b:43:bb:30",
-					ChannelID:  "d09176ba-878e-11eb-a3f1-8743bd4202ae",
+			"2020-04-18 03:22:17.995000",
 
-					TMCreate: "2020-04-18 03:22:18.995000",
+			[]*recording.Recording{
+				{
+					ID:         uuid.FromStringOrNil("72ccda84-878d-11eb-ba5a-973cd51aa68a"),
+					CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					Filenames:  []string{},
+					ChannelIDs: []string{},
+
+					TMStart:  "",
+					TMEnd:    "",
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
+				},
+				{
+					ID:         uuid.FromStringOrNil("c9b4cb8a-878e-11eb-9855-7b5ad1e3392c"),
+					CustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
+					Filenames:  []string{},
+					ChannelIDs: []string{},
+
+					TMStart:  "",
+					TMEnd:    "",
+					TMCreate: "2020-04-18 03:22:17.995000",
+					TMUpdate: DefaultTimeStamp,
+					TMDelete: DefaultTimeStamp,
 				},
 			},
 		},
 		{
 			"empty",
 			uuid.FromStringOrNil("08cb92b0-7f44-11ec-8753-6f51eae532cc"),
+			[]*recording.Recording{},
+
+			"2020-04-18 03:22:17.995000",
+
 			[]*recording.Recording{},
 		},
 	}
@@ -135,9 +199,10 @@ func Test_RecordingGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := &handler{
-				utilHandler: utilhandler.NewUtilHandler(),
+				utilHandler: mockUtil,
 				db:          dbTest,
 				cache:       mockCache,
 			}
@@ -145,20 +210,18 @@ func Test_RecordingGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, recording := range tt.recordings {
-				mockCache.EXPECT().RecordingSet(gomock.Any(), gomock.Any()).Return(nil)
+				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockCache.EXPECT().RecordingSet(ctx, gomock.Any()).Return(nil)
 				_ = h.RecordingCreate(ctx, recording)
 			}
 
-			res, err := h.RecordingGets(ctx, tt.customerID, 10, h.utilHandler.GetCurTime())
+			res, err := h.RecordingGets(ctx, tt.customerID, 10, utilhandler.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			for i, j := len(res)-1, 0; i >= 0; i, j = i-1, j+1 {
-				recording := tt.recordings[i]
-				if reflect.DeepEqual(recording, res[j]) != true {
-					t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", recording, res[j])
-				}
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}

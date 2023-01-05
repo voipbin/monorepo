@@ -2,7 +2,7 @@ package arieventhandler
 
 import (
 	"context"
-	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -23,8 +23,14 @@ func (h *eventHandler) EventHandlerRecordingStarted(ctx context.Context, evt int
 			"record":   e.Recording.Name,
 		})
 
-	filename := fmt.Sprintf("%s.%s", e.Recording.Name, e.Recording.Format)
-	r, err := h.db.RecordingGetByFilename(ctx, filename)
+	if !strings.HasSuffix(e.Recording.Name, "_in") {
+		// nothing to do here.
+		return nil
+	}
+
+	// parse recordingName and get recording
+	recordingName := strings.TrimSuffix(e.Recording.Name, "_in")
+	r, err := h.db.RecordingGetByRecordingName(ctx, recordingName)
 	if err != nil {
 		log.Errorf("Could not get the recording. err: %v", err)
 		return err
@@ -65,19 +71,25 @@ func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt in
 			"func":     "eventHandlerRecordingFinished",
 		})
 
-	filename := fmt.Sprintf("%s.%s", e.Recording.Name, e.Recording.Format)
-	r, err := h.db.RecordingGetByFilename(ctx, filename)
+	if !strings.HasSuffix(e.Recording.Name, "_in") {
+		// nothing to do here.
+		return nil
+	}
+
+	// parse recordingName and get recording
+	recordingName := strings.TrimSuffix(e.Recording.Name, "_in")
+	r, err := h.db.RecordingGetByRecordingName(ctx, recordingName)
 	if err != nil {
-		log.Errorf("Could not get recording info. err: %v", err)
+		log.Errorf("Could not get the recording. err: %v", err)
 		return err
 	}
 
 	log = log.WithFields(
 		logrus.Fields{
-			"type":      r.Type,
-			"reference": r.ReferenceID,
+			"reference_type": r.ReferenceType,
+			"reference_id":   r.ReferenceID,
 		})
-	log.Debug("Executing eventHandlerRecordingFinished event.")
+	log.WithField("recording", r).Debugf("Executing eventHandlerRecordingFinished event. recording_id: %s", r.ID)
 
 	// update record state to end
 	if err := h.db.RecordingSetStatus(ctx, r.ID, recording.StatusEnd, string(e.Timestamp)); err != nil {
@@ -100,19 +112,19 @@ func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt in
 	h.notifyHandler.PublishWebhookEvent(ctx, c.CustomerID, EventTypeRecordingFinished, tmpRecording)
 
 	// set empty recordID
-	switch r.Type {
-	case recording.TypeCall:
+	switch r.ReferenceType {
+	case recording.ReferenceTypeCall:
 		if err := h.db.CallSetRecordID(ctx, r.ReferenceID, uuid.Nil); err != nil {
 			log.Errorf("Could not set call record id. err: %v", err)
 		}
 
-	case recording.TypeConference:
+	case recording.ReferenceTypeConference:
 		if err := h.db.ConfbridgeSetRecordID(ctx, r.ReferenceID, uuid.Nil); err != nil {
 			log.Errorf("Could not get conference record id. err: %v", err)
 		}
 
 	default:
-		log.Errorf("Could not find correct tech type for recording. parse: %v", r.Type)
+		log.Errorf("Could not find correct tech type for recording. parse: %v", r.ReferenceType)
 	}
 
 	return nil

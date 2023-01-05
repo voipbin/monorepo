@@ -295,6 +295,13 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 	tests := []struct {
 		name string
 		call *call.Call
+
+		responseUUIDRecordingID uuid.UUID
+		responseGetCurTimeRFC   string
+		responseUUIDsChannelID  []uuid.UUID
+
+		expectArgs      []string
+		expectRecording *recording.Recording
 	}{
 		{
 			"default",
@@ -306,6 +313,38 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 					Type: fmaction.TypeRecordingStart,
 					ID:   uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
 				},
+			},
+
+			uuid.FromStringOrNil("a4cf65ba-8cbd-11ed-ada4-d3e4e8bd241d"),
+			"2023-01-05T14:58:05Z",
+			[]uuid.UUID{
+				uuid.FromStringOrNil("3c39d1f6-8cbe-11ed-9c41-e3a8baf79295"),
+				uuid.FromStringOrNil("3c6572b6-8cbe-11ed-a833-4394198a709d"),
+			},
+
+			[]string{
+				"context=call-record,call_id=bf4ff828-2a77-11eb-a984-33588027b8c4,recording_id=a4cf65ba-8cbd-11ed-ada4-d3e4e8bd241d,recording_name=call_bf4ff828-2a77-11eb-a984-33588027b8c4_2023-01-05T14:58:05Z,direction=in,format=wav,end_of_silence=0,end_of_key=,duration=0",
+				"context=call-record,call_id=bf4ff828-2a77-11eb-a984-33588027b8c4,recording_id=a4cf65ba-8cbd-11ed-ada4-d3e4e8bd241d,recording_name=call_bf4ff828-2a77-11eb-a984-33588027b8c4_2023-01-05T14:58:05Z,direction=out,format=wav,end_of_silence=0,end_of_key=,duration=0",
+			},
+			&recording.Recording{
+				ID:            uuid.FromStringOrNil("a4cf65ba-8cbd-11ed-ada4-d3e4e8bd241d"),
+				CustomerID:    uuid.Nil,
+				ReferenceType: recording.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
+				Status:        recording.StatusInitiating,
+				Format:        "wav",
+				RecordingName: "call_bf4ff828-2a77-11eb-a984-33588027b8c4_2023-01-05T14:58:05Z",
+				Filenames: []string{
+					"call_bf4ff828-2a77-11eb-a984-33588027b8c4_2023-01-05T14:58:05Z_in.wav",
+					"call_bf4ff828-2a77-11eb-a984-33588027b8c4_2023-01-05T14:58:05Z_out.wav",
+				},
+				AsteriskID: "42:01:0a:a4:00:05",
+				ChannelIDs: []string{
+					"3c39d1f6-8cbe-11ed-9c41-e3a8baf79295",
+					"3c6572b6-8cbe-11ed-a833-4394198a709d",
+				},
+				TMStart: dbhandler.DefaultTimeStamp,
+				TMEnd:   dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -327,10 +366,16 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
-			mockUtil.EXPECT().GetCurTimeRFC3339().Return(utilhandler.GetCurTimeRFC3339())
-			mockDB.EXPECT().RecordingCreate(ctx, gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionNone).Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDRecordingID)
+			mockUtil.EXPECT().GetCurTimeRFC3339().Return(tt.responseGetCurTimeRFC)
+
+			for i, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
+				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDsChannelID[i])
+
+				mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.responseUUIDsChannelID[i].String(), tt.expectArgs[i], direction, channel.SnoopDirectionNone).Return(&channel.Channel{}, nil)
+			}
+
+			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
 			mockDB.EXPECT().CallSetRecordID(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallAddRecordIDs(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
@@ -344,9 +389,9 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 
 	tests := []struct {
-		name   string
-		call   *call.Call
-		record *recording.Recording
+		name      string
+		call      *call.Call
+		recording *recording.Recording
 	}{
 		{
 			"default",
@@ -363,7 +408,10 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 			&recording.Recording{
 				ID:         uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
 				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "fe9354d8-2bb9-11eb-8ad0-9764de384853",
+				ChannelIDs: []string{
+					"fe9354d8-2bb9-11eb-8ad0-9764de384853",
+					"8052a744-8cbb-11ed-b92d-1fcff27ccb88",
+				},
 			},
 		},
 	}
@@ -385,8 +433,11 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingGet(ctx, tt.call.RecordingID).Return(tt.record, nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.record.AsteriskID, tt.record.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.call.RecordingID).Return(tt.recording, nil)
+
+			for _, channelID := range tt.recording.ChannelIDs {
+				mockReq.EXPECT().AstChannelHangup(ctx, tt.recording.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			}
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 
 			if err := h.ActionExecute(ctx, tt.call); err != nil {
