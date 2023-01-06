@@ -14,10 +14,11 @@ import (
 // StorageV1RecordingGet sends a request to storage-manager
 // to getting a recording download link.
 // it returns download link if it succeed.
-func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID) (*smbucketrecording.BucketRecording, error) {
+// requestTimeout: milliseconds
+func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketrecording.BucketRecording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
-	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceStorageRecording, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceStorageRecording, requestTimeout, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err

@@ -42,6 +42,8 @@ gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20221213044209-f2c58bd97a
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20221213044209-f2c58bd97a19/go.mod h1:JproeySq3iTne7yVxdukg0GpcU+M5AseIZ9AsluYKwA=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20221226144653-1836c28db6ec h1:yonp8eH1jhRrEH1Rl4ptkCAy94+djcD/r1pMol8qFlo=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20221226144653-1836c28db6ec/go.mod h1:JproeySq3iTne7yVxdukg0GpcU+M5AseIZ9AsluYKwA=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230105090643-2473bce7cd05 h1:/vnutAahARO3BqsrkFQaHJk8qrrFCsgwd1kBTDQizSA=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230105090643-2473bce7cd05/go.mod h1:FDX+AUUh2PzxM/Q2MoLYo1iPFy3HV6Q+mMIjLuX+1+8=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20221207172609-98006dd828f9 h1:OyChNsS6NknbNfiZi6iC28/Tt9lbaLUeMubUst+Fh7c=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20221207172609-98006dd828f9/go.mod h1:RSdWVAc9zm0kkPKM4muy1D91nKVJI61AA52a9efnYYc=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 h1:KpWVqqS+jFjQ8wOtZSOAorO/SpOEPbuPKWD72smHrQM=
@@ -56,6 +58,8 @@ gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20221202133722-5972d43aa3
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20221202133722-5972d43aa33e/go.mod h1:LRQLiO0jeM5FbJwtrAleWCbayfUDQ+rm/E9k58CIEec=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20221228115313-caaa170fd84b h1:mCwW2uLfTjy9Y9JKc5oWL6q3m9sKp86b8bS3I8ltIko=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20221228115313-caaa170fd84b/go.mod h1:uCdjR+aWU4ETmjRoqyqkACqRP58lhor4ATmccpkHFGY=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230102093540-da6a0504a0ae h1:r7OYFuCKVGNHRxPvMq4O3GJ8jPekG/qGI4xjsrr6Aig=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230102093540-da6a0504a0ae/go.mod h1:uCdjR+aWU4ETmjRoqyqkACqRP58lhor4ATmccpkHFGY=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600 h1:BCrfSskH3gjLBXZhC1PkYTyw1HLbAzPTZ1WGMJewPIg=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600/go.mod h1:XnEvGVrxHrwNie+5H0Us8OTwbonbk5terGYZOip0ZmU=
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20221216125212-e74e4c409422 h1:Xf4QSsOsDSJnnk4s7XwZAwjBEDqEXXKIFMGf/K18Eo4=
@@ -98,6 +102,8 @@ golang.org/x/sys v0.0.0-20210510120138-977fb7262007/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.3.0 h1:w8ZOecv6NaNa/zC8944JTU3vz4u6Lagfk4RPQxv92NQ=
 golang.org/x/sys v0.3.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.4.0 h1:Zr2JFtRQNX3BCZ8YtxRE9hNJYC8J6I1MVbMg6owUp18=
+golang.org/x/sys v0.4.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=

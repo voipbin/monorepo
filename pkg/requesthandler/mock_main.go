@@ -3166,18 +3166,18 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, provi
 }
 
 // StorageV1RecordingGet mocks base method.
-func (m *MockRequestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID) (*bucketrecording.BucketRecording, error) {
+func (m *MockRequestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*bucketrecording.BucketRecording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageV1RecordingGet", ctx, id)
+	ret := m.ctrl.Call(m, "StorageV1RecordingGet", ctx, id, requestTimeout)
 	ret0, _ := ret[0].(*bucketrecording.BucketRecording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // StorageV1RecordingGet indicates an expected call of StorageV1RecordingGet.
-func (mr *MockRequestHandlerMockRecorder) StorageV1RecordingGet(ctx, id interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) StorageV1RecordingGet(ctx, id, requestTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1RecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1RecordingGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1RecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1RecordingGet), ctx, id, requestTimeout)
 }
 
 // TTSV1SpeecheCreate mocks base method.
