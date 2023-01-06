@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -15,7 +15,7 @@ import (
 // to getting a recording download link.
 // it returns download link if it succeed.
 // requestTimeout: milliseconds
-func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketrecording.BucketRecording, error) {
+func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s", id)
 
 	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceStorageRecording, requestTimeout, 0, ContentTypeJSON, nil)
@@ -29,7 +29,7 @@ func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID
 		return nil, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var data smbucketrecording.BucketRecording
+	var data smbucketfile.BucketFile
 	if err := json.Unmarshal([]byte(res.Data), &data); err != nil {
 		return nil, err
 	}

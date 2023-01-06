@@ -53,7 +53,7 @@ import (
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
-	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	bucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	user "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
@@ -3166,10 +3166,10 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, provi
 }
 
 // StorageV1RecordingGet mocks base method.
-func (m *MockRequestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*bucketrecording.BucketRecording, error) {
+func (m *MockRequestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*bucketfile.BucketFile, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageV1RecordingGet", ctx, id, requestTimeout)
-	ret0, _ := ret[0].(*bucketrecording.BucketRecording)
+	ret0, _ := ret[0].(*bucketfile.BucketFile)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
