@@ -10,7 +10,7 @@ import (
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -23,9 +23,10 @@ func TestRecordingfileGet(t *testing.T) {
 
 		id uuid.UUID
 
-		response   *cmrecording.Recording
-		responseST *smbucketrecording.BucketRecording
-		expectRes  string
+		responseRecording  *cmrecording.Recording
+		responseBucketFile *smbucketfile.BucketFile
+
+		expectRes string
 	}
 
 	tests := []test{
@@ -34,16 +35,20 @@ func TestRecordingfileGet(t *testing.T) {
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
+
 			uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
 
 			&cmrecording.Recording{
 				ID:         uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
-				Filename:   "call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				Filenames: []string{
+					"call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
+				},
 			},
-			&smbucketrecording.BucketRecording{
+			&smbucketfile.BucketFile{
 				DownloadURI: "test.com/downloadlink.wav",
 			},
+
 			"test.com/downloadlink.wav",
 		},
 	}
@@ -62,8 +67,8 @@ func TestRecordingfileGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().StorageV1RecordingGet(ctx, tt.response.ID).Return(tt.responseST, nil)
+			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().StorageV1RecordingGet(ctx, tt.responseRecording.ID, 300000).Return(tt.responseBucketFile, nil)
 
 			res, err := h.RecordingfileGet(ctx, tt.customer, tt.id)
 			if err != nil {

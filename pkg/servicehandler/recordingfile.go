@@ -14,6 +14,7 @@ import (
 func (h *serviceHandler) RecordingfileGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (string, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":        "RecordingfileGet",
 			"customer_id": u.ID,
 			"recording":   id,
 		},
@@ -35,7 +36,7 @@ func (h *serviceHandler) RecordingfileGet(ctx context.Context, u *cscustomer.Cus
 
 	// get download url from storage-manager
 	log.Debugf("Getting recording file. recording: %s", id)
-	res, err := h.reqHandler.StorageV1RecordingGet(ctx, id)
+	res, err := h.reqHandler.StorageV1RecordingGet(ctx, id, 300000)
 	if err != nil {
 		log.Errorf("Could not get download url. err: %v", err)
 		return "", err
