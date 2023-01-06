@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -24,7 +24,7 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 		response      *rabbitmqhandler.Response
 
-		expectResult *smbucketrecording.BucketRecording
+		expectResult *smbucketfile.BucketFile
 	}{
 		{
 			"normal",
@@ -43,7 +43,7 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 				DataType:   "application/json",
 				Data:       []byte(`{"download_uri":"https://example.com/c7878bdc-93bd-11eb-ab3a-a7388c5862f4"}`),
 			},
-			&smbucketrecording.BucketRecording{
+			&smbucketfile.BucketFile{
 				DownloadURI: "https://example.com/c7878bdc-93bd-11eb-ab3a-a7388c5862f4",
 			},
 		},

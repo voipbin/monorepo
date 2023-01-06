@@ -50,7 +50,7 @@ import (
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
-	smbucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
@@ -644,7 +644,7 @@ type RequestHandler interface {
 	RouteV1RouteGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 
 	// storage: recording
-	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketrecording.BucketRecording, error)
+	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error)
