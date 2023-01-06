@@ -12,7 +12,7 @@ require (
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/sirupsen/logrus v1.9.0
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230105090643-2473bce7cd05
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20221229151758-7fef07dd9798
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230106060517-f01389adf836
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/oauth2 v0.4.0
 	golang.org/x/text v0.6.0 // indirect
@@ -23,9 +23,9 @@ require (
 
 require (
 	cloud.google.com/go v0.107.0 // indirect
-	cloud.google.com/go/compute v1.14.0 // indirect
+	cloud.google.com/go/compute v1.15.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	cloud.google.com/go/iam v0.9.0 // indirect
+	cloud.google.com/go/iam v0.10.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
