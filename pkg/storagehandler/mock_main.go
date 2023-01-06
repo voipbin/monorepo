@@ -5,11 +5,12 @@
 package storagehandler
 
 import (
+	context "context"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	bucketrecording "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	bucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 )
 
 // MockStorageHandler is a mock of StorageHandler interface.
@@ -36,16 +37,16 @@ func (m *MockStorageHandler) EXPECT() *MockStorageHandlerMockRecorder {
 }
 
 // GetRecording mocks base method.
-func (m *MockStorageHandler) GetRecording(id uuid.UUID) (*bucketrecording.BucketRecording, error) {
+func (m *MockStorageHandler) GetRecording(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRecording", id)
-	ret0, _ := ret[0].(*bucketrecording.BucketRecording)
+	ret := m.ctrl.Call(m, "GetRecording", ctx, id)
+	ret0, _ := ret[0].(*bucketfile.BucketFile)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetRecording indicates an expected call of GetRecording.
-func (mr *MockStorageHandlerMockRecorder) GetRecording(id interface{}) *gomock.Call {
+func (mr *MockStorageHandlerMockRecorder) GetRecording(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecording", reflect.TypeOf((*MockStorageHandler)(nil).GetRecording), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecording", reflect.TypeOf((*MockStorageHandler)(nil).GetRecording), ctx, id)
 }

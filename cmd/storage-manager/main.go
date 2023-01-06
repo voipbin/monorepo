@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,11 +12,11 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/buckethandler"
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/listenhandler"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/storagehandler"
 )
 
@@ -39,11 +38,14 @@ var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prom
 // gcp info
 var gcpCredential = flag.String("gcp_credential", "./credential.json", "the GCP credential file path")
 var gcpProjectID = flag.String("gcp_project_id", "project", "the gcp project id")
-var gcpBucketName = flag.String("gcp_bucket_name", "bucket", "the gcp bucket name to use")
+var gcpBucketMedia = flag.String("gcp_bucket_media", "bucket", "the gcp bucket name for media storage")
+var gcpBucketTmp = flag.String("gcp_bucket_tmp", "bucket", "the gcp bucket name for tmp storage")
+
+const (
+	serviceName = "storage-manager"
+)
 
 func main() {
-
-	printIPAddresses()
 
 	run()
 	<-chDone
@@ -63,7 +65,7 @@ func init() {
 	initProm(*promEndpoint, *promListenAddr)
 
 	logrus.Infof("init finished. credential: %s, prom_list: %s, rabbit_addr: %s, bucket_name: %s",
-		*gcpCredential, *promListenAddr, *rabbitAddr, *gcpBucketName)
+		*gcpCredential, *promListenAddr, *rabbitAddr, *gcpBucketMedia)
 }
 
 // signalHandler catches signals and set the done
@@ -109,10 +111,6 @@ func run() error {
 		return err
 	}
 
-	if err := runHTTPListen(); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -122,22 +120,17 @@ func runListen() error {
 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
 	rabbitSock.Connect()
 
-	// create request handler
-	requestHandler := requesthandler.NewRequestHandler(
-		rabbitSock,
-		*rabbitExchangeDelay,
-		*rabbitQueueCallRequest,
-	)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 
 	// create bucket handler
-	bucketHandler := buckethandler.NewBucketHandler(*gcpCredential, *gcpProjectID, *gcpBucketName)
+	bucketHandler := buckethandler.NewBucketHandler(*gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
 	if bucketHandler == nil {
 		logrus.Errorf("Could not create bucket handler.")
 		return fmt.Errorf("could not create bucket handler")
 	}
 
 	// create storage handler
-	storageHandler := storagehandler.NewStorageHandler(requestHandler, bucketHandler)
+	storageHandler := storagehandler.NewStorageHandler(reqHandler, bucketHandler)
 
 	// create listen handler
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, storageHandler)
@@ -148,45 +141,4 @@ func runListen() error {
 	}
 
 	return nil
-}
-
-func runHTTPListen() error {
-	// create bucket handler
-	bucketHandler := buckethandler.NewBucketHandler(*gcpCredential, *gcpProjectID, *gcpBucketName)
-	if bucketHandler == nil {
-		logrus.Errorf("Could not create tts handler.")
-		return fmt.Errorf("could not create tts handler")
-
-	}
-
-	return nil
-}
-
-func printIPAddresses() {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		logrus.Errorf("Could not get interfaces info. err: %v", err)
-		return
-	}
-
-	for _, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			logrus.Errorf("Could not get interface's ip address. err: %v", err)
-			continue
-		}
-
-		for _, addr := range addrs {
-			var ip net.IP
-			switch v := addr.(type) {
-			case *net.IPNet:
-				ip = v.IP
-			case *net.IPAddr:
-				ip = v.IP
-			}
-
-			fmt.Printf("interface: %s, ip: %v\n", i.Name, ip)
-		}
-	}
-
 }

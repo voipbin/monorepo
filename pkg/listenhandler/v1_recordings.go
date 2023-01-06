@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -27,7 +27,7 @@ func (h *listenHandler) v1RecordingsIDGet(req *rabbitmqhandler.Request) (*rabbit
 	recordingID := uuid.FromStringOrNil(tmpRecordingID)
 
 	// get recording
-	rec, err := h.storageHandler.GetRecording(recordingID)
+	rec, err := h.storageHandler.GetRecording(context.Background(), recordingID)
 	if err != nil {
 		logrus.Errorf("Could not get download url for recording. err: %v", err)
 		return nil, err

@@ -1,13 +1,14 @@
 package storagehandler
 
 import (
+	"context"
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 )
 
 func (h *storageHandler) getRecordingFilepath(filename string) string {
@@ -15,14 +16,8 @@ func (h *storageHandler) getRecordingFilepath(filename string) string {
 	return res
 }
 
-func (h *storageHandler) getBucketpath(filepath string) string {
-
-	res := "gs://" + h.bucketHandler.GetBucketName() + "/" + filepath
-	return res
-}
-
 // GetRecording returns bucketrecording info of the given recording id.
-func (h *storageHandler) GetRecording(id uuid.UUID) (*bucketrecording.BucketRecording, error) {
+func (h *storageHandler) GetRecording(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"recoding_id": id,
@@ -30,31 +25,33 @@ func (h *storageHandler) GetRecording(id uuid.UUID) (*bucketrecording.BucketReco
 	)
 
 	// get recording
-	rec, err := h.reqHandler.CMRecordingGet(id)
+	r, err := h.reqHandler.CallV1RecordingGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get recording info from the call-manager. err: %v", err)
 		return nil, err
 	}
 
-	// get filepath
-	filepath := h.getRecordingFilepath(rec.Filename)
+	// compose files
+	targetpaths := []string{}
+	for _, filename := range r.Filenames {
+		tmp := bucketDirectoryRecording + "/" + filename
+		targetpaths = append(targetpaths, tmp)
+	}
 
-	// get download uri
-	expire := time.Now().UTC().Add(24 * time.Hour)
-	downloadURI, err := h.bucketHandler.FileGetDownloadURL(filepath, expire)
+	// get download uri and filepath
+	bucketPath, downloadURI, err := h.bucketHandler.GetDownloadURI(ctx, targetpaths, time.Hour*24)
 	if err != nil {
 		log.Errorf("Could not get download link. err: %v", err)
 		return nil, err
 	}
 
-	// get bucket path
-	bucketPath := h.getBucketpath(filepath)
-
 	// create recording.Recording
-	res := &bucketrecording.BucketRecording{
-		RecordingID:    id,
-		BucketURI:      bucketPath,
-		DownloadURI:    downloadURI,
+	expire := time.Now().UTC().Add(24 * time.Hour)
+	res := &bucketfile.BucketFile{
+		ReferenceType:    bucketfile.ReferenceTypeRecording,
+		ReferenceID:      id,
+		BucketURI:        *bucketPath,
+		DownloadURI:      *downloadURI,
 		TMDownloadExpire: strings.TrimSuffix(expire.String(), " +0000 UTC"),
 	}
 

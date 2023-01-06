@@ -1,44 +1,43 @@
 package buckethandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package buckethandler -destination ./mock_buckethandler_buckethandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package buckethandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 )
 
 const (
-	bucketDirectory = "tts"
+	bucketDirectoryRecording = "recording"
+	bucketDirectoryTmp       = "tmp"
 )
 
 // BucketHandler intreface for GCP bucket handler
 type BucketHandler interface {
-	GetBucketName() string
-
-	FileExist(target string) bool
-	FileGet(target string) ([]byte, error)
-	FileGetAttrs(target string) (*storage.ObjectAttrs, error)
-	FileGetDownloadURL(target string, expire time.Time) (string, error)
-	FileUpload(src, dest string) error
+	GetDownloadURI(ctx context.Context, filepaths []string, expire time.Duration) (*string, *string, error)
 }
 
 type bucketHandler struct {
-	client *storage.Client
+	utilHandler utilhandler.UtilHandler
+	client      *storage.Client
 
-	projectID  string
-	bucketName string
-	accessID   string
-	privateKey []byte
+	projectID   string
+	bucketMedia string
+	bucketTmp   string
+	accessID    string
+	privateKey  []byte
 }
 
 // NewBucketHandler create bucket handler
-func NewBucketHandler(credentialPath string, projectID string, bucketName string) BucketHandler {
+func NewBucketHandler(credentialPath string, projectID string, bucketMedia string, bucketTmp string) BucketHandler {
 
 	ctx := context.Background()
 
@@ -63,12 +62,14 @@ func NewBucketHandler(credentialPath string, projectID string, bucketName string
 	}
 
 	h := &bucketHandler{
-		client: client,
+		utilHandler: utilhandler.NewUtilHandler(),
+		client:      client,
 
-		projectID:  projectID,
-		bucketName: bucketName,
-		accessID:   conf.Email,
-		privateKey: conf.PrivateKey,
+		projectID:   projectID,
+		bucketMedia: bucketMedia,
+		bucketTmp:   bucketTmp,
+		accessID:    conf.Email,
+		privateKey:  conf.PrivateKey,
 	}
 
 	return h
@@ -79,7 +80,10 @@ func (h *bucketHandler) Init() {
 	return
 }
 
-// GetBucketName returns using bucket name
-func (h *bucketHandler) GetBucketName() string {
-	return h.bucketName
+// getFilename returns filename
+func getFilename(target string) string {
+	splits := strings.Split(target, "/")
+	res := splits[len(splits)-1]
+
+	return res
 }
