@@ -17,7 +17,8 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id uuid.UUID
+		id             uuid.UUID
+		requestTimeout int
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -27,7 +28,9 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 	}{
 		{
 			"normal",
+
 			uuid.FromStringOrNil("c7878bdc-93bd-11eb-ab3a-a7388c5862f4"),
+			30000,
 
 			"bin-manager.storage-manager.request",
 			&rabbitmqhandler.Request{
@@ -59,7 +62,7 @@ func Test_StorageV1RecordingGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.StorageV1RecordingGet(ctx, tt.id)
+			res, err := reqHandler.StorageV1RecordingGet(ctx, tt.id, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
