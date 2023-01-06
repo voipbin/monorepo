@@ -1,18 +1,20 @@
 package storagehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package storagehandler -destination ./mock_storagehandler_storagehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package storagehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
-	"github.com/gofrs/uuid"
+	"context"
 
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketrecording"
+	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
+	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/buckethandler"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/requesthandler"
 )
 
 // StorageHandler intreface for storage handler
 type StorageHandler interface {
-	GetRecording(id uuid.UUID) (*bucketrecording.BucketRecording, error)
+	GetRecording(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error)
 }
 
 type storageHandler struct {

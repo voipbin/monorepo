@@ -44,8 +44,10 @@ spec:
             - './google_service_account.json'
             - '-gcp_project_id'
             - 'voipbin-production'
-            - '-gcp_bucket_name'
+            - '-gcp_bucket_media'
             - 'voipbin-voip-media-bucket-europe-west4'
+            - '-gcp_bucket_tmp'
+            - 'voipbin-tmp-bucket-europe-west4'
 
           ports:
             - name: metrics

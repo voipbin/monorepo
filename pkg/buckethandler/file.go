@@ -1,75 +1,81 @@
 package buckethandler
 
 import (
+	"archive/zip"
 	"context"
 	"io"
-	"io/ioutil"
-	"os"
 	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 )
 
-// fileUpload uploads the filename to the bucket(target)
-func (h *bucketHandler) FileUpload(src, dest string) error {
+// GetDownloadURL returns a download url for given target files
+func (h *bucketHandler) GetDownloadURI(ctx context.Context, filepaths []string, expire time.Duration) (*string, *string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "GetDownloadURI",
+	})
 
-	// open file
-	f, err := os.Open(src)
+	// create file object
+	filepath := bucketDirectoryTmp + "/" + h.utilHandler.CreateUUID().String() + ".zip"
+	fo := h.client.Bucket(h.bucketTmp).Object(filepath)
+	resBucketpath := "gs://" + h.bucketTmp + "/" + filepath
+	log.Debugf("Created a file object. filepath: %s, bucketpath: %s", filepath, resBucketpath)
+
+	fw := fo.NewWriter(ctx)
+	defer fw.Close()
+
+	// create a zip
+	zw := zip.NewWriter(fw)
+	for _, target := range filepaths {
+		f := h.client.Bucket(h.bucketMedia).Object(target)
+
+		// read open
+		reader, err := f.NewReader(ctx)
+		if err != nil {
+			log.Errorf("Could not create a reader. err: %v", err)
+			continue
+		}
+		defer reader.Close()
+
+		// add the filename to the result file
+		filename := getFilename(target)
+		fp, err := zw.Create(filename)
+		if err != nil {
+			log.Errorf("Could not add the file to the res file. err: %v", err)
+			continue
+		}
+
+		// copy
+		_, err = io.Copy(fp, reader)
+		if err != nil {
+			log.Errorf("Could not copy the file. err: %v", err)
+			continue
+		}
+	}
+
+	// close zip
+	if errClose := zw.Close(); errClose != nil {
+		log.Errorf("Could not close the zip writer. err: %v", errClose)
+		return nil, nil, errClose
+	}
+
+	// get download uri with expiration
+	tmExpire := time.Now().UTC().Add(expire)
+	resDownloadURL, err := h.generateDownloadURI(h.bucketTmp, filepath, tmExpire)
 	if err != nil {
-		logrus.Errorf("Could not open the target file. err: %v", err)
-		return err
-	}
-	defer f.Close()
-
-	// create a session
-	ctx := context.Background()
-	wc := h.client.Bucket(h.bucketName).Object(dest).NewWriter(ctx)
-	defer wc.Close()
-
-	// upload the file
-	if _, err = io.Copy(wc, f); err != nil {
-		logrus.Errorf("Could not upload the file to the bucket. err: %v", err)
-		return err
+		log.Errorf("Could not get download link. err: %v", err)
+		return nil, nil, err
 	}
 
-	if err := wc.Close(); err != nil {
-		logrus.Errorf("Could not close the write. err: %v", err)
-		return err
-	}
-
-	return nil
+	return &resBucketpath, &resDownloadURL, nil
 }
 
-// fileExist return the true if the given target is exists in the bucket
-func (h *bucketHandler) FileExist(target string) bool {
-	ctx := context.Background()
-
-	f := h.client.Bucket(h.bucketName).Object(target)
-	attrs, err := f.Attrs(ctx)
-	if err != nil {
-		return false
-	}
-	logrus.Debugf("The file is exist. filename: %s, bucket: %s, created: %s", target, attrs.Bucket, attrs.Created)
-
-	return true
-}
-
-// fileExist return the true if the given target is exists in the bucket
-func (h *bucketHandler) FileGetAttrs(target string) (*storage.ObjectAttrs, error) {
-	ctx := context.Background()
-
-	f := h.client.Bucket(h.bucketName).Object(target)
-	attrs, err := f.Attrs(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return attrs, nil
-}
-
-// fileGetDownloadURL returns google cloud storage signed url for file download
-func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (string, error) {
+// generateDownloadURI returns google cloud storage signed url for file download
+func (h *bucketHandler) generateDownloadURI(bucketName string, target string, expire time.Time) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "generateDownloadURI",
+	})
 
 	// create opt
 	opts := &storage.SignedURLOptions{
@@ -81,39 +87,11 @@ func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (str
 	}
 
 	// get downloadable url
-	u, err := storage.SignedURL(h.bucketName, target, opts)
+	u, err := storage.SignedURL(bucketName, target, opts)
 	if err != nil {
-		logrus.Errorf("Could not get signed url. err: %v", err)
+		log.Errorf("Could not get signed url. err: %v", err)
 		return "", err
 	}
 
 	return u, nil
-}
-
-// fileGet returns google cloud storage signed url for file download
-// The caller must close the returned reader.
-func (h *bucketHandler) FileGet(target string) ([]byte, error) {
-	ctx := context.Background()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"target": target,
-		},
-	)
-
-	rc, err := h.client.Bucket(h.bucketName).Object(target).NewReader(ctx)
-	if err != nil {
-		log.Errorf("Could not get object info. err: %v", err)
-		return nil, err
-	}
-	defer rc.Close()
-
-	// read the data
-	data, err := ioutil.ReadAll(rc)
-	if err != nil {
-		log.Errorf("Could not read the file. err: %v", err)
-		return nil, err
-	}
-
-	return data, nil
 }
