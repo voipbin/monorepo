@@ -376,6 +376,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 			}
 
 			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.expectRecording, nil)
 			mockDB.EXPECT().CallSetRecordID(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallAddRecordIDs(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)

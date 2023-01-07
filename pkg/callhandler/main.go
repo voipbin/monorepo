@@ -43,6 +43,19 @@ type CallHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error)
 
+	RecordingCreate(
+		ctx context.Context,
+		id uuid.UUID,
+		customerID uuid.UUID,
+		referenceType recording.ReferenceType,
+		referenceID uuid.UUID,
+		format string,
+		recordingName string,
+		filenames []string,
+		asteriskID string,
+		channelIDs []string,
+	) (*recording.Recording, error)
+	RecordingDelete(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error)
 	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
 	RecordingGet(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error)
 
@@ -85,8 +98,7 @@ const (
 
 // List of default values
 const (
-	defaultDialTimeout         = 60 // default outgoing dial timeout
-	defaultTimeStamp           = "9999-01-01 00:00:00.000000"
+	defaultDialTimeout         = 60      // default outgoing dial timeout
 	defaultTimeoutCallDuration = 3600000 // default call duration timeout. 1h
 )
 

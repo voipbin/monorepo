@@ -1126,6 +1126,20 @@ func (mr *MockDBHandlerMockRecorder) RecordingCreate(ctx, c interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingCreate", reflect.TypeOf((*MockDBHandler)(nil).RecordingCreate), ctx, c)
 }
 
+// RecordingDelete mocks base method.
+func (m *MockDBHandler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordingDelete indicates an expected call of RecordingDelete.
+func (mr *MockDBHandlerMockRecorder) RecordingDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingDelete", reflect.TypeOf((*MockDBHandler)(nil).RecordingDelete), ctx, id)
+}
+
 // RecordingGet mocks base method.
 func (m *MockDBHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()

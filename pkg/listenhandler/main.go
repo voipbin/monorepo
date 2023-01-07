@@ -38,7 +38,6 @@ type listenHandler struct {
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-	regAny  = "(.*)"
 
 	//// v1
 
@@ -64,8 +63,8 @@ var (
 	regV1ConfbridgesIDCallsID = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
 
 	// recordings
-	regV1RecordingsID = regexp.MustCompile("/v1/recordings/" + regAny)
-	regV1Recordings   = regexp.MustCompile("/v1/recordings")
+	regV1Recordings   = regexp.MustCompile(`/v1/recordings\?`)
+	regV1RecordingsID = regexp.MustCompile("/v1/recordings/" + regUUID + "$")
 )
 
 var (
@@ -290,15 +289,20 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	//////////////
 	// recordings
 	//////////////
+	// GET /recordings
+	case regV1Recordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1RecordingsGet(ctx, m)
+		requestType = "/v1/recordings"
+
 	// GET /recordings/<recording-id>
 	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1RecordingsIDGet(ctx, m)
 		requestType = "/v1/recordings/<recording-id>"
 
-	// GET /recordings
-	case regV1Recordings.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1RecordingsGet(ctx, m)
-		requestType = "/v1/recordings"
+	// DELETE /recordings/<recording-id>
+	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1RecordingsIDDelete(ctx, m)
+		requestType = "/v1/recordings/<recording-id>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

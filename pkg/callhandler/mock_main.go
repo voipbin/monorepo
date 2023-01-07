@@ -385,6 +385,36 @@ func (mr *MockCallHandlerMockRecorder) HangupWithReason(ctx, c, reason, hangupBy
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangupWithReason", reflect.TypeOf((*MockCallHandler)(nil).HangupWithReason), ctx, c, reason, hangupBy, timestamp)
 }
 
+// RecordingCreate mocks base method.
+func (m *MockCallHandler) RecordingCreate(ctx context.Context, id, customerID uuid.UUID, referenceType recording.ReferenceType, referenceID uuid.UUID, format, recordingName string, filenames []string, asteriskID string, channelIDs []string) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingCreate", ctx, id, customerID, referenceType, referenceID, format, recordingName, filenames, asteriskID, channelIDs)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingCreate indicates an expected call of RecordingCreate.
+func (mr *MockCallHandlerMockRecorder) RecordingCreate(ctx, id, customerID, referenceType, referenceID, format, recordingName, filenames, asteriskID, channelIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingCreate", reflect.TypeOf((*MockCallHandler)(nil).RecordingCreate), ctx, id, customerID, referenceType, referenceID, format, recordingName, filenames, asteriskID, channelIDs)
+}
+
+// RecordingDelete mocks base method.
+func (m *MockCallHandler) RecordingDelete(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingDelete", ctx, recordingID)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingDelete indicates an expected call of RecordingDelete.
+func (mr *MockCallHandlerMockRecorder) RecordingDelete(ctx, recordingID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingDelete", reflect.TypeOf((*MockCallHandler)(nil).RecordingDelete), ctx, recordingID)
+}
+
 // RecordingGet mocks base method.
 func (m *MockCallHandler) RecordingGet(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()

@@ -398,3 +398,26 @@ func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID, times
 
 	return nil
 }
+
+// RecordingDelete deletes the recording
+func (h *handler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
+	//prepare
+	q := `
+	update recordings set
+		tm_update = ?,
+		tm_delete = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. RecordingDelete. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.recordingUpdateToCache(ctx, id)
+
+	return nil
+}

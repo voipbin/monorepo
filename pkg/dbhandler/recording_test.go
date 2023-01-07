@@ -226,3 +226,79 @@ func Test_RecordingGets(t *testing.T) {
 		})
 	}
 }
+
+func Test_RecordingDelete(t *testing.T) {
+
+	type test struct {
+		name      string
+		recording *recording.Recording
+
+		id uuid.UUID
+
+		responseCurTime string
+
+		expectRes *recording.Recording
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&recording.Recording{
+				ID: uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
+			},
+
+			uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
+			"2020-04-18T03:22:18.995000",
+
+			&recording.Recording{
+				ID: uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
+
+				Filenames:  []string{},
+				ChannelIDs: []string{},
+
+				TMCreate: "2020-04-18T03:22:18.995000",
+				TMUpdate: "2020-04-18T03:22:18.995000",
+				TMDelete: "2020-04-18T03:22:18.995000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().RecordingSet(ctx, gomock.Any())
+			if err := h.RecordingCreate(ctx, tt.recording); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().RecordingSet(ctx, gomock.Any())
+			if err := h.RecordingDelete(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().RecordingGet(ctx, tt.recording.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().RecordingSet(ctx, gomock.Any())
+			res, err := h.RecordingGet(ctx, tt.recording.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
