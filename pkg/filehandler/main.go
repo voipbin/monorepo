@@ -1,10 +1,13 @@
-package buckethandler
+package filehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package buckethandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package filehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
+	"crypto/sha1"
+	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 	"time"
 
@@ -20,12 +23,14 @@ const (
 	bucketDirectoryTmp       = "tmp"
 )
 
-// BucketHandler intreface for GCP bucket handler
-type BucketHandler interface {
-	GetDownloadURI(ctx context.Context, filepaths []string, expire time.Duration) (*string, *string, error)
+// FileHandler intreface for GCP bucket handler
+type FileHandler interface {
+	GetDownloadURI(ctx context.Context, bucketName string, filepaths []string, expire time.Duration) (*string, *string, error)
+	Delete(ctx context.Context, bucketName string, filepath string) error
+	IsExist(ctx context.Context, bucketName string, filepath string) bool
 }
 
-type bucketHandler struct {
+type fileHandler struct {
 	utilHandler utilhandler.UtilHandler
 	client      *storage.Client
 
@@ -36,8 +41,8 @@ type bucketHandler struct {
 	privateKey  []byte
 }
 
-// NewBucketHandler create bucket handler
-func NewBucketHandler(credentialPath string, projectID string, bucketMedia string, bucketTmp string) BucketHandler {
+// NewFileHandler create bucket handler
+func NewFileHandler(credentialPath string, projectID string, bucketMedia string, bucketTmp string) FileHandler {
 
 	ctx := context.Background()
 
@@ -61,22 +66,22 @@ func NewBucketHandler(credentialPath string, projectID string, bucketMedia strin
 		return nil
 	}
 
-	h := &bucketHandler{
+	h := &fileHandler{
 		utilHandler: utilhandler.NewUtilHandler(),
 		client:      client,
 
-		projectID:   projectID,
-		bucketMedia: bucketMedia,
-		bucketTmp:   bucketTmp,
-		accessID:    conf.Email,
-		privateKey:  conf.PrivateKey,
+		projectID: projectID,
+		// bucketMedia: bucketMedia,
+		bucketTmp:  bucketTmp,
+		accessID:   conf.Email,
+		privateKey: conf.PrivateKey,
 	}
 
 	return h
 }
 
 // Init initialize the bucket
-func (h *bucketHandler) Init() {
+func (h *fileHandler) Init() {
 	return
 }
 
@@ -84,6 +89,20 @@ func (h *bucketHandler) Init() {
 func getFilename(target string) string {
 	splits := strings.Split(target, "/")
 	res := splits[len(splits)-1]
+
+	return res
+}
+
+func createZipFilepathHash(filenames []string) string {
+	sort.Strings(filenames)
+
+	tmpJoin := strings.Join(filenames, "")
+
+	sh1 := sha1.New()
+	sh1.Write([]byte(tmpJoin))
+	tmp := sh1.Sum(nil)
+
+	res := fmt.Sprintf("%s/%x.zip", bucketDirectoryTmp, tmp)
 
 	return res
 }

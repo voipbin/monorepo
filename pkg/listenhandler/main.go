@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -8,8 +9,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/storagehandler"
 )
 
@@ -40,7 +41,7 @@ var (
 )
 
 var (
-	metricsNamespace = "tts_manager"
+	metricsNamespace = "storage_manager"
 
 	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -121,6 +122,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
+	ctx := context.Background()
+
 	logrus.WithFields(
 		logrus.Fields{
 			"request": m,
@@ -132,7 +135,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// v1
 	case regV1RecordingsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodGet:
 		requestType = "/recordings"
-		response, err = h.v1RecordingsIDGet(m)
+		response, err = h.v1RecordingsIDGet(ctx, m)
+
+	case regV1RecordingsID.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodDelete:
+		requestType = "/recordings"
+		response, err = h.v1RecordingsIDDelete(ctx, m)
 
 	default:
 		logrus.WithFields(

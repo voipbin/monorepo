@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/buckethandler"
+	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/filehandler"
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/storagehandler"
 )
@@ -123,14 +123,14 @@ func runListen() error {
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 
 	// create bucket handler
-	bucketHandler := buckethandler.NewBucketHandler(*gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
+	bucketHandler := filehandler.NewFileHandler(*gcpCredential, *gcpProjectID, *gcpBucketMedia, *gcpBucketTmp)
 	if bucketHandler == nil {
 		logrus.Errorf("Could not create bucket handler.")
 		return fmt.Errorf("could not create bucket handler")
 	}
 
 	// create storage handler
-	storageHandler := storagehandler.NewStorageHandler(reqHandler, bucketHandler)
+	storageHandler := storagehandler.NewStorageHandler(reqHandler, bucketHandler, *gcpBucketMedia)
 
 	// create listen handler
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, storageHandler)

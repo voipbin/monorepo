@@ -36,17 +36,31 @@ func (m *MockStorageHandler) EXPECT() *MockStorageHandlerMockRecorder {
 	return m.recorder
 }
 
-// GetRecording mocks base method.
-func (m *MockStorageHandler) GetRecording(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error) {
+// RecordingDelete mocks base method.
+func (m *MockStorageHandler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRecording", ctx, id)
+	ret := m.ctrl.Call(m, "RecordingDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordingDelete indicates an expected call of RecordingDelete.
+func (mr *MockStorageHandlerMockRecorder) RecordingDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingDelete", reflect.TypeOf((*MockStorageHandler)(nil).RecordingDelete), ctx, id)
+}
+
+// RecordingGet mocks base method.
+func (m *MockStorageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingGet", ctx, id)
 	ret0, _ := ret[0].(*bucketfile.BucketFile)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetRecording indicates an expected call of GetRecording.
-func (mr *MockStorageHandlerMockRecorder) GetRecording(ctx, id interface{}) *gomock.Call {
+// RecordingGet indicates an expected call of RecordingGet.
+func (mr *MockStorageHandlerMockRecorder) RecordingGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecording", reflect.TypeOf((*MockStorageHandler)(nil).GetRecording), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockStorageHandler)(nil).RecordingGet), ctx, id)
 }
