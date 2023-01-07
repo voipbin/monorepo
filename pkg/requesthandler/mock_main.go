@@ -930,6 +930,21 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeDelete(ctx, conference
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeDelete", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeDelete), ctx, conferenceID)
 }
 
+// CallV1RecordingDelete mocks base method.
+func (m *MockRequestHandler) CallV1RecordingDelete(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1RecordingDelete", ctx, id)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1RecordingDelete indicates an expected call of CallV1RecordingDelete.
+func (mr *MockRequestHandlerMockRecorder) CallV1RecordingDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecordingDelete", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecordingDelete), ctx, id)
+}
+
 // CallV1RecordingGet mocks base method.
 func (m *MockRequestHandler) CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
