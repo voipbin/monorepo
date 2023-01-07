@@ -643,8 +643,9 @@ type RequestHandler interface {
 	RouteV1RouteUpdate(ctx context.Context, routeID uuid.UUID, providerID uuid.UUID, priority int, target string) (*rmroute.Route, error)
 	RouteV1RouteGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 
-	// storage: recording
+	// storage-manager: recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)
+	StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error)

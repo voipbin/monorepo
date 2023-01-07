@@ -3165,6 +3165,20 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, provi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteUpdate), ctx, routeID, providerID, priority, target)
 }
 
+// StorageV1RecordingDelete mocks base method.
+func (m *MockRequestHandler) StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1RecordingDelete", ctx, recordingID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StorageV1RecordingDelete indicates an expected call of StorageV1RecordingDelete.
+func (mr *MockRequestHandlerMockRecorder) StorageV1RecordingDelete(ctx, recordingID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1RecordingDelete", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1RecordingDelete), ctx, recordingID)
+}
+
 // StorageV1RecordingGet mocks base method.
 func (m *MockRequestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*bucketfile.BucketFile, error) {
 	m.ctrl.T.Helper()

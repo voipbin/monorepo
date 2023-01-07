@@ -36,3 +36,23 @@ func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID
 
 	return &data, nil
 }
+
+// StorageV1RecordingDelete sends a request to storage-manager
+// to deleting a recording files.
+// it returns error if it fails
+func (r *requestHandler) StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/recordings/%s", recordingID)
+
+	res, err := r.sendRequestStorage(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceStorageRecording, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
+}
