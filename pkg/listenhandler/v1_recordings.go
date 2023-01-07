@@ -89,3 +89,37 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitm
 
 	return res, nil
 }
+
+// processV1RecordingsIDDelete handles DELETE /v1/recordings/<id> request
+func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1RecordingsIDDelete.")
+
+	record, err := h.callHandler.RecordingDelete(ctx, id)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+	log.Debugf("Found record. record: %v", record)
+
+	data, err := json.Marshal(record)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

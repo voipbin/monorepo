@@ -15,7 +15,6 @@ import (
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Redirect options for timeout action
@@ -601,29 +600,25 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		log.WithField("channel", tmpChannel).Debugf("Created a snoop channel for recording. channel_id: %s", tmpChannel.ID)
 	}
 
-	// create a recording
-	rec := &recording.Recording{
-		ID:         recordingID,
-		CustomerID: c.CustomerID,
+	r, err := h.RecordingCreate(
+		ctx,
+		recordingID,
+		c.CustomerID,
 
-		ReferenceType: recording.ReferenceTypeCall,
-		ReferenceID:   c.ID,
-		Status:        recording.StatusInitiating,
-		Format:        format,
-		RecordingName: recordingName,
-		Filenames:     filenames,
+		recording.ReferenceTypeCall,
+		c.ID,
+		format,
+		recordingName,
+		filenames,
 
-		AsteriskID: c.AsteriskID,
-		ChannelIDs: channelIDs,
-
-		TMStart: dbhandler.DefaultTimeStamp,
-		TMEnd:   dbhandler.DefaultTimeStamp,
+		c.AsteriskID,
+		channelIDs,
+	)
+	if err != nil {
+		log.Errorf("Could not create recording. err: %v", err)
+		return err
 	}
-
-	if err := h.db.RecordingCreate(ctx, rec); err != nil {
-		log.Errorf("Could not create the record. err: %v", err)
-		return fmt.Errorf("could not create the record. err: %v", err)
-	}
+	log.WithField("recording", r).Debugf("Created a new recording. recording_id: %s", r.ID)
 
 	// set recording id
 	if err := h.db.CallSetRecordID(ctx, c.ID, recordingID); err != nil {

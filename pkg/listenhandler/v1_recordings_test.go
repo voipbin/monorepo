@@ -140,3 +140,66 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1RecordingsIDDelete(t *testing.T) {
+
+	type test struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseRecording *recording.Recording
+		expectRes         *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"basic",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/recordings/3019fe2a-8eba-11ed-809e-bbab8230e905",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+
+			&recording.Recording{
+				ID:            uuid.FromStringOrNil("3019fe2a-8eba-11ed-809e-bbab8230e905"),
+				CustomerID:    uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
+				ReferenceType: recording.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
+				Status:        recording.StatusEnd,
+				Filenames: []string{
+					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"3019fe2a-8eba-11ed-809e-bbab8230e905","customer_id":"d063099a-7f51-11ec-adbd-cf15a2e7ae7d","reference_type":"call","reference_id":"e2951d7c-ac2d-11ea-8d4b-aff0e70476d6","status":"ended","format":"","recording_name":"","filenames":["call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav"],"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().RecordingDelete(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
