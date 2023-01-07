@@ -9,18 +9,21 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
-	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/buckethandler"
+	"gitlab.com/voipbin/bin-manager/storage-manager.git/pkg/filehandler"
 )
 
 // StorageHandler intreface for storage handler
 type StorageHandler interface {
-	GetRecording(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error)
+	RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error)
+	RecordingDelete(ctx context.Context, id uuid.UUID) error
 }
 
 type storageHandler struct {
 	reqHandler requesthandler.RequestHandler
 
-	bucketHandler buckethandler.BucketHandler
+	bucketHandler filehandler.FileHandler
+
+	bucketNameMedia string
 }
 
 // fixed bucket directories
@@ -29,12 +32,14 @@ const (
 )
 
 // NewStorageHandler creates StorageHandler
-func NewStorageHandler(reqHandler requesthandler.RequestHandler, bucketHandler buckethandler.BucketHandler) StorageHandler {
+func NewStorageHandler(reqHandler requesthandler.RequestHandler, bucketHandler filehandler.FileHandler, bucketNameMedia string) StorageHandler {
 
 	h := &storageHandler{
 		reqHandler: reqHandler,
 
 		bucketHandler: bucketHandler,
+
+		bucketNameMedia: bucketNameMedia,
 	}
 
 	return h

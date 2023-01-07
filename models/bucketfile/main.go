@@ -6,7 +6,7 @@ import "github.com/gofrs/uuid"
 type BucketFile struct {
 	ReferenceType    ReferenceType `json:"reference_type"`
 	ReferenceID      uuid.UUID     `json:"reference_id"`
-	BucketURI        string        `json:"bucket_uri"`         // bucket uri. gs://...
+	BucketURI        string        `json:"bucket_uri"`         // bucket uri.
 	DownloadURI      string        `json:"download_uri"`       // download link
 	TMDownloadExpire string        `json:"tm_download_expire"` // timestamp for download link expire
 }

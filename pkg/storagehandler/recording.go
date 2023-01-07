@@ -11,15 +11,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 )
 
-func (h *storageHandler) getRecordingFilepath(filename string) string {
-	res := bucketDirectoryRecording + "/" + filename
-	return res
-}
-
-// GetRecording returns bucketrecording info of the given recording id.
-func (h *storageHandler) GetRecording(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error) {
+// RecordingGet returns given recording's bucketfile info.
+func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":        "RecordingGet",
 			"recoding_id": id,
 		},
 	)
@@ -39,7 +35,7 @@ func (h *storageHandler) GetRecording(ctx context.Context, id uuid.UUID) (*bucke
 	}
 
 	// get download uri and filepath
-	bucketPath, downloadURI, err := h.bucketHandler.GetDownloadURI(ctx, targetpaths, time.Hour*24)
+	bucketPath, downloadURI, err := h.bucketHandler.GetDownloadURI(ctx, h.bucketNameMedia, targetpaths, time.Hour*24)
 	if err != nil {
 		log.Errorf("Could not get download link. err: %v", err)
 		return nil, err
@@ -56,4 +52,37 @@ func (h *storageHandler) GetRecording(ctx context.Context, id uuid.UUID) (*bucke
 	}
 
 	return res, nil
+}
+
+// RecordingDelete deletes the given recording file
+func (h *storageHandler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "RecordingDelete",
+			"recoding_id": id,
+		},
+	)
+
+	// get recording
+	r, err := h.reqHandler.CallV1RecordingGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get recording info from the call-manager. err: %v", err)
+		return err
+	}
+
+	for _, filename := range r.Filenames {
+
+		if !h.bucketHandler.IsExist(ctx, h.bucketNameMedia, filename) {
+			log.Debugf("The file is already deleted. filename: %s", filename)
+			continue
+		}
+
+		// delete
+		if errDelete := h.bucketHandler.Delete(ctx, h.bucketNameMedia, filename); errDelete != nil {
+			log.Errorf("Could not delete recording file. filename: %s, err: %v", filename, errDelete)
+			return errDelete
+		}
+	}
+
+	return nil
 }
