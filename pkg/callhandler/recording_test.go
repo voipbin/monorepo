@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -261,6 +262,8 @@ func Test_RecordingDelete(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			time.Sleep(time.Millisecond * 100)
 
 			if !reflect.DeepEqual(res, tt.responseRecording) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.responseRecording, res)
