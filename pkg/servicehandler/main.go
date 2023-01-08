@@ -366,6 +366,7 @@ type ServiceHandler interface {
 	// recording handlers
 	RecordingGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error)
 	RecordingGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmrecording.WebhookMessage, error)
+	RecordingDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error)
 
 	// recordingfile handlers
 	RecordingfileGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (string, error)
