@@ -1958,6 +1958,21 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallGets(ctx, u, size, token inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGets", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallGets), ctx, u, size, token)
 }
 
+// RecordingDelete mocks base method.
+func (m *MockServiceHandler) RecordingDelete(ctx context.Context, u *customer.Customer, id uuid.UUID) (*recording.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingDelete", ctx, u, id)
+	ret0, _ := ret[0].(*recording.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingDelete indicates an expected call of RecordingDelete.
+func (mr *MockServiceHandlerMockRecorder) RecordingDelete(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingDelete", reflect.TypeOf((*MockServiceHandler)(nil).RecordingDelete), ctx, u, id)
+}
+
 // RecordingGet mocks base method.
 func (m *MockServiceHandler) RecordingGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*recording.WebhookMessage, error) {
 	m.ctrl.T.Helper()

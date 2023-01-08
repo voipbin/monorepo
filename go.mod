@@ -20,12 +20,12 @@ require (
 	github.com/swaggo/files v1.0.0
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.9
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230105090643-2473bce7cd05
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230106060517-f01389adf836
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230107191306-fdf7f6785078
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230107192225-d85c2a7ab346
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230102093540-da6a0504a0ae
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20221206185501-ee71428c9199
-	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230106055208-05e76f1dbad3
+	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230107173254-4e277ec80cc0
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20221222181305-2411870946f6
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
@@ -80,7 +80,7 @@ require (
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220628160222-ca61e7d2d60b // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
-	google.golang.org/genproto v0.0.0-20230104163317-caabf589fcbf // indirect
+	google.golang.org/genproto v0.0.0-20230106154932-a12b697841d9 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
