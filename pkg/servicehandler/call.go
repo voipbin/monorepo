@@ -31,6 +31,11 @@ func (h *serviceHandler) callGet(ctx context.Context, u *cscustomer.Customer, ca
 	}
 	log.WithField("call", res).Debug("Received result.")
 
+	if res.TMDelete < defaultTimestamp {
+		log.Debugf("Deleted call. call_id: %s", res.ID)
+		return nil, fmt.Errorf("not found")
+	}
+
 	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")

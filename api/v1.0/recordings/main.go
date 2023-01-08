@@ -10,5 +10,5 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	recordings.GET("", recordingsGET)
 	recordings.GET("/:id", recordingsIDGET)
-
+	recordings.DELETE("/:id", recordingsIDDELETE)
 }

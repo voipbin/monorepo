@@ -130,3 +130,50 @@ func recordingsIDGET(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// recordingsIDDELETE handles DELETE /recordings/<id> request.
+// It deletes a recording info.
+// @Summary Deletes a recording and returns a deleted recording information.
+// @Description Deletes a recording and returns a deleted recording information of the given recording id.
+// @Produce json
+// @Param id query string true "The recording's id."
+// @Success 200 {object} recording.Recording
+// @Router /v1.0/recordings/{id} [delete]
+func recordingsIDDELETE(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "recordingsIDDELETE",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("recording_id", id)
+	log.Debug("Executing recordingsIDDELETE.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.RecordingDelete(c.Request.Context(), &u, id)
+	if err != nil {
+		log.Errorf("Could not get a recording info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -17,7 +18,131 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestCallCreate(t *testing.T) {
+func Test_callGet(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer *cscustomer.Customer
+		callID   uuid.UUID
+
+		responseCall *cmcall.Call
+	}{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
+			&cmcall.Call{
+				ID:         uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				TMDelete:   defaultTimestamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+
+			res, err := h.callGet(ctx, tt.customer, tt.callID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseCall) {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.responseCall, res)
+			}
+		})
+	}
+}
+
+func Test_callGet_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer *cscustomer.Customer
+		callID   uuid.UUID
+
+		responseCall      *cmcall.Call
+		responseCallError error
+	}{
+		{
+			name: "call get returns an error",
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			callID: uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
+
+			responseCallError: fmt.Errorf(""),
+		},
+		{
+			name: "deleted call info",
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			callID: uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
+
+			responseCall: &cmcall.Call{
+				ID:         uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				TMDelete:   "2020-09-20 03:23:20.995000",
+			},
+		},
+		{
+			name: "user has no permission",
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("bf255b00-8f37-11ed-8505-ebf5b5e2e761"),
+			},
+			callID: uuid.FromStringOrNil("bf41540e-8f37-11ed-8355-4be7200818a7"),
+
+			responseCall: &cmcall.Call{
+				ID:         uuid.FromStringOrNil("bf41540e-8f37-11ed-8355-4be7200818a7"),
+				CustomerID: uuid.FromStringOrNil("d4c81cfe-8f37-11ed-9504-9f06f39cf4f0"),
+				TMDelete:   defaultTimestamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, tt.responseCallError)
+
+			_, err := h.callGet(ctx, tt.customer, tt.callID)
+			if err == nil {
+				t.Error("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_CallCreate(t *testing.T) {
 
 	tests := []struct {
 		name         string
@@ -177,11 +302,13 @@ func Test_CallDelete(t *testing.T) {
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("eccc7bf4-8926-11ed-b638-0fcef48a97d2"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				TMDelete:   defaultTimestamp,
 			},
 
 			&cmcall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("eccc7bf4-8926-11ed-b638-0fcef48a97d2"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}
@@ -234,11 +361,13 @@ func Test_CallHangup(t *testing.T) {
 			&cmcall.Call{
 				ID:         uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				TMDelete:   defaultTimestamp,
 			},
 
 			&cmcall.WebhookMessage{
 				ID:         uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				TMDelete:   defaultTimestamp,
 			},
 		},
 	}

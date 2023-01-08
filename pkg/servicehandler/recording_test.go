@@ -94,3 +94,64 @@ func TestRecordingGets(t *testing.T) {
 		})
 	}
 }
+
+func Test_RecordingDelete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer    *cscustomer.Customer
+		recordingID uuid.UUID
+
+		responseRecording *cmrecording.Recording
+		expectRes         *cmrecording.WebhookMessage
+	}{
+		{
+			"normal",
+
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
+
+			&cmrecording.Recording{
+				ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				TMDelete:   defaultTimestamp,
+			},
+
+			&cmrecording.WebhookMessage{
+				ID:       uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
+				TMDelete: defaultTimestamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingDelete(ctx, tt.recordingID).Return(tt.responseRecording, nil)
+
+			res, err := h.RecordingDelete(ctx, tt.customer, tt.recordingID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

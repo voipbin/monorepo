@@ -2,12 +2,10 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 )
 
 // RecordingfileGet returns downloadable url for recording
@@ -20,19 +18,14 @@ func (h *serviceHandler) RecordingfileGet(ctx context.Context, u *cscustomer.Cus
 		},
 	)
 
-	// get recording info from call-manager
-	recording, err := h.reqHandler.CallV1RecordingGet(ctx, id)
+	// get r info from call-manager
+	r, err := h.recordingGet(ctx, u, id)
 	if err != nil {
 		// no call info found
 		log.Infof("Could not get call info. err: %v", err)
 		return "", err
 	}
-
-	// check the recording ownership
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != recording.CustomerID {
-		log.Error("The user has no permission for this recording.")
-		return "", fmt.Errorf("user has no permission")
-	}
+	log.WithField("recording", r).Debugf("Found recording info. recording_id: %s", r.ID)
 
 	// get download url from storage-manager
 	log.Debugf("Getting recording file. recording: %s", id)
