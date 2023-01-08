@@ -2,6 +2,7 @@ package storagehandler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -30,12 +31,12 @@ func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucke
 	// compose files
 	targetpaths := []string{}
 	for _, filename := range r.Filenames {
-		tmp := bucketDirectoryRecording + "/" + filename
+		tmp := directoryRecording + "/" + filename
 		targetpaths = append(targetpaths, tmp)
 	}
 
 	// get download uri and filepath
-	bucketPath, downloadURI, err := h.bucketHandler.GetDownloadURI(ctx, h.bucketNameMedia, targetpaths, time.Hour*24)
+	bucketPath, downloadURI, err := h.fileHandler.GetDownloadURI(ctx, h.bucketNameMedia, targetpaths, time.Hour*24)
 	if err != nil {
 		log.Errorf("Could not get download link. err: %v", err)
 		return nil, err
@@ -71,15 +72,16 @@ func (h *storageHandler) RecordingDelete(ctx context.Context, id uuid.UUID) erro
 	}
 
 	for _, filename := range r.Filenames {
-
-		if !h.bucketHandler.IsExist(ctx, h.bucketNameMedia, filename) {
-			log.Debugf("The file is already deleted. filename: %s", filename)
+		filepath := fmt.Sprintf("recording/%s", filename)
+		log.Debugf("Deleting recording file. bucket_name: %s, filepath: %s", h.bucketNameMedia, filepath)
+		if !h.fileHandler.IsExist(ctx, h.bucketNameMedia, filepath) {
+			log.Debugf("The file is already deleted. bucket: %s, filepath: %s", h.bucketNameMedia, filepath)
 			continue
 		}
 
 		// delete
-		if errDelete := h.bucketHandler.Delete(ctx, h.bucketNameMedia, filename); errDelete != nil {
-			log.Errorf("Could not delete recording file. filename: %s, err: %v", filename, errDelete)
+		if errDelete := h.fileHandler.Delete(ctx, h.bucketNameMedia, filepath); errDelete != nil {
+			log.Errorf("Could not delete recording file. filepath: %s, err: %v", filepath, errDelete)
 			return errDelete
 		}
 	}

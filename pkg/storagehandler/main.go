@@ -19,25 +19,23 @@ type StorageHandler interface {
 }
 
 type storageHandler struct {
-	reqHandler requesthandler.RequestHandler
-
-	bucketHandler filehandler.FileHandler
+	reqHandler  requesthandler.RequestHandler
+	fileHandler filehandler.FileHandler
 
 	bucketNameMedia string
 }
 
 // fixed bucket directories
 const (
-	bucketDirectoryRecording = "recording"
+	directoryRecording = "recording"
 )
 
 // NewStorageHandler creates StorageHandler
-func NewStorageHandler(reqHandler requesthandler.RequestHandler, bucketHandler filehandler.FileHandler, bucketNameMedia string) StorageHandler {
+func NewStorageHandler(reqHandler requesthandler.RequestHandler, fileHandler filehandler.FileHandler, bucketNameMedia string) StorageHandler {
 
 	h := &storageHandler{
-		reqHandler: reqHandler,
-
-		bucketHandler: bucketHandler,
+		reqHandler:  reqHandler,
+		fileHandler: fileHandler,
 
 		bucketNameMedia: bucketNameMedia,
 	}

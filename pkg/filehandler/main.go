@@ -70,11 +70,11 @@ func NewFileHandler(credentialPath string, projectID string, bucketMedia string,
 		utilHandler: utilhandler.NewUtilHandler(),
 		client:      client,
 
-		projectID: projectID,
-		// bucketMedia: bucketMedia,
-		bucketTmp:  bucketTmp,
-		accessID:   conf.Email,
-		privateKey: conf.PrivateKey,
+		projectID:   projectID,
+		bucketMedia: bucketMedia,
+		bucketTmp:   bucketTmp,
+		accessID:    conf.Email,
+		privateKey:  conf.PrivateKey,
 	}
 
 	return h

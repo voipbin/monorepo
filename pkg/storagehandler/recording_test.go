@@ -2,6 +2,7 @@ package storagehandler
 
 import (
 	"context"
+	"fmt"
 	reflect "reflect"
 	"testing"
 	"time"
@@ -76,8 +77,8 @@ func Test_RecordingGet(t *testing.T) {
 			mockBucket := filehandler.NewMockFileHandler(mc)
 
 			h := storageHandler{
-				reqHandler:    mockReq,
-				bucketHandler: mockBucket,
+				reqHandler:  mockReq,
+				fileHandler: mockBucket,
 
 				bucketNameMedia: "media",
 			}
@@ -138,8 +139,8 @@ func Test_RecordingDelete(t *testing.T) {
 			mockBucket := filehandler.NewMockFileHandler(mc)
 
 			h := storageHandler{
-				reqHandler:    mockReq,
-				bucketHandler: mockBucket,
+				reqHandler:  mockReq,
+				fileHandler: mockBucket,
 
 				bucketNameMedia: "media",
 			}
@@ -149,8 +150,9 @@ func Test_RecordingDelete(t *testing.T) {
 			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
 
 			for _, filename := range tt.responseRecording.Filenames {
-				mockBucket.EXPECT().IsExist(ctx, h.bucketNameMedia, filename).Return(true)
-				mockBucket.EXPECT().Delete(ctx, h.bucketNameMedia, filename).Return(nil)
+				filepath := fmt.Sprintf("recording/%s", filename)
+				mockBucket.EXPECT().IsExist(ctx, h.bucketNameMedia, filepath).Return(true)
+				mockBucket.EXPECT().Delete(ctx, h.bucketNameMedia, filepath).Return(nil)
 			}
 
 			err := h.RecordingDelete(ctx, tt.recordingID)
