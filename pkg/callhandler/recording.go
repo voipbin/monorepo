@@ -114,11 +114,14 @@ func (h *callHandler) RecordingDelete(ctx context.Context, recordingID uuid.UUID
 		return nil, errDelete
 	}
 
-	// send request to delete recording files
-	if errDelete := h.reqHandler.StorageV1RecordingDelete(ctx, recordingID); errDelete != nil {
-		log.Errorf("Could not delete the recording file. err: %v", errDelete)
-		return nil, errDelete
-	}
+	go func() {
+		// send request to delete recording files
+		log.Debugf("Deleting recording files. recording_id: %s", recordingID)
+		if errDelete := h.reqHandler.StorageV1RecordingDelete(ctx, recordingID); errDelete != nil {
+			log.Errorf("Could not delete the recording files. err: %v", errDelete)
+			return
+		}
+	}()
 
 	res, err := h.db.RecordingGet(ctx, recordingID)
 	if err != nil {
