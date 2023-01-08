@@ -137,7 +137,17 @@ func (h *fileHandler) generateDownloadURI(bucketName string, target string, expi
 
 // IsExist returns true if the given file exist
 func (h *fileHandler) getAttrs(ctx context.Context, bucketName string, filepath string) (*storage.ObjectAttrs, error) {
-	return h.client.Bucket(h.bucketTmp).Object(filepath).Attrs(ctx)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "getAttrs",
+	})
+
+	res, err := h.client.Bucket(bucketName).Object(filepath).Attrs(ctx)
+	if err != nil {
+		log.Errorf("Could not get attrs. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // IsExist returns true if the given file exist
@@ -156,7 +166,7 @@ func (h *fileHandler) Delete(ctx context.Context, bucketName string, filepath st
 		"func": "Delete",
 	})
 
-	fo := h.client.Bucket(h.bucketTmp).Object(filepath)
+	fo := h.client.Bucket(bucketName).Object(filepath)
 	if errDelete := fo.Delete(ctx); errDelete != nil {
 		log.Errorf("Could not delete the file. err: %v", errDelete)
 		return errDelete
