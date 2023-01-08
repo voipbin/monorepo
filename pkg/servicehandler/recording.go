@@ -34,6 +34,11 @@ func (h *serviceHandler) recordingGet(ctx context.Context, u *cscustomer.Custome
 		return nil, fmt.Errorf("user has no permission")
 	}
 
+	if res.TMDelete < defaultTimestamp {
+		log.Debugf("Deleted recording. recording_id: %s", res.ID)
+		return nil, fmt.Errorf("not found")
+	}
+
 	return res, nil
 }
 
@@ -85,5 +90,33 @@ func (h *serviceHandler) RecordingGets(ctx context.Context, u *cscustomer.Custom
 		res = append(res, record)
 	}
 
+	return res, nil
+}
+
+// RecordingDelete sends a request to call-manager
+// to deleting a recording.
+// it returns deleted recording info if it succeed.
+func (h *serviceHandler) RecordingDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "RecordingDelete",
+		"customer_id":  u.ID,
+		"username":     u.Username,
+		"recording_id": id,
+	})
+
+	r, err := h.recordingGet(ctx, u, id)
+	if err != nil {
+		log.Errorf("Could not get recording info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("recording", r).Debugf("Validated recording info. recording_id: %s", r.ID)
+
+	tmp, err := h.reqHandler.CallV1RecordingDelete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete the recording. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }

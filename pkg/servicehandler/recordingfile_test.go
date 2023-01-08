@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestRecordingfileGet(t *testing.T) {
+func Test_RecordingfileGet(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -44,6 +44,7 @@ func TestRecordingfileGet(t *testing.T) {
 				Filenames: []string{
 					"call_25b4a290-0f25-4b50-87bd-7174638ac906_2021-01-26T02:17:05Z",
 				},
+				TMDelete: defaultTimestamp,
 			},
 			&smbucketfile.BucketFile{
 				DownloadURI: "test.com/downloadlink.wav",
