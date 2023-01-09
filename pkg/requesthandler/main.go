@@ -415,7 +415,8 @@ type RequestHandler interface {
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
-	CallV1CallSetDigits(ctx context.Context, callID uuid.UUID, digits string) error
+	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
+	CallV1CallSetRecordingID(ctx context.Context, callID uuid.UUID, recordingID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 
 	// call-manager channel

@@ -830,18 +830,33 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallRemoveChainedCall(ctx, callI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallRemoveChainedCall", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallRemoveChainedCall), ctx, callID, chainedCallID)
 }
 
-// CallV1CallSetDigits mocks base method.
-func (m *MockRequestHandler) CallV1CallSetDigits(ctx context.Context, callID uuid.UUID, digits string) error {
+// CallV1CallSendDigits mocks base method.
+func (m *MockRequestHandler) CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallSetDigits", ctx, callID, digits)
+	ret := m.ctrl.Call(m, "CallV1CallSendDigits", ctx, callID, digits)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CallV1CallSetDigits indicates an expected call of CallV1CallSetDigits.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallSetDigits(ctx, callID, digits interface{}) *gomock.Call {
+// CallV1CallSendDigits indicates an expected call of CallV1CallSendDigits.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallSendDigits(ctx, callID, digits interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSetDigits", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSetDigits), ctx, callID, digits)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSendDigits", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSendDigits), ctx, callID, digits)
+}
+
+// CallV1CallSetRecordingID mocks base method.
+func (m *MockRequestHandler) CallV1CallSetRecordingID(ctx context.Context, callID, recordingID uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallSetRecordingID", ctx, callID, recordingID)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1CallSetRecordingID indicates an expected call of CallV1CallSetRecordingID.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallSetRecordingID(ctx, callID, recordingID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSetRecordingID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSetRecordingID), ctx, callID, recordingID)
 }
 
 // CallV1CallsCreate mocks base method.
