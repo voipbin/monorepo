@@ -238,6 +238,7 @@ type RequestHandler interface {
 	AstBridgeDelete(ctx context.Context, asteriskID, bridgeID string) error
 	AstBridgeGet(ctx context.Context, asteriskID, bridgeID string) (*cmbridge.Bridge, error)
 	AstBridgeRemoveChannel(ctx context.Context, asteriskID, bridgeID, channelID string) error
+	AstBridgeRecord(ctx context.Context, asteriskID string, bridgeID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 
 	// asterisk channels
 	AstChannelAnswer(ctx context.Context, asteriskID, channelID string) error

@@ -91,3 +91,68 @@ func Test_AstBridgeGet(t *testing.T) {
 		})
 	}
 }
+
+func Test_AstBridgeRecord(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		asterisk string
+		bridgeID string
+		filename string
+		format   string
+		duration int
+		silence  int
+		beep     bool
+		endKey   string
+		ifExist  string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"67708fbc-904d-11ed-beba-4f35dd737a8d",
+			"conference_67708fbc-904d-11ed-beba-4f35dd737a8d_2020-05-17T10:24:54.396+0000",
+			"wav",
+			0,
+			0,
+			false,
+			"",
+			"fail",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:      "/ari/bridges/67708fbc-904d-11ed-beba-4f35dd737a8d/record",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"conference_67708fbc-904d-11ed-beba-4f35dd737a8d_2020-05-17T10:24:54.396+0000","format":"wav","maxDurationSeconds":0,"maxSilenceSeconds":0,"beep":false,"terminateOn":"","ifExists":"fail"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.AstBridgeRecord(context.Background(), tt.asterisk, tt.bridgeID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExist)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

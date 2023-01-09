@@ -136,3 +136,40 @@ func (r *requestHandler) AstBridgeRemoveChannel(ctx context.Context, asteriskID,
 	}
 	return nil
 }
+
+// AstBridgeRecord sends the request for recording the given bridge
+func (r *requestHandler) AstBridgeRecord(ctx context.Context, asteriskID string, bridgeID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error {
+	url := fmt.Sprintf("/ari/bridges/%s/record", bridgeID)
+
+	type Data struct {
+		Name               string `json:"name"`
+		Format             string `json:"format"`
+		MaxDurationSeconds int    `json:"maxDurationSeconds"`
+		MaxSilenceSeconds  int    `json:"maxSilenceSeconds"`
+		Beep               bool   `json:"beep"`
+		TerminateOn        string `json:"terminateOn"`
+		IfExists           string `json:"ifExists"`
+	}
+
+	m, err := json.Marshal(Data{
+		Name:               filename,
+		Format:             format,
+		MaxDurationSeconds: duration,
+		MaxSilenceSeconds:  silence,
+		Beep:               beep,
+		TerminateOn:        endKey,
+		IfExists:           ifExists,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstBridgesRemoveChannel, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
