@@ -406,10 +406,10 @@ func (r *requestHandler) CallV1CallGetDigits(ctx context.Context, callID uuid.UU
 	return resData.Digits, nil
 }
 
-// CallV1CallSetDigits sends a request to call-manager
-// to sets the digits of the call.
+// CallV1CallSendDigits sends a request to call-manager
+// to send the digits to the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallSetDigits(ctx context.Context, callID uuid.UUID, digits string) error {
+func (r *requestHandler) CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error {
 	uri := fmt.Sprintf("/v1/calls/%s/digits", callID)
 
 	reqData := &cmrequest.V1DataCallsIDDigitsPost{
@@ -433,4 +433,38 @@ func (r *requestHandler) CallV1CallSetDigits(ctx context.Context, callID uuid.UU
 	}
 
 	return nil
+}
+
+// CallV1CallSetRecordingID sends a request to call-manager
+// to sets the recording_id of the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallSetRecordingID(ctx context.Context, callID uuid.UUID, recordingID uuid.UUID) (*cmcall.Call, error) {
+	uri := fmt.Sprintf("/v1/calls/%s/recording_id", callID)
+
+	reqData := &cmrequest.V1DataCallsIDRecordingIDPut{
+		RecordingID: recordingID,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var c cmcall.Call
+	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
+		return nil, err
+	}
+
+	return &c, nil
 }

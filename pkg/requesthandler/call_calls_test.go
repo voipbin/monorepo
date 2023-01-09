@@ -896,7 +896,7 @@ func Test_CallV1CallGetDigits(t *testing.T) {
 	}
 }
 
-func Test_CallV1CallSetDigits(t *testing.T) {
+func Test_CallV1CallSendDigits(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -940,8 +940,71 @@ func Test_CallV1CallSetDigits(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallSetDigits(ctx, tt.callID, tt.digits); err != nil {
+			if err := reqHandler.CallV1CallSendDigits(ctx, tt.callID, tt.digits); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallSetRecordingID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID        uuid.UUID
+		recordingID   uuid.UUID
+		expectRequest *rabbitmqhandler.Request
+
+		response *rabbitmqhandler.Response
+
+		expectRes *cmcall.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("bf25f478-8fde-11ed-a4f2-b31c3a56afd1"),
+			uuid.FromStringOrNil("bef36116-8fde-11ed-ac7b-a71c9ce70a61"),
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/bf25f478-8fde-11ed-a4f2-b31c3a56afd1/recording_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"recording_id":"bef36116-8fde-11ed-ac7b-a71c9ce70a61"}`),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"bf25f478-8fde-11ed-a4f2-b31c3a56afd1"}`),
+			},
+
+			&cmcall.Call{
+				ID: uuid.FromStringOrNil("bf25f478-8fde-11ed-a4f2-b31c3a56afd1"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1CallSetRecordingID(ctx, tt.callID, tt.recordingID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
