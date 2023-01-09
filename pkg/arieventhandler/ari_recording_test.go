@@ -2,6 +2,7 @@ package arieventhandler
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -15,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
 func Test_EventHandlerRecordingStarted(t *testing.T) {
@@ -23,15 +25,13 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 		name  string
 		event *ari.RecordingStarted
 
-		responseCall      *call.Call
 		responseRecording *recording.Recording
 
 		expectRecordingName string
-		timestamp           string
 	}{
 		{
-			"normal",
-			&ari.RecordingStarted{
+			name: "normal",
+			event: &ari.RecordingStarted{
 				Event: ari.Event{
 					Type:        ari.EventTypeRecordingStarted,
 					Application: "voipbin",
@@ -48,10 +48,7 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 					TargetURI:       "channel:test_call",
 				},
 			},
-			&call.Call{
-				ID: uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
-			},
-			&recording.Recording{
+			responseRecording: &recording.Recording{
 				ID:            uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
@@ -60,8 +57,37 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 				},
 			},
 
-			"call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z",
-			"2020-02-10T13:08:18.888",
+			expectRecordingName: "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z",
+		},
+		{
+			name: "recording name end with _out",
+			event: &ari.RecordingStarted{
+				Event: ari.Event{
+					Type:        ari.EventTypeRecordingStarted,
+					Application: "voipbin",
+					Timestamp:   "2020-02-10T13:08:18.888",
+					AsteriskID:  "42:01:0a:84:00:12",
+				},
+				Recording: ari.RecordingLive{
+					Name:            "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z_out",
+					Format:          "wav",
+					State:           "recording",
+					SilenceDuration: 0,
+					Duration:        0,
+					TalkingDuration: 0,
+					TargetURI:       "channel:test_call",
+				},
+			},
+			responseRecording: &recording.Recording{
+				ID:            uuid.FromStringOrNil("d5e795ec-612b-11eb-b1f8-87092b928937"),
+				ReferenceType: recording.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("e31efb5e-1f3c-11ec-beea-af98446e3b8e"),
+				Filenames: []string{
+					"call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z_out.wav",
+				},
+			},
+
+			expectRecordingName: "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z",
 		},
 	}
 
@@ -75,22 +101,22 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockSvc := callhandler.NewMockCallHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := eventHandler{
-				db:            mockDB,
-				rabbitSock:    mockSock,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				callHandler:   mockSvc,
+				db:               mockDB,
+				rabbitSock:       mockSock,
+				reqHandler:       mockReq,
+				notifyHandler:    mockNotify,
+				callHandler:      mockSvc,
+				recordingHandler: mockRecording,
 			}
 
 			ctx := context.Background()
-
-			mockDB.EXPECT().RecordingGetByRecordingName(gomock.Any(), tt.expectRecordingName).Return(tt.responseRecording, nil)
-			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.responseRecording.ID, recording.StatusRecording, tt.timestamp).Return(nil)
-			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.responseRecording.ReferenceID).Return(tt.responseCall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, EventTypeRecordingStarted, tt.responseRecording)
+			if strings.HasSuffix(tt.event.Recording.Name, "_in") {
+				mockDB.EXPECT().RecordingGetByRecordingName(gomock.Any(), tt.expectRecordingName).Return(tt.responseRecording, nil)
+				mockRecording.EXPECT().Started(ctx, tt.responseRecording.ID).Return(tt.responseRecording, nil)
+			}
 
 			if err := h.EventHandlerRecordingStarted(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -158,102 +184,21 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockSvc := callhandler.NewMockCallHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := eventHandler{
-				db:            mockDB,
-				rabbitSock:    mockSock,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				callHandler:   mockSvc,
+				db:               mockDB,
+				rabbitSock:       mockSock,
+				reqHandler:       mockReq,
+				notifyHandler:    mockNotify,
+				callHandler:      mockSvc,
+				recordingHandler: mockRecording,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().RecordingGetByRecordingName(gomock.Any(), tt.expectRecordingName).Return(tt.responseRecording, nil)
-			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.responseRecording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
-			mockDB.EXPECT().CallSetRecordingID(gomock.Any(), tt.responseRecording.ReferenceID, uuid.Nil).Return(nil)
-			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.responseRecording.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, EventTypeRecordingFinished, tt.responseRecording)
-
-			if err := h.EventHandlerRecordingFinished(ctx, tt.event); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_EventHandlerRecordingFinished_conference(t *testing.T) {
-
-	tests := []struct {
-		name      string
-		event     *ari.RecordingFinished
-		call      *call.Call
-		recording *recording.Recording
-		timestamp string
-	}{
-		{
-			"normal",
-			&ari.RecordingFinished{
-				Event: ari.Event{
-					Type:        ari.EventTypeRecordingFinished,
-					Application: "voipbin",
-					Timestamp:   "2020-02-10T13:08:40.888",
-					AsteriskID:  "42:01:0a:84:00:12",
-				},
-				Recording: ari.RecordingLive{
-					Name:            "conference_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888_in",
-					Format:          "wav",
-					State:           "done",
-					SilenceDuration: 0,
-					Duration:        351,
-					TalkingDuration: 0,
-					TargetURI:       "channel:test_call",
-				},
-			},
-			&call.Call{
-				ID: uuid.FromStringOrNil("037b88fe-1547-11ec-836c-235bd80d876e"),
-			},
-			&recording.Recording{
-				ID: uuid.FromStringOrNil("34585192-1546-11ec-b592-63304ff57c57"),
-				Filenames: []string{
-					"something_filename_in.wav",
-				},
-				ReferenceType: recording.ReferenceTypeConference,
-				ReferenceID:   uuid.FromStringOrNil("037b88fe-1547-11ec-836c-235bd80d876e"),
-			},
-			"2020-02-10T13:08:40.888",
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockSvc := callhandler.NewMockCallHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := eventHandler{
-				db:            mockDB,
-				rabbitSock:    mockSock,
-				reqHandler:    mockReq,
-				callHandler:   mockSvc,
-				notifyHandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().RecordingGetByRecordingName(gomock.Any(), gomock.Any()).Return(tt.recording, nil)
-			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.recording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
-			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.recording.ReferenceID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, EventTypeRecordingFinished, tt.recording)
-			mockDB.EXPECT().ConfbridgeSetRecordID(gomock.Any(), tt.recording.ReferenceID, uuid.Nil).Return(nil)
+			mockRecording.EXPECT().Stopped(ctx, tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			if err := h.EventHandlerRecordingFinished(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

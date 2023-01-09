@@ -304,51 +304,23 @@ func (h *handler) RecordingGets(ctx context.Context, customerID uuid.UUID, size 
 }
 
 // RecordingSetStatus sets the record's status
-func (h *handler) RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error {
+func (h *handler) RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status) error {
 
 	switch status {
 
 	case recording.StatusRecording:
-		return h.recordingSetStatusRecording(ctx, id, timestamp)
+		return h.recordingSetStatusRecording(ctx, id)
 
 	case recording.StatusEnd:
-		return h.recordingSetStatusEnd(ctx, id, timestamp)
-
-	case recording.StatusInitiating:
-		return h.recordingSetStatusInitiating(ctx, id)
+		return h.recordingSetStatusEnd(ctx, id)
 
 	default:
 		return fmt.Errorf("could not found correct status handler")
 	}
 }
 
-// recordingSetStatusInitiating sets the record's status to initiating
-func (h *handler) recordingSetStatusInitiating(ctx context.Context, id uuid.UUID) error {
-
-	// prepare
-	q := `
-	update
-		recordings
-	set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, recording.StatusInitiating, h.utilHandler.GetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. recordingSetStatusRecording. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.recordingUpdateToCache(ctx, id)
-
-	return nil
-}
-
 // recordingSetStatusRecording sets the record's status recording
-func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID, timestamp string) error {
+func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID) error {
 
 	// prepare
 	q := `
@@ -362,7 +334,8 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID,
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recording.StatusRecording, timestamp, h.utilHandler.GetCurTime(), id.Bytes())
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, recording.StatusRecording, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusRecording. err: %v", err)
 	}
@@ -374,7 +347,7 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID,
 }
 
 // recordingSetStatusEnd sets the record's status to end
-func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID, timestamp string) error {
+func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID) error {
 
 	// prepare
 	q := `
@@ -388,7 +361,8 @@ func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID, times
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recording.StatusEnd, timestamp, h.utilHandler.GetCurTime(), id.Bytes())
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, recording.StatusEnd, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusEnd. err: %v", err)
 	}

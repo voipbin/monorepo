@@ -14,7 +14,6 @@ import (
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -383,66 +382,6 @@ func (m *MockCallHandler) HangupWithReason(ctx context.Context, c *call.Call, re
 func (mr *MockCallHandlerMockRecorder) HangupWithReason(ctx, c, reason, hangupBy, timestamp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangupWithReason", reflect.TypeOf((*MockCallHandler)(nil).HangupWithReason), ctx, c, reason, hangupBy, timestamp)
-}
-
-// RecordingCreate mocks base method.
-func (m *MockCallHandler) RecordingCreate(ctx context.Context, id, customerID uuid.UUID, referenceType recording.ReferenceType, referenceID uuid.UUID, format, recordingName string, filenames []string, asteriskID string, channelIDs []string) (*recording.Recording, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingCreate", ctx, id, customerID, referenceType, referenceID, format, recordingName, filenames, asteriskID, channelIDs)
-	ret0, _ := ret[0].(*recording.Recording)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RecordingCreate indicates an expected call of RecordingCreate.
-func (mr *MockCallHandlerMockRecorder) RecordingCreate(ctx, id, customerID, referenceType, referenceID, format, recordingName, filenames, asteriskID, channelIDs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingCreate", reflect.TypeOf((*MockCallHandler)(nil).RecordingCreate), ctx, id, customerID, referenceType, referenceID, format, recordingName, filenames, asteriskID, channelIDs)
-}
-
-// RecordingDelete mocks base method.
-func (m *MockCallHandler) RecordingDelete(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingDelete", ctx, recordingID)
-	ret0, _ := ret[0].(*recording.Recording)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RecordingDelete indicates an expected call of RecordingDelete.
-func (mr *MockCallHandlerMockRecorder) RecordingDelete(ctx, recordingID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingDelete", reflect.TypeOf((*MockCallHandler)(nil).RecordingDelete), ctx, recordingID)
-}
-
-// RecordingGet mocks base method.
-func (m *MockCallHandler) RecordingGet(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingGet", ctx, recordingID)
-	ret0, _ := ret[0].(*recording.Recording)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RecordingGet indicates an expected call of RecordingGet.
-func (mr *MockCallHandlerMockRecorder) RecordingGet(ctx, recordingID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockCallHandler)(nil).RecordingGet), ctx, recordingID)
-}
-
-// RecordingGets mocks base method.
-func (m *MockCallHandler) RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingGets", ctx, customerID, size, token)
-	ret0, _ := ret[0].([]*recording.Recording)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RecordingGets indicates an expected call of RecordingGets.
-func (mr *MockCallHandlerMockRecorder) RecordingGets(ctx, customerID, size, token interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockCallHandler)(nil).RecordingGets), ctx, customerID, size, token)
 }
 
 // StartCallHandle mocks base method.

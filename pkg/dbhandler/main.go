@@ -115,7 +115,7 @@ type DBHandler interface {
 	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingGetByRecordingName(ctx context.Context, recordingName string) (*recording.Recording, error)
 	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
-	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error
+	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status) error
 }
 
 // handler database handler

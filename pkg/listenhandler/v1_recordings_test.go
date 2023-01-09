@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
 func Test_processV1RecordingsGet(t *testing.T) {
@@ -60,13 +61,15 @@ func Test_processV1RecordingsGet(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
-				callHandler: mockCall,
+				rabbitSock:       mockSock,
+				callHandler:      mockCall,
+				recordingHandler: mockRecording,
 			}
 
-			mockCall.EXPECT().RecordingGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.recordings, nil)
+			mockRecording.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.recordings, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -121,13 +124,15 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
-				callHandler: mockCall,
+				rabbitSock:       mockSock,
+				callHandler:      mockCall,
+				recordingHandler: mockRecording,
 			}
 
-			mockCall.EXPECT().RecordingGet(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
+			mockRecording.EXPECT().Get(gomock.Any(), tt.recording.ID).Return(tt.recording, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -184,13 +189,15 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:  mockSock,
-				callHandler: mockCall,
+				rabbitSock:       mockSock,
+				callHandler:      mockCall,
+				recordingHandler: mockRecording,
 			}
 
-			mockCall.EXPECT().RecordingDelete(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Delete(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

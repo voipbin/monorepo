@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	db "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
 // ARIEventHandler intreface for ARI request handler
@@ -55,13 +56,8 @@ type eventHandler struct {
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
 	channelHandler    channelhandler.ChannelHandler
 	bridgeHandler     bridgehandler.BridgeHandler
+	recordingHandler  recordinghandler.RecordingHandler
 }
-
-// list of event types
-const (
-	EventTypeRecordingStarted  string = "recording_started"  // recording has started
-	EventTypeRecordingFinished string = "recording_finished" // recording has finished
-)
 
 func init() {}
 
@@ -76,6 +72,7 @@ func NewEventHandler(
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
 	brideHandler bridgehandler.BridgeHandler,
+	recordingHandler recordinghandler.RecordingHandler,
 ) ARIEventHandler {
 	h := &eventHandler{
 		rabbitSock:        sock,
@@ -87,6 +84,7 @@ func NewEventHandler(
 		confbridgeHandler: confbridgeHandler,
 		channelHandler:    channelHandler,
 		bridgeHandler:     brideHandler,
+		recordingHandler:  recordingHandler,
 	}
 
 	return h

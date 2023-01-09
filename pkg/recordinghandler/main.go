@@ -28,6 +28,7 @@ type RecordingHandler interface {
 		endOfKey string,
 		duration int,
 	) (*recording.Recording, error)
+	Started(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	Stop(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	Stopped(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 }
@@ -41,6 +42,20 @@ const (
 type recordingHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
-	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+	db            dbhandler.DBHandler
+}
+
+// NewRecordingHandler returns a new RecordingHandler
+func NewRecordingHandler(
+	reqHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	db dbhandler.DBHandler,
+) RecordingHandler {
+	return &recordingHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    reqHandler,
+		notifyHandler: notifyHandler,
+		db:            db,
+	}
 }

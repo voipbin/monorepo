@@ -34,15 +34,15 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitm
 	})
 
 	log.Debug("Getting recordings.")
-	recordings, err := h.callHandler.RecordingGets(context.Background(), customerID, pageSize, pageToken)
+	tmps, err := h.recordingHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(recordings)
+	data, err := json.Marshal(tmps)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", recordings, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmps, err)
 		return simpleResponse(500), nil
 	}
 	log.Debugf("Sending result: %v", data)
@@ -70,13 +70,13 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitm
 		})
 	log.Debug("Executing processV1CallsIDGet.")
 
-	record, err := h.callHandler.RecordingGet(ctx, id)
+	tmp, err := h.recordingHandler.Get(ctx, id)
 	if err != nil {
 		return simpleResponse(404), nil
 	}
-	log.Debugf("Found record. record: %v", record)
+	log.Debugf("Found record. record: %v", tmp)
 
-	data, err := json.Marshal(record)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		return simpleResponse(404), nil
 	}
@@ -104,13 +104,13 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabb
 		})
 	log.Debug("Executing processV1RecordingsIDDelete.")
 
-	record, err := h.callHandler.RecordingDelete(ctx, id)
+	tmp, err := h.recordingHandler.Delete(ctx, id)
 	if err != nil {
 		return simpleResponse(404), nil
 	}
-	log.Debugf("Found record. record: %v", record)
+	log.Debugf("Found record. record: %v", tmp)
 
-	data, err := json.Marshal(record)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		return simpleResponse(404), nil
 	}
