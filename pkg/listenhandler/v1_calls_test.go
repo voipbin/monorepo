@@ -1158,3 +1158,92 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		id          uuid.UUID
+		recordingID uuid.UUID
+
+		responseCall *call.Call
+
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/0953474c-8fd2-11ed-a24a-7bf36392fef2/recording_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"recording_id": "09178464-8fd2-11ed-a1d7-5b5491e83cc7"}`),
+			},
+
+			uuid.FromStringOrNil("0953474c-8fd2-11ed-a24a-7bf36392fef2"),
+			uuid.FromStringOrNil("09178464-8fd2-11ed-a1d7-5b5491e83cc7"),
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("0953474c-8fd2-11ed-a24a-7bf36392fef2"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0953474c-8fd2-11ed-a24a-7bf36392fef2","customer_id":"00000000-0000-0000-0000-000000000000","asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+		{
+			"set to empty",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/0977e50c-8fd2-11ed-8684-e34a2113a8cc/recording_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"recording_id": "00000000-0000-0000-0000-000000000000"}`),
+			},
+
+			uuid.FromStringOrNil("0977e50c-8fd2-11ed-8684-e34a2113a8cc"),
+			uuid.Nil,
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("0977e50c-8fd2-11ed-8684-e34a2113a8cc"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0977e50c-8fd2-11ed-8684-e34a2113a8cc","customer_id":"00000000-0000-0000-0000-000000000000","asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().UpdateRecordingID(gomock.Any(), tt.id, tt.recordingID).Return(tt.responseCall, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

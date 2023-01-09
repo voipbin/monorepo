@@ -620,17 +620,13 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 	}
 	log.WithField("recording", r).Debugf("Created a new recording. recording_id: %s", r.ID)
 
-	// set recording id
-	if err := h.db.CallSetRecordID(ctx, c.ID, recordingID); err != nil {
-		log.Errorf("Could not set the record id to the call. err: %v", err)
-		return fmt.Errorf("could not set the record id to the call. err: %v", err)
+	// update recording id
+	tmp, err := h.UpdateRecordingID(ctx, c.ID, recordingID)
+	if err != nil {
+		log.Errorf("Could not update the recording id. err: %v", err)
+		return err
 	}
-
-	// add the recording
-	if err := h.db.CallAddRecordIDs(ctx, c.ID, recordingID); err != nil {
-		log.Errorf("Could not add the record id to the call. err: %v", err)
-		return fmt.Errorf("could not add the record id to the call. err: %v", err)
-	}
+	log.WithField("call", tmp).Debugf("Updated recording info. call_id: %s, recording_id: %s", tmp.ID, tmp.RecordingID)
 
 	// send next action request
 	if err := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); err != nil {

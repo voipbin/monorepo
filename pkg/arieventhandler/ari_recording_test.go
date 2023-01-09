@@ -171,7 +171,7 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 
 			mockDB.EXPECT().RecordingGetByRecordingName(gomock.Any(), tt.expectRecordingName).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().RecordingSetStatus(gomock.Any(), tt.responseRecording.ID, recording.StatusEnd, tt.timestamp).Return(nil)
-			mockDB.EXPECT().CallSetRecordID(gomock.Any(), tt.responseRecording.ReferenceID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallSetRecordingID(gomock.Any(), tt.responseRecording.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().RecordingGet(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.responseRecording.ReferenceID).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, EventTypeRecordingFinished, tt.responseRecording)

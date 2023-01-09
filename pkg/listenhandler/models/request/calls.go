@@ -2,9 +2,8 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // V1DataCallsPost is
@@ -79,4 +78,11 @@ type V1DataCallsIDExternalMediaPost struct {
 // /v1/calls/<id>/digits POST
 type V1DataCallsIDDigitsPost struct {
 	Digits string `json:"digits"`
+}
+
+// V1DataCallsIDRecordingIDPut is
+// v1 data type for V1DataCallsIDRecordingIDPut
+// /v1/calls/<id>/recording_id PUT
+type V1DataCallsIDRecordingIDPut struct {
+	RecordingID uuid.UUID `json:"recording_id"`
 }

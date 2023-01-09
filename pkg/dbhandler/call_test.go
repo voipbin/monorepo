@@ -1305,7 +1305,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 	}
 }
 
-func Test_CallSetRecordID(t *testing.T) {
+func Test_CallSetRecordingID(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -1402,7 +1402,7 @@ func Test_CallSetRecordID(t *testing.T) {
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
-			if err := h.CallSetRecordID(ctx, tt.call.ID, tt.reocrdID); err != nil {
+			if err := h.CallSetRecordingID(ctx, tt.call.ID, tt.reocrdID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

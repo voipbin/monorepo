@@ -37,7 +37,7 @@ type DBHandler interface {
 
 	// calls
 	CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
-	CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	CallApplicationAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error)
 	CallApplicationAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error
 	CallCreate(ctx context.Context, call *call.Call) error
@@ -59,7 +59,7 @@ type DBHandler interface {
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error
 	CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error
 	CallSetStatusRinging(ctx context.Context, id uuid.UUID) error
-	CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	CallSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	CallSetToCache(ctx context.Context, call *call.Call) error
 	CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error
 	CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
