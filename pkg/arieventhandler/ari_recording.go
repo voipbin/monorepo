@@ -4,12 +4,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
 // EventHandlerRecordingStarted handles RecordingStarted ARI event
@@ -36,25 +34,12 @@ func (h *eventHandler) EventHandlerRecordingStarted(ctx context.Context, evt int
 		return err
 	}
 
-	// update record state to recording
-	if err := h.db.RecordingSetStatus(ctx, r.ID, recording.StatusRecording, string(e.Timestamp)); err != nil {
-		log.Errorf("Could not update the recording status to recording. err: %v", err)
-		return err
-	}
-
-	tmpRecording, err := h.db.RecordingGet(ctx, r.ID)
+	tmp, err := h.recordingHandler.Started(ctx, r.ID)
 	if err != nil {
-		log.Errorf("Could not get the updated recording info. err: %v", err)
+		log.Errorf("Could not handle the recording started. err: %v", err)
 		return err
 	}
-
-	// get call info
-	c, err := h.db.CallGet(ctx, tmpRecording.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not get the call info. err: %v", err)
-		return err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, c.CustomerID, EventTypeRecordingStarted, tmpRecording)
+	log.WithField("recording", tmp).Debugf("Updated recording status. recording_id: %s", tmp.ID)
 
 	return nil
 }
@@ -91,41 +76,12 @@ func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt in
 		})
 	log.WithField("recording", r).Debugf("Executing eventHandlerRecordingFinished event. recording_id: %s", r.ID)
 
-	// update record state to end
-	if err := h.db.RecordingSetStatus(ctx, r.ID, recording.StatusEnd, string(e.Timestamp)); err != nil {
-		log.Errorf("Could not update the record status to end. err: %v", err)
-		return err
-	}
-
-	tmpRecording, err := h.db.RecordingGet(ctx, r.ID)
+	tmp, err := h.recordingHandler.Stopped(ctx, r.ID)
 	if err != nil {
-		log.Errorf("Could not get the updated recording info. err: %v", err)
+		log.Errorf("Could not stopped the recording. err: %v", err)
 		return err
 	}
-
-	c, err := h.db.CallGet(ctx, r.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not get the call info. err: %v", err)
-		return err
-	}
-
-	h.notifyHandler.PublishWebhookEvent(ctx, c.CustomerID, EventTypeRecordingFinished, tmpRecording)
-
-	// set empty recordID
-	switch r.ReferenceType {
-	case recording.ReferenceTypeCall:
-		if err := h.db.CallSetRecordingID(ctx, r.ReferenceID, uuid.Nil); err != nil {
-			log.Errorf("Could not set call record id. err: %v", err)
-		}
-
-	case recording.ReferenceTypeConference:
-		if err := h.db.ConfbridgeSetRecordID(ctx, r.ReferenceID, uuid.Nil); err != nil {
-			log.Errorf("Could not get conference record id. err: %v", err)
-		}
-
-	default:
-		log.Errorf("Could not find correct tech type for recording. parse: %v", r.ReferenceType)
-	}
+	log.WithField("recording", tmp).Debugf("Updated recording info. recording_info: %s", tmp.ID)
 
 	return nil
 }

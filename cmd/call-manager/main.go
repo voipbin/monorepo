@@ -25,6 +25,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/subscribehandler"
 )
 
@@ -152,8 +153,9 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, bridgeHandler)
-	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler)
-	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler)
+	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db)
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, recordingHandler)
+	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 
 	// run ari event listener
 	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, ariEventHandler); err != nil {
@@ -161,7 +163,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}
 
 	// run request listener
-	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler, channelHandler); err != nil {
+	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler); err != nil {
 		return err
 	}
 
@@ -186,8 +188,9 @@ func runRequestListen(
 	callHandler callhandler.CallHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
+	recordingHandler recordinghandler.RecordingHandler,
 ) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

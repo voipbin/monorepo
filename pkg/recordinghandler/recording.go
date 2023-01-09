@@ -77,8 +77,9 @@ func (h *recordingHandler) createReferenceTypeCall(
 		channelIDs = append(channelIDs, channelID)
 
 		// set app args
-		appArgs := fmt.Sprintf("context=%s,call_id=%s,recording_id=%s,recording_name=%s,direction=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
+		appArgs := fmt.Sprintf("context=%s,reference_type=%s,reference_id=%s,recording_id=%s,recording_name=%s,direction=%s,format=%s,end_of_silence=%d,end_of_key=%s,duration=%d",
 			ContextRecording,
+			recording.ReferenceTypeCall,
 			c.ID,
 			id,
 			recordingName,
@@ -128,6 +129,34 @@ func (h *recordingHandler) createReferenceTypeCall(
 		return nil, err
 	}
 
+	cc, err := h.reqHandler.CallV1CallSetRecordingID(ctx, res.ReferenceID, res.ID)
+	if err != nil {
+		log.Errorf("Could not update the call's recording id. err: %v", err)
+		return nil, err
+	}
+	log.WithField("call", cc).Debugf("Updated call's recording id. call_id: %s", cc.ID)
+
+	return res, nil
+}
+
+// Started updates recording's status to the recording and notify the event
+func (h *recordingHandler) Started(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "Started",
+		"recording_id": id,
+	})
+	if errStatus := h.db.RecordingSetStatus(ctx, id, recording.StatusRecording); errStatus != nil {
+		log.Errorf("Could not update the recording status. err: %v", errStatus)
+		return nil, errStatus
+	}
+
+	res, err := h.db.RecordingGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the updated recording info. err: %v", err)
+		return nil, err
+	}
+
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, recording.EventTypeRecordingStarted, res)
 	return res, nil
 }
 
@@ -196,58 +225,43 @@ func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) (*recording.R
 	return res, nil
 }
 
-// Stop stops the recording
+// Stopped handels stopped recording
 func (h *recordingHandler) Stopped(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "Stop",
+		"func":         "Stopped",
 		"recording_id": id,
 	})
 
 	// update recording status
-	if errStatus := h.db.RecordingSetStatus(ctx, id, recording.StatusEnd, h.utilHandler.GetCurTime()); errStatus != nil {
+	if errStatus := h.db.RecordingSetStatus(ctx, id, recording.StatusEnd); errStatus != nil {
 		log.Errorf("Could not update recording status. err: %v", errStatus)
 		return nil, errStatus
 	}
 
-	// send call request to set recording id to empty
 	res, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated recording info. err: %v", err)
+		log.Errorf("Could not get recording info. err: %v", err)
 		return nil, err
 	}
 
+	switch res.ReferenceType {
+	case recording.ReferenceTypeCall:
+		tmp, err := h.reqHandler.CallV1CallSetRecordingID(ctx, res.ReferenceID, uuid.Nil)
+		if err != nil {
+			log.Errorf("Could not update the call's recording id. call_id: %s, err: %v", res.ReferenceID, err)
+			return nil, err
+		}
+		log.WithField("call", tmp).Debugf("Updated call's recording id. call_id: %s", tmp.ID)
+
+	default:
+		// nothing todo
+		log.Infof("Unsupported reference type. reference_type: %s, reference_id: %s", res.ReferenceType, res.ReferenceID)
+		return nil, fmt.Errorf("unsupported reference type")
+	}
+
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, recording.EventTypeRecordingFinished, res)
+
 	return res, nil
-
-	// r, err := h.Get(ctx, id)
-	// if err != nil {
-	// 	log.Errorf("Could not get recording info. err: %v", err)
-	// 	return nil, err
-	// }
-
-	// // update recording_id
-
-	// log.WithField("recording", r).Debugf("Found recording info. recording_id: %s", r.ID)
-	// for _, channelID := range r.ChannelIDs {
-	// 	// hangup the channel
-	// 	log.WithField("channel_id", channelID).Debugf("Hanging up the recording channel. channel_id: %s", channelID)
-	// 	if errHangup := h.reqHandler.AstChannelHangup(ctx, r.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0); errHangup != nil {
-	// 		log.Errorf("Could not hangup the recording channel. err: %v", errHangup)
-	// 	}
-	// }
-
-	// // update recording status
-	// if errStatus := h.db.RecordingSetStatus(ctx, id, recording.StatusEnd, h.utilHandler.GetCurTime()); errStatus != nil {
-	// 	log.Errorf("Could not update recording status. err: %v", errStatus)
-	// 	return nil, errStatus
-	// }
-
-	// res, err := h.Get(ctx, id)
-	// if err != nil {
-	// 	log.Errorf("Could not get updated recording info. err: %v", err)
-	// 	return nil, err
-	// }
-
-	// return res, nil
 }
 
 // Delete deletes recording

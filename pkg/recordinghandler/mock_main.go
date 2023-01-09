@@ -96,6 +96,21 @@ func (mr *MockRecordingHandlerMockRecorder) Start(ctx, referenceType, referenceI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockRecordingHandler)(nil).Start), ctx, referenceType, referenceID, format, endOfSilence, endOfKey, duration)
 }
 
+// Started mocks base method.
+func (m *MockRecordingHandler) Started(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Started", ctx, id)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Started indicates an expected call of Started.
+func (mr *MockRecordingHandlerMockRecorder) Started(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Started", reflect.TypeOf((*MockRecordingHandler)(nil).Started), ctx, id)
+}
+
 // Stop mocks base method.
 func (m *MockRecordingHandler) Stop(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	m.ctrl.T.Helper()

@@ -18,10 +18,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
 // CallHandler is interface for service handle
@@ -43,22 +43,6 @@ type CallHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error)
 	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*call.Call, error)
-
-	RecordingCreate(
-		ctx context.Context,
-		id uuid.UUID,
-		customerID uuid.UUID,
-		referenceType recording.ReferenceType,
-		referenceID uuid.UUID,
-		format string,
-		recordingName string,
-		filenames []string,
-		asteriskID string,
-		channelIDs []string,
-	) (*recording.Recording, error)
-	RecordingDelete(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error)
-	RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error)
-	RecordingGet(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error)
 
 	CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destinations []commonaddress.Address) ([]*call.Call, error)
 	CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) (*call.Call, error)
@@ -83,9 +67,10 @@ type callHandler struct {
 	utilHandler       utilhandler.UtilHandler
 	reqHandler        requesthandler.RequestHandler
 	db                dbhandler.DBHandler
+	notifyHandler     notifyhandler.NotifyHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
 	channelHandler    channelhandler.ChannelHandler
-	notifyHandler     notifyhandler.NotifyHandler
+	recordingHandler  recordinghandler.RecordingHandler
 }
 
 // contextType
@@ -186,20 +171,22 @@ func init() {
 
 // NewCallHandler returns new service handler
 func NewCallHandler(
-	r requesthandler.RequestHandler,
-	n notifyhandler.NotifyHandler,
+	requestHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
-	conf confbridgehandler.ConfbridgeHandler,
-	ch channelhandler.ChannelHandler,
+	confbridgeHandler confbridgehandler.ConfbridgeHandler,
+	channelHandler channelhandler.ChannelHandler,
+	recordingHandler recordinghandler.RecordingHandler,
 ) CallHandler {
 
 	h := &callHandler{
 		utilHandler:       utilhandler.NewUtilHandler(),
-		reqHandler:        r,
-		notifyHandler:     n,
+		reqHandler:        requestHandler,
+		notifyHandler:     notifyHandler,
 		db:                db,
-		confbridgeHandler: conf,
-		channelHandler:    ch,
+		confbridgeHandler: confbridgeHandler,
+		channelHandler:    channelHandler,
+		recordingHandler:  recordingHandler,
 	}
 
 	return h

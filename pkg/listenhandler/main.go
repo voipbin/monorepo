@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
 // pagination parameters
@@ -34,6 +35,7 @@ type listenHandler struct {
 	callHandler       callhandler.CallHandler
 	confbridgeHandler confbridgehandler.ConfbridgeHandler
 	channelHandler    channelhandler.ChannelHandler
+	recordingHandler  recordinghandler.RecordingHandler
 }
 
 var (
@@ -103,12 +105,14 @@ func NewListenHandler(
 	callHandler callhandler.CallHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
+	recordingHandler recordinghandler.RecordingHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:        rabbitSock,
 		callHandler:       callHandler,
 		confbridgeHandler: confbridgeHandler,
 		channelHandler:    channelHandler,
+		recordingHandler:  recordingHandler,
 	}
 
 	return h

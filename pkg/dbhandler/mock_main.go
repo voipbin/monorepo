@@ -1186,15 +1186,15 @@ func (mr *MockDBHandlerMockRecorder) RecordingGets(ctx, customerID, size, token 
 }
 
 // RecordingSetStatus mocks base method.
-func (m *MockDBHandler) RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status, timestamp string) error {
+func (m *MockDBHandler) RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingSetStatus", ctx, id, status, timestamp)
+	ret := m.ctrl.Call(m, "RecordingSetStatus", ctx, id, status)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecordingSetStatus indicates an expected call of RecordingSetStatus.
-func (mr *MockDBHandlerMockRecorder) RecordingSetStatus(ctx, id, status, timestamp interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) RecordingSetStatus(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingSetStatus", reflect.TypeOf((*MockDBHandler)(nil).RecordingSetStatus), ctx, id, status, timestamp)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingSetStatus", reflect.TypeOf((*MockDBHandler)(nil).RecordingSetStatus), ctx, id, status)
 }

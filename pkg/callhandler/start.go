@@ -139,13 +139,14 @@ func (h *callHandler) startHandlerContextRecording(ctx context.Context, cn *chan
 		return fmt.Errorf("could not set a call type for channel. channel: %s, asterisk: %s, err: %v", cn.ID, cn.AsteriskID, err)
 	}
 
+	referenceType := data["reference_type"]
+	referenceID := data["reference_id"]
 	id := data["recording_id"]
 	name := data["recording_name"]
 	format := data["format"]
 	duration, _ := strconv.Atoi(data["duration"])
 	silence, _ := strconv.Atoi(data["end_of_silence"])
 	endKey := data["end_of_key"]
-	callID := data["call_id"]
 	direction := data["direction"]
 
 	// parse recording name
@@ -155,7 +156,7 @@ func (h *callHandler) startHandlerContextRecording(ctx context.Context, cn *chan
 		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
 		return nil
 	}
-	log.Infof("Recording started. id: %s, name: %s, call: %s", id, recordingName, callID)
+	log.Infof("Recording started. id: %s, name: %s, reference_type: %s, reference_id: %s", id, recordingName, referenceType, referenceID)
 
 	return nil
 }
