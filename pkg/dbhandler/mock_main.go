@@ -188,18 +188,18 @@ func (mr *MockDBHandlerMockRecorder) CallAddChainedCallID(ctx, id, chainedCallID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAddChainedCallID", reflect.TypeOf((*MockDBHandler)(nil).CallAddChainedCallID), ctx, id, chainedCallID)
 }
 
-// CallAddRecordIDs mocks base method.
-func (m *MockDBHandler) CallAddRecordIDs(ctx context.Context, id, recordID uuid.UUID) error {
+// CallAddRecordingIDs mocks base method.
+func (m *MockDBHandler) CallAddRecordingIDs(ctx context.Context, id, recordingID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallAddRecordIDs", ctx, id, recordID)
+	ret := m.ctrl.Call(m, "CallAddRecordingIDs", ctx, id, recordingID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CallAddRecordIDs indicates an expected call of CallAddRecordIDs.
-func (mr *MockDBHandlerMockRecorder) CallAddRecordIDs(ctx, id, recordID interface{}) *gomock.Call {
+// CallAddRecordingIDs indicates an expected call of CallAddRecordingIDs.
+func (mr *MockDBHandlerMockRecorder) CallAddRecordingIDs(ctx, id, recordingID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAddRecordIDs", reflect.TypeOf((*MockDBHandler)(nil).CallAddRecordIDs), ctx, id, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallAddRecordingIDs", reflect.TypeOf((*MockDBHandler)(nil).CallAddRecordingIDs), ctx, id, recordingID)
 }
 
 // CallApplicationAMDGet mocks base method.
@@ -474,18 +474,18 @@ func (mr *MockDBHandlerMockRecorder) CallSetMasterCallID(ctx, id, callID interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetMasterCallID", reflect.TypeOf((*MockDBHandler)(nil).CallSetMasterCallID), ctx, id, callID)
 }
 
-// CallSetRecordID mocks base method.
-func (m *MockDBHandler) CallSetRecordID(ctx context.Context, id, recordID uuid.UUID) error {
+// CallSetRecordingID mocks base method.
+func (m *MockDBHandler) CallSetRecordingID(ctx context.Context, id, recordingID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSetRecordID", ctx, id, recordID)
+	ret := m.ctrl.Call(m, "CallSetRecordingID", ctx, id, recordingID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CallSetRecordID indicates an expected call of CallSetRecordID.
-func (mr *MockDBHandlerMockRecorder) CallSetRecordID(ctx, id, recordID interface{}) *gomock.Call {
+// CallSetRecordingID indicates an expected call of CallSetRecordingID.
+func (mr *MockDBHandlerMockRecorder) CallSetRecordingID(ctx, id, recordingID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetRecordID", reflect.TypeOf((*MockDBHandler)(nil).CallSetRecordID), ctx, id, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetRecordingID", reflect.TypeOf((*MockDBHandler)(nil).CallSetRecordingID), ctx, id, recordingID)
 }
 
 // CallSetStatus mocks base method.

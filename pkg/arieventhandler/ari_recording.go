@@ -114,7 +114,7 @@ func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt in
 	// set empty recordID
 	switch r.ReferenceType {
 	case recording.ReferenceTypeCall:
-		if err := h.db.CallSetRecordID(ctx, r.ReferenceID, uuid.Nil); err != nil {
+		if err := h.db.CallSetRecordingID(ctx, r.ReferenceID, uuid.Nil); err != nil {
 			log.Errorf("Could not set call record id. err: %v", err)
 		}
 

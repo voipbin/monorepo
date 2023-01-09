@@ -459,6 +459,21 @@ func (mr *MockCallHandlerMockRecorder) StartCallHandle(ctx, cn, data interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCallHandle", reflect.TypeOf((*MockCallHandler)(nil).StartCallHandle), ctx, cn, data)
 }
 
+// UpdateRecordingID mocks base method.
+func (m *MockCallHandler) UpdateRecordingID(ctx context.Context, id, recordingID uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRecordingID", ctx, id, recordingID)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateRecordingID indicates an expected call of UpdateRecordingID.
+func (mr *MockCallHandlerMockRecorder) UpdateRecordingID(ctx, id, recordingID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRecordingID", reflect.TypeOf((*MockCallHandler)(nil).UpdateRecordingID), ctx, id, recordingID)
+}
+
 // UpdateStatus mocks base method.
 func (m *MockCallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error) {
 	m.ctrl.T.Helper()

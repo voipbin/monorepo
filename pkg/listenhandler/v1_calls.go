@@ -593,3 +593,46 @@ func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *rabbit
 
 	return res, nil
 }
+
+// processV1CallsIDRecordingIDPut handles /v1/calls/<id>/recording_id PUT request
+func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1CallsIDRecordingIDPut.")
+
+	var req request.V1DataCallsIDRecordingIDPut
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+	log.WithFields(logrus.Fields{
+		"request": req,
+	}).Debugf("Parsed request data.")
+
+	tmp, err := h.callHandler.UpdateRecordingID(ctx, id, req.RecordingID)
+	if err != nil {
+		log.Errorf("Could not update call's recording id. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

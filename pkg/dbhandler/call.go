@@ -792,8 +792,8 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 	return nil
 }
 
-// CallSetRecordID sets the given recordID to recording_id.
-func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
+// CallSetRecordingID sets the given recordID to recording_id.
+func (h *handler) CallSetRecordingID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
 	update calls set
@@ -805,7 +805,7 @@ func (h *handler) CallSetRecordID(ctx context.Context, id uuid.UUID, recordID uu
 
 	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. CallSetRecordID. err: %v", err)
+		return fmt.Errorf("could not execute. CallSetRecordingID. err: %v", err)
 	}
 
 	// update the cache
@@ -841,8 +841,8 @@ func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, cha
 	return nil
 }
 
-// CallAddRecordIDs adds the given recording_id into the recording_ids.
-func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
+// CallAddRecordingIDs adds the given recording_id into the recording_ids.
+func (h *handler) CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
 	update calls set
@@ -858,7 +858,7 @@ func (h *handler) CallAddRecordIDs(ctx context.Context, id uuid.UUID, recordID u
 
 	_, err := h.db.Exec(q, recordID.String(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. CallAddRecordIDs. err: %v", err)
+		return fmt.Errorf("could not execute. CallAddRecordingIDs. err: %v", err)
 	}
 
 	// update the cache

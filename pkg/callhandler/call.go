@@ -294,3 +294,38 @@ func (h *callHandler) Delete(ctx context.Context, id uuid.UUID) (*call.Call, err
 
 	return res, nil
 }
+
+// UpdateRecordingID updates the call's recording id.
+// if the recording id is not uuid.Nil, it also adds to the recording_ids
+func (h *callHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":         "UpdateRecordingID",
+			"call_id":      id,
+			"recording_id": recordingID,
+		},
+	)
+
+	if errSet := h.db.CallSetRecordingID(ctx, id, recordingID); errSet != nil {
+		log.Errorf("Could not set the recording id. err: %v", errSet)
+		return nil, errSet
+	}
+
+	if recordingID != uuid.Nil {
+		// add the recording id
+		log.Debugf("Adding the recording id. call_id: %s, recording_id: %s", id, recordingID)
+		if errAdd := h.db.CallAddRecordingIDs(ctx, id, recordingID); errAdd != nil {
+			log.Errorf("Could not add the recording id. err: %v", errAdd)
+			return nil, errAdd
+		}
+	}
+
+	// get updated call
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
