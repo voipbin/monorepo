@@ -427,6 +427,7 @@ type RequestHandler interface {
 	CallV1ConfbridgeDelete(ctx context.Context, conferenceID uuid.UUID) error
 	CallV1ConfbridgeCallKick(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error
 	CallV1ConfbridgeCallAdd(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error
+	CallV1ConfbridgeGet(ctx context.Context, conferenceID uuid.UUID) (*cmconfbridge.Confbridge, error)
 
 	// call-manager recordings
 	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
