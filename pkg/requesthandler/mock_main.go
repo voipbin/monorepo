@@ -424,6 +424,20 @@ func (mr *MockRequestHandlerMockRecorder) AstBridgeGet(ctx, asteriskID, bridgeID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeGet", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeGet), ctx, asteriskID, bridgeID)
 }
 
+// AstBridgeRecord mocks base method.
+func (m *MockRequestHandler) AstBridgeRecord(ctx context.Context, asteriskID, bridgeID, filename, format string, duration, silence int, beep bool, endKey, ifExists string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstBridgeRecord", ctx, asteriskID, bridgeID, filename, format, duration, silence, beep, endKey, ifExists)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstBridgeRecord indicates an expected call of AstBridgeRecord.
+func (mr *MockRequestHandlerMockRecorder) AstBridgeRecord(ctx, asteriskID, bridgeID, filename, format, duration, silence, beep, endKey, ifExists interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstBridgeRecord", reflect.TypeOf((*MockRequestHandler)(nil).AstBridgeRecord), ctx, asteriskID, bridgeID, filename, format, duration, silence, beep, endKey, ifExists)
+}
+
 // AstBridgeRemoveChannel mocks base method.
 func (m *MockRequestHandler) AstBridgeRemoveChannel(ctx context.Context, asteriskID, bridgeID, channelID string) error {
 	m.ctrl.T.Helper()
