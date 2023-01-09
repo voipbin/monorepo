@@ -60,6 +60,31 @@ func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, conferenceI
 	return nil
 }
 
+// CallV1ConfbridgeGet sends a request to call-manager
+// to getting a confbridge.
+// it returns given call id's call if it succeed.
+func (r *requestHandler) CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
+	uri := fmt.Sprintf("/v1/confbridges/%s", confbridgeID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmconfbridge.Confbridge
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 // CallV1ConfbridgeCallKick sends the kick request to the confbridge.
 // conferenceID: conference id
 // callID: call id
