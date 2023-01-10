@@ -1676,6 +1676,21 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceUpdate(ctx, id, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceUpdate), ctx, id, name, detail, timeout, preActions, postActions)
 }
 
+// ConferenceV1ConferenceUpdateRecordingID mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Context, id, recordingID uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferenceUpdateRecordingID", ctx, id, recordingID)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ConferenceUpdateRecordingID indicates an expected call of ConferenceV1ConferenceUpdateRecordingID.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceUpdateRecordingID(ctx, id, recordingID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceUpdateRecordingID", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceUpdateRecordingID), ctx, id, recordingID)
+}
+
 // ConferenceV1ConferencecallCreate mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferencecallCreate(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
