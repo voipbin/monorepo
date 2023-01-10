@@ -1761,6 +1761,34 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceGets(ctx, custom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceGets), ctx, customerID, pageToken, pageSize, conferenceType)
 }
 
+// ConferenceV1ConferenceRecordingStart mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferenceRecordingStart", ctx, conferenceID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceV1ConferenceRecordingStart indicates an expected call of ConferenceV1ConferenceRecordingStart.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceRecordingStart(ctx, conferenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceRecordingStart", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceRecordingStart), ctx, conferenceID)
+}
+
+// ConferenceV1ConferenceRecordingStop mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferenceRecordingStop", ctx, conferenceID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceV1ConferenceRecordingStop indicates an expected call of ConferenceV1ConferenceRecordingStop.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceRecordingStop(ctx, conferenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceRecordingStop", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceRecordingStop), ctx, conferenceID)
+}
+
 // ConferenceV1ConferenceUpdate mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
