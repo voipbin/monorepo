@@ -83,6 +83,80 @@ func Test_processV1RecordingsGet(t *testing.T) {
 	}
 }
 
+func Test_processV1RecordingsPost(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		responseRecording *recording.Recording
+
+		expectReferenceType recording.ReferenceType
+		expectReferenceID   uuid.UUID
+		expectFormat        string
+		expectEndOfSilence  int
+		expectEndOfKey      string
+		expectDuration      int
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/recordings",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_type": "call", "reference_id": "30e259e0-90b5-11ed-9ca7-836b535a4622", "format": "wav", "end_of_silence": 0, "end_of_key": "", "duration": 0}`),
+			},
+
+			&recording.Recording{
+				ID: uuid.FromStringOrNil("ccf74444-90b5-11ed-958b-4fac7f75981c"),
+			},
+
+			recording.ReferenceTypeCall,
+			uuid.FromStringOrNil("30e259e0-90b5-11ed-9ca7-836b535a4622"),
+			"wav",
+			0,
+			"",
+			0,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"ccf74444-90b5-11ed-958b-4fac7f75981c","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","recording_name":"","filenames":null,"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				callHandler:      mockCall,
+				recordingHandler: mockRecording,
+			}
+
+			mockRecording.EXPECT().Start(gomock.Any(), tt.expectReferenceType, tt.expectReferenceID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration).Return(tt.responseRecording, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_processV1RecordingsIDGet(t *testing.T) {
 
 	type test struct {

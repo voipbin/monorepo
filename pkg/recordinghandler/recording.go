@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	cmconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -33,13 +34,10 @@ func (h *recordingHandler) Start(
 
 	switch referenceType {
 	case recording.ReferenceTypeCall:
-		tmp, err := h.reqHandler.CallV1CallGet(ctx, referenceID)
-		if err != nil {
-			log.Errorf("Could not get reference info. err: %v", err)
-			return nil, err
-		}
+		return h.createReferenceTypeCall(ctx, referenceID, format, endOfSilence, endOfKey, duration)
 
-		return h.createReferenceTypeCall(ctx, tmp, format, endOfSilence, endOfKey, duration)
+	case recording.ReferenceTypeConference:
+		return h.createReferenceTypeConference(ctx, referenceID, format, endOfSilence, endOfKey, duration)
 
 	default:
 		log.Errorf("Unimplemented reference type. reference_type: %s, reference_id: %s", referenceType, referenceID)
@@ -50,23 +48,34 @@ func (h *recordingHandler) Start(
 // createReferenceTypeCall creates a new reocording for call type
 func (h *recordingHandler) createReferenceTypeCall(
 	ctx context.Context,
-	c *call.Call,
+	referenceID uuid.UUID,
 	format string,
 	endOfSilence int,
 	endOfKey string,
 	duration int,
 ) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Create",
+		"func":           "createReferenceTypeCall",
 		"reference_type": recording.ReferenceTypeCall,
-		"reference_id":   c.ID,
+		"reference_id":   referenceID,
 	})
+
+	c, err := h.reqHandler.CallV1CallGet(ctx, referenceID)
+	if err != nil {
+		log.Errorf("Could not get reference info. err: %v", err)
+		return nil, err
+	}
+
+	if c.Status != call.StatusProgressing {
+		log.Errorf("Invalid status. call_id: %s, status: %s", c.ID, c.Status)
+		return nil, fmt.Errorf("invalid status")
+	}
 
 	id := h.utilHandler.CreateUUID()
 	channelIDs := []string{}
 	filenames := []string{}
-	ts := h.utilHandler.GetCurTimeRFC3339()
-	recordingName := fmt.Sprintf("%s_%s_%s", recording.ReferenceTypeCall, c.ID, ts)
+
+	recordingName := h.createRecordingName(recording.ReferenceTypeCall, c.ID.String())
 	for _, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
 		// filenames
 		filename := fmt.Sprintf("%s_%s.%s", recordingName, direction, format)
@@ -118,14 +127,14 @@ func (h *recordingHandler) createReferenceTypeCall(
 		TMEnd:   dbhandler.DefaultTimeStamp,
 	}
 
-	if err := h.db.RecordingCreate(ctx, tmp); err != nil {
-		log.Errorf("Could not create the record. err: %v", err)
-		return nil, fmt.Errorf("could not create the record. err: %v", err)
+	if errCreate := h.db.RecordingCreate(ctx, tmp); errCreate != nil {
+		log.Errorf("Could not create the record. err: %v", errCreate)
+		return nil, fmt.Errorf("could not create the record. err: %v", errCreate)
 	}
 
 	res, err := h.db.RecordingGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get created reocordings. err: %v", err)
+		log.Errorf("Could not get created reocording. err: %v", err)
 		return nil, err
 	}
 
@@ -135,6 +144,101 @@ func (h *recordingHandler) createReferenceTypeCall(
 		return nil, err
 	}
 	log.WithField("call", cc).Debugf("Updated call's recording id. call_id: %s", cc.ID)
+
+	return res, nil
+}
+
+// createReferenceTypeConference creates a new reocording for conference type
+func (h *recordingHandler) createReferenceTypeConference(
+	ctx context.Context,
+	conferenceID uuid.UUID,
+	format string,
+	endOfSilence int,
+	endOfKey string,
+	duration int,
+) (*recording.Recording, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "createReferenceTypeConference",
+		"reference_type": recording.ReferenceTypeCall,
+		"reference_id":   conferenceID,
+	})
+
+	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, conferenceID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return nil, err
+	}
+	if cf.Status != cmconference.StatusProgressing {
+		log.Errorf("Invalid status. conference_id: %s, status: %s", cf.ID, cf.Status)
+		return nil, fmt.Errorf("invalid status")
+	}
+
+	// get confbridge info
+	cb, err := h.confbridgeHandler.Get(ctx, cf.ConfbridgeID)
+	if err != nil {
+		log.Errorf("Could not get confbridge info. err: %v", err)
+		return nil, err
+	}
+
+	// get bridge info
+	br, err := h.bridgeHandler.Get(ctx, cb.BridgeID)
+	if err != nil {
+		log.Errorf("Could not get bridge info. err: %v", err)
+		return nil, err
+	}
+
+	// recreate recording name and filename
+	recordingName := h.createRecordingName(recording.ReferenceTypeConference, cf.ID.String())
+	filename := fmt.Sprintf("%s_in", recordingName)
+
+	if errRecord := h.reqHandler.AstBridgeRecord(
+		ctx,
+		br.AsteriskID,
+		br.ID,
+		filename,
+		format,
+		duration,
+		endOfSilence,
+		false,
+		endOfKey,
+		"fail",
+	); errRecord != nil {
+		log.Errorf("Could not record the bridge. err: %v", errRecord)
+		return nil, errRecord
+	}
+
+	id := h.utilHandler.CreateUUID()
+	recordingFilename := fmt.Sprintf("%s.%s", filename, format)
+	filenames := []string{
+		recordingFilename,
+	}
+	tmp := &recording.Recording{
+		ID:         id,
+		CustomerID: cf.CustomerID,
+
+		ReferenceType: recording.ReferenceTypeConference,
+		ReferenceID:   cf.ID,
+		Status:        recording.StatusInitiating,
+		Format:        format,
+		RecordingName: recordingName,
+		Filenames:     filenames,
+
+		AsteriskID: br.AsteriskID,
+
+		TMStart: dbhandler.DefaultTimeStamp,
+		TMEnd:   dbhandler.DefaultTimeStamp,
+	}
+
+	if errCreate := h.db.RecordingCreate(ctx, tmp); errCreate != nil {
+		log.Errorf("Could not create recording. err: %v", errCreate)
+		return nil, errCreate
+	}
+
+	res, err := h.db.RecordingGet(ctx, tmp.ID)
+	if err != nil {
+		log.Errorf("Could not get created recording. err: %v", err)
+		return nil, err
+	}
 
 	return res, nil
 }
@@ -195,7 +299,7 @@ func (h *recordingHandler) Get(ctx context.Context, id uuid.UUID) (*recording.Re
 }
 
 // Stop stops the recording
-func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
+func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "Stop",
 		"recording_id": id,
@@ -204,10 +308,29 @@ func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) (*recording.R
 	r, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get recording info. err: %v", err)
-		return nil, err
+		return err
 	}
 
-	log.WithField("recording", r).Debugf("Found recording info. recording_id: %s", r.ID)
+	switch r.ReferenceType {
+	case recording.ReferenceTypeCall:
+		return h.stopReferenceTypeCall(ctx, r)
+
+	case recording.ReferenceTypeConference:
+		return h.stopReferenceTypeConference(ctx, r)
+
+	default:
+		log.Errorf("Unsupported reference type. reference_type: %s", r.ReferenceType)
+		return fmt.Errorf("unsupported reference type")
+	}
+}
+
+// stopReferenceTypeCall stops the reference type call recording.
+func (h *recordingHandler) stopReferenceTypeCall(ctx context.Context, r *recording.Recording) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "stopReferenceTypeCall",
+		"recording_id": r.ID,
+	})
+
 	for _, channelID := range r.ChannelIDs {
 		// hangup the channel
 		log.WithField("channel_id", channelID).Debugf("Hanging up the recording channel. channel_id: %s", channelID)
@@ -216,13 +339,22 @@ func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) (*recording.R
 		}
 	}
 
-	res, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated recording info. err: %v", err)
-		return nil, err
+	return nil
+}
+
+// stopReferenceTypeConference stops the reference type conference recording.
+func (h *recordingHandler) stopReferenceTypeConference(ctx context.Context, r *recording.Recording) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "stopReferenceTypeConference",
+		"recording_id": r.ID,
+	})
+
+	if errStop := h.reqHandler.AstRecordingStop(ctx, r.AsteriskID, r.RecordingName); errStop != nil {
+		log.Errorf("Could not stop the recording. err: %v", errStop)
+		return errStop
 	}
 
-	return res, nil
+	return nil
 }
 
 // Stopped handels stopped recording
@@ -252,6 +384,14 @@ func (h *recordingHandler) Stopped(ctx context.Context, id uuid.UUID) (*recordin
 			return nil, err
 		}
 		log.WithField("call", tmp).Debugf("Updated call's recording id. call_id: %s", tmp.ID)
+
+	case recording.ReferenceTypeConference:
+		tmp, err := h.reqHandler.ConferenceV1ConferenceUpdateRecordingID(ctx, res.ReferenceID, uuid.Nil)
+		if err != nil {
+			log.Errorf("Could not update the conference's recording id. conference_id: %s, err: %v", res.ReferenceID, err)
+			return nil, err
+		}
+		log.WithField("conference", tmp).Debugf("Updated conference's recording id. reference_id: %s", tmp.ID)
 
 	default:
 		// nothing todo

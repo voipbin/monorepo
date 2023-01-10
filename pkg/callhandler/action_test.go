@@ -369,8 +369,6 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 	tests := []struct {
 		name string
 		call *call.Call
-
-		responseRecording *recording.Recording
 	}{
 		{
 			"default",
@@ -382,15 +380,6 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 				Action: fmaction.Action{
 					Type: fmaction.TypeRecordingStop,
 					ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
-				},
-			},
-
-			&recording.Recording{
-				ID:         uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelIDs: []string{
-					"fe9354d8-2bb9-11eb-8ad0-9764de384853",
-					"8052a744-8cbb-11ed-b92d-1fcff27ccb88",
 				},
 			},
 		},
@@ -415,7 +404,7 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockRecording.EXPECT().Stop(ctx, tt.call.RecordingID).Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Stop(ctx, tt.call.RecordingID).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 
 			if err := h.ActionExecute(ctx, tt.call); err != nil {

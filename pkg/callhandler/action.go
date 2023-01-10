@@ -599,12 +599,9 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 		}
 	}
 
-	rec, err := h.recordingHandler.Stop(ctx, c.RecordingID)
-	if err != nil {
+	if errStop := h.recordingHandler.Stop(ctx, c.RecordingID); errStop != nil {
 		// we failed to stop the recording. But we still want to continue to call process.
-		log.Errorf("Could not stop the recording. err: %v", err)
-	} else {
-		log.WithField("recording", rec).Debugf("Stopping recordings. recording_id: %s", rec.ID)
+		log.Errorf("Could not stop the recording. recording_id: %s, err: %v", c.RecordingID, errStop)
 	}
 
 	if err := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); err != nil {
@@ -613,31 +610,6 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 	}
 
 	return nil
-
-	// // we don't set empty call's recordgid at here.
-	// // setting the recordgid will be done with RecordingFinished event.
-	// // get r
-	// r, err := h.db.RecordingGet(ctx, c.RecordingID)
-	// if err != nil {
-	// 	log.Errorf("Could not get record info. But keep continue to next. err: %v", err)
-	// } else {
-	// 	log.WithField("recording", r).Debugf("Found recording info. recording_id: %s", r.ID)
-	// 	for _, channelID := range r.ChannelIDs {
-	// 		// hangup the channel
-	// 		log.WithField("channel_id", channelID).Debugf("Hanging up the recording channel. channel_id: %s", channelID)
-	// 		if errHangup := h.reqHandler.AstChannelHangup(ctx, r.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0); errHangup != nil {
-	// 			log.Errorf("Could not hangup the recording channel. err: %v", errHangup)
-	// 		}
-	// 	}
-	// }
-
-	// // send next action request
-	// if err := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); err != nil {
-	// 	log.Errorf("Could not execute next action call. err: %v", err)
-	// 	return err
-	// }
-
-	// return nil
 }
 
 // actionExecuteDigitsReceive executes the action type dtmf_receive.

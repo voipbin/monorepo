@@ -112,12 +112,11 @@ func (mr *MockRecordingHandlerMockRecorder) Started(ctx, id interface{}) *gomock
 }
 
 // Stop mocks base method.
-func (m *MockRecordingHandler) Stop(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
+func (m *MockRecordingHandler) Stop(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Stop", ctx, id)
-	ret0, _ := ret[0].(*recording.Recording)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Stop indicates an expected call of Stop.
