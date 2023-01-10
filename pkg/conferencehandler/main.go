@@ -1,6 +1,6 @@
 package conferencehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package conferencehandler -destination ./mock_conferencehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package conferencehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -49,6 +49,9 @@ type ConferenceHandler interface {
 	Leave(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error)
 	Leaved(ctx context.Context, cf *conference.Conference, referenceID uuid.UUID) error
 	Terminate(ctx context.Context, id uuid.UUID) error
+
+	RecordingStart(ctx context.Context, id uuid.UUID) error
+	RecordingStop(ctx context.Context, id uuid.UUID) error
 }
 
 // conferenceHandler structure for service handle
@@ -63,8 +66,9 @@ type conferenceHandler struct {
 
 // List of default values
 const (
-	defaultDialTimeout = 60                           //nolint:deadcode,varcheck // default outgoing dial timeout
-	defaultTimeStamp   = "9999-01-01 00:00:00.000000" // default timestamp
+	defaultDialTimeout      = 60                           //nolint:deadcode,varcheck // default outgoing dial timeout
+	defaultTimeStamp        = "9999-01-01 00:00:00.000000" // default timestamp
+	defaultRecordingTimeout = 86400000                     // 24hours
 )
 
 var (

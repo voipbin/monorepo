@@ -156,6 +156,34 @@ func (mr *MockConferenceHandlerMockRecorder) Leaved(ctx, cf, referenceID interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockConferenceHandler)(nil).Leaved), ctx, cf, referenceID)
 }
 
+// RecordingStart mocks base method.
+func (m *MockConferenceHandler) RecordingStart(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingStart", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordingStart indicates an expected call of RecordingStart.
+func (mr *MockConferenceHandlerMockRecorder) RecordingStart(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStart", reflect.TypeOf((*MockConferenceHandler)(nil).RecordingStart), ctx, id)
+}
+
+// RecordingStop mocks base method.
+func (m *MockConferenceHandler) RecordingStop(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingStop", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordingStop indicates an expected call of RecordingStop.
+func (mr *MockConferenceHandlerMockRecorder) RecordingStop(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStop", reflect.TypeOf((*MockConferenceHandler)(nil).RecordingStop), ctx, id)
+}
+
 // Terminate mocks base method.
 func (m *MockConferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
