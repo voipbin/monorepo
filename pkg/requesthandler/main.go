@@ -62,6 +62,7 @@ import (
 
 // contents type
 var (
+	ContentTypeNone = ""
 	ContentTypeText = "text/plain"
 	ContentTypeJSON = "application/json"
 )
@@ -141,6 +142,12 @@ const (
 	resourceAstChannelsVar           resource = "ast/channels/var"
 
 	resourceAstPlaybacks resource = "ast/playbacks"
+
+	resourceAstRecordingStop    resource = "ast/recording/<recording_name>/stop"
+	resourceAstRecordingPause   resource = "ast/recording/<recording_name>/pause"
+	resourceAstRecordingUnpause resource = "ast/recording/<recording_name>/unpause"
+	resourceAstRecordingMute    resource = "ast/recording/<recording_name>/mute"
+	resourceAstRecordingUnmute  resource = "ast/recording/<recording_name>/unmute"
 
 	resourceAgentAgents resource = "agent/agents"
 	resourceAgentTags   resource = "agent/tags"
@@ -258,6 +265,13 @@ type RequestHandler interface {
 
 	// asterisk playbacks
 	AstPlaybackStop(ctx context.Context, asteriskID string, playabckID string) error
+
+	// asterisk recordings
+	AstRecordingStop(ctx context.Context, asteriskID, recordingName string) error
+	AstRecordingPause(ctx context.Context, asteriskID, recordingName string) error
+	AstRecordingUnpause(ctx context.Context, asteriskID, recordingName string) error
+	AstRecordingMute(ctx context.Context, asteriskID, recordingName string) error
+	AstRecordingUnmute(ctx context.Context, asteriskID, recordingName string) error
 
 	// agent-manager agent
 	AgentV1AgentCreate(

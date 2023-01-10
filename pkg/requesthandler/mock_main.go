@@ -667,6 +667,76 @@ func (mr *MockRequestHandlerMockRecorder) AstPlaybackStop(ctx, asteriskID, playa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstPlaybackStop", reflect.TypeOf((*MockRequestHandler)(nil).AstPlaybackStop), ctx, asteriskID, playabckID)
 }
 
+// AstRecordingMute mocks base method.
+func (m *MockRequestHandler) AstRecordingMute(ctx context.Context, asteriskID, recordingName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstRecordingMute", ctx, asteriskID, recordingName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstRecordingMute indicates an expected call of AstRecordingMute.
+func (mr *MockRequestHandlerMockRecorder) AstRecordingMute(ctx, asteriskID, recordingName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstRecordingMute", reflect.TypeOf((*MockRequestHandler)(nil).AstRecordingMute), ctx, asteriskID, recordingName)
+}
+
+// AstRecordingPause mocks base method.
+func (m *MockRequestHandler) AstRecordingPause(ctx context.Context, asteriskID, recordingName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstRecordingPause", ctx, asteriskID, recordingName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstRecordingPause indicates an expected call of AstRecordingPause.
+func (mr *MockRequestHandlerMockRecorder) AstRecordingPause(ctx, asteriskID, recordingName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstRecordingPause", reflect.TypeOf((*MockRequestHandler)(nil).AstRecordingPause), ctx, asteriskID, recordingName)
+}
+
+// AstRecordingStop mocks base method.
+func (m *MockRequestHandler) AstRecordingStop(ctx context.Context, asteriskID, recordingName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstRecordingStop", ctx, asteriskID, recordingName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstRecordingStop indicates an expected call of AstRecordingStop.
+func (mr *MockRequestHandlerMockRecorder) AstRecordingStop(ctx, asteriskID, recordingName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstRecordingStop", reflect.TypeOf((*MockRequestHandler)(nil).AstRecordingStop), ctx, asteriskID, recordingName)
+}
+
+// AstRecordingUnmute mocks base method.
+func (m *MockRequestHandler) AstRecordingUnmute(ctx context.Context, asteriskID, recordingName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstRecordingUnmute", ctx, asteriskID, recordingName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstRecordingUnmute indicates an expected call of AstRecordingUnmute.
+func (mr *MockRequestHandlerMockRecorder) AstRecordingUnmute(ctx, asteriskID, recordingName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstRecordingUnmute", reflect.TypeOf((*MockRequestHandler)(nil).AstRecordingUnmute), ctx, asteriskID, recordingName)
+}
+
+// AstRecordingUnpause mocks base method.
+func (m *MockRequestHandler) AstRecordingUnpause(ctx context.Context, asteriskID, recordingName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstRecordingUnpause", ctx, asteriskID, recordingName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstRecordingUnpause indicates an expected call of AstRecordingUnpause.
+func (mr *MockRequestHandlerMockRecorder) AstRecordingUnpause(ctx, asteriskID, recordingName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstRecordingUnpause", reflect.TypeOf((*MockRequestHandler)(nil).AstRecordingUnpause), ctx, asteriskID, recordingName)
+}
+
 // CallV1CallActionNext mocks base method.
 func (m *MockRequestHandler) CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error {
 	m.ctrl.T.Helper()
