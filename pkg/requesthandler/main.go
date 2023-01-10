@@ -448,6 +448,16 @@ type RequestHandler interface {
 	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
 	CallV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error)
 	CallV1RecordingDelete(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
+	CallV1RecordingStart(
+		ctx context.Context,
+		referenceType cmrecording.ReferenceType,
+		referenceID uuid.UUID,
+		format string,
+		endOfSilence int,
+		endOfKey string,
+		duration int,
+	) (*cmrecording.Recording, error)
+	CallV1RecordingStop(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error)
 
 	// customer-manager customer
 	CustomerV1CustomerCreate(
