@@ -45,11 +45,13 @@ var (
 
 	// v1
 	// conferences
-	regV1Conferences              = regexp.MustCompile("/v1/conferences$")
-	regV1ConferencesGet           = regexp.MustCompile(`/v1/conferences\?`)
-	regV1ConferencesID            = regexp.MustCompile("/v1/conferences/" + regUUID + "$")
-	regV1ConferencesIDJoin        = regexp.MustCompile("/v1/conferences/" + regUUID + "/join$")
-	regV1ConferencesIDRecordingID = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_id$")
+	regV1Conferences                 = regexp.MustCompile("/v1/conferences$")
+	regV1ConferencesGet              = regexp.MustCompile(`/v1/conferences\?`)
+	regV1ConferencesID               = regexp.MustCompile("/v1/conferences/" + regUUID + "$")
+	regV1ConferencesIDJoin           = regexp.MustCompile("/v1/conferences/" + regUUID + "/join$")
+	regV1ConferencesIDRecordingID    = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_id$")
+	regV1ConferencesIDRecordingStart = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_start$")
+	regV1ConferencesIDRecordingStop  = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_stop$")
 
 	// conferencecalls
 	regV1Conferencecalls   = regexp.MustCompile("/v1/conferencecalls$")
@@ -173,15 +175,15 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// conferences
 	////////////////////
 
-	// PUT /conferences/<conference-id>/recording_id
-	case regV1ConferencesIDRecordingID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1ConferencesIDRecordingIDPut(ctx, m)
-		requestType = "/v1/conferences/<conference-id>/recording_id"
+	// POST /conferences
+	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConferencesPost(ctx, m)
+		requestType = "/v1/conferences"
 
-	// POST /conferences/<conference-id>/join
-	case regV1ConferencesIDJoin.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencesIDJoinPost(ctx, m)
-		requestType = "/v1/conferences/<conference-id>/join"
+	// GET /conferences
+	case regV1ConferencesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ConferencesGet(ctx, m)
+		requestType = "/v1/conferences"
 
 	// GET /conferences/<conference-id>
 	case regV1ConferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
@@ -198,15 +200,25 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ConferencesIDDelete(ctx, m)
 		requestType = "/v1/conferences/<conference-id>"
 
-	// POST /conferences
-	case regV1Conferences.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencesPost(ctx, m)
-		requestType = "/v1/conferences"
+	// PUT /conferences/<conference-id>/recording_id
+	case regV1ConferencesIDRecordingID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1ConferencesIDRecordingIDPut(ctx, m)
+		requestType = "/v1/conferences/<conference-id>/recording_id"
 
-	// GET /conferences
-	case regV1ConferencesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ConferencesGet(ctx, m)
-		requestType = "/v1/conferences"
+	// POST /conferences/<conference-id>/join
+	case regV1ConferencesIDJoin.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConferencesIDJoinPost(ctx, m)
+		requestType = "/v1/conferences/<conference-id>/join"
+
+	// POST /conferences/<conference-id>/recording_start
+	case regV1ConferencesIDRecordingStart.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConferencesIDRecordingStartPost(ctx, m)
+		requestType = "/v1/conferences/<conference-id>/recording_start"
+
+	// POST /conferences/<conference-id>/recording_stop
+	case regV1ConferencesIDRecordingStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConferencesIDRecordingStopPost(ctx, m)
+		requestType = "/v1/conferences/<conference-id>/recording_stop"
 
 	//////////////////
 	// conferencecalls

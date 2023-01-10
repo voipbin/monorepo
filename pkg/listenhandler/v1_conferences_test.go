@@ -457,3 +457,115 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseConference *conference.Conference
+
+		expectID  uuid.UUID
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"type conference",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences/17ca9f6a-9102-11ed-9c97-1b1670cb9db9/recording_start",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
+			},
+
+			uuid.FromStringOrNil("17ca9f6a-9102-11ed-9c97-1b1670cb9db9"),
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
+
+			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectID).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseConference *conference.Conference
+
+		expectID  uuid.UUID
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"type conference",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences/18033654-9102-11ed-994e-4b9c733834a5/recording_stop",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
+			},
+
+			uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
+
+			mockConf.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

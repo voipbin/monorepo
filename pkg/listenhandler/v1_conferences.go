@@ -286,3 +286,61 @@ func (h *listenHandler) processV1ConferencesIDRecordingIDPut(ctx context.Context
 
 	return res, nil
 }
+
+// processV1ConferencesIDRecordingStartPost handles /v1/conferences/<id>/recording_start POST request
+func (h *listenHandler) processV1ConferencesIDRecordingStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1ConferencesIDRecordingStartPost",
+			"uri":  m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	cfID := uuid.FromStringOrNil(uriItems[3])
+
+	if errRecording := h.conferenceHandler.RecordingStart(ctx, cfID); errRecording != nil {
+		log.Errorf("Could not start the conference recording id. err: %v", errRecording)
+		return nil, errRecording
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// processV1ConferencesIDRecordingStopPost handles /v1/conferences/<id>/recording_stop POST request
+func (h *listenHandler) processV1ConferencesIDRecordingStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1ConferencesIDRecordingStopPost",
+			"uri":  m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	cfID := uuid.FromStringOrNil(uriItems[3])
+
+	if errRecording := h.conferenceHandler.RecordingStop(ctx, cfID); errRecording != nil {
+		log.Errorf("Could not stop the conference recording. err: %v", errRecording)
+		return nil, errRecording
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
