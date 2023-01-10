@@ -178,3 +178,37 @@ func (r *requestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uu
 
 	return &conference, nil
 }
+
+// ConferenceV1ConferenceUpdateRecordingID sends a request to conference-manager
+// to update the conference's recording id.
+// it returns updated conference if it succeed.
+func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences/%s/recording_id", id.String())
+
+	data := &cfrequest.V1DataConferencesIDRecordingIDPut{
+		RecordingID: recordingID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var conference cfconference.Conference
+	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
+		return nil, err
+	}
+
+	return &conference, nil
+}
