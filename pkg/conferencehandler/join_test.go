@@ -72,7 +72,7 @@ func Test_Join(t *testing.T) {
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.responseConference.ID).Return(tt.responseConference, nil)
 			mockConferencecall.EXPECT().Create(ctx, tt.responseConference.CustomerID, tt.responseConference.ID, tt.referenceType, tt.referenceID).Return(tt.responseConferencecall, nil)
-			mockReq.EXPECT().CMV1ConfbridgeCallAdd(ctx, tt.responseConference.ConfbridgeID, tt.referenceID).Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeCallAdd(ctx, tt.responseConference.ConfbridgeID, tt.referenceID).Return(nil)
 
 			res, err := h.Join(ctx, tt.conferenceID, tt.referenceType, tt.referenceID)
 			if err != nil {

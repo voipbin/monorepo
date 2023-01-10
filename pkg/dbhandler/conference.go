@@ -554,8 +554,8 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// ConferenceSetRecordID sets the conference's recording_id.
-func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
+// ConferenceSetRecordingID sets the conference's recording_id.
+func (h *handler) ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	// prepare
 	q := `
 	update conferences set
@@ -565,9 +565,9 @@ func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recor
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.Bytes(), GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceSetRecordID. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceSetRecordingID. err: %v", err)
 	}
 
 	// update the cache
@@ -576,8 +576,8 @@ func (h *handler) ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recor
 	return nil
 }
 
-// ConferenceAddRecordIDs adds the record file to the bridge's record_files.
-func (h *handler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
+// ConferenceAddRecordingIDs adds the recording id to the conference's recording_ids.
+func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	// prepare
 	q := `
 	update conferences set
@@ -591,9 +591,9 @@ func (h *handler) ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.Bytes(), GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConferenceAddRecordIDs. err: %v", err)
+		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %v", err)
 	}
 
 	// update the cache

@@ -379,7 +379,7 @@ func TestConferenceSetRecordID(t *testing.T) {
 			}
 
 			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
-			if err := h.ConferenceSetRecordID(context.Background(), tt.conference.ID, tt.recordID); err != nil {
+			if err := h.ConferenceSetRecordingID(context.Background(), tt.conference.ID, tt.recordID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

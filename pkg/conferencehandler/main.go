@@ -42,6 +42,7 @@ type ConferenceHandler interface {
 		preActions []action.Action,
 		postActions []action.Action,
 	) (*conference.Conference, error)
+	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*conference.Conference, error)
 
 	Join(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
 	JoinedConfbridge(ctx context.Context, cf *conference.Conference, callID uuid.UUID) error

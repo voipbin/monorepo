@@ -82,7 +82,7 @@ func Test_TerminateConference(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.conference.ID, conference.StatusTerminating).Return(nil)
-			mockReq.EXPECT().FMV1FlowDelete(gomock.Any(), tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FlowV1FlowDelete(gomock.Any(), tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
 
 			for _, conferencecallID := range tt.conference.ConferencecallIDs {
 				referenceID := uuid.Must(uuid.NewV4())
@@ -90,11 +90,11 @@ func Test_TerminateConference(t *testing.T) {
 					ID:          conferencecallID,
 					ReferenceID: referenceID,
 				}, nil)
-				mockReq.EXPECT().CMV1ConfbridgeCallKick(gomock.Any(), tt.conference.ConfbridgeID, referenceID).Return(nil)
+				mockReq.EXPECT().CallV1ConfbridgeCallKick(gomock.Any(), tt.conference.ConfbridgeID, referenceID).Return(nil)
 			}
 
 			if len(tt.conference.ConferencecallIDs) == 0 {
-				mockReq.EXPECT().CMV1ConfbridgeDelete(gomock.Any(), tt.conference.ConfbridgeID).Return(nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(gomock.Any(), tt.conference.ConfbridgeID).Return(nil)
 				mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)

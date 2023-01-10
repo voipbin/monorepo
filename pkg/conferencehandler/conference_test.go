@@ -94,13 +94,13 @@ func Test_Create(t *testing.T) {
 			if tt.conferenceType == conference.TypeConference {
 				confbridgeType = cmconfbridge.TypeConference
 			}
-			mockReq.EXPECT().CMV1ConfbridgeCreate(gomock.Any(), confbridgeType).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), gomock.Any(), fmflow.TypeConference, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(gomock.Any(), confbridgeType).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(gomock.Any(), gomock.Any(), fmflow.TypeConference, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.expectRes.CustomerID, conference.EventTypeConferenceCreated, gomock.Any())
 			if tt.timeout > 0 {
-				mockReq.EXPECT().CFV1ConferenceDeleteDelay(gomock.Any(), gomock.Any(), tt.timeout*1000).Return(nil)
+				mockReq.EXPECT().ConferenceV1ConferenceDeleteDelay(gomock.Any(), gomock.Any(), tt.timeout*1000).Return(nil)
 			}
 
 			res, err := h.Create(ctx, tt.conferenceType, tt.customerID, tt.conferenceName, tt.detail, tt.timeout, tt.preActions, tt.postActions)
@@ -172,7 +172,7 @@ func Test_createConferenceFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(gomock.Any(), tt.customerID, fmflow.TypeConference, tt.flowName, "generated for conference by conference-manager.", gomock.Any(), true).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(gomock.Any(), tt.customerID, fmflow.TypeConference, tt.flowName, "generated for conference by conference-manager.", gomock.Any(), true).Return(tt.responseFlow, nil)
 
 			_, err := h.createConferenceFlow(ctx, tt.customerID, tt.conferenceID, tt.confbridgeID, tt.preActions, tt.postActions)
 			if err != nil {
@@ -294,6 +294,65 @@ func Test_GetByConfbridgeID(t *testing.T) {
 			mockDB.EXPECT().ConferenceGetByConfbridgeID(ctx, tt.confbridgeID).Return(tt.responseConference, nil)
 
 			res, err := h.GetByConfbridgeID(ctx, tt.confbridgeID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConference) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConference, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateRecordingID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		recordingID uuid.UUID
+
+		responseConference *conference.Conference
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("cbbf9c7c-9090-11ed-b005-b76aad1ce504"),
+			uuid.FromStringOrNil("cbf14380-9090-11ed-8ae5-0bdda69156ed"),
+
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("cbbf9c7c-9090-11ed-b005-b76aad1ce504"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConferenceSetRecordingID(ctx, tt.id, tt.recordingID).Return(nil)
+			if tt.recordingID != uuid.Nil {
+				mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.recordingID).Return(nil)
+			}
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+
+			res, err := h.UpdateRecordingID(ctx, tt.id, tt.recordingID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

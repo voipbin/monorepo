@@ -39,7 +39,7 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 
 	// remove flow
 	log.WithField("flow_id", cf.FlowID).Debug("Deleting the flow.")
-	_, err = h.reqHandler.FMV1FlowDelete(ctx, cf.FlowID)
+	_, err = h.reqHandler.FlowV1FlowDelete(ctx, cf.FlowID)
 	if err != nil {
 		log.WithField("flow_id", cf.FlowID).Errorf("Could not delete the conference. But keep moving on. err: %v", err)
 	}
@@ -60,7 +60,7 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 			// todo: we have to check the conferencecall's type and run the corresponded kick handler here.
 			// but we have only 1 conferencecall type, so we don't check the type here.
 			log.Debugf("Kicking out the conferencecall. reference_type: %s, reference_id: %s", cc.ReferenceType, cc.ReferenceID)
-			if errHangup := h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, cc.ReferenceID); errHangup != nil {
+			if errHangup := h.reqHandler.CallV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, cc.ReferenceID); errHangup != nil {
 				log.WithField("call_id", cc.ReferenceID).Errorf("Could not kicking out the call. err: %v", errHangup)
 			}
 
@@ -89,7 +89,7 @@ func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conferen
 	log.WithField("conference", cf).Debug("Destroying the conference.")
 
 	// delete confbridge
-	if err := h.reqHandler.CMV1ConfbridgeDelete(ctx, cf.ConfbridgeID); err != nil {
+	if err := h.reqHandler.CallV1ConfbridgeDelete(ctx, cf.ConfbridgeID); err != nil {
 		log.WithField("confbridge_id", cf.ConfbridgeID).Errorf("Could not delete the confbridge. But keep moving on. err: %v", err)
 	}
 

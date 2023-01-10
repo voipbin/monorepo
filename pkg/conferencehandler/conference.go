@@ -46,7 +46,7 @@ func (h *conferenceHandler) Create(
 		confbridgeType = cmconfbridge.TypeConference
 	}
 
-	cb, err := h.reqHandler.CMV1ConfbridgeCreate(ctx, confbridgeType)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, confbridgeType)
 	if err != nil {
 		log.Errorf("Could not crate confbridge. err: %v", err)
 		return nil, err
@@ -112,7 +112,7 @@ func (h *conferenceHandler) Create(
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {
-		if err := h.reqHandler.CFV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
+		if err := h.reqHandler.ConferenceV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
 			log.Errorf("Could not start conference timeout. err: %v", err)
 		}
 	}
@@ -166,7 +166,7 @@ func (h *conferenceHandler) createConferenceFlow(ctx context.Context, customerID
 	flowName := fmt.Sprintf("conference-%s", conferenceID.String())
 
 	// create flow
-	resFlow, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeConference, flowName, "generated for conference by conference-manager.", actions, true)
+	resFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeConference, flowName, "generated for conference by conference-manager.", actions, true)
 	if err != nil {
 		log.Errorf("Could not create a conference flow. err: %v", err)
 		return nil, err
@@ -258,7 +258,7 @@ func (h *conferenceHandler) Update(
 	log.Debugf("Created flow actions. actions: %v", actions)
 
 	// get flow
-	f, err := h.reqHandler.FMV1FlowGet(ctx, cf.FlowID)
+	f, err := h.reqHandler.FlowV1FlowGet(ctx, cf.FlowID)
 	if err != nil {
 		log.Errorf("Could not get flow. err: %v", err)
 		return nil, err
@@ -266,7 +266,7 @@ func (h *conferenceHandler) Update(
 	f.Actions = actions
 
 	// update flow
-	newFlow, err := h.reqHandler.FMV1FlowUpdate(ctx, f)
+	newFlow, err := h.reqHandler.FlowV1FlowUpdate(ctx, f)
 	if err != nil {
 		log.Errorf("Could not update the flow. err: %v", err)
 		return nil, err
@@ -293,10 +293,45 @@ func (h *conferenceHandler) Update(
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {
-		if err := h.reqHandler.CFV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
+		if err := h.reqHandler.ConferenceV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
 			log.Errorf("Could not start conference timeout. err: %v", err)
 		}
 	}
 
 	return newConf, nil
+}
+
+// UpdateRecordingID updates the conference's recording id.
+// if the recording id is not uuid.Nil, it also adds to the recording_ids
+func (h *conferenceHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*conference.Conference, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "UpdateRecordingID",
+			"conference_id": id,
+			"recording_id":  recordingID,
+		},
+	)
+
+	if errSet := h.db.ConferenceSetRecordingID(ctx, id, recordingID); errSet != nil {
+		log.Errorf("Could not set the recording id. err: %v", errSet)
+		return nil, errSet
+	}
+
+	if recordingID != uuid.Nil {
+		// add the recording id
+		log.Debugf("Adding the recording id. conference_id: %s, recording_id: %s", id, recordingID)
+		if errAdd := h.db.ConferenceAddRecordingIDs(ctx, id, recordingID); errAdd != nil {
+			log.Errorf("Could not add the recording id. err: %v", errAdd)
+			return nil, errAdd
+		}
+	}
+
+	// get updated conference
+	res, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
 }
