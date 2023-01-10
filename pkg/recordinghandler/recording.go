@@ -299,7 +299,7 @@ func (h *recordingHandler) Get(ctx context.Context, id uuid.UUID) (*recording.Re
 }
 
 // Stop stops the recording
-func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) error {
+func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "Stop",
 		"recording_id": id,
@@ -308,20 +308,37 @@ func (h *recordingHandler) Stop(ctx context.Context, id uuid.UUID) error {
 	r, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get recording info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	switch r.ReferenceType {
 	case recording.ReferenceTypeCall:
-		return h.stopReferenceTypeCall(ctx, r)
+		err = h.stopReferenceTypeCall(ctx, r)
 
 	case recording.ReferenceTypeConference:
-		return h.stopReferenceTypeConference(ctx, r)
+		err = h.stopReferenceTypeConference(ctx, r)
 
 	default:
 		log.Errorf("Unsupported reference type. reference_type: %s", r.ReferenceType)
-		return fmt.Errorf("unsupported reference type")
+		return nil, fmt.Errorf("unsupported reference type")
 	}
+	if err != nil {
+		log.Errorf("Could not stop the recording. reference_type: %s, reference_id: %s", r.ReferenceType, r.ReferenceID)
+		return nil, err
+	}
+
+	if errStatus := h.db.RecordingSetStatus(ctx, r.ID, recording.StatusStopping); errStatus != nil {
+		log.Errorf("Could not update the status. err: %v", errStatus)
+		return nil, errStatus
+	}
+
+	res, err := h.db.RecordingGet(ctx, r.ID)
+	if err != nil {
+		log.Errorf("Could not get updated recording info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // stopReferenceTypeCall stops the reference type call recording.
@@ -365,7 +382,7 @@ func (h *recordingHandler) Stopped(ctx context.Context, id uuid.UUID) (*recordin
 	})
 
 	// update recording status
-	if errStatus := h.db.RecordingSetStatus(ctx, id, recording.StatusEnd); errStatus != nil {
+	if errStatus := h.db.RecordingSetStatus(ctx, id, recording.StatusEnded); errStatus != nil {
 		log.Errorf("Could not update recording status. err: %v", errStatus)
 		return nil, errStatus
 	}

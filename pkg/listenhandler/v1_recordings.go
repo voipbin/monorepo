@@ -164,3 +164,36 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabb
 
 	return res, nil
 }
+
+// processV1RecordingsIDStopPost handles POST /v1/recordings/<id>/stop request
+func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1RecordingsIDStopPost.")
+
+	tmp, err := h.recordingHandler.Stop(ctx, id)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

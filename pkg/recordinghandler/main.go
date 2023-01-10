@@ -32,7 +32,7 @@ type RecordingHandler interface {
 		duration int,
 	) (*recording.Recording, error)
 	Started(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
-	Stop(ctx context.Context, id uuid.UUID) error
+	Stop(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	Stopped(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 }
 

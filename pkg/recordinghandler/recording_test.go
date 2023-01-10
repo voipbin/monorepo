@@ -462,9 +462,16 @@ func Test_Stop_referenceTypeCall(t *testing.T) {
 			for _, channelID := range tt.responseRecording.ChannelIDs {
 				mockReq.EXPECT().AstChannelHangup(ctx, tt.responseRecording.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 			}
+			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 
-			if err := h.Stop(ctx, tt.id); err != nil {
+			res, err := h.Stop(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseRecording) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, nil)
 			}
 		})
 	}
@@ -514,9 +521,16 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().AstRecordingStop(ctx, tt.responseRecording.AsteriskID, tt.responseRecording.RecordingName).Return(nil)
+			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 
-			if err := h.Stop(ctx, tt.id); err != nil {
+			res, err := h.Stop(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseRecording, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
 			}
 		})
 	}
@@ -568,7 +582,7 @@ func Test_Stopped(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusEnd).Return(nil)
+			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusEnded).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().CallV1CallSetRecordingID(ctx, tt.responseRecording.ReferenceID, uuid.Nil).Return(&call.Call{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseRecording.CustomerID, recording.EventTypeRecordingFinished, tt.responseRecording)

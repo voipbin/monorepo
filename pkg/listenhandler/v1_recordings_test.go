@@ -40,7 +40,7 @@ func Test_processV1RecordingsGet(t *testing.T) {
 					CustomerID:    uuid.FromStringOrNil("c15af818-7f51-11ec-8eeb-f733ba8df393"),
 					ReferenceType: recording.ReferenceTypeCall,
 					ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
-					Status:        recording.StatusEnd,
+					Status:        recording.StatusEnded,
 					Filenames: []string{
 						"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 					},
@@ -178,7 +178,7 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
-				Status:        recording.StatusEnd,
+				Status:        recording.StatusEnded,
 				Filenames: []string{
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 				},
@@ -243,7 +243,7 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 				CustomerID:    uuid.FromStringOrNil("d063099a-7f51-11ec-adbd-cf15a2e7ae7d"),
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("e2951d7c-ac2d-11ea-8d4b-aff0e70476d6"),
-				Status:        recording.StatusEnd,
+				Status:        recording.StatusEnded,
 				Filenames: []string{
 					"call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 				},
@@ -272,6 +272,64 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 			}
 
 			mockRecording.EXPECT().Delete(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1RecordingsIDStopPost(t *testing.T) {
+
+	type test struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseRecording *recording.Recording
+		expectRes         *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/recordings/2c7e5af4-90d6-11ed-8ba0-c335ddc4049b/stop",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			&recording.Recording{
+				ID: uuid.FromStringOrNil("2c7e5af4-90d6-11ed-8ba0-c335ddc4049b"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2c7e5af4-90d6-11ed-8ba0-c335ddc4049b","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","format":"","recording_name":"","filenames":null,"asterisk_id":"","channel_ids":null,"tm_start":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				callHandler:      mockCall,
+				recordingHandler: mockRecording,
+			}
+
+			mockRecording.EXPECT().Stop(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

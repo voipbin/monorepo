@@ -42,5 +42,6 @@ type Status string
 const (
 	StatusInitiating Status = "initiating"
 	StatusRecording  Status = "recording"
-	StatusEnd        Status = "ended"
+	StatusStopping   Status = "stopping"
+	StatusEnded      Status = "ended"
 )
