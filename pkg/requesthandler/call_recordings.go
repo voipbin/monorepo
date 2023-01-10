@@ -141,7 +141,7 @@ func (r *requestHandler) CallV1RecordingStart(
 func (r *requestHandler) CallV1RecordingStop(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings/%s/stop", recordingID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallRecordings, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
