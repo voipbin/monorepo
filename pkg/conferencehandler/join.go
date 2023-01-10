@@ -38,7 +38,7 @@ func (h *conferenceHandler) Join(ctx context.Context, conferenceID uuid.UUID, re
 	log.WithField("conferencecall", res).Debugf("Created a new conferencecall. conferencecall_id: %s", res.ID)
 
 	// put the call into the confbridge
-	if err := h.reqHandler.CMV1ConfbridgeCallAdd(ctx, cf.ConfbridgeID, referenceID); err != nil {
+	if err := h.reqHandler.CallV1ConfbridgeCallAdd(ctx, cf.ConfbridgeID, referenceID); err != nil {
 		log.Errorf("Could not put the call into the confbridge. err: %v", err)
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (h *conferenceHandler) JoinedConfbridge(ctx context.Context, cf *conference
 	// add the call to the conference.
 	if errAdd := h.db.ConferenceAddConferencecallID(ctx, cf.ID, cc.ID); errAdd != nil {
 		log.Errorf("Could not add the conferencecall to the conference. Kicking out the call from the conference. err: %v", errAdd)
-		_ = h.reqHandler.CMV1ConfbridgeCallKick(ctx, cf.ID, cc.ReferenceID)
+		_ = h.reqHandler.CallV1ConfbridgeCallKick(ctx, cf.ID, cc.ReferenceID)
 		return errAdd
 	}
 

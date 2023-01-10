@@ -184,3 +184,18 @@ func (mr *MockConferenceHandlerMockRecorder) Update(ctx, id, name, detail, timeo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConferenceHandler)(nil).Update), ctx, id, name, detail, timeout, preActions, postActions)
 }
+
+// UpdateRecordingID mocks base method.
+func (m *MockConferenceHandler) UpdateRecordingID(ctx context.Context, id, recordingID uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRecordingID", ctx, id, recordingID)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateRecordingID indicates an expected call of UpdateRecordingID.
+func (mr *MockConferenceHandlerMockRecorder) UpdateRecordingID(ctx, id, recordingID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRecordingID", reflect.TypeOf((*MockConferenceHandler)(nil).UpdateRecordingID), ctx, id, recordingID)
+}

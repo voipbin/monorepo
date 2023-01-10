@@ -52,18 +52,18 @@ func (mr *MockDBHandlerMockRecorder) ConferenceAddConferencecallID(ctx, id, call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddConferencecallID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddConferencecallID), ctx, id, callID)
 }
 
-// ConferenceAddRecordIDs mocks base method.
-func (m *MockDBHandler) ConferenceAddRecordIDs(ctx context.Context, id, recordID uuid.UUID) error {
+// ConferenceAddRecordingIDs mocks base method.
+func (m *MockDBHandler) ConferenceAddRecordingIDs(ctx context.Context, id, recordingID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceAddRecordIDs", ctx, id, recordID)
+	ret := m.ctrl.Call(m, "ConferenceAddRecordingIDs", ctx, id, recordingID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ConferenceAddRecordIDs indicates an expected call of ConferenceAddRecordIDs.
-func (mr *MockDBHandlerMockRecorder) ConferenceAddRecordIDs(ctx, id, recordID interface{}) *gomock.Call {
+// ConferenceAddRecordingIDs indicates an expected call of ConferenceAddRecordingIDs.
+func (mr *MockDBHandlerMockRecorder) ConferenceAddRecordingIDs(ctx, id, recordingID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddRecordIDs", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddRecordIDs), ctx, id, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddRecordingIDs", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddRecordingIDs), ctx, id, recordingID)
 }
 
 // ConferenceCreate mocks base method.
@@ -196,18 +196,18 @@ func (mr *MockDBHandlerMockRecorder) ConferenceSetData(ctx, id, data interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetData", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetData), ctx, id, data)
 }
 
-// ConferenceSetRecordID mocks base method.
-func (m *MockDBHandler) ConferenceSetRecordID(ctx context.Context, id, recordID uuid.UUID) error {
+// ConferenceSetRecordingID mocks base method.
+func (m *MockDBHandler) ConferenceSetRecordingID(ctx context.Context, id, recordingID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceSetRecordID", ctx, id, recordID)
+	ret := m.ctrl.Call(m, "ConferenceSetRecordingID", ctx, id, recordingID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ConferenceSetRecordID indicates an expected call of ConferenceSetRecordID.
-func (mr *MockDBHandlerMockRecorder) ConferenceSetRecordID(ctx, id, recordID interface{}) *gomock.Call {
+// ConferenceSetRecordingID indicates an expected call of ConferenceSetRecordingID.
+func (mr *MockDBHandlerMockRecorder) ConferenceSetRecordingID(ctx, id, recordingID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetRecordID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetRecordID), ctx, id, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetRecordingID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetRecordingID), ctx, id, recordingID)
 }
 
 // ConferenceSetStatus mocks base method.

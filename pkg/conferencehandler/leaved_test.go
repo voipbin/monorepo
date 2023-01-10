@@ -131,7 +131,7 @@ func Test_leavedTypeConference(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.conference.Status == conference.StatusTerminating && len(tt.conference.ConferencecallIDs) == 0 {
-				mockReq.EXPECT().CMV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(nil)
 				mockDB.EXPECT().ConferenceEnd(ctx, tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)
@@ -192,7 +192,7 @@ func Test_leavedTypeConnect(t *testing.T) {
 
 			if len(tt.conference.ConferencecallIDs) == 0 {
 				// destroy
-				mockReq.EXPECT().CMV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(nil)
 				mockDB.EXPECT().ConferenceEnd(ctx, tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)
@@ -200,10 +200,10 @@ func Test_leavedTypeConnect(t *testing.T) {
 				// terminating
 				mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
 				mockDB.EXPECT().ConferenceSetStatus(ctx, tt.conference.ID, conference.StatusTerminating).Return(nil)
-				mockReq.EXPECT().FMV1FlowDelete(ctx, tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
+				mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
 				for _, conferencecallID := range tt.conference.ConferencecallIDs {
 					mockConferencecall.EXPECT().Get(ctx, conferencecallID).Return(&conferencecall.Conferencecall{}, nil)
-					mockReq.EXPECT().CMV1ConfbridgeCallKick(ctx, tt.conference.ConfbridgeID, gomock.Any()).Return(nil)
+					mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.conference.ConfbridgeID, gomock.Any()).Return(nil)
 				}
 			}
 

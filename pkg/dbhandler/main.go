@@ -21,7 +21,7 @@ import (
 type DBHandler interface {
 	// conferences
 	ConferenceAddConferencecallID(ctx context.Context, id, callID uuid.UUID) error
-	ConferenceAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
 	ConferenceEnd(ctx context.Context, id uuid.UUID) error
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
@@ -31,7 +31,7 @@ type DBHandler interface {
 	ConferenceRemoveConferencecallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceSet(ctx context.Context, id uuid.UUID, name, detail string, timeout int, preActions, postActions []fmaction.Action) error
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
-	ConferenceSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
 
 	// conferencecalls
