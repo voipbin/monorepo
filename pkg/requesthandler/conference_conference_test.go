@@ -314,3 +314,99 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		response      *rabbitmqhandler.Response
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferences/062311b6-9107-11ed-bd31-fb8ce20a3bd7/recording_start",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		response      *rabbitmqhandler.Response
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("0660ce2a-9107-11ed-8c04-93e3837ffdcd"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferences/0660ce2a-9107-11ed-8c04-93e3837ffdcd/recording_stop",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.ConferenceV1ConferenceRecordingStop(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+		})
+	}
+}

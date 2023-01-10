@@ -212,3 +212,43 @@ func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Con
 
 	return &conference, nil
 }
+
+// ConferenceV1ConferenceRecordingStart sends a request to conference-manager
+// to start the conference recording.
+// it returns error if it failed.
+func (r *requestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/conferences/%s/recording_start", conferenceID.String())
+
+	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
+}
+
+// ConferenceV1ConferenceRecordingStop sends a request to conference-manager
+// to stop the conference recording.
+// it returns error if it failed.
+func (r *requestHandler) ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/conferences/%s/recording_stop", conferenceID.String())
+
+	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
+}
