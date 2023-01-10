@@ -66,9 +66,10 @@ var (
 	regV1ConfbridgesIDCallsID = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
 
 	// recordings
-	regV1RecordingsGet = regexp.MustCompile(`/v1/recordings\?`)
-	regV1Recordings    = regexp.MustCompile(`/v1/recordings$`)
-	regV1RecordingsID  = regexp.MustCompile("/v1/recordings/" + regUUID + "$")
+	regV1RecordingsGet    = regexp.MustCompile(`/v1/recordings\?`)
+	regV1Recordings       = regexp.MustCompile(`/v1/recordings$`)
+	regV1RecordingsID     = regexp.MustCompile("/v1/recordings/" + regUUID + "$")
+	regV1RecordingsIDStop = regexp.MustCompile("/v1/recordings/" + regUUID + "/stop$")
 )
 
 var (
@@ -319,6 +320,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1RecordingsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1RecordingsIDDelete(ctx, m)
 		requestType = "/v1/recordings/<recording-id>"
+
+	// POST /recordings/<recording-id>/stop
+	case regV1RecordingsIDStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1RecordingsIDStopPost(ctx, m)
+		requestType = "/v1/recordings/<recording-id>/stop"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

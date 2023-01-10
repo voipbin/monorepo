@@ -311,8 +311,11 @@ func (h *handler) RecordingSetStatus(ctx context.Context, id uuid.UUID, status r
 	case recording.StatusRecording:
 		return h.recordingSetStatusRecording(ctx, id)
 
-	case recording.StatusEnd:
+	case recording.StatusEnded:
 		return h.recordingSetStatusEnd(ctx, id)
+
+	case recording.StatusStopping:
+		return h.recordingSetStatusStopping(ctx, id)
 
 	default:
 		return fmt.Errorf("could not found correct status handler")
@@ -362,9 +365,35 @@ func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID) error
 	`
 
 	ts := h.utilHandler.GetCurTime()
-	_, err := h.db.Exec(q, recording.StatusEnd, ts, ts, id.Bytes())
+	_, err := h.db.Exec(q, recording.StatusEnded, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusEnd. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.recordingUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// recordingSetStatusStopping sets the record's status to stopping
+func (h *handler) recordingSetStatusStopping(ctx context.Context, id uuid.UUID) error {
+
+	// prepare
+	q := `
+	update
+		recordings
+	set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, recording.StatusStopping, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. recordingSetStatusStopping. err: %v", err)
 	}
 
 	// update the cache

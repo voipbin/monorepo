@@ -599,10 +599,12 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 		}
 	}
 
-	if errStop := h.recordingHandler.Stop(ctx, c.RecordingID); errStop != nil {
+	tmp, err := h.recordingHandler.Stop(ctx, c.RecordingID)
+	if err != nil {
 		// we failed to stop the recording. But we still want to continue to call process.
-		log.Errorf("Could not stop the recording. recording_id: %s, err: %v", c.RecordingID, errStop)
+		log.Errorf("Could not stop the recording. recording_id: %s, err: %v", c.RecordingID, err)
 	}
+	log.WithField("recording", tmp).Debugf("Stopping recording info. recording_id: %s", tmp.ID)
 
 	if err := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); err != nil {
 		log.Errorf("Could not execute next action call. err: %v", err)
