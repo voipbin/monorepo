@@ -1089,6 +1089,36 @@ func (mr *MockRequestHandlerMockRecorder) CallV1RecordingGets(ctx, customerID, s
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecordingGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecordingGets), ctx, customerID, size, token)
 }
 
+// CallV1RecordingStart mocks base method.
+func (m *MockRequestHandler) CallV1RecordingStart(ctx context.Context, referenceType recording.ReferenceType, referenceID uuid.UUID, format string, endOfSilence int, endOfKey string, duration int) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1RecordingStart", ctx, referenceType, referenceID, format, endOfSilence, endOfKey, duration)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1RecordingStart indicates an expected call of CallV1RecordingStart.
+func (mr *MockRequestHandlerMockRecorder) CallV1RecordingStart(ctx, referenceType, referenceID, format, endOfSilence, endOfKey, duration interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecordingStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecordingStart), ctx, referenceType, referenceID, format, endOfSilence, endOfKey, duration)
+}
+
+// CallV1RecordingStop mocks base method.
+func (m *MockRequestHandler) CallV1RecordingStop(ctx context.Context, recordingID uuid.UUID) (*recording.Recording, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1RecordingStop", ctx, recordingID)
+	ret0, _ := ret[0].(*recording.Recording)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1RecordingStop indicates an expected call of CallV1RecordingStop.
+func (mr *MockRequestHandlerMockRecorder) CallV1RecordingStop(ctx, recordingID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecordingStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecordingStop), ctx, recordingID)
+}
+
 // CampaignV1CampaignCreate mocks base method.
 func (m *MockRequestHandler) CampaignV1CampaignCreate(ctx context.Context, id, customerID uuid.UUID, campaignType campaign.Type, name, detail string, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
