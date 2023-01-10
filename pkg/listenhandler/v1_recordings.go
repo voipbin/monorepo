@@ -10,6 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 )
 
 // processV1RecordingGet handles GET /v1/recordings request
@@ -43,6 +45,45 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitm
 	data, err := json.Marshal(tmps)
 	if err != nil {
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmps, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1RecordingsPost handles POST /v1/recordings request
+func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"handler": "processV1RecordingsPost",
+			"uri":     m.URI,
+			"data":    m.Data,
+		},
+	)
+
+	var req request.V1DataRecordingsPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.recordingHandler.Start(ctx, req.ReferenceType, req.ReferenceID, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration)
+	if err != nil {
+		log.Errorf("Could not start the recording. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 	log.Debugf("Sending result: %v", data)

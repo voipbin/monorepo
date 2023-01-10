@@ -153,7 +153,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, bridgeHandler)
-	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db)
+	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, confbridgeHandler, bridgeHandler)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, recordingHandler)
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 

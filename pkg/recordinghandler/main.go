@@ -2,6 +2,7 @@ package recordinghandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
@@ -9,6 +10,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -29,7 +32,7 @@ type RecordingHandler interface {
 		duration int,
 	) (*recording.Recording, error)
 	Started(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
-	Stop(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
+	Stop(ctx context.Context, id uuid.UUID) error
 	Stopped(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 }
 
@@ -40,10 +43,12 @@ const (
 
 // recordingHandler structure for service handle
 type recordingHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	reqHandler    requesthandler.RequestHandler
-	notifyHandler notifyhandler.NotifyHandler
-	db            dbhandler.DBHandler
+	utilHandler       utilhandler.UtilHandler
+	reqHandler        requesthandler.RequestHandler
+	notifyHandler     notifyhandler.NotifyHandler
+	db                dbhandler.DBHandler
+	confbridgeHandler confbridgehandler.ConfbridgeHandler
+	bridgeHandler     bridgehandler.BridgeHandler
 }
 
 // NewRecordingHandler returns a new RecordingHandler
@@ -51,11 +56,22 @@ func NewRecordingHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
+	confbridgeHandler confbridgehandler.ConfbridgeHandler,
+	bridgeHandler bridgehandler.BridgeHandler,
 ) RecordingHandler {
 	return &recordingHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    reqHandler,
-		notifyHandler: notifyHandler,
-		db:            db,
+		utilHandler:       utilhandler.NewUtilHandler(),
+		reqHandler:        reqHandler,
+		notifyHandler:     notifyHandler,
+		db:                db,
+		confbridgeHandler: confbridgeHandler,
+		bridgeHandler:     bridgeHandler,
 	}
+}
+
+// createRecordingName returns recording name for the given reference type and id.
+func (h *recordingHandler) createRecordingName(referenceType recording.ReferenceType, referenceID string) string {
+	ts := h.utilHandler.GetCurTimeRFC3339()
+	res := fmt.Sprintf("%s_%s_%s", referenceType, referenceID, ts)
+	return res
 }

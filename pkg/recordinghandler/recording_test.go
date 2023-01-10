@@ -11,15 +11,20 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cmconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func Test_Start(t *testing.T) {
+func Test_Start_call(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -57,6 +62,7 @@ func Test_Start(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
 				AsteriskID: "42:01:0a:a4:00:03",
 				ChannelID:  "4f577092-8fd7-11ed-83c6-2fc653ad0b7c",
+				Status:     call.StatusProgressing,
 			},
 			responseUUID:       uuid.FromStringOrNil("e141bb2c-8fd5-11ed-a0f9-9735e31b8411"),
 			responseCurTimeRFC: "2023-01-05T14:58:05Z",
@@ -145,6 +151,141 @@ func Test_Start(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRecording) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRecording, res)
+			}
+		})
+	}
+}
+
+func Test_Start_conference(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		referenceType recording.ReferenceType
+		referenceID   uuid.UUID
+		format        string
+		endOfSilence  int
+		endOfKey      string
+		duration      int
+
+		responseConference *cmconference.Conference
+		responseConfbridge *confbridge.Confbridge
+		responseBridge     *bridge.Bridge
+		responseUUID       uuid.UUID
+		responseRecording  *recording.Recording
+
+		responseCurTimeRFC string
+
+		expectFilename  string
+		expectRecording *recording.Recording
+	}{
+		{
+			name: "normal reference type call",
+
+			referenceType: recording.ReferenceTypeConference,
+			referenceID:   uuid.FromStringOrNil("676d83d0-90a2-11ed-96be-afdeb5b65a08"),
+			format:        "wav",
+			endOfSilence:  0,
+			endOfKey:      "",
+			duration:      0,
+
+			responseConference: &cmconference.Conference{
+				ID:           uuid.FromStringOrNil("676d83d0-90a2-11ed-96be-afdeb5b65a08"),
+				CustomerID:   uuid.FromStringOrNil("67c29f96-90a2-11ed-ae2a-cf22d50cd411"),
+				ConfbridgeID: uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
+				Status:       cmconference.StatusProgressing,
+			},
+			responseConfbridge: &confbridge.Confbridge{
+				ID:       uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
+				BridgeID: "6822e4c8-90a2-11ed-8002-4bf0087d99cb",
+			},
+			responseBridge: &bridge.Bridge{
+				AsteriskID: "42:01:0a:a4:00:03",
+				ID:         "6822e4c8-90a2-11ed-8002-4bf0087d99cb",
+			},
+			responseUUID:       uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
+			responseCurTimeRFC: "2023-01-05T14:58:05Z",
+			responseRecording: &recording.Recording{
+				ID: uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
+			},
+
+			expectFilename: "conference_676d83d0-90a2-11ed-96be-afdeb5b65a08_2023-01-05T14:58:05Z_in",
+			expectRecording: &recording.Recording{
+				ID:            uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
+				CustomerID:    uuid.FromStringOrNil("67c29f96-90a2-11ed-ae2a-cf22d50cd411"),
+				ReferenceType: recording.ReferenceTypeConference,
+				ReferenceID:   uuid.FromStringOrNil("676d83d0-90a2-11ed-96be-afdeb5b65a08"),
+				Status:        recording.StatusInitiating,
+				Format:        "wav",
+				RecordingName: "conference_676d83d0-90a2-11ed-96be-afdeb5b65a08_2023-01-05T14:58:05Z",
+				Filenames: []string{
+					"conference_676d83d0-90a2-11ed-96be-afdeb5b65a08_2023-01-05T14:58:05Z_in.wav",
+				},
+				AsteriskID: "42:01:0a:a4:00:03",
+				TMStart:    dbhandler.DefaultTimeStamp,
+				TMEnd:      dbhandler.DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &recordingHandler{
+				utilHandler:       mockUtil,
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				confbridgeHandler: mockConfbridge,
+				bridgeHandler:     mockBridge,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.referenceID).Return(tt.responseConference, nil)
+			mockConfbridge.EXPECT().Get(ctx, tt.responseConference.ConfbridgeID).Return(tt.responseConfbridge, nil)
+			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
+			mockUtil.EXPECT().GetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
+
+			mockReq.EXPECT().AstBridgeRecord(
+				ctx,
+				tt.responseBridge.AsteriskID,
+				tt.responseBridge.ID,
+				tt.expectFilename,
+				tt.format,
+				tt.duration,
+				tt.endOfSilence,
+				false,
+				tt.endOfKey,
+				"fail",
+			)
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.responseRecording, nil)
+			res, err := h.Start(
+				ctx,
+				tt.referenceType,
+				tt.referenceID,
+				tt.format,
+				tt.endOfSilence,
+				tt.endOfKey,
+				tt.duration,
+			)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseRecording) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
 			}
 		})
 	}
@@ -272,7 +413,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_Stop(t *testing.T) {
+func Test_Stop_referenceTypeCall(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -282,13 +423,14 @@ func Test_Stop(t *testing.T) {
 		responseRecording *recording.Recording
 	}{
 		{
-			name: "normal reference type call",
+			name: "normal",
 
 			id: uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
 
 			responseRecording: &recording.Recording{
-				ID:         uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
-				AsteriskID: "42:01:0a:a4:00:03",
+				ID:            uuid.FromStringOrNil("85e34fd6-8ff1-11ed-84bc-cf71e0ea8a60"),
+				ReferenceType: recording.ReferenceTypeCall,
+				AsteriskID:    "42:01:0a:a4:00:03",
 				ChannelIDs: []string{
 					"9ce319be-8ff1-11ed-a60d-e354dfcdff50",
 					"9d0b60c2-8ff1-11ed-aa1e-b31d5892bff8",
@@ -320,15 +462,61 @@ func Test_Stop(t *testing.T) {
 			for _, channelID := range tt.responseRecording.ChannelIDs {
 				mockReq.EXPECT().AstChannelHangup(ctx, tt.responseRecording.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
 			}
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 
-			res, err := h.Stop(ctx, tt.id)
-			if err != nil {
+			if err := h.Stop(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+		})
+	}
+}
 
-			if !reflect.DeepEqual(res, tt.responseRecording) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseRecording, res)
+func Test_Stop_referenceTypeConference(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseRecording *recording.Recording
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("f3a4776c-90c2-11ed-a1fe-df5a7d2fc896"),
+
+			responseRecording: &recording.Recording{
+				ID:            uuid.FromStringOrNil("f3a4776c-90c2-11ed-a1fe-df5a7d2fc896"),
+				ReferenceType: recording.ReferenceTypeConference,
+				AsteriskID:    "42:01:0a:a4:00:03",
+				RecordingName: "conference_f3eeac6a-90c2-11ed-9bad-9bc50d0bf273_2023-01-05T14:58:05Z",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &recordingHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().AstRecordingStop(ctx, tt.responseRecording.AsteriskID, tt.responseRecording.RecordingName).Return(nil)
+
+			if err := h.Stop(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
