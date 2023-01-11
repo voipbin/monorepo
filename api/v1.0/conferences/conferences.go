@@ -229,3 +229,97 @@ func conferencesIDDELETE(c *gin.Context) {
 
 	c.AbortWithStatus(200)
 }
+
+// conferencesIDRecordingStartPOST handles DELETE /conferences/{id}/recording_start request.
+// It starts the conference recording.
+// @Summary Starts the conference recording.
+// @Description Start the conference recording.
+// @Produce json
+// @Param id path string true "The ID of the conference"
+// @Success 200
+// @Router /v1.0/conferences/{id}/recording_start [post]
+func conferencesIDRecordingStartPOST(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesIDRecordingStartPOST",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("conference_id", id)
+	log.Debug("Executing conferencesIDDELETE.")
+
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	err := servicehandler.ConferenceRecordingStart(c.Request.Context(), &u, id)
+	if err != nil {
+		log.Errorf("Could not start the conference recording. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// conferencesIDRecordingStopPOST handles DELETE /conferences/{id}/recording_stop request.
+// It stops the conference recording.
+// @Summary Stops the conference recording.
+// @Description Stops the conference recording.
+// @Produce json
+// @Param id path string true "The ID of the conference"
+// @Success 200
+// @Router /v1.0/conferences/{id}/recording_stop [post]
+func conferencesIDRecordingStopPOST(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesIDRecordingStopPOST",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("conference_id", id)
+	log.Debug("Executing conferencesIDRecordingStopPOST.")
+
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	err := servicehandler.ConferenceRecordingStop(c.Request.Context(), &u, id)
+	if err != nil {
+		log.Errorf("Could not stop the conference recording. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
