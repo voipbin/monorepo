@@ -97,10 +97,14 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230110083953-9a37f598
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230110083953-9a37f5984a13/go.mod h1:0vROTIzlKhLsNlCWdtwYd3fppa6u588wUx+WQzrL3ko=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230110111705-c83a30c93460 h1:v1jbnu3/+7xfE62KNnEDhPQBJzS/A5XSB30p677aLoI=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230110111705-c83a30c93460/go.mod h1:X5LYSzKK2IL1bFWD5VmR3scGiJ3a+DG/M864LIGNR/s=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230110171108-6e4027433c49 h1:pfy4E7W/ZAXxykUEfHFcygbzIsOVlxiq8E7hdVdkkMI=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230110171108-6e4027433c49/go.mod h1:qkWOeuM96hD+1f/alr3xw4HvgGyBlsCuwpBVKn8lmvE=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220807174531-0227483c904d h1:eyg08npi9eCH97QVHxM0pzo0j7+mnvGvjr37M2wKXdk=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220807174531-0227483c904d/go.mod h1:oRbHciKRp4n8pmVI7HG5NMzhtl52c9qFw7rC6Bd0zgg=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230110041606-9821d284bde0 h1:qZJMX/i25H6cxWujo4zlu2BH2r176/zmsWk9lbzRF2k=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230110041606-9821d284bde0/go.mod h1:M2+9kQ9DYMwiqa+IyjQbRXYiZg1Pl28yuk7+7OEbklI=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230110164030-b4ae21ca6468 h1:4bHZpM2N19b3tdGg/cuRi+750r7hgE2kLe8UD6v2S1g=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230110164030-b4ae21ca6468/go.mod h1:eXUo02KtxpnEdA2AzrnVgHajyuPbYMwdWwhNjgpTFXQ=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a h1:6tQaB5eQ8du+G2tXWGrm1E9oI2fPZQT+slbcYFcVqPE=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a/go.mod h1:DtQoH7ZODkzXBZR0i6J4PH0NyS2/v+BkhLZhxbf585Q=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5 h1:l2PNnUrTq8qZNqqi9eu2b6EaQKNz/oar9P9/H0d+6hU=
