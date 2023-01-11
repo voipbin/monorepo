@@ -236,3 +236,107 @@ func Test_conferencesIDDELETE(t *testing.T) {
 		})
 	}
 }
+
+func Test_conferencesIDRecordingStartPOST(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer cscustomer.Customer
+		id       uuid.UUID
+
+		requestURI string
+	}{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+			uuid.FromStringOrNil("d2f603ce-910c-11ed-a360-0356e6882c63"),
+			"/v1.0/conferences/d2f603ce-910c-11ed-a360-0356e6882c63/recording_start",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("POST", tt.requestURI, nil)
+
+			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.customer, tt.id).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+		})
+	}
+}
+
+func Test_conferencesIDRecordingStotPOST(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer cscustomer.Customer
+		id       uuid.UUID
+
+		requestURI string
+	}{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+			uuid.FromStringOrNil("f1f4d55c-910c-11ed-ad67-8768a5ad30d8"),
+			"/v1.0/conferences/f1f4d55c-910c-11ed-ad67-8768a5ad30d8/recording_stop",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("POST", tt.requestURI, nil)
+
+			mockSvc.EXPECT().ConferenceRecordingStop(req.Context(), &tt.customer, tt.id).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+		})
+	}
+}

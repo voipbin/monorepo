@@ -834,6 +834,34 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceGets(ctx, u, size, token int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGets), ctx, u, size, token)
 }
 
+// ConferenceRecordingStart mocks base method.
+func (m *MockServiceHandler) ConferenceRecordingStart(ctx context.Context, u *customer.Customer, confID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceRecordingStart", ctx, u, confID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceRecordingStart indicates an expected call of ConferenceRecordingStart.
+func (mr *MockServiceHandlerMockRecorder) ConferenceRecordingStart(ctx, u, confID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRecordingStart", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceRecordingStart), ctx, u, confID)
+}
+
+// ConferenceRecordingStop mocks base method.
+func (m *MockServiceHandler) ConferenceRecordingStop(ctx context.Context, u *customer.Customer, confID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceRecordingStop", ctx, u, confID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceRecordingStop indicates an expected call of ConferenceRecordingStop.
+func (mr *MockServiceHandlerMockRecorder) ConferenceRecordingStop(ctx, u, confID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceRecordingStop", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceRecordingStop), ctx, u, confID)
+}
+
 // ConferencecallCreate mocks base method.
 func (m *MockServiceHandler) ConferencecallCreate(ctx context.Context, u *customer.Customer, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
