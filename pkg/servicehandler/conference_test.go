@@ -375,3 +375,121 @@ func TestConferenceGet(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConferenceRecordingStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer     *cscustomer.Customer
+		conferenceID uuid.UUID
+
+		responseconference *cfconference.Conference
+		expectRes          *cfconference.WebhookMessage
+	}{
+		{
+			"normal",
+
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
+
+			&cfconference.Conference{
+				ID:         uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+
+				PreActions:  []fmaction.Action{},
+				PostActions: []fmaction.Action{},
+			},
+			&cfconference.WebhookMessage{
+				ID:         uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+
+				PreActions:  []fmaction.Action{},
+				PostActions: []fmaction.Action{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID).Return(nil)
+			if err := h.ConferenceRecordingStart(ctx, tt.customer, tt.conferenceID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_ConferenceRecordingStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer     *cscustomer.Customer
+		conferenceID uuid.UUID
+
+		responseconference *cfconference.Conference
+		expectRes          *cfconference.WebhookMessage
+	}{
+		{
+			"normal",
+
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			uuid.FromStringOrNil("f6e67710-910b-11ed-b11d-abaf81af53bf"),
+
+			&cfconference.Conference{
+				ID:         uuid.FromStringOrNil("f6e67710-910b-11ed-b11d-abaf81af53bf"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+
+				PreActions:  []fmaction.Action{},
+				PostActions: []fmaction.Action{},
+			},
+			&cfconference.WebhookMessage{
+				ID:         uuid.FromStringOrNil("f6e67710-910b-11ed-b11d-abaf81af53bf"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+
+				PreActions:  []fmaction.Action{},
+				PostActions: []fmaction.Action{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceRecordingStop(ctx, tt.conferenceID).Return(nil)
+			if err := h.ConferenceRecordingStop(ctx, tt.customer, tt.conferenceID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

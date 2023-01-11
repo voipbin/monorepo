@@ -150,3 +150,57 @@ func (h *serviceHandler) ConferenceDelete(ctx context.Context, u *cscustomer.Cus
 
 	return nil
 }
+
+// ConferenceRecordingStart is a service handler for conference recording start.
+func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "ConferenceRecordingStart",
+			"customer_id":   u.ID,
+			"username":      u.Username,
+			"conference_id": confID,
+		},
+	)
+
+	// get conference for ownership check
+	_, err := h.conferenceGet(ctx, u, confID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return err
+	}
+
+	// recording
+	if err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, confID); err != nil {
+		log.Errorf("Could not start the conference recording. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// ConferenceRecordingStop is a service handler for conference recording stop.
+func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "ConferenceRecordingStop",
+			"customer_id":   u.ID,
+			"username":      u.Username,
+			"conference_id": confID,
+		},
+	)
+
+	// get conference for ownership check
+	_, err := h.conferenceGet(ctx, u, confID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return err
+	}
+
+	// recording
+	if err := h.reqHandler.ConferenceV1ConferenceRecordingStop(ctx, confID); err != nil {
+		log.Errorf("Could not stop the conference recording. err: %v", err)
+		return err
+	}
+
+	return nil
+}
