@@ -162,6 +162,7 @@ func (h *recordingHandler) createReferenceTypeConference(
 		"reference_type": recording.ReferenceTypeCall,
 		"reference_id":   conferenceID,
 	})
+	log.Debugf("Start recording the conference. conference_id: %s", conferenceID)
 
 	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, conferenceID)
 	if err != nil {
