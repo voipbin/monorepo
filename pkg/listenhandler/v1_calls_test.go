@@ -1247,3 +1247,123 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		expectID           uuid.UUID
+		expectFormat       string
+		expectEndOfSilence int
+		expectEndOfKey     string
+		expectDuration     int
+
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/1c3dc786-9344-11ed-96a2-17c902204823/recording_start",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"format": "wav", "end_of_silence": 1000, "end_of_key": "#", "duration": 86400}`),
+			},
+
+			uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
+			"wav",
+			1000,
+			"#",
+			86400,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		expectID  uuid.UUID
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/1c73262e-9344-11ed-840d-37569c93274f/recording_stop",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("1c73262e-9344-11ed-840d-37569c93274f"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

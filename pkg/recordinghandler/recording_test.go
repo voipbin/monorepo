@@ -31,7 +31,7 @@ func Test_Start_call(t *testing.T) {
 
 		referenceType recording.ReferenceType
 		referenceID   uuid.UUID
-		format        string
+		format        recording.Format
 		endOfSilence  int
 		endOfKey      string
 		duration      int
@@ -52,7 +52,7 @@ func Test_Start_call(t *testing.T) {
 
 			referenceType: recording.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
-			format:        "wav",
+			format:        recording.FormatWAV,
 			endOfSilence:  0,
 			endOfKey:      "",
 			duration:      0,
@@ -163,7 +163,7 @@ func Test_Start_conference(t *testing.T) {
 
 		referenceType recording.ReferenceType
 		referenceID   uuid.UUID
-		format        string
+		format        recording.Format
 		endOfSilence  int
 		endOfKey      string
 		duration      int
@@ -180,11 +180,11 @@ func Test_Start_conference(t *testing.T) {
 		expectRecording *recording.Recording
 	}{
 		{
-			name: "normal reference type call",
+			name: "normal",
 
 			referenceType: recording.ReferenceTypeConference,
 			referenceID:   uuid.FromStringOrNil("676d83d0-90a2-11ed-96be-afdeb5b65a08"),
-			format:        "wav",
+			format:        recording.FormatWAV,
 			endOfSilence:  0,
 			endOfKey:      "",
 			duration:      0,
@@ -255,7 +255,10 @@ func Test_Start_conference(t *testing.T) {
 			mockConfbridge.EXPECT().Get(ctx, tt.responseConference.ConfbridgeID).Return(tt.responseConfbridge, nil)
 			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
 			mockUtil.EXPECT().GetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
-
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceUpdateRecordingID(ctx, tt.responseRecording.ReferenceID, tt.responseRecording.ID).Return(tt.responseConference, nil)
 			mockReq.EXPECT().AstBridgeRecord(
 				ctx,
 				tt.responseBridge.AsteriskID,
@@ -268,9 +271,7 @@ func Test_Start_conference(t *testing.T) {
 				tt.endOfKey,
 				"fail",
 			)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
-			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.responseRecording, nil)
+
 			res, err := h.Start(
 				ctx,
 				tt.referenceType,
@@ -485,6 +486,8 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 		id uuid.UUID
 
 		responseRecording *recording.Recording
+
+		expectRecordingName string
 	}{
 		{
 			name: "normal",
@@ -497,6 +500,8 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 				AsteriskID:    "42:01:0a:a4:00:03",
 				RecordingName: "conference_f3eeac6a-90c2-11ed-9bad-9bc50d0bf273_2023-01-05T14:58:05Z",
 			},
+
+			expectRecordingName: "conference_f3eeac6a-90c2-11ed-9bad-9bc50d0bf273_2023-01-05T14:58:05Z_in",
 		},
 	}
 
@@ -520,7 +525,7 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().AstRecordingStop(ctx, tt.responseRecording.AsteriskID, tt.responseRecording.RecordingName).Return(nil)
+			mockReq.EXPECT().AstRecordingStop(ctx, tt.responseRecording.AsteriskID, tt.expectRecordingName).Return(nil)
 			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
 

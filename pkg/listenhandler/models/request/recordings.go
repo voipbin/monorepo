@@ -18,7 +18,7 @@ type V1DataRecordingsGET struct {
 type V1DataRecordingsPost struct {
 	ReferenceType recording.ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID               `json:"reference_id"`
-	Format        string                  `json:"format"`         // default wav
+	Format        recording.Format        `json:"format"`         // default wav
 	EndOfSilence  int                     `json:"end_of_silence"` // milliseconds
 	EndOfKey      string                  `json:"end_of_key"`
 	Duration      int                     `json:"duration"` // milliseconds

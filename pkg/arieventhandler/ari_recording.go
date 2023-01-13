@@ -50,10 +50,10 @@ func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt in
 
 	log := log.WithFields(
 		log.Fields{
-			"asterisk": e.AsteriskID,
-			"stasis":   e.Application,
-			"record":   e.Recording.Name,
-			"func":     "eventHandlerRecordingFinished",
+			"func":           "eventHandlerRecordingFinished",
+			"asterisk_name":  e.AsteriskID,
+			"stasis_name":    e.Application,
+			"recording_name": e.Recording.Name,
 		})
 
 	if !strings.HasSuffix(e.Recording.Name, "_in") {

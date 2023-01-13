@@ -82,7 +82,7 @@ func (mr *MockRecordingHandlerMockRecorder) GetsByCustomerID(ctx, customerID, si
 }
 
 // Start mocks base method.
-func (m *MockRecordingHandler) Start(ctx context.Context, referenceType recording.ReferenceType, referenceID uuid.UUID, format string, endOfSilence int, endOfKey string, duration int) (*recording.Recording, error) {
+func (m *MockRecordingHandler) Start(ctx context.Context, referenceType recording.ReferenceType, referenceID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", ctx, referenceType, referenceID, format, endOfSilence, endOfKey, duration)
 	ret0, _ := ret[0].(*recording.Recording)
