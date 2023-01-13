@@ -93,7 +93,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 
 		expectReferenceType recording.ReferenceType
 		expectReferenceID   uuid.UUID
-		expectFormat        string
+		expectFormat        recording.Format
 		expectEndOfSilence  int
 		expectEndOfKey      string
 		expectDuration      int
@@ -116,7 +116,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 
 			recording.ReferenceTypeCall,
 			uuid.FromStringOrNil("30e259e0-90b5-11ed-9ca7-836b535a4622"),
-			"wav",
+			recording.FormatWAV,
 			0,
 			"",
 			0,

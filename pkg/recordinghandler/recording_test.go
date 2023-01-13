@@ -264,7 +264,7 @@ func Test_Start_conference(t *testing.T) {
 				tt.responseBridge.AsteriskID,
 				tt.responseBridge.ID,
 				tt.expectFilename,
-				tt.format,
+				string(tt.format),
 				tt.duration,
 				tt.endOfSilence,
 				false,
