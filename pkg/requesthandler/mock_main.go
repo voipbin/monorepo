@@ -899,6 +899,34 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallHealth(ctx, id, delay, retry
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHealth), ctx, id, delay, retryCount)
 }
 
+// CallV1CallRecordingStart mocks base method.
+func (m *MockRequestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallRecordingStart", ctx, callID, format, endOfSilence, endOfKey, duration)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallRecordingStart indicates an expected call of CallV1CallRecordingStart.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallRecordingStart(ctx, callID, format, endOfSilence, endOfKey, duration interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallRecordingStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallRecordingStart), ctx, callID, format, endOfSilence, endOfKey, duration)
+}
+
+// CallV1CallRecordingStop mocks base method.
+func (m *MockRequestHandler) CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallRecordingStop", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallRecordingStop indicates an expected call of CallV1CallRecordingStop.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallRecordingStop(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallRecordingStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallRecordingStop), ctx, callID)
+}
+
 // CallV1CallRemoveChainedCall mocks base method.
 func (m *MockRequestHandler) CallV1CallRemoveChainedCall(ctx context.Context, callID, chainedCallID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -1090,7 +1118,7 @@ func (mr *MockRequestHandlerMockRecorder) CallV1RecordingGets(ctx, customerID, s
 }
 
 // CallV1RecordingStart mocks base method.
-func (m *MockRequestHandler) CallV1RecordingStart(ctx context.Context, referenceType recording.ReferenceType, referenceID uuid.UUID, format string, endOfSilence int, endOfKey string, duration int) (*recording.Recording, error) {
+func (m *MockRequestHandler) CallV1RecordingStart(ctx context.Context, referenceType recording.ReferenceType, referenceID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallV1RecordingStart", ctx, referenceType, referenceID, format, endOfSilence, endOfKey, duration)
 	ret0, _ := ret[0].(*recording.Recording)

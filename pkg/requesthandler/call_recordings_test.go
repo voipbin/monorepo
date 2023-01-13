@@ -231,7 +231,7 @@ func Test_CallV1RecordingStart(t *testing.T) {
 
 		referenceType cmrecording.ReferenceType
 		referenceID   uuid.UUID
-		format        string
+		format        cmrecording.Format
 		endOfSilence  int
 		endOfKey      string
 		duration      int
@@ -247,7 +247,7 @@ func Test_CallV1RecordingStart(t *testing.T) {
 
 			cmrecording.ReferenceTypeCall,
 			uuid.FromStringOrNil("a49bea54-90ce-11ed-9bfb-67a5f5309240"),
-			"wav",
+			cmrecording.FormatWAV,
 			10000,
 			"#",
 			100000,

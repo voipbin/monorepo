@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -467,4 +468,56 @@ func (r *requestHandler) CallV1CallSetRecordingID(ctx context.Context, callID uu
 	}
 
 	return &c, nil
+}
+
+// CallV1CallRecordingStart sends a request to call-manager
+// to starts the given call's recording.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) error {
+	uri := fmt.Sprintf("/v1/calls/%s/recording_start", callID)
+
+	reqData := &cmrequest.V1DataCallsIDRecordingStartPost{
+		Format:       format,
+		EndOfSilence: endOfSilence,
+		EndOfKey:     endOfKey,
+		Duration:     duration,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsRecordingStart, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallRecordingStop sends a request to call-manager
+// to starts the given call's recording.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/recording_stop", callID)
+
+	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	return nil
 }
