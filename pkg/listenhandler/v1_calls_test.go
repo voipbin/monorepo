@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 )
 
@@ -1256,7 +1257,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 		request *rabbitmqhandler.Request
 
 		expectID           uuid.UUID
-		expectFormat       string
+		expectFormat       recording.Format
 		expectEndOfSilence int
 		expectEndOfKey     string
 		expectDuration     int
@@ -1275,7 +1276,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
-			"wav",
+			recording.FormatWAV,
 			1000,
 			"#",
 			86400,

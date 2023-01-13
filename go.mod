@@ -14,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
 	github.com/ttacon/libphonenumber v1.2.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230113054027-4774c0b31b5c
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230113135911-baeb11ed8a2e
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230113073456-697af0e91642
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230102093540-da6a0504a0ae
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9

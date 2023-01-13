@@ -101,6 +101,8 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230110171108-6e402743
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230110171108-6e4027433c49/go.mod h1:qkWOeuM96hD+1f/alr3xw4HvgGyBlsCuwpBVKn8lmvE=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230113054027-4774c0b31b5c h1:l58ynOwpIuDtVvIwPbaX8dSK6XGXaYURLD1mBiYnE50=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230113054027-4774c0b31b5c/go.mod h1:vO+3gaLHicuRQ0dZP+H4gzeI3NkBfLxdO01nMxihJCU=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230113135911-baeb11ed8a2e h1:RPRgcteicF/pD2h7gv1t+jk8clmwTUHn8zYIgI3tJ0o=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230113135911-baeb11ed8a2e/go.mod h1:6ET7E967UfNx5eowaL4t0/+amOsn05xq5rE+gzWA1Pk=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220807174531-0227483c904d h1:eyg08npi9eCH97QVHxM0pzo0j7+mnvGvjr37M2wKXdk=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20220807174531-0227483c904d/go.mod h1:oRbHciKRp4n8pmVI7HG5NMzhtl52c9qFw7rC6Bd0zgg=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230110041606-9821d284bde0 h1:qZJMX/i25H6cxWujo4zlu2BH2r176/zmsWk9lbzRF2k=

@@ -299,7 +299,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 
 		responseRecording *recording.Recording
 
-		expectFormat       string
+		expectFormat       recording.Format
 		expectEndOfSilence int
 		expectEndOfKey     string
 		expectDuration     int
@@ -322,7 +322,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 				ID: uuid.FromStringOrNil("dec99d2a-8fe8-11ed-b223-478f994dc5a0"),
 			},
 
-			"wav",
+			recording.FormatWAV,
 			0,
 			"",
 			0,

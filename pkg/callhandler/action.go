@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
 // Redirect options for timeout action
@@ -559,7 +560,7 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 	if errRecording := h.RecordingStart(
 		ctx,
 		c.ID,
-		option.Format,
+		recording.Format(option.Format),
 		option.EndOfSilence,
 		option.EndOfKey,
 		option.Duration,
