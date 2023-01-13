@@ -14,6 +14,7 @@ import (
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -382,6 +383,34 @@ func (m *MockCallHandler) HangupWithReason(ctx context.Context, c *call.Call, re
 func (mr *MockCallHandlerMockRecorder) HangupWithReason(ctx, c, reason, hangupBy, timestamp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangupWithReason", reflect.TypeOf((*MockCallHandler)(nil).HangupWithReason), ctx, c, reason, hangupBy, timestamp)
+}
+
+// RecordingStart mocks base method.
+func (m *MockCallHandler) RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingStart", ctx, id, format, endOfSilence, endOfKey, duration)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordingStart indicates an expected call of RecordingStart.
+func (mr *MockCallHandlerMockRecorder) RecordingStart(ctx, id, format, endOfSilence, endOfKey, duration interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStart", reflect.TypeOf((*MockCallHandler)(nil).RecordingStart), ctx, id, format, endOfSilence, endOfKey, duration)
+}
+
+// RecordingStop mocks base method.
+func (m *MockCallHandler) RecordingStop(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingStop", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordingStop indicates an expected call of RecordingStop.
+func (mr *MockCallHandlerMockRecorder) RecordingStop(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStop", reflect.TypeOf((*MockCallHandler)(nil).RecordingStop), ctx, id)
 }
 
 // StartCallHandle mocks base method.

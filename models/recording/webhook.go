@@ -13,7 +13,7 @@ type WebhookMessage struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 	Status        Status        `json:"status"`
-	Format        string        `json:"format"`
+	Format        Format        `json:"format"`
 
 	TMStart string `json:"tm_start"`
 	TMEnd   string `json:"tm_end"`

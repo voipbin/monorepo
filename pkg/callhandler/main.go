@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -50,6 +51,16 @@ type CallHandler interface {
 	Hangup(ctx context.Context, cn *channel.Channel) error
 	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error
 	HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) error
+
+	RecordingStart(
+		ctx context.Context,
+		id uuid.UUID,
+		format recording.Format,
+		endOfSilence int,
+		endOfKey string,
+		duration int,
+	) error
+	RecordingStop(ctx context.Context, id uuid.UUID) error
 
 	ActionNext(ctx context.Context, c *call.Call) error
 	ActionNextForce(ctx context.Context, c *call.Call) error

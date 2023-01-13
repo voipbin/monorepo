@@ -10,7 +10,7 @@ type Recording struct {
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 	Status        Status        `json:"status"`
-	Format        string        `json:"format"`
+	Format        Format        `json:"format"`
 
 	RecordingName string   `json:"recording_name"`
 	Filenames     []string `json:"filenames"`
@@ -44,4 +44,12 @@ const (
 	StatusRecording  Status = "recording"
 	StatusStopping   Status = "stopping"
 	StatusEnded      Status = "ended"
+)
+
+// Format type
+type Format string
+
+// list of formats
+const (
+	FormatWAV Format = "wav"
 )

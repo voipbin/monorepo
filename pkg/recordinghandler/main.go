@@ -26,7 +26,7 @@ type RecordingHandler interface {
 		ctx context.Context,
 		referenceType recording.ReferenceType,
 		referenceID uuid.UUID,
-		format string,
+		format recording.Format,
 		endOfSilence int,
 		endOfKey string,
 		duration int,

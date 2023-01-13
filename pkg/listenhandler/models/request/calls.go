@@ -4,6 +4,8 @@ import (
 	"github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
 // V1DataCallsPost is
@@ -85,4 +87,14 @@ type V1DataCallsIDDigitsPost struct {
 // /v1/calls/<id>/recording_id PUT
 type V1DataCallsIDRecordingIDPut struct {
 	RecordingID uuid.UUID `json:"recording_id"`
+}
+
+// V1DataCallsIDRecordingStartPost is
+// v1 data type for
+// /v1/calls/<id>/recording_start POST
+type V1DataCallsIDRecordingStartPost struct {
+	Format       recording.Format `json:"format"`         // Format to encode audio in. wav, mp3, ogg
+	EndOfSilence int              `json:"end_of_silence"` // Maximum duration of silence, in seconds. 0 for no limit.
+	EndOfKey     string           `json:"end_of_key"`     // DTMF input to terminate recording. none, any, *, #
+	Duration     int              `json:"duration"`       // Maximum duration of the recording, in seconds. 0 for no limit.
 }

@@ -310,6 +310,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 				ID:         uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
 				AsteriskID: "42:01:0a:a4:00:05",
 				ChannelID:  "bfd0e668-2a77-11eb-9993-e72b323b1801",
+				Status:     call.StatusProgressing,
 				Action: fmaction.Action{
 					Type:   fmaction.TypeRecordingStart,
 					ID:     uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
@@ -347,6 +348,7 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockRecording.EXPECT().Start(
 				ctx,
 				recording.ReferenceTypeCall,
@@ -378,6 +380,7 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 				AsteriskID:  "42:01:0a:a4:00:05",
 				ChannelID:   "5293419a-2b9e-11eb-bfa6-97a4312177f2",
 				RecordingID: uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
+				Status:      call.StatusProgressing,
 				Action: fmaction.Action{
 					Type: fmaction.TypeRecordingStop,
 					ID:   uuid.FromStringOrNil("4a3925dc-2b9e-11eb-abb3-d759c4b283d0"),
@@ -408,6 +411,7 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockRecording.EXPECT().Stop(ctx, tt.call.RecordingID).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 

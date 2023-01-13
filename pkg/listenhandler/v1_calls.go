@@ -636,3 +636,65 @@ func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *r
 
 	return res, nil
 }
+
+// processV1CallsIDRecordingStartPost handles /v1/calls/<id>/recording_start POST request
+func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1CallsIDRecordingIDPut.")
+
+	var req request.V1DataCallsIDRecordingStartPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+	log.WithFields(logrus.Fields{
+		"request": req,
+	}).Debugf("Parsed request data.")
+
+	if errRecording := h.callHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration); errRecording != nil {
+		log.Errorf("Could not start call recording. err: %v", errRecording)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDRecordingStopPost handles /v1/calls/<id>/recording_stop POST request
+func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1CallsIDRecordingStopPost.")
+
+	if errRecording := h.callHandler.RecordingStop(ctx, id); errRecording != nil {
+		log.Errorf("Could not start call recording. err: %v", errRecording)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}

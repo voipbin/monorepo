@@ -56,6 +56,8 @@ var (
 	regV1CallsIDExternalMedia     = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media$")
 	regV1CallsIDHangup            = regexp.MustCompile("/v1/calls/" + regUUID + "/hangup$")
 	regV1CallsIDRecordingID       = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_id$")
+	regV1CallsIDRecordingStart    = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_start$")
+	regV1CallsIDRecordingStop     = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_stop$")
 
 	// channels
 	regV1ChannelsIDHealth = regexp.MustCompile("/v1/channels/" + regUUID + "/health-check$")
@@ -250,6 +252,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CallsIDRecordingID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1CallsIDRecordingIDPut(ctx, m)
 		requestType = "/v1/calls/<call-id>/recording_id"
+
+	// PUT /calls/<id>/recording_id
+	case regV1CallsIDRecordingStart.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDRecordingStartPost(ctx, m)
+		requestType = "/v1/calls/<call-id>/recording_start"
+
+	// PUT /calls/<id>/recording_id
+	case regV1CallsIDRecordingStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDRecordingStopPost(ctx, m)
+		requestType = "/v1/calls/<call-id>/recording_stop"
 
 	// GET /calls
 	case regV1CallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:

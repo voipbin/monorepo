@@ -21,7 +21,7 @@ func (h *recordingHandler) Start(
 	ctx context.Context,
 	referenceType recording.ReferenceType,
 	referenceID uuid.UUID,
-	format string,
+	format recording.Format,
 	endOfSilence int,
 	endOfKey string,
 	duration int,
@@ -49,7 +49,7 @@ func (h *recordingHandler) Start(
 func (h *recordingHandler) createReferenceTypeCall(
 	ctx context.Context,
 	referenceID uuid.UUID,
-	format string,
+	format recording.Format,
 	endOfSilence int,
 	endOfKey string,
 	duration int,
@@ -152,7 +152,7 @@ func (h *recordingHandler) createReferenceTypeCall(
 func (h *recordingHandler) createReferenceTypeConference(
 	ctx context.Context,
 	conferenceID uuid.UUID,
-	format string,
+	format recording.Format,
 	endOfSilence int,
 	endOfKey string,
 	duration int,
@@ -192,22 +192,6 @@ func (h *recordingHandler) createReferenceTypeConference(
 	recordingName := h.createRecordingName(recording.ReferenceTypeConference, cf.ID.String())
 	filename := fmt.Sprintf("%s_in", recordingName)
 
-	if errRecord := h.reqHandler.AstBridgeRecord(
-		ctx,
-		br.AsteriskID,
-		br.ID,
-		filename,
-		format,
-		duration,
-		endOfSilence,
-		false,
-		endOfKey,
-		"fail",
-	); errRecord != nil {
-		log.Errorf("Could not record the bridge. err: %v", errRecord)
-		return nil, errRecord
-	}
-
 	id := h.utilHandler.CreateUUID()
 	recordingFilename := fmt.Sprintf("%s.%s", filename, format)
 	filenames := []string{
@@ -239,6 +223,31 @@ func (h *recordingHandler) createReferenceTypeConference(
 	if err != nil {
 		log.Errorf("Could not get created recording. err: %v", err)
 		return nil, err
+	}
+
+	// update recording id
+	cc, err := h.reqHandler.ConferenceV1ConferenceUpdateRecordingID(ctx, res.ReferenceID, res.ID)
+	if err != nil {
+		log.Errorf("Could not update the conference's recording id. err: %v", err)
+		return nil, err
+	}
+	log.WithField("conference", cc).Debugf("Updated conference's recording id. conference_id: %s", cc.ID)
+
+	// send recording request
+	if errRecord := h.reqHandler.AstBridgeRecord(
+		ctx,
+		br.AsteriskID,
+		br.ID,
+		filename,
+		string(format),
+		duration,
+		endOfSilence,
+		false,
+		endOfKey,
+		"fail",
+	); errRecord != nil {
+		log.Errorf("Could not record the bridge. err: %v", errRecord)
+		return nil, errRecord
 	}
 
 	return res, nil
@@ -367,7 +376,9 @@ func (h *recordingHandler) stopReferenceTypeConference(ctx context.Context, r *r
 		"recording_id": r.ID,
 	})
 
-	if errStop := h.reqHandler.AstRecordingStop(ctx, r.AsteriskID, r.RecordingName); errStop != nil {
+	filename := fmt.Sprintf("%s_in", r.RecordingName)
+	log.Debugf("Stopping conference recording. recording_name: %s", filename)
+	if errStop := h.reqHandler.AstRecordingStop(ctx, r.AsteriskID, filename); errStop != nil {
 		log.Errorf("Could not stop the recording. err: %v", errStop)
 		return errStop
 	}

@@ -14,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
 // Redirect options for timeout action
@@ -557,21 +556,18 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		}
 	}
 
-	// starts the recording
-	rec, err := h.recordingHandler.Start(
+	if errRecording := h.RecordingStart(
 		ctx,
-		recording.ReferenceTypeCall,
 		c.ID,
 		option.Format,
 		option.EndOfSilence,
 		option.EndOfKey,
 		option.Duration,
-	)
-	if err != nil {
-		log.Errorf("Could not start the recording. err: %v", err)
-		return err
+	); errRecording != nil {
+		log.Errorf("Could not start the recording. err: %v", errRecording)
+		return errRecording
 	}
-	log.WithField("recording", rec).Debugf("Started recording. recording_id: %s", rec.ID)
+	log.Debugf("Started recording. call_id: %s", c.ID)
 
 	// send next action request
 	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); errNext != nil {
@@ -599,12 +595,11 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 		}
 	}
 
-	tmp, err := h.recordingHandler.Stop(ctx, c.RecordingID)
-	if err != nil {
+	if errRecording := h.RecordingStop(ctx, c.ID); errRecording != nil {
 		// we failed to stop the recording. But we still want to continue to call process.
-		log.Errorf("Could not stop the recording. recording_id: %s, err: %v", c.RecordingID, err)
+		log.Errorf("Could not stop the recording. recording_id: %s, err: %v", c.RecordingID, errRecording)
 	}
-	log.WithField("recording", tmp).Debugf("Stopping recording info. recording_id: %s", tmp.ID)
+	log.Debugf("Stopping recording info. call_id: %s, recording_id: %s", c.ID, c.RecordingID)
 
 	if err := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); err != nil {
 		log.Errorf("Could not execute next action call. err: %v", err)
