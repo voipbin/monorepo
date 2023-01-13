@@ -156,13 +156,15 @@ const (
 	resourceCampaignCampaigncalls resource = "campaign/campaigncalls"
 	resourceCampaignOutplans      resource = "campaign/outplans"
 
-	resourceCallCalls              resource = "call/calls"
-	resourceCallCallsActionNext    resource = "call/calls/action-next"
-	resourceCallCallsActionTimeout resource = "call/calls/action-timeout"
-	resourceCallCallsHealth        resource = "call/calls/health"
-	resourceCallChannelsHealth     resource = "call/channels/health"
-	resourceCallConfbridges        resource = "call/confbridges"
-	resourceCallRecordings         resource = "call/recordings"
+	resourceCallCalls               resource = "call/calls"
+	resourceCallCallsActionNext     resource = "call/calls/action-next"
+	resourceCallCallsActionTimeout  resource = "call/calls/action-timeout"
+	resourceCallCallsHealth         resource = "call/calls/health"
+	resourceCallCallsRecordingStart resource = "call/calls/recording-start"
+	resourceCallCallsRecordingStop  resource = "call/calls/recording-stop"
+	resourceCallChannelsHealth      resource = "call/channels/health"
+	resourceCallConfbridges         resource = "call/confbridges"
+	resourceCallRecordings          resource = "call/recordings"
 
 	resourceChatChats            resource = "chat/chats"
 	resourceChatChatrooms        resource = "chat/chatrooms"
@@ -430,6 +432,8 @@ type RequestHandler interface {
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
+	CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) error
+	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) error
 	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
 	CallV1CallSetRecordingID(ctx context.Context, callID uuid.UUID, recordingID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
@@ -452,7 +456,7 @@ type RequestHandler interface {
 		ctx context.Context,
 		referenceType cmrecording.ReferenceType,
 		referenceID uuid.UUID,
-		format string,
+		format cmrecording.Format,
 		endOfSilence int,
 		endOfKey string,
 		duration int,

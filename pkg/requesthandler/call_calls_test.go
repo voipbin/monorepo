@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
@@ -1005,6 +1006,112 @@ func Test_CallV1CallSetRecordingID(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallRecordingStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID       uuid.UUID
+		format       cmrecording.Format
+		endOfSilence int
+		endOfKey     string
+		duration     int
+
+		expectRequest *rabbitmqhandler.Request
+
+		response *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("6533f61e-9348-11ed-83bc-ab5a0adfe5e5"),
+			cmrecording.FormatWAV,
+			1000,
+			"#",
+			86400,
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/6533f61e-9348-11ed-83bc-ab5a0adfe5e5/recording_start",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"format":"wav","end_of_silence":1000,"end_of_key":"#","duration":86400}`),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallRecordingStart(ctx, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallRecordingStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		expectRequest *rabbitmqhandler.Request
+
+		response *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("6593f41a-9348-11ed-bdd2-3b5bf8891acb"),
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/6593f41a-9348-11ed-bdd2-3b5bf8891acb/recording_stop",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallRecordingStop(ctx, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

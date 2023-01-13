@@ -95,7 +95,7 @@ func (r *requestHandler) CallV1RecordingStart(
 	ctx context.Context,
 	referenceType cmrecording.ReferenceType,
 	referenceID uuid.UUID,
-	format string,
+	format cmrecording.Format,
 	endOfSilence int,
 	endOfKey string,
 	duration int,
