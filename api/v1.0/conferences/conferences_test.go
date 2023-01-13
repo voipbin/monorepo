@@ -237,6 +237,82 @@ func Test_conferencesIDDELETE(t *testing.T) {
 	}
 }
 
+func Test_conferencesIDPUT(t *testing.T) {
+
+	tests := []struct {
+		name          string
+		customer      cscustomer.Customer
+		requestTarget string
+		request       []byte
+
+		respionseConference *cfconference.WebhookMessage
+
+		expectID          uuid.UUID
+		expectName        string
+		expectDetail      string
+		expectTimeout     int
+		expectPreActions  []fmaction.Action
+		expectPostActions []fmaction.Action
+	}{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			"/v1.0/conferences/4363587a-92ff-11ed-8a2f-930de2e9aeae",
+			[]byte(`{"name": "update name", "detail": "update detail", "timeout": 86400, "pre_actions": [{"type": "answer"}], "post_actions":[{"type": "hangup"}]}`),
+
+			&cfconference.WebhookMessage{
+				ID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
+			},
+
+			uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
+			"update name",
+			"update detail",
+			86400,
+			[]fmaction.Action{
+				{
+					Type: "answer",
+				},
+			},
+			[]fmaction.Action{
+				{
+					Type: "hangup",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("PUT", tt.requestTarget, bytes.NewBuffer(tt.request))
+			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ConferenceUpdate(req.Context(), &tt.customer, tt.expectID, tt.expectName, tt.expectDetail, tt.expectTimeout, tt.expectPreActions, tt.expectPostActions).Return(tt.respionseConference, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+		})
+	}
+}
+
 func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 
 	tests := []struct {

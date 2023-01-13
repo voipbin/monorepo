@@ -183,6 +183,61 @@ func conferencesIDGET(c *gin.Context) {
 	c.JSON(200, res)
 }
 
+// conferencesIDPUT handles PUT /conferences/{id} request.
+// It updates the conference and returns updated conference info.
+// @Summary Update conference info.
+// @Description Update conference info of the given conference id.
+// @Produce json
+// @Param id path string true "The ID of the conference"
+// @Param token query string true "JWT token"
+// @Success 200 {object} conference.Conference
+// @Router /v1.0/conferences/{id} [put]
+func conferencesIDPUT(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesIDPUT",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("conference_id", id)
+	log.Debug("Executing conferencesIDPUT.")
+
+	var req request.BodyConferencesIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := servicehandler.ConferenceUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.Tiemout, req.PreActions, req.PostActions)
+	if err != nil || res == nil {
+		log.Errorf("Could not update the conference. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // conferencesIDDELETE handles DELETE /conferences/{id} request.
 // It deletes the conference.
 // @Summary Delete the conference.
