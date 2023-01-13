@@ -182,9 +182,11 @@ func (h *conferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, conf
 
 	var res []*conference.Conference
 	var err error
-	if confType == "" {
+	switch confType {
+	case conference.TypeNone:
 		res, err = h.db.ConferenceGets(ctx, customerID, size, token)
-	} else {
+
+	default:
 		res, err = h.db.ConferenceGetsWithType(ctx, customerID, confType, size, token)
 	}
 

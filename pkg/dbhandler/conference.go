@@ -51,7 +51,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	var postActions string
 	var data string
 	var conferencecallIDs sql.NullString
-	var RecordingIDs string
+	var recordingIDs sql.NullString
 
 	res := &conference.Conference{}
 	if err := row.Scan(
@@ -73,7 +73,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		&conferencecallIDs,
 
 		&res.RecordingID,
-		&RecordingIDs,
+		&recordingIDs,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -111,8 +111,10 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 		res.ConferencecallIDs = []uuid.UUID{}
 	}
 
-	if err := json.Unmarshal([]byte(RecordingIDs), &res.RecordingIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the destination. conferenceGetFromRow. err: %v", err)
+	if recordingIDs.Valid {
+		if errMarshal := json.Unmarshal([]byte(recordingIDs.String), &res.RecordingIDs); errMarshal != nil {
+			return nil, fmt.Errorf("could not unmarshal the recording_ids. conferenceGetFromRow. err: %v", errMarshal)
+		}
 	}
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}
@@ -591,7 +593,7 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordingID.Bytes(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %v", err)
 	}
