@@ -170,6 +170,16 @@ type ServiceHandler interface {
 	ConferenceGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
 	ConferenceRecordingStart(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error
 	ConferenceRecordingStop(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error
+	ConferenceUpdate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		cfID uuid.UUID,
+		name string,
+		detail string,
+		timeout int,
+		preActions []fmaction.Action,
+		postActions []fmaction.Action,
+	) (*cfconference.WebhookMessage, error)
 
 	// conferencecall handlers
 	ConferencecallGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconferencecall.WebhookMessage, error)
