@@ -44,6 +44,7 @@ func (h *serviceHandler) conferenceGet(ctx context.Context, u *cscustomer.Custom
 // It returns conference info if it succeed.
 func (h *serviceHandler) ConferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "ConferenceGet",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"conference":  id,
@@ -64,6 +65,7 @@ func (h *serviceHandler) ConferenceGet(ctx context.Context, u *cscustomer.Custom
 // It returns list of calls if it succeed.
 func (h *serviceHandler) ConferenceGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "ConferenceGets",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"size":        size,
@@ -103,6 +105,7 @@ func (h *serviceHandler) ConferenceCreate(
 ) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":         "ConferenceCreate",
 			"customer_id":  u.ID,
 			"username":     u.Username,
 			"type":         confType,
@@ -128,6 +131,7 @@ func (h *serviceHandler) ConferenceCreate(
 func (h *serviceHandler) ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":        "ConferenceDelete",
 			"customer_id": u.ID,
 			"username":    u.Username,
 			"conference":  confID,
@@ -149,6 +153,51 @@ func (h *serviceHandler) ConferenceDelete(ctx context.Context, u *cscustomer.Cus
 	}
 
 	return nil
+}
+
+// ConferenceUpdate is a service handler for conference updating.
+func (h *serviceHandler) ConferenceUpdate(
+	ctx context.Context,
+	u *cscustomer.Customer,
+	cfID uuid.UUID,
+	name string,
+	detail string,
+	timeout int,
+	preActions []fmaction.Action,
+	postActions []fmaction.Action,
+) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "ConferenceUpdate",
+			"customer_id": u.ID,
+			"username":    u.Username,
+			"conference":  cfID,
+		},
+	)
+
+	// get conference for ownership check
+	_, err := h.conferenceGet(ctx, u, cfID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.reqHandler.ConferenceV1ConferenceUpdate(
+		ctx,
+		cfID,
+		name,
+		detail,
+		timeout,
+		preActions,
+		postActions,
+	)
+	if err != nil {
+		log.Errorf("Could not update the conference info. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // ConferenceRecordingStart is a service handler for conference recording start.

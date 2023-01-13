@@ -376,6 +376,86 @@ func TestConferenceGet(t *testing.T) {
 	}
 }
 
+func Test_ConferenceUpdate(t *testing.T) {
+
+	tests := []struct {
+		name        string
+		customer    *cscustomer.Customer
+		id          uuid.UUID
+		updateName  string
+		detail      string
+		timeout     int
+		preActions  []fmaction.Action
+		postActions []fmaction.Action
+
+		response  *cfconference.Conference
+		expectRes *cfconference.WebhookMessage
+	}{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
+			"update name",
+			"update detail",
+			86400,
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeHangup,
+				},
+			},
+
+			&cfconference.Conference{
+				ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+
+				PreActions:  []fmaction.Action{},
+				PostActions: []fmaction.Action{},
+			},
+			&cfconference.WebhookMessage{
+				ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+
+				PreActions:  []fmaction.Action{},
+				PostActions: []fmaction.Action{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceUpdate(ctx, tt.id, tt.updateName, tt.detail, tt.timeout, tt.preActions, tt.postActions).Return(tt.response, nil)
+			res, err := h.ConferenceUpdate(ctx, tt.customer, tt.id, tt.updateName, tt.detail, tt.timeout, tt.preActions, tt.postActions)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_ConferenceRecordingStart(t *testing.T) {
 
 	tests := []struct {
