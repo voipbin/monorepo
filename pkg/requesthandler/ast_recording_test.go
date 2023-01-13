@@ -26,7 +26,7 @@ func Test_AstRecordingStop(t *testing.T) {
 			"74b441de-90be-11ed-a5ab-eff9d8e46ebe",
 
 			"asterisk.00:11:22:33:44:55.request",
-			"/ari/recordings/74b441de-90be-11ed-a5ab-eff9d8e46ebe/stop",
+			"/ari/recordings/live/74b441de-90be-11ed-a5ab-eff9d8e46ebe/stop",
 			rabbitmqhandler.RequestMethodPost,
 		},
 	}
@@ -77,7 +77,7 @@ func Test_AstRecordingPause(t *testing.T) {
 			"ac61de34-90be-11ed-9fd7-b3becbae66ed",
 
 			"asterisk.00:11:22:33:44:55.request",
-			"/ari/recordings/ac61de34-90be-11ed-9fd7-b3becbae66ed/pause",
+			"/ari/recordings/live/ac61de34-90be-11ed-9fd7-b3becbae66ed/pause",
 			rabbitmqhandler.RequestMethodPost,
 		},
 	}
@@ -128,7 +128,7 @@ func Test_AstRecordingUnpause(t *testing.T) {
 			"ac61de34-90be-11ed-9fd7-b3becbae66ed",
 
 			"asterisk.00:11:22:33:44:55.request",
-			"/ari/recordings/ac61de34-90be-11ed-9fd7-b3becbae66ed/pause",
+			"/ari/recordings/live/ac61de34-90be-11ed-9fd7-b3becbae66ed/pause",
 			rabbitmqhandler.RequestMethodDelete,
 		},
 	}
@@ -179,7 +179,7 @@ func Test_AstRecordingMute(t *testing.T) {
 			"e73398fe-90be-11ed-821f-0fa720b0f3ab",
 
 			"asterisk.00:11:22:33:44:55.request",
-			"/ari/recordings/e73398fe-90be-11ed-821f-0fa720b0f3ab/mute",
+			"/ari/recordings/live/e73398fe-90be-11ed-821f-0fa720b0f3ab/mute",
 			rabbitmqhandler.RequestMethodPost,
 		},
 	}
@@ -230,7 +230,7 @@ func Test_AstRecordingUnmute(t *testing.T) {
 			"f8feed4a-90be-11ed-aa76-c7eb32286c6d",
 
 			"asterisk.00:11:22:33:44:55.request",
-			"/ari/recordings/f8feed4a-90be-11ed-aa76-c7eb32286c6d/mute",
+			"/ari/recordings/live/f8feed4a-90be-11ed-aa76-c7eb32286c6d/mute",
 			rabbitmqhandler.RequestMethodDelete,
 		},
 	}
