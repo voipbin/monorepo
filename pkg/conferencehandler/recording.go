@@ -69,7 +69,7 @@ func (h *conferenceHandler) RecordingStop(ctx context.Context, id uuid.UUID) err
 	// send recording stop request
 	tmp, err := h.reqHandler.CallV1RecordingStop(ctx, cf.RecordingID)
 	if err != nil {
-		log.Errorf("Could not start the recording. err: %v", err)
+		log.Errorf("Could not stop the recording. err: %v", err)
 		return err
 	}
 	log.WithField("recording", tmp).Debugf("Recording is stopping. conference_id: %s, recording_id: %s", cf.ID, tmp.ID)
