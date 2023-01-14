@@ -252,3 +252,28 @@ func (r *requestHandler) ConferenceV1ConferenceRecordingStop(ctx context.Context
 
 	return nil
 }
+
+// ConferenceV1ConferenceRemoveConferencecallID sends a request to conference-manager
+// to remove the conferencecall_id from the conference.
+// it returns error if it failed.
+func (r *requestHandler) ConferenceV1ConferenceRemoveConferencecallID(ctx context.Context, conferenceID uuid.UUID, conferencecallID uuid.UUID) (*cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences/%s/conferencecalls/%s", conferenceID, conferencecallID)
+
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
