@@ -410,3 +410,65 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConferenceV1ConferenceRemoveConferencecallID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conferenceID     uuid.UUID
+		conferencecallID uuid.UUID
+
+		responseConference *cfconference.Conference
+		response           *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("602fac90-943c-11ed-b5cf-5f79619bbead"),
+			uuid.FromStringOrNil("60666f8c-943c-11ed-9e7f-3f6cceab3ca2"),
+
+			&cfconference.Conference{
+				ID: uuid.FromStringOrNil("602fac90-943c-11ed-b5cf-5f79619bbead"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"602fac90-943c-11ed-b5cf-5f79619bbead"}`),
+			},
+
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferences/602fac90-943c-11ed-b5cf-5f79619bbead/conferencecalls/60666f8c-943c-11ed-9e7f-3f6cceab3ca2",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ConferenceV1ConferenceRemoveConferencecallID(ctx, tt.conferenceID, tt.conferencecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.responseConference) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConference, res)
+			}
+		})
+	}
+}
