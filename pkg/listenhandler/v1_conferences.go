@@ -344,3 +344,84 @@ func (h *listenHandler) processV1ConferencesIDRecordingStopPost(ctx context.Cont
 
 	return res, nil
 }
+
+// processV1ConferencesIDConferencecallIDsPost handles /v1/conferences/<conference-id>/conferencecall_ids POST request
+func (h *listenHandler) processV1ConferencesIDConferencecallIDsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1ConferencesIDConferencecallIDsPost",
+			"uri":  m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	cfID := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataConferencesIDConferencecallIDsPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.conferenceHandler.AddConferencecallID(ctx, cfID, req.ConferencecallID)
+	if err != nil {
+		log.Errorf("Could not add the conferencecall id. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConferencesIDConferencecallsConferencecallIDsIDDelete handles /v1/conferences/<conference-id>/conferencecall_ids/<conferencecall-id> DELETE request
+func (h *listenHandler) processV1ConferencesIDConferencecallsConferencecallIDsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1ConferencesIDConferencecallsConferencecallIDsIDDelete",
+			"uri":  m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 6 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	cfID := uuid.FromStringOrNil(uriItems[3])
+	ccID := uuid.FromStringOrNil(uriItems[5])
+
+	tmp, err := h.conferenceHandler.RemoveConferencecallID(ctx, cfID, ccID)
+	if err != nil {
+		log.Errorf("Could not stop the conference recording. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

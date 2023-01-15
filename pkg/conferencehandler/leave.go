@@ -1,66 +1,57 @@
 package conferencehandler
 
-import (
-	"context"
+// // Leave outs the call from the conference
+// func (h *conferenceHandler) Leave(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func":              "Leave",
+// 			"conferencecall_id": conferencecallID,
+// 		})
+// 	log.Debugf("Leaving the call from the conference.")
 
-	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
+// 	// update conferencecall status to leaving
+// 	cc, err := h.conferencecallHandler.UpdateStatusLeaving(ctx, conferencecallID)
+// 	if err != nil {
+// 		log.Errorf("Could not update the conferencecall status. err: %v", err)
+// 		return nil, err
+// 	}
+// 	log.WithField("conferencecall", cc).Debugf("Updated conferencecall info. conferencecall_id: %s", cc.ID)
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-)
+// 	// get conference
+// 	cf, err := h.Get(ctx, cc.ConferenceID)
+// 	if err != nil {
+// 		log.Errorf("Could not get conference info. conference_id: %s, err: %v", cf.ID, err)
+// 		return nil, err
+// 	}
 
-// Leave outs the call from the conference
-func (h *conferenceHandler) Leave(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "Leave",
-			"conferencecall_id": conferencecallID,
-		})
-	log.Debugf("Leaving the call from the conference.")
+// 	switch cc.ReferenceType {
 
-	// update conferencecall status to leaving
-	cc, err := h.conferencecallHandler.UpdateStatusLeaving(ctx, conferencecallID)
-	if err != nil {
-		log.Errorf("Could not update the conferencecall status. err: %v", err)
-		return nil, err
-	}
-	log.WithField("conferencecall", cc).Debugf("Updated conferencecall info. conferencecall_id: %s", cc.ID)
+// 	default:
+// 		// send the kick request
+// 		if err := h.reqHandler.CallV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, cc.ReferenceID); err != nil {
+// 			log.Errorf("Could not kick the call from the conference. err: %v", err)
+// 			return nil, err
+// 		}
+// 	}
 
-	// get conference
-	cf, err := h.Get(ctx, cc.ConferenceID)
-	if err != nil {
-		log.Errorf("Could not get conference info. conference_id: %s, err: %v", cf.ID, err)
-		return nil, err
-	}
+// 	return cc, nil
+// }
 
-	switch cc.ReferenceType {
+// func (h *conferenceHandler) LeaveByReferenceID(ctx context.Context, conferenceID, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
 
-	default:
-		// send the kick request
-		if err := h.reqHandler.CallV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, cc.ReferenceID); err != nil {
-			log.Errorf("Could not kick the call from the conference. err: %v", err)
-			return nil, err
-		}
-	}
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func":          "LeaveByReferenceID",
+// 			"conference_id": conferenceID,
+// 			"reference_id":  referenceID,
+// 		})
+// 	log.Debugf("Leaving the call from the conference.")
 
-	return cc, nil
-}
+// 	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, referenceID)
+// 	if err != nil {
+// 		log.Errorf("Could not get conferencecall info. err: %v", err)
+// 		return nil, err
+// 	}
 
-func (h *conferenceHandler) LeaveByReferenceID(ctx context.Context, conferenceID, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "LeaveByReferenceID",
-			"conference_id": conferenceID,
-			"reference_id":  referenceID,
-		})
-	log.Debugf("Leaving the call from the conference.")
-
-	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, referenceID)
-	if err != nil {
-		log.Errorf("Could not get conferencecall info. err: %v", err)
-		return nil, err
-	}
-
-	return h.Leave(ctx, cc.ID)
-}
+// 	return h.Leave(ctx, cc.ID)
+// }

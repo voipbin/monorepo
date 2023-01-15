@@ -34,7 +34,7 @@ func (h *conferenceHandler) RecordingStart(ctx context.Context, id uuid.UUID) er
 	}
 
 	// send recording request
-	tmp, err := h.reqHandler.CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConference, cf.ID, "wav", 0, "", defaultRecordingTimeout)
+	tmp, err := h.reqHandler.CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConference, cf.ID, cmrecording.FormatWAV, 0, "", defaultRecordingTimeout)
 	if err != nil {
 		log.Errorf("Could not start the recording. err: %v", err)
 		return err

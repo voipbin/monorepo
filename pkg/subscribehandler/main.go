@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
@@ -36,7 +37,8 @@ type subscribeHandler struct {
 	subscribeQueue    string
 	subscribesTargets string
 
-	conferenceHandler conferencehandler.ConferenceHandler
+	conferenceHandler     conferencehandler.ConferenceHandler
+	conferencecallHandler conferencecallhandler.ConferencecallHandler
 }
 
 var (
@@ -70,15 +72,17 @@ func NewSubscribeHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	conferenceHandler conferencehandler.ConferenceHandler,
+	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) SubscribeHandler {
 
 	h := &subscribeHandler{
 		rabbitSock: rabbitSock,
 		db:         db,
 
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
-		conferenceHandler: conferenceHandler,
+		subscribeQueue:        subscribeQueue,
+		subscribesTargets:     subscribeTargets,
+		conferenceHandler:     conferenceHandler,
+		conferencecallHandler: conferencecallHandler,
 	}
 
 	return h

@@ -62,7 +62,7 @@ func Test_RecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConference, tt.responseConference.ID, "wav", 0, "", defaultRecordingTimeout).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConference, tt.responseConference.ID, cmrecording.FormatWAV, 0, "", defaultRecordingTimeout).Return(tt.responseRecording, nil)
 
 			if err := h.RecordingStart(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

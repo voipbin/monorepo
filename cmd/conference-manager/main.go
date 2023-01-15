@@ -156,7 +156,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}
 
 	// run subscribe
-	if err := runSubscribe(db, rabbitSock, requestHandler, notifyHandler, conferenceHandler); err != nil {
+	if err := runSubscribe(db, rabbitSock, requestHandler, notifyHandler, conferenceHandler, conferencecallHandler); err != nil {
 		log.Errorf("Could not start runSubscribe. err: %v", err)
 		return err
 	}
@@ -171,6 +171,7 @@ func runSubscribe(
 	requestHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	conferenceHandler conferencehandler.ConferenceHandler,
+	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) error {
 
 	subHandler := subscribehandler.NewSubscribeHandler(
@@ -181,6 +182,7 @@ func runSubscribe(
 		requestHandler,
 		notifyHandler,
 		conferenceHandler,
+		conferencecallHandler,
 	)
 
 	// run

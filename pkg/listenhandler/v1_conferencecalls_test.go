@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -190,18 +191,77 @@ func Test_processV1ConferencecallsIDDelete(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+			mockConfcall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &listenHandler{
-				rabbitSock:        mockSock,
-				conferenceHandler: mockConf,
+				rabbitSock:            mockSock,
+				conferencecallHandler: mockConfcall,
 			}
 
-			mockConf.EXPECT().Leave(gomock.Any(), tt.conferencecallID).Return(tt.responseConferencecall, nil)
+			mockConfcall.EXPECT().Terminate(gomock.Any(), tt.conferencecallID).Return(tt.responseConferencecall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_processV1ConferencecallsIDHealthCheckPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		expectConferencecallID uuid.UUID
+		expectRetyCount        int
+		expectDelay            int
+		expectRes              *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferencecalls/14fb5cf8-94a3-11ed-8a92-2b5c1e7d925b/health-check",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"retry_count": 2}`),
+			},
+
+			uuid.FromStringOrNil("14fb5cf8-94a3-11ed-8a92-2b5c1e7d925b"),
+			2,
+			5000,
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConfcall := conferencecallhandler.NewMockConferencecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:            mockSock,
+				conferencecallHandler: mockConfcall,
+			}
+
+			mockConfcall.EXPECT().HealthCheck(gomock.Any(), tt.expectConferencecallID, tt.expectRetyCount)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(time.Millisecond * 100)
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)

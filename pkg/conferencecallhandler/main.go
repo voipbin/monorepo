@@ -29,6 +29,11 @@ type ConferencecallHandler interface {
 	UpdateStatusJoined(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error)
 	UpdateStatusLeaving(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	UpdateStatusLeaved(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
+
+	Terminate(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
+	Terminated(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error)
+
+	HealthCheck(ctx context.Context, id uuid.UUID, retryCount int)
 }
 
 // conferencecallHandler structure for service handle
@@ -38,6 +43,11 @@ type conferencecallHandler struct {
 	db            dbhandler.DBHandler
 	cache         cachehandler.CacheHandler
 }
+
+const (
+	defaultHealthCheckDelay    = 5000 // 5 secs
+	defaultHealthCheckRetryMax = 2    //
+)
 
 var (
 	metricsNamespace = "conference_manager"
