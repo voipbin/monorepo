@@ -1908,18 +1908,17 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallGet(ctx, con
 }
 
 // ConferenceV1ConferencecallHealthCheck mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int) (*conferencecall.Conferencecall, error) {
+func (m *MockRequestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount, delay int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallHealthCheck", ctx, conferencecallID, retryCount)
-	ret0, _ := ret[0].(*conferencecall.Conferencecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallHealthCheck", ctx, conferencecallID, retryCount, delay)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ConferenceV1ConferencecallHealthCheck indicates an expected call of ConferenceV1ConferencecallHealthCheck.
-func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallHealthCheck(ctx, conferencecallID, retryCount interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallHealthCheck(ctx, conferencecallID, retryCount, delay interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallHealthCheck", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallHealthCheck), ctx, conferencecallID, retryCount)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallHealthCheck", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallHealthCheck), ctx, conferencecallID, retryCount, delay)
 }
 
 // ConferenceV1ConferencecallKick mocks base method.
