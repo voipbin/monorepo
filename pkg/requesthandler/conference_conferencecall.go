@@ -91,3 +91,34 @@ func (r *requestHandler) ConferenceV1ConferencecallKick(ctx context.Context, con
 
 	return &res, nil
 }
+
+// ConferenceV1ConferencecallHealthCheck sends a request to conference-manager
+// to checks the health of the given conferencecall.
+// it returns kicked conferencecall if it succeed.
+func (r *requestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int) (*cfconferencecall.Conferencecall, error) {
+	uri := fmt.Sprintf("/v1/conferencecalls/%s/health-check", conferencecallID)
+
+	d := &cfrequest.V1DataConferencecallsIDHealthCheckPost{
+		RetryCount: retryCount,
+	}
+
+	m, err := json.Marshal(d)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencecalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cfconferencecall.Conferencecall
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}

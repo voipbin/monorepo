@@ -200,3 +200,69 @@ func Test_ConferenceV1ConferencecallKick(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conferencecallID uuid.UUID
+		retryCount       int
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+
+		expectRes *cfconferencecall.Conferencecall
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("23d64db6-94a6-11ed-9b9f-2bfedef352c1"),
+			2,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"23d64db6-94a6-11ed-9b9f-2bfedef352c1"}`),
+			},
+
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferencecalls/23d64db6-94a6-11ed-9b9f-2bfedef352c1/health-check",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"retry_count":2}`),
+			},
+
+			&cfconferencecall.Conferencecall{
+				ID: uuid.FromStringOrNil("23d64db6-94a6-11ed-9b9f-2bfedef352c1"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ConferenceV1ConferencecallHealthCheck(ctx, tt.conferencecallID, tt.retryCount)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+
+		})
+	}
+}
