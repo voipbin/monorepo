@@ -208,6 +208,7 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 
 		conferencecallID uuid.UUID
 		retryCount       int
+		delay            int
 
 		response *rabbitmqhandler.Response
 
@@ -220,6 +221,7 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 			"normal",
 			uuid.FromStringOrNil("23d64db6-94a6-11ed-9b9f-2bfedef352c1"),
 			2,
+			5000,
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -252,17 +254,16 @@ func Test_ConferenceV1ConferencecallHealthCheck(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			mockSock.EXPECT().PublishExchangeDelayedRequest(
+				gomock.Any(),
+				tt.expectTarget,
+				tt.expectRequest,
+				tt.delay,
+			).Return(nil)
 
-			res, err := reqHandler.ConferenceV1ConferencecallHealthCheck(ctx, tt.conferencecallID, tt.retryCount)
-			if err != nil {
+			if err := reqHandler.ConferenceV1ConferencecallHealthCheck(ctx, tt.conferencecallID, tt.retryCount, tt.delay); err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-
 		})
 	}
 }

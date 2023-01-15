@@ -95,7 +95,8 @@ func (r *requestHandler) ConferenceV1ConferencecallKick(ctx context.Context, con
 // ConferenceV1ConferencecallHealthCheck sends a request to conference-manager
 // to checks the health of the given conferencecall.
 // it returns kicked conferencecall if it succeed.
-func (r *requestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int) (*cfconferencecall.Conferencecall, error) {
+// delay: milliseconds
+func (r *requestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int, delay int) error {
 	uri := fmt.Sprintf("/v1/conferencecalls/%s/health-check", conferencecallID)
 
 	d := &cfrequest.V1DataConferencecallsIDHealthCheckPost{
@@ -104,21 +105,18 @@ func (r *requestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Conte
 
 	m, err := json.Marshal(d)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencecalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencecalls, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return nil, err
+		return err
+	case tmp == nil:
+		return nil
 	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res cfconferencecall.Conferencecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
+	return nil
 }
