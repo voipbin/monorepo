@@ -508,12 +508,14 @@ type RequestHandler interface {
 	ConferenceV1ConferenceUpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) error
 	ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) error
+	ConferenceV1ConferenceAddConferencecallID(ctx context.Context, conferenceID uuid.UUID, conferencecallID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceRemoveConferencecallID(ctx context.Context, conferenceID uuid.UUID, conferencecallID uuid.UUID) (*cfconference.Conference, error)
 
 	// conference-manager conferencecall
 	ConferenceV1ConferencecallGet(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
 	ConferenceV1ConferencecallCreate(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfconferencecall.Conferencecall, error)
 	ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
+	ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int) (*cfconferencecall.Conferencecall, error)
 
 	// conversation-manager conversation
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
