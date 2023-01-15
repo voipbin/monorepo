@@ -215,5 +215,4 @@ func (h *conferencecallHandler) UpdateStatusLeaved(ctx context.Context, id uuid.
 	h.notifyHandler.PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaved, res)
 
 	return res, nil
-
 }

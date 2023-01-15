@@ -47,3 +47,10 @@ type V1DataConferencesIDJoinPost struct {
 type V1DataConferencesIDRecordingIDPut struct {
 	RecordingID uuid.UUID `json:"recording_id"`
 }
+
+// V1DataConferencesIDConferencecallIDsPost is
+// v1 data type request struct for
+// /v1/conferences/<conference-id>/conferencecall_ids" PUT
+type V1DataConferencesIDConferencecallIDsPost struct {
+	ConferencecallID uuid.UUID `json:"conferencecall_id"`
+}

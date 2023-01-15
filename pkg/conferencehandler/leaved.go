@@ -10,54 +10,50 @@ import (
 )
 
 // Leaved handles event the referencecall has left from the confbridge
-func (h *conferenceHandler) Leaved(ctx context.Context, cf *conference.Conference, referenceID uuid.UUID) error {
+// func (h *conferenceHandler) Leaved(ctx context.Context, cfID uuid.UUID, ccID uuid.UUID) (*conference.Conference, error) {
+func (h *conferenceHandler) RemoveConferencecallID(ctx context.Context, cfID uuid.UUID, ccID uuid.UUID) (*conference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "Leaved",
-		"conference_id": cf.ID,
-		"reference_id":  referenceID,
+		"func":              "RemoveConferencecallID",
+		"conference_id":     cfID,
+		"conferencecall_id": ccID,
 	})
 
-	// get conferencecall
-	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, referenceID)
-	if err != nil {
-		log.Errorf("Could not get conferencecall info. err: %v", err)
-		return err
-	}
-
-	// update conferencecall status
-	_, err = h.conferencecallHandler.UpdateStatusLeaved(ctx, cc.ID)
-	if err != nil {
-		log.Errorf("Could not update the conferencecall's status. err: %v", err)
-		return err
-	}
-
-	// remove call from the conference
-	if errRemove := h.db.ConferenceRemoveConferencecallID(ctx, cf.ID, cc.ID); errRemove != nil {
+	// remove conferencecall from the conference
+	if errRemove := h.db.ConferenceRemoveConferencecallID(ctx, cfID, ccID); errRemove != nil {
 		log.Errorf("Could not remove the callID from the conference. err: %v", errRemove)
-		return errRemove
+		return nil, errRemove
 	}
 
 	// get updated conference
-	tmp, err := h.Get(ctx, cf.ID)
+	res, err := h.Get(ctx, cfID)
 	if err != nil {
 		log.Errorf("Could not get updated conference. err: %v", err)
-		return err
+		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, tmp.CustomerID, conference.EventTypeConferenceUpdated, tmp)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceUpdated, res)
 
-	switch cf.Type {
-	case conference.TypeConnect:
-		return h.leavedTypeConnect(ctx, tmp)
+	go func() {
+		switch res.Type {
+		case conference.TypeConnect:
+			if errLeaved := h.removeConferencecallIDTypeConnect(ctx, res); errLeaved != nil {
+				log.Errorf("Could not complete the process for conference type connect. err: %v", errLeaved)
+			}
 
-	default:
-		log.Debugf("Executing default conference leave handle. conference_type: %s", cf.Type)
-		return h.leavedTypeConference(ctx, tmp)
-	}
+		default:
+			log.Debugf("Executing default conference leave handle. conference_type: %s", res.Type)
+			if errLeaved := h.removeConferencecallIDTypeConference(ctx, res); errLeaved != nil {
+				log.Errorf("Could not complete the process. err: %v", errLeaved)
+			}
+		}
+	}()
+
+	return res, nil
 }
 
-// leavedTypeConnect
-func (h *conferenceHandler) leavedTypeConnect(ctx context.Context, cf *conference.Conference) error {
+// removeConferencecallIDTypeConnect
+func (h *conferenceHandler) removeConferencecallIDTypeConnect(ctx context.Context, cf *conference.Conference) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":          "removeConferencecallIDTypeConnect",
 		"conference_id": cf.ID,
 	})
 
@@ -76,10 +72,10 @@ func (h *conferenceHandler) leavedTypeConnect(ctx context.Context, cf *conferenc
 	return nil
 }
 
-// leavedTypeConference
-func (h *conferenceHandler) leavedTypeConference(ctx context.Context, cf *conference.Conference) error {
+// removeConferencecallIDTypeConference
+func (h *conferenceHandler) removeConferencecallIDTypeConference(ctx context.Context, cf *conference.Conference) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "leavedTypeConference",
+		"func":          "removeConferencecallIDTypeConference",
 		"conference_id": cf.ID,
 	})
 

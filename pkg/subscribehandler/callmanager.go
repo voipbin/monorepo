@@ -50,7 +50,6 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 
 // processEventCMConfbridgeLeaved handles the call-manager's call related event
 func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m *rabbitmqhandler.Event) error {
-	// ctx := context.Background()
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":  "processEventCMConfbridgeLeaved",
@@ -70,20 +69,19 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 		},
 	).Debugf("Detail event. event: %s", m.Type)
 
-	// get conference
-	cf, err := h.conferenceHandler.GetByConfbridgeID(ctx, evt.ID)
+	// get conferencecall
+	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, evt.LeavedCallID)
 	if err != nil {
-		// not found the conference
-		log.Debugf("Could not get conference. err: %v", err)
-		return nil
-	}
-	log = log.WithField("conference_id", cf.ID)
-	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
-
-	if err := h.conferenceHandler.Leaved(ctx, cf, evt.LeavedCallID); err != nil {
-		log.Errorf("Could not handle the confbridge leaved event. err: %v", err)
+		log.Errorf("Could not get conferencecall info. err: %v", err)
 		return err
 	}
+
+	tmp, err := h.conferencecallHandler.Terminated(ctx, cc)
+	if err != nil {
+		log.Errorf("Could not terminated the conference call. err: %v", err)
+		return err
+	}
+	log.WithField("conferencecall", tmp).Debugf("Termianted conferencecall. conferencecall_id: %s", tmp.ID)
 
 	return nil
 }

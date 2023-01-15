@@ -337,3 +337,28 @@ func (h *conferenceHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 
 	return res, nil
 }
+
+// AddConferencecallID adds the conference's conferencecall id.
+func (h *conferenceHandler) AddConferencecallID(ctx context.Context, id uuid.UUID, conferencecallID uuid.UUID) (*conference.Conference, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":              "AddConferencecallID",
+			"conference_id":     id,
+			"conferencecall_id": conferencecallID,
+		},
+	)
+
+	// add the call to the conference.
+	if errAdd := h.db.ConferenceAddConferencecallID(ctx, id, conferencecallID); errAdd != nil {
+		log.Errorf("Could not add the conferencecall to the conference. err: %v", errAdd)
+		return nil, errAdd
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated conference info. err: %v", err)
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceUpdated, res)
+
+	return res, nil
+}

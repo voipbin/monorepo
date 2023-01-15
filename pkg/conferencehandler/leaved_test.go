@@ -2,6 +2,7 @@ package conferencehandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -16,27 +17,25 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
-func Test_Leaved(t *testing.T) {
+func Test_RemoveConferencecallID(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		conference  *conference.Conference
-		referenceID uuid.UUID
+		conferenceID     uuid.UUID
+		conferencecallID uuid.UUID
 
-		responseConferencecall *conferencecall.Conferencecall
+		responseConference *conference.Conference
 	}{
 		{
 			"conference type and not terminating",
 
+			uuid.FromStringOrNil("db1133c4-149a-11ed-be62-d3681a989fb4"),
+			uuid.FromStringOrNil("5dd38eba-149b-11ed-a715-17c3951b2c26"),
+
 			&conference.Conference{
 				ID:   uuid.FromStringOrNil("db1133c4-149a-11ed-be62-d3681a989fb4"),
 				Type: conference.TypeConference,
-			},
-			uuid.FromStringOrNil("e41b141c-149a-11ed-bf7f-7b9a8e34e993"),
-
-			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("5dd38eba-149b-11ed-a715-17c3951b2c26"),
 			},
 		},
 	}
@@ -61,14 +60,17 @@ func Test_Leaved(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockConferencecall.EXPECT().GetByReferenceID(ctx, tt.referenceID).Return(tt.responseConferencecall, nil)
-			mockConferencecall.EXPECT().UpdateStatusLeaved(ctx, tt.responseConferencecall.ID).Return(&conferencecall.Conferencecall{}, nil)
-			mockDB.EXPECT().ConferenceRemoveConferencecallID(ctx, tt.conference.ID, tt.responseConferencecall.ID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.conference.CustomerID, conference.EventTypeConferenceUpdated, tt.conference)
+			mockDB.EXPECT().ConferenceRemoveConferencecallID(ctx, tt.responseConference.ID, tt.conferencecallID).Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.responseConference.ID).Return(tt.responseConference, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
 
-			if err := h.Leaved(ctx, tt.conference, tt.referenceID); err != nil {
+			res, err := h.RemoveConferencecallID(ctx, tt.conferenceID, tt.conferencecallID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConference) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConference, res)
 			}
 		})
 	}
@@ -137,7 +139,7 @@ func Test_leavedTypeConference(t *testing.T) {
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)
 			}
 
-			if err := h.leavedTypeConference(ctx, tt.conference); err != nil {
+			if err := h.removeConferencecallIDTypeConference(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -207,7 +209,7 @@ func Test_leavedTypeConnect(t *testing.T) {
 				}
 			}
 
-			if err := h.leavedTypeConnect(ctx, tt.conference); err != nil {
+			if err := h.removeConferencecallIDTypeConnect(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
