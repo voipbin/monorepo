@@ -442,7 +442,7 @@ func Test_ConferenceV1ConferenceRemoveConferencecallID(t *testing.T) {
 
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/conferences/602fac90-943c-11ed-b5cf-5f79619bbead/conferencecalls/60666f8c-943c-11ed-9e7f-3f6cceab3ca2",
+				URI:    "/v1/conferences/602fac90-943c-11ed-b5cf-5f79619bbead/conferencecall_ids/60666f8c-943c-11ed-9e7f-3f6cceab3ca2",
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 		},
