@@ -113,12 +113,25 @@ func (h *listenHandler) processV1ConferencesIDDelete(ctx context.Context, m *rab
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	if err := h.conferenceHandler.Terminate(ctx, id); err != nil {
-		log.Errorf("Could not terminate the conference. err: %v", err)
+	cf, err := h.conferenceHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete the conference. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	return simpleResponse(200), nil
+	tmp, err := json.Marshal(cf)
+	if err != nil {
+		log.Errorf("Could not marshal the conference. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       tmp,
+	}
+
+	return res, nil
 }
 
 // processV1ConferencesIDPut handles /v1/conferences/<id> PUT request

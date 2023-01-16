@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
 // Create is handy function for creating a conference.
@@ -27,10 +26,7 @@ func (h *conferencecallHandler) Create(
 		},
 	)
 
-	id := uuid.Must(uuid.NewV4())
-	log = log.WithField("conferencecall_id", id.String())
-
-	curTime := dbhandler.GetCurTime()
+	id := h.utilHandler.CreateUUID()
 	tmp := &conferencecall.Conferencecall{
 		ID:           id,
 		CustomerID:   customerID,
@@ -40,11 +36,9 @@ func (h *conferencecallHandler) Create(
 		ReferenceID:   referenceID,
 
 		Status: conferencecall.StatusJoining,
-
-		TMCreate: curTime,
-		TMUpdate: curTime,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
+	log = log.WithField("conferencecall_id", id.String())
+	log.WithField("conferencecall", tmp).Debugf("Creating conferencecall. conference_call: %s", tmp.ID)
 
 	if errCreate := h.db.ConferencecallCreate(ctx, tmp); errCreate != nil {
 		log.Errorf("Could not create a new conferencecall. err: %v", errCreate)
@@ -59,14 +53,16 @@ func (h *conferencecallHandler) Create(
 	}
 	h.notifyHandler.PublishEvent(ctx, conferencecall.EventTypeConferencecallJoining, res)
 
+	// start health check
+	go func() {
+		_ = h.reqHandler.ConferenceV1ConferencecallHealthCheck(ctx, id, 0, defaultHealthCheckDelay)
+	}()
+
 	return res, nil
 }
 
 // Get is handy function for getting a conferencecall.
-func (h *conferencecallHandler) Get(
-	ctx context.Context,
-	id uuid.UUID,
-) (*conferencecall.Conferencecall, error) {
+func (h *conferencecallHandler) Get(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":              "Get",
@@ -84,10 +80,7 @@ func (h *conferencecallHandler) Get(
 }
 
 // GetByReferenceID is handy function for getting a conferencecall by the reference_id.
-func (h *conferencecallHandler) GetByReferenceID(
-	ctx context.Context,
-	referenceID uuid.UUID,
-) (*conferencecall.Conferencecall, error) {
+func (h *conferencecallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":         "GetByReferenceID",
@@ -131,38 +124,12 @@ func (h *conferencecallHandler) updateStatus(ctx context.Context, id uuid.UUID, 
 	return res, nil
 }
 
-// updateStatusByReferenceID is handy function for update the conferencecall's status.
+// updateStatusJoined is handy function for update the conferencecall's status to the joined.
 // it increases corresponded counter
-func (h *conferencecallHandler) updateStatusByReferenceID(
-	ctx context.Context,
-	referenceID uuid.UUID,
-	status conferencecall.Status,
-) (*conferencecall.Conferencecall, error) {
+func (h *conferencecallHandler) updateStatusJoined(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":         "updateStatusByReferenceID",
-			"reference_id": referenceID,
-			"status":       status,
-		},
-	)
-
-	// get conferencecall
-	cc, err := h.GetByReferenceID(ctx, referenceID)
-	if err != nil {
-		log.Errorf("Could not get conferencecall info. err: %v", err)
-		return nil, err
-	}
-	log.WithField("conferencecall", cc).Debugf("Found conferencecall info. conferencecall_id: %s", cc.ID)
-
-	return h.updateStatus(ctx, cc.ID, status)
-}
-
-// UpdateStatusJoined is handy function for update the conferencecall's status to the joined.
-// it increases corresponded counter
-func (h *conferencecallHandler) UpdateStatusJoined(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "UpdateStatusJoined",
+			"func":              "updateStatusJoined",
 			"conferencecall_id": conferencecallID,
 		},
 	)
@@ -177,12 +144,12 @@ func (h *conferencecallHandler) UpdateStatusJoined(ctx context.Context, conferen
 	return res, nil
 }
 
-// UpdateStatusLeaving is handy function for update the conferencecall's status to the leaved.
+// updateStatusLeaving is handy function for update the conferencecall's status to the leaved.
 // it increases corresponded counter
-func (h *conferencecallHandler) UpdateStatusLeaving(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
+func (h *conferencecallHandler) updateStatusLeaving(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":              "UpdateStatusLeaving",
+			"func":              "updateStatusLeaving",
 			"conferencecall_id": id,
 		},
 	)
@@ -197,12 +164,12 @@ func (h *conferencecallHandler) UpdateStatusLeaving(ctx context.Context, id uuid
 	return res, nil
 }
 
-// UpdateStatusLeaved is handy function for update the conferencecall's status to the leaved.
+// updateStatusLeaved is handy function for update the conferencecall's status to the leaved.
 // it increases corresponded counter
-func (h *conferencecallHandler) UpdateStatusLeaved(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
+func (h *conferencecallHandler) updateStatusLeaved(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":              "UpdateStatusLeaved",
+			"func":              "updateStatusLeaved",
 			"conferencecall_id": id,
 		},
 	)

@@ -30,6 +30,7 @@ type ConferenceHandler interface {
 		preActions []action.Action,
 		postActions []action.Action,
 	) (*conference.Conference, error)
+	Delete(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	GetByConfbridgeID(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	Gets(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error)
@@ -46,7 +47,6 @@ type ConferenceHandler interface {
 	AddConferencecallID(ctx context.Context, id uuid.UUID, conferencecallID uuid.UUID) (*conference.Conference, error)
 
 	Join(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
-	// JoinedConfbridge(ctx context.Context, cf *conference.Conference, callID uuid.UUID) error
 	RemoveConferencecallID(ctx context.Context, cfID uuid.UUID, ccID uuid.UUID) (*conference.Conference, error)
 	Terminate(ctx context.Context, id uuid.UUID) error
 

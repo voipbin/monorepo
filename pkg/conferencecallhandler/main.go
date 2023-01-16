@@ -1,6 +1,6 @@
 package conferencecallhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package conferencecallhandler -destination ./mock_conferencecallhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package conferencecallhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
@@ -26,9 +27,8 @@ type ConferencecallHandler interface {
 	) (*conferencecall.Conferencecall, error)
 	Get(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
-	UpdateStatusJoined(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error)
-	UpdateStatusLeaving(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
-	UpdateStatusLeaved(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
+
+	Joined(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error)
 
 	Terminate(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	Terminated(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error)
@@ -38,6 +38,7 @@ type ConferencecallHandler interface {
 
 // conferencecallHandler structure for service handle
 type conferencecallHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
@@ -72,6 +73,7 @@ func init() {
 func NewConferencecallHandler(req requesthandler.RequestHandler, notify notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) ConferencecallHandler {
 
 	h := &conferencecallHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,

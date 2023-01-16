@@ -52,6 +52,7 @@ var (
 	regV1ConferencesIDRecordingID         = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_id$")
 	regV1ConferencesIDRecordingStart      = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_start$")
 	regV1ConferencesIDRecordingStop       = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_stop$")
+	regV1ConferencesIDConferencecallIDs   = regexp.MustCompile("/v1/conferences/" + regUUID + "/conferencecall_ids$")
 	regV1ConferencesIDConferencecallIDsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/conferencecall_ids/" + regUUID + "$")
 
 	// conferencecalls
@@ -222,15 +223,15 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ConferencesIDRecordingStopPost(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/recording_stop"
 
-	// DELETE /conferences/<conference-id>/conferencecalls/<conferencecall-id>
+	// POST /conferences/<conference-id>/conferencecall_ids
+	case regV1ConferencesIDConferencecallIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConferencesIDConferencecallIDsPost(ctx, m)
+		requestType = "/v1/conferences/<conference-id>/conferencecall_ids"
+
+	// DELETE /conferences/<conference-id>/conferencecall_ids/<conferencecall-id>
 	case regV1ConferencesIDConferencecallIDsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConferencesIDConferencecallsConferencecallIDsIDDelete(ctx, m)
-		requestType = "/v1/conferences/<conference-id>/conferencecalls/<conferencecall-id>"
-
-	// POST /conferences/<conference-id>/conferencecalls/<conferencecall-id>
-	case regV1ConferencesIDConferencecallIDsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencesIDConferencecallIDsPost(ctx, m)
-		requestType = "/v1/conferences/<conference-id>/conferencecalls/<conferencecall-id>"
+		requestType = "/v1/conferences/<conference-id>/conferencecall_ids/<conferencecall-id>"
 
 	//////////////////
 	// conferencecalls

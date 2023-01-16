@@ -31,6 +31,8 @@ type Conference struct {
 	RecordingID  uuid.UUID   `json:"recording_id"`
 	RecordingIDs []uuid.UUID `json:"recording_ids"`
 
+	TMEnd string `json:"tm_end"` // represent the timestamp for conference ended.
+
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`

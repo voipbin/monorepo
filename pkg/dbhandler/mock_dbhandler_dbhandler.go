@@ -80,6 +80,20 @@ func (mr *MockDBHandlerMockRecorder) ConferenceCreate(ctx, cf interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceCreate", reflect.TypeOf((*MockDBHandler)(nil).ConferenceCreate), ctx, cf)
 }
 
+// ConferenceDelete mocks base method.
+func (m *MockDBHandler) ConferenceDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceDelete indicates an expected call of ConferenceDelete.
+func (mr *MockDBHandlerMockRecorder) ConferenceDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceDelete", reflect.TypeOf((*MockDBHandler)(nil).ConferenceDelete), ctx, id)
+}
+
 // ConferenceEnd mocks base method.
 func (m *MockDBHandler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()

@@ -12,7 +12,6 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
 const defaultConferenceTimeout = 86400
@@ -66,7 +65,7 @@ func (h *conferenceHandler) Create(
 	}
 
 	// create a conference struct
-	newCf := &conference.Conference{
+	tmp := &conference.Conference{
 		ID:           id,
 		CustomerID:   customerID,
 		ConfbridgeID: cb.ID,
@@ -83,41 +82,32 @@ func (h *conferenceHandler) Create(
 
 		ConferencecallIDs: []uuid.UUID{},
 		RecordingIDs:      []uuid.UUID{},
-
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: defaultTimeStamp,
-		TMDelete: defaultTimeStamp,
 	}
 
-	// set timestamp
-	newCf.TMCreate = dbhandler.GetCurTime()
-	newCf.TMUpdate = defaultTimeStamp
-	newCf.TMDelete = defaultTimeStamp
-
 	// create a conference record
-	if err := h.db.ConferenceCreate(ctx, newCf); err != nil {
+	if err := h.db.ConferenceCreate(ctx, tmp); err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err
 	}
-	promConferenceCreateTotal.WithLabelValues(string(newCf.Type)).Inc()
+	promConferenceCreateTotal.WithLabelValues(string(tmp.Type)).Inc()
 
 	// get created conference and notify
-	cf, err := h.Get(ctx, id)
+	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get created conference. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, cf.CustomerID, conference.EventTypeConferenceCreated, cf)
-	log.WithField("conference", cf).Debugf("Created a new conference. conference_id: %s", cf.ID)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceCreated, res)
+	log.WithField("conference", res).Debugf("Created a new conference. conference_id: %s", res.ID)
 
 	// set the timeout if it was set
-	if cf.Timeout > 0 {
-		if err := h.reqHandler.ConferenceV1ConferenceDeleteDelay(ctx, id, cf.Timeout*1000); err != nil {
+	if res.Timeout > 0 {
+		if err := h.reqHandler.ConferenceV1ConferenceDeleteDelay(ctx, id, res.Timeout*1000); err != nil {
 			log.Errorf("Could not start conference timeout. err: %v", err)
 		}
 	}
 
-	return cf, nil
+	return res, nil
 }
 
 // createConferenceFlowActions creates the actions for conference join.
@@ -211,6 +201,33 @@ func (h *conferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.
 	return res, nil
 }
 
+// Delete deletes the conference.
+func (h *conferenceHandler) Delete(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Delete",
+		"conference_id": id,
+	})
+
+	if errTerm := h.Terminate(ctx, id); errTerm != nil {
+		log.Errorf("Could not terminate the conference. err: %v", errTerm)
+		return nil, errTerm
+	}
+
+	if errDel := h.db.ConferenceDelete(ctx, id); errDel != nil {
+		log.Errorf("Could not delete conference. err: %v", errDel)
+		return nil, errDel
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted conference. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceDeleted, res)
+
+	return res, nil
+}
+
 // GetByConfbridgeID returns conference of the given confbridge id.
 func (h *conferenceHandler) GetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error) {
 	log := logrus.WithField("func", "GetByConfbridgeID")
@@ -286,12 +303,12 @@ func (h *conferenceHandler) Update(
 	}
 
 	// get updated conference and notify
-	newConf, err := h.db.ConferenceGet(ctx, id)
+	res, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated conference. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, newConf.CustomerID, conference.EventTypeConferenceUpdated, newConf)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceUpdated, res)
 
 	// set the timeout if it was set
 	if cf.Timeout > 0 {
@@ -300,7 +317,7 @@ func (h *conferenceHandler) Update(
 		}
 	}
 
-	return newConf, nil
+	return res, nil
 }
 
 // UpdateRecordingID updates the conference's recording id.

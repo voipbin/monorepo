@@ -18,19 +18,19 @@ func (h *conferencecallHandler) Joined(ctx context.Context, cc *conferencecall.C
 	)
 
 	// update status
-	res, err := h.UpdateStatusJoined(ctx, cc.ID)
+	res, err := h.updateStatusJoined(ctx, cc.ID)
 	if err != nil {
 		log.Errorf("Could not update the conferencecall status. err: %v", err)
 		return nil, err
 	}
 
-	// send request
-	cf, err := h.reqHandler.ConferenceV1ConferenceRemoveConferencecallID(ctx, cc.ConferenceID, cc.ID)
+	// add conferencecall to the conference
+	cf, err := h.reqHandler.ConferenceV1ConferenceAddConferencecallID(ctx, cc.ConferenceID, cc.ID)
 	if err != nil {
 		log.Errorf("Could not remove the conferencecall id from the conference. err: %v", err)
 		return nil, err
 	}
-	log.WithField("conference", cf).Debugf("Removed conferencecall id from the conference. conference_id: %s", cf.ID)
+	log.WithField("conference", cf).Debugf("Added conferencecall id to the conference. conference_id: %s", cf.ID)
 
 	return res, nil
 }

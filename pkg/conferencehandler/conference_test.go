@@ -363,3 +363,118 @@ func Test_UpdateRecordingID(t *testing.T) {
 		})
 	}
 }
+
+func Test_AddConferencecallID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id               uuid.UUID
+		conferencecallID uuid.UUID
+
+		responseConference *conference.Conference
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("3a9eb896-94a9-11ed-b58c-af21495e92d6"),
+			uuid.FromStringOrNil("3b1b4a50-94a9-11ed-a34c-13244d5ec3ce"),
+
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("3a9eb896-94a9-11ed-b58c-af21495e92d6"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConferenceAddConferencecallID(ctx, tt.id, tt.conferencecallID).Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
+
+			res, err := h.AddConferencecallID(ctx, tt.id, tt.conferencecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConference) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConference, res)
+			}
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseConference *conference.Conference
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("9e43cc72-94e2-11ed-b2f6-b3ea29f01f60"),
+
+			&conference.Conference{
+				ID:     uuid.FromStringOrNil("9e43cc72-94e2-11ed-b2f6-b3ea29f01f60"),
+				Status: conference.StatusTerminating,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+
+			mockDB.EXPECT().ConferenceDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceDeleted, tt.responseConference)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConference) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConference, res)
+			}
+		})
+	}
+}

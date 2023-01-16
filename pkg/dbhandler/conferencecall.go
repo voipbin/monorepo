@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
@@ -87,9 +88,9 @@ func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.C
 
 		cf.Status,
 
-		cf.TMCreate,
-		cf.TMUpdate,
-		cf.TMDelete,
+		h.utilHandler.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferencecallCreate. err: %v", err)
@@ -277,12 +278,14 @@ func (h *handler) ConferencecallDelete(ctx context.Context, id uuid.UUID) error 
 	//prepare
 	q := `
 	update conferencecalls set
+		tm_update = ?,
 		tm_delete = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferencecallDelete. err: %v", err)
 	}
@@ -304,7 +307,7 @@ func (h *handler) ConferencecallUpdateStatus(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferencecallUpdateStatus. err: %v", err)
 	}
