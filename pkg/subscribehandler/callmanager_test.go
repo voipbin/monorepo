@@ -8,7 +8,6 @@ import (
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
@@ -20,11 +19,10 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 		name  string
 		event *rabbitmqhandler.Event
 
-		responseConference *conference.Conference
+		responseConferencecall *conferencecall.Conferencecall
 
-		expectConferenceID uuid.UUID
-		expectCallID       uuid.UUID
-		expectRes          *rabbitmqhandler.Response
+		expectConferencecallID uuid.UUID
+		expectRes              *rabbitmqhandler.Response
 	}{
 		{
 			"type conference",
@@ -34,11 +32,10 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 				DataType:  "application/json",
 				Data:      []byte(`{"id":"2a8739a2-9368-11ed-82dd-bfa0ae5f78fb","joined_call_id":"2abecb4c-9368-11ed-9130-b74b5a76b8d3"}`),
 			},
-			&conference.Conference{
+			&conferencecall.Conferencecall{
 				ID: uuid.FromStringOrNil("18033654-9102-11ed-994e-4b9c733834a5"),
 			},
 
-			uuid.FromStringOrNil("2a8739a2-9368-11ed-82dd-bfa0ae5f78fb"),
 			uuid.FromStringOrNil("2abecb4c-9368-11ed-9130-b74b5a76b8d3"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -53,15 +50,15 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+			mockConfcall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &subscribeHandler{
-				rabbitSock:        mockSock,
-				conferenceHandler: mockConf,
+				rabbitSock:            mockSock,
+				conferencecallHandler: mockConfcall,
 			}
 
-			mockConf.EXPECT().GetByConfbridgeID(gomock.Any(), tt.expectConferenceID).Return(tt.responseConference, nil)
-			mockConf.EXPECT().JoinedConfbridge(gomock.Any(), tt.responseConference, tt.expectCallID)
+			mockConfcall.EXPECT().GetByReferenceID(gomock.Any(), tt.expectConferencecallID).Return(tt.responseConferencecall, nil)
+			mockConfcall.EXPECT().Joined(gomock.Any(), tt.responseConferencecall).Return(tt.responseConferencecall, nil)
 			h.processEvent(tt.event)
 		})
 	}

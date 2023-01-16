@@ -23,6 +23,7 @@ create table conferences(
   recording_ids  json,        -- record ids
 
   -- timestamps
+  tm_end    datetime(6),  --
   tm_create datetime(6),  --
   tm_update datetime(6),  --
   tm_delete datetime(6),  --

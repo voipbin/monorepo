@@ -30,20 +30,19 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 		},
 	).Debugf("Detail event. event: %s", m.Type)
 
-	// get conference
-	cf, err := h.conferenceHandler.GetByConfbridgeID(ctx, evt.ID)
+	// get conferencecall
+	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, evt.JoinedCallID)
 	if err != nil {
-		// not found the conference
-		log.Debugf("Could not get conference. err: %v", err)
-		return nil
-	}
-	log = log.WithField("conference_id", cf.ID)
-	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
-
-	if err := h.conferenceHandler.JoinedConfbridge(ctx, cf, evt.JoinedCallID); err != nil {
-		log.Errorf("Could not handle the confbridge joined event. err: %v", err)
+		// conferencecall not found. Not a conferencecall.
 		return err
 	}
+
+	tmp, err := h.conferencecallHandler.Joined(ctx, cc)
+	if err != nil {
+		log.Errorf("Could not join the conferencecall. conferencecall_id: %s", err)
+		return err
+	}
+	log.WithField("conferencecall", tmp).Debugf("Joined conferencecall. conferencecall_id: %s", tmp.ID)
 
 	return nil
 }
@@ -72,7 +71,7 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 	// get conferencecall
 	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, evt.LeavedCallID)
 	if err != nil {
-		log.Errorf("Could not get conferencecall info. err: %v", err)
+		// conferencecall not found. Not a conferencecall.
 		return err
 	}
 

@@ -68,6 +68,21 @@ func (mr *MockConferenceHandlerMockRecorder) Create(ctx, conferenceType, custome
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConferenceHandler)(nil).Create), ctx, conferenceType, customerID, name, detail, timeout, preActions, postActions)
 }
 
+// Delete mocks base method.
+func (m *MockConferenceHandler) Delete(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockConferenceHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockConferenceHandler)(nil).Delete), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockConferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()

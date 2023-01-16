@@ -42,25 +42,18 @@ func (h *conferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*c
 	}
 
 	if !h.isKickable(ctx, cc, cf, c) {
-		res, err := h.UpdateStatusLeaved(ctx, id)
-		if err != nil {
-			log.Errorf("Could not update the status to leaved. err: %v", err)
-			return nil, err
-		}
-
-		// send remove conferencecall
-		tmp, err := h.reqHandler.ConferenceV1ConferenceRemoveConferencecallID(ctx, cf.ID, cc.ID)
+		res, err := h.Terminated(ctx, cc)
 		if err != nil {
 			log.Errorf("Could not remove the conferencecall id from the conference. err: %v", err)
 			return nil, err
 		}
-		log.WithField("conference", tmp).Debugf("Removed conferencecall from the conference. conference_id: %s, conferencecall_id: %S", cf.ID, cc.ID)
+		log.WithField("conference", res).Debugf("Removed conferencecall from the conference. conference_id: %s, conferencecall_id: %S", cf.ID, cc.ID)
 
 		return res, nil
 	}
 
 	// update the conferencecall
-	res, err := h.updateStatus(ctx, id, conferencecall.StatusLeaving)
+	res, err := h.updateStatusLeaving(ctx, id)
 	if err != nil {
 		log.Errorf("Could not update the status correctly. err: %v", err)
 		return nil, err
@@ -111,7 +104,7 @@ func (h *conferencecallHandler) Terminated(ctx context.Context, cc *conferenceca
 	)
 
 	// update status
-	res, err := h.UpdateStatusLeaved(ctx, cc.ID)
+	res, err := h.updateStatusLeaved(ctx, cc.ID)
 	if err != nil {
 		log.Errorf("Could not update the conferencecall status. err: %v", err)
 		return nil, err

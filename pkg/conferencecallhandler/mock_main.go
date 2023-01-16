@@ -93,6 +93,21 @@ func (mr *MockConferencecallHandlerMockRecorder) HealthCheck(ctx, id, retryCount
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockConferencecallHandler)(nil).HealthCheck), ctx, id, retryCount)
 }
 
+// Joined mocks base method.
+func (m *MockConferencecallHandler) Joined(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Joined", ctx, cc)
+	ret0, _ := ret[0].(*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Joined indicates an expected call of Joined.
+func (mr *MockConferencecallHandlerMockRecorder) Joined(ctx, cc interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockConferencecallHandler)(nil).Joined), ctx, cc)
+}
+
 // Terminate mocks base method.
 func (m *MockConferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
@@ -121,49 +136,4 @@ func (m *MockConferencecallHandler) Terminated(ctx context.Context, cc *conferen
 func (mr *MockConferencecallHandlerMockRecorder) Terminated(ctx, cc interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminated", reflect.TypeOf((*MockConferencecallHandler)(nil).Terminated), ctx, cc)
-}
-
-// UpdateStatusJoined mocks base method.
-func (m *MockConferencecallHandler) UpdateStatusJoined(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatusJoined", ctx, conferencecallID)
-	ret0, _ := ret[0].(*conferencecall.Conferencecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateStatusJoined indicates an expected call of UpdateStatusJoined.
-func (mr *MockConferencecallHandlerMockRecorder) UpdateStatusJoined(ctx, conferencecallID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusJoined", reflect.TypeOf((*MockConferencecallHandler)(nil).UpdateStatusJoined), ctx, conferencecallID)
-}
-
-// UpdateStatusLeaved mocks base method.
-func (m *MockConferencecallHandler) UpdateStatusLeaved(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatusLeaved", ctx, id)
-	ret0, _ := ret[0].(*conferencecall.Conferencecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateStatusLeaved indicates an expected call of UpdateStatusLeaved.
-func (mr *MockConferencecallHandlerMockRecorder) UpdateStatusLeaved(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusLeaved", reflect.TypeOf((*MockConferencecallHandler)(nil).UpdateStatusLeaved), ctx, id)
-}
-
-// UpdateStatusLeaving mocks base method.
-func (m *MockConferencecallHandler) UpdateStatusLeaving(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatusLeaving", ctx, id)
-	ret0, _ := ret[0].(*conferencecall.Conferencecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateStatusLeaving indicates an expected call of UpdateStatusLeaving.
-func (mr *MockConferencecallHandlerMockRecorder) UpdateStatusLeaving(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusLeaving", reflect.TypeOf((*MockConferencecallHandler)(nil).UpdateStatusLeaving), ctx, id)
 }

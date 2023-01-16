@@ -4,11 +4,13 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
@@ -25,6 +27,7 @@ func Test_Create(t *testing.T) {
 		referenceType conferencecall.ReferenceType
 		referenceID   uuid.UUID
 
+		responseUUID           uuid.UUID
 		responseConferencecall *conferencecall.Conferencecall
 	}{
 		{
@@ -35,6 +38,7 @@ func Test_Create(t *testing.T) {
 			conferencecall.ReferenceTypeCall,
 			uuid.FromStringOrNil("6fdaccaa-1350-11ed-8a93-cb0e3c8d6bf8"),
 
+			uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
 			&conferencecall.Conferencecall{
 				ID: uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
 			},
@@ -46,12 +50,14 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				cache:         mockCache,
@@ -60,13 +66,17 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
 			mockDB.EXPECT().ConferencecallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, gomock.Any()).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallJoining, tt.responseConferencecall)
+			mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.responseConferencecall.ID, 0, defaultHealthCheckDelay)
 			res, err := h.Create(ctx, tt.customerID, tt.conferenceID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			time.Sleep(time.Millisecond * 100)
 
 			if !reflect.DeepEqual(res, tt.responseConferencecall) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConferencecall, res)
@@ -182,24 +192,22 @@ func Test_updateStatus(t *testing.T) {
 	}
 }
 
-func Test_updateStatusByReferenceID(t *testing.T) {
+func Test_updateStatusJoined(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		referenceID uuid.UUID
-		status      conferencecall.Status
+		id uuid.UUID
 
 		responseConferencecall *conferencecall.Conferencecall
 	}{
 		{
 			"normal",
 
-			uuid.FromStringOrNil("7e17659c-1352-11ed-bfbe-774659fa11e9"),
-			conferencecall.StatusJoining,
+			uuid.FromStringOrNil("6c149caa-94d2-11ed-9638-c3b106edcdbd"),
 
 			&conferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("7e47b5e4-1352-11ed-b286-ef1d6830ab8a"),
+				ID: uuid.FromStringOrNil("6c149caa-94d2-11ed-9638-c3b106edcdbd"),
 			},
 		},
 	}
@@ -223,10 +231,11 @@ func Test_updateStatusByReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseConferencecall, nil)
-			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.responseConferencecall.ID, tt.status).Return(nil)
+			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.responseConferencecall.ID, conferencecall.StatusJoined).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
-			res, err := h.updateStatusByReferenceID(ctx, tt.referenceID, tt.status)
+			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallJoined, tt.responseConferencecall)
+
+			res, err := h.updateStatusJoined(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -238,7 +247,7 @@ func Test_updateStatusByReferenceID(t *testing.T) {
 	}
 }
 
-func Test_UpdateStatusLeaving(t *testing.T) {
+func Test_updateStatusLeaving(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -281,7 +290,7 @@ func Test_UpdateStatusLeaving(t *testing.T) {
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaving, tt.responseConferencecall)
 
-			res, err := h.UpdateStatusLeaving(ctx, tt.id)
+			res, err := h.updateStatusLeaving(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -293,7 +302,7 @@ func Test_UpdateStatusLeaving(t *testing.T) {
 	}
 }
 
-func Test_UpdateStatusLeaved(t *testing.T) {
+func Test_updateStatusLeaved(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -336,7 +345,7 @@ func Test_UpdateStatusLeaved(t *testing.T) {
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.responseConferencecall.ID).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallLeaved, tt.responseConferencecall)
 
-			res, err := h.UpdateStatusLeaved(ctx, tt.id)
+			res, err := h.updateStatusLeaved(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
