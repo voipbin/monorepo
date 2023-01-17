@@ -1,5 +1,6 @@
 package tts
 
+// TTS define
 type TTS struct {
 	Gender        Gender `json:"gender"`
 	Text          string `json:"text"`

@@ -127,7 +127,7 @@ func run() error {
 func runListen(rabbitSock rabbitmqhandler.Rabbit, notifyHandler notifyhandler.NotifyHandler) error {
 
 	// create tts handler
-	ttsHandler := ttshandler.NewTTSHandler(notifyHandler, *gcpCredential, *gcpProjectID, *gcpBucketName)
+	ttsHandler := ttshandler.NewTTSHandler(*gcpCredential, *gcpProjectID, *gcpBucketName)
 	if ttsHandler == nil {
 		logrus.Errorf("Could not create tts handler.")
 		return fmt.Errorf("could not create tts handler")

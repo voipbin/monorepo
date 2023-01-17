@@ -3,6 +3,7 @@ package ttshandler
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -13,17 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/buckethandler"
 )
 
-func TestTTSCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockAudio := audiohandler.NewMockAudioHandler(mc)
-	mockBucket := buckethandler.NewMockBucketHandler(mc)
-
-	h := &ttsHandler{
-		audioHandler:  mockAudio,
-		bucketHandler: mockBucket,
-	}
+func Test_Create(t *testing.T) {
 
 	type test struct {
 		name string
@@ -45,34 +36,45 @@ func TestTTSCreate(t *testing.T) {
 			"<speak>Hello world</speak>",
 			tts.GenderFemale,
 			"en-US",
-			"865e9979dc81574475491a52a38bd423487935e9.wav",
+			"766e587168455d862b8ef2a931341e7adaa106e1.wav",
 
 			&tts.TTS{
 				Gender:        tts.GenderFemale,
 				Text:          "<speak>Hello world</speak>",
 				Language:      "en-US",
-				MediaFilepath: "temp/tts/865e9979dc81574475491a52a38bd423487935e9.wav",
+				MediaFilepath: "temp/tts/766e587168455d862b8ef2a931341e7adaa106e1.wav",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAudio := audiohandler.NewMockAudioHandler(mc)
+			mockBucket := buckethandler.NewMockBucketHandler(mc)
+
+			h := &ttsHandler{
+				audioHandler:  mockAudio,
+				bucketHandler: mockBucket,
+			}
+
 			ctx := context.Background()
 
 			target := fmt.Sprintf("%s/%s", bucketDirectory, tt.filename)
 
-			mockBucket.EXPECT().FileExist(target).Return(false)
+			mockBucket.EXPECT().FileExist(ctx, target).Return(false)
 			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.filename).Return(nil)
-			mockBucket.EXPECT().FileUpload(tt.filename, target).Return(nil)
+			mockBucket.EXPECT().FileUpload(ctx, tt.filename, target).Return(nil)
 
 			res, err := h.Create(ctx, tt.callID, tt.text, tt.language, tt.gender)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectRes {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, res)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
 			}
 		})
 	}
