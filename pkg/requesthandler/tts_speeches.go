@@ -6,14 +6,14 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/response"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // TTSV1SpeecheCreate create speech-to-text.
-func (r *requestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error) {
+func (r *requestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error) {
 
 	uri := "/v1/speeches"
 
@@ -24,22 +24,24 @@ func (r *requestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUI
 		Language: language,
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	tmp, err := r.sendRequestTTS(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceTTSSpeeches, timeout, 0, ContentTypeJSON, m)
-	if err != nil {
-		return "", err
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	if tmp.StatusCode >= 299 {
-		return "", fmt.Errorf("could not create stt. status: %d", tmp.StatusCode)
-	}
-
-	var res response.V1ResponseSpeechesPost
+	var res tmtts.TTS
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return res.Filename, nil
+	return &res, nil
 }

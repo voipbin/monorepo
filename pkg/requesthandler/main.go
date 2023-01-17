@@ -53,6 +53,7 @@ import (
 	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
@@ -686,7 +687,7 @@ type RequestHandler interface {
 	StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error
 
 	// tts-manager speeches
-	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error)
+	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)
 
 	// // transcribe-manager
 	TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
