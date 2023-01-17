@@ -8,7 +8,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/request"
-	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/listenhandler/models/response"
 )
 
 // v1SpeechesPost handles /v1/speeches POST request
@@ -26,17 +25,13 @@ func (h *listenHandler) v1SpeechesPost(ctx context.Context, m *rabbitmqhandler.R
 	log.WithField("request", req).Debugf("Request detail.")
 
 	// create tts
-	filename, err := h.ttshandler.TTSCreate(ctx, req.CallID, req.Text, req.Language, req.Gender)
+	tmp, err := h.ttshandler.Create(ctx, req.CallID, req.Text, req.Language, req.Gender)
 	if err != nil {
 		log.Errorf("Could not create a tts audio. err: %v", err)
 		return nil, err
 	}
 
-	resMsg := &response.V1ResponseSpeechesPost{
-		Filename: filename,
-	}
-
-	data, err := json.Marshal(resMsg)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err

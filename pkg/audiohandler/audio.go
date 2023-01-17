@@ -7,9 +7,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
+
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 )
 
-func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text, lang, gender, filename string) error {
+// AudioCreate Creates tts audio
+func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender, filename string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "AudioCreate",
 		"call_id": callID,
@@ -18,10 +21,10 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text, 
 
 	ssmlGender := texttospeechpb.SsmlVoiceGender_NEUTRAL
 	switch gender {
-	case "male":
+	case tts.GenderMale:
 		ssmlGender = texttospeechpb.SsmlVoiceGender_MALE
 
-	case "female":
+	case tts.GenderFemale:
 		ssmlGender = texttospeechpb.SsmlVoiceGender_FEMALE
 	}
 
@@ -45,8 +48,8 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text, 
 
 		// select the type of audio file you want returned.
 		AudioConfig: &texttospeechpb.AudioConfig{
-			AudioEncoding:   texttospeechpb.AudioEncoding_LINEAR16,
-			SampleRateHertz: 8000,
+			AudioEncoding:   defaultAudioEncoding,
+			SampleRateHertz: defaultSampleRate,
 		},
 	}
 
