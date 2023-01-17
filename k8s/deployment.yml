@@ -93,6 +93,7 @@ spec:
             - 'sip:10.164.0.20:5060'
             - 'eth0'
             - 'voipbin-voip-media-bucket-europe-west4'
+            - 'voipbin-tmp-bucket-europe-west4'
           ports:
             - name: sip-tcp
               protocol: "TCP"

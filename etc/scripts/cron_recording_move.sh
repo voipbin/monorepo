@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ASTERISK_RECORDING_DIRECTORY=/var/spool/asterisk/recording
-GCSFUSE_RECORDING_DIRECTORY=/mnt/recording
+GCSFUSE_RECORDING_DIRECTORY=/mnt/media/recording
 
 for RECORDING in $ASTERISK_RECORDING_DIRECTORY/*
 do
