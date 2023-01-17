@@ -43,7 +43,7 @@ spec:
             - '-gcp_project_id'
             - 'voipbin-production'
             - '-gcp_bucket_name'
-            - 'voipbin-voip-media-bucket-europe-west4'
+            - 'voipbin-tmp-bucket-europe-west4'
 
           ports:
             - name: metrics

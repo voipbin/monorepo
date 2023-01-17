@@ -8,28 +8,39 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 )
 
 const (
 	bucketDirectory = "tts"
 )
 
-// TTSCreate creates audio and upload it to the bucket.
+// Create creates audio and upload it to the bucket.
 // Returns downloadable link string
-func (h *ttsHandler) TTSCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender string) (string, error) {
+func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender) (*tts.TTS, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "TTSCreate",
+		"func":    "Create",
 		"call_id": callID,
 	})
 	log.Debugf("Creating TTS. lang: %s, gender: %s, text: %s", lang, gender, text)
 
-	// create hash/target
+	// create hash/target/result
 	filename := h.filenameHashGenerator(text, lang, gender)
 	target := fmt.Sprintf("%s/%s", bucketDirectory, filename)
+	filepath := fmt.Sprintf("temp/%s", target)
+	res := &tts.TTS{
+		Gender:        gender,
+		Text:          text,
+		Language:      lang,
+		MediaFilepath: filepath,
+	}
+
 	log = log.WithFields(
 		logrus.Fields{
 			"filename": filename,
 			"target":   target,
+			"tts":      res,
 		},
 	)
 	log.Debugf("Creating a new tts target. target: %s", target)
@@ -37,29 +48,29 @@ func (h *ttsHandler) TTSCreate(ctx context.Context, callID uuid.UUID, text strin
 	// check exists
 	if h.bucketHandler.FileExist(target) {
 		log.Infof("The target file is already exsits. target: %s", target)
-		return target, nil
+		return res, nil
 	}
 
 	// create audio
 	err := h.audioHandler.AudioCreate(ctx, callID, text, lang, gender, filename)
 	if err != nil {
 		log.Errorf("Could not create audio. err: %v", err)
-		return "", fmt.Errorf("could not create audio. err: %v", err)
+		return nil, fmt.Errorf("could not create audio. err: %v", err)
 	}
 	defer os.Remove(filename)
 
 	// upload to bucket
 	if err := h.bucketHandler.FileUpload(filename, target); err != nil {
 		log.Errorf("Could not upload the file to the bucket. err: %v", err)
-		return "", fmt.Errorf("could not upload the file to the bucket. err: %v", err)
+		return nil, fmt.Errorf("could not upload the file to the bucket. err: %v", err)
 	}
 	log.Debugf("Created and uploaded tts wav file to the bucket correctly. target: %s", target)
 
-	return target, nil
+	return res, nil
 }
 
 // filenameHashGenerator generates hashed filename for tts wav file.
-func (h *ttsHandler) filenameHashGenerator(text string, lang string, gender string) string {
+func (h *ttsHandler) filenameHashGenerator(text string, lang string, gender tts.Gender) string {
 	s := fmt.Sprintf("%s%s%s", text, lang, gender)
 
 	sh1 := sha1.New()

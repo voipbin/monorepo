@@ -1,6 +1,6 @@
 package ttshandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package ttshandler -destination ./mock_ttshandler_ttshandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package ttshandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -9,13 +9,14 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/audiohandler"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/buckethandler"
 )
 
 // TTSHandler intreface for tts handler
 type TTSHandler interface {
-	TTSCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender string) (string, error)
+	Create(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender) (*tts.TTS, error)
 }
 
 type ttsHandler struct {

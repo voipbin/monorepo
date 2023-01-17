@@ -1,24 +1,37 @@
 package audiohandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package audiohandler -destination ./mock_audiohandler_audiohandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package audiohandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
+	"io/fs"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
+	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
+
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 )
 
 // AudioHandler intreface for audio handler
 type AudioHandler interface {
-	AudioCreate(ctx context.Context, callID uuid.UUID, text, lang, gender, filename string) error
+	AudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender, filename string) error
 }
 
 type audioHandler struct {
 	client *texttospeech.Client
 }
+
+// list of default variables
+const (
+	defaultGender                                     = tts.GenderNeutral
+	defaultAudioEncoding texttospeechpb.AudioEncoding = texttospeechpb.AudioEncoding_LINEAR16
+	defaultSampleRate    int32                        = 8000
+
+	defaultFileMode fs.FileMode = 0644
+)
 
 // NewAudioHandler create AudioHandler
 func NewAudioHandler(credentialPath string) AudioHandler {
