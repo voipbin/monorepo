@@ -13,6 +13,80 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcribehandler"
 )
 
+func Test_processV1TranscribesPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		responseTranscribe *transcribe.Transcribe
+
+		expectCustomerID    uuid.UUID
+		expectReferenceType transcribe.ReferenceType
+		expectReferenceID   uuid.UUID
+		expectLanguage      string
+		expectDirection     transcribe.Direction
+		expectRes           *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/transcribes",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"10a7593a-9693-11ed-b4b7-7b48322d6a8d","reference_type":"call","reference_id":"112d907c-9693-11ed-a72c-8fa9ccd046a7","language":"en-US","direction":"both"}`),
+			},
+
+			&transcribe.Transcribe{
+				ID: uuid.FromStringOrNil("1162e178-9693-11ed-9bcf-974fbfeb1ea3"),
+			},
+
+			uuid.FromStringOrNil("10a7593a-9693-11ed-b4b7-7b48322d6a8d"),
+			transcribe.ReferenceTypeCall,
+			uuid.FromStringOrNil("112d907c-9693-11ed-a72c-8fa9ccd046a7"),
+			"en-US",
+			transcribe.DirectionBoth,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"1162e178-9693-11ed-9bcf-974fbfeb1ea3","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				reqHandler:        mockReq,
+				transcribeHandler: mockTranscribe,
+			}
+
+			mockTranscribe.EXPECT().TranscribingStart(gomock.Any(), tt.expectCustomerID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection).Return(tt.responseTranscribe, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_processV1TranscribesGet(t *testing.T) {
 
 	tests := []struct {
