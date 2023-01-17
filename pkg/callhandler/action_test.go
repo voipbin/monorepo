@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
+	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -237,7 +238,9 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 		expectGender   string
 		expectLanguage string
 		filename       string
-		expectURI      []string
+
+		responseTTS *tmtts.TTS
+		expectURI   []string
 	}{
 		{
 			"normal",
@@ -257,7 +260,14 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			"male",
 			"en-US",
 			"tts/tmp_filename.wav",
-			[]string{"sound:http://localhost:8000/tts/tmp_filename.wav"},
+
+			&tmtts.TTS{
+				Gender:        tmtts.GenderMale,
+				Text:          "hello world",
+				Language:      "en-US",
+				MediaFilepath: "temp/tts/tmp_filename.wav",
+			},
+			[]string{"sound:http://localhost:8000/temp/tts/tmp_filename.wav"},
 		},
 	}
 
@@ -281,7 +291,7 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			if tt.call.Status != call.StatusProgressing {
 				mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
 			}
-			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tt.expectGender, tt.expectLanguage, 10000).Return(tt.filename, nil)
+			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tmtts.Gender(tt.expectGender), tt.expectLanguage, 10000).Return(tt.responseTTS, nil)
 			mockReq.EXPECT().AstChannelPlay(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.call.Action.ID, tt.expectURI, "").Return(nil)
 
 			if err := h.ActionExecute(ctx, tt.call); err != nil {
