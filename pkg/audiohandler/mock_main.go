@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	tts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 )
 
 // MockAudioHandler is a mock of AudioHandler interface.
@@ -36,7 +37,7 @@ func (m *MockAudioHandler) EXPECT() *MockAudioHandlerMockRecorder {
 }
 
 // AudioCreate mocks base method.
-func (m *MockAudioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text, lang, gender, filename string) error {
+func (m *MockAudioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text, lang string, gender tts.Gender, filename string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AudioCreate", ctx, callID, text, lang, gender, filename)
 	ret0, _ := ret[0].(error)

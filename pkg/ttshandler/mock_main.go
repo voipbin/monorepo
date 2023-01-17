@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	tts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 )
 
 // MockTTSHandler is a mock of TTSHandler interface.
@@ -35,17 +36,17 @@ func (m *MockTTSHandler) EXPECT() *MockTTSHandlerMockRecorder {
 	return m.recorder
 }
 
-// TTSCreate mocks base method.
-func (m *MockTTSHandler) TTSCreate(ctx context.Context, callID uuid.UUID, text, lang, gender string) (string, error) {
+// Create mocks base method.
+func (m *MockTTSHandler) Create(ctx context.Context, callID uuid.UUID, text, lang string, gender tts.Gender) (*tts.TTS, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TTSCreate", ctx, callID, text, lang, gender)
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "Create", ctx, callID, text, lang, gender)
+	ret0, _ := ret[0].(*tts.TTS)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TTSCreate indicates an expected call of TTSCreate.
-func (mr *MockTTSHandlerMockRecorder) TTSCreate(ctx, callID, text, lang, gender interface{}) *gomock.Call {
+// Create indicates an expected call of Create.
+func (mr *MockTTSHandlerMockRecorder) Create(ctx, callID, text, lang, gender interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSCreate", reflect.TypeOf((*MockTTSHandler)(nil).TTSCreate), ctx, callID, text, lang, gender)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTTSHandler)(nil).Create), ctx, callID, text, lang, gender)
 }
