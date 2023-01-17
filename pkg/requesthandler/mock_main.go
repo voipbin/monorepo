@@ -56,6 +56,7 @@ import (
 	bucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	tts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 	user "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 )
@@ -3469,10 +3470,10 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1RecordingGet(ctx, id, request
 }
 
 // TTSV1SpeecheCreate mocks base method.
-func (m *MockRequestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text, gender, language string, timeout int) (string, error) {
+func (m *MockRequestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tts.Gender, language string, timeout int) (*tts.TTS, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TTSV1SpeecheCreate", ctx, callID, text, gender, language, timeout)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(*tts.TTS)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
