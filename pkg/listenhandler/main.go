@@ -46,6 +46,7 @@ var (
 
 	// v1
 	// transcribes
+	regV1Transcribes       = regexp.MustCompile(`/v1/transcribes$`)
 	regV1TranscribesGet    = regexp.MustCompile(`/v1/transcribes\?`)
 	regV1TranscribesID     = regexp.MustCompile("/v1/transcribes/" + regUUID + "$")
 	regV1TranscribesIDStop = regexp.MustCompile("/v1/transcribes/" + regUUID + "/stop$")
@@ -241,6 +242,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 	// transcribes
 	////////////////////
+	// POST /transcribes
+	case regV1Transcribes.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1TranscribesPost(ctx, m)
+		requestType = "/v1/transcribes"
+
 	// GET /transcribes
 	case regV1TranscribesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1TranscribesGet(ctx, m)
@@ -256,7 +262,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1TranscribesIDDelete(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>"
 
-	// POST /transcribe/<transcribe-id>/stop
+	// POST /transcribes/<transcribe-id>/stop
 	case regV1TranscribesIDStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1TranscribesIDStopPost(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>/stop"

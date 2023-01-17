@@ -21,7 +21,7 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	)
 
 	// send a request to storage-manager to get a media link
-	recording, err := h.reqHandler.StorageV1RecordingGet(ctx, recordingID)
+	recording, err := h.reqHandler.StorageV1RecordingGet(ctx, recordingID, defaultBucketTimeout)
 	if err != nil {
 		log.Errorf("Could not get recording info. err: %v", err)
 		return nil, err

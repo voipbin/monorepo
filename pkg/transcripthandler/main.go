@@ -24,9 +24,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 )
 
+// default variables
 const (
 	defaultListenPortMin = 10000
 	defaultListenPortMax = 11000
+	defaultBucketTimeout = 100000 // 100 sec
 )
 
 var defaultListenIP string // listen ip address
