@@ -9,6 +9,10 @@ asterisk-proxy
 asterisk-docker
 ```
 
+# Buckets
+Media(Recording files): /mnt/media
+Temp: /mnt/temp
+
 # Test
 ```
 $ docker build -t test:0.4 ./
