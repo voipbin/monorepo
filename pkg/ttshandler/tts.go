@@ -46,7 +46,7 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	log.Debugf("Creating a new tts target. target: %s", target)
 
 	// check exists
-	if h.bucketHandler.FileExist(target) {
+	if h.bucketHandler.FileExist(ctx, target) {
 		log.Infof("The target file is already exsits. target: %s", target)
 		return res, nil
 	}
@@ -60,7 +60,7 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	defer os.Remove(filename)
 
 	// upload to bucket
-	if err := h.bucketHandler.FileUpload(filename, target); err != nil {
+	if err := h.bucketHandler.FileUpload(ctx, filename, target); err != nil {
 		log.Errorf("Could not upload the file to the bucket. err: %v", err)
 		return nil, fmt.Errorf("could not upload the file to the bucket. err: %v", err)
 	}

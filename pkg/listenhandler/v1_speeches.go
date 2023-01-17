@@ -25,7 +25,7 @@ func (h *listenHandler) v1SpeechesPost(ctx context.Context, m *rabbitmqhandler.R
 	log.WithField("request", req).Debugf("Request detail.")
 
 	// create tts
-	tmp, err := h.ttshandler.Create(ctx, req.CallID, req.Text, req.Language, req.Gender)
+	tmp, err := h.ttsHandler.Create(ctx, req.CallID, req.Text, req.Language, req.Gender)
 	if err != nil {
 		log.Errorf("Could not create a tts audio. err: %v", err)
 		return nil, err

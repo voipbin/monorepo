@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/audiohandler"
@@ -20,8 +19,6 @@ type TTSHandler interface {
 }
 
 type ttsHandler struct {
-	notifyHandler notifyhandler.NotifyHandler
-
 	credentailPath string
 
 	audioHandler  audiohandler.AudioHandler
@@ -29,7 +26,7 @@ type ttsHandler struct {
 }
 
 // NewTTSHandler create TTSHandler
-func NewTTSHandler(notifyHandler notifyhandler.NotifyHandler, credentialPath string, projectID, bucketName string) TTSHandler {
+func NewTTSHandler(credentialPath string, projectID, bucketName string) TTSHandler {
 	audioHandler := audiohandler.NewAudioHandler(credentialPath)
 	if audioHandler == nil {
 		logrus.Errorf("Could not create audio handler.")

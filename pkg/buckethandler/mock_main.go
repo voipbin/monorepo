@@ -5,6 +5,7 @@
 package buckethandler
 
 import (
+	context "context"
 	reflect "reflect"
 	time "time"
 
@@ -35,17 +36,17 @@ func (m *MockBucketHandler) EXPECT() *MockBucketHandlerMockRecorder {
 }
 
 // FileExist mocks base method.
-func (m *MockBucketHandler) FileExist(target string) bool {
+func (m *MockBucketHandler) FileExist(ctx context.Context, target string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileExist", target)
+	ret := m.ctrl.Call(m, "FileExist", ctx, target)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // FileExist indicates an expected call of FileExist.
-func (mr *MockBucketHandlerMockRecorder) FileExist(target interface{}) *gomock.Call {
+func (mr *MockBucketHandlerMockRecorder) FileExist(ctx, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileExist", reflect.TypeOf((*MockBucketHandler)(nil).FileExist), target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileExist", reflect.TypeOf((*MockBucketHandler)(nil).FileExist), ctx, target)
 }
 
 // FileGet mocks base method.
@@ -79,15 +80,15 @@ func (mr *MockBucketHandlerMockRecorder) FileGetDownloadURL(target, expire inter
 }
 
 // FileUpload mocks base method.
-func (m *MockBucketHandler) FileUpload(src, dest string) error {
+func (m *MockBucketHandler) FileUpload(ctx context.Context, src, dest string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileUpload", src, dest)
+	ret := m.ctrl.Call(m, "FileUpload", ctx, src, dest)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FileUpload indicates an expected call of FileUpload.
-func (mr *MockBucketHandlerMockRecorder) FileUpload(src, dest interface{}) *gomock.Call {
+func (mr *MockBucketHandlerMockRecorder) FileUpload(ctx, src, dest interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileUpload", reflect.TypeOf((*MockBucketHandler)(nil).FileUpload), src, dest)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileUpload", reflect.TypeOf((*MockBucketHandler)(nil).FileUpload), ctx, src, dest)
 }

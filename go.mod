@@ -9,7 +9,7 @@ require (
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230115082507-8fe10428be02
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230117064756-8d99ea59bcb7
 	golang.org/x/oauth2 v0.4.0
 	golang.org/x/sys v0.4.0 // indirect
 	google.golang.org/api v0.107.0

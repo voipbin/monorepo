@@ -26,7 +26,7 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
-	ttshandler ttshandler.TTSHandler
+	ttsHandler ttshandler.TTSHandler
 }
 
 var (
@@ -70,7 +70,7 @@ func NewListenHandler(
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
-		ttshandler: ttsHandler,
+		ttsHandler: ttsHandler,
 	}
 
 	return h

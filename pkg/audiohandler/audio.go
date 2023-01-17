@@ -2,11 +2,12 @@ package audiohandler
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 
+	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 )
@@ -19,6 +20,7 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text s
 	})
 	log.WithField("text", text).Debugf("Creating a new audio. lang: %s, gender: %s, filename: %s", lang, gender, filename)
 
+	voiceName := h.getVoiceName(lang, gender)
 	ssmlGender := texttospeechpb.SsmlVoiceGender_NEUTRAL
 	switch gender {
 	case tts.GenderMale:
@@ -43,6 +45,7 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text s
 		// voice gender ("neutral")
 		Voice: &texttospeechpb.VoiceSelectionParams{
 			LanguageCode: lang,
+			Name:         voiceName,
 			SsmlGender:   ssmlGender,
 		},
 
@@ -52,6 +55,7 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text s
 			SampleRateHertz: defaultSampleRate,
 		},
 	}
+	log.Debugf("Send speech request. language_code: %s, gender: %d, name: %s", req.Voice.LanguageCode, req.Voice.SsmlGender, voiceName)
 
 	// send request
 	resp, err := h.client.SynthesizeSpeech(ctx, &req)
@@ -61,11 +65,26 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text s
 	}
 
 	// create audio
-	if err := ioutil.WriteFile(filename, resp.AudioContent, 0644); err != nil {
+	if err := ioutil.WriteFile(filename, resp.AudioContent, defaultFileMode); err != nil {
 		log.Errorf("Could not create a result audio file. err: %v", err)
 		return err
 	}
 	log.Debugf("Created a new audio. filename: %s", filename)
 
 	return nil
+}
+
+// getVoiceName returns voicename of the given language and gender
+func (h *audioHandler) getVoiceName(lang string, gender tts.Gender) string {
+	mapVoiceName := map[string]string{
+		"en-US:" + tts.GenderFemale: "en-US-Standard-C",
+	}
+
+	tmp := fmt.Sprintf("%s:%s", lang, gender)
+	res, ok := mapVoiceName[tmp]
+	if !ok {
+		return ""
+	}
+
+	return res
 }

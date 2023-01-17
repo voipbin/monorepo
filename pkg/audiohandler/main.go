@@ -7,10 +7,10 @@ import (
 	"io/fs"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
+	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
-	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 )
@@ -26,7 +26,6 @@ type audioHandler struct {
 
 // list of default variables
 const (
-	defaultGender                                     = tts.GenderNeutral
 	defaultAudioEncoding texttospeechpb.AudioEncoding = texttospeechpb.AudioEncoding_LINEAR16
 	defaultSampleRate    int32                        = 8000
 
