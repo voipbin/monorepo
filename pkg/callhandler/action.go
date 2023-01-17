@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -518,12 +519,14 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 	}
 
 	// send request for create wav file
-	filename, err := h.reqHandler.TTSV1SpeecheCreate(ctx, c.ID, option.Text, option.Gender, option.Language, 10000)
+	tts, err := h.reqHandler.TTSV1SpeecheCreate(ctx, c.ID, option.Text, tmtts.Gender(option.Gender), option.Language, 10000)
 	if err != nil {
 		log.Errorf("Could not create speech file. err: %v", err)
 		return fmt.Errorf("could not create tts wav. err: %v", err)
 	}
-	url := fmt.Sprintf("http://localhost:8000/%s", filename)
+	log.WithField("tts", tts).Debugf("Received tts speech result. medial_filepath: %s", tts.MediaFilepath)
+
+	url := fmt.Sprintf("http://localhost:8000/%s", tts.MediaFilepath)
 
 	// create a media string array
 	var medias []string
