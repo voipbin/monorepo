@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
+	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/audiohandler"
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/pkg/buckethandler"
 )
@@ -29,11 +30,11 @@ func TestTTSCreate(t *testing.T) {
 
 		callID   uuid.UUID
 		text     string
-		gender   string
+		gender   tts.Gender
 		language string
 		filename string
 
-		expectRes string
+		expectRes *tts.TTS
 	}
 
 	tests := []test{
@@ -42,11 +43,16 @@ func TestTTSCreate(t *testing.T) {
 
 			uuid.FromStringOrNil("c1a8bfe6-9214-11ec-a013-1bbdbd87fc23"),
 			"<speak>Hello world</speak>",
-			"male",
+			tts.GenderFemale,
 			"en-US",
 			"865e9979dc81574475491a52a38bd423487935e9.wav",
 
-			"tts/865e9979dc81574475491a52a38bd423487935e9.wav",
+			&tts.TTS{
+				Gender:        tts.GenderFemale,
+				Text:          "<speak>Hello world</speak>",
+				Language:      "en-US",
+				MediaFilepath: "temp/tts/865e9979dc81574475491a52a38bd423487935e9.wav",
+			},
 		},
 	}
 
@@ -60,7 +66,7 @@ func TestTTSCreate(t *testing.T) {
 			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.filename).Return(nil)
 			mockBucket.EXPECT().FileUpload(tt.filename, target).Return(nil)
 
-			res, err := h.TTSCreate(ctx, tt.callID, tt.text, tt.language, tt.gender)
+			res, err := h.Create(ctx, tt.callID, tt.text, tt.language, tt.gender)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
