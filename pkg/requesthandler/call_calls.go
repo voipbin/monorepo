@@ -334,10 +334,10 @@ func (r *requestHandler) CallV1CallRemoveChainedCall(ctx context.Context, callID
 	return &c, nil
 }
 
-// CallV1CallAddExternalMedia sends a request to call-manager
-// to add the external media.
+// CallV1CallExternalMediaStart sends a request to call-manager
+// to start the external media.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallAddExternalMedia(
+func (r *requestHandler) CallV1CallExternalMediaStart(
 	ctx context.Context,
 	callID uuid.UUID,
 	externalHost string, // external host:port
@@ -346,7 +346,7 @@ func (r *requestHandler) CallV1CallAddExternalMedia(
 	connectionType string, // client,server
 	format string, // ulaw
 	direction string, // in,out,both
-) (*cmresponse.V1ResponseCallsIDExternalMediaPost, error) {
+) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
 
 	reqData := &cmrequest.V1DataCallsIDExternalMediaPost{
@@ -363,23 +363,48 @@ func (r *requestHandler) CallV1CallAddExternalMedia(
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resData cmresponse.V1ResponseCallsIDExternalMediaPost
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	return &res, nil
+}
+
+// CallV1CallExternalMediaStop sends a request to call-manager
+// to stop the external media.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
+	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallCallsExternalMedia, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // CallV1CallGetDigits sends a request to call-manager

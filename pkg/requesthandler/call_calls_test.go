@@ -9,7 +9,6 @@ import (
 	"github.com/golang/mock/gomock"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -765,7 +764,7 @@ func Test_CallV1CallHangup(t *testing.T) {
 	}
 }
 
-func Test_CallV1CallAddExternalMedia(t *testing.T) {
+func Test_CallV1CallExternalMediaStart(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -781,7 +780,7 @@ func Test_CallV1CallAddExternalMedia(t *testing.T) {
 		response *rabbitmqhandler.Response
 
 		expectRequest *rabbitmqhandler.Request
-		expectRes     *cmresponse.V1ResponseCallsIDExternalMediaPost
+		expectRes     *cmcall.Call
 	}{
 		{
 			"normal",
@@ -797,7 +796,7 @@ func Test_CallV1CallAddExternalMedia(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"media_addr_ip":"127.0.0.1","media_addr_port":9999}`),
+				Data:       []byte(`{"id":"a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"}`),
 			},
 
 			&rabbitmqhandler.Request{
@@ -806,9 +805,8 @@ func Test_CallV1CallAddExternalMedia(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
 			},
-			&cmresponse.V1ResponseCallsIDExternalMediaPost{
-				MediaAddrIP:   "127.0.0.1",
-				MediaAddrPort: 9999,
+			&cmcall.Call{
+				ID: uuid.FromStringOrNil("a099a2a4-0ac7-11ec-b8ae-438c5d2fe6fb"),
 			},
 		},
 	}
@@ -827,7 +825,66 @@ func Test_CallV1CallAddExternalMedia(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallAddExternalMedia(ctx, tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			res, err := reqHandler.CallV1CallExternalMediaStart(ctx, tt.callID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallExternalMediaStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmcall.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("487233ec-97c1-11ed-968d-47ee0ef18dbf"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"487233ec-97c1-11ed-968d-47ee0ef18dbf"}`),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/487233ec-97c1-11ed-968d-47ee0ef18dbf/external-media",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&cmcall.Call{
+				ID: uuid.FromStringOrNil("487233ec-97c1-11ed-968d-47ee0ef18dbf"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1CallExternalMediaStop(ctx, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
