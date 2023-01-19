@@ -161,3 +161,135 @@ func Test_CallV1ConfbridgeGet(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallV1ConfbridgeExternalMediaStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		confbridgeID   uuid.UUID
+		externalHost   string
+		encapsulation  string
+		transport      string
+		connectionType string
+		format         string
+		direction      string
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmconfbridge.Confbridge
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
+			"localhost:5060",
+			"rtp",
+			"udp",
+			"client",
+			"ulaw",
+			"both",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"8bb7a268-97d0-11ed-bb1d-efd9a3f33560"}`),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/confbridges/8bb7a268-97d0-11ed-bb1d-efd9a3f33560/external-media",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"external_host":"localhost:5060","encapsulation":"rtp","transport":"udp","connection_type":"client","format":"ulaw","direction":"both"}`),
+			},
+			&cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("8bb7a268-97d0-11ed-bb1d-efd9a3f33560"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1ConfbridgeExternalMediaStart(ctx, tt.confbridgeID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallV1ConfbridgeExternalMediaStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmconfbridge.Confbridge
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("8c21d002-97d0-11ed-9bb5-bf7c25553a09"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"8c21d002-97d0-11ed-9bb5-bf7c25553a09"}`),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/confbridges/8c21d002-97d0-11ed-9bb5-bf7c25553a09/external-media",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("8c21d002-97d0-11ed-9bb5-bf7c25553a09"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1ConfbridgeExternalMediaStop(ctx, tt.callID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
