@@ -65,9 +65,10 @@ var (
 	regV1ChannelsIDHealth = regexp.MustCompile("/v1/channels/" + regUUID + "/health-check$")
 
 	// confbridges
-	regV1Confbridges          = regexp.MustCompile("/v1/confbridges$")
-	regV1ConfbridgesID        = regexp.MustCompile("/v1/confbridges/" + regUUID + "$")
-	regV1ConfbridgesIDCallsID = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
+	regV1Confbridges                = regexp.MustCompile("/v1/confbridges$")
+	regV1ConfbridgesID              = regexp.MustCompile("/v1/confbridges/" + regUUID + "$")
+	regV1ConfbridgesIDExternalMedia = regexp.MustCompile("/v1/confbridges/" + regUUID + "/external-media$")
+	regV1ConfbridgesIDCallsID       = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
 
 	// external-medias
 	regV1ExternalMedias   = regexp.MustCompile("/v1/external-medias$")
@@ -322,6 +323,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Confbridges.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConfbridgesPost(ctx, m)
 		requestType = "/v1/confbridges"
+
+	// POST /confbridges/<confbridge-id>/external-media
+	case regV1ConfbridgesIDExternalMedia.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConfbridgesIDExternalMediaPost(ctx, m)
+		requestType = "/v1/confbridges/<confbridge-id>/external-media"
+
+	// DELETE /confbridges/<confbridge-id>/external-media
+	case regV1ConfbridgesIDExternalMedia.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ConfbridgesIDExternalMediaDelete(ctx, m)
+		requestType = "/v1/confbridges/<confbridge-id>/external-media"
 
 	////////////////
 	// external-medias

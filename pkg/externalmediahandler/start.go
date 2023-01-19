@@ -47,7 +47,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callI
 	)
 	log.Debug("Creating the external media for call type.")
 
-	c, err := h.db.CallGet(ctx, callID)
+	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get a call info. err: %v", err)
 		return nil, err
@@ -98,7 +98,7 @@ func (h *externalMediaHandler) startReferenceTypeConfbridge(ctx context.Context,
 	log.Debug("Creating the external media for confbridge type.")
 
 	// get confbridge
-	cb, err := h.confbridgeHandler.Get(ctx, confbridgeID)
+	cb, err := h.reqHandler.CallV1ConfbridgeGet(ctx, confbridgeID)
 	if err != nil {
 		log.Errorf("Could not get confbridge info")
 		return nil, err

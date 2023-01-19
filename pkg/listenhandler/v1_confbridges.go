@@ -161,3 +161,80 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m
 
 	return simpleResponse(200), nil
 }
+
+// processV1ConfbridgesIDExternalMediaPost handles /v1/confbridges/<confbridge-id>/external-media POST request
+func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1ConfbridgessIDExternalMediaPost.")
+
+	var req request.V1DataConfbridgessIDExternalMediaPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+	log.WithField("request", req).Debugf("Parsed request data.")
+
+	tmp, err := h.confbridgeHandler.ExternalMediaStart(ctx, id, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
+	if err != nil {
+		log.Errorf("Could not start the external media. confbridge_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConfbridgesIDExternalMediaDelete handles /v1/confbridges/<confbridge-id>/external-media DELETE request
+func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1ConfbridgesIDExternalMediaDelete.")
+
+	tmp, err := h.confbridgeHandler.ExternalMediaStop(ctx, id)
+	if err != nil {
+		log.Errorf("Could not stop the external media. confbridge_id: %s, err: %v", id, err)
+		return nil, err
+	}
+	log.Debugf("Stopped external media channel. external: %v", tmp)
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

@@ -67,3 +67,28 @@ func (h *confbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.
 
 	return res, nil
 }
+
+// UpdateExternalMediaID updates the confbridge's external media id.
+func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":              "UpdateExternalMediaID",
+			"confbridge_id":     id,
+			"external_media_id": externalMediaID,
+		},
+	)
+
+	if errSet := h.db.ConfbridgeSetExternalMediaID(ctx, id, externalMediaID); errSet != nil {
+		log.Errorf("Could not set the external media id. err: %v", errSet)
+		return nil, errSet
+	}
+
+	// get updated confbridge
+	res, err := h.db.ConfbridgeGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}

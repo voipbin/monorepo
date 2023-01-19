@@ -14,7 +14,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
@@ -936,11 +935,11 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 
 	type test struct {
 		name    string
-		call    *call.Call
 		request *rabbitmqhandler.Request
 
-		responseExternalMedia *externalmedia.ExternalMedia
+		responseCall *call.Call
 
+		expectCallID         uuid.UUID
 		expectExternalHost   string
 		expectEncapsulation  string
 		expectTransport      string
@@ -954,9 +953,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&call.Call{
-				ID: uuid.FromStringOrNil("31255b7c-0a6b-11ec-87e2-afe5a545df76"),
-			},
+
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/31255b7c-0a6b-11ec-87e2-afe5a545df76/external-media",
 				Method:   rabbitmqhandler.RequestMethodPost,
@@ -964,12 +961,11 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 				Data:     []byte(`{"external_host": "127.0.0.1:5060", "encapsulation": "rtp", "transport": "udp", "connection_type": "client", "format": "ulaw", "direction": "both", "data": ""}`),
 			},
 
-			&externalmedia.ExternalMedia{
-				ID:        uuid.FromStringOrNil("d9f3fc36-0a7a-11ec-8f20-eb8a7aa17176"),
-				LocalIP:   "127.0.0.1",
-				LocalPort: 9000,
+			&call.Call{
+				ID: uuid.FromStringOrNil("31255b7c-0a6b-11ec-87e2-afe5a545df76"),
 			},
 
+			uuid.FromStringOrNil("31255b7c-0a6b-11ec-87e2-afe5a545df76"),
 			"127.0.0.1:5060",
 			"rtp",
 			"udp",
@@ -980,7 +976,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"media_addr_ip":"127.0.0.1","media_addr_port":9000}`),
+				Data:       []byte(`{"id":"31255b7c-0a6b-11ec-87e2-afe5a545df76","customer_id":"00000000-0000-0000-0000-000000000000","asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -1000,17 +996,16 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 				externalMediaHandler: mockExternal,
 			}
 
-			mockExternal.EXPECT().Start(
+			mockCall.EXPECT().ExternalMediaStart(
 				context.Background(),
-				externalmedia.ReferenceTypeCall,
-				tt.call.ID,
+				tt.expectCallID,
 				tt.expectExternalHost,
 				tt.expectEncapsulation,
 				tt.expectTransport,
 				tt.expectConnectionType,
 				tt.expectFormat,
 				tt.expectDirection,
-			).Return(tt.responseExternalMedia, nil)
+			).Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

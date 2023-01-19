@@ -13,7 +13,6 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 )
@@ -486,21 +485,15 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 		"external_media": req,
 	}).Debugf("Parsed request data.")
 
-	externalMedia, err := h.externalMediaHandler.Start(ctx, externalmedia.ReferenceTypeCall, id, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
+	tmp, err := h.callHandler.ExternalMediaStart(ctx, id, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
 		return nil, err
 	}
-	log.Debugf("Created external media channel. external: %v", externalMedia)
-
-	tmp := &response.V1ResponseCallsIDExternalMediaPost{
-		MediaAddrIP:   externalMedia.LocalIP,
-		MediaAddrPort: externalMedia.LocalPort,
-	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 

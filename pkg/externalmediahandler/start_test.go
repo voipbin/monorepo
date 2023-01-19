@@ -16,7 +16,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -112,7 +111,7 @@ func Test_Start_reference_type_call(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridgeID)
 			mockReq.EXPECT().AstBridgeCreate(ctx, tt.responseCall.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
@@ -211,20 +210,18 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCb := confbridgehandler.NewMockConfbridgeHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &externalMediaHandler{
-				utilHandler:       mockUtil,
-				reqHandler:        mockReq,
-				db:                mockDB,
-				confbridgeHandler: mockCb,
-				bridgeHandler:     mockBridge,
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				bridgeHandler: mockBridge,
 			}
 
 			ctx := context.Background()
 
-			mockCb.EXPECT().Get(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
 			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
 
 			// startExternalMedia
