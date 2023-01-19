@@ -176,7 +176,7 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Cont
 		})
 	log.Debug("Executing processV1ConfbridgessIDExternalMediaPost.")
 
-	var req request.V1DataConfbridgessIDExternalMediaPost
+	var req request.V1DataConfbridgesIDExternalMediaPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
