@@ -16,8 +16,8 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
-	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 	caoutplan "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
@@ -163,9 +163,11 @@ const (
 	resourceCallCallsHealth         resource = "call/calls/health"
 	resourceCallCallsRecordingStart resource = "call/calls/recording-start"
 	resourceCallCallsRecordingStop  resource = "call/calls/recording-stop"
+	resourceCallCallsExternalMedia  resource = "call/calls/external-media"
 	resourceCallChannelsHealth      resource = "call/channels/health"
 	resourceCallConfbridges         resource = "call/confbridges"
 	resourceCallRecordings          resource = "call/recordings"
+	resourceCallExternalMedia       resource = "call/external-medias"
 
 	resourceChatChats            resource = "chat/chats"
 	resourceChatChatrooms        resource = "chat/chatrooms"
@@ -424,7 +426,8 @@ type RequestHandler interface {
 	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
 	CallV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallRemoveChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallAddExternalMedia(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmresponse.V1ResponseCallsIDExternalMediaPost, error)
+	CallV1CallExternalMediaStart(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmcall.Call, error)
+	CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
 	CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
 	CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *commonaddress.Address, destination []commonaddress.Address) ([]cmcall.Call, error)
@@ -448,6 +451,11 @@ type RequestHandler interface {
 	CallV1ConfbridgeCallKick(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error
 	CallV1ConfbridgeCallAdd(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error
 	CallV1ConfbridgeGet(ctx context.Context, conferenceID uuid.UUID) (*cmconfbridge.Confbridge, error)
+
+	// call-manager external-media
+	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
+	CallV1ExternalMediaStart(ctx context.Context, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmexternalmedia.ExternalMedia, error)
+	CallV1ExternalMediaStop(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
 
 	// call-manager recordings
 	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
