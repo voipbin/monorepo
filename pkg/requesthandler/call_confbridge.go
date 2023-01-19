@@ -122,3 +122,76 @@ func (r *requestHandler) CallV1ConfbridgeCallAdd(ctx context.Context, conference
 
 	return nil
 }
+
+// CallV1ConfbridgeExternalMediaStart sends a request to call-manager
+// to start the external media.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
+	ctx context.Context,
+	confbridgeID uuid.UUID,
+	externalHost string, // external host:port
+	encapsulation string, // rtp
+	transport string, // udp
+	connectionType string, // client,server
+	format string, // ulaw
+	direction string, // in,out,both
+) (*cmconfbridge.Confbridge, error) {
+	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", confbridgeID)
+
+	reqData := &cmrequest.V1DataConfbridgesIDExternalMediaPost{
+		ExternalHost:   externalHost,
+		Encapsulation:  encapsulation,
+		Transport:      transport,
+		ConnectionType: connectionType,
+		Format:         format,
+		Direction:      direction,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridgesIDExternalMedia, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmconfbridge.Confbridge
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallV1ConfbridgeExternalMediaStop sends a request to call-manager
+// to stop the external media.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmconfbridge.Confbridge, error) {
+	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridgesIDExternalMedia, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmconfbridge.Confbridge
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
