@@ -95,6 +95,36 @@ func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx, confbridgeType interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfbridgeHandler)(nil).Create), ctx, confbridgeType)
 }
 
+// ExternalMediaStart mocks base method.
+func (m *MockConfbridgeHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, id, externalHost, encapsulation, transport, connectionType, format, direction)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExternalMediaStart indicates an expected call of ExternalMediaStart.
+func (mr *MockConfbridgeHandlerMockRecorder) ExternalMediaStart(ctx, id, externalHost, encapsulation, transport, connectionType, format, direction interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).ExternalMediaStart), ctx, id, externalHost, encapsulation, transport, connectionType, format, direction)
+}
+
+// ExternalMediaStop mocks base method.
+func (m *MockConfbridgeHandler) ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExternalMediaStop", ctx, id)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExternalMediaStop indicates an expected call of ExternalMediaStop.
+func (mr *MockConfbridgeHandlerMockRecorder) ExternalMediaStop(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStop", reflect.TypeOf((*MockConfbridgeHandler)(nil).ExternalMediaStop), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockConfbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
@@ -178,4 +208,19 @@ func (m *MockConfbridgeHandler) Terminate(ctx context.Context, id uuid.UUID) err
 func (mr *MockConfbridgeHandlerMockRecorder) Terminate(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConfbridgeHandler)(nil).Terminate), ctx, id)
+}
+
+// UpdateExternalMediaID mocks base method.
+func (m *MockConfbridgeHandler) UpdateExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateExternalMediaID", ctx, id, externalMediaID)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateExternalMediaID indicates an expected call of UpdateExternalMediaID.
+func (mr *MockConfbridgeHandlerMockRecorder) UpdateExternalMediaID(ctx, id, externalMediaID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExternalMediaID", reflect.TypeOf((*MockConfbridgeHandler)(nil).UpdateExternalMediaID), ctx, id, externalMediaID)
 }

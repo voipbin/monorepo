@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
 )
 
 // Contexts of confbridge types
@@ -33,22 +34,27 @@ type ConfbridgeHandler interface {
 	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
 
 	Create(ctx context.Context, confbridgeType confbridge.Type) (*confbridge.Confbridge, error)
+	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error)
 	Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	Join(ctx context.Context, confbridgeID, callID uuid.UUID) error
 	Joined(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	Kick(ctx context.Context, id, callID uuid.UUID) error
 	Leaved(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	Terminate(ctx context.Context, id uuid.UUID) error
+
+	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*confbridge.Confbridge, error)
+	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 }
 
 // confbridgeHandler structure for service handle
 type confbridgeHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	reqHandler    requesthandler.RequestHandler
-	notifyHandler notifyhandler.NotifyHandler
-	db            dbhandler.DBHandler
-	cache         cachehandler.CacheHandler
-	bridgeHandler bridgehandler.BridgeHandler
+	utilHandler          utilhandler.UtilHandler
+	reqHandler           requesthandler.RequestHandler
+	notifyHandler        notifyhandler.NotifyHandler
+	db                   dbhandler.DBHandler
+	cache                cachehandler.CacheHandler
+	bridgeHandler        bridgehandler.BridgeHandler
+	externalMediaHandler externalmediahandler.ExternalMediaHandler
 }
 
 var (
@@ -94,15 +100,17 @@ func NewConfbridgeHandler(
 	db dbhandler.DBHandler,
 	cache cachehandler.CacheHandler,
 	bridgeHandler bridgehandler.BridgeHandler,
+	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 ) ConfbridgeHandler {
 
 	h := &confbridgeHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    req,
-		notifyHandler: notify,
-		db:            db,
-		cache:         cache,
-		bridgeHandler: bridgeHandler,
+		utilHandler:          utilhandler.NewUtilHandler(),
+		reqHandler:           req,
+		notifyHandler:        notify,
+		db:                   db,
+		cache:                cache,
+		bridgeHandler:        bridgeHandler,
+		externalMediaHandler: externalMediaHandler,
 	}
 
 	return h

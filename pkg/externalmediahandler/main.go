@@ -12,7 +12,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -44,8 +43,7 @@ type externalMediaHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	bridgeHandler     bridgehandler.BridgeHandler
-	confbridgeHandler confbridgehandler.ConfbridgeHandler
+	bridgeHandler bridgehandler.BridgeHandler
 }
 
 // NewExternalMediaHandler returns new service handler
@@ -53,17 +51,15 @@ func NewExternalMediaHandler(
 	requestHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
-	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	bridgeHandler bridgehandler.BridgeHandler,
 ) ExternalMediaHandler {
 
 	h := &externalMediaHandler{
-		utilHandler:       utilhandler.NewUtilHandler(),
-		reqHandler:        requestHandler,
-		notifyHandler:     notifyHandler,
-		db:                db,
-		confbridgeHandler: confbridgeHandler,
-		bridgeHandler:     bridgeHandler,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    requestHandler,
+		notifyHandler: notifyHandler,
+		db:            db,
+		bridgeHandler: bridgeHandler,
 	}
 
 	return h
