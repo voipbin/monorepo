@@ -2,26 +2,27 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
 )
 
 func Test_ExternalMediaStart(t *testing.T) {
 
 	tests := []struct {
 		name string
-		call *call.Call
 
+		id             uuid.UUID
 		externalHost   string
 		encapsulation  string
 		transport      string
@@ -29,20 +30,13 @@ func Test_ExternalMediaStart(t *testing.T) {
 		format         string
 		direction      string
 
-		expectExternalHost   string
-		expectEncapsulation  string
-		expectTransport      string
-		expectConnectionType string
-		expectFormat         string
-		expectDirection      string
+		responseCall          *call.Call
+		responseExternalMedia *externalmedia.ExternalMedia
 	}{
 		{
-			"default",
-			&call.Call{
-				ID:         uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "8066017c-02fb-11ec-ba6c-c320820accf1",
-			},
+			"normal",
+
+			uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
 			"example.com",
 			"rtp",
 			"udp",
@@ -50,12 +44,12 @@ func Test_ExternalMediaStart(t *testing.T) {
 			"ulaw",
 			"both",
 
-			"example.com",
-			"rtp",
-			"udp",
-			"client",
-			"ulaw",
-			"both",
+			&call.Call{
+				ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+			},
+			&externalmedia.ExternalMedia{
+				ID: uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
+			},
 		},
 	}
 
@@ -64,64 +58,59 @@ func Test_ExternalMediaStart(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
+				utilHandler:          mockUtil,
+				reqHandler:           mockReq,
+				db:                   mockDB,
+				externalMediaHandler: mockExternal,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstBridgeCreate(ctx, tt.call.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
-			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.call.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-			_, err := h.ExternalMediaStart(ctx, tt.call.ID, false, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockExternal.EXPECT().Start(ctx, externalmedia.ReferenceTypeCall, tt.id, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction).Return(tt.responseExternalMedia, nil)
+			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+
+			res, err := h.ExternalMediaStart(ctx, tt.id, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseCall, res) {
+				t.Errorf("Wrong match.\nexpect: %vgot: %v", tt.responseExternalMedia, res)
 			}
 		})
 	}
 }
 
-func TestExternalMediaStop(t *testing.T) {
+func Test_ExternalMediaStop(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		call     *call.Call
-		extMedia *externalmedia.ExternalMedia
+		name string
+
+		id uuid.UUID
+
+		responseCall          *call.Call
+		responseExternalMedia *externalmedia.ExternalMedia
 	}{
 		{
-			"default",
+			"normal",
+
+			uuid.FromStringOrNil("a4a11b7a-96f8-11ed-a7ff-c7b76333c22f"),
+
 			&call.Call{
-				ID:         uuid.FromStringOrNil("8e84ccd4-1afc-11ec-a0c7-673cb57f1064"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "8eee1c0c-1afc-11ec-947d-1b608000e61c",
+				ID:              uuid.FromStringOrNil("a4a11b7a-96f8-11ed-a7ff-c7b76333c22f"),
+				ExternalMediaID: uuid.FromStringOrNil("5338f2ba-96fa-11ed-9741-83dfb85823e4"),
 			},
 			&externalmedia.ExternalMedia{
-				CallID:         uuid.FromStringOrNil("8e84ccd4-1afc-11ec-a0c7-673cb57f1064"),
-				AsteriskID:     "42:01:0a:a4:00:05",
-				ChannelID:      "abab8726-1afc-11ec-873c-df1a7c3c2f22",
-				LocalIP:        "127.0.0.1",
-				LocalPort:      10001,
-				ExternalHost:   "example.com",
-				Encapsulation:  "rtp",
-				Transport:      "udp",
-				ConnectionType: "client",
-				Format:         "ulaw",
-				Direction:      "both",
+				ID: uuid.FromStringOrNil("77af2454-96f8-11ed-a2c6-1b0a3b96dbdd"),
 			},
-		},
-		{
-			"have no external media",
-			&call.Call{
-				ID:         uuid.FromStringOrNil("af2fcbae-1afd-11ec-9e9c-b3602bb157eb"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "af7005ac-1afd-11ec-b889-9fea8ae57cf3",
-			},
-			nil,
 		},
 	}
 
@@ -132,22 +121,105 @@ func TestExternalMediaStop(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
+				reqHandler:           mockReq,
+				db:                   mockDB,
+				externalMediaHandler: mockExternal,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.call.ID).Return(tt.extMedia, nil)
-			if tt.extMedia != nil {
-				mockReq.EXPECT().AstChannelHangup(ctx, tt.extMedia.AsteriskID, tt.extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0).Return(nil)
-				mockDB.EXPECT().ExternalMediaDelete(ctx, tt.call.ID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockExternal.EXPECT().Stop(ctx, tt.responseCall.ExternalMediaID).Return(&externalmedia.ExternalMedia{}, nil)
+			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+
+			res, err := h.ExternalMediaStop(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.ExternalMediaStop(ctx, tt.call.ID); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			if !reflect.DeepEqual(tt.responseCall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseCall, res)
+			}
+		})
+	}
+}
+
+func Test_ExternalMediaStop_error(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseCall               *call.Call
+		responseCallError          error
+		responseExternalMedia      *externalmedia.ExternalMedia
+		responseExternalMediaError error
+	}{
+		{
+			name: "call get returns an error",
+
+			id: uuid.FromStringOrNil("524db4e8-9728-11ed-8b63-33b3e4cab35f"),
+
+			responseCallError: fmt.Errorf(""),
+		},
+		{
+			name: "call has no external media",
+
+			id: uuid.FromStringOrNil("7e77d07c-9727-11ed-9a5c-7f64fe264774"),
+
+			responseCall: &call.Call{
+				ID: uuid.FromStringOrNil("7e77d07c-9727-11ed-9a5c-7f64fe264774"),
+			},
+		},
+		{
+			name: "external media stop media returns an error",
+
+			id: uuid.FromStringOrNil("92a767b4-9728-11ed-885f-47623ef9293e"),
+
+			responseCall: &call.Call{
+				ID:              uuid.FromStringOrNil("92a767b4-9728-11ed-885f-47623ef9293e"),
+				ExternalMediaID: uuid.FromStringOrNil("92cd6342-9728-11ed-b00b-d7edef482e40"),
+			},
+			responseExternalMediaError: fmt.Errorf(""),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockExternal := externalmediahandler.NewMockExternalMediaHandler(mc)
+
+			h := &callHandler{
+				reqHandler:           mockReq,
+				db:                   mockDB,
+				externalMediaHandler: mockExternal,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, tt.responseCallError)
+			if tt.responseCallError == nil {
+				if tt.responseCall.ExternalMediaID != uuid.Nil {
+					mockExternal.EXPECT().Stop(ctx, tt.responseCall.ExternalMediaID).Return(&externalmedia.ExternalMedia{}, tt.responseExternalMediaError)
+					if tt.responseExternalMediaError == nil {
+						mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia).Return(nil)
+						mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+					}
+				}
+			}
+
+			_, err := h.ExternalMediaStop(ctx, tt.id)
+			if err == nil {
+				t.Error("Wrong match. expect: error, got: ok")
 			}
 		})
 	}

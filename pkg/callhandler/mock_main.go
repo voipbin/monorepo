@@ -285,32 +285,33 @@ func (mr *MockCallHandlerMockRecorder) DigitsSet(ctx, id, digits interface{}) *g
 }
 
 // ExternalMediaStart mocks base method.
-func (m *MockCallHandler) ExternalMediaStart(ctx context.Context, callID uuid.UUID, isCallMedia bool, externalHost, encapsulation, transport, connectionType, format, direction string) (*channel.Channel, error) {
+func (m *MockCallHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost, encapsulation, transport, connectionType, format, direction string) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, callID, isCallMedia, externalHost, encapsulation, transport, connectionType, format, direction)
-	ret0, _ := ret[0].(*channel.Channel)
+	ret := m.ctrl.Call(m, "ExternalMediaStart", ctx, id, externalHost, encapsulation, transport, connectionType, format, direction)
+	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExternalMediaStart indicates an expected call of ExternalMediaStart.
-func (mr *MockCallHandlerMockRecorder) ExternalMediaStart(ctx, callID, isCallMedia, externalHost, encapsulation, transport, connectionType, format, direction interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) ExternalMediaStart(ctx, id, externalHost, encapsulation, transport, connectionType, format, direction interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStart), ctx, callID, isCallMedia, externalHost, encapsulation, transport, connectionType, format, direction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStart", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStart), ctx, id, externalHost, encapsulation, transport, connectionType, format, direction)
 }
 
 // ExternalMediaStop mocks base method.
-func (m *MockCallHandler) ExternalMediaStop(ctx context.Context, callID uuid.UUID) error {
+func (m *MockCallHandler) ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaStop", ctx, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "ExternalMediaStop", ctx, id)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ExternalMediaStop indicates an expected call of ExternalMediaStop.
-func (mr *MockCallHandlerMockRecorder) ExternalMediaStop(ctx, callID interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) ExternalMediaStop(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStop", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStop), ctx, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStop", reflect.TypeOf((*MockCallHandler)(nil).ExternalMediaStop), ctx, id)
 }
 
 // Get mocks base method.
@@ -425,6 +426,21 @@ func (m *MockCallHandler) StartCallHandle(ctx context.Context, cn *channel.Chann
 func (mr *MockCallHandlerMockRecorder) StartCallHandle(ctx, cn, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCallHandle", reflect.TypeOf((*MockCallHandler)(nil).StartCallHandle), ctx, cn, data)
+}
+
+// UpdateExternalMediaID mocks base method.
+func (m *MockCallHandler) UpdateExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateExternalMediaID", ctx, id, externalMediaID)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateExternalMediaID indicates an expected call of UpdateExternalMediaID.
+func (mr *MockCallHandlerMockRecorder) UpdateExternalMediaID(ctx, id, externalMediaID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExternalMediaID", reflect.TypeOf((*MockCallHandler)(nil).UpdateExternalMediaID), ctx, id, externalMediaID)
 }
 
 // UpdateRecordingID mocks base method.

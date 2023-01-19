@@ -53,6 +53,7 @@ type DBHandler interface {
 	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
 	CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error
+	CallSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
@@ -101,13 +102,14 @@ type DBHandler interface {
 	ConfbridgeUpdateToCache(ctx context.Context, id uuid.UUID) error
 	ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error
 	ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
-	ConfbridgeSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error
+	ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
 	ConfbridgeSetToCache(ctx context.Context, data *confbridge.Confbridge) error
 
 	// external media
-	ExternalMediaDelete(ctx context.Context, callID uuid.UUID) error
-	ExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error)
-	ExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error
+	ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error
+	ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
+	ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error
 
 	// recordings
 	RecordingCreate(ctx context.Context, c *recording.Recording) error

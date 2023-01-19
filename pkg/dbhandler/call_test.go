@@ -1420,6 +1420,89 @@ func Test_CallSetRecordingID(t *testing.T) {
 	}
 }
 
+func Test_CallSetExternalMediaID(t *testing.T) {
+
+	type test struct {
+		name string
+		call *call.Call
+
+		externalMediaID uuid.UUID
+
+		responseCurTime string
+		expectCall      *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&call.Call{
+				ID: uuid.FromStringOrNil("93eef900-96f3-11ed-9ce1-3f97da39b9d8"),
+			},
+
+			uuid.FromStringOrNil("94202c28-96f3-11ed-9327-176b7622fb32"),
+
+			"2020-04-18T03:22:17.995000",
+			&call.Call{
+				ID:             uuid.FromStringOrNil("93eef900-96f3-11ed-9ce1-3f97da39b9d8"),
+				ChainedCallIDs: []uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+				Data:           map[string]string{},
+				Dialroutes:     []rmroute.Route{},
+
+				ExternalMediaID: uuid.FromStringOrNil("94202c28-96f3-11ed-9327-176b7622fb32"),
+
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetExternalMediaID(ctx, tt.call.ID, tt.externalMediaID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectCall, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectCall, res)
+			}
+		})
+	}
+}
+
 func Test_CallSetForRouteFailover(t *testing.T) {
 
 	type test struct {

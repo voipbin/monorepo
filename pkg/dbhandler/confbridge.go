@@ -24,6 +24,8 @@ const (
 		recording_id,
 		recording_ids,
 
+		external_media_id,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -48,6 +50,8 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 
 		&res.RecordingID,
 		&recordingIDs,
+
+		&res.ExternalMediaID,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -91,6 +95,8 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		recording_id,
 		recording_ids,
 
+		external_media_id,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -98,6 +104,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		?, ?, ?,
 		?,
 		?, ?,
+		?,
 		?, ?, ?
 		)
 	`
@@ -122,9 +129,11 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		cb.RecordingID.Bytes(),
 		recordingIDs,
 
-		cb.TMCreate,
-		cb.TMUpdate,
-		cb.TMDelete,
+		cb.ExternalMediaID.Bytes(),
+
+		h.utilHandler.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeCreate. err: %v", err)
@@ -284,8 +293,8 @@ func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// ConfbridgeSetRecordID sets the conference's recording_id.
-func (h *handler) ConfbridgeSetRecordID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
+// ConfbridgeSetRecordingID sets the conference's recording_id.
+func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
 	// prepare
 	q := `
 	update confbridges set
@@ -297,7 +306,7 @@ func (h *handler) ConfbridgeSetRecordID(ctx context.Context, id uuid.UUID, recor
 
 	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeSetRecordID. err: %v", err)
+		return fmt.Errorf("could not execute. ConfbridgeSetRecordingID. err: %v", err)
 	}
 
 	// update the cache
@@ -324,6 +333,28 @@ func (h *handler) ConfbridgeAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddRecordIDs. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.ConfbridgeUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ConfbridgeSetExternalMediaID sets the conference's external media id.
+func (h *handler) ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error {
+	// prepare
+	q := `
+	update confbridges set
+		external_media_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, externalMediaID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConfbridgeSetExternalMediaID. err: %v", err)
 	}
 
 	// update the cache

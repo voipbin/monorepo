@@ -19,9 +19,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
@@ -44,6 +46,7 @@ type CallHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error)
 	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*call.Call, error)
+	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error)
 
 	CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destinations []commonaddress.Address) ([]*call.Call, error)
 	CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) (*call.Call, error)
@@ -69,19 +72,21 @@ type CallHandler interface {
 	ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
 	ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error)
 
-	ExternalMediaStart(ctx context.Context, callID uuid.UUID, isCallMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error)
-	ExternalMediaStop(ctx context.Context, callID uuid.UUID) error
+	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*call.Call, error)
+	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
 }
 
 // callHandler structure for service handle
 type callHandler struct {
-	utilHandler       utilhandler.UtilHandler
-	reqHandler        requesthandler.RequestHandler
-	db                dbhandler.DBHandler
-	notifyHandler     notifyhandler.NotifyHandler
-	confbridgeHandler confbridgehandler.ConfbridgeHandler
-	channelHandler    channelhandler.ChannelHandler
-	recordingHandler  recordinghandler.RecordingHandler
+	utilHandler          utilhandler.UtilHandler
+	reqHandler           requesthandler.RequestHandler
+	db                   dbhandler.DBHandler
+	notifyHandler        notifyhandler.NotifyHandler
+	confbridgeHandler    confbridgehandler.ConfbridgeHandler
+	channelHandler       channelhandler.ChannelHandler
+	bridgeHandler        bridgehandler.BridgeHandler
+	recordingHandler     recordinghandler.RecordingHandler
+	externalMediaHandler externalmediahandler.ExternalMediaHandler
 }
 
 // contextType
@@ -187,17 +192,21 @@ func NewCallHandler(
 	db dbhandler.DBHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
+	bridgeHandler bridgehandler.BridgeHandler,
 	recordingHandler recordinghandler.RecordingHandler,
+	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 ) CallHandler {
 
 	h := &callHandler{
-		utilHandler:       utilhandler.NewUtilHandler(),
-		reqHandler:        requestHandler,
-		notifyHandler:     notifyHandler,
-		db:                db,
-		confbridgeHandler: confbridgeHandler,
-		channelHandler:    channelHandler,
-		recordingHandler:  recordingHandler,
+		utilHandler:          utilhandler.NewUtilHandler(),
+		reqHandler:           requestHandler,
+		notifyHandler:        notifyHandler,
+		db:                   db,
+		confbridgeHandler:    confbridgeHandler,
+		channelHandler:       channelHandler,
+		bridgeHandler:        bridgeHandler,
+		recordingHandler:     recordingHandler,
+		externalMediaHandler: externalMediaHandler,
 	}
 
 	return h

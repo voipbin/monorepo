@@ -24,6 +24,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/subscribehandler"
@@ -154,7 +155,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, bridgeHandler)
 	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, confbridgeHandler, bridgeHandler)
-	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, recordingHandler)
+	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, confbridgeHandler, bridgeHandler)
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 
 	// run ari event listener
@@ -163,7 +165,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}
 
 	// run request listener
-	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler); err != nil {
+	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler); err != nil {
 		return err
 	}
 
@@ -189,8 +191,9 @@ func runRequestListen(
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
 	recordingHandler recordinghandler.RecordingHandler,
+	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 ) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

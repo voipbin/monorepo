@@ -32,6 +32,7 @@ const (
 		chained_call_ids,
 		recording_id,
 		recording_ids,
+		external_media_id,
 
 		source,
 		destination,
@@ -88,6 +89,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&chainedCallIDs,
 		&res.RecordingID,
 		&recordingIDs,
+		&res.ExternalMediaID,
 
 		&source,
 		&destination,
@@ -210,6 +212,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		chained_call_ids,
 		recording_id,
 		recording_ids,
+		external_media_id,
 
 		source,
 		source_target,
@@ -238,7 +241,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	) values(
 		?, ?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?,
 		?, ?,
@@ -294,6 +297,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.AsteriskID,
 		c.ChannelID,
 		c.BridgeID,
+
 		c.FlowID.Bytes(),
 		c.ActiveFlowID.Bytes(),
 		c.ConfbridgeID.Bytes(),
@@ -303,6 +307,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		tmpChainedCallIDs,
 		c.RecordingID.Bytes(),
 		tmpRecordingIDs,
+		c.ExternalMediaID.Bytes(),
 
 		tmpSource,
 		c.Source.Target,
@@ -810,6 +815,31 @@ func (h *handler) CallSetRecordingID(ctx context.Context, id uuid.UUID, recordID
 
 	// update the cache
 	_ = h.CallUpdateToCache(context.Background(), id)
+
+	return nil
+}
+
+// CallSetExternalMediaID sets the call's external_media_id
+func (h *handler) CallSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error {
+
+	// prepare
+	q := `
+	update
+		calls
+	set
+		external_media_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, externalMediaID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetExternalMediaID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.CallUpdateToCache(ctx, id)
 
 	return nil
 }

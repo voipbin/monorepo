@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
@@ -18,68 +19,62 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		confbridge       *confbridge.Confbridge
-		expectConfbridge *confbridge.Confbridge
+		confbridge *confbridge.Confbridge
+
+		responseCurTime string
+		expectRes       *confbridge.Confbridge
 	}{
 		{
 			"empty",
 			&confbridge.Confbridge{
 				ID: uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
 			},
+
+			"2023-01-18 03:22:18.995000",
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
+				TMCreate:       "2023-01-18 03:22:18.995000",
+				TMUpdate:       DefaultTimeStamp,
+				TMDelete:       DefaultTimeStamp,
 			},
 		},
 
 		{
-			"normal type connect",
+			"have all",
 			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
-				Type:           confbridge.TypeConnect,
-				ChannelCallIDs: map[string]uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-			},
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
-				Type:           confbridge.TypeConnect,
-				ChannelCallIDs: map[string]uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-			},
-		},
-		{
-			"normal type conference",
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("d7f12a42-977b-11ec-9f46-b753ff3f1c92"),
-				Type:           confbridge.TypeConference,
-				ChannelCallIDs: map[string]uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-			},
-			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("d7f12a42-977b-11ec-9f46-b753ff3f1c92"),
-				Type:           confbridge.TypeConference,
-				ChannelCallIDs: map[string]uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
-			},
-		},
-		{
-			"have channel call id",
-			&confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
-				Type: confbridge.TypeConnect,
+				ID:       uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
+				Type:     confbridge.TypeConnect,
+				BridgeID: "f4959208-972c-11ed-be90-6b3eb4bef16d",
 				ChannelCallIDs: map[string]uuid.UUID{
-					"9ed7ad74-4494-11ec-857e-e37007ea55e6": uuid.FromStringOrNil("9efa08ce-4494-11ec-8759-e3502fbffddb"),
+					"e655ea4e-972c-11ed-9de8-bbd3892344ca": uuid.FromStringOrNil("f4173688-972c-11ed-88f7-7b8c8c882ba4"),
 				},
-				RecordingIDs: []uuid.UUID{},
+				RecordingID: uuid.FromStringOrNil("f4bb44a8-972c-11ed-b242-d37f337f0809"),
+				RecordingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("f469a080-972c-11ed-823d-5777dc5a0e95"),
+					uuid.FromStringOrNil("f4bb44a8-972c-11ed-b242-d37f337f0809"),
+				},
+				ExternalMediaID: uuid.FromStringOrNil("f4deecf0-972c-11ed-8ad1-1b7b0c5441ac"),
 			},
+
+			"2023-01-18 03:22:18.995000",
 			&confbridge.Confbridge{
-				ID:   uuid.FromStringOrNil("9de0435e-4494-11ec-bf3d-3b33839d4f09"),
-				Type: confbridge.TypeConnect,
+				ID:       uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
+				Type:     confbridge.TypeConnect,
+				BridgeID: "f4959208-972c-11ed-be90-6b3eb4bef16d",
 				ChannelCallIDs: map[string]uuid.UUID{
-					"9ed7ad74-4494-11ec-857e-e37007ea55e6": uuid.FromStringOrNil("9efa08ce-4494-11ec-8759-e3502fbffddb"),
+					"e655ea4e-972c-11ed-9de8-bbd3892344ca": uuid.FromStringOrNil("f4173688-972c-11ed-88f7-7b8c8c882ba4"),
 				},
-				RecordingIDs: []uuid.UUID{},
+				RecordingID: uuid.FromStringOrNil("f4bb44a8-972c-11ed-b242-d37f337f0809"),
+				RecordingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("f469a080-972c-11ed-823d-5777dc5a0e95"),
+					uuid.FromStringOrNil("f4bb44a8-972c-11ed-b242-d37f337f0809"),
+				},
+				ExternalMediaID: uuid.FromStringOrNil("f4deecf0-972c-11ed-8ad1-1b7b0c5441ac"),
+				TMCreate:        "2023-01-18 03:22:18.995000",
+				TMUpdate:        DefaultTimeStamp,
+				TMDelete:        DefaultTimeStamp,
 			},
 		},
 	}
@@ -89,24 +84,32 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any()).Return(nil)
-			if err := h.ConfbridgeCreate(context.Background(), tt.confbridge); err != nil {
+			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridge.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ConfbridgeSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			res, err := h.ConfbridgeGet(ctx, tt.confbridge.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectConfbridge, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConfbridge, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -117,8 +120,10 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 	type test struct {
 		name string
 
-		confbridge       *confbridge.Confbridge
-		expectConfbridge *confbridge.Confbridge
+		confbridge *confbridge.Confbridge
+
+		responseCurTime string
+		expectRes       *confbridge.Confbridge
 	}
 
 	tests := []test{
@@ -130,11 +135,16 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 			},
+
+			"2023-01-18 03:22:18.995000",
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
 				BridgeID:       "bfc5a1e4-34ef-11ec-ad12-870a5704955c",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
+				TMCreate:       "2023-01-18 03:22:18.995000",
+				TMUpdate:       DefaultTimeStamp,
+				TMDelete:       DefaultTimeStamp,
 			},
 		},
 	}
@@ -144,10 +154,18 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any()).Return(nil)
 			if err := h.ConfbridgeCreate(context.Background(), tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -158,34 +176,41 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectConfbridge, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConfbridge, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func TestConfbridgeSetRecordID(t *testing.T) {
+func Test_ConfbridgeSetRecordingID(t *testing.T) {
 
 	type test struct {
-		name             string
-		confbridge       *confbridge.Confbridge
-		recordID         uuid.UUID
-		expectConfbridge *confbridge.Confbridge
+		name       string
+		confbridge *confbridge.Confbridge
+		recordID   uuid.UUID
+
+		responseCurTime string
+		expectRes       *confbridge.Confbridge
 	}
 
 	tests := []test{
 		{
-			"test normal",
+			"normal",
 			&confbridge.Confbridge{
 				ID: uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
 			},
 			uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
+
+			"2023-01-18 03:22:18.995000",
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingID:    uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
 				RecordingIDs:   []uuid.UUID{},
+				TMCreate:       "2023-01-18 03:22:18.995000",
+				TMUpdate:       "2023-01-18 03:22:18.995000",
+				TMDelete:       DefaultTimeStamp,
 			},
 		},
 	}
@@ -195,30 +220,112 @@ func TestConfbridgeSetRecordID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := NewHandler(dbTest, mockCache)
 
-			mockCache.EXPECT().ConfbridgeSet(gomock.Any(), gomock.Any())
-			if err := h.ConfbridgeCreate(context.Background(), tt.confbridge); err != nil {
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConfbridgeSet(gomock.Any(), gomock.Any())
-			if err := h.ConfbridgeSetRecordID(context.Background(), tt.confbridge.ID, tt.recordID); err != nil {
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			if err := h.ConfbridgeSetRecordingID(ctx, tt.confbridge.ID, tt.recordID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConfbridgeGet(gomock.Any(), tt.confbridge.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ConfbridgeSet(gomock.Any(), gomock.Any())
-			res, err := h.ConfbridgeGet(context.Background(), tt.confbridge.ID)
+			mockCache.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			res, err := h.ConfbridgeGet(ctx, tt.confbridge.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
-			res.TMCreate = ""
-			if reflect.DeepEqual(tt.expectConfbridge, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConfbridge, res)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConfbridgeSetExternalMediaID(t *testing.T) {
+
+	type test struct {
+		name            string
+		confbridge      *confbridge.Confbridge
+		externalMediaID uuid.UUID
+
+		responseCurTime string
+		expectRes       *confbridge.Confbridge
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("a587afdc-972e-11ed-9c8a-c71ab8ef38bd"),
+			},
+			uuid.FromStringOrNil("a5b2cc80-972e-11ed-86cc-a31ac34ae6bc"),
+
+			"2023-01-18 03:22:18.995000",
+			&confbridge.Confbridge{
+				ID:              uuid.FromStringOrNil("a587afdc-972e-11ed-9c8a-c71ab8ef38bd"),
+				ChannelCallIDs:  map[string]uuid.UUID{},
+				RecordingIDs:    []uuid.UUID{},
+				ExternalMediaID: uuid.FromStringOrNil("a5b2cc80-972e-11ed-86cc-a31ac34ae6bc"),
+				TMCreate:        "2023-01-18 03:22:18.995000",
+				TMUpdate:        "2023-01-18 03:22:18.995000",
+				TMDelete:        DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			if err := h.ConfbridgeSetExternalMediaID(ctx, tt.confbridge.ID, tt.externalMediaID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			res, err := h.ConfbridgeGet(ctx, tt.confbridge.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

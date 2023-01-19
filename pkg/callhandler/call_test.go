@@ -506,3 +506,140 @@ func Test_Delete(t *testing.T) {
 		})
 	}
 }
+
+func Test_UpdateRecordingID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		recordingID uuid.UUID
+
+		responseCall *call.Call
+
+		expectRes *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("01c6f11a-96f6-11ed-915b-a35651364fe6"),
+			uuid.FromStringOrNil("056647bc-96f6-11ed-9b2b-cf2574510032"),
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("01c6f11a-96f6-11ed-915b-a35651364fe6"),
+			},
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("01c6f11a-96f6-11ed-915b-a35651364fe6"),
+			},
+		},
+		{
+			"update to nil recording id",
+
+			uuid.FromStringOrNil("a190c2a8-96fa-11ed-8059-83bf970cee17"),
+			uuid.Nil,
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("a190c2a8-96fa-11ed-8059-83bf970cee17"),
+			},
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("a190c2a8-96fa-11ed-8059-83bf970cee17"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetRecordingID(ctx, tt.id, tt.recordingID).Return(nil)
+			if tt.recordingID != uuid.Nil {
+				mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.id, tt.recordingID).Return(nil)
+			}
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+
+			res, err := h.UpdateRecordingID(ctx, tt.id, tt.recordingID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateExternalMediaID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id              uuid.UUID
+		externalMediaID uuid.UUID
+
+		responseCall *call.Call
+
+		expectRes *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("4f8d61ea-96f6-11ed-9d0f-a72a3a2e3ba4"),
+			uuid.FromStringOrNil("4fb929b0-96f6-11ed-8a11-ef7217d2f4bd"),
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("4f8d61ea-96f6-11ed-9d0f-a72a3a2e3ba4"),
+			},
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("4f8d61ea-96f6-11ed-9d0f-a72a3a2e3ba4"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+
+			res, err := h.UpdateExternalMediaID(ctx, tt.id, tt.externalMediaID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

@@ -700,13 +700,6 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 		"func":        "actionExecuteExternalMediaStart",
 	})
 
-	// check already external media is going on
-	extMedia, _ := h.db.ExternalMediaGet(ctx, c.ID)
-	if extMedia != nil {
-		log.Infof("The external media is already going on. external_media: %v", extMedia)
-		return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
-	}
-
 	var option fmaction.OptionExternalMediaStart
 	if c.Action.Option != nil {
 		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
@@ -715,12 +708,12 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 		}
 	}
 
-	extCh, err := h.ExternalMediaStart(ctx, c.ID, true, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction)
+	cc, err := h.ExternalMediaStart(ctx, c.ID, option.ExternalHost, option.Encapsulation, option.Transport, option.ConnectionType, option.Format, option.Direction)
 	if err != nil {
 		log.Errorf("Could not start external media. err: %v", err)
 		return err
 	}
-	log.Debugf("Created external media channel. channel: %v", extCh)
+	log.WithField("call", cc).Debugf("Started external media. external_media_id: %s", cc.ExternalMediaID)
 
 	// send next action request
 	return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
@@ -735,12 +728,18 @@ func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *cal
 		"func":        "actionExecuteExternalMediaStop",
 	})
 
-	// stop the external media
-	if err := h.ExternalMediaStop(context.Background(), c.ID); err != nil {
-		log.Errorf("Could not stop the external media. err: %v", err)
-		return err
+	if c.ExternalMediaID == uuid.Nil {
+		// nothing to do here
+		log.Infof("The call has no external media. call_id: %s", c.ID)
+	} else {
+		// stop the external media
+		tmp, err := h.externalMediaHandler.Stop(ctx, c.ExternalMediaID)
+		if err != nil {
+			log.Errorf("Could not stop the external media. err: %v", err)
+			return err
+		}
+		log.WithField("external_media", tmp).Debugf("Stopped external media. external_media_id: %s", tmp.ID)
 	}
-	log.Debugf("Stopped external media channel. call_id: %v", c.ID)
 
 	// send next action request
 	return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)

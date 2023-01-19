@@ -9,16 +9,16 @@ import (
 )
 
 // ExternalMediaGet returns external media
-func (h *handler) ExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error) {
-	return h.cache.CallExternalMediaGet(ctx, callID)
+func (h *handler) ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error) {
+	return h.cache.ExternalMediaGet(ctx, externalMediaID)
 }
 
 // ExternalMediaSet sets external media.
-func (h *handler) ExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error {
-	return h.cache.CallExternalMediaSet(ctx, callID, data)
+func (h *handler) ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error {
+	return h.cache.ExternalMediaSet(ctx, data)
 }
 
 // ExternalMediaDelete deletes external media.
-func (h *handler) ExternalMediaDelete(ctx context.Context, callID uuid.UUID) error {
-	return h.cache.CallExternalMediaDelete(ctx, callID)
+func (h *handler) ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error {
+	return h.cache.ExternalMediaDelete(ctx, externalMediaID)
 }

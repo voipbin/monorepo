@@ -29,10 +29,11 @@ type Call struct {
 	Type Type `json:"type"` // call type
 
 	// etc info
-	MasterCallID   uuid.UUID   `json:"master_call_id"`   // master call id
-	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
-	RecordingID    uuid.UUID   `json:"recording_id"`     // recording id(current)
-	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // recording ids
+	MasterCallID    uuid.UUID   `json:"master_call_id"`   // master call id
+	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids"` // chained call ids
+	RecordingID     uuid.UUID   `json:"recording_id"`     // recording id(current)
+	RecordingIDs    []uuid.UUID `json:"recording_ids"`    // recording ids
+	ExternalMediaID uuid.UUID   `json:"external_media_id"`
 
 	// source/destination
 	Source      commonaddress.Address `json:"source"`

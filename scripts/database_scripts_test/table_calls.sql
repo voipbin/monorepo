@@ -18,6 +18,9 @@ create table calls(
   recording_id  binary(16),     -- current recording id
   recording_ids json,           -- recording ids
 
+  -- external media info
+  external_media_id binary(16), -- external media id
+
   -- source/destination
   source        json, -- source's type, target, number, name, ...
   source_target varchar(1024),
@@ -57,3 +60,4 @@ create index idx_calls_hangup on calls(tm_hangup);
 create index idx_calls_source_target on calls(source_target);
 create index idx_calls_destination_target on calls(destination_target);
 create index idx_calls_customer_id on calls(customer_id);
+create index idx_calls_external_media_id on calls(external_media_id);

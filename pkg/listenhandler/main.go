@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
@@ -31,11 +32,12 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	rabbitSock        rabbitmqhandler.Rabbit
-	callHandler       callhandler.CallHandler
-	confbridgeHandler confbridgehandler.ConfbridgeHandler
-	channelHandler    channelhandler.ChannelHandler
-	recordingHandler  recordinghandler.RecordingHandler
+	rabbitSock           rabbitmqhandler.Rabbit
+	callHandler          callhandler.CallHandler
+	confbridgeHandler    confbridgehandler.ConfbridgeHandler
+	channelHandler       channelhandler.ChannelHandler
+	recordingHandler     recordinghandler.RecordingHandler
+	externalMediaHandler externalmediahandler.ExternalMediaHandler
 }
 
 var (
@@ -66,6 +68,10 @@ var (
 	regV1Confbridges          = regexp.MustCompile("/v1/confbridges$")
 	regV1ConfbridgesID        = regexp.MustCompile("/v1/confbridges/" + regUUID + "$")
 	regV1ConfbridgesIDCallsID = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
+
+	// external-medias
+	regV1ExternalMedias   = regexp.MustCompile("/v1/external-medias$")
+	regV1ExternalMediasID = regexp.MustCompile("/v1/external-medias/" + regUUID + "$")
 
 	// recordings
 	regV1RecordingsGet    = regexp.MustCompile(`/v1/recordings\?`)
@@ -110,13 +116,15 @@ func NewListenHandler(
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
 	recordingHandler recordinghandler.RecordingHandler,
+	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock:        rabbitSock,
-		callHandler:       callHandler,
-		confbridgeHandler: confbridgeHandler,
-		channelHandler:    channelHandler,
-		recordingHandler:  recordingHandler,
+		rabbitSock:           rabbitSock,
+		callHandler:          callHandler,
+		confbridgeHandler:    confbridgeHandler,
+		channelHandler:       channelHandler,
+		recordingHandler:     recordingHandler,
+		externalMediaHandler: externalMediaHandler,
 	}
 
 	return h
@@ -228,6 +236,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1CallsIDExternalMediaPost(ctx, m)
 		requestType = "/v1/calls/external-media"
 
+	// DELETE /calls/<id>/external-media
+	case regV1CallsIDExternalMedia.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1CallsIDExternalMediaDelete(ctx, m)
+		requestType = "/v1/calls/external-media"
+
 	// GET /calls/<id>
 	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsIDGet(ctx, m)
@@ -309,6 +322,24 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Confbridges.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConfbridgesPost(ctx, m)
 		requestType = "/v1/confbridges"
+
+	////////////////
+	// external-medias
+	////////////////
+	// POST /external-medias
+	case regV1ExternalMedias.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ExternalMediasPost(ctx, m)
+		requestType = "/v1/external-medias"
+
+	// GET /external-medias/<external-media-id>
+	case regV1ExternalMediasID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ExternalMediasIDGet(ctx, m)
+		requestType = "/v1/external-medias/<external-media-id>"
+
+	// DELETE /external-medias/<external-media-id>
+	case regV1ExternalMediasID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ExternalMediasIDDelete(ctx, m)
+		requestType = "/v1/external-medias/<external-media-id>"
 
 	//////////////
 	// recordings
