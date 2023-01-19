@@ -6,9 +6,13 @@ import (
 
 // ExternalMedia defines external media detail info
 type ExternalMedia struct {
-	CallID     uuid.UUID `json:"call_id"`     // call id
-	AsteriskID string    `json:"asterisk_id"` // asterisk id
-	ChannelID  string    `json:"channel_id"`  // external media channel id
+	ID uuid.UUID `json:"id"`
+
+	AsteriskID string `json:"asterisk_id"` // asterisk id
+	ChannelID  string `json:"channel_id"`  // external media channel id
+
+	ReferenceType ReferenceType `json:"reference_typee"`
+	ReferenceID   uuid.UUID     `json:"reference_id"`
 
 	LocalIP   string `json:"local_ip"`
 	LocalPort int    `json:"local_port"`
@@ -20,3 +24,12 @@ type ExternalMedia struct {
 	Format         string `json:"format"`
 	Direction      string `json:"direction"`
 }
+
+// ReferenceType define
+type ReferenceType string
+
+// list of reference types
+const (
+	ReferenceTypeCall       ReferenceType = "call"
+	ReferenceTypeConfbridge ReferenceType = "confbridge"
+)

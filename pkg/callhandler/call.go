@@ -74,6 +74,8 @@ func (h *callHandler) Create(
 		RecordingID:  recordingID,
 		RecordingIDs: recordingIDs,
 
+		ExternalMediaID: uuid.Nil,
+
 		Source:      *source,
 		Destination: *destination,
 
@@ -318,6 +320,31 @@ func (h *callHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recor
 			log.Errorf("Could not add the recording id. err: %v", errAdd)
 			return nil, errAdd
 		}
+	}
+
+	// get updated call
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateExternalMediaID updates the call's external media id.
+func (h *callHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":              "UpdateExternalMediaID",
+			"call_id":           id,
+			"external_media_id": externalMediaID,
+		},
+	)
+
+	if errSet := h.db.CallSetExternalMediaID(ctx, id, externalMediaID); errSet != nil {
+		log.Errorf("Could not set the external media id. err: %v", errSet)
+		return nil, errSet
 	}
 
 	// get updated call

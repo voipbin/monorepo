@@ -10,6 +10,9 @@ create table confbridges(
   recording_id   binary(16),  -- current record id
   recording_ids  json,        -- record ids
 
+  -- external media info
+  external_media_id binary(16),
+
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --

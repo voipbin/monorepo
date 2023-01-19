@@ -13,19 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 )
 
-func TestProcessV1ConfbridgePost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		callHandler:       mockCall,
-		confbridgeHandler: mockConfbridge,
-	}
+func Test_processV1ConfbridgePost(t *testing.T) {
 
 	type test struct {
 		name           string
@@ -59,7 +47,7 @@ func TestProcessV1ConfbridgePost(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","type":"connect","bridge_id":"73453fa8-3609-11ec-af18-075139856086","channel_call_ids":{},"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","type":"connect","bridge_id":"73453fa8-3609-11ec-af18-075139856086","channel_call_ids":{},"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -84,12 +72,24 @@ func TestProcessV1ConfbridgePost(t *testing.T) {
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				Data:       []byte(`{"id":"7a995638-977d-11ec-bd1d-6f78844899df","type":"conference","bridge_id":"7b7c4d9e-977d-11ec-96d3-0780fcb609eb","channel_call_ids":{},"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"7a995638-977d-11ec-bd1d-6f78844899df","type":"conference","bridge_id":"7b7c4d9e-977d-11ec-96d3-0780fcb609eb","channel_call_ids":{},"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				callHandler:       mockCall,
+				confbridgeHandler: mockConfbridge,
+			}
 
 			mockConfbridge.EXPECT().Create(gomock.Any(), tt.confbridgeType).Return(tt.confbridge, nil)
 
@@ -106,19 +106,7 @@ func TestProcessV1ConfbridgePost(t *testing.T) {
 	}
 }
 
-func TestProcessV1ConfbridgesIDDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:        mockSock,
-		callHandler:       mockCall,
-		confbridgeHandler: mockConfbridge,
-	}
+func Test_processV1ConfbridgesIDDelete(t *testing.T) {
 
 	type test struct {
 		name    string
@@ -146,6 +134,18 @@ func TestProcessV1ConfbridgesIDDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				callHandler:       mockCall,
+				confbridgeHandler: mockConfbridge,
+			}
 
 			mockConfbridge.EXPECT().Terminate(gomock.Any(), tt.id).Return(nil)
 

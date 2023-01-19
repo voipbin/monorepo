@@ -418,6 +418,20 @@ func (mr *MockDBHandlerMockRecorder) CallSetConfbridgeID(ctx, id, confbridgeID i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetConfbridgeID", reflect.TypeOf((*MockDBHandler)(nil).CallSetConfbridgeID), ctx, id, confbridgeID)
 }
 
+// CallSetExternalMediaID mocks base method.
+func (m *MockDBHandler) CallSetExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetExternalMediaID", ctx, id, externalMediaID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetExternalMediaID indicates an expected call of CallSetExternalMediaID.
+func (mr *MockDBHandlerMockRecorder) CallSetExternalMediaID(ctx, id, externalMediaID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetExternalMediaID", reflect.TypeOf((*MockDBHandler)(nil).CallSetExternalMediaID), ctx, id, externalMediaID)
+}
+
 // CallSetFlowID mocks base method.
 func (m *MockDBHandler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -1027,18 +1041,32 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeSetBridgeID(ctx, id, bridgeID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetBridgeID), ctx, id, bridgeID)
 }
 
-// ConfbridgeSetRecordID mocks base method.
-func (m *MockDBHandler) ConfbridgeSetRecordID(ctx context.Context, id, recordID uuid.UUID) error {
+// ConfbridgeSetExternalMediaID mocks base method.
+func (m *MockDBHandler) ConfbridgeSetExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfbridgeSetRecordID", ctx, id, recordID)
+	ret := m.ctrl.Call(m, "ConfbridgeSetExternalMediaID", ctx, id, externalMediaID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ConfbridgeSetRecordID indicates an expected call of ConfbridgeSetRecordID.
-func (mr *MockDBHandlerMockRecorder) ConfbridgeSetRecordID(ctx, id, recordID interface{}) *gomock.Call {
+// ConfbridgeSetExternalMediaID indicates an expected call of ConfbridgeSetExternalMediaID.
+func (mr *MockDBHandlerMockRecorder) ConfbridgeSetExternalMediaID(ctx, id, externalMediaID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetRecordID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetRecordID), ctx, id, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetExternalMediaID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetExternalMediaID), ctx, id, externalMediaID)
+}
+
+// ConfbridgeSetRecordingID mocks base method.
+func (m *MockDBHandler) ConfbridgeSetRecordingID(ctx context.Context, id, recordID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeSetRecordingID", ctx, id, recordID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConfbridgeSetRecordingID indicates an expected call of ConfbridgeSetRecordingID.
+func (mr *MockDBHandlerMockRecorder) ConfbridgeSetRecordingID(ctx, id, recordID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetRecordingID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetRecordingID), ctx, id, recordID)
 }
 
 // ConfbridgeSetToCache mocks base method.
@@ -1070,46 +1098,46 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeUpdateToCache(ctx, id interface{}
 }
 
 // ExternalMediaDelete mocks base method.
-func (m *MockDBHandler) ExternalMediaDelete(ctx context.Context, callID uuid.UUID) error {
+func (m *MockDBHandler) ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaDelete", ctx, callID)
+	ret := m.ctrl.Call(m, "ExternalMediaDelete", ctx, externalMediaID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ExternalMediaDelete indicates an expected call of ExternalMediaDelete.
-func (mr *MockDBHandlerMockRecorder) ExternalMediaDelete(ctx, callID interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ExternalMediaDelete(ctx, externalMediaID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaDelete", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaDelete), ctx, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaDelete", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaDelete), ctx, externalMediaID)
 }
 
 // ExternalMediaGet mocks base method.
-func (m *MockDBHandler) ExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error) {
+func (m *MockDBHandler) ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaGet", ctx, callID)
+	ret := m.ctrl.Call(m, "ExternalMediaGet", ctx, externalMediaID)
 	ret0, _ := ret[0].(*externalmedia.ExternalMedia)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExternalMediaGet indicates an expected call of ExternalMediaGet.
-func (mr *MockDBHandlerMockRecorder) ExternalMediaGet(ctx, callID interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ExternalMediaGet(ctx, externalMediaID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaGet", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaGet), ctx, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaGet", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaGet), ctx, externalMediaID)
 }
 
 // ExternalMediaSet mocks base method.
-func (m *MockDBHandler) ExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error {
+func (m *MockDBHandler) ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExternalMediaSet", ctx, callID, data)
+	ret := m.ctrl.Call(m, "ExternalMediaSet", ctx, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ExternalMediaSet indicates an expected call of ExternalMediaSet.
-func (mr *MockDBHandlerMockRecorder) ExternalMediaSet(ctx, callID, data interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ExternalMediaSet(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaSet", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaSet), ctx, callID, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaSet", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaSet), ctx, data)
 }
 
 // RecordingCreate mocks base method.

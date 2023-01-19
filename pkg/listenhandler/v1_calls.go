@@ -13,7 +13,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 )
@@ -486,24 +486,53 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 		"external_media": req,
 	}).Debugf("Parsed request data.")
 
-	extCh, err := h.callHandler.ExternalMediaStart(ctx, id, false, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
+	externalMedia, err := h.externalMediaHandler.Start(ctx, externalmedia.ReferenceTypeCall, id, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
 	if err != nil {
 		log.Errorf("Could not start the external media. call: %s, err: %v", id, err)
 		return nil, err
 	}
-	log.Debugf("Created external media channel. external: %v", extCh)
-
-	ip := extCh.Data[callhandler.ChannelValiableExternalMediaLocalAddress].(string)
-	port, err := strconv.Atoi(extCh.Data[callhandler.ChannelValiableExternalMediaLocalPort].(string))
-	if err != nil {
-		log.Errorf("Could not get external media port. err: %v", err)
-		return nil, err
-	}
+	log.Debugf("Created external media channel. external: %v", externalMedia)
 
 	tmp := &response.V1ResponseCallsIDExternalMediaPost{
-		MediaAddrIP:   ip,
-		MediaAddrPort: port,
+		MediaAddrIP:   externalMedia.LocalIP,
+		MediaAddrPort: externalMedia.LocalPort,
 	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDExternalMediaDelete handles /v1/calls/<id>/external-media DELETE request
+func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"id": id,
+		})
+	log.Debug("Executing processV1CallsIDExternalMediaDelete.")
+
+	tmp, err := h.callHandler.ExternalMediaStop(ctx, id)
+	if err != nil {
+		log.Errorf("Could not stop the external media. call_id: %s, err: %v", id, err)
+		return nil, err
+	}
+	log.Debugf("Stopped external media channel. external: %v", tmp)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {

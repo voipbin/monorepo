@@ -3,14 +3,11 @@ package callhandler
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 )
 
@@ -21,116 +18,77 @@ const (
 )
 
 // ExternalMediaStart starts the external media processing
-func (h *callHandler) ExternalMediaStart(ctx context.Context, callID uuid.UUID, isCallMedia bool, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*channel.Channel, error) {
+func (h *callHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*call.Call, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":    "ExternalMediaStart",
-			"call_id": callID,
+			"call_id": id,
 		},
 	)
-	log.Debug("Creating the external media.")
+	log.Debug("Starting the external media.")
 
-	c, err := h.db.CallGet(ctx, callID)
+	c, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get a call info. err: %v", err)
+		log.Errorf("Could not get call info. err: %v", err)
 		return nil, err
 	}
 
-	// create a bridge
-	bridgeID := uuid.Must(uuid.NewV4())
-	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
-	if errBridge := h.reqHandler.AstBridgeCreate(ctx, c.AsteriskID, bridgeID.String(), bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
-		log.Errorf("Could not create a bridge for external media. error: %v", errBridge)
-		return nil, errBridge
+	if c.ExternalMediaID != uuid.Nil {
+		log.Errorf("The call has external media already. external_media_id: %s", c.ExternalMediaID)
+		return nil, fmt.Errorf("the call has external media already")
 	}
 
-	// create a snoop channel
-	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s,bridge_id=%s",
-		ContextExternalSoop,
-		c.ID,
-		bridgeID,
-	)
-	snoopID := uuid.Must(uuid.NewV4())
-	tmp, err := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, snoopID.String(), appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth)
+	tmp, err := h.externalMediaHandler.Start(ctx, externalmedia.ReferenceTypeCall, c.ID, externalHost, encapsulation, transport, connectionType, format, direction)
 	if err != nil {
-		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
+		log.Errorf("Could not start the external media. err: %v", err)
 		return nil, err
 	}
-	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
+	log.WithField("external_media", tmp).Debugf("Started external media. external_media_id: %s", tmp.ID)
 
-	// create a external media channel
-	// set data
-	chData := fmt.Sprintf("context=%s,bridge_id=%s,call_id=%s", ContextExternalMedia, bridgeID.String(), c.ID.String())
-	extChannelID := uuid.Must(uuid.NewV4())
-	extCh, err := h.reqHandler.AstChannelExternalMedia(ctx, c.AsteriskID, extChannelID.String(), externalHost, encapsulation, transport, connectionType, format, direction, chData, nil)
+	res, err := h.UpdateExternalMediaID(ctx, id, tmp.ID)
 	if err != nil {
-		log.Errorf("Could not create a external media channel. err: %v", err)
+		log.Errorf("Could not update the external media id. err: %v", err)
 		return nil, err
 	}
 
-	if !isCallMedia {
-		return extCh, nil
-	}
-
-	// parse local ip and port
-	ip := ""
-	port := 0
-	if tmp := extCh.Data[ChannelValiableExternalMediaLocalAddress]; tmp != nil {
-		ip = tmp.(string)
-	}
-	if tmp := extCh.Data[ChannelValiableExternalMediaLocalPort]; tmp != nil {
-		port, _ = strconv.Atoi(tmp.(string))
-	}
-
-	extMedia := &externalmedia.ExternalMedia{
-		CallID:         callID,
-		AsteriskID:     c.AsteriskID,
-		ChannelID:      extChannelID.String(),
-		LocalIP:        ip,
-		LocalPort:      port,
-		ExternalHost:   externalHost,
-		Encapsulation:  encapsulation,
-		Transport:      transport,
-		ConnectionType: connectionType,
-		Format:         format,
-		Direction:      direction,
-	}
-
-	if errDB := h.db.ExternalMediaSet(ctx, callID, extMedia); errDB != nil {
-		log.Errorf("Could not set the external media info to the database. err: %v", errDB)
-	}
-
-	return extCh, nil
+	return res, nil
 }
 
 // ExternalMediaStop stops the external media processing
-func (h *callHandler) ExternalMediaStop(ctx context.Context, callID uuid.UUID) error {
+func (h *callHandler) ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"call_id": callID,
+			"func":    "ExternalMediaStop",
+			"call_id": id,
 		},
 	)
 	log.Debug("Stopping the external media.")
 
-	// get external media
-	extMedia, err := h.db.ExternalMediaGet(ctx, callID)
-	if err != nil || extMedia == nil {
-		log.Debug("No external media exist. Nothing to do.")
-		return nil
+	// get call
+	c, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return nil, err
 	}
 
-	// hangup the external media channel
-	if errHangup := h.reqHandler.AstChannelHangup(ctx, extMedia.AsteriskID, extMedia.ChannelID, ari.ChannelCauseNormalClearing, 0); errHangup != nil {
-		log.Errorf("Could not hangup the external media. err: %v", errHangup)
-		return nil
+	if c.ExternalMediaID == uuid.Nil {
+		log.Errorf("The call has no external media id. call_id: %s", c.ID)
+		return nil, fmt.Errorf("the call has no external media id")
 	}
 
-	// delete external media info
-	if errExtDelete := h.db.ExternalMediaDelete(ctx, callID); errExtDelete != nil {
-		log.Errorf("Could not delete external media info. err: %v", errExtDelete)
-		return nil
+	tmp, err := h.externalMediaHandler.Stop(ctx, c.ExternalMediaID)
+	if err != nil {
+		log.Errorf("Could not stop the external media handler. err: %v", err)
+		return nil, err
+	}
+	log.WithField("external_media", tmp).Debugf("Stopped external media. external_media_id: %s", tmp.ID)
+
+	// update
+	res, err := h.UpdateExternalMediaID(ctx, id, uuid.Nil)
+	if err != nil {
+		log.Errorf("Coudl not update the external media to empty. err: %v", err)
+		return nil, err
 	}
 
-	return nil
+	return res, nil
 }

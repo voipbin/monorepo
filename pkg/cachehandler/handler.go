@@ -218,9 +218,9 @@ func (h *handler) CallAppAMDSet(ctx context.Context, channelID string, app *call
 	return nil
 }
 
-// CallExternalMediaGet returns the given call's external media info from the cache
-func (h *handler) CallExternalMediaGet(ctx context.Context, callID uuid.UUID) (*externalmedia.ExternalMedia, error) {
-	key := fmt.Sprintf("call:%s:external_media", callID)
+// ExternalMediaGet returns the given external media info from the cache
+func (h *handler) ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error) {
+	key := fmt.Sprintf("external_media:%s", externalMediaID)
 
 	var res externalmedia.ExternalMedia
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -230,9 +230,9 @@ func (h *handler) CallExternalMediaGet(ctx context.Context, callID uuid.UUID) (*
 	return &res, nil
 }
 
-// CallExternalMediaSet sets the given call's external media info into the cache.
-func (h *handler) CallExternalMediaSet(ctx context.Context, callID uuid.UUID, data *externalmedia.ExternalMedia) error {
-	key := fmt.Sprintf("call:%s:external_media", callID)
+// ExternalMediaSet sets the given external media info into the cache.
+func (h *handler) ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error {
+	key := fmt.Sprintf("external_media:%s", data.ID)
 
 	if err := h.setSerialize(ctx, key, data); err != nil {
 		return err
@@ -241,9 +241,9 @@ func (h *handler) CallExternalMediaSet(ctx context.Context, callID uuid.UUID, da
 	return nil
 }
 
-// CallExternalMediaDelete deletes the given call's external media info from the cache.
-func (h *handler) CallExternalMediaDelete(ctx context.Context, callID uuid.UUID) error {
-	key := fmt.Sprintf("call:%s:external_media", callID)
+// ExternalMediaDelete deletes the given external media info from the cache.
+func (h *handler) ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error {
+	key := fmt.Sprintf("external_media:%s", externalMediaID)
 
 	if _, err := h.Cache.Del(ctx, key).Result(); err != nil {
 		return err
