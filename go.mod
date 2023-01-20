@@ -28,7 +28,7 @@ require (
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20221206185501-ee71428c9199
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
-	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230117184019-436f4bd36e90
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230120110509-eb4908c35288
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230117134054-5234eab5c94d
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61

@@ -448,10 +448,10 @@ type RequestHandler interface {
 
 	// call-manager confbridge
 	CallV1ConfbridgeCreate(ctx context.Context, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
-	CallV1ConfbridgeDelete(ctx context.Context, conferenceID uuid.UUID) error
-	CallV1ConfbridgeCallKick(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error
-	CallV1ConfbridgeCallAdd(ctx context.Context, conferenceID uuid.UUID, callID uuid.UUID) error
-	CallV1ConfbridgeGet(ctx context.Context, conferenceID uuid.UUID) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) error
+	CallV1ConfbridgeCallKick(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
+	CallV1ConfbridgeCallAdd(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
+	CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 
 	// call-manager external-media
 	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
