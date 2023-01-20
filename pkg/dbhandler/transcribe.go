@@ -27,6 +27,8 @@ const (
 		language,
 		direction,
 
+		streaming_ids,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -38,6 +40,8 @@ const (
 
 // transcribeGetFromRow gets the transcribe from the row.
 func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, error) {
+	var tmpStreamingIDs sql.NullString
+
 	res := &transcribe.Transcribe{}
 	if err := row.Scan(
 		&res.ID,
@@ -51,6 +55,8 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 		&res.Language,
 		&res.Direction,
 
+		&tmpStreamingIDs,
+
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
@@ -58,11 +64,30 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 		return nil, fmt.Errorf("could not scan the row. transcribeGetFromRow. err: %v", err)
 	}
 
+	// StreamingIDs
+	if tmpStreamingIDs.Valid {
+		if err := json.Unmarshal([]byte(tmpStreamingIDs.String), &res.StreamingIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the recording_ids. callGetFromRow. err: %v", err)
+		}
+	}
+	if res.StreamingIDs == nil {
+		res.StreamingIDs = []uuid.UUID{}
+	}
+
 	return res, nil
 }
 
 // TranscribeCreate creates a new tanscribe
 func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe) error {
+
+	if t.StreamingIDs == nil {
+		t.StreamingIDs = []uuid.UUID{}
+	}
+	tmpStreamingIDs, err := json.Marshal(t.StreamingIDs)
+	if err != nil {
+		return fmt.Errorf("could not marshal the streaming_ids. TranscribeCreate. err: %v", err)
+	}
+
 	q := `insert into transcribes(
 		id,
 		customer_id,
@@ -75,18 +100,20 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 		language,
 		direction,
 
+		streaming_ids,
+
 		tm_create,
 		tm_update,
 		tm_delete
-
 	) values(
 		?, ?,
 		?, ?,
 		?, ?, ?, ?,
+		?,
 		?, ?, ?
 		)`
 
-	_, err := h.db.Exec(q,
+	_, err = h.db.Exec(q,
 		t.ID.Bytes(),
 		t.CustomerID.Bytes(),
 
@@ -97,6 +124,8 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 		t.HostID.Bytes(),
 		t.Language,
 		t.Direction,
+
+		tmpStreamingIDs,
 
 		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,

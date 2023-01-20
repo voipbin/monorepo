@@ -17,6 +17,8 @@ type Transcribe struct {
 	Language  string    `json:"language"` // BCP47 type's language code. en-US
 	Direction Direction `json:"direction"`
 
+	StreamingIDs []uuid.UUID `json:"streaming_ids"`
+
 	// timestamp
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

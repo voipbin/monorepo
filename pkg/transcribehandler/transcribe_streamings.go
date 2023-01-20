@@ -1,34 +1,28 @@
 package transcribehandler
 
-import (
-	"github.com/gofrs/uuid"
+// // addTranscribeStreamings adds the transcribe streamings
+// func (h *transcribeHandler) addTranscribeStreamings(transcribeID uuid.UUID, streamings []*streaming.Streaming) {
+// 	defer h.transcribeStreamingsMu.Unlock()
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-)
+// 	h.transcribeStreamingsMu.Lock()
+// 	h.transcribeStreamingsMap[transcribeID] = streamings
+// }
 
-// addTranscribeStreamings adds the transcribe streamings
-func (h *transcribeHandler) addTranscribeStreamings(transcribeID uuid.UUID, streamings []*streaming.Streaming) {
-	defer h.transcribeStreamingsMu.Unlock()
+// // deleteTranscribeStreamings deletes the transcribe streamings
+// func (h *transcribeHandler) deleteTranscribeStreamings(transcribeID uuid.UUID) {
+// 	defer h.transcribeStreamingsMu.Unlock()
 
-	h.transcribeStreamingsMu.Lock()
-	h.transcribeStreamingsMap[transcribeID] = streamings
-}
+// 	h.transcribeStreamingsMu.Lock()
+// 	delete(h.transcribeStreamingsMap, transcribeID)
+// }
 
-// deleteTranscribeStreamings deletes the transcribe streamings
-func (h *transcribeHandler) deleteTranscribeStreamings(transcribeID uuid.UUID) {
-	defer h.transcribeStreamingsMu.Unlock()
+// // getTranscribeStreamings returns streaming
+// func (h *transcribeHandler) getTranscribeStreamings(transcribeID uuid.UUID) []*streaming.Streaming {
+// 	defer h.transcribeStreamingsMu.Unlock()
 
-	h.transcribeStreamingsMu.Lock()
-	delete(h.transcribeStreamingsMap, transcribeID)
-}
-
-// getTranscribeStreamings returns streaming
-func (h *transcribeHandler) getTranscribeStreamings(transcribeID uuid.UUID) []*streaming.Streaming {
-	defer h.transcribeStreamingsMu.Unlock()
-
-	h.transcribeStreamingsMu.Lock()
-	if v, ok := h.transcribeStreamingsMap[transcribeID]; ok {
-		return v
-	}
-	return nil
-}
+// 	h.transcribeStreamingsMu.Lock()
+// 	if v, ok := h.transcribeStreamingsMap[transcribeID]; ok {
+// 		return v
+// 	}
+// 	return nil
+// }

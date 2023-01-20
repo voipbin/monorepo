@@ -4,7 +4,6 @@ package transcribehandler
 
 import (
 	"context"
-	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -13,28 +12,28 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"golang.org/x/text/language"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/streaminghandler"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/transcripthandler"
 )
 
 // TranscribeHandler is interface for service handle
 type TranscribeHandler interface {
-	Create(
-		ctx context.Context,
-		customerID uuid.UUID,
-		referenceType transcribe.ReferenceType,
-		referenceID uuid.UUID,
-		language string,
-		direction transcribe.Direction,
-	) (*transcribe.Transcribe, error)
+	// Create(
+	// 	ctx context.Context,
+	// 	customerID uuid.UUID,
+	// 	referenceType transcribe.ReferenceType,
+	// 	referenceID uuid.UUID,
+	// 	language string,
+	// 	direction transcribe.Direction,
+	// ) (*transcribe.Transcribe, error)
 	Delete(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	GetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error)
 
-	TranscribingStart(
+	Start(
 		ctx context.Context,
 		customerID uuid.UUID,
 		referenceType transcribe.ReferenceType,
@@ -42,7 +41,7 @@ type TranscribeHandler interface {
 		language string,
 		direction transcribe.Direction,
 	) (*transcribe.Transcribe, error)
-	TranscribingStop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
+	Stop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 }
 
 // transcribeHandler structure for service handle
@@ -54,9 +53,7 @@ type transcribeHandler struct {
 
 	hostID            uuid.UUID
 	transcriptHandler transcripthandler.TranscriptHandler
-
-	transcribeStreamingsMap map[uuid.UUID][]*streaming.Streaming
-	transcribeStreamingsMu  sync.Mutex
+	streamingHandler  streaminghandler.StreamingHandler
 }
 
 // prometheus
@@ -85,6 +82,7 @@ func NewTranscribeHandler(
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	transcriptHandler transcripthandler.TranscriptHandler,
+	streamingHandler streaminghandler.StreamingHandler,
 	hostID uuid.UUID,
 ) TranscribeHandler {
 	h := &transcribeHandler{
@@ -95,8 +93,7 @@ func NewTranscribeHandler(
 
 		hostID:            hostID,
 		transcriptHandler: transcriptHandler,
-
-		transcribeStreamingsMap: map[uuid.UUID][]*streaming.Streaming{},
+		streamingHandler:  streamingHandler,
 	}
 
 	return h

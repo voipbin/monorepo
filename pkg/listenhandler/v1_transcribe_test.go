@@ -54,7 +54,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1162e178-9693-11ed-9bcf-974fbfeb1ea3","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1162e178-9693-11ed-9bcf-974fbfeb1ea3","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -74,7 +74,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().TranscribingStart(gomock.Any(), tt.expectCustomerID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection).Return(tt.responseTranscribe, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -118,7 +118,7 @@ func Test_processV1TranscribesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"0710ac06-7f68-11ed-b2cd-877b6dca8ac7","customer_id":"079ffd84-7f68-11ed-ae05-430c9b75ab3b","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"0710ac06-7f68-11ed-b2cd-877b6dca8ac7","customer_id":"079ffd84-7f68-11ed-ae05-430c9b75ab3b","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -143,7 +143,7 @@ func Test_processV1TranscribesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"873a8eec-7f68-11ed-9c2b-5f1311cc5a88","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"876112b0-7f68-11ed-bf8c-074e301a66da","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"873a8eec-7f68-11ed-9c2b-5f1311cc5a88","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"876112b0-7f68-11ed-bf8c-074e301a66da","customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -196,7 +196,7 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"06db1ed2-7f69-11ed-a6fe-83fb6c80964d","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"06db1ed2-7f69-11ed-a6fe-83fb6c80964d","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -257,7 +257,7 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a4f388dc-86ab-11ec-8d14-9bd962288757","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a4f388dc-86ab-11ec-8d14-9bd962288757","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -321,7 +321,7 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"06b55408-821c-11ed-980a-cf31e1861a1f","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"06b55408-821c-11ed-980a-cf31e1861a1f","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","streaming_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -341,7 +341,7 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().TranscribingStop(gomock.Any(), tt.transcribeID).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Stop(gomock.Any(), tt.transcribeID).Return(tt.responseTranscribe, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

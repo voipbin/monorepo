@@ -169,13 +169,14 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id            uuid.UUID
 		customerID    uuid.UUID
 		referenceType transcribe.ReferenceType
 		referenceID   uuid.UUID
 		language      string
 		direction     transcribe.Direction
+		streamingIDs  []uuid.UUID
 
-		responseUUID       uuid.UUID
 		responseTranscribe *transcribe.Transcribe
 
 		expectTranscribe *transcribe.Transcribe
@@ -183,19 +184,23 @@ func Test_Create(t *testing.T) {
 		{
 			"normal type call",
 
+			uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
 			uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
 			transcribe.ReferenceTypeCall,
 			uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
 			"en-US",
 			transcribe.DirectionBoth,
-
-			uuid.FromStringOrNil("5f9b7a2e-7f6b-11ed-ac8e-f38841b7998b"),
-			&transcribe.Transcribe{
-				ID: uuid.FromStringOrNil("5f9b7a2e-7f6b-11ed-ac8e-f38841b7998b"),
+			[]uuid.UUID{
+				uuid.FromStringOrNil("fbd2802c-986b-11ed-83d3-e34b7b277be6"),
+				uuid.FromStringOrNil("fc071828-986b-11ed-ab88-07e9d45c9d0f"),
 			},
 
 			&transcribe.Transcribe{
-				ID:            uuid.FromStringOrNil("5f9b7a2e-7f6b-11ed-ac8e-f38841b7998b"),
+				ID: uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
+			},
+
+			&transcribe.Transcribe{
+				ID:            uuid.FromStringOrNil("0afbb01e-986c-11ed-9fdb-d3bf0303c51c"),
 				CustomerID:    uuid.FromStringOrNil("5d0166e6-877f-11ec-b42f-4f6a59ece023"),
 				ReferenceType: transcribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("8a9bc0b2-7f6b-11ed-8cad-5b6ec2832ff4"),
@@ -203,6 +208,10 @@ func Test_Create(t *testing.T) {
 				HostID:        testHostID,
 				Language:      "en-US",
 				Direction:     transcribe.DirectionBoth,
+				StreamingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("fbd2802c-986b-11ed-83d3-e34b7b277be6"),
+					uuid.FromStringOrNil("fc071828-986b-11ed-ab88-07e9d45c9d0f"),
+				},
 			},
 		},
 	}
@@ -230,15 +239,17 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
 			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe).Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.responseUUID).Return(tt.responseTranscribe, nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
-			_, err := h.Create(ctx, tt.customerID, transcribe.ReferenceTypeCall, tt.referenceID, "en-US", transcribe.DirectionBoth)
+			res, err := h.Create(ctx, tt.id, tt.customerID, transcribe.ReferenceTypeCall, tt.referenceID, "en-US", transcribe.DirectionBoth, tt.streamingIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			if !reflect.DeepEqual(tt.responseTranscribe, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseTranscribe, res)
+			}
 		})
 	}
 }

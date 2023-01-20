@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	streaming "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
@@ -49,6 +50,35 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
+}
+
+// StreamingGet mocks base method.
+func (m *MockCacheHandler) StreamingGet(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamingGet", ctx, id)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StreamingGet indicates an expected call of StreamingGet.
+func (mr *MockCacheHandlerMockRecorder) StreamingGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingGet", reflect.TypeOf((*MockCacheHandler)(nil).StreamingGet), ctx, id)
+}
+
+// StreamingSet mocks base method.
+func (m *MockCacheHandler) StreamingSet(ctx context.Context, stream *streaming.Streaming) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamingSet", ctx, stream)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StreamingSet indicates an expected call of StreamingSet.
+func (mr *MockCacheHandlerMockRecorder) StreamingSet(ctx, stream interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingSet", reflect.TypeOf((*MockCacheHandler)(nil).StreamingSet), ctx, stream)
 }
 
 // TranscribeGet mocks base method.

@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	streaming "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
@@ -35,6 +36,35 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// StreamingCreate mocks base method.
+func (m *MockDBHandler) StreamingCreate(ctx context.Context, s *streaming.Streaming) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamingCreate", ctx, s)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StreamingCreate indicates an expected call of StreamingCreate.
+func (mr *MockDBHandlerMockRecorder) StreamingCreate(ctx, s interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingCreate", reflect.TypeOf((*MockDBHandler)(nil).StreamingCreate), ctx, s)
+}
+
+// StreamingGet mocks base method.
+func (m *MockDBHandler) StreamingGet(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamingGet", ctx, id)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StreamingGet indicates an expected call of StreamingGet.
+func (mr *MockDBHandlerMockRecorder) StreamingGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingGet", reflect.TypeOf((*MockDBHandler)(nil).StreamingGet), ctx, id)
 }
 
 // TranscribeAddTranscript mocks base method.

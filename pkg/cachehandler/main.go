@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
@@ -23,6 +24,9 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
+
+	StreamingGet(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
+	StreamingSet(ctx context.Context, stream *streaming.Streaming) error
 
 	TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	TranscribeSet(ctx context.Context, trans *transcribe.Transcribe) error

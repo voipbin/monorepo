@@ -40,7 +40,7 @@ func (h *listenHandler) processV1TranscribesPost(ctx context.Context, m *rabbitm
 	})
 
 	log.Debug("Starting transcribe.")
-	tmp, err := h.transcribeHandler.TranscribingStart(ctx, req.CustomerID, req.ReferenceType, req.ReferenceID, req.Language, req.Direction)
+	tmp, err := h.transcribeHandler.Start(ctx, req.CustomerID, req.ReferenceType, req.ReferenceID, req.Language, req.Direction)
 	if err != nil {
 		log.Debugf("Could not create a transcribe. err: %v", err)
 		return simpleResponse(500), nil
@@ -189,7 +189,7 @@ func (h *listenHandler) processV1TranscribesIDStopPost(ctx context.Context, m *r
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tr, err := h.transcribeHandler.TranscribingStop(ctx, id)
+	tr, err := h.transcribeHandler.Stop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not update the conference. err: %v", err)
 		return simpleResponse(400), nil
