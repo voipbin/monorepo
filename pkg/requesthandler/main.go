@@ -175,8 +175,12 @@ const (
 	resourceChatMessagechats     resource = "chat/messagechats"
 	resourceChatMessagechatrooms resource = "chat/messagechatrooms"
 
-	resourceConferenceConferences     resource = "conference/conferences"
-	resourceConferenceConferencecalls resource = "conference/conferencecalls"
+	resourceConferenceConferences                  resource = "conference/conferences"
+	resourceConferenceConferencesIDRecordingStart  resource = "conference/conferences/<conference-id>/recording_start"
+	resourceConferenceConferencesIDRecordingStop   resource = "conference/conferences/<conference-id>/recording_stop"
+	resourceConferenceConferencesIDTranscribeStart resource = "conference/conferences/<conference-id>/transdribe_start"
+	resourceConferenceConferencesIDTranscribeStop  resource = "conference/conferences/<conference-id>/transcribe_stop"
+	resourceConferenceConferencecalls              resource = "conference/conferencecalls"
 
 	resourceCustomerCustomers resource = "customer/customers"
 	resourceCustomerLogin     resource = "customer/login"
@@ -516,8 +520,10 @@ type RequestHandler interface {
 	ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error
 	ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
 	ConferenceV1ConferenceUpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*cfconference.Conference, error)
-	ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) error
-	ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) error
+	ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
+	ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
+	ConferenceV1ConferenceTranscribeStart(ctx context.Context, conferenceID uuid.UUID, language string) (*cfconference.Conference, error)
+	ConferenceV1ConferenceTranscribeStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceAddConferencecallID(ctx context.Context, conferenceID uuid.UUID, conferencecallID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceRemoveConferencecallID(ctx context.Context, conferenceID uuid.UUID, conferencecallID uuid.UUID) (*cfconference.Conference, error)
 

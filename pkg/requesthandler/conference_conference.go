@@ -194,63 +194,132 @@ func (r *requestHandler) ConferenceV1ConferenceUpdateRecordingID(ctx context.Con
 		return nil, err
 	}
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var conference cfconference.Conference
-	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &conference, nil
+	return &res, nil
 }
 
 // ConferenceV1ConferenceRecordingStart sends a request to conference-manager
 // to start the conference recording.
 // it returns error if it failed.
-func (r *requestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) error {
+func (r *requestHandler) ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s/recording_start", conferenceID.String())
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesIDRecordingStart, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
-		return err
-	case res == nil:
+		return nil, err
+	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // ConferenceV1ConferenceRecordingStop sends a request to conference-manager
 // to stop the conference recording.
 // it returns error if it failed.
-func (r *requestHandler) ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) error {
+func (r *requestHandler) ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s/recording_stop", conferenceID.String())
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesIDRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
-		return err
-	case res == nil:
+		return nil, err
+	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ConferenceV1ConferenceTranscribeStart sends a request to conference-manager
+// to start the conference transcribe.
+// it returns error if it failed.
+func (r *requestHandler) ConferenceV1ConferenceTranscribeStart(ctx context.Context, conferenceID uuid.UUID, language string) (*cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences/%s/transcribe_start", conferenceID.String())
+
+	data := &cfrequest.V1DataConferencesIDTranscribeStartPost{
+		Language: language,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesIDTranscribeStart, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ConferenceV1ConferenceTranscribeStop sends a request to conference-manager
+// to stop the conference transcribe.
+// it returns error if it failed.
+func (r *requestHandler) ConferenceV1ConferenceTranscribeStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences/%s/transcribe_stop", conferenceID.String())
+
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesIDTranscribeStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // ConferenceV1ConferenceRemoveConferencecallID sends a request to conference-manager

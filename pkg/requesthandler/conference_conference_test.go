@@ -325,6 +325,7 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 		response      *rabbitmqhandler.Response
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+		expectRes     *cfconference.Conference
 	}{
 		{
 			"normal",
@@ -334,11 +335,15 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"062311b6-9107-11ed-bd31-fb8ce20a3bd7"}`),
 			},
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/conferences/062311b6-9107-11ed-bd31-fb8ce20a3bd7/recording_start",
 				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&cfconference.Conference{
+				ID: uuid.FromStringOrNil("062311b6-9107-11ed-bd31-fb8ce20a3bd7"),
 			},
 		},
 	}
@@ -356,8 +361,13 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id); err != nil {
+			res, err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -373,6 +383,7 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 		response      *rabbitmqhandler.Response
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+		expectRes     *cfconference.Conference
 	}{
 		{
 			"normal",
@@ -382,11 +393,15 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"0660ce2a-9107-11ed-8c04-93e3837ffdcd"}`),
 			},
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/conferences/0660ce2a-9107-11ed-8c04-93e3837ffdcd/recording_stop",
 				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&cfconference.Conference{
+				ID: uuid.FromStringOrNil("0660ce2a-9107-11ed-8c04-93e3837ffdcd"),
 			},
 		},
 	}
@@ -404,8 +419,133 @@ func Test_ConferenceV1ConferenceRecordingStop(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.ConferenceV1ConferenceRecordingStop(ctx, tt.id); err != nil {
+			res, err := reqHandler.ConferenceV1ConferenceRecordingStop(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConferenceV1ConferenceTranscribeStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id       uuid.UUID
+		language string
+
+		response      *rabbitmqhandler.Response
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cfconference.Conference
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("dfa5e700-98e7-11ed-a643-4bd2f59007ae"),
+			"en-US",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"dfa5e700-98e7-11ed-a643-4bd2f59007ae"}`),
+			},
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences/dfa5e700-98e7-11ed-a643-4bd2f59007ae/transcribe_start",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"language":"en-US"}`),
+			},
+			&cfconference.Conference{
+				ID: uuid.FromStringOrNil("dfa5e700-98e7-11ed-a643-4bd2f59007ae"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ConferenceV1ConferenceTranscribeStart(ctx, tt.id, tt.language)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConferenceV1ConferenceTranscribeStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		response      *rabbitmqhandler.Response
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cfconference.Conference
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("dfda30dc-98e7-11ed-a69c-e781929a3118"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"dfda30dc-98e7-11ed-a69c-e781929a3118"}`),
+			},
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferences/dfda30dc-98e7-11ed-a69c-e781929a3118/transcribe_stop",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&cfconference.Conference{
+				ID: uuid.FromStringOrNil("dfda30dc-98e7-11ed-a69c-e781929a3118"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ConferenceV1ConferenceTranscribeStop(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
