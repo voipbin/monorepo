@@ -3,7 +3,7 @@ module gitlab.com/voipbin/bin-manager/transcribe-manager.git
 go 1.18
 
 require (
-	cloud.google.com/go v0.108.0 // indirect
+	cloud.google.com/go v0.109.0 // indirect
 	cloud.google.com/go/speech v1.12.0
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.5
@@ -18,16 +18,16 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230117075737-e0399afd8d96
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230117064756-8d99ea59bcb7
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230119080621-56be1eeabb0a
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230119081335-a5cbc0de6c45
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/oauth2 v0.4.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0
-	google.golang.org/api v0.107.0
-	google.golang.org/genproto v0.0.0-20230117162540-28d6b9783ac4 // indirect
+	google.golang.org/api v0.108.0
+	google.golang.org/genproto v0.0.0-20230119192704-9d59e20e5cd1 // indirect
 )
 
 require google.golang.org/protobuf v1.28.1 // indirect

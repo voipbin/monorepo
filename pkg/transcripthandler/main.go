@@ -4,12 +4,8 @@ package transcripthandler
 
 import (
 	"context"
-	"math/rand"
-	"net"
-	"time"
 
 	speech "cloud.google.com/go/speech/apiv1"
-	speechpb "cloud.google.com/go/speech/apiv1/speechpb"
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -18,35 +14,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"google.golang.org/api/option"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 )
 
 // default variables
 const (
-	defaultListenPortMin = 10000
-	defaultListenPortMax = 11000
 	defaultBucketTimeout = 100000 // 100 sec
-)
-
-var defaultListenIP string // listen ip address
-
-// list of default external media channel options.
-//nolint:deadcode,varcheck
-const (
-	externalMediaOptEncapsulation  = "rtp"
-	externalMediaOptTransport      = "udp"
-	externalMediaOptConnectionType = "client"
-	externalMediaOptFormat         = "ulaw"
-	externalMediaOptDirection      = "both"
-)
-
-const (
-	defaultEncoding          = speechpb.RecognitionConfig_MULAW
-	defaultSampleRate        = 8000
-	defaultAudioChannelCount = 1
 )
 
 // transcriptHandler structure for streaming handler
@@ -85,9 +59,6 @@ type TranscriptHandler interface {
 	) (*transcript.Transcript, error)
 	Gets(ctx context.Context, transcribeID uuid.UUID) ([]*transcript.Transcript, error)
 
-	Start(ctx context.Context, tr *transcribe.Transcribe, direction transcript.Direction) (*streaming.Streaming, error)
-	Stop(ctx context.Context, st *streaming.Streaming) error
-
 	Recording(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, recordingID uuid.UUID, language string) (*transcript.Transcript, error)
 }
 
@@ -117,28 +88,7 @@ func NewTranscriptHandler(
 }
 
 func init() {
-	defaultListenIP = getListenIP()
-
 	prometheus.MustRegister(
 		promTranscriptCreateTotal,
 	)
-}
-
-// getListenIP retrurns current listen ip address.
-func getListenIP() string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		logrus.Errorf("Could not connect to the internet. err: %v", err)
-	}
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-	return localAddr.IP.String()
-}
-
-// getRandomPort returns random listen port
-func getRandomPort() int {
-	rand.Seed(time.Now().UTC().UnixNano())
-	res := rand.Intn(defaultListenPortMax-defaultListenPortMin+1) + defaultListenPortMin
-	return res
 }

@@ -67,21 +67,22 @@ func (h *transcribeHandler) Gets(ctx context.Context, customerID uuid.UUID, size
 // Create creates a new transcribe
 func (h *transcribeHandler) Create(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	referenceType transcribe.ReferenceType,
 	referenceID uuid.UUID,
 	language string,
 	direction transcribe.Direction,
+	streamingIDs []uuid.UUID,
 ) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":         "Create",
-			"type":         referenceType,
-			"reference_id": referenceID,
+			"func":           "Create",
+			"reference_type": referenceType,
+			"reference_id":   referenceID,
 		},
 	)
 
-	id := h.utilHandler.CreateUUID()
 	tmp := &transcribe.Transcribe{
 		ID:            id,
 		CustomerID:    customerID,
@@ -92,6 +93,8 @@ func (h *transcribeHandler) Create(
 		HostID:    h.hostID,
 		Language:  language,
 		Direction: direction,
+
+		StreamingIDs: streamingIDs,
 	}
 
 	if err := h.db.TranscribeCreate(ctx, tmp); err != nil {

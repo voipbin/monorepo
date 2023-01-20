@@ -35,6 +35,11 @@ func Test_TranscribeCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("c2220b88-0edb-11ec-8cf6-1fcc5a2e6786"),
 				HostID:        uuid.FromStringOrNil("cd612952-0edb-11ec-a725-cf67d5b3d232"),
 				Language:      "en-US",
+				Direction:     transcribe.DirectionBoth,
+				StreamingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("41eb75da-9878-11ed-9f62-97d0d501930c"),
+					uuid.FromStringOrNil("421e8bc8-9878-11ed-84be-1f7747406f78"),
+				},
 			},
 
 			"2021-01-01 00:00:00.000",
@@ -45,9 +50,14 @@ func Test_TranscribeCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("c2220b88-0edb-11ec-8cf6-1fcc5a2e6786"),
 				HostID:        uuid.FromStringOrNil("cd612952-0edb-11ec-a725-cf67d5b3d232"),
 				Language:      "en-US",
-				TMCreate:      "2021-01-01 00:00:00.000",
-				TMUpdate:      DefaultTimeStamp,
-				TMDelete:      DefaultTimeStamp,
+				Direction:     transcribe.DirectionBoth,
+				StreamingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("41eb75da-9878-11ed-9f62-97d0d501930c"),
+					uuid.FromStringOrNil("421e8bc8-9878-11ed-84be-1f7747406f78"),
+				},
+				TMCreate: "2021-01-01 00:00:00.000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
@@ -58,10 +68,11 @@ func Test_TranscribeCreate(t *testing.T) {
 
 			"2021-01-01 00:00:00.000",
 			&transcribe.Transcribe{
-				ID:       uuid.FromStringOrNil("81ce2448-0edd-11ec-861d-c7b56c3e942a"),
-				TMCreate: "2021-01-01 00:00:00.000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				ID:           uuid.FromStringOrNil("81ce2448-0edd-11ec-861d-c7b56c3e942a"),
+				StreamingIDs: []uuid.UUID{},
+				TMCreate:     "2021-01-01 00:00:00.000",
+				TMUpdate:     DefaultTimeStamp,
+				TMDelete:     DefaultTimeStamp,
 			},
 		},
 	}
@@ -126,11 +137,12 @@ func Test_TranscribeGetsByCustomerID(t *testing.T) {
 			"2021-01-01 00:00:00.000",
 			[]*transcribe.Transcribe{
 				{
-					ID:         uuid.FromStringOrNil("5a543dc8-7e2e-11ed-98b6-1f655462baf9"),
-					CustomerID: uuid.FromStringOrNil("5a89c4de-7e2e-11ed-97c8-a30faed31cf2"),
-					TMCreate:   "2021-01-01 00:00:00.000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					ID:           uuid.FromStringOrNil("5a543dc8-7e2e-11ed-98b6-1f655462baf9"),
+					CustomerID:   uuid.FromStringOrNil("5a89c4de-7e2e-11ed-97c8-a30faed31cf2"),
+					StreamingIDs: []uuid.UUID{},
+					TMCreate:     "2021-01-01 00:00:00.000",
+					TMUpdate:     DefaultTimeStamp,
+					TMDelete:     DefaultTimeStamp,
 				},
 			},
 		},
@@ -161,18 +173,20 @@ func Test_TranscribeGetsByCustomerID(t *testing.T) {
 			"2021-01-01 00:00:00.000",
 			[]*transcribe.Transcribe{
 				{
-					ID:         uuid.FromStringOrNil("89076d02-7e2e-11ed-9d33-cb5ddc245e50"),
-					CustomerID: uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
-					TMCreate:   "2021-01-01 00:00:00.000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					ID:           uuid.FromStringOrNil("89076d02-7e2e-11ed-9d33-cb5ddc245e50"),
+					CustomerID:   uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
+					StreamingIDs: []uuid.UUID{},
+					TMCreate:     "2021-01-01 00:00:00.000",
+					TMUpdate:     DefaultTimeStamp,
+					TMDelete:     DefaultTimeStamp,
 				},
 				{
-					ID:         uuid.FromStringOrNil("8937c114-7e2e-11ed-8566-ffc2c99e510d"),
-					CustomerID: uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
-					TMCreate:   "2021-01-01 00:00:00.000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					ID:           uuid.FromStringOrNil("8937c114-7e2e-11ed-8566-ffc2c99e510d"),
+					CustomerID:   uuid.FromStringOrNil("89673048-7e2e-11ed-96ed-d70dc363ece5"),
+					StreamingIDs: []uuid.UUID{},
+					TMCreate:     "2021-01-01 00:00:00.000",
+					TMUpdate:     DefaultTimeStamp,
+					TMDelete:     DefaultTimeStamp,
 				},
 			},
 		},
@@ -241,8 +255,9 @@ func Test_TranscribeSetStatus(t *testing.T) {
 			"2020-04-18T03:22:17.995000",
 
 			&transcribe.Transcribe{
-				ID:     uuid.FromStringOrNil("dc3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
-				Status: transcribe.StatusProgressing,
+				ID:           uuid.FromStringOrNil("dc3b0b60-7f54-11ed-aed1-8363cc29dfe3"),
+				Status:       transcribe.StatusProgressing,
+				StreamingIDs: []uuid.UUID{},
 
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:17.995000",

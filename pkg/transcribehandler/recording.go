@@ -9,12 +9,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 )
 
-// Recording transcribe the recoring
+// startRecording transcribe the recoring
 // returns created transcribe
-func (h *transcribeHandler) Recording(ctx context.Context, customerID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+func (h *transcribeHandler) startRecording(ctx context.Context, customerID uuid.UUID, recordingID uuid.UUID, language string) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":         "Recording",
+			"func":         "startRecording",
 			"recording_id": recordingID,
 		},
 	)
@@ -28,13 +28,16 @@ func (h *transcribeHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	}
 
 	// create transcribing
+	id := h.utilHandler.CreateUUID()
 	tr, err := h.Create(
 		ctx,
+		id,
 		customerID,
 		transcribe.ReferenceTypeRecording,
 		recordingID,
 		language,
 		transcribe.DirectionBoth,
+		[]uuid.UUID{},
 	)
 	if err != nil {
 		log.Errorf("Could not create the transcribe. err: %v", err)

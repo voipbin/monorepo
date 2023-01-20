@@ -9,10 +9,11 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
-// TranscribingStart start a live transcribe
-func (h *transcribeHandler) TranscribingStart(
+// Start starts a transcribe
+func (h *transcribeHandler) Start(
 	ctx context.Context,
 	customerID uuid.UUID,
 	referenceType transcribe.ReferenceType,
@@ -22,14 +23,14 @@ func (h *transcribeHandler) TranscribingStart(
 ) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":           "TranscribingStart",
+			"func":           "Start",
 			"reference_type": referenceType,
 			"reference_id":   referenceID,
 		},
 	)
 
 	// check the reference is valid
-	if valid := h.isValidReference(ctx, referenceType, referenceID); valid != true {
+	if valid := h.isValidReference(ctx, referenceType, referenceID); !valid {
 		log.Errorf("The given reference info is not valid for transcribe.")
 		return nil, fmt.Errorf("the given reference info is not valid for transcribe")
 	}
@@ -38,18 +39,18 @@ func (h *transcribeHandler) TranscribingStart(
 	lang := getBCP47LanguageCode(language)
 	log.Debugf("Parsed BCP47 language code. lang: %s", lang)
 
-	var res *transcribe.Transcribe = nil
+	var res *transcribe.Transcribe
 	var err error
 	switch referenceType {
 	case transcribe.ReferenceTypeRecording:
-		res, err = h.Recording(ctx, customerID, referenceID, lang)
+		res, err = h.startRecording(ctx, customerID, referenceID, lang)
 		if err != nil {
 			log.Errorf("Could not transcribe the recording reference type. err: %v", err)
 			return nil, err
 		}
 
 	case transcribe.ReferenceTypeCall:
-		res, err = h.streamingTranscribeStart(ctx, customerID, referenceType, referenceID, lang, direction)
+		res, err = h.startLive(ctx, customerID, referenceType, referenceID, lang, direction)
 		if err != nil {
 			log.Errorf("Could not transcribe the call reference type. err: %v", err)
 			return nil, err
@@ -61,41 +62,6 @@ func (h *transcribeHandler) TranscribingStart(
 	}
 
 	return res, nil
-}
-
-// TranscribingStop stops the progressing transcribe process.
-func (h *transcribeHandler) TranscribingStop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "TranscribingStop",
-			"transcribe_id": id,
-		},
-	)
-
-	// get transcribe and evaluate
-	tmp, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get transcribe. err: %v", err)
-		return nil, err
-	}
-
-	if tmp.Status != transcribe.StatusProgressing {
-		log.Errorf("Invalid status. old_status: %s, new_status: %s", tmp.Status, transcribe.StatusDone)
-		return nil, fmt.Errorf("invalid status")
-	}
-
-	switch tmp.ReferenceType {
-	case transcribe.ReferenceTypeCall:
-		return h.streamingTranscribeStop(ctx, tmp.ID)
-
-	case transcribe.ReferenceTypeConference:
-		log.Errorf("Not implemented reference type. reference_type: %s", tmp.ReferenceType)
-		return nil, fmt.Errorf("Unimplemented reference type")
-
-	default:
-		log.Errorf("Invalid reference type. reference_type: %s", tmp.ReferenceType)
-		return nil, fmt.Errorf("invalid reference type")
-	}
 }
 
 // isValidReference returns false if the given reference is not valid for transcribe.
@@ -131,4 +97,58 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 	}
 
 	return true
+}
+
+// startLive starts the streaming transcribe
+func (h *transcribeHandler) startLive(
+	ctx context.Context,
+	customerID uuid.UUID,
+	referenceType transcribe.ReferenceType,
+	referenceID uuid.UUID,
+	language string,
+	direction transcribe.Direction,
+) (*transcribe.Transcribe, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":           "startStreaming",
+			"reference_type": referenceType,
+			"reference_id":   referenceID,
+			"language":       language,
+			"direction":      direction,
+		},
+	)
+
+	// create transcribe id
+	id := h.utilHandler.CreateUUID()
+	log = log.WithField("transcribe_id", id)
+
+	directions := []transcript.Direction{transcript.Direction(direction)}
+	if direction == transcribe.DirectionBoth {
+		directions = []transcript.Direction{transcript.DirectionIn, transcript.DirectionOut}
+	}
+
+	// start streamings
+	streamingIDs := []uuid.UUID{}
+	for _, dr := range directions {
+
+		// start the streaming transcribe
+		st, err := h.streamingHandler.Start(ctx, customerID, id, referenceType, referenceID, language, dr)
+		if err != nil {
+			log.Errorf("Could not start the streaming stt. direction: %s, err: %v", dr, err)
+			return nil, err
+		}
+		log.WithField("streaming", st).Debugf("Streaming started. streaming_id: %s", st.ID)
+
+		streamingIDs = append(streamingIDs, st.ID)
+	}
+
+	// create transcribing
+	res, err := h.Create(ctx, id, customerID, referenceType, referenceID, language, direction, streamingIDs)
+	if err != nil {
+		log.Errorf("Could not create the transcribe. err: %v", err)
+		return nil, err
+	}
+	log.WithField("transcribe", res).Debugf("Created transcribe. transcribe_id: %s", res.ID)
+
+	return res, nil
 }

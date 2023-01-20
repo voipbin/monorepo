@@ -10,8 +10,6 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	streaming "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
-	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
 
@@ -81,33 +79,4 @@ func (m *MockTranscriptHandler) Recording(ctx context.Context, customerID, trans
 func (mr *MockTranscriptHandlerMockRecorder) Recording(ctx, customerID, transcribeID, recordingID, language interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recording", reflect.TypeOf((*MockTranscriptHandler)(nil).Recording), ctx, customerID, transcribeID, recordingID, language)
-}
-
-// Start mocks base method.
-func (m *MockTranscriptHandler) Start(ctx context.Context, tr *transcribe.Transcribe, direction transcript.Direction) (*streaming.Streaming, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, tr, direction)
-	ret0, _ := ret[0].(*streaming.Streaming)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Start indicates an expected call of Start.
-func (mr *MockTranscriptHandlerMockRecorder) Start(ctx, tr, direction interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockTranscriptHandler)(nil).Start), ctx, tr, direction)
-}
-
-// Stop mocks base method.
-func (m *MockTranscriptHandler) Stop(ctx context.Context, st *streaming.Streaming) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Stop", ctx, st)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Stop indicates an expected call of Stop.
-func (mr *MockTranscriptHandlerMockRecorder) Stop(ctx, st interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockTranscriptHandler)(nil).Stop), ctx, st)
 }

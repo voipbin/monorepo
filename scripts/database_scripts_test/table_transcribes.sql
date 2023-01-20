@@ -12,6 +12,8 @@ create table transcribes(
   language      varchar(16),  -- BCP47 type's language code. en-US
   direction     varchar(255),
 
+  streaming_ids json,
+
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --

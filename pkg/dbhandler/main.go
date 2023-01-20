@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/cachehandler"
@@ -17,6 +18,10 @@ import (
 
 // DBHandler interface for database handle
 type DBHandler interface {
+
+	// streaming
+	StreamingCreate(ctx context.Context, s *streaming.Streaming) error
+	StreamingGet(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
 
 	// transcribe
 	TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *transcript.Transcript) error

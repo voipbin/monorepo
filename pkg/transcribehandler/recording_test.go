@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
-	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
@@ -60,6 +59,8 @@ func Test_Recording(t *testing.T) {
 				HostID:    testHostID,
 				Language:  "en-US",
 				Direction: transcribe.DirectionBoth,
+
+				StreamingIDs: []uuid.UUID{},
 			},
 			&transcribe.Transcribe{
 				ID: uuid.FromStringOrNil("6130f79e-7f69-11ed-8138-8795762544e8"),
@@ -85,8 +86,7 @@ func Test_Recording(t *testing.T) {
 				notifyHandler:     mockNotify,
 				transcriptHandler: mockTranscript,
 
-				hostID:                  testHostID,
-				transcribeStreamingsMap: map[uuid.UUID][]*streaming.Streaming{},
+				hostID: testHostID,
 			}
 
 			ctx := context.Background()
@@ -106,7 +106,7 @@ func Test_Recording(t *testing.T) {
 			mockDB.EXPECT().TranscribeGet(ctx, tt.responseTranscribe.ID).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeDone, tt.responseTranscribe)
 
-			res, err := h.Recording(ctx, tt.customerID, tt.recordingID, tt.language)
+			res, err := h.startRecording(ctx, tt.customerID, tt.recordingID, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

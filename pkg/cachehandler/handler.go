@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/streaming"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 )
@@ -89,6 +90,29 @@ func (h *handler) TranscriptSet(ctx context.Context, trans *transcript.Transcrip
 	key := fmt.Sprintf("transcribe:transcript:%s", trans.ID)
 
 	if err := h.setSerialize(ctx, key, trans); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// StreamingGet returns cached streaming info
+func (h *handler) StreamingGet(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error) {
+	key := fmt.Sprintf("transcribe:streaming:%s", id)
+
+	var res streaming.Streaming
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// streaming.Streaming sets the streaming info into the cache.
+func (h *handler) StreamingSet(ctx context.Context, stream *streaming.Streaming) error {
+	key := fmt.Sprintf("transcribe:streaming:%s", stream.ID)
+
+	if err := h.setSerialize(ctx, key, stream); err != nil {
 		return err
 	}
 
