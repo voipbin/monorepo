@@ -96,6 +96,8 @@ gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20221222181305-2411
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20221222181305-2411870946f6/go.mod h1:IJ93lfnMeyQ1qkju49GSYsad0CiI5WLnSj+vbzDQRZo=
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230117184019-436f4bd36e90 h1:0c/faFHesiMq8jcXA5rIKBVaod19HlzRKp7wqrnozLg=
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230117184019-436f4bd36e90/go.mod h1:8Ieewq8nQIEcUmJzgEC/3IT0O6nCSHjft10f0LM0g70=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230120110509-eb4908c35288 h1:funy29podpZh13WleJqpykzKDp1yZOxdMPo0LQP9KKI=
+gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230120110509-eb4908c35288/go.mod h1:XjpLwLwGatyJm4z5yESlNgdb8bzGOtmp/mWzSk9NttY=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220628160222-ca61e7d2d60b h1:KoGZWuBOBro2lbDBGpdrhpKK7/MzIhw++DB/Jf2wLJc=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20220628160222-ca61e7d2d60b/go.mod h1:ZzFmntrt7qr7wZA+h5el3gCYqWjgwvmMF0EGI6UNgWA=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230117063429-5b327fc125d6 h1:SjcxT2kk0emr3RfGPSV0slptvP0D2lV77HeuqtJBiAg=
