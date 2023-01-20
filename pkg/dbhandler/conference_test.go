@@ -26,284 +26,112 @@ func Test_ConferenceCreate(t *testing.T) {
 
 		expectRes *conference.Conference
 	}{
-
 		{
-			"type conference",
+			"have all",
 			&conference.Conference{
-				ID:         uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
-				CustomerID: uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
-				Type:       conference.TypeConference,
-				Name:       "test type conference",
-				Detail:     "test type conference detail",
-			},
-
-			"2023-01-03 21:35:02.809",
-			&conference.Conference{
-				ID:                uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
-				CustomerID:        uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
-				Type:              conference.TypeConference,
-				Name:              "test type conference",
-				Detail:            "test type conference detail",
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingIDs:      []uuid.UUID{},
-				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          DefaultTimeStamp,
-				TMDelete:          DefaultTimeStamp,
-			},
-		},
-		{
-			"added user ID",
-			&conference.Conference{
-				ID:         uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
-				CustomerID: uuid.FromStringOrNil("3fccf15e-7f45-11ec-bae1-7344ecec79bd"),
-				Type:       conference.TypeConference,
-				Name:       "test type conference",
-				Detail:     "test type conference detail",
-			},
-
-			"2023-01-03 21:35:02.809",
-			&conference.Conference{
-				ID:                uuid.FromStringOrNil("132d3c9e-f08f-11ea-8ed9-6f27c201eff3"),
-				CustomerID:        uuid.FromStringOrNil("3fccf15e-7f45-11ec-bae1-7344ecec79bd"),
-				Type:              conference.TypeConference,
-				Name:              "test type conference",
-				Detail:            "test type conference detail",
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingIDs:      []uuid.UUID{},
-				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          DefaultTimeStamp,
-				TMDelete:          DefaultTimeStamp,
-			},
-		},
-		{
-			"added record id",
-			&conference.Conference{
-				ID:          uuid.FromStringOrNil("218aa220-2c19-11eb-905f-1b9d4d0da185"),
-				CustomerID:  uuid.FromStringOrNil("48974ac8-7f45-11ec-9ba9-1f3e79c1ba60"),
-				Type:        conference.TypeConference,
-				Name:        "test type conference",
-				Detail:      "test type conference detail",
-				RecordingID: uuid.FromStringOrNil("37962c54-6122-11eb-a8b2-4ff0062b4c1b"),
-			},
-
-			"2023-01-03 21:35:02.809",
-			&conference.Conference{
-				ID:                uuid.FromStringOrNil("218aa220-2c19-11eb-905f-1b9d4d0da185"),
-				CustomerID:        uuid.FromStringOrNil("48974ac8-7f45-11ec-9ba9-1f3e79c1ba60"),
-				Type:              conference.TypeConference,
-				Name:              "test type conference",
-				Detail:            "test type conference detail",
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingID:       uuid.FromStringOrNil("37962c54-6122-11eb-a8b2-4ff0062b4c1b"),
-				RecordingIDs:      []uuid.UUID{},
-				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          DefaultTimeStamp,
-				TMDelete:          DefaultTimeStamp,
-			},
-		},
-		{
-			"added record ids",
-			&conference.Conference{
-				ID:           uuid.FromStringOrNil("21d33d64-2c19-11eb-be7d-1ff9387bed0e"),
-				CustomerID:   uuid.FromStringOrNil("50b72fca-7f45-11ec-8734-6749711ab0ed"),
+				ID:           uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
+				CustomerID:   uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
+				ConfbridgeID: uuid.FromStringOrNil("6a8ea5c6-98b8-11ed-87e2-33728f9ec79e"),
+				FlowID:       uuid.FromStringOrNil("6ad5c136-98b8-11ed-84cb-07e86f64e72c"),
 				Type:         conference.TypeConference,
+				Status:       conference.StatusProgressing,
 				Name:         "test type conference",
 				Detail:       "test type conference detail",
-				RecordingIDs: []uuid.UUID{uuid.FromStringOrNil("515f79ce-6122-11eb-b3ca-db50409503c4")},
-			},
-
-			"2023-01-03 21:35:02.809",
-			&conference.Conference{
-				ID:                uuid.FromStringOrNil("21d33d64-2c19-11eb-be7d-1ff9387bed0e"),
-				CustomerID:        uuid.FromStringOrNil("50b72fca-7f45-11ec-8734-6749711ab0ed"),
-				Type:              conference.TypeConference,
-				Name:              "test type conference",
-				Detail:            "test type conference detail",
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingIDs:      []uuid.UUID{uuid.FromStringOrNil("515f79ce-6122-11eb-b3ca-db50409503c4")},
-				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          DefaultTimeStamp,
-				TMDelete:          DefaultTimeStamp,
-			},
-		},
-		{
-			"set pre actions",
-			&conference.Conference{
-				ID:         uuid.FromStringOrNil("3824d0e4-3be7-11ec-b046-674e88e91f56"),
-				CustomerID: uuid.FromStringOrNil("6342318a-7f45-11ec-b41d-af17676583fe"),
-				Type:       conference.TypeConference,
-				Name:       "test type conference",
-				Detail:     "test type conference detail",
+				Data: map[string]interface{}{
+					"key1": "string value",
+					"key2": "string value",
+				},
+				Timeout: 100,
 				PreActions: []fmaction.Action{
 					{
-						Type: "answer",
+						Type: fmaction.TypeAnswer,
 					},
+				},
+				PostActions: []fmaction.Action{
+					{
+						Type: fmaction.TypeHangup,
+					},
+				},
+				ConferencecallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("6b00d1c8-98b8-11ed-86cf-13921488e8d1"),
+					uuid.FromStringOrNil("6b28b4d6-98b8-11ed-a21b-7fb97887cf8c"),
+				},
+				RecordingID: uuid.FromStringOrNil("6b556288-98b8-11ed-b567-23ed7bb9222b"),
+				RecordingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("b197268c-98b8-11ed-964e-779dfe986c16"),
+					uuid.FromStringOrNil("b1bd7eea-98b8-11ed-af70-23caf714c591"),
+				},
+				TranscribeID: uuid.FromStringOrNil("b1e3cf6e-98b8-11ed-9638-8f594b2cc533"),
+				TranscribeIDs: []uuid.UUID{
+					uuid.FromStringOrNil("b20ff346-98b8-11ed-9fa7-f74b9cee92b5"),
+					uuid.FromStringOrNil("b238edc8-98b8-11ed-9ce4-73af14c3e8ff"),
 				},
 			},
 
 			"2023-01-03 21:35:02.809",
 			&conference.Conference{
-				ID:         uuid.FromStringOrNil("3824d0e4-3be7-11ec-b046-674e88e91f56"),
-				CustomerID: uuid.FromStringOrNil("6342318a-7f45-11ec-b41d-af17676583fe"),
-				Type:       conference.TypeConference,
-				Name:       "test type conference",
-				Detail:     "test type conference detail",
+				ID:           uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
+				CustomerID:   uuid.FromStringOrNil("361de3de-7f45-11ec-b641-5358ec38b5e2"),
+				ConfbridgeID: uuid.FromStringOrNil("6a8ea5c6-98b8-11ed-87e2-33728f9ec79e"),
+				FlowID:       uuid.FromStringOrNil("6ad5c136-98b8-11ed-84cb-07e86f64e72c"),
+				Type:         conference.TypeConference,
+				Status:       conference.StatusProgressing,
+				Name:         "test type conference",
+				Detail:       "test type conference detail",
+				Data: map[string]interface{}{
+					"key1": "string value",
+					"key2": "string value",
+				},
+				Timeout: 100,
 				PreActions: []fmaction.Action{
 					{
-						Type: "answer",
+						Type: fmaction.TypeAnswer,
 					},
 				},
-				PostActions:       []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingIDs:      []uuid.UUID{},
-				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          DefaultTimeStamp,
-				TMDelete:          DefaultTimeStamp,
+				PostActions: []fmaction.Action{
+					{
+						Type: fmaction.TypeHangup,
+					},
+				},
+				ConferencecallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("6b00d1c8-98b8-11ed-86cf-13921488e8d1"),
+					uuid.FromStringOrNil("6b28b4d6-98b8-11ed-a21b-7fb97887cf8c"),
+				},
+				RecordingID: uuid.FromStringOrNil("6b556288-98b8-11ed-b567-23ed7bb9222b"),
+				RecordingIDs: []uuid.UUID{
+					uuid.FromStringOrNil("b197268c-98b8-11ed-964e-779dfe986c16"),
+					uuid.FromStringOrNil("b1bd7eea-98b8-11ed-af70-23caf714c591"),
+				},
+				TranscribeID: uuid.FromStringOrNil("b1e3cf6e-98b8-11ed-9638-8f594b2cc533"),
+				TranscribeIDs: []uuid.UUID{
+					uuid.FromStringOrNil("b20ff346-98b8-11ed-9fa7-f74b9cee92b5"),
+					uuid.FromStringOrNil("b238edc8-98b8-11ed-9ce4-73af14c3e8ff"),
+				},
+				TMEnd:    DefaultTimeStamp,
+				TMCreate: "2023-01-03 21:35:02.809",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 		{
-			"set post actions",
+			"empty",
 			&conference.Conference{
-				ID:         uuid.FromStringOrNil("e3d6c112-3bed-11ec-99be-5bc49af8efc2"),
-				CustomerID: uuid.FromStringOrNil("6aa95b9c-7f45-11ec-b6fe-cbd78c2e625c"),
-				Type:       conference.TypeConference,
-				Name:       "test type conference",
-				Detail:     "test type conference detail",
-				PostActions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
+				ID: uuid.FromStringOrNil("a9f69592-98b9-11ed-947e-0f7ac40639b6"),
 			},
 
 			"2023-01-03 21:35:02.809",
 			&conference.Conference{
-				ID:         uuid.FromStringOrNil("e3d6c112-3bed-11ec-99be-5bc49af8efc2"),
-				CustomerID: uuid.FromStringOrNil("6aa95b9c-7f45-11ec-b6fe-cbd78c2e625c"),
-				Type:       conference.TypeConference,
-				Name:       "test type conference",
-				Detail:     "test type conference detail",
-				PreActions: []fmaction.Action{},
-				PostActions: []fmaction.Action{
-					{
-						Type: "answer",
-					},
-				},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingIDs:      []uuid.UUID{},
-				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          DefaultTimeStamp,
-				TMDelete:          DefaultTimeStamp,
-			},
-		},
-		{
-			"set timeout",
-			&conference.Conference{
-				ID:         uuid.FromStringOrNil("05d6758c-3bee-11ec-a2f7-e78825f985e2"),
-				CustomerID: uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
-				Type:       conference.TypeConference,
-				Name:       "test type conference",
-				Detail:     "test type conference detail",
-				Timeout:    86400,
-			},
-
-			"2023-01-03 21:35:02.809",
-			&conference.Conference{
-				ID:                uuid.FromStringOrNil("05d6758c-3bee-11ec-a2f7-e78825f985e2"),
-				CustomerID:        uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
-				Type:              conference.TypeConference,
-				Name:              "test type conference",
-				Detail:            "test type conference detail",
-				Timeout:           86400,
+				ID:                uuid.FromStringOrNil("a9f69592-98b9-11ed-947e-0f7ac40639b6"),
+				Data:              map[string]interface{}{},
 				PreActions:        []fmaction.Action{},
 				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
+				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
 				TMCreate:          "2023-01-03 21:35:02.809",
 				TMUpdate:          DefaultTimeStamp,
 				TMDelete:          DefaultTimeStamp,
-			},
-		},
-		{
-			"having confbridge",
-			&conference.Conference{
-				ID:           uuid.FromStringOrNil("ba8a9474-0c2f-11ed-8002-37c00264d0b5"),
-				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
-				ConfbridgeID: uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				Timeout:      86400,
-			},
-
-			"2023-01-03 21:35:02.809",
-			&conference.Conference{
-				ID:                uuid.FromStringOrNil("ba8a9474-0c2f-11ed-8002-37c00264d0b5"),
-				CustomerID:        uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
-				ConfbridgeID:      uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
-				Type:              conference.TypeConference,
-				Name:              "test type conference",
-				Detail:            "test type conference detail",
-				Timeout:           86400,
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingIDs:      []uuid.UUID{},
-				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          DefaultTimeStamp,
-				TMDelete:          DefaultTimeStamp,
-			},
-		},
-		{
-			"have conferencecall ids",
-			&conference.Conference{
-				ID:           uuid.FromStringOrNil("dc31f848-14d5-11ed-a65a-13e7fcbe84bb"),
-				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
-				ConfbridgeID: uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				ConferencecallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("dc060896-14d5-11ed-8fb1-6fece6a05aa5"),
-				},
-				Timeout: 86400,
-			},
-
-			"2023-01-03 21:35:02.809",
-			&conference.Conference{
-				ID:           uuid.FromStringOrNil("dc31f848-14d5-11ed-a65a-13e7fcbe84bb"),
-				CustomerID:   uuid.FromStringOrNil("6b84f04e-7f45-11ec-be45-3f95176833cc"),
-				ConfbridgeID: uuid.FromStringOrNil("bc976166-0c2f-11ed-a0ff-6fe0610a390e"),
-				Type:         conference.TypeConference,
-				Name:         "test type conference",
-				Detail:       "test type conference detail",
-				Timeout:      86400,
-				PreActions:   []fmaction.Action{},
-				PostActions:  []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("dc060896-14d5-11ed-8fb1-6fece6a05aa5"),
-				},
-				RecordingIDs: []uuid.UUID{},
-				TMEnd:        DefaultTimeStamp,
-				TMCreate:     "2023-01-03 21:35:02.809",
-				TMUpdate:     DefaultTimeStamp,
-				TMDelete:     DefaultTimeStamp,
 			},
 		},
 	}
@@ -322,20 +150,22 @@ func Test_ConferenceCreate(t *testing.T) {
 				cache:       mockCache,
 			}
 
+			ctx := context.Background()
+
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
-			if err := h.ConferenceCreate(context.Background(), tt.conference); err != nil {
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ConferenceSet(gomock.Any(), gomock.Any())
-			res, err := h.ConferenceGet(context.Background(), tt.conference.ID)
+			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			res, err := h.ConferenceGet(ctx, tt.conference.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
+			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
@@ -371,10 +201,12 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 				Type:              conference.TypeConference,
 				Name:              "test type conference",
 				Detail:            "test type conference detail",
+				Data:              map[string]interface{}{},
 				PreActions:        []fmaction.Action{},
 				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
+				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
 				TMCreate:          "2023-01-03 21:35:02.809",
 				TMUpdate:          DefaultTimeStamp,
@@ -416,12 +248,12 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 	}
 }
 
-func Test_ConferenceSetRecordID(t *testing.T) {
+func Test_ConferenceSetRecordingID(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		conference *conference.Conference
-		recordID   uuid.UUID
+		name        string
+		conference  *conference.Conference
+		recordingID uuid.UUID
 
 		responseCurTime  string
 		expectConference *conference.Conference
@@ -436,11 +268,13 @@ func Test_ConferenceSetRecordID(t *testing.T) {
 			"2023-01-03 21:35:02.809",
 			&conference.Conference{
 				ID:                uuid.FromStringOrNil("2f7b0ee4-2834-11eb-9a6d-5beea5795ea6"),
+				Data:              map[string]interface{}{},
 				PreActions:        []fmaction.Action{},
 				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingID:       uuid.FromStringOrNil("2fb4b446-2834-11eb-b864-1fdb13777d08"),
 				RecordingIDs:      []uuid.UUID{},
+				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
 				TMCreate:          "2023-01-03 21:35:02.809",
 				TMUpdate:          "2023-01-03 21:35:02.809",
@@ -473,7 +307,7 @@ func Test_ConferenceSetRecordID(t *testing.T) {
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
-			if err := h.ConferenceSetRecordingID(ctx, tt.conference.ID, tt.recordID); err != nil {
+			if err := h.ConferenceSetRecordingID(ctx, tt.conference.ID, tt.recordingID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -514,18 +348,19 @@ func Test_ConferenceSetData(t *testing.T) {
 
 			"2023-01-03 21:35:02.809",
 			&conference.Conference{
-				ID:                uuid.FromStringOrNil("0a64e234-675d-11eb-92c7-13f0c9a0e28b"),
+				ID: uuid.FromStringOrNil("0a64e234-675d-11eb-92c7-13f0c9a0e28b"),
+				Data: map[string]interface{}{
+					"key1": "string value",
+				},
 				PreActions:        []fmaction.Action{},
 				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
-				Data: map[string]interface{}{
-					"key1": "string value",
-				},
-				TMEnd:    DefaultTimeStamp,
-				TMCreate: "2023-01-03 21:35:02.809",
-				TMUpdate: "2023-01-03 21:35:02.809",
-				TMDelete: DefaultTimeStamp,
+				TranscribeIDs:     []uuid.UUID{},
+				TMEnd:             DefaultTimeStamp,
+				TMCreate:          "2023-01-03 21:35:02.809",
+				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMDelete:          DefaultTimeStamp,
 			},
 		},
 		{
@@ -540,19 +375,20 @@ func Test_ConferenceSetData(t *testing.T) {
 
 			"2023-01-03 21:35:02.809",
 			&conference.Conference{
-				ID:                uuid.FromStringOrNil("d54bf5b4-675d-11eb-b133-9b06996a9b99"),
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingIDs:      []uuid.UUID{},
+				ID: uuid.FromStringOrNil("d54bf5b4-675d-11eb-b133-9b06996a9b99"),
 				Data: map[string]interface{}{
 					"key1": "string value",
 					"key2": "string value",
 				},
-				TMEnd:    DefaultTimeStamp,
-				TMCreate: "2023-01-03 21:35:02.809",
-				TMUpdate: "2023-01-03 21:35:02.809",
-				TMDelete: DefaultTimeStamp,
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
+				TranscribeIDs:     []uuid.UUID{},
+				TMEnd:             DefaultTimeStamp,
+				TMCreate:          "2023-01-03 21:35:02.809",
+				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMDelete:          DefaultTimeStamp,
 			},
 		},
 		{
@@ -567,19 +403,20 @@ func Test_ConferenceSetData(t *testing.T) {
 
 			"2023-01-03 21:35:02.809",
 			&conference.Conference{
-				ID:                uuid.FromStringOrNil("efa1ec2a-675d-11eb-b854-ffe06d0fc488"),
-				PreActions:        []fmaction.Action{},
-				PostActions:       []fmaction.Action{},
-				ConferencecallIDs: []uuid.UUID{},
-				RecordingIDs:      []uuid.UUID{},
+				ID: uuid.FromStringOrNil("efa1ec2a-675d-11eb-b854-ffe06d0fc488"),
 				Data: map[string]interface{}{
 					"key1": "string value",
 					"key2": float64(123),
 				},
-				TMEnd:    DefaultTimeStamp,
-				TMCreate: "2023-01-03 21:35:02.809",
-				TMUpdate: "2023-01-03 21:35:02.809",
-				TMDelete: DefaultTimeStamp,
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
+				TranscribeIDs:     []uuid.UUID{},
+				TMEnd:             DefaultTimeStamp,
+				TMCreate:          "2023-01-03 21:35:02.809",
+				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMDelete:          DefaultTimeStamp,
 			},
 		},
 	}
@@ -668,10 +505,12 @@ func Test_ConferenceGetsWithType(t *testing.T) {
 					ID:                uuid.FromStringOrNil("418ea85a-94b8-11ed-9cf4-5f71d1d56a86"),
 					CustomerID:        uuid.FromStringOrNil("80a965e0-7f45-11ec-a078-7f296665fa3d"),
 					Type:              conference.TypeConference,
+					Data:              map[string]interface{}{},
 					PreActions:        []fmaction.Action{},
 					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
 					RecordingIDs:      []uuid.UUID{},
+					TranscribeIDs:     []uuid.UUID{},
 					TMEnd:             DefaultTimeStamp,
 					TMCreate:          "2023-01-03 21:35:02.809",
 					TMUpdate:          DefaultTimeStamp,
@@ -681,10 +520,12 @@ func Test_ConferenceGetsWithType(t *testing.T) {
 					ID:                uuid.FromStringOrNil("4b0feace-94b8-11ed-a8a7-f3ffb3124f95"),
 					CustomerID:        uuid.FromStringOrNil("80a965e0-7f45-11ec-a078-7f296665fa3d"),
 					Type:              conference.TypeConference,
+					Data:              map[string]interface{}{},
 					PreActions:        []fmaction.Action{},
 					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
 					RecordingIDs:      []uuid.UUID{},
+					TranscribeIDs:     []uuid.UUID{},
 					TMEnd:             DefaultTimeStamp,
 					TMCreate:          "2023-01-03 21:35:02.809",
 					TMUpdate:          DefaultTimeStamp,
@@ -771,10 +612,12 @@ func Test_ConferenceGets(t *testing.T) {
 				{
 					ID:                uuid.FromStringOrNil("ac54ebd4-94c9-11ed-b4aa-4f7da8f9741a"),
 					CustomerID:        uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
+					Data:              map[string]interface{}{},
 					PreActions:        []fmaction.Action{},
 					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
 					RecordingIDs:      []uuid.UUID{},
+					TranscribeIDs:     []uuid.UUID{},
 					TMEnd:             DefaultTimeStamp,
 					TMCreate:          "2023-01-03 21:35:02.809",
 					TMUpdate:          DefaultTimeStamp,
@@ -783,10 +626,12 @@ func Test_ConferenceGets(t *testing.T) {
 				{
 					ID:                uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
 					CustomerID:        uuid.FromStringOrNil("91f25410-7f45-11ec-97d1-8b4f8cee4768"),
+					Data:              map[string]interface{}{},
 					PreActions:        []fmaction.Action{},
 					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
 					RecordingIDs:      []uuid.UUID{},
+					TranscribeIDs:     []uuid.UUID{},
 					TMEnd:             DefaultTimeStamp,
 					TMCreate:          "2023-01-03 21:35:02.809",
 					TMUpdate:          DefaultTimeStamp,
@@ -864,10 +709,12 @@ func Test_ConferenceEnd(t *testing.T) {
 			&conference.Conference{
 				ID:                uuid.FromStringOrNil("722c7822-94ca-11ed-b0a9-ef969fc8348d"),
 				Status:            conference.StatusTerminated,
+				Data:              map[string]interface{}{},
 				PreActions:        []fmaction.Action{},
 				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
+				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             "2023-01-03 21:35:02.809",
 				TMCreate:          "2023-01-03 21:35:02.809",
 				TMUpdate:          "2023-01-03 21:35:02.809",
@@ -940,10 +787,12 @@ func Test_ConferenceDelete(t *testing.T) {
 			"2023-01-03 21:35:02.809",
 			&conference.Conference{
 				ID:                uuid.FromStringOrNil("7a23bfa0-94e2-11ed-8dd9-0b374780e823"),
+				Data:              map[string]interface{}{},
 				PreActions:        []fmaction.Action{},
 				PostActions:       []fmaction.Action{},
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
+				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
 				TMCreate:          "2023-01-03 21:35:02.809",
 				TMUpdate:          "2023-01-03 21:35:02.809",
@@ -990,6 +839,83 @@ func Test_ConferenceDelete(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
+		})
+	}
+}
+
+func Test_ConferenceSetTranscribeID(t *testing.T) {
+
+	tests := []struct {
+		name         string
+		conference   *conference.Conference
+		transcribeID uuid.UUID
+
+		responseCurTime  string
+		expectConference *conference.Conference
+	}{
+		{
+			"normal",
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("000ca104-98c1-11ed-bde2-9badb79a7365"),
+			},
+			uuid.FromStringOrNil("003eb216-98c1-11ed-9789-ff71dbeab66e"),
+
+			"2023-01-03 21:35:02.809",
+			&conference.Conference{
+				ID:                uuid.FromStringOrNil("000ca104-98c1-11ed-bde2-9badb79a7365"),
+				Data:              map[string]interface{}{},
+				PreActions:        []fmaction.Action{},
+				PostActions:       []fmaction.Action{},
+				ConferencecallIDs: []uuid.UUID{},
+				RecordingIDs:      []uuid.UUID{},
+				TranscribeID:      uuid.FromStringOrNil("003eb216-98c1-11ed-9789-ff71dbeab66e"),
+				TranscribeIDs:     []uuid.UUID{},
+				TMEnd:             DefaultTimeStamp,
+				TMCreate:          "2023-01-03 21:35:02.809",
+				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMDelete:          DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			if err := h.ConferenceSetTranscribeID(ctx, tt.conference.ID, tt.transcribeID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
+			res, err := h.ConferenceGet(ctx, tt.conference.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectConference, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectConference, res)
+			}
 		})
 	}
 }

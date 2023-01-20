@@ -50,7 +50,14 @@ type V1DataConferencesIDRecordingIDPut struct {
 
 // V1DataConferencesIDConferencecallIDsPost is
 // v1 data type request struct for
-// /v1/conferences/<conference-id>/conferencecall_ids" PUT
+// /v1/conferences/<conference-id>/conferencecall_ids" POST
 type V1DataConferencesIDConferencecallIDsPost struct {
 	ConferencecallID uuid.UUID `json:"conferencecall_id"`
+}
+
+// V1DataConferencesIDTranscribeStartPost is
+// v1 data type request struct for
+// /v1/conferences/<conference-id>/transcribe_start" POST
+type V1DataConferencesIDTranscribeStartPost struct {
+	Language string `json:"language"`
 }

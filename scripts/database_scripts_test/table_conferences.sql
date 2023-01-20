@@ -22,6 +22,9 @@ create table conferences(
   recording_id   binary(16),  -- current record id
   recording_ids  json,        -- record ids
 
+  transcribe_id  binary(16),  -- current transcribe id
+  transcribe_ids json,        -- transcribe ids
+
   -- timestamps
   tm_end    datetime(6),  --
   tm_create datetime(6),  --

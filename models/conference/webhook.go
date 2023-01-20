@@ -28,6 +28,9 @@ type WebhookMessage struct {
 	RecordingID  uuid.UUID   `json:"recording_id"`
 	RecordingIDs []uuid.UUID `json:"recording_ids"`
 
+	TranscribeID  uuid.UUID   `json:"transcribe_id"`
+	TranscribeIDs []uuid.UUID `json:"transcribe_ids"`
+
 	TMEnd string `json:"tm_end"`
 
 	TMCreate string `json:"tm_create"`
@@ -56,6 +59,9 @@ func (h *Conference) ConvertWebhookMessage() *WebhookMessage {
 
 		RecordingID:  h.RecordingID,
 		RecordingIDs: h.RecordingIDs,
+
+		TranscribeID:  h.TranscribeID,
+		TranscribeIDs: h.TranscribeIDs,
 
 		TMEnd: h.TMEnd,
 
