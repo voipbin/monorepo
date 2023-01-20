@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -129,6 +130,86 @@ func Test_Start_referencetype_call(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_isValidReference(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		referenceType transcribe.ReferenceType
+		referenceID   uuid.UUID
+
+		responseCall       *cmcall.Call
+		responseConfbridge *cmconfbridge.Confbridge
+
+		expectRes bool
+	}{
+		{
+			name: "reference type call",
+
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("918c6c26-98ae-11ed-8a80-a703c7717d9a"),
+
+			responseCall: &cmcall.Call{
+				ID:     uuid.FromStringOrNil("918c6c26-98ae-11ed-8a80-a703c7717d9a"),
+				Status: cmcall.StatusProgressing,
+			},
+
+			expectRes: true,
+		},
+		{
+			name: "reference type confbridge",
+
+			referenceType: transcribe.ReferenceTypeConfbridge,
+			referenceID:   uuid.FromStringOrNil("915fe2c8-98ae-11ed-8b05-bf167f4d8651"),
+
+			responseConfbridge: &cmconfbridge.Confbridge{
+				ID:       uuid.FromStringOrNil("915fe2c8-98ae-11ed-8b05-bf167f4d8651"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+
+			expectRes: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+			h := &transcribeHandler{
+				utilHandler:       mockUtil,
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				transcriptHandler: mockTranscript,
+				streamingHandler:  mockStreaming,
+			}
+
+			ctx := context.Background()
+
+			switch tt.referenceType {
+			case transcribe.ReferenceTypeCall:
+				mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+
+			case transcribe.ReferenceTypeConfbridge:
+				mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
+			}
+
+			res := h.isValidReference(ctx, tt.referenceType, tt.referenceID)
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

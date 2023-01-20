@@ -33,7 +33,7 @@ const (
 	ReferenceTypeUnknown    ReferenceType = "unknown"
 	ReferenceTypeRecording  ReferenceType = "recording"
 	ReferenceTypeCall       ReferenceType = "call"
-	ReferenceTypeConference ReferenceType = "conference"
+	ReferenceTypeConfbridge ReferenceType = "confbridge"
 )
 
 // Direction define

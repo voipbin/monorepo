@@ -10,6 +10,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	"gitlab.com/voipbin/bin-manager/transcribe-manager.git/pkg/dbhandler"
 )
 
 // Start starts a transcribe
@@ -49,7 +50,7 @@ func (h *transcribeHandler) Start(
 			return nil, err
 		}
 
-	case transcribe.ReferenceTypeCall:
+	case transcribe.ReferenceTypeCall, transcribe.ReferenceTypeConfbridge:
 		res, err = h.startLive(ctx, customerID, referenceType, referenceID, lang, direction)
 		if err != nil {
 			log.Errorf("Could not transcribe the call reference type. err: %v", err)
@@ -77,10 +78,20 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 	case transcribe.ReferenceTypeCall:
 		tmp, err := h.reqHandler.CallV1CallGet(ctx, referenceID)
 		if err != nil {
-			log.Errorf("Could not get reference info. type: %s", referenceType)
+			log.Errorf("Could not get reference info. type: %s, err: %v", referenceType, err)
 			return false
 		}
 		if tmp.Status != cmcall.StatusProgressing {
+			return false
+		}
+
+	case transcribe.ReferenceTypeConfbridge:
+		tmp, err := h.reqHandler.CallV1ConfbridgeGet(ctx, referenceID)
+		if err != nil {
+			log.Errorf("Could not get reference info. type: %s, err: %v", referenceType, err)
+			return false
+		}
+		if tmp.TMDelete < dbhandler.DefaultTimeStamp {
 			return false
 		}
 

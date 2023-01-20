@@ -32,12 +32,8 @@ func (h *transcribeHandler) Stop(ctx context.Context, id uuid.UUID) (*transcribe
 	}
 
 	switch tr.ReferenceType {
-	case transcribe.ReferenceTypeCall:
+	case transcribe.ReferenceTypeCall, transcribe.ReferenceTypeConfbridge:
 		return h.stopLive(ctx, tr)
-
-	case transcribe.ReferenceTypeConference:
-		log.Errorf("Not implemented reference type. reference_type: %s", tr.ReferenceType)
-		return nil, fmt.Errorf("Unimplemented reference type")
 
 	default:
 		log.Errorf("Invalid reference type. reference_type: %s", tr.ReferenceType)
