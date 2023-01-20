@@ -66,6 +66,20 @@ func (mr *MockDBHandlerMockRecorder) ConferenceAddRecordingIDs(ctx, id, recordin
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddRecordingIDs", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddRecordingIDs), ctx, id, recordingID)
 }
 
+// ConferenceAddTranscribeIDs mocks base method.
+func (m *MockDBHandler) ConferenceAddTranscribeIDs(ctx context.Context, id, transcribeID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceAddTranscribeIDs", ctx, id, transcribeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceAddTranscribeIDs indicates an expected call of ConferenceAddTranscribeIDs.
+func (mr *MockDBHandlerMockRecorder) ConferenceAddTranscribeIDs(ctx, id, transcribeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceAddTranscribeIDs", reflect.TypeOf((*MockDBHandler)(nil).ConferenceAddTranscribeIDs), ctx, id, transcribeID)
+}
+
 // ConferenceCreate mocks base method.
 func (m *MockDBHandler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
 	m.ctrl.T.Helper()
@@ -236,6 +250,20 @@ func (m *MockDBHandler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, s
 func (mr *MockDBHandlerMockRecorder) ConferenceSetStatus(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetStatus), ctx, id, status)
+}
+
+// ConferenceSetTranscribeID mocks base method.
+func (m *MockDBHandler) ConferenceSetTranscribeID(ctx context.Context, id, transcribeID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceSetTranscribeID", ctx, id, transcribeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConferenceSetTranscribeID indicates an expected call of ConferenceSetTranscribeID.
+func (mr *MockDBHandlerMockRecorder) ConferenceSetTranscribeID(ctx, id, transcribeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSetTranscribeID", reflect.TypeOf((*MockDBHandler)(nil).ConferenceSetTranscribeID), ctx, id, transcribeID)
 }
 
 // ConferencecallCreate mocks base method.

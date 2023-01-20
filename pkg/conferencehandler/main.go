@@ -50,8 +50,11 @@ type ConferenceHandler interface {
 	RemoveConferencecallID(ctx context.Context, cfID uuid.UUID, ccID uuid.UUID) (*conference.Conference, error)
 	Terminate(ctx context.Context, id uuid.UUID) error
 
-	RecordingStart(ctx context.Context, id uuid.UUID) error
-	RecordingStop(ctx context.Context, id uuid.UUID) error
+	RecordingStart(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+	RecordingStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
+
+	TranscribeStart(ctx context.Context, id uuid.UUID, lang string) (*conference.Conference, error)
+	TranscribeStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 }
 
 // conferenceHandler structure for service handle

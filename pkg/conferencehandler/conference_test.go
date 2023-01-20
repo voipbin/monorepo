@@ -325,6 +325,16 @@ func Test_UpdateRecordingID(t *testing.T) {
 				ID: uuid.FromStringOrNil("cbbf9c7c-9090-11ed-b005-b76aad1ce504"),
 			},
 		},
+		{
+			"update to nil",
+
+			uuid.FromStringOrNil("f036af26-98c1-11ed-a796-0753c08f103e"),
+			uuid.Nil,
+
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("f036af26-98c1-11ed-a796-0753c08f103e"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -353,6 +363,75 @@ func Test_UpdateRecordingID(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 
 			res, err := h.UpdateRecordingID(ctx, tt.id, tt.recordingID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConference) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConference, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateTranscribeID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		transcribeID uuid.UUID
+
+		responseConference *conference.Conference
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("d5e141cc-98c1-11ed-8cce-6b7c71104332"),
+			uuid.FromStringOrNil("d629b3ee-98c1-11ed-8d37-d7fa7c56235d"),
+
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("d5e141cc-98c1-11ed-8cce-6b7c71104332"),
+			},
+		},
+		{
+			"update to nil",
+
+			uuid.FromStringOrNil("f0138906-98c1-11ed-8b15-77a88eafac75"),
+			uuid.Nil,
+
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("f0138906-98c1-11ed-8b15-77a88eafac75"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferenceHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				cache:         mockCache,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConferenceSetTranscribeID(ctx, tt.id, tt.transcribeID).Return(nil)
+			if tt.transcribeID != uuid.Nil {
+				mockDB.EXPECT().ConferenceAddTranscribeIDs(ctx, tt.id, tt.transcribeID).Return(nil)
+			}
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+
+			res, err := h.UpdateTranscribeID(ctx, tt.id, tt.transcribeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

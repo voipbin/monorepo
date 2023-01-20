@@ -316,14 +316,22 @@ func (h *listenHandler) processV1ConferencesIDRecordingStartPost(ctx context.Con
 	}
 	cfID := uuid.FromStringOrNil(uriItems[3])
 
-	if errRecording := h.conferenceHandler.RecordingStart(ctx, cfID); errRecording != nil {
-		log.Errorf("Could not start the conference recording id. err: %v", errRecording)
-		return nil, errRecording
+	tmp, err := h.conferenceHandler.RecordingStart(ctx, cfID)
+	if err != nil {
+		log.Errorf("Could not start the conference recording id. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -345,14 +353,22 @@ func (h *listenHandler) processV1ConferencesIDRecordingStopPost(ctx context.Cont
 	}
 	cfID := uuid.FromStringOrNil(uriItems[3])
 
-	if errRecording := h.conferenceHandler.RecordingStop(ctx, cfID); errRecording != nil {
+	tmp, errRecording := h.conferenceHandler.RecordingStop(ctx, cfID)
+	if errRecording != nil {
 		log.Errorf("Could not stop the conference recording. err: %v", errRecording)
 		return nil, errRecording
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -422,6 +438,86 @@ func (h *listenHandler) processV1ConferencesIDConferencecallsConferencecallIDsID
 	if err != nil {
 		log.Errorf("Could not stop the conference recording. err: %v", err)
 		return simpleResponse(400), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConferencesIDTranscribeStartPost handles /v1/conferences/<conference-id>/transcribe_start POST request
+func (h *listenHandler) processV1ConferencesIDTranscribeStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1ConferencesIDTranscribeStartPost",
+			"uri":  m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	cfID := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataConferencesIDTranscribeStartPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.conferenceHandler.TranscribeStart(ctx, cfID, req.Language)
+	if err != nil {
+		log.Errorf("Could not start the conference transcribe. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConferencesIDTranscribeStopPost handles /v1/conferences/<conference-id>/transcribe_stop POST request
+func (h *listenHandler) processV1ConferencesIDTranscribeStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1ConferencesIDTranscribeStopPost",
+			"uri":  m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	cfID := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.conferenceHandler.TranscribeStop(ctx, cfID)
+	if err != nil {
+		log.Errorf("Could not stop the conference transcribe. err: %v", err)
+		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)

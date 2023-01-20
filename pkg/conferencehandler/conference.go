@@ -348,7 +348,42 @@ func (h *conferenceHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 	// get updated conference
 	res, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated call. err: %v", err)
+		log.Errorf("Could not get updated conference. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateTranscribeID updates the conference's transcribe id.
+// if the transcribe id is not uuid.Nil, it also adds to the transcribe_ids
+func (h *conferenceHandler) UpdateTranscribeID(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) (*conference.Conference, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "UpdateTranscribeID",
+			"conference_id": id,
+			"transcribe_id": transcribeID,
+		},
+	)
+
+	if errSet := h.db.ConferenceSetTranscribeID(ctx, id, transcribeID); errSet != nil {
+		log.Errorf("Could not set the transcribe id. err: %v", errSet)
+		return nil, errSet
+	}
+
+	if transcribeID != uuid.Nil {
+		// add the transcribe id
+		log.Debugf("Adding the transcribe id. conference_id: %s, transcribe_id: %s", id, transcribeID)
+		if errAdd := h.db.ConferenceAddTranscribeIDs(ctx, id, transcribeID); errAdd != nil {
+			log.Errorf("Could not add the transcribe id. err: %v", errAdd)
+			return nil, errAdd
+		}
+	}
+
+	// get updated conference
+	res, err := h.db.ConferenceGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated conference. err: %v", err)
 		return nil, err
 	}
 

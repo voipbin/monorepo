@@ -144,11 +144,12 @@ func (mr *MockConferenceHandlerMockRecorder) Join(ctx, conferenceID, referenceTy
 }
 
 // RecordingStart mocks base method.
-func (m *MockConferenceHandler) RecordingStart(ctx context.Context, id uuid.UUID) error {
+func (m *MockConferenceHandler) RecordingStart(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingStart", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // RecordingStart indicates an expected call of RecordingStart.
@@ -158,11 +159,12 @@ func (mr *MockConferenceHandlerMockRecorder) RecordingStart(ctx, id interface{})
 }
 
 // RecordingStop mocks base method.
-func (m *MockConferenceHandler) RecordingStop(ctx context.Context, id uuid.UUID) error {
+func (m *MockConferenceHandler) RecordingStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingStop", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // RecordingStop indicates an expected call of RecordingStop.
@@ -198,6 +200,36 @@ func (m *MockConferenceHandler) Terminate(ctx context.Context, id uuid.UUID) err
 func (mr *MockConferenceHandlerMockRecorder) Terminate(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConferenceHandler)(nil).Terminate), ctx, id)
+}
+
+// TranscribeStart mocks base method.
+func (m *MockConferenceHandler) TranscribeStart(ctx context.Context, id uuid.UUID, lang string) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeStart", ctx, id, lang)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeStart indicates an expected call of TranscribeStart.
+func (mr *MockConferenceHandlerMockRecorder) TranscribeStart(ctx, id, lang interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeStart", reflect.TypeOf((*MockConferenceHandler)(nil).TranscribeStart), ctx, id, lang)
+}
+
+// TranscribeStop mocks base method.
+func (m *MockConferenceHandler) TranscribeStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeStop", ctx, id)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeStop indicates an expected call of TranscribeStop.
+func (mr *MockConferenceHandlerMockRecorder) TranscribeStop(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeStop", reflect.TypeOf((*MockConferenceHandler)(nil).TranscribeStop), ctx, id)
 }
 
 // Update mocks base method.

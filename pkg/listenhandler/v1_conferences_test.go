@@ -26,7 +26,7 @@ func Test_processV1ConferencesGets(t *testing.T) {
 		expectRes      *rabbitmqhandler.Response
 	}{
 		{
-			"basic",
+			"normal",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=24676972-7f49-11ec-bc89-b7d33e9d3ea8",
 				Method: rabbitmqhandler.RequestMethodGet,
@@ -44,7 +44,7 @@ func Test_processV1ConferencesGets(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"0addf332-9312-11eb-95e8-9b90e44428a0","customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"0addf332-9312-11eb-95e8-9b90e44428a0","customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -68,14 +68,14 @@ func Test_processV1ConferencesGets(t *testing.T) {
 					PreActions:        []fmaction.Action{},
 					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
-					RecordingID:       [16]byte{},
 					RecordingIDs:      []uuid.UUID{},
+					TranscribeIDs:     []uuid.UUID{},
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"33b1138a-3bef-11ec-a187-f77a455f3ced","customer_id":"3be94c82-7f49-11ec-814e-ff2a9d84a806","confbridge_id":"343ae074-3bef-11ec-b657-db12d3135e42","flow_id":"49da6378-3bef-11ec-88b6-f31f8c97b61b","type":"","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"33b1138a-3bef-11ec-a187-f77a455f3ced","customer_id":"3be94c82-7f49-11ec-814e-ff2a9d84a806","confbridge_id":"343ae074-3bef-11ec-b657-db12d3135e42","flow_id":"49da6378-3bef-11ec-88b6-f31f8c97b61b","type":"","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":[],"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -100,14 +100,14 @@ func Test_processV1ConferencesGets(t *testing.T) {
 					PreActions:        []fmaction.Action{},
 					PostActions:       []fmaction.Action{},
 					ConferencecallIDs: []uuid.UUID{},
-					RecordingID:       [16]byte{},
 					RecordingIDs:      []uuid.UUID{},
+					TranscribeIDs:     []uuid.UUID{},
 				},
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c1e0a078-3de6-11ec-ae88-13052faf6ad7","customer_id":"4d4d8ce0-7f49-11ec-a61f-1358990ed631","confbridge_id":"c21b98ea-3de6-11ec-ab1e-4bcde9e784af","flow_id":"c234ce0a-3de6-11ec-8807-0b3f00d6e280","type":"conference","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"c1e0a078-3de6-11ec-ae88-13052faf6ad7","customer_id":"4d4d8ce0-7f49-11ec-a61f-1358990ed631","confbridge_id":"c21b98ea-3de6-11ec-ab1e-4bcde9e784af","flow_id":"c234ce0a-3de6-11ec-8807-0b3f00d6e280","type":"conference","status":"","name":"","detail":"","data":{},"timeout":86400,"pre_actions":[],"post_actions":[],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":[],"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -176,7 +176,7 @@ func Test_processV1ConferencesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5e0d6cb0-4003-11ec-a7f9-f72079d71f10","customer_id":"2375a978-7f4b-11ec-81ed-73f63efd9dd8","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -233,7 +233,7 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"8d920096-3bf2-11ec-9ff1-87ad93d2f885","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"8d920096-3bf2-11ec-9ff1-87ad93d2f885","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -308,7 +308,7 @@ func Test_processV1ConferencesIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a07e574a-4002-11ec-9c73-a31093777cf0","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"590b7a70-4005-11ec-882c-cff85956bfd4","flow_id":"5937a834-4005-11ec-98ca-2770f4d8351a","type":"conference","status":"progressing","name":"test update","detail":"test detail update","data":{},"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"hangup"}],"conferencecall_ids":[],"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":[],"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -375,7 +375,7 @@ func Test_processV1ConferencesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"11f067f6-3bf3-11ec-9bca-877deb76639d","customer_id":"4fa8d53a-8057-11ec-9e7c-2310213dc857","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"conference","status":"","name":"test","detail":"test detail","data":null,"timeout":86400,"pre_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"post_actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -436,7 +436,7 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"81d69286-9091-11ed-8036-5f6887716de3","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"81d69286-9091-11ed-8036-5f6887716de3","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -493,6 +493,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"17ca9f6a-9102-11ed-9c97-1b1670cb9db9","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -510,7 +511,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectID).Return(nil)
+			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -549,6 +550,7 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"18033654-9102-11ed-994e-4b9c733834a5","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -566,7 +568,7 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(nil)
+			mockConf.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -608,7 +610,7 @@ func Test_processV1ConferencesIDConferencecallIDsPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1b4b1290-9540-11ed-b8d9-cf98d53f9044","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"1b4b1290-9540-11ed-b8d9-cf98d53f9044","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -667,7 +669,7 @@ func Test_processV1ConferencesIDConferencecallsConferencecallIDsIDDelete(t *test
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"18033654-9102-11ed-994e-4b9c733834a5","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"18033654-9102-11ed-994e-4b9c733834a5","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -686,6 +688,123 @@ func Test_processV1ConferencesIDConferencecallsConferencecallIDsIDDelete(t *test
 			}
 
 			mockConf.EXPECT().RemoveConferencecallID(gomock.Any(), tt.expectConferenceID, tt.expectConferencecallID).Return(tt.responseConference, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ConferencesIDTranscribeStartPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseConference *conference.Conference
+
+		expectID   uuid.UUID
+		expectLang string
+		expectRes  *rabbitmqhandler.Response
+	}{
+		{
+			"type conference",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences/95cf180c-98c6-11ed-8330-bb119cab4678/transcribe_start",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"language":"en-US"}`),
+			},
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("95cf180c-98c6-11ed-8330-bb119cab4678"),
+			},
+
+			uuid.FromStringOrNil("95cf180c-98c6-11ed-8330-bb119cab4678"),
+			"en-US",
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"95cf180c-98c6-11ed-8330-bb119cab4678","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
+
+			mockConf.EXPECT().TranscribeStart(gomock.Any(), tt.expectID, tt.expectLang).Return(tt.responseConference, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ConferencesIDTranscribeStopPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseConference *conference.Conference
+
+		expectID  uuid.UUID
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"type conference",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/conferences/95fdc09e-98c6-11ed-a6a1-ff3648dce452/transcribe_stop",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+			&conference.Conference{
+				ID: uuid.FromStringOrNil("95fdc09e-98c6-11ed-a6a1-ff3648dce452"),
+			},
+
+			uuid.FromStringOrNil("95fdc09e-98c6-11ed-a6a1-ff3648dce452"),
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"95fdc09e-98c6-11ed-a6a1-ff3648dce452","customer_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","status":"","name":"","detail":"","data":null,"timeout":0,"pre_actions":null,"post_actions":null,"conferencecall_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"transcribe_id":"00000000-0000-0000-0000-000000000000","transcribe_ids":null,"tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencehandler.NewMockConferenceHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				conferenceHandler: mockConf,
+			}
+
+			mockConf.EXPECT().TranscribeStop(gomock.Any(), tt.expectID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -35,6 +35,9 @@ const (
 		recording_id,
 		recording_ids,
 
+		transcribe_id,
+		transcribe_ids,
+
 		tm_end,
 
 		tm_create,
@@ -54,6 +57,7 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	var data string
 	var conferencecallIDs sql.NullString
 	var recordingIDs sql.NullString
+	var transcribeIDs sql.NullString
 
 	res := &conference.Conference{}
 	if err := row.Scan(
@@ -76,6 +80,9 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 		&res.RecordingID,
 		&recordingIDs,
+
+		&res.TranscribeID,
+		&transcribeIDs,
 
 		&res.TMEnd,
 
@@ -103,6 +110,9 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	if err := json.Unmarshal([]byte(data), &res.Data); err != nil {
 		return nil, fmt.Errorf("could not unmarshal the data. conferenceGetFromRow. err: %v", err)
 	}
+	if res.Data == nil {
+		res.Data = map[string]interface{}{}
+	}
 
 	if conferencecallIDs.Valid && conferencecallIDs.String != "" {
 		if err := json.Unmarshal([]byte(conferencecallIDs.String), &res.ConferencecallIDs); err != nil {
@@ -122,6 +132,15 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 	}
 	if res.RecordingIDs == nil {
 		res.RecordingIDs = []uuid.UUID{}
+	}
+
+	if transcribeIDs.Valid {
+		if errMarshal := json.Unmarshal([]byte(transcribeIDs.String), &res.TranscribeIDs); errMarshal != nil {
+			return nil, fmt.Errorf("could not unmarshal the transcribe_ids. conferenceGetFromRow. err: %v", errMarshal)
+		}
+	}
+	if res.TranscribeIDs == nil {
+		res.TranscribeIDs = []uuid.UUID{}
 	}
 
 	return res, nil
@@ -150,6 +169,9 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		recording_id,
 		recording_ids,
 
+		transcribe_id,
+		transcribe_ids,
+
 		tm_end,
 
 		tm_create,
@@ -160,6 +182,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		?, ?, ?, ?, ?,
 		?, ?,
 		?,
+		?, ?,
 		?, ?,
 		?,
 		?, ?, ?
@@ -191,6 +214,11 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 		return fmt.Errorf("could not marshal recording_ids. ConferenceCreate. err: %v", err)
 	}
 
+	transcribeIDs, err := json.Marshal(cf.TranscribeIDs)
+	if err != nil {
+		return fmt.Errorf("could not marshal transcribe_ids. ConferenceCreate. err: %v", err)
+	}
+
 	_, err = h.db.Exec(q,
 		cf.ID.Bytes(),
 		cf.CustomerID.Bytes(),
@@ -211,6 +239,9 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 		cf.RecordingID.Bytes(),
 		recordingIDs,
+
+		cf.TranscribeID.Bytes(),
+		transcribeIDs,
 
 		DefaultTimeStamp,
 
@@ -630,6 +661,54 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 	_, err := h.db.Exec(q, recordingID.String(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.conferenceUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ConferenceSetTranscribeID sets the conference's transcribe_id.
+func (h *handler) ConferenceSetTranscribeID(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error {
+	// prepare
+	q := `
+	update conferences set
+		transcribe_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, transcribeID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConferenceSetTranscribeID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.conferenceUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ConferenceAddTranscribeIDs adds the transcribe id to the conference's transcribe_ids.
+func (h *handler) ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error {
+	// prepare
+	q := `
+	update conferences set
+		recording_ids = json_array_append(
+			transcribe_ids,
+			'$',
+			?
+		),
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, transcribeID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConferenceAddTranscribeIDs. err: %v", err)
 	}
 
 	// update the cache

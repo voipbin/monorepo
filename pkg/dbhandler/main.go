@@ -21,6 +21,7 @@ type DBHandler interface {
 	// conferences
 	ConferenceAddConferencecallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
+	ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
 	ConferenceDelete(ctx context.Context, id uuid.UUID) error
 	ConferenceEnd(ctx context.Context, id uuid.UUID) error
@@ -33,6 +34,7 @@ type DBHandler interface {
 	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
 	ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
+	ConferenceSetTranscribeID(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
 
 	// conferencecalls
 	ConferencecallCreate(ctx context.Context, cf *conferencecall.Conferencecall) error
