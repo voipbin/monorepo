@@ -13,8 +13,9 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230119080621-56be1eeabb0a
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230120112344-89fe454e9b94
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230120173840-9fbc9e53b3c2
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230102093540-da6a0504a0ae
+	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230120110509-eb4908c35288
 )
 
 require (
@@ -40,7 +41,6 @@ require (
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20221206185501-ee71428c9199 // indirect
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097 // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9 // indirect
-	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230120110509-eb4908c35288 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230117134054-5234eab5c94d // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
