@@ -916,11 +916,12 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallHealth(ctx, id, delay, retry
 }
 
 // CallV1CallRecordingStart mocks base method.
-func (m *MockRequestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) error {
+func (m *MockRequestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallV1CallRecordingStart", ctx, callID, format, endOfSilence, endOfKey, duration)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CallV1CallRecordingStart indicates an expected call of CallV1CallRecordingStart.
@@ -930,11 +931,12 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallRecordingStart(ctx, callID, 
 }
 
 // CallV1CallRecordingStop mocks base method.
-func (m *MockRequestHandler) CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) error {
+func (m *MockRequestHandler) CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallV1CallRecordingStop", ctx, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CallV1CallRecordingStop indicates an expected call of CallV1CallRecordingStop.
@@ -970,21 +972,6 @@ func (m *MockRequestHandler) CallV1CallSendDigits(ctx context.Context, callID uu
 func (mr *MockRequestHandlerMockRecorder) CallV1CallSendDigits(ctx, callID, digits interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSendDigits", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSendDigits), ctx, callID, digits)
-}
-
-// CallV1CallSetRecordingID mocks base method.
-func (m *MockRequestHandler) CallV1CallSetRecordingID(ctx context.Context, callID, recordingID uuid.UUID) (*call.Call, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallSetRecordingID", ctx, callID, recordingID)
-	ret0, _ := ret[0].(*call.Call)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CallV1CallSetRecordingID indicates an expected call of CallV1CallSetRecordingID.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallSetRecordingID(ctx, callID, recordingID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSetRecordingID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSetRecordingID), ctx, callID, recordingID)
 }
 
 // CallV1CallsCreate mocks base method.
@@ -1045,18 +1032,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeCallKick(ctx, confbrid
 }
 
 // CallV1ConfbridgeCreate mocks base method.
-func (m *MockRequestHandler) CallV1ConfbridgeCreate(ctx context.Context, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
+func (m *MockRequestHandler) CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1ConfbridgeCreate", ctx, confbridgeType)
+	ret := m.ctrl.Call(m, "CallV1ConfbridgeCreate", ctx, customerID, confbridgeType)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1ConfbridgeCreate indicates an expected call of CallV1ConfbridgeCreate.
-func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeCreate(ctx, confbridgeType interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeCreate(ctx, customerID, confbridgeType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeCreate), ctx, confbridgeType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeCreate), ctx, customerID, confbridgeType)
 }
 
 // CallV1ConfbridgeDelete mocks base method.
@@ -1086,6 +1073,36 @@ func (m *MockRequestHandler) CallV1ConfbridgeGet(ctx context.Context, confbridge
 func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeGet(ctx, confbridgeID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeGet", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeGet), ctx, confbridgeID)
+}
+
+// CallV1ConfbridgeRecordingStart mocks base method.
+func (m *MockRequestHandler) CallV1ConfbridgeRecordingStart(ctx context.Context, confbridgeID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1ConfbridgeRecordingStart", ctx, confbridgeID, format, endOfSilence, endOfKey, duration)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1ConfbridgeRecordingStart indicates an expected call of CallV1ConfbridgeRecordingStart.
+func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeRecordingStart(ctx, confbridgeID, format, endOfSilence, endOfKey, duration interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeRecordingStart", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeRecordingStart), ctx, confbridgeID, format, endOfSilence, endOfKey, duration)
+}
+
+// CallV1ConfbridgeRecordingStop mocks base method.
+func (m *MockRequestHandler) CallV1ConfbridgeRecordingStop(ctx context.Context, callID uuid.UUID) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1ConfbridgeRecordingStop", ctx, callID)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1ConfbridgeRecordingStop indicates an expected call of CallV1ConfbridgeRecordingStop.
+func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeRecordingStop(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeRecordingStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeRecordingStop), ctx, callID)
 }
 
 // CallV1ExternalMediaGet mocks base method.
