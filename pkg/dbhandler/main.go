@@ -92,7 +92,7 @@ type DBHandler interface {
 
 	// confbridges
 	ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) error
-	ConfbridgeAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error
 	ConfbridgeDelete(ctx context.Context, id uuid.UUID) error
 	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
@@ -103,7 +103,7 @@ type DBHandler interface {
 	ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error
 	ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error
-	ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error
+	ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	ConfbridgeSetToCache(ctx context.Context, data *confbridge.Confbridge) error
 
 	// external media

@@ -911,18 +911,18 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeAddChannelCallID(ctx, id, channel
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeAddChannelCallID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeAddChannelCallID), ctx, id, channelID, callID)
 }
 
-// ConfbridgeAddRecordIDs mocks base method.
-func (m *MockDBHandler) ConfbridgeAddRecordIDs(ctx context.Context, id, recordID uuid.UUID) error {
+// ConfbridgeAddRecordingIDs mocks base method.
+func (m *MockDBHandler) ConfbridgeAddRecordingIDs(ctx context.Context, id, recordingID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfbridgeAddRecordIDs", ctx, id, recordID)
+	ret := m.ctrl.Call(m, "ConfbridgeAddRecordingIDs", ctx, id, recordingID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ConfbridgeAddRecordIDs indicates an expected call of ConfbridgeAddRecordIDs.
-func (mr *MockDBHandlerMockRecorder) ConfbridgeAddRecordIDs(ctx, id, recordID interface{}) *gomock.Call {
+// ConfbridgeAddRecordingIDs indicates an expected call of ConfbridgeAddRecordingIDs.
+func (mr *MockDBHandlerMockRecorder) ConfbridgeAddRecordingIDs(ctx, id, recordingID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeAddRecordIDs", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeAddRecordIDs), ctx, id, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeAddRecordingIDs", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeAddRecordingIDs), ctx, id, recordingID)
 }
 
 // ConfbridgeCreate mocks base method.
@@ -1056,17 +1056,17 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeSetExternalMediaID(ctx, id, exter
 }
 
 // ConfbridgeSetRecordingID mocks base method.
-func (m *MockDBHandler) ConfbridgeSetRecordingID(ctx context.Context, id, recordID uuid.UUID) error {
+func (m *MockDBHandler) ConfbridgeSetRecordingID(ctx context.Context, id, recordingID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfbridgeSetRecordingID", ctx, id, recordID)
+	ret := m.ctrl.Call(m, "ConfbridgeSetRecordingID", ctx, id, recordingID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConfbridgeSetRecordingID indicates an expected call of ConfbridgeSetRecordingID.
-func (mr *MockDBHandlerMockRecorder) ConfbridgeSetRecordingID(ctx, id, recordID interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ConfbridgeSetRecordingID(ctx, id, recordingID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetRecordingID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetRecordingID), ctx, id, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetRecordingID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetRecordingID), ctx, id, recordingID)
 }
 
 // ConfbridgeSetToCache mocks base method.

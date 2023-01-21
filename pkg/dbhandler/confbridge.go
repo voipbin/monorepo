@@ -16,6 +16,7 @@ const (
 	confbridgeSelect = `
 	select
 		id,
+		customer_id,
 		type,
 		bridge_id,
 
@@ -43,6 +44,7 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 	res := &confbridge.Confbridge{}
 	if err := row.Scan(
 		&res.ID,
+		&res.CustomerID,
 		&res.Type,
 		&res.BridgeID,
 
@@ -87,6 +89,7 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error {
 	q := `insert into confbridges(
 		id,
+		customer_id,
 		type,
 		bridge_id,
 
@@ -101,7 +104,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?,
+		?, ?, ?, ?,
 		?,
 		?, ?,
 		?,
@@ -121,6 +124,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 
 	_, err = h.db.Exec(q,
 		cb.ID.Bytes(),
+		cb.CustomerID.Bytes(),
 		cb.Type,
 		cb.BridgeID,
 
@@ -294,7 +298,7 @@ func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // ConfbridgeSetRecordingID sets the conference's recording_id.
-func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
+func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	// prepare
 	q := `
 	update confbridges set
@@ -304,7 +308,7 @@ func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, re
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetRecordingID. err: %v", err)
 	}
@@ -315,8 +319,8 @@ func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, re
 	return nil
 }
 
-// ConfbridgeAddRecordIDs adds the record file to the bridge's record_files.
-func (h *handler) ConfbridgeAddRecordIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
+// ConfbridgeAddRecordingIDs adds the record file to the bridge's record_files.
+func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
 	// prepare
 	q := `
 	update confbridges set
@@ -330,9 +334,9 @@ func (h *handler) ConfbridgeAddRecordIDs(ctx context.Context, id uuid.UUID, reco
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeAddRecordIDs. err: %v", err)
+		return fmt.Errorf("could not execute. ConfbridgeAddRecordingIDs. err: %v", err)
 	}
 
 	// update the cache

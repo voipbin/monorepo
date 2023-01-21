@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -71,9 +72,17 @@ func Test_RecordingStart(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockRecording.EXPECT().Start(ctx, recording.ReferenceTypeCall, tt.responseCall.ID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration).Return(tt.responseRecording, nil)
+			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
+			mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 
-			if err := h.RecordingStart(ctx, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration); err != nil {
+			res, err := h.RecordingStart(ctx, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseCall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseCall, res)
 			}
 		})
 	}
@@ -135,9 +144,16 @@ func Test_RecordingStop(t *testing.T) {
 			ctx := context.Background()
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockRecording.EXPECT().Stop(ctx, tt.responseCall.RecordingID).Return(tt.responseRecording, nil)
+			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 
-			if err := h.RecordingStop(ctx, tt.id); err != nil {
+			res, err := h.RecordingStop(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseCall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseCall, res)
 			}
 		})
 	}

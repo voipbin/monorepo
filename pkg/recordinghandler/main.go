@@ -11,7 +11,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -43,12 +42,11 @@ const (
 
 // recordingHandler structure for service handle
 type recordingHandler struct {
-	utilHandler       utilhandler.UtilHandler
-	reqHandler        requesthandler.RequestHandler
-	notifyHandler     notifyhandler.NotifyHandler
-	db                dbhandler.DBHandler
-	confbridgeHandler confbridgehandler.ConfbridgeHandler
-	bridgeHandler     bridgehandler.BridgeHandler
+	utilHandler   utilhandler.UtilHandler
+	reqHandler    requesthandler.RequestHandler
+	notifyHandler notifyhandler.NotifyHandler
+	db            dbhandler.DBHandler
+	bridgeHandler bridgehandler.BridgeHandler
 }
 
 // NewRecordingHandler returns a new RecordingHandler
@@ -56,16 +54,14 @@ func NewRecordingHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
-	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	bridgeHandler bridgehandler.BridgeHandler,
 ) RecordingHandler {
 	return &recordingHandler{
-		utilHandler:       utilhandler.NewUtilHandler(),
-		reqHandler:        reqHandler,
-		notifyHandler:     notifyHandler,
-		db:                db,
-		confbridgeHandler: confbridgeHandler,
-		bridgeHandler:     bridgeHandler,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    reqHandler,
+		notifyHandler: notifyHandler,
+		db:            db,
+		bridgeHandler: bridgeHandler,
 	}
 }
 

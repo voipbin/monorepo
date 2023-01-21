@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -15,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -75,12 +77,14 @@ func Test_Hangup(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotfiy,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotfiy,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
@@ -109,8 +113,8 @@ func Test_Hangup(t *testing.T) {
 				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating).Return(nil)
 				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
 				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, gomock.Any())
-
-				mockReq.EXPECT().AstChannelHangup(ctx, tmpCall.AsteriskID, tmpCall.ChannelID, ari.ChannelCauseNormalClearing, 0)
+				mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+				mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), ari.ChannelCauseNormalClearing, 0)
 			}
 
 			if err := h.Hangup(ctx, tt.channel); err != nil {
@@ -178,13 +182,22 @@ func TestHangupWithReason(t *testing.T) {
 func Test_HanginUp(t *testing.T) {
 
 	tests := []struct {
-		name             string
-		call             *call.Call
+		name string
+
+		id    uuid.UUID
+		cause ari.ChannelCause
+
+		responseCall    *call.Call
+		responseChannel *channel.Channel
+
 		expectCallStatus call.Status
-		cause            ari.ChannelCause
 	}{
 		{
-			"normal",
+			"normal terminating",
+
+			uuid.FromStringOrNil("785880aa-1777-11ec-abec-2b721201c1af"),
+			ari.ChannelCauseNormalClearing,
+
 			&call.Call{
 				ID:         uuid.FromStringOrNil("785880aa-1777-11ec-abec-2b721201c1af"),
 				ChannelID:  "7877dce8-1777-11ec-b4ea-3bb953ca2fe7",
@@ -194,11 +207,19 @@ func Test_HanginUp(t *testing.T) {
 					Type: fmaction.TypeEcho,
 				},
 			},
+			&channel.Channel{
+				ID:         "7877dce8-1777-11ec-b4ea-3bb953ca2fe7",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+
 			call.StatusTerminating,
-			ari.ChannelCauseNormalClearing,
 		},
 		{
 			"canceling",
+
+			uuid.FromStringOrNil("ac477e50-ab1c-11ec-b50f-7bb28cc97fd4"),
+			ari.ChannelCauseNormalClearing,
+
 			&call.Call{
 				ID:         uuid.FromStringOrNil("ac477e50-ab1c-11ec-b50f-7bb28cc97fd4"),
 				ChannelID:  "ac7411a4-ab1c-11ec-bce4-e7e983448875",
@@ -209,8 +230,12 @@ func Test_HanginUp(t *testing.T) {
 					Type: fmaction.TypeEcho,
 				},
 			},
+			&channel.Channel{
+				ID:         "ac7411a4-ab1c-11ec-bce4-e7e983448875",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+
 			call.StatusCanceling,
-			ari.ChannelCauseNormalClearing,
 		},
 	}
 
@@ -224,29 +249,37 @@ func Test_HanginUp(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockChan := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotfiy,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotfiy,
+				channelHandler: mockChan,
 			}
 
 			ctx := context.Background()
 
 			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 
 			// updateStatus
-			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, tt.expectCallStatus).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, tt.expectCallStatus).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.cause, 0).Return(nil)
+			mockChan.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.cause, 0).Return(nil)
 
-			if err := h.HangingUp(ctx, tt.call.ID, tt.cause); err != nil {
+			res, err := h.HangingUp(ctx, tt.id, tt.cause)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseCall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseCall, res)
 			}
 		})
 	}

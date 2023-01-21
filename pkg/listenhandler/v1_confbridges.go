@@ -28,11 +28,12 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *rabbitm
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
-		"type": req.Type,
+		"customer_id": req.CustomerID,
+		"type":        req.Type,
 	})
 
 	// create confbridge
-	cb, err := h.confbridgeHandler.Create(ctx, req.Type)
+	cb, err := h.confbridgeHandler.Create(ctx, req.CustomerID, req.Type)
 	if err != nil {
 		log.Errorf("Could not create the confbridge. err: %v", err)
 		return simpleResponse(400), nil
@@ -47,6 +48,7 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *rabbitm
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
+		DataType:   "application/json",
 		Data:       tmp,
 	}
 
@@ -223,6 +225,84 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Co
 		return nil, err
 	}
 	log.Debugf("Stopped external media channel. external: %v", tmp)
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConfbridgesIDRecordingStartPost handles /v1/confbridges/<confbridge-id>/recording_start POST request
+func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"confbridge_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1ConfbridgesIDRecordingStartPost.")
+
+	var req request.V1DataConfbridgesIDRecordingStartPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+	log.WithFields(logrus.Fields{
+		"request": req,
+	}).Debugf("Parsed request data.")
+
+	tmp, err := h.confbridgeHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration)
+	if err != nil {
+		log.Errorf("Could not start call recording. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConfbridgesIDRecordingStopPost handles /v1/confbridges/<confbridge-id>/recording_stop POST request
+func (h *listenHandler) processV1ConfbridgesIDRecordingStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1ConfbridgesIDRecordingStopPost.")
+
+	tmp, err := h.confbridgeHandler.RecordingStop(ctx, id)
+	if err != nil {
+		log.Errorf("Could not start call recording. err: %v", err)
+		return simpleResponse(500), nil
+	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {

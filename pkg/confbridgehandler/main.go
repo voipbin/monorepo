@@ -15,10 +15,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
 // Contexts of confbridge types
@@ -33,7 +35,7 @@ type ConfbridgeHandler interface {
 	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
 
-	Create(ctx context.Context, confbridgeType confbridge.Type) (*confbridge.Confbridge, error)
+	Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error)
 	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error)
 	Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	Join(ctx context.Context, confbridgeID, callID uuid.UUID) error
@@ -41,6 +43,9 @@ type ConfbridgeHandler interface {
 	Kick(ctx context.Context, id, callID uuid.UUID) error
 	Leaved(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	Terminate(ctx context.Context, id uuid.UUID) error
+
+	RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*confbridge.Confbridge, error)
+	RecordingStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 
 	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*confbridge.Confbridge, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
@@ -54,6 +59,7 @@ type confbridgeHandler struct {
 	db                   dbhandler.DBHandler
 	cache                cachehandler.CacheHandler
 	bridgeHandler        bridgehandler.BridgeHandler
+	recordingHandler     recordinghandler.RecordingHandler
 	externalMediaHandler externalmediahandler.ExternalMediaHandler
 }
 
@@ -100,6 +106,7 @@ func NewConfbridgeHandler(
 	db dbhandler.DBHandler,
 	cache cachehandler.CacheHandler,
 	bridgeHandler bridgehandler.BridgeHandler,
+	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 ) ConfbridgeHandler {
 
@@ -110,6 +117,7 @@ func NewConfbridgeHandler(
 		db:                   db,
 		cache:                cache,
 		bridgeHandler:        bridgeHandler,
+		recordingHandler:     recordingHandler,
 		externalMediaHandler: externalMediaHandler,
 	}
 

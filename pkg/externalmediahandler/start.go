@@ -53,10 +53,17 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callI
 		return nil, err
 	}
 
+	// get channel
+	ch, err := h.channelHandler.Get(ctx, c.ChannelID)
+	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
+		return nil, err
+	}
+
 	// create a bridge
 	bridgeID := h.utilHandler.CreateUUID().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
-	if errBridge := h.reqHandler.AstBridgeCreate(ctx, c.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
+	if errBridge := h.reqHandler.AstBridgeCreate(ctx, ch.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}); errBridge != nil {
 		log.Errorf("Could not create a bridge for external media. error: %v", errBridge)
 		return nil, errBridge
 	}
@@ -69,7 +76,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callI
 		bridgeID,
 	)
 	snoopID := h.utilHandler.CreateUUID().String()
-	tmp, err := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, snoopID, appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth)
+	tmp, err := h.reqHandler.AstChannelCreateSnoop(ctx, ch.AsteriskID, ch.ID, snoopID, appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth)
 	if err != nil {
 		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
 		return nil, err
@@ -77,7 +84,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callI
 	log.WithField("channel", tmp).Debugf("Created a new snoop channel. channel_id: %s", tmp.ID)
 
 	// start external media
-	res, err := h.startExternalMedia(ctx, c.AsteriskID, bridgeID, externalmedia.ReferenceTypeCall, c.ID, externalHost)
+	res, err := h.startExternalMedia(ctx, ch.AsteriskID, bridgeID, externalmedia.ReferenceTypeCall, c.ID, externalHost)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
 		return nil, err

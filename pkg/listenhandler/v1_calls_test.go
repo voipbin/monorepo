@@ -661,29 +661,31 @@ func Test_processV1CallsIDDelete(t *testing.T) {
 func Test_processV1CallsIDHangupPost(t *testing.T) {
 
 	type test struct {
-		name      string
-		id        uuid.UUID
-		call      *call.Call
-		request   *rabbitmqhandler.Request
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseCall *call.Call
+
+		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
-			"empty addresses",
-			uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
-			&call.Call{
-				ID:          uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
-				CustomerID:  uuid.FromStringOrNil("6ed4431a-7f51-11ec-8855-73041a5777e8"),
-				Source:      commonaddress.Address{},
-				Destination: commonaddress.Address{},
-			},
+			"normal",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/91a0b50e-f4ec-11ea-b64c-1bf53742d0d8/hangup",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     nil,
 			},
+
+			&call.Call{
+				ID:         uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
+				CustomerID: uuid.FromStringOrNil("6ed4431a-7f51-11ec-8855-73041a5777e8"),
+			},
+
+			uuid.FromStringOrNil("91a0b50e-f4ec-11ea-b64c-1bf53742d0d8"),
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -705,8 +707,7 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().HangingUp(context.Background(), tt.id, ari.ChannelCauseNormalClearing)
-			mockCall.EXPECT().Get(gomock.Any(), tt.id).Return(tt.call, nil)
+			mockCall.EXPECT().HangingUp(context.Background(), tt.expectID, ari.ChannelCauseNormalClearing).Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -1313,6 +1314,8 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 
 		request *rabbitmqhandler.Request
 
+		responseCall *call.Call
+
 		expectID           uuid.UUID
 		expectFormat       recording.Format
 		expectEndOfSilence int
@@ -1332,6 +1335,10 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 				Data:     []byte(`{"format": "wav", "end_of_silence": 1000, "end_of_key": "#", "duration": 86400}`),
 			},
 
+			&call.Call{
+				ID: uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
+			},
+
 			uuid.FromStringOrNil("1c3dc786-9344-11ed-96a2-17c902204823"),
 			recording.FormatWAV,
 			1000,
@@ -1341,6 +1348,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"1c3dc786-9344-11ed-96a2-17c902204823","customer_id":"00000000-0000-0000-0000-000000000000","asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -1358,7 +1366,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration).Return(nil)
+			mockCall.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration).Return(tt.responseCall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1378,6 +1386,8 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 
 		request *rabbitmqhandler.Request
 
+		responseCall *call.Call
+
 		expectID  uuid.UUID
 		expectRes *rabbitmqhandler.Response
 	}
@@ -1391,11 +1401,16 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 				DataType: "application/json",
 			},
 
+			&call.Call{
+				ID: uuid.FromStringOrNil("1c73262e-9344-11ed-840d-37569c93274f"),
+			},
+
 			uuid.FromStringOrNil("1c73262e-9344-11ed-840d-37569c93274f"),
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
+				Data:       []byte(`{"id":"1c73262e-9344-11ed-840d-37569c93274f","customer_id":"00000000-0000-0000-0000-000000000000","asterisk_id":"","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -1413,7 +1428,7 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(nil)
+			mockCall.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(tt.responseCall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

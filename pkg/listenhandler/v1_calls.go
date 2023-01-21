@@ -246,15 +246,9 @@ func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *rabbi
 	log.Debug("Executing processV1CallsIDHangupPost.")
 
 	// hanging up the call
-	if err := h.callHandler.HangingUp(ctx, id, ari.ChannelCauseNormalClearing); err != nil {
-		log.Debugf("Could not hanging up the call. err: %v", err)
-		return simpleResponse(500), nil
-	}
-
-	// get updated call info
-	tmp, err := h.callHandler.Get(ctx, id)
+	tmp, err := h.callHandler.HangingUp(ctx, id, ari.ChannelCauseNormalClearing)
 	if err != nil {
-		log.Debugf("Could not get updated call info. err: %v", err)
+		log.Debugf("Could not hanging up the call. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -681,14 +675,22 @@ func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, 
 		"request": req,
 	}).Debugf("Parsed request data.")
 
-	if errRecording := h.callHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration); errRecording != nil {
-		log.Errorf("Could not start call recording. err: %v", errRecording)
+	tmp, err := h.callHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration)
+	if err != nil {
+		log.Errorf("Could not start call recording. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
 		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil
@@ -708,14 +710,22 @@ func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m
 		})
 	log.WithField("request", m).Debug("Executing processV1CallsIDRecordingStopPost.")
 
-	if errRecording := h.callHandler.RecordingStop(ctx, id); errRecording != nil {
-		log.Errorf("Could not start call recording. err: %v", errRecording)
+	tmp, err := h.callHandler.RecordingStop(ctx, id)
+	if err != nil {
+		log.Errorf("Could not start call recording. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
 		return simpleResponse(500), nil
 	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

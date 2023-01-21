@@ -345,11 +345,12 @@ func (mr *MockCallHandlerMockRecorder) Gets(ctx, customerID, size, token interfa
 }
 
 // HangingUp mocks base method.
-func (m *MockCallHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) error {
+func (m *MockCallHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HangingUp", ctx, id, cause)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // HangingUp indicates an expected call of HangingUp.
@@ -387,11 +388,12 @@ func (mr *MockCallHandlerMockRecorder) HangupWithReason(ctx, c, reason, hangupBy
 }
 
 // RecordingStart mocks base method.
-func (m *MockCallHandler) RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) error {
+func (m *MockCallHandler) RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingStart", ctx, id, format, endOfSilence, endOfKey, duration)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // RecordingStart indicates an expected call of RecordingStart.
@@ -401,11 +403,12 @@ func (mr *MockCallHandlerMockRecorder) RecordingStart(ctx, id, format, endOfSile
 }
 
 // RecordingStop mocks base method.
-func (m *MockCallHandler) RecordingStop(ctx context.Context, id uuid.UUID) error {
+func (m *MockCallHandler) RecordingStop(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingStop", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // RecordingStop indicates an expected call of RecordingStop.

@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -33,6 +34,7 @@ func Test_Start_reference_type_call(t *testing.T) {
 		direction      string
 
 		responseCall                *call.Call
+		responseChannel             *channel.Channel
 		responseUUIDBridgeID        uuid.UUID
 		responseUUIDSnoopID         uuid.UUID
 		responseUUIDChannelID       uuid.UUID
@@ -60,9 +62,13 @@ func Test_Start_reference_type_call(t *testing.T) {
 			"both",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				ID: uuid.FromStringOrNil("7f6dbc1a-02fb-11ec-897b-ef9b30e25c57"),
+				// AsteriskID: "42:01:0a:a4:00:05",
+				ChannelID: "8066017c-02fb-11ec-ba6c-c320820accf1",
+			},
+			&channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "8066017c-02fb-11ec-ba6c-c320820accf1",
+				ID:         "8066017c-02fb-11ec-ba6c-c320820accf1",
 			},
 			uuid.FromStringOrNil("9b6c7a78-96e3-11ed-904b-9baa2c0183fd"),
 			uuid.FromStringOrNil("80981342-96e3-11ed-bc85-830940cba8ea"),
@@ -102,25 +108,28 @@ func Test_Start_reference_type_call(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &externalMediaHandler{
-				utilHandler: mockUtil,
-				reqHandler:  mockReq,
-				db:          mockDB,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseChannel, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridgeID)
-			mockReq.EXPECT().AstBridgeCreate(ctx, tt.responseCall.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
+			mockReq.EXPECT().AstBridgeCreate(ctx, tt.responseChannel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDSnoopID)
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.responseCall.AsteriskID, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.responseChannel.AsteriskID, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannelID)
-			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.responseCall.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
+			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDExternalMediaID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
