@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -207,12 +208,14 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
@@ -231,6 +234,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, gomock.Any())
 				mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+				mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 				mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
 			}
 

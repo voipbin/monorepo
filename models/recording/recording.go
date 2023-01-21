@@ -32,7 +32,7 @@ type ReferenceType string
 // List of reference types
 const (
 	ReferenceTypeCall       ReferenceType = "call"       // call type.
-	ReferenceTypeConference ReferenceType = "conference" // conference type.
+	ReferenceTypeConfbridge ReferenceType = "confbridge" // confbridge type.
 )
 
 // Status type

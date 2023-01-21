@@ -65,10 +65,12 @@ var (
 	regV1ChannelsIDHealth = regexp.MustCompile("/v1/channels/" + regUUID + "/health-check$")
 
 	// confbridges
-	regV1Confbridges                = regexp.MustCompile("/v1/confbridges$")
-	regV1ConfbridgesID              = regexp.MustCompile("/v1/confbridges/" + regUUID + "$")
-	regV1ConfbridgesIDExternalMedia = regexp.MustCompile("/v1/confbridges/" + regUUID + "/external-media$")
-	regV1ConfbridgesIDCallsID       = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
+	regV1Confbridges                 = regexp.MustCompile("/v1/confbridges$")
+	regV1ConfbridgesID               = regexp.MustCompile("/v1/confbridges/" + regUUID + "$")
+	regV1ConfbridgesIDExternalMedia  = regexp.MustCompile("/v1/confbridges/" + regUUID + "/external-media$")
+	regV1ConfbridgesIDCallsID        = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
+	regV1ConfbridgesIDRecordingStart = regexp.MustCompile("/v1/confbridges/" + regUUID + "/recording_start$")
+	regV1ConfbridgesIDRecordingStop  = regexp.MustCompile("/v1/confbridges/" + regUUID + "/recording_stop$")
 
 	// external-medias
 	regV1ExternalMedias   = regexp.MustCompile("/v1/external-medias$")
@@ -267,12 +269,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1CallsIDRecordingIDPut(ctx, m)
 		requestType = "/v1/calls/<call-id>/recording_id"
 
-	// PUT /calls/<id>/recording_id
+	// POST /calls/<call-id>/recording_start
 	case regV1CallsIDRecordingStart.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDRecordingStartPost(ctx, m)
 		requestType = "/v1/calls/<call-id>/recording_start"
 
-	// PUT /calls/<id>/recording_id
+	// POST /calls/<call-id>/recording_stop
 	case regV1CallsIDRecordingStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDRecordingStopPost(ctx, m)
 		requestType = "/v1/calls/<call-id>/recording_stop"
@@ -333,6 +335,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ConfbridgesIDExternalMedia.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ConfbridgesIDExternalMediaDelete(ctx, m)
 		requestType = "/v1/confbridges/<confbridge-id>/external-media"
+
+	// POST /confbridges/<confbridge-id>/recording_start
+	case regV1ConfbridgesIDRecordingStart.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConfbridgesIDRecordingStartPost(ctx, m)
+		requestType = "/v1/confbridges/<confbridge-id>/recording_start"
+
+	// POST /confbridges/<confbridge-id>/recording_stop
+	case regV1ConfbridgesIDRecordingStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConfbridgesIDRecordingStopPost(ctx, m)
+		requestType = "/v1/confbridges/<confbridge-id>/recording_stop"
 
 	////////////////
 	// external-medias

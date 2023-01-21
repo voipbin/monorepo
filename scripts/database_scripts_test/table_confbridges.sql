@@ -1,6 +1,7 @@
 create table confbridges(
   -- identity
   id            binary(16),   -- id
+  customer_id   binary(16),   -- customer id
   type          varchar(255), -- type
   bridge_id     varchar(255), -- conference's bridge id
 
@@ -22,4 +23,5 @@ create table confbridges(
 );
 
 create index idx_confbridges_create on confbridges(tm_create);
+create index idx_confbridges_customer_id on confbridges(customer_id);
 create index idx_confbridges_bridge_id on confbridges(bridge_id);

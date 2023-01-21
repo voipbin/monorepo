@@ -11,7 +11,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cmconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -20,7 +19,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -156,7 +154,7 @@ func Test_Start_call(t *testing.T) {
 	}
 }
 
-func Test_Start_conference(t *testing.T) {
+func Test_Start_confbridge(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -168,7 +166,6 @@ func Test_Start_conference(t *testing.T) {
 		endOfKey      string
 		duration      int
 
-		responseConference *cmconference.Conference
 		responseConfbridge *confbridge.Confbridge
 		responseBridge     *bridge.Bridge
 		responseUUID       uuid.UUID
@@ -182,22 +179,18 @@ func Test_Start_conference(t *testing.T) {
 		{
 			name: "normal",
 
-			referenceType: recording.ReferenceTypeConference,
-			referenceID:   uuid.FromStringOrNil("676d83d0-90a2-11ed-96be-afdeb5b65a08"),
+			referenceType: recording.ReferenceTypeConfbridge,
+			referenceID:   uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
 			format:        recording.FormatWAV,
 			endOfSilence:  0,
 			endOfKey:      "",
 			duration:      0,
 
-			responseConference: &cmconference.Conference{
-				ID:           uuid.FromStringOrNil("676d83d0-90a2-11ed-96be-afdeb5b65a08"),
-				CustomerID:   uuid.FromStringOrNil("67c29f96-90a2-11ed-ae2a-cf22d50cd411"),
-				ConfbridgeID: uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
-				Status:       cmconference.StatusProgressing,
-			},
 			responseConfbridge: &confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
-				BridgeID: "6822e4c8-90a2-11ed-8002-4bf0087d99cb",
+				ID:         uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
+				CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				BridgeID:   "6822e4c8-90a2-11ed-8002-4bf0087d99cb",
+				TMDelete:   dbhandler.DefaultTimeStamp,
 			},
 			responseBridge: &bridge.Bridge{
 				AsteriskID: "42:01:0a:a4:00:03",
@@ -209,17 +202,17 @@ func Test_Start_conference(t *testing.T) {
 				ID: uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
 			},
 
-			expectFilename: "conference_676d83d0-90a2-11ed-96be-afdeb5b65a08_2023-01-05T14:58:05Z_in",
+			expectFilename: "confbridge_67f358e8-90a2-11ed-b315-2b63c5f83d10_2023-01-05T14:58:05Z_in",
 			expectRecording: &recording.Recording{
 				ID:            uuid.FromStringOrNil("6856ed5e-90a2-11ed-8f4e-6353d1a3e50b"),
-				CustomerID:    uuid.FromStringOrNil("67c29f96-90a2-11ed-ae2a-cf22d50cd411"),
-				ReferenceType: recording.ReferenceTypeConference,
-				ReferenceID:   uuid.FromStringOrNil("676d83d0-90a2-11ed-96be-afdeb5b65a08"),
+				CustomerID:    uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
+				ReferenceType: recording.ReferenceTypeConfbridge,
+				ReferenceID:   uuid.FromStringOrNil("67f358e8-90a2-11ed-b315-2b63c5f83d10"),
 				Status:        recording.StatusInitiating,
 				Format:        "wav",
-				RecordingName: "conference_676d83d0-90a2-11ed-96be-afdeb5b65a08_2023-01-05T14:58:05Z",
+				RecordingName: "confbridge_67f358e8-90a2-11ed-b315-2b63c5f83d10_2023-01-05T14:58:05Z",
 				Filenames: []string{
-					"conference_676d83d0-90a2-11ed-96be-afdeb5b65a08_2023-01-05T14:58:05Z_in.wav",
+					"confbridge_67f358e8-90a2-11ed-b315-2b63c5f83d10_2023-01-05T14:58:05Z_in.wav",
 				},
 				AsteriskID: "42:01:0a:a4:00:03",
 				TMStart:    dbhandler.DefaultTimeStamp,
@@ -237,28 +230,24 @@ func Test_Start_conference(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &recordingHandler{
-				utilHandler:       mockUtil,
-				reqHandler:        mockReq,
-				db:                mockDB,
-				notifyHandler:     mockNotify,
-				confbridgeHandler: mockConfbridge,
-				bridgeHandler:     mockBridge,
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				bridgeHandler: mockBridge,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.referenceID).Return(tt.responseConference, nil)
-			mockConfbridge.EXPECT().Get(ctx, tt.responseConference.ConfbridgeID).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
 			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
 			mockUtil.EXPECT().GetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
 			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceUpdateRecordingID(ctx, tt.responseRecording.ReferenceID, tt.responseRecording.ID).Return(tt.responseConference, nil)
 			mockReq.EXPECT().AstBridgeRecord(
 				ctx,
 				tt.responseBridge.AsteriskID,
@@ -496,7 +485,7 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 
 			responseRecording: &recording.Recording{
 				ID:            uuid.FromStringOrNil("f3a4776c-90c2-11ed-a1fe-df5a7d2fc896"),
-				ReferenceType: recording.ReferenceTypeConference,
+				ReferenceType: recording.ReferenceTypeConfbridge,
 				AsteriskID:    "42:01:0a:a4:00:03",
 				RecordingName: "conference_f3eeac6a-90c2-11ed-9bad-9bc50d0bf273_2023-01-05T14:58:05Z",
 			},

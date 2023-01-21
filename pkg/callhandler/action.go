@@ -168,14 +168,14 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 
 	if c.FlowID == uuid.Nil {
 		log.WithField("call", c).Info("No flow id found. Hangup the call.")
-		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
 	// set action next hold
 	if errHold := h.updateActionNextHold(ctx, c.ID, true); errHold != nil {
 		log.Errorf("Could not set the action next hold. err: %v", errHold)
-		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
@@ -184,7 +184,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	if err != nil {
 		// could not get the next action from the flow-manager.
 		log.WithField("action", c.Action).Infof("Could not get the next action from the flow-manager. err: %v", err)
-		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 	log.WithField("action", nextAction).Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
@@ -199,7 +199,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 
 	if err := h.ActionExecute(ctx, cc); err != nil {
 		log.Errorf("Could not execute the next action correctly. Hanging up the call. err: %v", err)
-		_ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
 		return nil
 	}
 
@@ -485,9 +485,11 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call) err
 		}
 	}
 
-	if err := h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing); err != nil {
+	tmp, err := h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+	if err != nil {
 		log.Errorf("Could not hangup the call. err: %v", err)
 	}
+	log.WithField("call", tmp).Debugf("Hanging up the call. call_id: %s", tmp.ID)
 
 	return nil
 }
@@ -560,18 +562,19 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 		}
 	}
 
-	if errRecording := h.RecordingStart(
+	tmp, err := h.RecordingStart(
 		ctx,
 		c.ID,
 		recording.Format(option.Format),
 		option.EndOfSilence,
 		option.EndOfKey,
 		option.Duration,
-	); errRecording != nil {
-		log.Errorf("Could not start the recording. err: %v", errRecording)
-		return errRecording
+	)
+	if err != nil {
+		log.Errorf("Could not start the recording. err: %v", err)
+		return err
 	}
-	log.Debugf("Started recording. call_id: %s", c.ID)
+	log.WithField("call", tmp).Debugf("Started recording. call_id: %s", c.ID)
 
 	// send next action request
 	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); errNext != nil {
@@ -599,11 +602,12 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 		}
 	}
 
-	if errRecording := h.RecordingStop(ctx, c.ID); errRecording != nil {
+	tmp, errRecording := h.RecordingStop(ctx, c.ID)
+	if errRecording != nil {
 		// we failed to stop the recording. But we still want to continue to call process.
 		log.Errorf("Could not stop the recording. recording_id: %s, err: %v", c.RecordingID, errRecording)
 	}
-	log.Debugf("Stopping recording info. call_id: %s, recording_id: %s", c.ID, c.RecordingID)
+	log.WithField("call", tmp).Debugf("Stopped recording. call_id: %s, recording_id: %s", c.ID, c.RecordingID)
 
 	if err := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); err != nil {
 		log.Errorf("Could not execute next action call. err: %v", err)

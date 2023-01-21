@@ -57,7 +57,7 @@ func (h *callHandler) startServiceFromAMD(ctx context.Context, cn *channel.Chann
 	if status == amdStatusMachine && amd.MachineHandle == callapplication.AMDMachineHandleHangup {
 		// hangup the call
 		log.Infof("The amd option is machine hangup. machine_handle: %s", amd.MachineHandle)
-		_ = h.HangingUp(ctx, amd.CallID, ari.ChannelCauseCallAMD)
+		_, _ = h.HangingUp(ctx, amd.CallID, ari.ChannelCauseCallAMD)
 		return nil
 	}
 

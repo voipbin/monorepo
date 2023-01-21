@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -85,12 +86,14 @@ func Test_startServiceFromAMD(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
@@ -104,6 +107,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 				mockDB.EXPECT().CallSetStatus(ctx, gomock.Any(), call.StatusTerminating).Return(nil)
 				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+				mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 				mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), ari.ChannelCauseCallAMD, 0).Return(nil)
 			} else {
 				if !tt.responseAMD.Async {

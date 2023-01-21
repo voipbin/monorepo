@@ -67,7 +67,8 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	// hangup the chained call
 	for _, callID := range c.ChainedCallIDs {
 		// hang up the call
-		if err := h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing); err != nil {
+		_, err := h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing)
+		if err != nil {
 			log.Errorf("Could not hangup the chained call. err: %v", err)
 		}
 	}
@@ -94,7 +95,7 @@ func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason
 
 // HangingUp starts hangup process.
 // It sets the call status to the terminating and sends the hangup request to the Asterisk.
-func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) error {
+func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "HangingUp",
 		"call_id":       id,
@@ -105,13 +106,13 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 	c, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
-		return err
+		return nil, err
 	}
 	log.WithField("call", c).Debug("Call info.")
 
 	if c.Status == call.StatusCanceling || c.Status == call.StatusHangup || c.Status == call.StatusTerminating {
 		// already hanging up
-		return nil
+		return c, nil
 	}
 
 	status := call.StatusTerminating
@@ -122,22 +123,29 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 	}
 
 	// update call status
-	log.Debugf("Updating call status for hangup. status: %v", status)
-	cc, err := h.UpdateStatus(ctx, c.ID, status)
+	log.Debugf("Updating call status for hanging up. status: %v", status)
+	res, err := h.UpdateStatus(ctx, c.ID, status)
 	if err != nil {
 		// update status failed, just write log here. No need error handle here.
 		log.Errorf("Could not update the call status for hangup. status: %v, err: %v", status, err)
-		return err
+		return nil, err
+	}
+
+	// get channel
+	ch, err := h.channelHandler.Get(ctx, c.ChannelID)
+	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
+		return nil, err
 	}
 
 	// send hangup request
-	if err := h.reqHandler.AstChannelHangup(ctx, cc.AsteriskID, cc.ChannelID, cause, 0); err != nil {
+	if err := h.reqHandler.AstChannelHangup(ctx, ch.AsteriskID, ch.ID, cause, 0); err != nil {
 		// Send hangup request has failed. Something really wrong.
 		log.Errorf("Could not send the hangup request for call hangup. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return res, nil
 }
 
 // isRetryable returns true if the given call is dial retryable

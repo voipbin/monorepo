@@ -153,9 +153,9 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db)
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
-	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, bridgeHandler)
-	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, bridgeHandler, externalMediaHandler)
-	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, confbridgeHandler, bridgeHandler)
+	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler)
+	recordingHandler := recordinghandler.NewRecordingHandler(reqHandler, notifyHandler, db, bridgeHandler)
+	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, bridgeHandler, recordingHandler, externalMediaHandler)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 

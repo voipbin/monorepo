@@ -53,7 +53,7 @@ type CallHandler interface {
 	StartCallHandle(ctx context.Context, cn *channel.Channel, data map[string]string) error
 	Hangup(ctx context.Context, cn *channel.Channel) error
 	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error
-	HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) error
+	HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) (*call.Call, error)
 
 	RecordingStart(
 		ctx context.Context,
@@ -62,8 +62,8 @@ type CallHandler interface {
 		endOfSilence int,
 		endOfKey string,
 		duration int,
-	) error
-	RecordingStop(ctx context.Context, id uuid.UUID) error
+	) (*call.Call, error)
+	RecordingStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
 	ActionNext(ctx context.Context, c *call.Call) error
 	ActionNextForce(ctx context.Context, c *call.Call) error

@@ -1,4 +1,4 @@
-package callhandler
+package confbridgehandler
 
 import (
 	"context"
@@ -7,42 +7,43 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-// RecordingStart starts the call recording
-func (h *callHandler) RecordingStart(
+// confbridgeHandler starts the confbridge recording
+func (h *confbridgeHandler) RecordingStart(
 	ctx context.Context,
 	id uuid.UUID,
 	format recording.Format,
 	endOfSilence int,
 	endOfKey string,
 	duration int,
-) (*call.Call, error) {
+) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "RecordingStart",
-		"call_id": id,
+		"func":          "RecordingStart",
+		"confbridge_id": id,
 	})
 
 	c, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
+		log.Errorf("Could not get confbridge info. err: %v", err)
 		return nil, err
 	}
 
 	if c.RecordingID != uuid.Nil {
-		log.Errorf("The call recording is already progressing. recording_id: %s", c.RecordingID)
+		log.Errorf("The confbridge recording is already progressing. recording_id: %s", c.RecordingID)
 		return nil, fmt.Errorf("recording is already progressing")
-	} else if c.Status != call.StatusProgressing {
-		log.Errorf("The call is status is not progressing. status: %s", c.Status)
+	} else if c.TMDelete < dbhandler.DefaultTimeStamp {
+		log.Errorf("The confbridge status is not progressing. tm_delete: %s", c.TMDelete)
 		return nil, fmt.Errorf("invalid status")
 	}
 
 	// starts the recording
 	rec, err := h.recordingHandler.Start(
 		ctx,
-		recording.ReferenceTypeCall,
+		recording.ReferenceTypeConfbridge,
 		c.ID,
 		format,
 		endOfSilence,
@@ -65,10 +66,10 @@ func (h *callHandler) RecordingStart(
 }
 
 // RecordingStop stops the recording
-func (h *callHandler) RecordingStop(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+func (h *confbridgeHandler) RecordingStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "RecordingStop",
-		"call_id": id,
+		"func":          "RecordingStop",
+		"confbridge_id": id,
 	})
 
 	c, err := h.Get(ctx, id)
@@ -81,8 +82,8 @@ func (h *callHandler) RecordingStop(ctx context.Context, id uuid.UUID) (*call.Ca
 	if c.RecordingID == uuid.Nil {
 		log.Errorf("No Recording progressing. conference_id: %s, recording_id: %s", c.ID, c.RecordingID)
 		return nil, fmt.Errorf("no recording")
-	} else if c.Status != call.StatusProgressing {
-		log.Errorf("Invalid status. call_id: %s, status: %s", c.ID, c.Status)
+	} else if c.TMDelete < dbhandler.DefaultTimeStamp {
+		log.Errorf("The confbridge status is not progressing. tm_delete: %s", c.TMDelete)
 		return nil, fmt.Errorf("invalid status")
 	}
 

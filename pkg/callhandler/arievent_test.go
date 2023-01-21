@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -64,12 +65,14 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotfiy,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotfiy,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
@@ -90,6 +93,7 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), gomock.Any(), gomock.Any())
 				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{}, nil)
 				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+				mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 				mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
 			}
 

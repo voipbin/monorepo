@@ -13,6 +13,7 @@ import (
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
 // MockConfbridgeHandler is a mock of ConfbridgeHandler interface.
@@ -81,18 +82,18 @@ func (mr *MockConfbridgeHandlerMockRecorder) ARIStasisStart(ctx, cn, data interf
 }
 
 // Create mocks base method.
-func (m *MockConfbridgeHandler) Create(ctx context.Context, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
+func (m *MockConfbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, confbridgeType)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, confbridgeType)
 	ret0, _ := ret[0].(*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx, confbridgeType interface{}) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx, customerID, confbridgeType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfbridgeHandler)(nil).Create), ctx, confbridgeType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfbridgeHandler)(nil).Create), ctx, customerID, confbridgeType)
 }
 
 // ExternalMediaStart mocks base method.
@@ -194,6 +195,36 @@ func (m *MockConfbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel,
 func (mr *MockConfbridgeHandlerMockRecorder) Leaved(ctx, cn, br interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockConfbridgeHandler)(nil).Leaved), ctx, cn, br)
+}
+
+// RecordingStart mocks base method.
+func (m *MockConfbridgeHandler) RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingStart", ctx, id, format, endOfSilence, endOfKey, duration)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingStart indicates an expected call of RecordingStart.
+func (mr *MockConfbridgeHandlerMockRecorder) RecordingStart(ctx, id, format, endOfSilence, endOfKey, duration interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).RecordingStart), ctx, id, format, endOfSilence, endOfKey, duration)
+}
+
+// RecordingStop mocks base method.
+func (m *MockConfbridgeHandler) RecordingStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingStop", ctx, id)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingStop indicates an expected call of RecordingStop.
+func (mr *MockConfbridgeHandlerMockRecorder) RecordingStop(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStop", reflect.TypeOf((*MockConfbridgeHandler)(nil).RecordingStop), ctx, id)
 }
 
 // Terminate mocks base method.

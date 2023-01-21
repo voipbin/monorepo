@@ -4,10 +4,10 @@ import "github.com/gofrs/uuid"
 
 // Confbridge type
 type Confbridge struct {
-	ID uuid.UUID `json:"id"`
+	ID         uuid.UUID `json:"id"`
+	CustomerID uuid.UUID `json:"customer_id"`
 
-	Type Type `json:"type"`
-
+	Type     Type   `json:"type"`
 	BridgeID string `json:"bridge_id"`
 
 	ChannelCallIDs map[string]uuid.UUID `json:"channel_call_ids"` // channelid:callid

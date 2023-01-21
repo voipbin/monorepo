@@ -8,30 +8,27 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Create is handy function for creating a confbridge.
 // it increases corresponded counter
-func (h *confbridgeHandler) Create(ctx context.Context, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
+func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "Create",
+			"func":        "Create",
+			"customer_id": customerID,
 		},
 	)
 
 	id := uuid.Must(uuid.NewV4())
 
 	cb := &confbridge.Confbridge{
-		ID:   id,
-		Type: confbridgeType,
+		ID:         id,
+		CustomerID: customerID,
+		Type:       confbridgeType,
 
 		RecordingIDs:   []uuid.UUID{},
 		ChannelCallIDs: map[string]uuid.UUID{},
-
-		TMCreate: h.utilHandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	// create a confbridge
@@ -68,6 +65,41 @@ func (h *confbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.
 	return res, nil
 }
 
+// UpdateRecordingID updates the confbridge's recording id.
+// if the recording id is not uuid.Nil, it also adds to the recording_ids
+func (h *confbridgeHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*confbridge.Confbridge, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "UpdateRecordingID",
+			"confbridge_id": id,
+			"recording_id":  recordingID,
+		},
+	)
+
+	if errSet := h.db.ConfbridgeSetRecordingID(ctx, id, recordingID); errSet != nil {
+		log.Errorf("Could not set the recording id. err: %v", errSet)
+		return nil, errSet
+	}
+
+	if recordingID != uuid.Nil {
+		// add the recording id
+		log.Debugf("Adding the recording id. confbridge_id: %s, recording_id: %s", id, recordingID)
+		if errAdd := h.db.ConfbridgeAddRecordingIDs(ctx, id, recordingID); errAdd != nil {
+			log.Errorf("Could not add the recording id. err: %v", errAdd)
+			return nil, errAdd
+		}
+	}
+
+	// get updated confbridge
+	res, err := h.db.ConfbridgeGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated confbridge. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // UpdateExternalMediaID updates the confbridge's external media id.
 func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(
@@ -86,7 +118,7 @@ func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.U
 	// get updated confbridge
 	res, err := h.db.ConfbridgeGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get updated call. err: %v", err)
+		log.Errorf("Could not get updated confbridge. err: %v", err)
 		return nil, err
 	}
 
