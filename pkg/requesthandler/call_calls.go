@@ -461,44 +461,10 @@ func (r *requestHandler) CallV1CallSendDigits(ctx context.Context, callID uuid.U
 	return nil
 }
 
-// CallV1CallSetRecordingID sends a request to call-manager
-// to sets the recording_id of the call.
-// it returns error if something went wrong.
-func (r *requestHandler) CallV1CallSetRecordingID(ctx context.Context, callID uuid.UUID, recordingID uuid.UUID) (*cmcall.Call, error) {
-	uri := fmt.Sprintf("/v1/calls/%s/recording_id", callID)
-
-	reqData := &cmrequest.V1DataCallsIDRecordingIDPut{
-		RecordingID: recordingID,
-	}
-
-	m, err := json.Marshal(reqData)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var c cmcall.Call
-	if err := json.Unmarshal([]byte(res.Data), &c); err != nil {
-		return nil, err
-	}
-
-	return &c, nil
-}
-
 // CallV1CallRecordingStart sends a request to call-manager
 // to starts the given call's recording.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) error {
+func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/recording_start", callID)
 
 	reqData := &cmrequest.V1DataCallsIDRecordingStartPost{
@@ -510,39 +476,49 @@ func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uu
 
 	m, err := json.Marshal(reqData)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsRecordingStart, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsRecordingStart, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return err
-	case res == nil:
+		return nil, err
+	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // CallV1CallRecordingStop sends a request to call-manager
 // to starts the given call's recording.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) error {
+func (r *requestHandler) CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/recording_stop", callID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
-		return err
-	case res == nil:
+		return nil, err
+	case tmp == nil:
 		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }

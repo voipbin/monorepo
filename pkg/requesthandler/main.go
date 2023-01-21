@@ -167,6 +167,8 @@ const (
 	resourceCallChannelsHealth             resource = "call/channels/health"
 	resourceCallConfbridges                resource = "call/confbridges"
 	resourceCallConfbridgesIDExternalMedia resource = "call/confbridges/<confbridge-id>/external-media"
+	resourceCallConfbridgesRecordingStart  resource = "call/confbridges/<confbridge-id>/recording-start"
+	resourceCallConfbridgesRecordingStop   resource = "call/confbridges/<confbridge-id>/recording-stop"
 	resourceCallRecordings                 resource = "call/recordings"
 	resourceCallExternalMedia              resource = "call/external-medias"
 
@@ -441,21 +443,22 @@ type RequestHandler interface {
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
-	CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) error
-	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) error
+	CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error)
+	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
-	CallV1CallSetRecordingID(ctx context.Context, callID uuid.UUID, recordingID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 
 	// call-manager channel
 	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error
 
 	// call-manager confbridge
-	CallV1ConfbridgeCreate(ctx context.Context, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) error
 	CallV1ConfbridgeCallKick(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
 	CallV1ConfbridgeCallAdd(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
 	CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeRecordingStart(ctx context.Context, confbridgeID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeRecordingStop(ctx context.Context, callID uuid.UUID) (*cmconfbridge.Confbridge, error)
 
 	// call-manager external-media
 	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
