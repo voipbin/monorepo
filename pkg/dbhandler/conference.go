@@ -649,7 +649,7 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 	q := `
 	update conferences set
 		recording_ids = json_array_append(
-			recording_ids,
+			coalesce(recording_ids, '[]'),
 			'$',
 			?
 		),
@@ -696,8 +696,8 @@ func (h *handler) ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, 
 	// prepare
 	q := `
 	update conferences set
-		recording_ids = json_array_append(
-			transcribe_ids,
+		transcribe_ids = json_array_append(
+			coalesce(transcribe_ids, '[]'),
 			'$',
 			?
 		),
