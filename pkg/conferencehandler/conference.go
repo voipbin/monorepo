@@ -45,7 +45,7 @@ func (h *conferenceHandler) Create(
 		confbridgeType = cmconfbridge.TypeConference
 	}
 
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, confbridgeType)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, customerID, confbridgeType)
 	if err != nil {
 		log.Errorf("Could not crate confbridge. err: %v", err)
 		return nil, err

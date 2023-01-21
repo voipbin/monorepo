@@ -94,7 +94,7 @@ func Test_Create(t *testing.T) {
 			if tt.conferenceType == conference.TypeConference {
 				confbridgeType = cmconfbridge.TypeConference
 			}
-			mockReq.EXPECT().CallV1ConfbridgeCreate(gomock.Any(), confbridgeType).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(gomock.Any(), tt.customerID, confbridgeType).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(gomock.Any(), gomock.Any(), fmflow.TypeConference, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFlow, nil)
 			mockDB.EXPECT().ConferenceCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferenceGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)

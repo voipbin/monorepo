@@ -63,7 +63,7 @@ func Test_RecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConference, tt.responseConference.ID, cmrecording.FormatWAV, 0, "", defaultRecordingTimeout).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingStart(ctx, cmrecording.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, cmrecording.FormatWAV, 0, "", defaultRecordingTimeout).Return(tt.responseRecording, nil)
 			mockDB.EXPECT().ConferenceSetRecordingID(ctx, tt.id, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.responseRecording.ID).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
