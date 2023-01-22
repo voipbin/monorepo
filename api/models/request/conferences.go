@@ -19,11 +19,16 @@ type BodyConferencesPOST struct {
 	PostActions []fmaction.Action `json:"post_actions"`
 }
 
-// BodyConferencesIDPUT is rquest body define for POST /conferences/<conference-id>
+// BodyConferencesIDPUT is rquest body define for PUT /conferences/<conference-id>
 type BodyConferencesIDPUT struct {
 	Name        string            `json:"name"`
 	Detail      string            `json:"detail"`
 	Tiemout     int               `json:"timeout"` // seconds
 	PreActions  []fmaction.Action `json:"pre_actions"`
 	PostActions []fmaction.Action `json:"post_actions"`
+}
+
+// BodyConferencesIDTranscribeStartPOST is rquest body define for POST /conferences/<conference-id>/transcribe_start
+type BodyConferencesIDTranscribeStartPOST struct {
+	Language string `json:"language"`
 }

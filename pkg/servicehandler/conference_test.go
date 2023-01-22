@@ -250,20 +250,12 @@ func TestConferenceGets(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-					PreActions:        []fmaction.Action{},
-					PostActions:       []fmaction.Action{},
-					ConferencecallIDs: []uuid.UUID{},
 				},
 			},
 			[]*cfconference.WebhookMessage{
 				{
 					ID:         uuid.FromStringOrNil("c5e87cbc-93b5-11eb-acc0-63225d983d12"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-					PreActions:        []fmaction.Action{},
-					PostActions:       []fmaction.Action{},
-					ConferencecallIDs: []uuid.UUID{},
 				},
 			},
 		},
@@ -314,16 +306,10 @@ func TestConferenceGet(t *testing.T) {
 			&cfconference.Conference{
 				ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 			&cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 		},
 		{
@@ -335,16 +321,10 @@ func TestConferenceGet(t *testing.T) {
 			&cfconference.Conference{
 				ID:         uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 			&cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("b8c4d2ce-202d-11ec-97aa-43b74ed2d540"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 		},
 	}
@@ -414,16 +394,10 @@ func Test_ConferenceUpdate(t *testing.T) {
 			&cfconference.Conference{
 				ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 			&cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 		},
 	}
@@ -478,16 +452,10 @@ func Test_ConferenceRecordingStart(t *testing.T) {
 			&cfconference.Conference{
 				ID:         uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 			&cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 		},
 	}
@@ -507,9 +475,14 @@ func Test_ConferenceRecordingStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID).Return(nil)
-			if err := h.ConferenceRecordingStart(ctx, tt.customer, tt.conferenceID); err != nil {
+			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			res, err := h.ConferenceRecordingStart(ctx, tt.customer, tt.conferenceID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -537,16 +510,10 @@ func Test_ConferenceRecordingStop(t *testing.T) {
 			&cfconference.Conference{
 				ID:         uuid.FromStringOrNil("f6e67710-910b-11ed-b11d-abaf81af53bf"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 			&cfconference.WebhookMessage{
 				ID:         uuid.FromStringOrNil("f6e67710-910b-11ed-b11d-abaf81af53bf"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-
-				PreActions:  []fmaction.Action{},
-				PostActions: []fmaction.Action{},
 			},
 		},
 	}
@@ -566,9 +533,132 @@ func Test_ConferenceRecordingStop(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceRecordingStop(ctx, tt.conferenceID).Return(nil)
-			if err := h.ConferenceRecordingStop(ctx, tt.customer, tt.conferenceID); err != nil {
+			mockReq.EXPECT().ConferenceV1ConferenceRecordingStop(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			res, err := h.ConferenceRecordingStop(ctx, tt.customer, tt.conferenceID)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConferenceTranscribeStart(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer     *cscustomer.Customer
+		conferenceID uuid.UUID
+		language     string
+
+		responseconference *cfconference.Conference
+		expectRes          *cfconference.WebhookMessage
+	}{
+		{
+			"normal",
+
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			uuid.FromStringOrNil("729da1a8-98eb-11ed-8fa8-1b689360397c"),
+			"en-US",
+
+			&cfconference.Conference{
+				ID:         uuid.FromStringOrNil("729da1a8-98eb-11ed-8fa8-1b689360397c"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			&cfconference.WebhookMessage{
+				ID:         uuid.FromStringOrNil("729da1a8-98eb-11ed-8fa8-1b689360397c"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceTranscribeStart(ctx, tt.conferenceID, tt.language).Return(tt.responseconference, nil)
+			res, err := h.ConferenceTranscribeStart(ctx, tt.customer, tt.conferenceID, tt.language)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConferenceTranscribeStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer     *cscustomer.Customer
+		conferenceID uuid.UUID
+
+		responseconference *cfconference.Conference
+		expectRes          *cfconference.WebhookMessage
+	}{
+		{
+			"normal",
+
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			uuid.FromStringOrNil("72d42a48-98eb-11ed-bd79-f3b90badd9ad"),
+
+			&cfconference.Conference{
+				ID:         uuid.FromStringOrNil("72d42a48-98eb-11ed-bd79-f3b90badd9ad"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			&cfconference.WebhookMessage{
+				ID:         uuid.FromStringOrNil("72d42a48-98eb-11ed-bd79-f3b90badd9ad"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceTranscribeStop(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			res, err := h.ConferenceTranscribeStop(ctx, tt.customer, tt.conferenceID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

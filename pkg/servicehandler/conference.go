@@ -201,7 +201,7 @@ func (h *serviceHandler) ConferenceUpdate(
 }
 
 // ConferenceRecordingStart is a service handler for conference recording start.
-func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error {
+func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "ConferenceRecordingStart",
@@ -215,20 +215,22 @@ func (h *serviceHandler) ConferenceRecordingStart(ctx context.Context, u *cscust
 	_, err := h.conferenceGet(ctx, u, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// recording
-	if err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, confID); err != nil {
+	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStart(ctx, confID)
+	if err != nil {
 		log.Errorf("Could not start the conference recording. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // ConferenceRecordingStop is a service handler for conference recording stop.
-func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error {
+func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "ConferenceRecordingStop",
@@ -242,14 +244,73 @@ func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, u *cscusto
 	_, err := h.conferenceGet(ctx, u, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// recording
-	if err := h.reqHandler.ConferenceV1ConferenceRecordingStop(ctx, confID); err != nil {
+	tmp, err := h.reqHandler.ConferenceV1ConferenceRecordingStop(ctx, confID)
+	if err != nil {
 		log.Errorf("Could not stop the conference recording. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ConferenceTranscribeStart is a service handler for conference transcribe start.
+func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "ConferenceTranscribeStart",
+			"customer_id":   u.ID,
+			"username":      u.Username,
+			"conference_id": conferenceID,
+		},
+	)
+
+	// get conference for ownership check
+	_, err := h.conferenceGet(ctx, u, conferenceID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.reqHandler.ConferenceV1ConferenceTranscribeStart(ctx, conferenceID, language)
+	if err != nil {
+		log.Errorf("Could not start the conference transcribe. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ConferenceTranscribeStop is a service handler for conference transcribe stop.
+func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "ConferenceTranscribeStop",
+			"customer_id":   u.ID,
+			"username":      u.Username,
+			"conference_id": conferenceID,
+		},
+	)
+
+	// get conference for ownership check
+	_, err := h.conferenceGet(ctx, u, conferenceID)
+	if err != nil {
+		log.Errorf("Could not get conference info. err: %v", err)
+		return nil, err
+	}
+
+	// recording
+	tmp, err := h.reqHandler.ConferenceV1ConferenceTranscribeStop(ctx, conferenceID)
+	if err != nil {
+		log.Errorf("Could not stop the conference transcribe. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }

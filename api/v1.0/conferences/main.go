@@ -13,4 +13,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	conferences.PUT("/:id", conferencesIDPUT)
 	conferences.POST("/:id/recording_start", conferencesIDRecordingStartPOST)
 	conferences.POST("/:id/recording_stop", conferencesIDRecordingStopPOST)
+	conferences.POST("/:id/transcribe_start", conferencesIDTranscribeStartPOST)
+	conferences.POST("/:id/transcribe_stop", conferencesIDTranscribeStopPOST)
 }
