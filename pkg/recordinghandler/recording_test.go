@@ -132,8 +132,6 @@ func Test_Start_call(t *testing.T) {
 			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.expectRecording, nil)
 
-			mockReq.EXPECT().CallV1CallSetRecordingID(ctx, tt.referenceID, tt.expectRecording.ID).Return(&call.Call{}, nil)
-
 			res, err := h.Start(
 				ctx,
 				tt.referenceType,
@@ -578,7 +576,6 @@ func Test_Stopped(t *testing.T) {
 
 			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusEnded).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().CallV1CallSetRecordingID(ctx, tt.responseRecording.ReferenceID, uuid.Nil).Return(&call.Call{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseRecording.CustomerID, recording.EventTypeRecordingFinished, tt.responseRecording)
 
 			res, err := h.Stopped(ctx, tt.id)

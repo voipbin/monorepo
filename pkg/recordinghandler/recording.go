@@ -137,13 +137,6 @@ func (h *recordingHandler) createReferenceTypeCall(
 		return nil, err
 	}
 
-	cc, err := h.reqHandler.CallV1CallSetRecordingID(ctx, res.ReferenceID, res.ID)
-	if err != nil {
-		log.Errorf("Could not update the call's recording id. err: %v", err)
-		return nil, err
-	}
-	log.WithField("call", cc).Debugf("Updated call's recording id. call_id: %s", cc.ID)
-
 	return res, nil
 }
 
@@ -390,30 +383,6 @@ func (h *recordingHandler) Stopped(ctx context.Context, id uuid.UUID) (*recordin
 		log.Errorf("Could not get recording info. err: %v", err)
 		return nil, err
 	}
-
-	switch res.ReferenceType {
-	case recording.ReferenceTypeCall:
-		tmp, err := h.reqHandler.CallV1CallSetRecordingID(ctx, res.ReferenceID, uuid.Nil)
-		if err != nil {
-			log.Errorf("Could not update the call's recording id. call_id: %s, err: %v", res.ReferenceID, err)
-			return nil, err
-		}
-		log.WithField("call", tmp).Debugf("Updated call's recording id. call_id: %s", tmp.ID)
-
-	case recording.ReferenceTypeConfbridge:
-		tmp, err := h.reqHandler.ConferenceV1ConferenceUpdateRecordingID(ctx, res.ReferenceID, uuid.Nil)
-		if err != nil {
-			log.Errorf("Could not update the conference's recording id. conference_id: %s, err: %v", res.ReferenceID, err)
-			return nil, err
-		}
-		log.WithField("conference", tmp).Debugf("Updated conference's recording id. reference_id: %s", tmp.ID)
-
-	default:
-		// nothing todo
-		log.Infof("Unsupported reference type. reference_type: %s, reference_id: %s", res.ReferenceType, res.ReferenceID)
-		return nil, fmt.Errorf("unsupported reference type")
-	}
-
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, recording.EventTypeRecordingFinished, res)
 
 	return res, nil
