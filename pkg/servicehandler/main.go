@@ -168,8 +168,10 @@ type ServiceHandler interface {
 	ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error
 	ConferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
-	ConferenceRecordingStart(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error
-	ConferenceRecordingStop(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error
+	ConferenceRecordingStart(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error)
+	ConferenceRecordingStop(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error)
+	ConferenceTranscribeStart(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID, language string) (*cfconference.WebhookMessage, error)
+	ConferenceTranscribeStop(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceUpdate(
 		ctx context.Context,
 		u *cscustomer.Customer,

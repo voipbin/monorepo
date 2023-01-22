@@ -322,14 +322,14 @@ func conferencesIDRecordingStartPOST(c *gin.Context) {
 	log.Debug("Executing conferencesIDDELETE.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	err := servicehandler.ConferenceRecordingStart(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferenceRecordingStart(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not start the conference recording. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // conferencesIDRecordingStopPOST handles DELETE /conferences/{id}/recording_stop request.
@@ -369,12 +369,114 @@ func conferencesIDRecordingStopPOST(c *gin.Context) {
 	log.Debug("Executing conferencesIDRecordingStopPOST.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	err := servicehandler.ConferenceRecordingStop(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferenceRecordingStop(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not stop the conference recording. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
+}
+
+// conferencesIDTranscribeStartPOST handles DELETE /conferences/{id}/transcribe_start request.
+// It starts the conference transcribe.
+// @Summary Starts the conference transcribe.
+// @Description Start the conference transcribe.
+// @Produce json
+// @Param id path string true "The ID of the conference"
+// @Success 200
+// @Router /v1.0/conferences/{id}/transcribe_start [post]
+func conferencesIDTranscribeStartPOST(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesIDTranscribeStartPOST",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("conference_id", id)
+
+	var req request.BodyConferencesIDTranscribeStartPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	log.Debug("Executing conferencesIDTranscribeStartPOST.")
+
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := servicehandler.ConferenceTranscribeStart(c.Request.Context(), &u, id, req.Language)
+	if err != nil {
+		log.Errorf("Could not start the conference recording. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// conferencesIDTranscribeStopPOST handles DELETE /conferences/{id}/transcribe_stop request.
+// It stops the conference transcribe.
+// @Summary Stops the conference transcribe.
+// @Description Stops the conference transcribe.
+// @Produce json
+// @Param id path string true "The ID of the conference"
+// @Success 200
+// @Router /v1.0/conferences/{id}/transcribe_stop [post]
+func conferencesIDTranscribeStopPOST(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "conferencesIDTranscribeStopPOST",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("conference_id", id)
+	log.Debug("Executing conferencesIDTranscribeStopPOST.")
+
+	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := servicehandler.ConferenceTranscribeStop(c.Request.Context(), &u, id)
+	if err != nil {
+		log.Errorf("Could not stop the conference transcribe. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
 }
