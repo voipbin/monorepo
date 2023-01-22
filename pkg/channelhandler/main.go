@@ -59,6 +59,10 @@ type ChannelHandler interface {
 	UpdateState(ctx context.Context, id string, state ari.ChannelState) (*channel.Channel, error)
 	UpdateBridgeID(ctx context.Context, id string, bridgeID string) (*channel.Channel, error)
 
+	Hangup(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)
+	HangingUp(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)
+	HangingUpWithAsteriskID(ctx context.Context, asteriskID string, id string, cause ari.ChannelCause) error
+
 	HealthCheck(ctx context.Context, channelID string, retryCount int, retryCountMax int, delay int)
 }
 

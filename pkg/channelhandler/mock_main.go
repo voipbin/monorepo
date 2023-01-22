@@ -97,6 +97,50 @@ func (mr *MockChannelHandlerMockRecorder) GetWithTimeout(ctx, id, timeout interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWithTimeout", reflect.TypeOf((*MockChannelHandler)(nil).GetWithTimeout), ctx, id, timeout)
 }
 
+// HangingUp mocks base method.
+func (m *MockChannelHandler) HangingUp(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HangingUp", ctx, id, cause)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HangingUp indicates an expected call of HangingUp.
+func (mr *MockChannelHandlerMockRecorder) HangingUp(ctx, id, cause interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangingUp", reflect.TypeOf((*MockChannelHandler)(nil).HangingUp), ctx, id, cause)
+}
+
+// HangingUpWithAsteriskID mocks base method.
+func (m *MockChannelHandler) HangingUpWithAsteriskID(ctx context.Context, asteriskID, id string, cause ari.ChannelCause) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HangingUpWithAsteriskID", ctx, asteriskID, id, cause)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// HangingUpWithAsteriskID indicates an expected call of HangingUpWithAsteriskID.
+func (mr *MockChannelHandlerMockRecorder) HangingUpWithAsteriskID(ctx, asteriskID, id, cause interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangingUpWithAsteriskID", reflect.TypeOf((*MockChannelHandler)(nil).HangingUpWithAsteriskID), ctx, asteriskID, id, cause)
+}
+
+// Hangup mocks base method.
+func (m *MockChannelHandler) Hangup(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Hangup", ctx, id, cause)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Hangup indicates an expected call of Hangup.
+func (mr *MockChannelHandlerMockRecorder) Hangup(ctx, id, cause interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockChannelHandler)(nil).Hangup), ctx, id, cause)
+}
+
 // HealthCheck mocks base method.
 func (m *MockChannelHandler) HealthCheck(ctx context.Context, channelID string, retryCount, retryCountMax, delay int) {
 	m.ctrl.T.Helper()
