@@ -20,8 +20,8 @@ import (
 
 func Test_startServiceFromAMD(t *testing.T) {
 	tests := []struct {
-		name    string
-		channel *channel.Channel
+		name      string
+		channelID string
 
 		responseAMD *callapplication.AMD
 
@@ -29,10 +29,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 	}{
 		{
 			"amd result HUMAN",
-			&channel.Channel{
-				ID:         "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
-				AsteriskID: "80:fa:5b:5e:da:81",
-			},
+			"47c4df8c-9ace-11ea-82a2-b7e1b384317c",
 
 			&callapplication.AMD{
 				CallID:        uuid.FromStringOrNil("962d6694-ab2f-11ec-a07d-634bebfd48d2"),
@@ -45,10 +42,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 		},
 		{
 			"amd result Machine and continue",
-			&channel.Channel{
-				ID:         "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
-				AsteriskID: "80:fa:5b:5e:da:81",
-			},
+			"47c4df8c-9ace-11ea-82a2-b7e1b384317c",
 
 			&callapplication.AMD{
 				CallID:        uuid.FromStringOrNil("962d6694-ab2f-11ec-a07d-634bebfd48d2"),
@@ -61,10 +55,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 		},
 		{
 			"amd result Machine and hangup",
-			&channel.Channel{
-				ID:         "d2e4086c-ab30-11ec-9154-0ffe74bbec50",
-				AsteriskID: "80:fa:5b:5e:da:81",
-			},
+			"d2e4086c-ab30-11ec-9154-0ffe74bbec50",
 
 			&callapplication.AMD{
 				CallID:        uuid.FromStringOrNil("d3bd1c6a-ab30-11ec-8b93-879bf5e0ba45"),
@@ -100,23 +91,22 @@ func Test_startServiceFromAMD(t *testing.T) {
 
 			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 
-			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channel.ID).Return(tt.responseAMD, nil)
+			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channelID).Return(tt.responseAMD, nil)
 
 			if tt.responseAMD.MachineHandle == callapplication.AMDMachineHandleHangup && tt.data["amd_status"] == amdStatusMachine {
 				mockDB.EXPECT().CallGet(ctx, tt.responseAMD.CallID).Return(&call.Call{}, nil)
 				mockDB.EXPECT().CallSetStatus(ctx, gomock.Any(), call.StatusTerminating).Return(nil)
 				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-				mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-				mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), ari.ChannelCauseCallAMD, 0).Return(nil)
+				mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			} else {
 				if !tt.responseAMD.Async {
 					mockReq.EXPECT().CallV1CallActionNext(ctx, tt.responseAMD.CallID, false)
 				}
 			}
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channelID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
 
-			if err := h.startServiceFromAMD(ctx, tt.channel, tt.data); err != nil {
+			if err := h.startServiceFromAMD(ctx, tt.channelID, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

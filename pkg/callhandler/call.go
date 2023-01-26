@@ -11,6 +11,7 @@ import (
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Create creates a call record.
@@ -20,7 +21,6 @@ func (h *callHandler) Create(
 	id uuid.UUID,
 	customerID uuid.UUID,
 
-	asteriskID string,
 	channelID string,
 	bridgeID string,
 
@@ -29,12 +29,6 @@ func (h *callHandler) Create(
 	confbridgeID uuid.UUID,
 
 	callType call.Type,
-
-	masterCallID uuid.UUID,
-	chainedcallIDs []uuid.UUID,
-
-	recordingID uuid.UUID,
-	recordingIDs []uuid.UUID,
 
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
@@ -60,7 +54,6 @@ func (h *callHandler) Create(
 		ID:         id,
 		CustomerID: customerID,
 
-		AsteriskID:   asteriskID,
 		ChannelID:    channelID,
 		BridgeID:     bridgeID,
 		FlowID:       flowID,
@@ -68,11 +61,10 @@ func (h *callHandler) Create(
 		ConfbridgeID: confbridgeID,
 		Type:         callType,
 
-		MasterCallID:   masterCallID,
-		ChainedCallIDs: chainedcallIDs,
-
-		RecordingID:  recordingID,
-		RecordingIDs: recordingIDs,
+		MasterCallID:   uuid.Nil,
+		ChainedCallIDs: []uuid.UUID{},
+		RecordingID:    uuid.Nil,
+		RecordingIDs:   []uuid.UUID{},
 
 		ExternalMediaID: uuid.Nil,
 
@@ -182,9 +174,14 @@ func (h *callHandler) CallHealthCheck(ctx context.Context, id uuid.UUID, retryCo
 		return
 	}
 
-	// send a channel heaclth check
-	_, err = h.reqHandler.AstChannelGet(ctx, c.AsteriskID, c.ChannelID)
+	ch, err := h.channelHandler.Get(ctx, c.ChannelID)
 	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
+		return
+	}
+
+	// check the channel is valid or not
+	if ch.TMDelete < dbhandler.DefaultTimeStamp {
 		retryCount++
 	} else {
 		retryCount = 0
@@ -343,6 +340,31 @@ func (h *callHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, e
 	)
 
 	if errSet := h.db.CallSetExternalMediaID(ctx, id, externalMediaID); errSet != nil {
+		log.Errorf("Could not set the external media id. err: %v", errSet)
+		return nil, errSet
+	}
+
+	// get updated call
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateConfbridgeID updates the call's confbridge id.
+func (h *callHandler) UpdateConfbridgeID(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "UpdateConfbridgeID",
+			"call_id":       id,
+			"confbridge_id": confbridgeID,
+		},
+	)
+
+	if errSet := h.db.CallSetConfbridgeID(ctx, id, confbridgeID); errSet != nil {
 		log.Errorf("Could not set the external media id. err: %v", errSet)
 		return nil, errSet
 	}

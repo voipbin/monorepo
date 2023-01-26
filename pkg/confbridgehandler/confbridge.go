@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
@@ -20,7 +21,7 @@ func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, co
 		},
 	)
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.utilHandler.CreateUUID()
 
 	cb := &confbridge.Confbridge{
 		ID:         id,
@@ -37,7 +38,7 @@ func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, co
 	}
 	promConfbridgeCreateTotal.Inc()
 
-	res, err := h.db.ConfbridgeGet(ctx, id)
+	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get created confbridge info. err: %v", err)
 		return nil, err
@@ -91,7 +92,7 @@ func (h *confbridgeHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 	}
 
 	// get updated confbridge
-	res, err := h.db.ConfbridgeGet(ctx, id)
+	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated confbridge. err: %v", err)
 		return nil, err
@@ -116,10 +117,85 @@ func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.U
 	}
 
 	// get updated confbridge
-	res, err := h.db.ConfbridgeGet(ctx, id)
+	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated confbridge. err: %v", err)
 		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateBridgeID updates the confbridge's bridge id.
+func (h *confbridgeHandler) UpdateBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) (*confbridge.Confbridge, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "UpdateBridgeID",
+			"confbridge_id": id,
+			"bridge_id":     bridgeID,
+		},
+	)
+
+	if errSet := h.db.ConfbridgeSetBridgeID(ctx, id, bridgeID); errSet != nil {
+		log.Errorf("Could not set the bridge id. err: %v", errSet)
+		return nil, errSet
+	}
+
+	// get updated confbridge
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated confbridge. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// RemoveChannelCallID removes the channel from the channel call id
+func (h *confbridgeHandler) RemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) (*confbridge.Confbridge, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "RemoveChannelCallID",
+			"confbridge_id": id,
+			"channel_id":    channelID,
+		},
+	)
+
+	if errRemove := h.db.ConfbridgeRemoveChannelCallID(ctx, id, channelID); errRemove != nil {
+		log.Errorf("Could not remove the channel from the confbridge's channel/call info. err: %v", errRemove)
+		return nil, errors.Wrap(errRemove, "could not remove the channel")
+	}
+
+	// get confbridge
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated confbridge. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated confbridge")
+	}
+
+	return res, nil
+}
+
+// AddChannelCallID adds the channel from the channel call id
+func (h *confbridgeHandler) AddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) (*confbridge.Confbridge, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "AddChannelCallID",
+			"confbridge_id": id,
+			"channel_id":    channelID,
+		},
+	)
+
+	if errAdd := h.db.ConfbridgeAddChannelCallID(ctx, id, channelID, callID); errAdd != nil {
+		log.Errorf("Could not add the channel/call to the confbridge's channel/call info. err: %v", errAdd)
+		return nil, errors.Wrap(errAdd, "could not add the channel call")
+	}
+
+	// get confbridge
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated confbridge. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated confbridge")
 	}
 
 	return res, nil

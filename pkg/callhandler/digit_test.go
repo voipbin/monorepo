@@ -33,7 +33,6 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 			&call.Call{
 				ID:         uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
 				ChannelID:  "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
-				AsteriskID: "80:fa:5b:5e:da:81",
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
@@ -95,7 +94,6 @@ func Test_DTMFReceivedContinue(t *testing.T) {
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
-				AsteriskID: "80:fa:5b:5e:da:81",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3}`),
@@ -164,7 +162,6 @@ func Test_DTMFReceivedStop(t *testing.T) {
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
-				AsteriskID: "80:fa:5b:5e:da:81",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3, "key": "#*"}`),
@@ -196,7 +193,6 @@ func Test_DTMFReceivedStop(t *testing.T) {
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
-				AsteriskID: "80:fa:5b:5e:da:81",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3, "key": "#*"}`),
@@ -229,7 +225,6 @@ func Test_DTMFReceivedStop(t *testing.T) {
 			&call.Call{
 				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
-				AsteriskID: "80:fa:5b:5e:da:81",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 2}`),

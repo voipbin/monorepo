@@ -98,16 +98,18 @@ func Test_ActionExecute_actionExecuteStreamEcho(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler: mockUtil,
-				reqHandler:  mockReq,
-				db:          mockDB,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelContinue(ctx, tt.call.AsteriskID, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
+			mockChannel.EXPECT().Continue(ctx, tt.call.ChannelID, "svc-stream_echo", "s", 1, "").Return(nil)
 			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, gomock.Any(), &tt.call.Action).Return(nil)
 			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -125,9 +127,8 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 		{
 			"empty option",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("4371b0d6-df48-11ea-9a8c-177968c165e9"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "5b21353a-df48-11ea-8207-6fc0fa36a3fe",
+				ID:        uuid.FromStringOrNil("4371b0d6-df48-11ea-9a8c-177968c165e9"),
+				ChannelID: "5b21353a-df48-11ea-8207-6fc0fa36a3fe",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeAnswer,
 					Option: []byte(`{}`),
@@ -144,16 +145,18 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler: mockUtil,
-				reqHandler:  mockReq,
-				db:          mockDB,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+			mockChannel.EXPECT().Answer(ctx, tt.call.ChannelID).Return(nil)
 			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
 			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -173,9 +176,8 @@ func Test_ActionTimeoutNext(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("66e039c6-e3fc-11ea-ae6f-53584373e7c9"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "12a05228-e3fd-11ea-b55f-afd68e7aa755",
+				ID:        uuid.FromStringOrNil("66e039c6-e3fc-11ea-ae6f-53584373e7c9"),
+				ChannelID: "12a05228-e3fd-11ea-b55f-afd68e7aa755",
 				Action: fmaction.Action{
 					ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
 					TMExecute: "2020-04-18T03:22:17.995000",
@@ -245,9 +247,8 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			"normal",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("5e9f3946-2188-11eb-9d74-bf4bf1239da3"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "61a1345a-2188-11eb-ba52-af82c1239d8f",
+				ID:        uuid.FromStringOrNil("5e9f3946-2188-11eb-9d74-bf4bf1239da3"),
+				ChannelID: "61a1345a-2188-11eb-ba52-af82c1239d8f",
 				Action: fmaction.Action{
 					Type: fmaction.TypeTalk,
 					ID:   uuid.FromStringOrNil("5c9cd6be-2195-11eb-a9c9-bfc91ac88411"),
@@ -278,20 +279,22 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler: mockUtil,
-				reqHandler:  mockReq,
-				db:          mockDB,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
 			if tt.call.Status != call.StatusProgressing {
-				mockReq.EXPECT().AstChannelAnswer(ctx, tt.call.AsteriskID, tt.call.ChannelID).Return(nil)
+				mockChannel.EXPECT().Answer(ctx, tt.call.ChannelID).Return(nil)
 			}
 			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tmtts.Gender(tt.expectGender), tt.expectLanguage, 10000).Return(tt.responseTTS, nil)
-			mockReq.EXPECT().AstChannelPlay(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.call.Action.ID, tt.expectURI, "").Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.call.Action.ID, tt.expectURI, "").Return(nil)
 
 			if err := h.ActionExecute(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -316,10 +319,9 @@ func Test_ActionExecute_actionExecuteRecordingStart(t *testing.T) {
 		{
 			"default",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "bfd0e668-2a77-11eb-9993-e72b323b1801",
-				Status:     call.StatusProgressing,
+				ID:        uuid.FromStringOrNil("bf4ff828-2a77-11eb-a984-33588027b8c4"),
+				ChannelID: "bfd0e668-2a77-11eb-9993-e72b323b1801",
+				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
 					Type:   fmaction.TypeRecordingStart,
 					ID:     uuid.FromStringOrNil("c06f25c6-2a77-11eb-bcc8-e3d864a76f78"),
@@ -389,7 +391,6 @@ func Test_ActionExecute_actionExecuteRecordingStop(t *testing.T) {
 			"default",
 			&call.Call{
 				ID:          uuid.FromStringOrNil("4dde92d0-2b9e-11eb-ad28-f732fd0afed7"),
-				AsteriskID:  "42:01:0a:a4:00:05",
 				ChannelID:   "5293419a-2b9e-11eb-bfa6-97a4312177f2",
 				RecordingID: uuid.FromStringOrNil("b230d160-611f-11eb-9bee-2734cae1cab5"),
 				Status:      call.StatusProgressing,
@@ -448,9 +449,8 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				ID:        uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				ChannelID: "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
@@ -465,9 +465,8 @@ func Test_ActionExecute_actionExecuteDigitsReceive(t *testing.T) {
 		{
 			"finish on key set but not qualified",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "c34e2226-6959-11eb-b57a-8718398e2ffc",
+				ID:        uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
+				ChannelID: "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					ID:     uuid.FromStringOrNil("c373b8f6-6959-11eb-b768-df9f393cd216"),
@@ -523,7 +522,6 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 			&call.Call{
 				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
 				ActiveFlowID: uuid.FromStringOrNil("8ab35caa-df01-11ec-a567-abb76662ef08"),
-				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -544,7 +542,6 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 			&call.Call{
 				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
 				ActiveFlowID: uuid.FromStringOrNil("bc06ef06-df01-11ec-ad88-074454252454"),
-				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -565,7 +562,6 @@ func Test_ActionExecute_actionExecuteDTMFReceiveFinishWithStoredDTMFs(t *testing
 			&call.Call{
 				ID:           uuid.FromStringOrNil("be6ef424-6959-11eb-b70a-9bbd190cd5fd"),
 				ActiveFlowID: uuid.FromStringOrNil("e28f7a44-df01-11ec-8eaf-47af6e21909e"),
-				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "c34e2226-6959-11eb-b57a-8718398e2ffc",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
@@ -622,9 +618,8 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("50270fae-69bf-11eb-a0a7-273260ea280c"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "5daefc0e-69bf-11eb-9e3a-b7d9a5988373",
+				ID:        uuid.FromStringOrNil("50270fae-69bf-11eb-a0a7-273260ea280c"),
+				ChannelID: "5daefc0e-69bf-11eb-9e3a-b7d9a5988373",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsSend,
 					ID:     uuid.FromStringOrNil("508063d8-69bf-11eb-a668-abdbd47ce266"),
@@ -640,9 +635,8 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 		{
 			"send 1 digits",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("49a66b38-69c0-11eb-b96c-d799dd21ba8f"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "49e625de-69c0-11eb-891d-db5407ae4982",
+				ID:        uuid.FromStringOrNil("49a66b38-69c0-11eb-b96c-d799dd21ba8f"),
+				ChannelID: "49e625de-69c0-11eb-891d-db5407ae4982",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsSend,
 					ID:     uuid.FromStringOrNil("4a24912a-69c0-11eb-a334-6f8053ede87a"),
@@ -665,16 +659,18 @@ func Test_ActionExecute_actionExecuteDigitsSend(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler: mockUtil,
-				reqHandler:  mockReq,
-				db:          mockDB,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelDTMF(ctx, tt.call.AsteriskID, tt.call.ChannelID, tt.expectDigits, tt.expectDuration, 0, tt.expectInterval, 0)
+			mockChannel.EXPECT().DTMFSend(ctx, tt.call.ChannelID, tt.expectDigits, tt.expectDuration, 0, tt.expectInterval, 0).Return(nil)
 			mockReq.EXPECT().CallV1CallActionTimeout(ctx, tt.call.ID, tt.expectTimeout, &tt.call.Action)
 
 			if err := h.ActionExecute(ctx, tt.call); err != nil {
@@ -702,9 +698,8 @@ func Test_ActionExecute_actionExecuteExternalMediaStart(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("3ba00ae0-02f8-11ec-863a-abd78c8246c4"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "4455e2f4-02f8-11ec-acf9-43a391fce607",
+				ID:        uuid.FromStringOrNil("3ba00ae0-02f8-11ec-863a-abd78c8246c4"),
+				ChannelID: "4455e2f4-02f8-11ec-acf9-43a391fce607",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeExternalMediaStart,
 					ID:     uuid.FromStringOrNil("447f0d28-02f8-11ec-bfdb-4bb2407458ce"),
@@ -768,7 +763,6 @@ func Test_ActionExecute_actionExecuteExternalMediaStop(t *testing.T) {
 			"normal",
 			&call.Call{
 				ID:              uuid.FromStringOrNil("50b8cb46-1aa5-11ec-9b1e-7b766955c7d1"),
-				AsteriskID:      "42:01:0a:a4:00:05",
 				ChannelID:       "4455e2f4-02f8-11ec-acf9-43a391fce607",
 				ExternalMediaID: uuid.FromStringOrNil("c7e222a4-96ef-11ed-a9c7-731c399f5537"),
 				Action: fmaction.Action{
@@ -823,9 +817,8 @@ func Test_actionExecuteAMD(t *testing.T) {
 		{
 			"sync false",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				ID:        uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				ChannelID: "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeAMD,
 					ID:     uuid.FromStringOrNil("f681c108-19b6-11ec-bc57-635de4310a4b"),
@@ -841,9 +834,8 @@ func Test_actionExecuteAMD(t *testing.T) {
 		{
 			"sync true",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "7da1b4fc-19b9-11ec-948e-7f9ca90957a1",
+				ID:        uuid.FromStringOrNil("7d89362a-19b9-11ec-a1ea-a74ce01d2c9b"),
+				ChannelID: "7da1b4fc-19b9-11ec-948e-7f9ca90957a1",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeAMD,
 					ID:     uuid.FromStringOrNil("7dba7df2-19b9-11ec-b426-17e356fbf5e3"),
@@ -867,16 +859,19 @@ func Test_actionExecuteAMD(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
-				utilHandler: mockUtil,
-				reqHandler:  mockReq,
-				db:          mockDB,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.call.AsteriskID, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
+			mockChannel.EXPECT().StartSnoop(ctx, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallApplicationAMDSet(ctx, gomock.Any(), tt.expectAMD).Return(nil)
 
 			if tt.expectAMD.Async == true {
@@ -900,9 +895,8 @@ func Test_cleanCurrentAction(t *testing.T) {
 		{
 			"playback has set",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				ID:        uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
+				ChannelID: "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 			},
 			&channel.Channel{
 				ID:         "f6593184-19b6-11ec-85ee-8bda2a70f32e",
@@ -915,7 +909,6 @@ func Test_cleanCurrentAction(t *testing.T) {
 			"confbridgeID has set",
 			&call.Call{
 				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
-				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				ConfbridgeID: uuid.FromStringOrNil("619bba82-5839-11ec-8733-c3a8bf0aee26"),
 			},
@@ -928,9 +921,8 @@ func Test_cleanCurrentAction(t *testing.T) {
 		{
 			"action sleep",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("0d074aee-8c1a-11ec-b499-c33db4145901"),
-				AsteriskID: "42:01:0a:a4:00:05",
-				ChannelID:  "f6593184-19b6-11ec-85ee-8bda2a70f32e",
+				ID:        uuid.FromStringOrNil("0d074aee-8c1a-11ec-b499-c33db4145901"),
+				ChannelID: "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Action: fmaction.Action{
 					Type: fmaction.TypeSleep,
 				},
@@ -964,7 +956,7 @@ func Test_cleanCurrentAction(t *testing.T) {
 
 			mockChannel.EXPECT().Get(ctx, tt.call.ChannelID).Return(tt.responseChannel, nil)
 			if tt.responseChannel.PlaybackID != "" {
-				mockReq.EXPECT().AstPlaybackStop(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.PlaybackID)
+				mockChannel.EXPECT().PlaybackStop(ctx, tt.call.ChannelID).Return(nil)
 			}
 
 			if tt.call.ConfbridgeID != uuid.Nil {
@@ -996,7 +988,6 @@ func Test_ActionNext(t *testing.T) {
 			"normal",
 			&call.Call{
 				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
-				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),
@@ -1016,7 +1007,6 @@ func Test_ActionNext(t *testing.T) {
 			},
 			&call.Call{
 				ID:           uuid.FromStringOrNil("f607e1b2-19b6-11ec-8304-a33ee590d878"),
-				AsteriskID:   "42:01:0a:a4:00:05",
 				ChannelID:    "f6593184-19b6-11ec-85ee-8bda2a70f32e",
 				Status:       call.StatusProgressing,
 				FlowID:       uuid.FromStringOrNil("82beb924-583b-11ec-955a-236e3409cf25"),

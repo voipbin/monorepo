@@ -21,7 +21,7 @@ type V1DataCallsPost struct {
 
 // V1DataCallsIDPost is
 // v1 data type request struct for
-// /v1/calls/<id> POST
+// /v1/calls/<call-id> POST
 type V1DataCallsIDPost struct {
 	FlowID       uuid.UUID             `json:"flow_id"`
 	ActiveflosID uuid.UUID             `json:"activeflow_id"`
@@ -34,7 +34,7 @@ type V1DataCallsIDPost struct {
 // V1DataCallsIDHealthPost is
 // v1 data type request struct for
 // CallsIDHealth
-// /v1/calls/<id>/health-check POST
+// /v1/calls/<call-id>/health-check POST
 type V1DataCallsIDHealthPost struct {
 	RetryCount int `json:"retry_count"`
 	Delay      int `json:"delay"`
@@ -42,7 +42,7 @@ type V1DataCallsIDHealthPost struct {
 
 // V1DataCallsIDActionTimeoutPost is
 // v1 data type for CallsIDActionTimeout
-// /v1/calls/<id>/action-timeout POST
+// /v1/calls/<call-id>/action-timeout POST
 type V1DataCallsIDActionTimeoutPost struct {
 	ActionID   uuid.UUID     `json:"action_id"`
 	ActionType fmaction.Type `json:"action_type"`
@@ -51,21 +51,21 @@ type V1DataCallsIDActionTimeoutPost struct {
 
 // V1DataCallsIDChainedCallIDsPost is
 // v1 data type for V1DataCallsIDChainedCallIDsPost
-// /v1/calls/<id>/chained-call-ids POST
+// /v1/calls/<call-id>/chained-call-ids POST
 type V1DataCallsIDChainedCallIDsPost struct {
 	ChainedCallID uuid.UUID `json:"chained_call_id"`
 }
 
 // V1DataCallsIDActionNextPost is
 // v1 data type for
-// /v1/calls/<id>/action-next POST
+// /v1/calls/<call-id>/action-next POST
 type V1DataCallsIDActionNextPost struct {
 	Force bool `json:"force"`
 }
 
 // V1DataCallsIDExternalMediaPost is
 // v1 data type for V1DataCallsIDExternalMediaPost
-// /v1/calls/<id>/external-media POST
+// /v1/calls/<call-id>/external-media POST
 type V1DataCallsIDExternalMediaPost struct {
 	ExternalHost   string `json:"external_host"`
 	Encapsulation  string `json:"encapsulation"`
@@ -77,21 +77,28 @@ type V1DataCallsIDExternalMediaPost struct {
 
 // V1DataCallsIDDigitsPost is
 // v1 data type for V1DataCallsIDDigitsPost
-// /v1/calls/<id>/digits POST
+// /v1/calls/<call-id>/digits POST
 type V1DataCallsIDDigitsPost struct {
 	Digits string `json:"digits"`
 }
 
 // V1DataCallsIDRecordingIDPut is
 // v1 data type for V1DataCallsIDRecordingIDPut
-// /v1/calls/<id>/recording_id PUT
+// /v1/calls/<call-id>/recording_id PUT
 type V1DataCallsIDRecordingIDPut struct {
 	RecordingID uuid.UUID `json:"recording_id"`
 }
 
+// V1DataCallsIDConfbridgeIDPut is
+// v1 data type for
+// /v1/calls/<call-id>/confbridge_id PUT
+type V1DataCallsIDConfbridgeIDPut struct {
+	ConfbridgeID uuid.UUID `json:"confbridge_id"`
+}
+
 // V1DataCallsIDRecordingStartPost is
 // v1 data type for
-// /v1/calls/<id>/recording_start POST
+// /v1/calls/<call-id>/recording_start POST
 type V1DataCallsIDRecordingStartPost struct {
 	Format       recording.Format `json:"format"`         // Format to encode audio in. wav, mp3, ogg
 	EndOfSilence int              `json:"end_of_silence"` // Maximum duration of silence, in seconds. 0 for no limit.

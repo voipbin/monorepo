@@ -34,12 +34,6 @@ func Test_Create(t *testing.T) {
 		confbridgeID uuid.UUID
 		callType     call.Type
 
-		masterCallID   uuid.UUID
-		chainedcallIDs []uuid.UUID
-
-		recordingID  uuid.UUID
-		recordingIDs []uuid.UUID
-
 		source      *commonaddress.Address
 		destination *commonaddress.Address
 
@@ -72,16 +66,6 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("dd115b5e-5d15-11ed-a748-3f6e22ac12a4"),
 			uuid.FromStringOrNil("dd43df70-5d15-11ed-9eb2-7f19e0311fa0"),
 			call.TypeFlow,
-
-			uuid.FromStringOrNil("28ded57a-5d16-11ed-894f-3b5a0d35af31"),
-			[]uuid.UUID{
-				uuid.FromStringOrNil("28ded57a-5d16-11ed-894f-3b5a0d35af31"),
-			},
-
-			uuid.FromStringOrNil("2909d2c0-5d16-11ed-9c47-139f3f088f8b"),
-			[]uuid.UUID{
-				uuid.FromStringOrNil("2909d2c0-5d16-11ed-9c47-139f3f088f8b"),
-			},
 
 			&commonaddress.Address{
 				Type:       commonaddress.TypeTel,
@@ -120,24 +104,18 @@ func Test_Create(t *testing.T) {
 				ID:         uuid.FromStringOrNil("db8e0052-5d15-11ed-afd1-f3139883b1f4"),
 				CustomerID: uuid.FromStringOrNil("dc375314-5d15-11ed-afd7-b3f36cf2d4a6"),
 
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "dc88e2e2-5d15-11ed-bd52-f3db2e20c793",
-				BridgeID:   "dcb241dc-5d15-11ed-9aa3-23e3fffa7037",
+				ChannelID: "dc88e2e2-5d15-11ed-bd52-f3db2e20c793",
+				BridgeID:  "dcb241dc-5d15-11ed-9aa3-23e3fffa7037",
 
 				FlowID:       uuid.FromStringOrNil("dce0c20a-5d15-11ed-87b5-d7bb7b446647"),
 				ActiveFlowID: uuid.FromStringOrNil("dd115b5e-5d15-11ed-a748-3f6e22ac12a4"),
 				ConfbridgeID: uuid.FromStringOrNil("dd43df70-5d15-11ed-9eb2-7f19e0311fa0"),
 				Type:         call.TypeFlow,
 
-				MasterCallID: uuid.FromStringOrNil("28ded57a-5d16-11ed-894f-3b5a0d35af31"),
-				ChainedCallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("28ded57a-5d16-11ed-894f-3b5a0d35af31"),
-				},
-
-				RecordingID: uuid.FromStringOrNil("2909d2c0-5d16-11ed-9c47-139f3f088f8b"),
-				RecordingIDs: []uuid.UUID{
-					uuid.FromStringOrNil("2909d2c0-5d16-11ed-9c47-139f3f088f8b"),
-				},
+				MasterCallID:   uuid.Nil,
+				ChainedCallIDs: []uuid.UUID{},
+				RecordingID:    uuid.Nil,
+				RecordingIDs:   []uuid.UUID{},
 
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeTel,
@@ -222,7 +200,6 @@ func Test_Create(t *testing.T) {
 				tt.id,
 				tt.customerID,
 
-				tt.asteriskID,
 				tt.channelID,
 				tt.bridgeID,
 
@@ -231,12 +208,6 @@ func Test_Create(t *testing.T) {
 				tt.confbridgeID,
 
 				tt.callType,
-
-				tt.masterCallID,
-				tt.chainedcallIDs,
-
-				tt.recordingID,
-				tt.recordingIDs,
 
 				tt.source,
 				tt.destination,

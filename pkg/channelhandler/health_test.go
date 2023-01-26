@@ -61,7 +61,7 @@ func Test_HealthCheck(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 			mockReq.EXPECT().AstChannelGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(tt.responseChannel, nil)
 			mockReq.EXPECT().CallV1ChannelHealth(ctx, tt.id, tt.delay, 0, tt.retryCountMax).Return(nil)
 			h.HealthCheck(ctx, tt.id, tt.retryCount, tt.retryCountMax, tt.delay)

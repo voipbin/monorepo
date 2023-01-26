@@ -32,18 +32,13 @@ func (h *confbridgeHandler) Kick(ctx context.Context, id, callID uuid.UUID) erro
 
 		if joinedCallID == callID {
 
-			// get channel info
-			ch, err := h.db.ChannelGet(ctx, joinedChannelID)
+			// hangup the channels
+			tmp, err := h.channelHandler.HangingUp(ctx, joinedChannelID, ari.ChannelCauseNormalClearing)
 			if err != nil {
-				log.Errorf("Could not get joined channel info. err: %v", err)
+				log.Errorf("Could not hangup the channel correctly. err: %v", err)
 				return err
 			}
-
-			// hang up the call
-			if errHangup := h.reqHandler.AstChannelHangup(ctx, ch.AsteriskID, ch.ID, ari.ChannelCauseNormalClearing, 0); errHangup != nil {
-				log.Errorf("Could not hang up the joined call. err: %v", errHangup)
-				return errHangup
-			}
+			log.WithField("channel", tmp).Debugf("Kicked the joined channel from the bridge. call_id: %s, channel_id: %s", joinedCallID, joinedChannelID)
 
 			log.Debug("Hangup the joined call.")
 			return nil

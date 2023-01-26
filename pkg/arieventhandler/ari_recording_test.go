@@ -114,7 +114,7 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 
 			ctx := context.Background()
 			if strings.HasSuffix(tt.event.Recording.Name, "_in") {
-				mockDB.EXPECT().RecordingGetByRecordingName(gomock.Any(), tt.expectRecordingName).Return(tt.responseRecording, nil)
+				mockRecording.EXPECT().GetByRecordingName(ctx, tt.expectRecordingName).Return(tt.responseRecording, nil)
 				mockRecording.EXPECT().Started(ctx, tt.responseRecording.ID).Return(tt.responseRecording, nil)
 			}
 
@@ -197,7 +197,7 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingGetByRecordingName(gomock.Any(), tt.expectRecordingName).Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().GetByRecordingName(ctx, tt.expectRecordingName).Return(tt.responseRecording, nil)
 			mockRecording.EXPECT().Stopped(ctx, tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			if err := h.EventHandlerRecordingFinished(ctx, tt.event); err != nil {

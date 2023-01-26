@@ -21,6 +21,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -60,47 +62,59 @@ func Test_GetTypeContextIncomingCall(t *testing.T) {
 	}
 }
 
-func Test_typeConferenceStart(t *testing.T) {
+func Test_StartCallHandle_typeConferenceStart(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		channel *channel.Channel
-		data    map[string]string
 
-		responseUUIDCall   uuid.UUID
-		responseUUIDBridge uuid.UUID
-		responseCall       *call.Call
-		responseConference *cfconference.Conference
-		responseActiveflow *fmactiveflow.Activeflow
-		responseCurTime    string
+		responseSource      *commonaddress.Address
+		responseDestination *commonaddress.Address
+		responseUUIDCall    uuid.UUID
+		responseUUIDBridge  uuid.UUID
+		responseBridge      *bridge.Bridge
+		responseCall        *call.Call
+		responseConference  *cfconference.Conference
+		responseActiveflow  *fmactiveflow.Activeflow
+		responseCurTime     string
 
-		expectCall *call.Call
+		expectBridgeName string
+		expectCall       *call.Call
 	}{
 		{
 			"normal",
 
 			&channel.Channel{
-				ID:                "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
 				AsteriskID:        "80:fa:5b:5e:da:81",
+				ID:                "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
 				Name:              "PJSIP/in-voipbin-00000999",
 				DestinationNumber: "bad943d8-9b59-11ea-b409-4ba263721f17",
 				State:             ari.ChannelStateRing,
-			},
-			map[string]string{
-				"context": ContextIncomingCall,
-				"domain":  "conference.voipbin.net",
+				StasisData: map[string]string{
+					"context": common.ContextIncomingCall,
+					"domain":  "conference.voipbin.net",
+				},
 			},
 
+			&commonaddress.Address{
+				Type: commonaddress.TypeTel,
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "bad943d8-9b59-11ea-b409-4ba263721f17",
+			},
 			uuid.FromStringOrNil("666ae678-5e55-11ed-8bbd-bbd66d73cbaf"),
 			uuid.FromStringOrNil("56b24806-5e56-11ed-9b77-cf2a442594d7"),
+			&bridge.Bridge{
+				ID: "56b24806-5e56-11ed-9b77-cf2a442594d7",
+			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
-				AsteriskID: "80:fa:5b:5e:da:81",
-				ChannelID:  "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
-				Type:       call.TypeConference,
-				Direction:  call.DirectionIncoming,
-				FlowID:     uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
+				ID:        uuid.FromStringOrNil("c6914fcc-9b59-11ea-a5fc-4f4392f10a97"),
+				ChannelID: "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
+				Type:      call.TypeConference,
+				Direction: call.DirectionIncoming,
+				FlowID:    uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
 				Action: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
@@ -122,13 +136,13 @@ func Test_typeConferenceStart(t *testing.T) {
 			},
 			"2020-04-18 03:22:17.995000",
 
+			"reference_type=call,reference_id=666ae678-5e55-11ed-8bbd-bbd66d73cbaf",
 			&call.Call{
 				ID:         uuid.FromStringOrNil("666ae678-5e55-11ed-8bbd-bbd66d73cbaf"),
 				CustomerID: uuid.FromStringOrNil("2d6e83b0-5e56-11ed-9fcc-db15249e4a66"),
 
-				AsteriskID: "80:fa:5b:5e:da:81",
-				ChannelID:  "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
-				BridgeID:   "56b24806-5e56-11ed-9b77-cf2a442594d7",
+				ChannelID: "c08ce47e-9b59-11ea-89c6-f3435f55a6ea",
+				BridgeID:  "56b24806-5e56-11ed-9b77-cf2a442594d7",
 
 				FlowID:       uuid.FromStringOrNil("7d0c1efc-3fe2-11ec-b074-5b80d129f4ed"),
 				ActiveFlowID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
@@ -147,7 +161,7 @@ func Test_typeConferenceStart(t *testing.T) {
 				Status: call.StatusRinging,
 
 				Data: map[string]string{
-					"context": ContextIncomingCall,
+					"context": common.ContextIncomingCall,
 					"domain":  "conference.voipbin.net",
 				},
 				Action: fmaction.Action{
@@ -175,6 +189,7 @@ func Test_typeConferenceStart(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
@@ -182,21 +197,25 @@ func Test_typeConferenceStart(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
 			ctx := context.Background()
 
+			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockChannel.EXPECT().HangingUpWithDelay(ctx, gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
+
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
+
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDCall)
-
-			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(nil)
-
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.responseConference, nil)
 
 			// addCallBridge
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridge)
-			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
-			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
+
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseConference.FlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.responseActiveflow, nil)
 
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
@@ -214,10 +233,9 @@ func Test_typeConferenceStart(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-			mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
+			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
-			if err := h.StartCallHandle(ctx, tt.channel, tt.data); err != nil {
+			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -230,14 +248,16 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 		name string
 
 		channel *channel.Channel
-		data    map[string]string
 
-		responseUUIDCall   uuid.UUID
-		responseUUIDBridge uuid.UUID
-		responseNumber     *number.Number
-		responseActiveflow *fmactiveflow.Activeflow
-		responseCurTime    string
-		responseCall       *call.Call
+		responseSource      *commonaddress.Address
+		responseDestination *commonaddress.Address
+		responseUUIDCall    uuid.UUID
+		responseUUIDBridge  uuid.UUID
+		responseBridge      *bridge.Bridge
+		responseNumber      *number.Number
+		responseActiveflow  *fmactiveflow.Activeflow
+		responseCurTime     string
+		responseCall        *call.Call
 
 		expectCall *call.Call
 	}
@@ -245,20 +265,31 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
+
 			&channel.Channel{
-				ID:                "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
 				AsteriskID:        "80:fa:5b:5e:da:81",
-				Name:              "PJSIP/in-voipbin-00000949",
+				ID:                "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
+				Name:              "PJSIP/in-voipbin-00000911",
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
-			},
-			map[string]string{
-				"context": ContextIncomingCall,
-				"domain":  "pstn.voipbin.net",
+				StasisData: map[string]string{
+					"context": common.ContextIncomingCall,
+					"domain":  "pstn.voipbin.net",
+				},
 			},
 
+			&commonaddress.Address{
+				Type: commonaddress.TypeTel,
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+123456789",
+			},
 			uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
 			uuid.FromStringOrNil("ab5d36ce-5e5e-11ed-917e-a70e0240c226"),
+			&bridge.Bridge{
+				ID: "ab5d36ce-5e5e-11ed-917e-a70e0240c226",
+			},
 			&number.Number{
 				ID:         uuid.FromStringOrNil("bd484f7e-09ef-11eb-9347-377b97e1b9ea"),
 				CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
@@ -276,7 +307,6 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:           uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
-				AsteriskID:   "80:fa:5b:5e:da:81",
 				ChannelID:    "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
 				FlowID:       uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 				ActiveFlowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
@@ -295,9 +325,8 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				ID:         uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
 				CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
 
-				AsteriskID: "80:fa:5b:5e:da:81",
-				ChannelID:  "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
-				BridgeID:   "ab5d36ce-5e5e-11ed-917e-a70e0240c226",
+				ChannelID: "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
+				BridgeID:  "ab5d36ce-5e5e-11ed-917e-a70e0240c226",
 
 				FlowID:       uuid.FromStringOrNil("d2e558c2-09ef-11eb-bdec-e3ef3b78ac73"),
 				ActiveFlowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
@@ -316,7 +345,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 
 				Status: call.StatusRinging,
 				Data: map[string]string{
-					"context": ContextIncomingCall,
+					"context": common.ContextIncomingCall,
 					"domain":  "pstn.voipbin.net",
 				},
 				Action: fmaction.Action{
@@ -344,6 +373,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
@@ -351,19 +381,24 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(nil)
+			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
+
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDCall)
-			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.channel.DestinationNumber).Return(tt.responseNumber, nil)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridge)
+			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.responseDestination.Target).Return(tt.responseNumber, nil)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumber.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
-			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false)
+
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridge)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseUUIDCall).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
@@ -378,10 +413,9 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-			mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
+			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
-			if err := h.StartCallHandle(ctx, tt.channel, tt.data); err != nil {
+			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -391,35 +425,39 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 func Test_StartCallHandle_Outgoing(t *testing.T) {
 
 	tests := []struct {
-		name    string
+		name string
+
 		channel *channel.Channel
-		data    map[string]string
 
 		responseUUIDBridge uuid.UUID
+		responseBridge     *bridge.Bridge
 		call               *call.Call
 	}{
 		{
 			"normal",
 
 			&channel.Channel{
-				ID:                "08959a96-8b31-11eb-a5aa-cb0965a824f8",
 				AsteriskID:        "80:fa:5b:5e:da:81",
-				Name:              "PJSIP/in-voipbin-00000949",
+				ID:                "08959a96-8b31-11eb-a5aa-cb0965a824f8",
+				Name:              "PJSIP/in-voipbin-00000912",
 				DestinationNumber: "+123456789",
-			},
-			map[string]string{
-				"context": ContextOutgoingCall,
-				"domain":  "pstn.voipbin.net",
-				"call_id": "086c90e2-8b31-11eb-b3a0-4ba972148103",
+				State:             ari.ChannelStateRing,
+				StasisData: map[string]string{
+					"context": common.ContextOutgoingCall,
+					"domain":  "pstn.voipbin.net",
+					"call_id": "086c90e2-8b31-11eb-b3a0-4ba972148103",
+				},
 			},
 
 			uuid.FromStringOrNil("694c7770-5e60-11ed-8fe2-7f388186ee27"),
+			&bridge.Bridge{
+				ID: "694c7770-5e60-11ed-8fe2-7f388186ee27",
+			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("086c90e2-8b31-11eb-b3a0-4ba972148103"),
-				AsteriskID: "80:fa:5b:5e:da:81",
-				ChannelID:  "08959a96-8b31-11eb-a5aa-cb0965a824f8",
-				Type:       call.TypeSipService,
-				Direction:  call.DirectionIncoming,
+				ID:        uuid.FromStringOrNil("086c90e2-8b31-11eb-b3a0-4ba972148103"),
+				ChannelID: "08959a96-8b31-11eb-a5aa-cb0965a824f8",
+				Type:      call.TypeSipService,
+				Direction: call.DirectionIncoming,
 			},
 		},
 	}
@@ -433,28 +471,31 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
 			ctx := context.Background()
 
 			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
-			mockDB.EXPECT().CallSetAsteriskID(ctx, tt.call.ID, tt.channel.AsteriskID, gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(nil)
+			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridge)
-			mockReq.EXPECT().AstBridgeCreate(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
-			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.channel.AsteriskID, gomock.Any(), tt.channel.ID, "", false, false).Return(nil)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 			mockDB.EXPECT().CallSetBridgeID(ctx, tt.call.ID, gomock.Any()).Return(nil)
-			mockReq.EXPECT().AstChannelDial(ctx, tt.channel.AsteriskID, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)
+			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)
 
-			if err := h.StartCallHandle(ctx, tt.channel, tt.data); err != nil {
+			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -464,23 +505,28 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 func Test_StartHandlerContextExternalMedia(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		channel  *channel.Channel
-		data     map[string]string
-		bridgeID string
+		name string
+
+		channel *channel.Channel
+
+		expectBridgeID string
 	}{
 		{
 			"normal",
+
 			&channel.Channel{
-				ID:         "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Name:       "UnicastRTP/127.0.0.1:5090-0x7f6d54035300",
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
+				Name:              "PJSIP/in-voipbin-00000915",
+				DestinationNumber: "+123456789",
+				State:             ari.ChannelStateRing,
+				StasisData: map[string]string{
+					"context":   common.ContextExternalMedia,
+					"bridge_id": "fab96694-0300-11ec-b4d4-c3bcab7364fd",
+					"call_id":   "0648d6c0-0301-11ec-818e-53865044b15c",
+				},
 			},
-			map[string]string{
-				"context":   ContextExternalMedia,
-				"bridge_id": "fab96694-0300-11ec-b4d4-c3bcab7364fd",
-				"call_id":   "0648d6c0-0301-11ec-818e-53865044b15c",
-			},
+
 			"fab96694-0300-11ec-b4d4-c3bcab7364fd",
 		},
 	}
@@ -493,16 +539,21 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
-			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
-			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
+			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
+			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -512,22 +563,23 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		channel  *channel.Channel
-		data     map[string]string
-		bridgeID string
+		name string
+
+		channel        *channel.Channel
+		expectBridgeID string
 	}{
 		{
 			"normal",
+
 			&channel.Channel{
 				ID:         "asterisk-call-5765d977d8-c4k5q-1629607067.6639",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.132-00000000",
-			},
-			map[string]string{
-				"context":   ContextExternalSoop,
-				"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
-				"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",
+				StasisData: map[string]string{
+					"context":   common.ContextExternalSoop,
+					"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
+					"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",
+				},
 			},
 			"d6aecd56-0301-11ec-aee0-77d9356147eb",
 		},
@@ -541,16 +593,22 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
-			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
-			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
-			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
+			ctx := context.Background()
+
+			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
+			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -560,10 +618,10 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 func Test_StartHandlerContextJoin(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		channel  *channel.Channel
-		data     map[string]string
-		bridgeID string
+		name    string
+		channel *channel.Channel
+
+		expectBridgeID string
 	}{
 		{
 			"normal",
@@ -571,13 +629,14 @@ func Test_StartHandlerContextJoin(t *testing.T) {
 				ID:         "asterisk-call-06627464-431a-11ec-bda3-2f0d6128b98f",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.139-00000000",
+				StasisData: map[string]string{
+					"context":       common.ContextJoinCall,
+					"bridge_id":     "ed08cbf8-4319-11ec-a768-23af5da287d4",
+					"call_id":       "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+					"confbridge_id": "ed70a890-4319-11ec-a8dc-8baa3bdb6a39",
+				},
 			},
-			map[string]string{
-				"context":       ContextJoinCall,
-				"bridge_id":     "ed08cbf8-4319-11ec-a768-23af5da287d4",
-				"call_id":       "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
-				"confbridge_id": "ed70a890-4319-11ec-a8dc-8baa3bdb6a39",
-			},
+
 			"ed08cbf8-4319-11ec-a768-23af5da287d4",
 		},
 	}
@@ -590,19 +649,23 @@ func Test_StartHandlerContextJoin(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
+			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelVariableSet(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "VB-TYPE", string(channel.TypeJoin)).Return(nil)
-			mockReq.EXPECT().AstBridgeAddChannel(gomock.Any(), tt.channel.AsteriskID, tt.bridgeID, tt.channel.ID, "", false, false).Return(nil)
+			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeJoin)).Return(nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
+			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, "", defaultDialTimeout).Return(nil)
 
-			mockReq.EXPECT().AstChannelDial(gomock.Any(), tt.channel.AsteriskID, tt.channel.ID, "", defaultDialTimeout).Return(nil)
-
-			if err := h.StartCallHandle(context.Background(), tt.channel, tt.data); err != nil {
+			if err := h.StartCallHandle(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

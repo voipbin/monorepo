@@ -75,6 +75,7 @@ func (h *recordingHandler) createReferenceTypeCall(
 	filenames := []string{}
 
 	recordingName := h.createRecordingName(recording.ReferenceTypeCall, c.ID.String())
+	asteriskID := ""
 	for _, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
 		// filenames
 		filename := fmt.Sprintf("%s_%s.%s", recordingName, direction, format)
@@ -99,13 +100,17 @@ func (h *recordingHandler) createReferenceTypeCall(
 		)
 
 		// create a snoop channel
-		tmpChannel, err := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, channelID, appArgs, direction, channel.SnoopDirectionNone)
+		tmpChannel, err := h.channelHandler.StartSnoop(ctx, c.ChannelID, channelID, appArgs, direction, channel.SnoopDirectionNone)
 		if err != nil {
+
+			// tmpChannel, err := h.reqHandler.AstChannelCreateSnoop(ctx, c.AsteriskID, c.ChannelID, channelID, appArgs, direction, channel.SnoopDirectionNone)
+			// if err != nil {
 			log.Errorf("Could not create a snoop channel for recroding. err: %v", err)
 			return nil, fmt.Errorf("could not create snoop chanel for recrod. err: %v", err)
 		}
 
 		log.WithField("channel", tmpChannel).Debugf("Created a snoop channel for recording. channel_id: %s", tmpChannel.ID)
+		asteriskID = tmpChannel.AsteriskID
 	}
 
 	tmp := &recording.Recording{
@@ -119,7 +124,7 @@ func (h *recordingHandler) createReferenceTypeCall(
 		RecordingName: recordingName,
 		Filenames:     filenames,
 
-		AsteriskID: c.AsteriskID,
+		AsteriskID: asteriskID,
 		ChannelIDs: channelIDs,
 
 		TMStart: dbhandler.DefaultTimeStamp,
@@ -279,6 +284,22 @@ func (h *recordingHandler) Get(ctx context.Context, id uuid.UUID) (*recording.Re
 	})
 
 	res, err := h.db.RecordingGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get recording info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// GetByRecordingName returns the recording info of the given recording name
+func (h *recordingHandler) GetByRecordingName(ctx context.Context, recordingName string) (*recording.Recording, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "GetByRecordingName",
+		"recording_name": recordingName,
+	})
+
+	res, err := h.db.RecordingGetByRecordingName(ctx, recordingName)
 	if err != nil {
 		log.Errorf("Could not get recording info. err: %v", err)
 		return nil, err

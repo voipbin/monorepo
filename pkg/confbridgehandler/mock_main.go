@@ -68,17 +68,17 @@ func (mr *MockConfbridgeHandlerMockRecorder) ARIChannelLeftBridge(ctx, cn, br in
 }
 
 // ARIStasisStart mocks base method.
-func (m *MockConfbridgeHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
+func (m *MockConfbridgeHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ARIStasisStart", ctx, cn, data)
+	ret := m.ctrl.Call(m, "ARIStasisStart", ctx, cn)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ARIStasisStart indicates an expected call of ARIStasisStart.
-func (mr *MockConfbridgeHandlerMockRecorder) ARIStasisStart(ctx, cn, data interface{}) *gomock.Call {
+func (mr *MockConfbridgeHandlerMockRecorder) ARIStasisStart(ctx, cn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIStasisStart), ctx, cn, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIStasisStart), ctx, cn)
 }
 
 // Create mocks base method.

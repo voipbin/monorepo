@@ -71,20 +71,19 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 // valid only for outgoing call.
 func (h *callHandler) handleSIPCallID(ctx context.Context, cn *channel.Channel, c *call.Call) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "handleSIPCallID",
-		"call_id":     c.ID,
-		"asterisk_id": cn.AsteriskID,
-		"channel_id":  cn.ID,
+		"func":       "handleSIPCallID",
+		"call_id":    c.ID,
+		"channel_id": cn.ID,
 	})
 
-	sipCallID, err := h.reqHandler.AstChannelVariableGet(ctx, cn.AsteriskID, cn.ID, `CHANNEL(pjsip,call-id)`)
+	sipCallID, err := h.channelHandler.VariableGet(ctx, cn.ID, `CHANNEL(pjsip,call-id)`)
 	if err != nil {
 		log.Errorf("Could not get channel variable. err: %v", err)
 		return
 	}
 	log.Debugf("Received sip call id. sip_call_id: %s", sipCallID)
 
-	if errSet := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "VB-SIP_CALLID", sipCallID); errSet != nil {
+	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-SIP_CALLID", sipCallID); errSet != nil {
 		log.Errorf("Could not set sip_call_id. err: %v", errSet)
 		return
 	}

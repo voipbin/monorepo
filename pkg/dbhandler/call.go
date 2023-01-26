@@ -20,7 +20,7 @@ const (
 	select
 		id,
 		customer_id,
-		asterisk_id,
+
 		channel_id,
 		bridge_id,
 		flow_id,
@@ -77,7 +77,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
-		&res.AsteriskID,
+
 		&res.ChannelID,
 		&res.BridgeID,
 		&res.FlowID,
@@ -199,7 +199,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	q := `insert into calls(
 		id,
 		customer_id,
-		asterisk_id,
+
 		channel_id,
 		bridge_id,
 
@@ -239,7 +239,8 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		tm_ringing,
 		tm_hangup
 	) values(
-		?, ?, ?, ?, ?,
+		?, ?,
+		?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?,
 		?, ?, ?, ?,
@@ -294,7 +295,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.CustomerID.Bytes(),
-		c.AsteriskID,
+
 		c.ChannelID,
 		c.BridgeID,
 
@@ -512,31 +513,6 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetStatus. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.CallUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// CallSetAsteriskID sets the call aserisk_id
-func (h *handler) CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error {
-
-	// prepare
-	q := `
-	update
-		calls
-	set
-		asterisk_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, asteriskID, tmUpdate, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CallSetAsteriskID. err: %v", err)
 	}
 
 	// update the cache
@@ -849,7 +825,6 @@ func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, cha
 	// prepare
 	q := `
 	update calls set
-		asterisk_id = '',
 		bridge_id = '',
 
 		channel_id = ?,

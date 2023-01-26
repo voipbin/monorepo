@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
@@ -33,7 +34,7 @@ const (
 type ConfbridgeHandler interface {
 	ARIChannelEnteredBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
-	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
+	ARIStasisStart(ctx context.Context, cn *channel.Channel) error
 
 	Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error)
 	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error)
@@ -58,6 +59,7 @@ type confbridgeHandler struct {
 	notifyHandler        notifyhandler.NotifyHandler
 	db                   dbhandler.DBHandler
 	cache                cachehandler.CacheHandler
+	channelHandler       channelhandler.ChannelHandler
 	bridgeHandler        bridgehandler.BridgeHandler
 	recordingHandler     recordinghandler.RecordingHandler
 	externalMediaHandler externalmediahandler.ExternalMediaHandler
@@ -105,6 +107,7 @@ func NewConfbridgeHandler(
 	notify notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
 	cache cachehandler.CacheHandler,
+	channelHandler channelhandler.ChannelHandler,
 	bridgeHandler bridgehandler.BridgeHandler,
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
@@ -116,6 +119,7 @@ func NewConfbridgeHandler(
 		notifyHandler:        notify,
 		db:                   db,
 		cache:                cache,
+		channelHandler:       channelHandler,
 		bridgeHandler:        bridgeHandler,
 		recordingHandler:     recordingHandler,
 		externalMediaHandler: externalMediaHandler,

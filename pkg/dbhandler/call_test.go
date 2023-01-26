@@ -32,9 +32,9 @@ func Test_CallCreate(t *testing.T) {
 		{
 			"have all",
 			&call.Call{
-				ID:           uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
-				CustomerID:   uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
-				AsteriskID:   "3e:50:6b:43:bb:30",
+				ID:         uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
+				CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
+
 				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				BridgeID:     "fe27852c-90c3-4f60-b357-69c44b605e6e",
 				FlowID:       uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
@@ -90,7 +90,6 @@ func Test_CallCreate(t *testing.T) {
 			&call.Call{
 				ID:           uuid.FromStringOrNil("f2e8b62a-2824-11eb-ba7a-b7fd7464daa3"),
 				CustomerID:   uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
-				AsteriskID:   "3e:50:6b:43:bb:30",
 				ChannelID:    "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				BridgeID:     "fe27852c-90c3-4f60-b357-69c44b605e6e",
 				FlowID:       uuid.FromStringOrNil("069ba9f2-2825-11eb-be24-9f2570e3033c"),
@@ -628,10 +627,9 @@ func Test_CallGetByChannelID(t *testing.T) {
 		{
 			"test normal",
 			call.Call{
-				ID:         uuid.FromStringOrNil("5462dfbe-6bc8-11ed-b128-57813cbc586f"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "54963ab2-6bc8-11ed-9acd-8325f591cc80",
-				Type:       call.TypeFlow,
+				ID:        uuid.FromStringOrNil("5462dfbe-6bc8-11ed-b128-57813cbc586f"),
+				ChannelID: "54963ab2-6bc8-11ed-9acd-8325f591cc80",
+				Type:      call.TypeFlow,
 
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
@@ -641,10 +639,9 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 			"2020-04-18T03:22:17.995000",
 			call.Call{
-				ID:         uuid.FromStringOrNil("5462dfbe-6bc8-11ed-b128-57813cbc586f"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "54963ab2-6bc8-11ed-9acd-8325f591cc80",
-				Type:       call.TypeFlow,
+				ID:        uuid.FromStringOrNil("5462dfbe-6bc8-11ed-b128-57813cbc586f"),
+				ChannelID: "54963ab2-6bc8-11ed-9acd-8325f591cc80",
+				Type:      call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -666,10 +663,9 @@ func Test_CallGetByChannelID(t *testing.T) {
 		{
 			"test normal has source address type sip",
 			call.Call{
-				ID:         uuid.FromStringOrNil("79dc4e7e-6bc8-11ed-a082-2f57dba9cd50"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
-				Type:       call.TypeFlow,
+				ID:        uuid.FromStringOrNil("79dc4e7e-6bc8-11ed-a082-2f57dba9cd50"),
+				ChannelID: "79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
+				Type:      call.TypeFlow,
 
 				Source: commonaddress.Address{
 					Type: commonaddress.TypeSIP,
@@ -684,10 +680,9 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 			"2020-04-18T03:22:17.995000",
 			call.Call{
-				ID:         uuid.FromStringOrNil("79dc4e7e-6bc8-11ed-a082-2f57dba9cd50"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
-				Type:       call.TypeFlow,
+				ID:        uuid.FromStringOrNil("79dc4e7e-6bc8-11ed-a082-2f57dba9cd50"),
+				ChannelID: "79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
+				Type:      call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -765,10 +760,9 @@ func Test_CallSetHangup(t *testing.T) {
 		{
 			"test normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
+				ID:        uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
+				ChannelID: "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
+				Type:      call.TypeFlow,
 
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
@@ -786,10 +780,9 @@ func Test_CallSetHangup(t *testing.T) {
 			"2020-04-18T03:22:18.995000",
 
 			call.Call{
-				ID:         uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
+				ID:        uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
+				ChannelID: "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
+				Type:      call.TypeFlow,
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -1042,11 +1035,10 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 		{
 			"echo option duration",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("1d55d302-8d02-11ea-992f-53a0113a8a9b"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
-				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
+				ID:        uuid.FromStringOrNil("1d55d302-8d02-11ea-992f-53a0113a8a9b"),
+				ChannelID: "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
+				Type:      call.TypeFlow,
+				FlowID:    uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
@@ -1063,11 +1055,10 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 
 			"2020-04-18T03:22:17.995000",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("1d55d302-8d02-11ea-992f-53a0113a8a9b"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
-				Type:       call.TypeFlow,
-				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
+				ID:        uuid.FromStringOrNil("1d55d302-8d02-11ea-992f-53a0113a8a9b"),
+				ChannelID: "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
+				Type:      call.TypeFlow,
+				FlowID:    uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -1098,11 +1089,10 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 		{
 			"echo option empty",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("964b060e-8d04-11ea-bc42-93d5d0871556"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "9c5c8e5a-8d04-11ea-9e62-3be93b94e0eb",
-				Type:       call.TypeFlow,
-				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
+				ID:        uuid.FromStringOrNil("964b060e-8d04-11ea-bc42-93d5d0871556"),
+				ChannelID: "9c5c8e5a-8d04-11ea-9e62-3be93b94e0eb",
+				Type:      call.TypeFlow,
+				FlowID:    uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
@@ -1118,11 +1108,10 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 
 			"2020-04-18T03:22:17.995000",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("964b060e-8d04-11ea-bc42-93d5d0871556"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "9c5c8e5a-8d04-11ea-9e62-3be93b94e0eb",
-				Type:       call.TypeFlow,
-				FlowID:     uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
+				ID:        uuid.FromStringOrNil("964b060e-8d04-11ea-bc42-93d5d0871556"),
+				ChannelID: "9c5c8e5a-8d04-11ea-9e62-3be93b94e0eb",
+				Type:      call.TypeFlow,
+				FlowID:    uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
@@ -1208,17 +1197,15 @@ func Test_CallSetMasterCallID(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "14daba5c-24fc-11eb-8f58-8b798baaf553",
-				Type:       call.TypeFlow,
+				ID:        uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
+				ChannelID: "14daba5c-24fc-11eb-8f58-8b798baaf553",
+				Type:      call.TypeFlow,
 			},
 			uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 
 			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:             uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
-				AsteriskID:     "3e:50:6b:43:bb:30",
 				ChannelID:      "14daba5c-24fc-11eb-8f58-8b798baaf553",
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
@@ -1320,18 +1307,16 @@ func Test_CallSetRecordingID(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("46ab9ad8-282b-11eb-82c3-6782faf5e030"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "4e2fe520-282b-11eb-ad66-b777dce59261",
-				Type:       call.TypeFlow,
-				TMCreate:   "2020-04-18T03:22:17.995000",
+				ID:        uuid.FromStringOrNil("46ab9ad8-282b-11eb-82c3-6782faf5e030"),
+				ChannelID: "4e2fe520-282b-11eb-ad66-b777dce59261",
+				Type:      call.TypeFlow,
+				TMCreate:  "2020-04-18T03:22:17.995000",
 			},
 			uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
 
 			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:             uuid.FromStringOrNil("46ab9ad8-282b-11eb-82c3-6782faf5e030"),
-				AsteriskID:     "3e:50:6b:43:bb:30",
 				ChannelID:      "4e2fe520-282b-11eb-ad66-b777dce59261",
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},
@@ -1522,10 +1507,9 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ChannelID:  "54144112-6036-11ed-9492-5b86fbbf6672",
-				Type:       call.TypeFlow,
+				ID:        uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
+				ChannelID: "54144112-6036-11ed-9492-5b86fbbf6672",
+				Type:      call.TypeFlow,
 			},
 
 			uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
@@ -1535,7 +1519,6 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:             uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
-				AsteriskID:     "",
 				ChannelID:      "06372bc6-6036-11ed-bd92-7793e1da99bd",
 				Type:           call.TypeFlow,
 				ChainedCallIDs: []uuid.UUID{},

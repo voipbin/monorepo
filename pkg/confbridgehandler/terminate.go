@@ -56,7 +56,7 @@ func (h *confbridgeHandler) destroyBridge(ctx context.Context, bridgeID string) 
 			"bridge_id": bridgeID,
 		})
 
-	if !h.isBridgeExist(ctx, bridgeID) {
+	if !h.bridgeHandler.IsExist(ctx, bridgeID) {
 		return nil
 	}
 
@@ -68,19 +68,19 @@ func (h *confbridgeHandler) destroyBridge(ctx context.Context, bridgeID string) 
 	}
 
 	for _, channelID := range br.ChannelIDs {
-		if err := h.reqHandler.AstChannelHangup(ctx, br.AsteriskID, channelID, ari.ChannelCauseNormalClearing, 0); err != nil {
+		_, errHangup := h.channelHandler.HangingUp(ctx, channelID, ari.ChannelCauseNormalClearing)
+		if errHangup != nil {
 			log.WithFields(
 				logrus.Fields{
-					"asterisk": br.AsteriskID,
-					"bridge":   br.ID,
-					"channel":  channelID,
+					"bridge_id":  br.ID,
+					"channel_id": channelID,
 				}).Warningf("Could not hangup the channel. err: %v", err)
 		}
 	}
 
 	// destroy the confbridge bridge
-	if errBridgeDel := h.reqHandler.AstBridgeDelete(ctx, br.AsteriskID, br.ID); errBridgeDel != nil {
-		log.Errorf("Could not delete confbridge bridge. err: %v", errBridgeDel)
+	if errDestroy := h.bridgeHandler.Destroy(ctx, br.ID); errDestroy != nil {
+		log.Errorf("Could not delete confbridge bridge. err: %v", errDestroy)
 	}
 
 	return nil

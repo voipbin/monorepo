@@ -9,23 +9,28 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestEventHandlerStasisStart(t *testing.T) {
+func Test_EventHandlerStasisStart(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		event *ari.StasisStart
 
+		responseChannel *channel.Channel
+
+		expectAsteriskID string
 		expectChannelID  string
+		expectStatus     call.Status
+		expectData       map[string]string
+
 		expactStasisData map[string]string
 		expectStasisname string
-
-		responseChannel *channel.Channel
 	}{
 		{
 			"normal",
@@ -61,18 +66,34 @@ func TestEventHandlerStasisStart(t *testing.T) {
 				},
 			},
 
+			&channel.Channel{
+				ID:         "1587774438.2390",
+				AsteriskID: "42:01:0a:a4:00:03",
+				Name:       "PJSIP/in-voipbin-00000948",
+				State:      ari.ChannelStateRing,
+				Data: map[string]interface{}{
+					"context": "call-in",
+					"domain":  "sip-service.voipbin.net",
+					"source":  "213.127.79.161",
+				},
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+
+			"42:01:0a:a4:00:03",
 			"1587774438.2390",
+			call.StatusRinging,
+			map[string]string{
+				"context": "call-in",
+				"domain":  "sip-service.voipbin.net",
+				"source":  "213.127.79.161",
+			},
+
 			map[string]string{
 				"context": "call-in",
 				"domain":  "sip-service.voipbin.net",
 				"source":  "213.127.79.161",
 			},
 			"voipbin",
-
-			&channel.Channel{
-				ID:   "1587774438.2390",
-				Name: "PJSIP/in-voipbin-00000948",
-			},
 		},
 	}
 
@@ -96,14 +117,10 @@ func TestEventHandlerStasisStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			channel := &channel.Channel{
-				Data: map[string]interface{}{},
-			}
+			mockChannel.EXPECT().Get(ctx, tt.expectChannelID).Return(tt.responseChannel, nil)
+			mockChannel.EXPECT().UpdateStasisNameAndStasisData(ctx, tt.expectChannelID, tt.expectStasisname, tt.expectData).Return(tt.responseChannel, nil)
 
-			mockChannel.EXPECT().GetWithTimeout(ctx, tt.expectChannelID, defaultExistTimeout).Return(tt.responseChannel, nil)
-			mockDB.EXPECT().ChannelSetStasisNameAndStasisData(gomock.Any(), tt.expectChannelID, tt.expectStasisname, tt.expactStasisData).Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.expectChannelID).Return(channel, nil)
-			mockCall.EXPECT().ARIStasisStart(gomock.Any(), channel, tt.expactStasisData).Return(nil)
+			mockCall.EXPECT().ARIStasisStart(gomock.Any(), tt.responseChannel).Return(nil)
 
 			if err := h.EventHandlerStasisStart(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -112,21 +129,7 @@ func TestEventHandlerStasisStart(t *testing.T) {
 	}
 }
 
-func TestEventHandlerStasisEnd(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockRequest,
-		callHandler: mockCall,
-	}
-
+func Test_EventHandlerStasisEnd(t *testing.T) {
 	tests := []struct {
 		name  string
 		event *ari.StasisEnd
@@ -168,9 +171,25 @@ func TestEventHandlerStasisEnd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockRequest := requesthandler.NewMockRequestHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			h := eventHandler{
+				db:             mockDB,
+				rabbitSock:     mockSock,
+				reqHandler:     mockRequest,
+				channelHandler: mockChannel,
+				callHandler:    mockCall,
+			}
+
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetStasis(gomock.Any(), tt.expectChannelID, tt.expectStasis).Return(nil)
+			mockChannel.EXPECT().UpdateStasisName(ctx, tt.expectChannelID, tt.expectStasis).Return(&channel.Channel{}, nil)
 
 			if err := h.EventHandlerStasisEnd(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

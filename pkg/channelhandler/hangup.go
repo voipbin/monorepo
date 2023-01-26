@@ -73,3 +73,31 @@ func (h *channelHandler) HangingUpWithAsteriskID(ctx context.Context, asteriskID
 
 	return nil
 }
+
+// HangingUpWithDelay starts the hangup process
+func (h *channelHandler) HangingUpWithDelay(ctx context.Context, id string, cause ari.ChannelCause, delay int) (*channel.Channel, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "HangingUpWithTimeout",
+			"channel_id": id,
+		},
+	)
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
+		return nil, err
+	}
+
+	if res.TMDelete < dbhandler.DefaultTimeStamp {
+		// already hungup nothing to do
+		return nil, fmt.Errorf("already hungup")
+	}
+
+	if errHangup := h.reqHandler.AstChannelHangup(ctx, res.AsteriskID, id, cause, delay); errHangup != nil {
+		log.Errorf("Could not send the hangup request. err: %v", errHangup)
+		return nil, errHangup
+	}
+
+	return res, nil
+}

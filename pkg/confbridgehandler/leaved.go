@@ -2,9 +2,9 @@ package confbridgehandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -19,49 +19,54 @@ import (
 func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":          "leaved",
-			"confbridge_id": br.ReferenceID,
-			"channel_id":    cn.ID,
+			"func":       "Leaved",
+			"channel_id": cn.ID,
+			"bridge_id":  br.ID,
 		},
 	)
+
 	confbridgeID := uuid.FromStringOrNil(cn.StasisData["confbridge_id"])
 	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])
+	log = log.WithFields(logrus.Fields{
+		"call_id":       callID,
+		"confbridge_id": confbridgeID,
+	})
+	log.Debug("Leaved channel to the confbridge.")
 
-	// remove the channel/call info from the confbridge
-	if errCallChannelID := h.db.ConfbridgeRemoveChannelCallID(ctx, confbridgeID, cn.ID); errCallChannelID != nil {
-		return fmt.Errorf("could not remove the channel from the confbridge's channel/call info")
+	cb, err := h.RemoveChannelCallID(ctx, confbridgeID, cn.ID)
+	if err != nil {
+		log.Errorf("Could not remove the channel info from the confbridge. err: %v", err)
+		return errors.Wrap(err, "could not remove the channel info from the confbridge")
 	}
 
+	// todo: here we are updating the call's confbridge id.
+	// but we should not do this. instead of doing this, we need to send the request to the callhandler
+	// and let them handle the update work
 	// set nil conference id to the call
 	// note: here we are setting the conference's id to the call.
 	// we don't set the confbridge id to the call.
 	if err := h.db.CallSetConfbridgeID(ctx, callID, uuid.Nil); err != nil {
 		log.Errorf("Could not set the conference id for a call. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
-		return err
-	}
-
-	// get confbridge
-	cf, err := h.Get(ctx, confbridgeID)
-	if err != nil {
-		log.Errorf("Could not get confbridge. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
 		return err
 	}
 
 	// check the confbridge type
-	if cf.Type == confbridge.TypeConnect && len(cf.ChannelCallIDs) == 1 {
+	if cb.Type == confbridge.TypeConnect && len(cb.ChannelCallIDs) == 1 {
 		// kick the other channel
-		for _, joinedCallID := range cf.ChannelCallIDs {
-			log.Debugf("Kicking out the call from the confbridge. call_id: %s", joinedCallID)
-			if errKick := h.reqHandler.CallV1ConfbridgeCallKick(ctx, cf.ID, joinedCallID); errKick != nil {
-				log.Errorf("Could not kick the call from the confbridge. err: %v", errKick)
-			}
+		for _, joinedCallID := range cb.ChannelCallIDs {
+			go func(kickID uuid.UUID) {
+				log.Debugf("Kicking out the call from the confbridge. call_id: %s", kickID)
+				if errKick := h.reqHandler.CallV1ConfbridgeCallKick(ctx, cb.ID, kickID); errKick != nil {
+					log.Errorf("Could not kick the call from the confbridge. err: %v", errKick)
+				}
+			}(joinedCallID)
 		}
 	}
 
 	// Publish the event
 	evt := &confbridge.EventConfbridgeLeaved{
-		Confbridge:   *cf,
+		Confbridge:   *cb,
 		LeavedCallID: callID,
 	}
 	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, evt)

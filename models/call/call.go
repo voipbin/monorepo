@@ -18,9 +18,8 @@ type Call struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
-	AsteriskID string `json:"asterisk_id"`
-	ChannelID  string `json:"channel_id"`
-	BridgeID   string `json:"bridge_id"` // call bridge id
+	ChannelID string `json:"channel_id"`
+	BridgeID  string `json:"bridge_id"` // call bridge id
 
 	FlowID       uuid.UUID `json:"flow_id"`        // flow id
 	ActiveFlowID uuid.UUID `json:"active_flow_id"` // active flow id
@@ -29,11 +28,11 @@ type Call struct {
 	Type Type `json:"type"` // call type
 
 	// etc info
-	MasterCallID    uuid.UUID   `json:"master_call_id"`   // master call id
-	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids"` // chained call ids
-	RecordingID     uuid.UUID   `json:"recording_id"`     // recording id(current)
-	RecordingIDs    []uuid.UUID `json:"recording_ids"`    // recording ids
-	ExternalMediaID uuid.UUID   `json:"external_media_id"`
+	MasterCallID    uuid.UUID   `json:"master_call_id"`    // master call id
+	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids"`  // chained call ids
+	RecordingID     uuid.UUID   `json:"recording_id"`      // recording id(current)
+	RecordingIDs    []uuid.UUID `json:"recording_ids"`     // recording ids
+	ExternalMediaID uuid.UUID   `json:"external_media_id"` // external media id(current)
 
 	// source/destination
 	Source      commonaddress.Address `json:"source"`
@@ -41,7 +40,7 @@ type Call struct {
 
 	// info
 	Status         Status            `json:"status"`
-	Data           map[string]string `json:"data"`
+	Data           map[string]string `json:"data"`             //
 	Action         fmaction.Action   `json:"action"`           // call's current action.
 	ActionNextHold bool              `json:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
 	Direction      Direction         `json:"direction"`

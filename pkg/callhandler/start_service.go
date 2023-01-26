@@ -3,43 +3,42 @@ package callhandler
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
 const (
 	amdStatusMachine = "MACHINE" // amd status result machine
 )
 
-func (h *callHandler) startServiceFromDefault(ctx context.Context, cn *channel.Channel, data map[string]string) error {
+func (h *callHandler) startServiceFromDefault(ctx context.Context, channelID string, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startServiceFromDefault",
-		"channel_id": cn.ID,
+		"channel_id": channelID,
 	})
 	log.Debug("Executing default service handler.")
 
 	// get call by the channel id
-	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
+	c, err := h.db.CallGetByChannelID(ctx, channelID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNoRouteDestination, 0)
-		return err
+		return errors.Wrap(err, "coudl not get call info")
 	}
 
 	return h.ActionNext(ctx, c)
 }
 
 // startServiceFromAMD handles context-from amd service call.
-func (h *callHandler) startServiceFromAMD(ctx context.Context, cn *channel.Channel, data map[string]string) error {
+func (h *callHandler) startServiceFromAMD(ctx context.Context, channelID string, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startServiceFromAMD",
-		"channel_id": cn.ID,
+		"channel_id": channelID,
 	})
 	defer func() {
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
+		_, _ = h.channelHandler.HangingUp(ctx, channelID, ari.ChannelCauseNormalClearing)
 	}()
 
 	status := data["amd_status"]
@@ -47,9 +46,10 @@ func (h *callHandler) startServiceFromAMD(ctx context.Context, cn *channel.Chann
 	log.Debugf("Received amd result. status: %s, cause: %s", status, cause)
 
 	// get amd option
-	amd, err := h.db.CallApplicationAMDGet(ctx, cn.ID)
+	amd, err := h.db.CallApplicationAMDGet(ctx, channelID)
 	if err != nil {
 		log.Errorf("Could not get amd option. err: %v", err)
+		return nil
 	}
 	log = log.WithField("call_id", amd.CallID)
 

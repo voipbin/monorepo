@@ -19,6 +19,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -38,6 +39,7 @@ func Test_Start_call(t *testing.T) {
 		responseUUID            uuid.UUID
 		responseCurTimeRFC      string
 		responseUUIDsChannelIDs []uuid.UUID
+		responseChannels        []*channel.Channel
 
 		expectAsteriskID      string
 		expectTargetChannelID string
@@ -58,7 +60,6 @@ func Test_Start_call(t *testing.T) {
 			responseCall: &call.Call{
 				ID:         uuid.FromStringOrNil("d883a3f2-8fd4-11ed-baee-af9907e4df67"),
 				CustomerID: uuid.FromStringOrNil("00deda0e-8fd7-11ed-ac78-13dc7fb65df3"),
-				AsteriskID: "42:01:0a:a4:00:03",
 				ChannelID:  "4f577092-8fd7-11ed-83c6-2fc653ad0b7c",
 				Status:     call.StatusProgressing,
 			},
@@ -67,6 +68,16 @@ func Test_Start_call(t *testing.T) {
 			responseUUIDsChannelIDs: []uuid.UUID{
 				uuid.FromStringOrNil("4acf57a2-8fd6-11ed-98e5-6f1e54343269"),
 				uuid.FromStringOrNil("4af70a04-8fd6-11ed-a294-4b2bc83c1829"),
+			},
+			responseChannels: []*channel.Channel{
+				{
+					ID:         "4acf57a2-8fd6-11ed-98e5-6f1e54343269",
+					AsteriskID: "42:01:0a:a4:00:03",
+				},
+				{
+					ID:         "4af70a04-8fd6-11ed-a294-4b2bc83c1829",
+					AsteriskID: "42:01:0a:a4:00:03",
+				},
 			},
 
 			expectAsteriskID:      "42:01:0a:a4:00:03",
@@ -111,12 +122,14 @@ func Test_Start_call(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &recordingHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
@@ -126,7 +139,7 @@ func Test_Start_call(t *testing.T) {
 			mockUtil.EXPECT().GetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
 			for i, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
 				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDsChannelIDs[i])
-				mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.expectAsteriskID, tt.expectTargetChannelID, tt.expectChannelIDs[i], tt.expectArgs[i], direction, channel.SnoopDirectionNone).Return(&channel.Channel{}, nil)
+				mockChannel.EXPECT().StartSnoop(ctx, tt.expectTargetChannelID, tt.expectChannelIDs[i], tt.expectArgs[i], direction, channel.SnoopDirectionNone).Return(tt.responseChannels[i], nil)
 			}
 
 			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)

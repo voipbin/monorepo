@@ -37,20 +37,10 @@ func Test_Create(t *testing.T) {
 		destinationName   string
 		destinationNumber string
 
-		state      ari.ChannelState
-		data       map[string]interface{}
-		stasisName string
-		stasisData map[string]string
-		bridgeID   string
-		playbackID string
-
-		dialResult  string
-		hangupCause ari.ChannelCause
-
-		direction channel.Direction
+		state ari.ChannelState
 
 		responseChannel *channel.Channel
-		expectRes       *channel.Channel
+		expectChannel   *channel.Channel
 	}
 
 	tests := []test{
@@ -72,26 +62,31 @@ func Test_Create(t *testing.T) {
 			"+821100000002",
 
 			ari.ChannelStateRing,
-			map[string]interface{}{
-				"key1": "value1",
-			},
-			"voipbin",
-			map[string]string{
-				"call_id": "75c37398-6e0d-11ed-94a6-8f255cf3934e",
-			},
-			"75f01be6-6e0d-11ed-a7c9-7335c3fa383a",
-			"761b21f6-6e0d-11ed-b651-c37f76e7d8aa",
-
-			"answer",
-			ari.ChannelCauseNormalClearing,
-
-			channel.DirectionOutgoing,
 
 			&channel.Channel{
-				ID: "764818be-6e0d-11ed-a193-33bbe6697279",
+				ID: "5169be58-6e0d-11ed-9bfa-1bb6e1bc670f",
 			},
 			&channel.Channel{
-				ID: "764818be-6e0d-11ed-a193-33bbe6697279",
+				ID:                "5169be58-6e0d-11ed-9bfa-1bb6e1bc670f",
+				AsteriskID:        "3e:50:6b:43:bb:30",
+				Name:              "PJSIP/call-in-00000000",
+				Type:              channel.TypeCall,
+				Tech:              channel.TechPJSIP,
+				SIPCallID:         "",
+				SIPTransport:      "",
+				SourceName:        "test source name",
+				SourceNumber:      "+821100000001",
+				DestinationName:   "test destination name",
+				DestinationNumber: "+821100000002",
+				State:             ari.ChannelStateRing,
+				Data:              map[string]interface{}{},
+				StasisName:        "",
+				StasisData:        map[string]string{},
+				BridgeID:          "",
+				PlaybackID:        "",
+				DialResult:        "",
+				HangupCause:       ari.ChannelCauseUnknown,
+				Direction:         channel.DirectionNone,
 			},
 		},
 	}
@@ -114,34 +109,8 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			c := &channel.Channel{
-				ID:         tt.id,
-				AsteriskID: tt.asteriskID,
-				Name:       tt.channelName,
-				Type:       tt.channelType,
-				Tech:       tt.tech,
-
-				SIPCallID:    tt.sipCallID,
-				SIPTransport: tt.sipTransport,
-
-				SourceName:        tt.sourceName,
-				SourceNumber:      tt.sourceNumber,
-				DestinationName:   tt.destinationName,
-				DestinationNumber: tt.destinationNumber,
-
-				State:      tt.state,
-				Data:       tt.data,
-				StasisName: tt.stasisName,
-				StasisData: tt.stasisData,
-				BridgeID:   tt.bridgeID,
-				PlaybackID: tt.playbackID,
-
-				DialResult:  tt.dialResult,
-				HangupCause: tt.hangupCause,
-				Direction:   tt.direction,
-			}
-			mockDB.EXPECT().ChannelCreate(ctx, c).Return(nil)
-			mockDB.EXPECT().ChannelGet(ctx, c.ID).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelCreate(ctx, tt.expectChannel).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.Create(
 				ctx,
@@ -152,32 +121,19 @@ func Test_Create(t *testing.T) {
 				tt.channelType,
 				tt.tech,
 
-				tt.sipCallID,
-				tt.sipTransport,
-
 				tt.sourceName,
 				tt.sourceNumber,
 				tt.destinationName,
 				tt.destinationNumber,
 
 				tt.state,
-				tt.data,
-				tt.stasisName,
-				tt.stasisData,
-				tt.bridgeID,
-				tt.playbackID,
-
-				tt.dialResult,
-				tt.hangupCause,
-
-				tt.direction,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if reflect.DeepEqual(tt.responseChannel, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseChannel, res)
 			}
 		})
 	}
@@ -210,6 +166,8 @@ func Test_Get(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
@@ -227,9 +185,69 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.Get(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(time.Microsecond * 100)
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_getWithTimeout(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id string
+
+		responseChannel *channel.Channel
+		expectRes       *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			"f40fd888-9b88-11ed-b227-bfa210c766fb",
+
+			&channel.Channel{
+				ID: "f40fd888-9b88-11ed-b227-bfa210c766fb",
+			},
+			&channel.Channel{
+				ID: "f40fd888-9b88-11ed-b227-bfa210c766fb",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+
+			res, err := h.getWithTimeout(ctx, tt.id, defaultExistTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -288,7 +306,7 @@ func Test_Delete(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChannelEndAndDelete(ctx, tt.id, tt.cause).Return(nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 			res, err := h.Delete(ctx, tt.id, tt.cause)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -398,7 +416,7 @@ func Test_SetSIPTransport(t *testing.T) {
 			mockDB.EXPECT().ChannelSetSIPTransport(ctx, tt.id, tt.transport).Return(nil)
 
 			// goroutine
-			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(&channel.Channel{}, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(&channel.Channel{}, nil)
 
 			if err := h.SetSIPTransport(ctx, tt.id, tt.transport); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -454,7 +472,7 @@ func Test_SetDirection(t *testing.T) {
 			mockDB.EXPECT().ChannelSetDirection(ctx, tt.id, tt.direction).Return(nil)
 
 			// goroutine
-			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(&channel.Channel{}, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(&channel.Channel{}, nil)
 
 			if err := h.SetDirection(ctx, tt.id, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -643,7 +661,7 @@ func Test_UpdateState(t *testing.T) {
 			case ari.ChannelStateRing, ari.ChannelStateRinging:
 				mockDB.EXPECT().ChannelSetStateRinging(ctx, tt.id, tt.state).Return(nil)
 			}
-			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.UpdateState(ctx, tt.id, tt.state)
 			if err != nil {
@@ -704,7 +722,7 @@ func Test_UpdateBridgeID(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChannelSetBridgeID(ctx, tt.id, tt.bridgeID).Return(nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.UpdateBridgeID(ctx, tt.id, tt.bridgeID)
 			if err != nil {

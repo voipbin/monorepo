@@ -28,9 +28,9 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	log = log.WithField("call_id", c.ID)
 
 	// remove the call bridge
-	if err := h.reqHandler.AstBridgeDelete(ctx, c.AsteriskID, c.BridgeID); err != nil {
+	if errDestroy := h.bridgeHandler.Destroy(ctx, c.BridgeID); errDestroy != nil {
 		// we don't care the error here. just write the log.
-		log.Errorf("Could not remove the bridge. err: %v", err)
+		log.Errorf("Could not destroy the bridge. err: %v", errDestroy)
 	}
 
 	// determine route-failover required
@@ -131,19 +131,12 @@ func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.Cha
 		return nil, err
 	}
 
-	// get channel
-	ch, err := h.channelHandler.Get(ctx, c.ChannelID)
+	tmp, err := h.channelHandler.HangingUp(ctx, c.ChannelID, cause)
 	if err != nil {
-		log.Errorf("Could not get channel info. err: %v", err)
+		log.Errorf("Could not hang up the call channel. err: %v", err)
 		return nil, err
 	}
-
-	// send hangup request
-	if err := h.reqHandler.AstChannelHangup(ctx, ch.AsteriskID, ch.ID, cause, 0); err != nil {
-		// Send hangup request has failed. Something really wrong.
-		log.Errorf("Could not send the hangup request for call hangup. err: %v", err)
-		return nil, err
-	}
+	log.WithField("channel", tmp).Debugf("Hanging up the call channel. call_id: %s", c.ID)
 
 	return res, nil
 }
