@@ -33,8 +33,6 @@ type BridgeHandler interface {
 		videoMode string,
 		videoSourceID string,
 
-		channelIDs []string,
-
 		referenceType bridge.ReferenceType,
 		referenceID uuid.UUID,
 	) (*bridge.Bridge, error)
@@ -42,7 +40,14 @@ type BridgeHandler interface {
 	Delete(ctx context.Context, id string) (*bridge.Bridge, error)
 	AddChannelID(ctx context.Context, id, channelID string) (*bridge.Bridge, error)
 	RemoveChannelID(ctx context.Context, id, channelID string) (*bridge.Bridge, error)
-	GetWithTimeout(ctx context.Context, id string, timeout time.Duration) (*bridge.Bridge, error)
+	Destroy(ctx context.Context, id string) error
+
+	ChannelKick(ctx context.Context, id string, channelID string) error
+	ChannelJoin(ctx context.Context, id string, channelID string, role string, absorbDTMF bool, mute bool) error
+
+	Start(ctx context.Context, asteriskID string, bridgeID string, bridgeName string, bridgeType []bridge.Type) (*bridge.Bridge, error)
+
+	IsExist(ctx context.Context, id string) bool
 }
 
 // bridgeHandler structure for service handle
@@ -56,6 +61,7 @@ type bridgeHandler struct {
 // list of default values
 const (
 	defaultDelayTimeout = time.Millisecond * 150
+	defaultExistTimeout = time.Second * 3
 )
 
 var (

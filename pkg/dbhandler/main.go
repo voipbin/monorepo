@@ -50,7 +50,6 @@ type DBHandler interface {
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error
 	CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error
-	CallSetAsteriskID(ctx context.Context, id uuid.UUID, asteriskID string, tmUpdate string) error
 	CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error
 	CallSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error

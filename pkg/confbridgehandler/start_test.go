@@ -12,29 +12,18 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func Test_startContextIncomingTypeConference(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	h := &confbridgeHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		cache:         mockCache,
-	}
 
 	tests := []struct {
 		name string
 
-		channel    *channel.Channel
+		channel   *channel.Channel
+		channelID string
+
 		callID     uuid.UUID
 		confbridge *confbridge.Confbridge
 		data       map[string]string
@@ -48,6 +37,7 @@ func Test_startContextIncomingTypeConference(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: "d93fdf46-977c-11ec-8403-5b0f71484cde",
 			},
+			"asterisk-call-5765d977d8-c4k5q-1629605410.6626",
 			uuid.FromStringOrNil("3c93499c-977e-11ec-bb53-03fb8063aed1"),
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("3c48edc0-977e-11ec-b248-8b86ab79e4ff"),
@@ -67,10 +57,27 @@ func Test_startContextIncomingTypeConference(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &confbridgeHandler{
+				db:             mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				cache:          mockCache,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelAnswer(ctx, tt.channel.AsteriskID, tt.channel.ID).Return(nil)
-			err := h.startContextIncomingTypeConference(ctx, tt.channel, tt.data, tt.callID, tt.confbridge)
+			mockChannel.EXPECT().Answer(ctx, tt.channelID).Return(nil)
+			err := h.startContextIncomingTypeConference(ctx, tt.channelID, tt.data, tt.callID, tt.confbridge)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -79,25 +86,12 @@ func Test_startContextIncomingTypeConference(t *testing.T) {
 }
 
 func Test_startContextIncomingTypeConnect(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	h := &confbridgeHandler{
-		db:            mockDB,
-		reqHandler:    mockReq,
-		notifyHandler: mockNotify,
-		cache:         mockCache,
-	}
 
 	tests := []struct {
 		name string
 
-		channel    *channel.Channel
+		channelID string
+
 		callID     uuid.UUID
 		confbridge *confbridge.Confbridge
 		data       map[string]string
@@ -105,12 +99,8 @@ func Test_startContextIncomingTypeConnect(t *testing.T) {
 		{
 			"call already exist",
 
-			&channel.Channel{
-				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
-				AsteriskID:        "80:fa:5b:5e:da:81",
-				Name:              "PJSIP/in-voipbin-00000948",
-				DestinationNumber: "9d7ecb3c-977e-11ec-bce7-abaa62ee4790",
-			},
+			"asterisk-call-5765d977d8-c4k5q-1629605410.6626",
+
 			uuid.FromStringOrNil("9ddb42ea-977e-11ec-8245-7f56a442dbdc"),
 			&confbridge.Confbridge{
 				ID:       uuid.FromStringOrNil("9dad7bb2-977e-11ec-935a-4f47ed77038e"),
@@ -130,12 +120,8 @@ func Test_startContextIncomingTypeConnect(t *testing.T) {
 		{
 			"first call",
 
-			&channel.Channel{
-				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
-				AsteriskID:        "80:fa:5b:5e:da:81",
-				Name:              "PJSIP/in-voipbin-00000948",
-				DestinationNumber: "01009e28-9794-11ec-bc54-034deaa2338f",
-			},
+			"asterisk-call-5765d977d8-c4k5q-1629605410.6626",
+
 			uuid.FromStringOrNil("0156d8b0-9794-11ec-80b3-7fe4ef675ba1"),
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("017f3f80-9794-11ec-8ebb-f7a30d24d78f"),
@@ -155,19 +141,35 @@ func Test_startContextIncomingTypeConnect(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &confbridgeHandler{
+				db:             mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				cache:          mockCache,
+				channelHandler: mockChannel,
+			}
+
 			ctx := context.Background()
 
 			if len(tt.confbridge.ChannelCallIDs) == 0 {
-				mockReq.EXPECT().AstChannelRing(ctx, tt.channel.AsteriskID, tt.channel.ID).Return(nil)
+				mockChannel.EXPECT().Ring(ctx, tt.channelID).Return(nil)
 			} else {
-				mockReq.EXPECT().AstChannelAnswer(ctx, tt.channel.AsteriskID, tt.channel.ID).Return(nil)
-
+				mockChannel.EXPECT().Answer(ctx, tt.channelID).Return(nil)
 				for channelID := range tt.confbridge.ChannelCallIDs {
-					mockReq.EXPECT().AstChannelAnswer(ctx, tt.channel.AsteriskID, channelID).Return(nil)
+					mockChannel.EXPECT().Answer(ctx, channelID).Return(nil)
 				}
 			}
 
-			err := h.startContextIncomingTypeConnect(ctx, tt.channel, tt.data, tt.callID, tt.confbridge)
+			err := h.startContextIncomingTypeConnect(ctx, tt.channelID, tt.data, tt.callID, tt.confbridge)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

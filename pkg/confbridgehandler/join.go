@@ -3,18 +3,16 @@ package confbridgehandler
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
-
-const contextCallJoin = "call-join"
 
 // createEndpointTarget creates target endpoint(destination) address for conference join.
 // This will create a SIP destination address towards conference Asterisk to joining the conference.
@@ -63,38 +61,22 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 		return err
 	}
 
-	// get call
-	c, err := h.db.CallGet(ctx, callID)
+	// get call info
+	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
-		return err
+		return errors.Wrap(err, "could not get call info")
 	}
 
-	// // answer the call. it is safe to call this for answered call.
-	// if c.Status == call.StatusRinging {
-	// 	log.Debugf("Call was not answered. Answering the call.")
-	// 	if err := h.reqHandler.AstChannelAnswer(ctx, c.AsteriskID, c.ChannelID); err != nil {
-	// 		log.Errorf("Could not answer the call. err: %v", err)
-	// 		return err
-	// 	}
-	// }
-
 	// check the confbridge's bridge does exist
-	if cb.BridgeID == "" || !h.isBridgeExist(ctx, cb.BridgeID) {
+	if cb.BridgeID == "" || !h.bridgeHandler.IsExist(ctx, cb.BridgeID) {
 		// the conference's bridge has gone somehow.
 		// we need to create a new bridge for this conference.
 		log.Infof("Could not find valid conference bridge. Creating a new bridge for the conference. bridge: %s", cb.BridgeID)
 
-		timeout := time.Second * 1
-		if err := h.createConfbridgeBridgeWithTimeout(ctx, cb.ID, timeout); err != nil {
-			log.Errorf("Could not create a conference bridge. err: %v", err)
-			return err
-		}
-
-		// get updated confbridge
-		cb, err = h.db.ConfbridgeGet(ctx, confbridgeID)
+		cb, err = h.createConfbridgeBridge(ctx, cb.ID)
 		if err != nil {
-			log.Errorf("Could not get conference after bridge update. err: %v", err)
+			log.Errorf("Could not create a conference bridge. err: %v", err)
 			return err
 		}
 	}
@@ -112,7 +94,7 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 	// bridge_id: The bridge ID where this channel entered after StasisStart.
 	// call_id: The call ID which this channel has related with.
 	args := fmt.Sprintf("context=%s,confbridge_id=%s,bridge_id=%s,call_id=%s",
-		contextCallJoin,
+		common.ContextJoinCall,
 		cb.ID.String(),
 		c.BridgeID,
 		c.ID.String(),
@@ -125,8 +107,8 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 	}
 
 	// create a another channel with joining context
-	channelID := uuid.Must(uuid.NewV4())
-	tmp, err := h.reqHandler.AstChannelCreate(ctx, c.AsteriskID, channelID.String(), args, dialDestination, "", "vp8", "", variables)
+	channelID := h.utilHandler.CreateUUID()
+	tmp, err := h.channelHandler.StartChannelWithBaseChannel(ctx, c.ChannelID, channelID.String(), args, dialDestination, "", "vp8", "", variables)
 	if err != nil {
 		log.Errorf("Could not create a channel for joining. err: %v", err)
 		return err
@@ -136,67 +118,34 @@ func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.
 	return nil
 }
 
-// isBridgeExist returns true if the given bridge does exist
-func (h *confbridgeHandler) isBridgeExist(ctx context.Context, id string) bool {
-	if id == "" {
-		logrus.Debugf("The bridge id is invalid. Consider this bridge does not exist. bridge: %s", id)
-		return false
-	}
-
-	br, err := h.bridgeHandler.Get(ctx, id)
-	if err != nil {
-		logrus.Debugf("Could not get bridge info from the database. Consider this bridge does not exist. bridge: %s, err: %v", id, err)
-		return false
-	}
-
-	if br.TMDelete < dbhandler.DefaultTimeStamp {
-		logrus.WithFields(
-			logrus.Fields{
-				"bridge": br,
-			},
-		).Debugf("The bridge info marked as deleted. Consider this bridge does not exist. bridge: %s", id)
-		return false
-	}
-
-	// get bridge from the asterisk
-	_, err = h.reqHandler.AstBridgeGet(ctx, br.AsteriskID, br.ID)
-	if err != nil {
-		logrus.Debugf("Could not get bridge info from the asterisk. Consider this bridge does not exist. bridge: %s, err: %v", id, err)
-		return false
-	}
-
-	return true
-}
-
-// createConfbridgeBridgeWithTimeout creates the bridge for confbridge
-func (h *confbridgeHandler) createConfbridgeBridgeWithTimeout(ctx context.Context, id uuid.UUID, timeout time.Duration) error {
-	bridgeID := uuid.Must(uuid.NewV4()).String()
-	bridgeName := generateBridgeName(bridge.ReferenceTypeConfbridge, id)
-
+// createConfbridgeBridge creates the bridge for confbridge
+func (h *confbridgeHandler) createConfbridgeBridge(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":          "createConfbridgeBridge",
 			"confbridge_id": id,
-			"bridge_id":     bridgeID,
 		},
 	)
 
-	// create a bridge
-	if err := h.reqHandler.AstBridgeCreate(ctx, requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing}); err != nil {
-		log.Errorf("Could not create a bridge for a confbridge. err: %v", err)
-		return err
-	}
+	bridgeID := h.utilHandler.CreateUUID().String()
+	bridgeName := generateBridgeName(bridge.ReferenceTypeConfbridge, id)
+	log.Debugf("Creating a bridge for confbridge. birdge_id: %s, birdge_name: %s", bridgeID, bridgeName)
 
-	br, err := h.bridgeHandler.GetWithTimeout(ctx, bridgeID, timeout)
+	// create a bridge
+	br, err := h.bridgeHandler.Start(ctx, requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing})
 	if err != nil {
-		log.Errorf("Could not get a created bridge within timeout. err: %v", err)
-		return err
+		log.Errorf("Could not create bridge for a confbridge. err: %v", err)
+		return nil, errors.Wrap(err, "could not create a bridge for the confbridge")
 	}
+	log.WithField("bridge", br).Debugf("Created a bridge for confbridge. bridge_id: %s", br.ID)
 
 	// set new bridge id to the confbridge
-	if err := h.db.ConfbridgeSetBridgeID(ctx, id, br.ID); err != nil {
-		log.Errorf("Could not set the new bridge id for a confbridge. err: %v", err)
-		return err
+	res, err := h.UpdateBridgeID(ctx, id, br.ID)
+	if err != nil {
+		log.Errorf("Could not update the bridge id. err: %v", err)
+		return nil, errors.Wrap(err, "could not update the bridge id")
 	}
+	log.WithField("confbridge", res).Debugf("Updated conbridge info. confbridge_id: %s", res.ID)
 
-	return nil
+	return res, nil
 }

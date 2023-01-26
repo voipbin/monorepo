@@ -3,6 +3,7 @@ package callhandler
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -14,21 +15,23 @@ const (
 )
 
 // startHandlerContextApplication handles contextApplication context type of StasisStart event.
-func (h *callHandler) applicationHandleAMD(ctx context.Context, cn *channel.Channel, data map[string]string) error {
+func (h *callHandler) applicationHandleAMD(ctx context.Context, channelID string, data map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "applicationHandleAMD",
-		"channel_id": cn.ID,
+		"channel_id": channelID,
 		"call_id":    data["call_id"],
 	})
 	log.Debug("Executing the applciationHandleAMD.")
 
-	if err := h.reqHandler.AstChannelVariableSet(ctx, cn.AsteriskID, cn.ID, "VB-TYPE", string(channel.TypeApplication)); err != nil {
+	if err := h.channelHandler.VariableSet(ctx, channelID, "VB-TYPE", string(channel.TypeApplication)); err != nil {
 		log.Errorf("Could not set channel variable. err: %v", err)
+		return errors.Wrap(err, "could not set channel variable")
 	}
 
 	// put the cahnnel to the amd
-	if errContinue := h.reqHandler.AstChannelContinue(ctx, cn.AsteriskID, cn.ID, serviceContextAMD, "", 0, ""); errContinue != nil {
+	if errContinue := h.channelHandler.Continue(ctx, channelID, serviceContextAMD, "", 0, ""); errContinue != nil {
 		log.Errorf("Could not continue the channel. err: %v", errContinue)
+		return errors.Wrap(errContinue, "could not continue the channel")
 	}
 
 	return nil

@@ -13,21 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func TestEventHandlerContactStatusChange(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockSvc := callhandler.NewMockCallHandler(mc)
-
-	h := eventHandler{
-		db:          mockDB,
-		rabbitSock:  mockSock,
-		reqHandler:  mockReq,
-		callHandler: mockSvc,
-	}
+func Test_EventHandlerContactStatusChange(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -64,6 +50,20 @@ func TestEventHandlerContactStatusChange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockSvc := callhandler.NewMockCallHandler(mc)
+
+			h := eventHandler{
+				db:          mockDB,
+				rabbitSock:  mockSock,
+				reqHandler:  mockReq,
+				callHandler: mockSvc,
+			}
 			ctx := context.Background()
 
 			mockReq.EXPECT().RegistrarV1ContactUpdate(gomock.Any(), tt.endpoint).Return(nil)

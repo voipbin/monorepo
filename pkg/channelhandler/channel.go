@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -22,10 +23,6 @@ func (h *channelHandler) Create(
 	channelType channel.Type,
 	tech channel.Tech,
 
-	// sip information
-	sipCallID string,
-	sipTransport channel.SIPTransport,
-
 	// source/destination
 	sourceName string,
 	sourceNumber string,
@@ -33,16 +30,6 @@ func (h *channelHandler) Create(
 	destinationNumber string,
 
 	state ari.ChannelState,
-	data map[string]interface{},
-	stasisName string,
-	stasisData map[string]string,
-	bridgeID string,
-	playbackID string,
-
-	dialResult string,
-	hangupCause ari.ChannelCause,
-
-	direction channel.Direction,
 ) (*channel.Channel, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -58,8 +45,8 @@ func (h *channelHandler) Create(
 		Type:       channelType,
 		Tech:       tech,
 
-		SIPCallID:    sipCallID,
-		SIPTransport: sipTransport,
+		SIPCallID:    "",
+		SIPTransport: channel.SIPTransportNone,
 
 		SourceName:        sourceName,
 		SourceNumber:      sourceNumber,
@@ -67,15 +54,15 @@ func (h *channelHandler) Create(
 		DestinationNumber: destinationNumber,
 
 		State:      state,
-		Data:       data,
-		StasisName: stasisName,
-		StasisData: stasisData,
-		BridgeID:   bridgeID,
-		PlaybackID: playbackID,
+		Data:       map[string]interface{}{},
+		StasisName: "",
+		StasisData: map[string]string{},
+		BridgeID:   "",
+		PlaybackID: "",
 
-		DialResult:  dialResult,
-		HangupCause: hangupCause,
-		Direction:   direction,
+		DialResult:  "",
+		HangupCause: ari.ChannelCauseUnknown,
+		Direction:   channel.DirectionNone,
 	}
 	log.WithField("channel", c).Debugf("Creating a new channel. channel_id: %s", c.ID)
 
@@ -94,6 +81,24 @@ func (h *channelHandler) Create(
 	return res, nil
 }
 
+// get returns call.
+func (h *channelHandler) get(ctx context.Context, id string) (*channel.Channel, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "get",
+			"channel_id": id,
+		},
+	)
+
+	res, err := h.db.ChannelGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get channel. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // Get returns call.
 func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, error) {
 	log := logrus.WithFields(
@@ -103,7 +108,11 @@ func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, 
 		},
 	)
 
-	res, err := h.db.ChannelGet(ctx, id)
+	// we are giving some delay timeoute to getting a channel info.
+	// because we are creating a channel info after receiving a ChannelCreate ari event.
+	// but it is possible to receive other ari channel event earlier than creating a chanenl info.
+	// for example, it is possible to get StasisStart event earlier than process the ChannelCreate event.
+	res, err := h.getWithTimeout(ctx, id, defaultExistTimeout)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
 		return nil, err
@@ -285,6 +294,52 @@ func (h *channelHandler) UpdateState(ctx context.Context, id string, state ari.C
 	return res, nil
 }
 
+// UpdateStasisNameAndStasisData updates the channel's stasis_name and stasis_data.
+func (h *channelHandler) UpdateStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) (*channel.Channel, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "UpdateStasisNameAndStasisData",
+			"channel_id": id,
+		},
+	)
+
+	if errSet := h.db.ChannelSetStasisNameAndStasisData(ctx, id, stasisName, stasisData); errSet != nil {
+		log.Errorf("Could not update the channel stasis_name and stasis_data. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not update the channel stasis_name and stasis_data")
+	}
+
+	res, err := h.db.ChannelGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated channel info. channel_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateStasisName updates the channel's stasis_name.
+func (h *channelHandler) UpdateStasisName(ctx context.Context, id string, stasisName string) (*channel.Channel, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "UpdateStasisName",
+			"channel_id": id,
+		},
+	)
+
+	if errSet := h.db.ChannelSetStasis(ctx, id, stasisName); errSet != nil {
+		log.Errorf("Could not set channel's stasis name. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not set the channel stasis name")
+	}
+
+	res, err := h.db.ChannelGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated channel info. channel_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // UpdateBridgeID updates the channel's bridge id.
 func (h *channelHandler) UpdateBridgeID(ctx context.Context, id string, bridgeID string) (*channel.Channel, error) {
 	log := logrus.WithFields(
@@ -309,8 +364,32 @@ func (h *channelHandler) UpdateBridgeID(ctx context.Context, id string, bridgeID
 	return res, nil
 }
 
-// GetWithTimeout gets the channel with for given timeout.
-func (h *channelHandler) GetWithTimeout(ctx context.Context, id string, timeout time.Duration) (*channel.Channel, error) {
+// UpdatePlaybackID updates the channel's playback id.
+func (h *channelHandler) UpdatePlaybackID(ctx context.Context, id string, playbackID string) (*channel.Channel, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "UpdatePlaybackID",
+			"channel_id": id,
+		},
+	)
+	log.Debugf("Updating channel's playback id. channel_id: %s, playback_id: %s", id, playbackID)
+
+	if errSet := h.db.ChannelSetPlaybackID(ctx, id, playbackID); errSet != nil {
+		log.Errorf("Could not update the channel's playback id. channel_id: %s, err: %v", id, errSet)
+		return nil, errSet
+	}
+
+	res, err := h.db.ChannelGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated channel info. channel_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// getWithTimeout gets the channel within given timeout.
+func (h *channelHandler) getWithTimeout(ctx context.Context, id string, timeout time.Duration) (*channel.Channel, error) {
 	cctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -324,7 +403,7 @@ func (h *channelHandler) GetWithTimeout(ctx context.Context, id string, timeout 
 				return
 
 			default:
-				tmp, err := h.Get(cctx, id)
+				tmp, err := h.get(cctx, id)
 				if err != nil {
 					time.Sleep(defaultDelayTimeout)
 					continue

@@ -15,6 +15,7 @@ import (
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 )
 
 const (
@@ -116,7 +117,6 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 		id,
 		customerID,
 
-		"",
 		channelID,
 		"",
 
@@ -124,12 +124,6 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 		af.ID,
 		uuid.Nil,
 		call.TypeFlow,
-
-		uuid.Nil,
-		[]uuid.UUID{},
-
-		uuid.Nil,
-		[]uuid.UUID{},
 
 		&source,
 		&destination,
@@ -358,7 +352,7 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 	}
 
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s", ContextOutgoingCall, c.ID)
+	appArgs := fmt.Sprintf("context=%s,call_id=%s", common.ContextOutgoingCall, c.ID)
 
 	// set variables
 	variables := map[string]string{
@@ -367,7 +361,7 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 	}
 
 	// create a channel
-	tmp, err := h.reqHandler.AstChannelCreate(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", variables)
+	tmp, err := h.channelHandler.StartChannel(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", variables)
 	if err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 

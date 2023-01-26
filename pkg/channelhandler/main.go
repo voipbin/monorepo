@@ -6,7 +6,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -27,28 +29,14 @@ type ChannelHandler interface {
 		channelType channel.Type,
 		tech channel.Tech,
 
-		sipCallID string,
-		sipTransport channel.SIPTransport,
-
 		sourceName string,
 		sourceNumber string,
 		destinationName string,
 		destinationNumber string,
 
 		state ari.ChannelState,
-		data map[string]interface{},
-		stasisName string,
-		stasisData map[string]string,
-		bridgeID string,
-		playbackID string,
-
-		dialResult string,
-		hangupCause ari.ChannelCause,
-
-		direction channel.Direction,
 	) (*channel.Channel, error)
 	Get(ctx context.Context, id string) (*channel.Channel, error)
-	GetWithTimeout(ctx context.Context, id string, timeout time.Duration) (*channel.Channel, error)
 	Delete(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)
 	SetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	SetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
@@ -56,14 +44,44 @@ type ChannelHandler interface {
 	SetSIPCallID(ctx context.Context, id string, sipCallID string) error
 	SetType(ctx context.Context, id string, channelType channel.Type) error
 
+	AddressGetSource(cn *channel.Channel, addressType commonaddress.Type) *commonaddress.Address
+	AddressGetDestination(cn *channel.Channel, addressType commonaddress.Type) *commonaddress.Address
+
+	UpdateStasisName(ctx context.Context, id string, stasisName string) (*channel.Channel, error)
 	UpdateState(ctx context.Context, id string, state ari.ChannelState) (*channel.Channel, error)
 	UpdateBridgeID(ctx context.Context, id string, bridgeID string) (*channel.Channel, error)
+	UpdateStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) (*channel.Channel, error)
+	UpdatePlaybackID(ctx context.Context, id string, playbackID string) (*channel.Channel, error)
+
+	Answer(ctx context.Context, id string) error
+
+	StartChannelWithBaseChannel(ctx context.Context, baseChannelID string, id string, appArgs string, endpoint string, otherChannelID string, originator string, formats string, variables map[string]string) (*channel.Channel, error)
+	StartChannel(ctx context.Context, asteriskID string, id string, appArgs string, endpoint string, otherChannelID string, originator string, formats string, variables map[string]string) (*channel.Channel, error)
+	StartSnoop(ctx context.Context, id string, snoopID string, appArgs string, spy channel.SnoopDirection, whisper channel.SnoopDirection) (*channel.Channel, error)
+	StartExternalMedia(ctx context.Context, asteriskID string, id string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*channel.Channel, error)
+
+	DTMFSend(ctx context.Context, id string, digit string, duration int, before int, between int, after int) error
 
 	Hangup(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)
 	HangingUp(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)
 	HangingUpWithAsteriskID(ctx context.Context, asteriskID string, id string, cause ari.ChannelCause) error
+	HangingUpWithDelay(ctx context.Context, id string, cause ari.ChannelCause, delay int) (*channel.Channel, error)
 
 	HealthCheck(ctx context.Context, channelID string, retryCount int, retryCountMax int, delay int)
+
+	Continue(ctx context.Context, id string, context string, exten string, priority int, label string) error
+
+	Play(ctx context.Context, id string, actionID uuid.UUID, medias []string, language string) error
+	PlaybackStop(ctx context.Context, id string) error
+
+	Redirect(ctx context.Context, id string, context string, exten string, priority string) error
+	Record(ctx context.Context, id string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
+	Ring(ctx context.Context, id string) error
+
+	VariableGet(ctx context.Context, id string, key string) (string, error)
+	VariableSet(ctx context.Context, id string, key string, value string) error
+
+	Dial(ctx context.Context, id string, caller string, timeout int) error
 }
 
 // channelHandler structure for service handle
@@ -77,6 +95,7 @@ type channelHandler struct {
 // list of default values
 const (
 	defaultDelayTimeout = time.Millisecond * 150
+	defaultExistTimeout = time.Second * 3
 )
 
 var (

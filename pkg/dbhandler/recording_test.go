@@ -41,7 +41,7 @@ func Test_RecordingCreate(t *testing.T) {
 					"call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000_out.wav",
 				},
 
-				AsteriskID: "3e:50:6b:43:bb:30",
+				// AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelIDs: []string{
 					"b10c2e84-2b59-11eb-b963-db658ca2c824",
 					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",
@@ -66,7 +66,7 @@ func Test_RecordingCreate(t *testing.T) {
 					"call_b1439856-2b59-11eb-89c1-678a053c5c86_2020-04-18T03:22:17.995000_out.wav",
 				},
 
-				AsteriskID: "3e:50:6b:43:bb:30",
+				// AsteriskID: "3e:50:6b:43:bb:30",
 				ChannelIDs: []string{
 					"b10c2e84-2b59-11eb-b963-db658ca2c824",
 					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",

@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -35,10 +36,9 @@ func Test_Hangup(t *testing.T) {
 				HangupCause: ari.ChannelCauseNormalClearing,
 			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
-				ChannelID:  "70271162-1772-11ec-a941-fb10a2f9c2e7",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Status:     call.StatusProgressing,
+				ID:        uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
+				ChannelID: "70271162-1772-11ec-a941-fb10a2f9c2e7",
+				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
@@ -52,10 +52,9 @@ func Test_Hangup(t *testing.T) {
 				HangupCause: ari.ChannelCauseNormalClearing,
 			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("e37dcd4e-1778-11ec-95c1-5b6f4657bd15"),
-				ChannelID:  "e3c68930-1778-11ec-8c04-0bcef8a75b4f",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Status:     call.StatusProgressing,
+				ID:        uuid.FromStringOrNil("e37dcd4e-1778-11ec-95c1-5b6f4657bd15"),
+				ChannelID: "e3c68930-1778-11ec-8c04-0bcef8a75b4f",
+				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
@@ -78,6 +77,7 @@ func Test_Hangup(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
@@ -85,6 +85,7 @@ func Test_Hangup(t *testing.T) {
 				db:             mockDB,
 				notifyHandler:  mockNotfiy,
 				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
 			ctx := context.Background()
@@ -92,7 +93,7 @@ func Test_Hangup(t *testing.T) {
 			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 
 			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().AstBridgeDelete(ctx, tt.call.AsteriskID, tt.call.BridgeID).Return(nil)
+			mockBridge.EXPECT().Destroy(ctx, tt.call.BridgeID).Return(nil)
 			mockDB.EXPECT().CallSetHangup(ctx, tt.call.ID, call.HangupReasonNormal, call.HangupByRemote, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallHungup, gomock.Any())
@@ -101,10 +102,9 @@ func Test_Hangup(t *testing.T) {
 			for _, chainedCallID := range tt.call.ChainedCallIDs {
 				// Hangingup
 				tmpCall := &call.Call{
-					AsteriskID: "80:fa:5b:5e:da:81",
-					ChannelID:  "b0c8ac74-1779-11ec-8038-fbb981f4ed27",
-					ID:         chainedCallID,
-					Status:     call.StatusProgressing,
+					ChannelID: "b0c8ac74-1779-11ec-8038-fbb981f4ed27",
+					ID:        chainedCallID,
+					Status:    call.StatusProgressing,
 				}
 
 				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
@@ -113,8 +113,7 @@ func Test_Hangup(t *testing.T) {
 				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating).Return(nil)
 				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
 				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, gomock.Any())
-				mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-				mockReq.EXPECT().AstChannelHangup(ctx, gomock.Any(), gomock.Any(), ari.ChannelCauseNormalClearing, 0)
+				mockChannel.EXPECT().HangingUp(ctx, tmpCall.ChannelID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
 			}
 
 			if err := h.Hangup(ctx, tt.channel); err != nil {
@@ -135,10 +134,9 @@ func TestHangupWithReason(t *testing.T) {
 		{
 			"normal",
 			&call.Call{
-				ID:         uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
-				ChannelID:  "70271162-1772-11ec-a941-fb10a2f9c2e7",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Status:     call.StatusProgressing,
+				ID:        uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
+				ChannelID: "70271162-1772-11ec-a941-fb10a2f9c2e7",
+				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
@@ -199,10 +197,9 @@ func Test_HanginUp(t *testing.T) {
 			ari.ChannelCauseNormalClearing,
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("785880aa-1777-11ec-abec-2b721201c1af"),
-				ChannelID:  "7877dce8-1777-11ec-b4ea-3bb953ca2fe7",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Status:     call.StatusProgressing,
+				ID:        uuid.FromStringOrNil("785880aa-1777-11ec-abec-2b721201c1af"),
+				ChannelID: "7877dce8-1777-11ec-b4ea-3bb953ca2fe7",
+				Status:    call.StatusProgressing,
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
@@ -221,11 +218,10 @@ func Test_HanginUp(t *testing.T) {
 			ari.ChannelCauseNormalClearing,
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("ac477e50-ab1c-11ec-b50f-7bb28cc97fd4"),
-				ChannelID:  "ac7411a4-ab1c-11ec-bce4-e7e983448875",
-				AsteriskID: "80:fa:5b:5e:da:81",
-				Status:     call.StatusDialing,
-				Direction:  call.DirectionOutgoing,
+				ID:        uuid.FromStringOrNil("ac477e50-ab1c-11ec-b50f-7bb28cc97fd4"),
+				ChannelID: "ac7411a4-ab1c-11ec-bce4-e7e983448875",
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
@@ -249,14 +245,14 @@ func Test_HanginUp(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
-			mockChan := channelhandler.NewMockChannelHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &callHandler{
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
 				notifyHandler:  mockNotfiy,
-				channelHandler: mockChan,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
@@ -270,8 +266,7 @@ func Test_HanginUp(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
-			mockChan.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.cause, 0).Return(nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.responseCall.ChannelID, tt.cause).Return(&channel.Channel{}, nil)
 
 			res, err := h.HangingUp(ctx, tt.id, tt.cause)
 			if err != nil {

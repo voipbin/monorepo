@@ -16,23 +16,34 @@ func (h *eventHandler) EventHandlerRecordingStarted(ctx context.Context, evt int
 
 	log := log.WithFields(
 		log.Fields{
-			"asterisk": e.AsteriskID,
-			"stasis":   e.Application,
-			"record":   e.Recording.Name,
+			"func":           "EventHandlerRecordingStarted",
+			"asterisk_id":    e.AsteriskID,
+			"stasis_name":    e.Application,
+			"recording_name": e.Recording.Name,
 		})
 
 	if !strings.HasSuffix(e.Recording.Name, "_in") {
-		// nothing to do here.
+		// for reference type call, we are making a 2 recordings channels for 1 recording
+		// and it makes race condition. So, rather than process in/out both, we process only the "in"
+		// because reference type confbridge, makes only "in".
+		// so, nothing to do here if it's not "in".
 		return nil
 	}
 
 	// parse recordingName and get recording
 	recordingName := strings.TrimSuffix(e.Recording.Name, "_in")
-	r, err := h.db.RecordingGetByRecordingName(ctx, recordingName)
+	r, err := h.recordingHandler.GetByRecordingName(ctx, recordingName)
 	if err != nil {
 		log.Errorf("Could not get the recording. err: %v", err)
 		return err
 	}
+
+	log = log.WithFields(
+		logrus.Fields{
+			"reference_type": r.ReferenceType,
+			"reference_id":   r.ReferenceID,
+		})
+	log.WithField("recording", r).Debugf("Executing EventHandlerRecordingStarted event. recording_id: %s", r.ID)
 
 	tmp, err := h.recordingHandler.Started(ctx, r.ID)
 	if err != nil {
@@ -57,13 +68,16 @@ func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt in
 		})
 
 	if !strings.HasSuffix(e.Recording.Name, "_in") {
-		// nothing to do here.
+		// for reference type call, we are making a 2 recordings channels for 1 recording
+		// and it makes race condition. So, rather than process in/out both, we process only the "in"
+		// because reference type confbridge, makes only "in".
+		// so, nothing to do here if it's not "in".
 		return nil
 	}
 
 	// parse recordingName and get recording
 	recordingName := strings.TrimSuffix(e.Recording.Name, "_in")
-	r, err := h.db.RecordingGetByRecordingName(ctx, recordingName)
+	r, err := h.recordingHandler.GetByRecordingName(ctx, recordingName)
 	if err != nil {
 		log.Errorf("Could not get the recording. err: %v", err)
 		return err

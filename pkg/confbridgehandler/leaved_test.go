@@ -3,6 +3,7 @@ package confbridgehandler
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -47,8 +48,10 @@ func Test_Leaved(t *testing.T) {
 				},
 			},
 			&bridge.Bridge{
-				AsteriskID: "00:11:22:33:44:55",
-				ID:         "1f940122-38e9-11ec-a25c-cb08db10a7c1",
+				AsteriskID:    "00:11:22:33:44:55",
+				ID:            "1f940122-38e9-11ec-a25c-cb08db10a7c1",
+				ReferenceType: bridge.ReferenceTypeConfbridge,
+				ReferenceID:   uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
 			},
 		},
 		{
@@ -71,8 +74,10 @@ func Test_Leaved(t *testing.T) {
 				},
 			},
 			&bridge.Bridge{
-				AsteriskID: "00:11:22:33:44:55",
-				ID:         "1f940122-38e9-11ec-a25c-cb08db10a7c1",
+				AsteriskID:    "00:11:22:33:44:55",
+				ID:            "1f940122-38e9-11ec-a25c-cb08db10a7c1",
+				ReferenceType: bridge.ReferenceTypeConfbridge,
+				ReferenceID:   uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),
 			},
 		},
 	}
@@ -97,8 +102,9 @@ func Test_Leaved(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.confbridge.ID, tt.channel.ID).Return(nil)
-			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.callID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
+
+			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.callID, uuid.Nil).Return(nil)
 
 			if tt.confbridge.Type == confbridge.TypeConnect && len(tt.confbridge.ChannelCallIDs) == 1 {
 				for _, joinedCallID := range tt.confbridge.ChannelCallIDs {
@@ -113,6 +119,8 @@ func Test_Leaved(t *testing.T) {
 			if err := h.Leaved(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			time.Sleep(time.Millisecond * 100)
 		})
 	}
 }

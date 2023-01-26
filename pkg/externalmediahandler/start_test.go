@@ -36,10 +36,12 @@ func Test_Start_reference_type_call(t *testing.T) {
 		responseCall                *call.Call
 		responseChannel             *channel.Channel
 		responseUUIDBridgeID        uuid.UUID
+		responseBridge              *bridge.Bridge
 		responseUUIDSnoopID         uuid.UUID
 		responseUUIDChannelID       uuid.UUID
 		responseUUIDExternalMediaID uuid.UUID
 
+		expectBridgeArgs     string
 		expectExternalHost   string
 		expectEncapsulation  string
 		expectTransport      string
@@ -71,10 +73,14 @@ func Test_Start_reference_type_call(t *testing.T) {
 				ID:         "8066017c-02fb-11ec-ba6c-c320820accf1",
 			},
 			uuid.FromStringOrNil("9b6c7a78-96e3-11ed-904b-9baa2c0183fd"),
+			&bridge.Bridge{
+				ID: "9b6c7a78-96e3-11ed-904b-9baa2c0183fd",
+			},
 			uuid.FromStringOrNil("80981342-96e3-11ed-bc85-830940cba8ea"),
 			uuid.FromStringOrNil("488feb00-96e3-11ed-8ae7-1fe9bc7a995f"),
 			uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
 
+			"reference_type=call-snoop,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
 			"example.com",
 			"rtp",
 			"udp",
@@ -109,12 +115,14 @@ func Test_Start_reference_type_call(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &externalMediaHandler{
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
 				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
 			ctx := context.Background()
@@ -123,13 +131,13 @@ func Test_Start_reference_type_call(t *testing.T) {
 			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseChannel, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridgeID)
-			mockReq.EXPECT().AstBridgeCreate(ctx, tt.responseChannel.AsteriskID, gomock.Any(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(nil)
+			mockBridge.EXPECT().Start(ctx, tt.responseChannel.AsteriskID, tt.responseUUIDBridgeID.String(), tt.expectBridgeArgs, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDSnoopID)
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.responseChannel.AsteriskID, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().StartSnoop(ctx, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannelID)
-			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.expectExternalHost, tt.expectEncapsulation, tt.expectTransport, tt.expectConnectionType, tt.expectFormat, tt.expectDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDExternalMediaID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
@@ -219,13 +227,15 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &externalMediaHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				bridgeHandler: mockBridge,
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
 			ctx := context.Background()
@@ -235,7 +245,7 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 
 			// startExternalMedia
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannelID)
-			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.responseBridge.AsteriskID, tt.responseUUIDChannelID.String(), tt.expectExternalHost, constEncapsulation, constTransport, constConnectionType, constFormat, constDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseBridge.AsteriskID, tt.responseUUIDChannelID.String(), tt.expectExternalHost, constEncapsulation, constTransport, constConnectionType, constFormat, constDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDExternalMediaID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 

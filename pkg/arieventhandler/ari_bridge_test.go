@@ -31,7 +31,6 @@ func Test_EventHandlerBridgeCreated(t *testing.T) {
 		expectCreator       string
 		expectVideoMode     string
 		expectVideoSourceID string
-		expectChannelIDs    []string
 		expectReferenceType bridge.ReferenceType
 		expectReferenceID   uuid.UUID
 
@@ -72,7 +71,6 @@ func Test_EventHandlerBridgeCreated(t *testing.T) {
 			"Stasis",
 			"none",
 			"",
-			[]string{},
 			bridge.ReferenceTypeUnknown,
 			uuid.Nil,
 
@@ -114,7 +112,6 @@ func Test_EventHandlerBridgeCreated(t *testing.T) {
 				tt.expectCreator,
 				tt.expectVideoMode,
 				tt.expectVideoSourceID,
-				tt.expectChannelIDs,
 				tt.expectReferenceType,
 				tt.expectReferenceID,
 			).Return(tt.responseBridge, nil)
@@ -193,7 +190,7 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockBridge.EXPECT().GetWithTimeout(ctx, tt.expectBridgeID, defaultExistTimeout).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().Get(ctx, tt.expectBridgeID).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().Delete(ctx, tt.expectBridgeID).Return(tt.responseBridge, nil)
 
 			if err := h.EventHandlerBridgeDestroyed(ctx, tt.event); err != nil {

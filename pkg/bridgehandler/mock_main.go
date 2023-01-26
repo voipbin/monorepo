@@ -7,7 +7,6 @@ package bridgehandler
 import (
 	context "context"
 	reflect "reflect"
-	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -52,19 +51,47 @@ func (mr *MockBridgeHandlerMockRecorder) AddChannelID(ctx, id, channelID interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddChannelID", reflect.TypeOf((*MockBridgeHandler)(nil).AddChannelID), ctx, id, channelID)
 }
 
-// Create mocks base method.
-func (m *MockBridgeHandler) Create(ctx context.Context, asteriskID, id, name string, bridgeType bridge.Type, tech bridge.Tech, class, creator, videoMode, videoSourceID string, channelIDs []string, referenceType bridge.ReferenceType, referenceID uuid.UUID) (*bridge.Bridge, error) {
+// ChannelJoin mocks base method.
+func (m *MockBridgeHandler) ChannelJoin(ctx context.Context, id, channelID, role string, absorbDTMF, mute bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, asteriskID, id, name, bridgeType, tech, class, creator, videoMode, videoSourceID, channelIDs, referenceType, referenceID)
+	ret := m.ctrl.Call(m, "ChannelJoin", ctx, id, channelID, role, absorbDTMF, mute)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelJoin indicates an expected call of ChannelJoin.
+func (mr *MockBridgeHandlerMockRecorder) ChannelJoin(ctx, id, channelID, role, absorbDTMF, mute interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelJoin", reflect.TypeOf((*MockBridgeHandler)(nil).ChannelJoin), ctx, id, channelID, role, absorbDTMF, mute)
+}
+
+// ChannelKick mocks base method.
+func (m *MockBridgeHandler) ChannelKick(ctx context.Context, id, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelKick", ctx, id, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelKick indicates an expected call of ChannelKick.
+func (mr *MockBridgeHandlerMockRecorder) ChannelKick(ctx, id, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelKick", reflect.TypeOf((*MockBridgeHandler)(nil).ChannelKick), ctx, id, channelID)
+}
+
+// Create mocks base method.
+func (m *MockBridgeHandler) Create(ctx context.Context, asteriskID, id, name string, bridgeType bridge.Type, tech bridge.Tech, class, creator, videoMode, videoSourceID string, referenceType bridge.ReferenceType, referenceID uuid.UUID) (*bridge.Bridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, asteriskID, id, name, bridgeType, tech, class, creator, videoMode, videoSourceID, referenceType, referenceID)
 	ret0, _ := ret[0].(*bridge.Bridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockBridgeHandlerMockRecorder) Create(ctx, asteriskID, id, name, bridgeType, tech, class, creator, videoMode, videoSourceID, channelIDs, referenceType, referenceID interface{}) *gomock.Call {
+func (mr *MockBridgeHandlerMockRecorder) Create(ctx, asteriskID, id, name, bridgeType, tech, class, creator, videoMode, videoSourceID, referenceType, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockBridgeHandler)(nil).Create), ctx, asteriskID, id, name, bridgeType, tech, class, creator, videoMode, videoSourceID, channelIDs, referenceType, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockBridgeHandler)(nil).Create), ctx, asteriskID, id, name, bridgeType, tech, class, creator, videoMode, videoSourceID, referenceType, referenceID)
 }
 
 // Delete mocks base method.
@@ -82,6 +109,20 @@ func (mr *MockBridgeHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockBridgeHandler)(nil).Delete), ctx, id)
 }
 
+// Destroy mocks base method.
+func (m *MockBridgeHandler) Destroy(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Destroy", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Destroy indicates an expected call of Destroy.
+func (mr *MockBridgeHandlerMockRecorder) Destroy(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destroy", reflect.TypeOf((*MockBridgeHandler)(nil).Destroy), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockBridgeHandler) Get(ctx context.Context, id string) (*bridge.Bridge, error) {
 	m.ctrl.T.Helper()
@@ -97,19 +138,18 @@ func (mr *MockBridgeHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockBridgeHandler)(nil).Get), ctx, id)
 }
 
-// GetWithTimeout mocks base method.
-func (m *MockBridgeHandler) GetWithTimeout(ctx context.Context, id string, timeout time.Duration) (*bridge.Bridge, error) {
+// IsExist mocks base method.
+func (m *MockBridgeHandler) IsExist(ctx context.Context, id string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetWithTimeout", ctx, id, timeout)
-	ret0, _ := ret[0].(*bridge.Bridge)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "IsExist", ctx, id)
+	ret0, _ := ret[0].(bool)
+	return ret0
 }
 
-// GetWithTimeout indicates an expected call of GetWithTimeout.
-func (mr *MockBridgeHandlerMockRecorder) GetWithTimeout(ctx, id, timeout interface{}) *gomock.Call {
+// IsExist indicates an expected call of IsExist.
+func (mr *MockBridgeHandlerMockRecorder) IsExist(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWithTimeout", reflect.TypeOf((*MockBridgeHandler)(nil).GetWithTimeout), ctx, id, timeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExist", reflect.TypeOf((*MockBridgeHandler)(nil).IsExist), ctx, id)
 }
 
 // RemoveChannelID mocks base method.
@@ -125,4 +165,19 @@ func (m *MockBridgeHandler) RemoveChannelID(ctx context.Context, id, channelID s
 func (mr *MockBridgeHandlerMockRecorder) RemoveChannelID(ctx, id, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveChannelID", reflect.TypeOf((*MockBridgeHandler)(nil).RemoveChannelID), ctx, id, channelID)
+}
+
+// Start mocks base method.
+func (m *MockBridgeHandler) Start(ctx context.Context, asteriskID, bridgeID, bridgeName string, bridgeType []bridge.Type) (*bridge.Bridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start", ctx, asteriskID, bridgeID, bridgeName, bridgeType)
+	ret0, _ := ret[0].(*bridge.Bridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Start indicates an expected call of Start.
+func (mr *MockBridgeHandlerMockRecorder) Start(ctx, asteriskID, bridgeID, bridgeName, bridgeType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockBridgeHandler)(nil).Start), ctx, asteriskID, bridgeID, bridgeName, bridgeType)
 }

@@ -18,41 +18,37 @@ import (
 func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":          "Joined",
-			"confbridge_id": cn.StasisData["confbridge_id"],
-			"call_id":       cn.StasisData["call_id"],
-			"channel_id":    cn.ID,
-			"bridge_id":     br.ID,
+			"func":       "Joined",
+			"channel_id": cn.ID,
+			"bridge_id":  br.ID,
 		},
 	)
-	log.Debug("Joined channel to the confbridge.")
 
 	confbridgeID := uuid.FromStringOrNil(cn.StasisData["confbridge_id"])
 	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])
+	log = log.WithFields(logrus.Fields{
+		"conbridge_id": confbridgeID,
+		"call_id":      callID,
+	})
+	log.Debug("Joined channel to the confbridge.")
 
-	// add the call/channel info to the confbridge
-	if errChannelCallID := h.db.ConfbridgeAddChannelCallID(ctx, confbridgeID, cn.ID, callID); errChannelCallID != nil {
-		log.Errorf("Could not add the channel/call info to the confbridge. err: %v", errChannelCallID)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseUnallocated, 0)
-		return errors.Wrap(errChannelCallID, "could not add the confbridge's channel/call info")
+	cb, err := h.AddChannelCallID(ctx, confbridgeID, cn.ID, callID)
+	if err != nil {
+		log.Errorf("Could not add the channel/call info to the confbridge. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseUnallocated)
+		return errors.Wrap(err, "could not add the confbridge's channel/call info")
 	}
 
 	// set confbridge id to the call
 	if err := h.db.CallSetConfbridgeID(ctx, callID, confbridgeID); err != nil {
 		log.Errorf("Could not set the conference id for a call. err: %v", err)
-		_ = h.reqHandler.AstChannelHangup(ctx, cn.AsteriskID, cn.ID, ari.ChannelCauseNormalClearing, 0)
-		return err
-	}
-
-	cf, err := h.Get(ctx, confbridgeID)
-	if err != nil {
-		log.Errorf("Could not get confbridge info. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
 		return err
 	}
 
 	// Publish the event
 	evt := &confbridge.EventConfbridgeJoined{
-		Confbridge:   *cf,
+		Confbridge:   *cb,
 		JoinedCallID: callID,
 	}
 	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, evt)

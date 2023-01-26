@@ -13,6 +13,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -54,16 +56,20 @@ func TestBridgeLeftJoin(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.bridge.ReferenceID, uuid.Nil).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.bridge.ReferenceID).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
@@ -76,7 +82,7 @@ func TestBridgeLeftJoin(t *testing.T) {
 	}
 }
 
-func TestBridgeLeftExternal(t *testing.T) {
+func Test_BridgeLeftExternal(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -125,21 +131,25 @@ func TestBridgeLeftExternal(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
 			}
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
 
 			if len(tt.bridge.ChannelIDs) == 0 {
-				mockReq.EXPECT().AstBridgeDelete(ctx, tt.bridge.AsteriskID, tt.bridge.ID)
+				mockBridge.EXPECT().Destroy(ctx, tt.bridge.ID).Return(nil)
 			} else {
 				for _, channelID := range tt.bridge.ChannelIDs {
-					mockReq.EXPECT().AstBridgeRemoveChannel(ctx, tt.bridge.AsteriskID, tt.bridge.ID, channelID).Return(nil)
+					mockBridge.EXPECT().ChannelKick(ctx, tt.bridge.ID, channelID).Return(nil)
 				}
 			}
 
@@ -176,16 +186,18 @@ func TestRemoveAllChannelsInBridge(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
 
 			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				bridgeHandler: mockBridge,
 			}
 
 			ctx := context.Background()
 
 			for _, channelID := range tt.bridge.ChannelIDs {
-				mockReq.EXPECT().AstBridgeRemoveChannel(ctx, tt.bridge.AsteriskID, tt.bridge.ID, channelID)
+				mockBridge.EXPECT().ChannelKick(ctx, tt.bridge.ID, channelID).Return(nil)
 			}
 			h.removeAllChannelsInBridge(ctx, tt.bridge)
 		})

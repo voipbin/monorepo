@@ -33,25 +33,12 @@ func (h *eventHandler) EventHandlerChannelCreated(ctx context.Context, evt inter
 		channel.TypeNone,
 		tech,
 
-		"",                       // sipCallID
-		channel.SIPTransportNone, // sipTransport
-
 		e.Channel.Caller.Name,
 		e.Channel.Caller.Number,
 		"",                       // destinationName
 		e.Channel.Dialplan.Exten, // destinationNumber
 
 		e.Channel.State,
-		map[string]interface{}{},
-
-		"",
-		map[string]string{},
-
-		"",
-		"",
-		"",
-		ari.ChannelCauseUnknown,
-		channel.DirectionNone,
 	)
 	if err != nil {
 		log.Errorf("Could not create a channel info. channel_id: %s, err: %v", cn.ID, err)
@@ -121,11 +108,10 @@ func (h *eventHandler) EventHandlerChannelEnteredBridge(ctx context.Context, evt
 		return err
 	}
 
-	_, err = h.bridgeHandler.GetWithTimeout(ctx, e.Bridge.ID, defaultExistTimeout)
-	if err != nil {
-		log.Errorf("Could not get the bridge within timeout. err: %v", err)
+	if !h.bridgeHandler.IsExist(ctx, e.Bridge.ID) {
+		log.Error("The given bridge is not in our database.")
 		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)
-		return err
+		return fmt.Errorf("no bridge found")
 	}
 
 	br, err := h.bridgeHandler.AddChannelID(ctx, e.Bridge.ID, e.Channel.ID)
@@ -162,15 +148,13 @@ func (h *eventHandler) EventHandlerChannelLeftBridge(ctx context.Context, evt in
 		return err
 	}
 
-	tmp, err := h.bridgeHandler.GetWithTimeout(ctx, e.Bridge.ID, defaultExistTimeout)
-	if err != nil {
+	if !h.bridgeHandler.IsExist(ctx, e.Bridge.ID) {
 		log.Error("The given bridge is not in our database.")
 		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)
 		return fmt.Errorf("no bridge found")
 	}
-	log.WithField("bridge", tmp).Debugf("Found bridge info. bridge_id: %s", tmp.ID)
 
-	br, err := h.bridgeHandler.RemoveChannelID(ctx, tmp.ID, e.Channel.ID)
+	br, err := h.bridgeHandler.RemoveChannelID(ctx, e.Bridge.ID, e.Channel.ID)
 	if err != nil {
 		log.Errorf("Could not remove the channel from the bridge. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)

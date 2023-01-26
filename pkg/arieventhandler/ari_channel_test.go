@@ -134,21 +134,11 @@ func Test_EventHandlerChannelCreated(t *testing.T) {
 				tt.expectName,
 				tt.expectChannelType,
 				tt.expectTech,
-				tt.expectSIPCallID,
-				tt.expectSIPTransport,
 				tt.expectSourceName,
 				tt.expectSourceNumber,
 				tt.expectDestinationName,
 				tt.expectDestinationNumber,
 				tt.expectState,
-				tt.expectData,
-				tt.expectStasisName,
-				tt.expectStasisData,
-				tt.expectBridgeID,
-				tt.expectPlaybackID,
-				tt.expectDialResult,
-				tt.expectHangupCause,
-				tt.expectDirection,
 			).Return(tt.responseChannel, nil)
 			mockRequest.EXPECT().CallV1ChannelHealth(gomock.Any(), tt.responseChannel.ID, gomock.Any(), gomock.Any(), gomock.Any())
 
@@ -312,10 +302,10 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 
 	type test struct {
-		name    string
-		event   *ari.ChannelEnteredBridge
-		channel *channel.Channel
-		bridge  *bridge.Bridge
+		name           string
+		event          *ari.ChannelEnteredBridge
+		channel        *channel.Channel
+		responseBridge *bridge.Bridge
 	}
 
 	tests := []test{
@@ -492,12 +482,12 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, tt.bridge.ID).Return(tt.channel, nil)
-			mockBridge.EXPECT().GetWithTimeout(ctx, tt.bridge.ID, defaultExistTimeout).Return(tt.bridge, nil)
-			mockBridge.EXPECT().AddChannelID(ctx, tt.bridge.ID, tt.channel.ID).Return(tt.bridge, nil)
+			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, tt.responseBridge.ID).Return(tt.channel, nil)
+			mockBridge.EXPECT().IsExist(ctx, tt.event.Bridge.ID).Return(true)
+			mockBridge.EXPECT().AddChannelID(ctx, tt.responseBridge.ID, tt.channel.ID).Return(tt.responseBridge, nil)
 
 			if tt.channel.Type == channel.TypeConfbridge {
-				mockConfbridge.EXPECT().ARIChannelEnteredBridge(gomock.Any(), tt.channel, tt.bridge).Return(nil)
+				mockConfbridge.EXPECT().ARIChannelEnteredBridge(gomock.Any(), tt.channel, tt.responseBridge).Return(nil)
 			}
 
 			if err := h.EventHandlerChannelEnteredBridge(ctx, tt.event); err != nil {
@@ -510,10 +500,10 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 
 	tests := []struct {
-		name    string
-		event   *ari.ChannelLeftBridge
-		channel *channel.Channel
-		bridge  *bridge.Bridge
+		name           string
+		event          *ari.ChannelLeftBridge
+		channel        *channel.Channel
+		responseBridge *bridge.Bridge
 	}{
 		{
 			"channel left from the conference bridge",
@@ -738,16 +728,16 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, "").Return(tt.channel, nil)
-			mockBridge.EXPECT().GetWithTimeout(ctx, tt.bridge.ID, defaultExistTimeout).Return(tt.bridge, nil)
-			mockBridge.EXPECT().RemoveChannelID(ctx, tt.bridge.ID, tt.channel.ID).Return(tt.bridge, nil)
+			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.event.Channel.ID, "").Return(tt.channel, nil)
+			mockBridge.EXPECT().IsExist(ctx, tt.event.Bridge.ID).Return(true)
+			mockBridge.EXPECT().RemoveChannelID(ctx, tt.event.Bridge.ID, tt.event.Channel.ID).Return(tt.responseBridge, nil)
 
-			switch tt.bridge.ReferenceType {
+			switch tt.responseBridge.ReferenceType {
 			case bridge.ReferenceTypeConfbridge, bridge.ReferenceTypeConfbridgeSnoop:
-				mockConfbridge.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.bridge).Return(nil)
+				mockConfbridge.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.responseBridge).Return(nil)
 
 			case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
-				mockCall.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.bridge).Return(nil)
+				mockCall.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.responseBridge).Return(nil)
 			}
 
 			if err := h.EventHandlerChannelLeftBridge(ctx, tt.event); err != nil {

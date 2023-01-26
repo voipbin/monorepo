@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -15,60 +16,62 @@ func (h *eventHandler) EventHandlerStasisStart(ctx context.Context, evt interfac
 
 	log := log.WithFields(
 		log.Fields{
-			"channel_id":  e.Channel.ID,
+			"func":        "EventHandlerStasisStart",
 			"asterisk_id": e.AsteriskID,
+			"channel_id":  e.Channel.ID,
 			"stasis_name": e.Application,
+			"stasis_data": e.Args,
 		})
 
-	tmp, err := h.channelHandler.GetWithTimeout(ctx, e.Channel.ID, defaultExistTimeout)
+	tmp, err := h.channelHandler.Get(ctx, e.Channel.ID)
 	if err != nil {
 		log.Error("The given channel is not in our database.")
-		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)
-		return fmt.Errorf("no channel found")
+		_ = h.channelHandler.HangingUpWithAsteriskID(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking)
+		return errors.Wrap(err, "no channel found")
 	}
 	log.WithField("channel", tmp).Debugf("Found channel info. channel_id: %s", tmp.ID)
 
-	// get stasis name and stasis data
+	// get stasis name and parse the stasis data
 	stasisName := e.Application
-	stasisData := make(map[string]string, 1)
-	for k, v := range e.Args {
-		stasisData[k] = v
-	}
+	stasisData := e.Args
 
-	// update data and stasis
-	log.Debug("Updating channel stasis name and stasis data.")
-	if err := h.db.ChannelSetStasisNameAndStasisData(ctx, e.Channel.ID, stasisName, stasisData); err != nil {
-		// something went wrong. Hangup at here.
-		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated, 0)
-		return err
-	}
-
-	cn, err := h.db.ChannelGet(ctx, e.Channel.ID)
+	// update channel's stasis name and stasis data
+	cn, err := h.channelHandler.UpdateStasisNameAndStasisData(ctx, e.Channel.ID, stasisName, stasisData)
 	if err != nil {
-		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseUnallocated, 0)
+		log.Errorf("Could not update the channel's stasis name and stasis data. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
 
 	contextType := getContextType(stasisData["context"])
 	switch contextType {
 	case contextTypeCall:
-		return h.callHandler.ARIStasisStart(ctx, cn, stasisData)
+		err = h.callHandler.ARIStasisStart(ctx, cn)
 
-	case contextTypeConference:
-		return h.confbridgeHandler.ARIStasisStart(ctx, cn, stasisData)
+	case contextTypeConfbridge:
+		err = h.confbridgeHandler.ARIStasisStart(ctx, cn)
 
 	default:
 		log.Errorf("Could not find context type handler. context_type: %s", contextType)
-		return fmt.Errorf("could not find context type handler. context_type: %s", contextType)
+		err = fmt.Errorf("could not find context type handler. context_type: %s", contextType)
 	}
+	if err != nil {
+		log.Errorf("Could not handle the event correctly. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
+		return err
+	}
+	return nil
 }
 
 // EventHandlerStasisEnd handles StasisEnd ARI event
 func (h *eventHandler) EventHandlerStasisEnd(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisEnd)
 
-	if err := h.db.ChannelSetStasis(ctx, e.Channel.ID, ""); err != nil {
-		// nothing we can do here
+	_, err := h.channelHandler.UpdateStasisName(ctx, e.Channel.ID, "")
+	if err != nil {
+		// could not update the channel's stasis name to empty.
+		// but we don't do anything here because it's not critical.
+		// and nothing we can do here because it's already end of stasis.
 		return err
 	}
 

@@ -2,7 +2,7 @@ create table calls(
   -- identity
   id                binary(16),   -- id
   customer_id       binary(16),   -- customer id
-  asterisk_id       varchar(255), -- Asterisk id
+
   channel_id        varchar(255), -- channel id
   bridge_id         varchar(255), -- call bridge id
   flow_id           binary(16),   -- flow id

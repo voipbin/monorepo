@@ -28,6 +28,7 @@ func (h *eventHandler) EventHandlerBridgeCreated(ctx context.Context, evt interf
 	if mapParse["reference_type"] != "" {
 		referenceType = bridge.ReferenceType(mapParse["reference_type"])
 	}
+	referenceID := uuid.FromStringOrNil(mapParse["reference_id"])
 
 	br, err := h.bridgeHandler.Create(
 		ctx,
@@ -40,15 +41,13 @@ func (h *eventHandler) EventHandlerBridgeCreated(ctx context.Context, evt interf
 		e.Bridge.Creator,
 		e.Bridge.VideoMode,
 		e.Bridge.VideoSourceID,
-		[]string{},
 		referenceType,
-		uuid.Nil,
+		referenceID,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new bridge. err: %v", err)
 		return err
 	}
-
 	log.WithField("bridge", br).Debugf("Created a new bridge. bridge_id: %s", br.ID)
 
 	return nil
@@ -66,7 +65,7 @@ func (h *eventHandler) EventHandlerBridgeDestroyed(ctx context.Context, evt inte
 			"stasis":   e.Application,
 		})
 
-	br, err := h.bridgeHandler.GetWithTimeout(ctx, e.Bridge.ID, defaultExistTimeout)
+	br, err := h.bridgeHandler.Get(ctx, e.Bridge.ID)
 	if err != nil {
 		log.Error("The given bridge is not in our database.")
 		return fmt.Errorf("no bridge found")

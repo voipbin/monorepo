@@ -29,7 +29,6 @@ func Test_Create(t *testing.T) {
 		creator       string
 		videoMode     string
 		videoSourceID string
-		channelIDs    []string
 		referenceType bridge.ReferenceType
 		referenceID   uuid.UUID
 
@@ -52,7 +51,6 @@ func Test_Create(t *testing.T) {
 			"Stasis",
 			"none",
 			"",
-			[]string{},
 			bridge.ReferenceTypeUnknown,
 			uuid.Nil,
 
@@ -102,7 +100,7 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().BridgeCreate(ctx, tt.expectBridge).Return(nil)
-			mockDB.EXPECT().BridgeGet(ctx, tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
 
 			res, err := h.Create(
 				ctx,
@@ -118,8 +116,6 @@ func Test_Create(t *testing.T) {
 
 				tt.videoMode,
 				tt.videoSourceID,
-
-				tt.channelIDs,
 
 				tt.referenceType,
 				tt.referenceID,
@@ -179,7 +175,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeGet(ctx, tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -238,7 +234,7 @@ func Test_Delete(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().BridgeEnd(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().BridgeGet(ctx, tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {
@@ -299,7 +295,7 @@ func Test_AddChannelID(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().BridgeAddChannelID(ctx, tt.id, tt.channelID).Return(nil)
-			mockDB.EXPECT().BridgeGet(ctx, tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
 
 			res, err := h.AddChannelID(ctx, tt.id, tt.channelID)
 			if err != nil {
@@ -360,7 +356,7 @@ func Test_RemoveChannelID(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().BridgeRemoveChannelID(ctx, tt.id, tt.channelID).Return(nil)
-			mockDB.EXPECT().BridgeGet(ctx, tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
 
 			res, err := h.RemoveChannelID(ctx, tt.id, tt.channelID)
 			if err != nil {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -28,8 +29,6 @@ func (h *bridgeHandler) Create(
 	videoMode string,
 	videoSourceID string,
 
-	channelIDs []string,
-
 	// reference
 	referenceType bridge.ReferenceType,
 	referenceID uuid.UUID,
@@ -49,7 +48,7 @@ func (h *bridgeHandler) Create(
 		Creator:       creator,
 		VideoMode:     videoMode,
 		VideoSourceID: videoSourceID,
-		ChannelIDs:    channelIDs,
+		ChannelIDs:    []string{},
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 	}
@@ -59,7 +58,7 @@ func (h *bridgeHandler) Create(
 		return nil, errCreate
 	}
 
-	res, err := h.db.BridgeGet(ctx, id)
+	res, err := h.get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get created bridge. err: %v", err)
 		return nil, err
@@ -69,17 +68,29 @@ func (h *bridgeHandler) Create(
 	return res, nil
 }
 
-// Create creates a new bridge.
+// Get returns a bridge.
 func (h *bridgeHandler) Get(ctx context.Context, id string) (*bridge.Bridge, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "Get",
 		"bridge_id": id,
 	})
 
+	res, err := h.getWithTimeout(ctx, id, defaultExistTimeout)
+	if err != nil {
+		log.Errorf("Could not get bridge. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// get returns a bridge where it gets from the database directly.
+func (h *bridgeHandler) get(ctx context.Context, id string) (*bridge.Bridge, error) {
 	res, err := h.db.BridgeGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not create a bridge. err: %v", err)
-		return nil, err
+		// we don't write log here
+		// log.Errorf("Could not create a bridge. err: %v", err)
+		return nil, errors.Wrapf(err, "could not get bridge from the database. bridge_id: %s", id)
 	}
 
 	return res, nil
@@ -99,7 +110,7 @@ func (h *bridgeHandler) Delete(ctx context.Context, id string) (*bridge.Bridge, 
 		return nil, errEnd
 	}
 
-	res, err := h.db.BridgeGet(ctx, id)
+	res, err := h.get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get deleted bridge. err: %v", err)
 		return nil, err
@@ -125,7 +136,7 @@ func (h *bridgeHandler) AddChannelID(ctx context.Context, id, channelID string) 
 		return nil, errAdd
 	}
 
-	res, err := h.db.BridgeGet(ctx, id)
+	res, err := h.get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get deleted bridge. err: %v", err)
 		return nil, err
@@ -150,7 +161,7 @@ func (h *bridgeHandler) RemoveChannelID(ctx context.Context, id, channelID strin
 		return nil, errAdd
 	}
 
-	res, err := h.db.BridgeGet(ctx, id)
+	res, err := h.get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get deleted bridge. err: %v", err)
 		return nil, err
@@ -159,8 +170,8 @@ func (h *bridgeHandler) RemoveChannelID(ctx context.Context, id, channelID strin
 	return res, nil
 }
 
-// GetUntilTimeout gets the bridge with for given timeout.
-func (h *bridgeHandler) GetWithTimeout(ctx context.Context, id string, timeout time.Duration) (*bridge.Bridge, error) {
+// getWithTimeout gets the bridge with for given timeout.
+func (h *bridgeHandler) getWithTimeout(ctx context.Context, id string, timeout time.Duration) (*bridge.Bridge, error) {
 	cctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -174,7 +185,7 @@ func (h *bridgeHandler) GetWithTimeout(ctx context.Context, id string, timeout t
 				return
 
 			default:
-				tmp, err := h.Get(cctx, id)
+				tmp, err := h.get(cctx, id)
 				if err != nil {
 					time.Sleep(defaultDelayTimeout)
 					continue

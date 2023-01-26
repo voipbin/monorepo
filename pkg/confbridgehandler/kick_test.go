@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -53,19 +54,20 @@ func Test_Kick(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := confbridgeHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				cache:         mockCache,
-				notifyHandler: mockNotify,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				cache:          mockCache,
+				notifyHandler:  mockNotify,
+				channelHandler: mockChannel,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridgeID).Return(tt.confbridge, nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.channel.ID).Return(tt.channel, nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.channel.AsteriskID, tt.channel.ID, ari.ChannelCauseNormalClearing, 0).Return(nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(tt.channel, nil)
 
 			if err := h.Kick(ctx, tt.confbridgeID, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

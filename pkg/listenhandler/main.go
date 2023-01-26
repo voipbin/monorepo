@@ -57,6 +57,7 @@ var (
 	regV1CallsIDChainedCallIDsIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids/" + regUUID + "$")
 	regV1CallsIDExternalMedia     = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media$")
 	regV1CallsIDHangup            = regexp.MustCompile("/v1/calls/" + regUUID + "/hangup$")
+	regV1CallsIDConfbridgeID      = regexp.MustCompile("/v1/calls/" + regUUID + "/confbridge_id$")
 	regV1CallsIDRecordingID       = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_id$")
 	regV1CallsIDRecordingStart    = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_start$")
 	regV1CallsIDRecordingStop     = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_stop$")
@@ -199,72 +200,77 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////
 	// calls
 	////////
-	// POST /calls/<id>/health-check
+	// POST /calls/<call-id>/health-check
 	case regV1CallsIDHealth.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDHealthPost(ctx, m)
 		requestType = "/v1/calls/health-check"
 
-	// Get /calls/<id>/digits
+	// Get /calls/<call-id>/digits
 	case regV1CallsIDDigits.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsIDDigitsGet(ctx, m)
 		requestType = "/v1/calls/digits"
 
-	// Get /calls/<id>/digits
+	// Get /calls/<call-id>/digits
 	case regV1CallsIDDigits.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDDigitsSet(ctx, m)
 		requestType = "/v1/calls/digits"
 
-	// POST /calls/<id>/action-next
+	// POST /calls/<call-id>/action-next
 	case regV1CallsIDActionNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDActionNextPost(ctx, m)
 		requestType = "/v1/calls/action-next"
 
-	// POST /calls/<id>/action-timeout
+	// POST /calls/<call-id>/action-timeout
 	case regV1CallsIDActionTimeout.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDActionTimeoutPost(ctx, m)
 		requestType = "/v1/calls/action-timeout"
 
-	// POST /calls/<id>/chained-call-ids
+	// POST /calls/<call-id>/chained-call-ids
 	case regV1CallsIDChainedCallIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDChainedCallIDsPost(ctx, m)
 		requestType = "/v1/calls/chained-call-ids"
 
-	// DELETE /calls/<id>/chained-call-ids/<chaied_call_id>
+	// DELETE /calls/<call-id>/chained-call-ids/<chaied_call_id>
 	case regV1CallsIDChainedCallIDsIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1CallsIDChainedCallIDsDelete(ctx, m)
 		requestType = "/v1/calls/chained-call-ids"
 
-	// POST /calls/<id>/external-media
+	// POST /calls/<call-id>/external-media
 	case regV1CallsIDExternalMedia.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDExternalMediaPost(ctx, m)
 		requestType = "/v1/calls/external-media"
 
-	// DELETE /calls/<id>/external-media
+	// DELETE /calls/<call-id>/external-media
 	case regV1CallsIDExternalMedia.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1CallsIDExternalMediaDelete(ctx, m)
 		requestType = "/v1/calls/external-media"
 
-	// GET /calls/<id>
+	// GET /calls/<call-id>
 	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1CallsIDGet(ctx, m)
 		requestType = "/v1/calls/<call-id>"
 
-	// POST /calls/<id>
+	// POST /calls/<call-id>
 	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDPost(ctx, m)
 		requestType = "/v1/calls/<call-id>"
 
-	// DELETE /calls/<id>
+	// DELETE /calls/<call-id>
 	case regV1CallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1CallsIDDelete(ctx, m)
 		requestType = "/v1/calls/<call-id>"
 
-	// POST /calls/<id>/hangup
+	// POST /calls/<call-id>/hangup
 	case regV1CallsIDHangup.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDHangupPost(ctx, m)
 		requestType = "/v1/calls/<call-id>/hangup"
 
-	// PUT /calls/<id>/recording_id
+	// PUT /calls/<call-id>/recording_id
+	case regV1CallsIDConfbridgeID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1CallsIDConfbridgeIDPut(ctx, m)
+		requestType = "/v1/calls/<call-id>/recording_id"
+
+	// PUT /calls/<call-id>/recording_id
 	case regV1CallsIDRecordingID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1CallsIDRecordingIDPut(ctx, m)
 		requestType = "/v1/calls/<call-id>/recording_id"
@@ -346,9 +352,9 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ConfbridgesIDRecordingStopPost(ctx, m)
 		requestType = "/v1/confbridges/<confbridge-id>/recording_stop"
 
-	////////////////
+	////////////////////
 	// external-medias
-	////////////////
+	////////////////////
 	// POST /external-medias
 	case regV1ExternalMedias.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ExternalMediasPost(ctx, m)

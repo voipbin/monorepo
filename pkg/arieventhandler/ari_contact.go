@@ -14,6 +14,7 @@ func (h *eventHandler) EventHandlerContactStatusChange(ctx context.Context, evt 
 
 	log := log.WithFields(
 		log.Fields{
+			"func":     "EventHandlerContactStatusChange",
 			"asterisk": e.AsteriskID,
 			"stasis":   e.Application,
 			"aor":      e.ContactInfo.AOR,

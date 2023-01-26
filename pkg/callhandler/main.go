@@ -34,7 +34,7 @@ type CallHandler interface {
 	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	ARIChannelStateChange(ctx context.Context, cn *channel.Channel) error
 	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error
-	ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error
+	ARIStasisStart(ctx context.Context, cn *channel.Channel) error
 
 	CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount int, delay int)
 
@@ -47,10 +47,11 @@ type CallHandler interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error)
 	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*call.Call, error)
 	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error)
+	UpdateConfbridgeID(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) (*call.Call, error)
 
 	CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destinations []commonaddress.Address) ([]*call.Call, error)
 	CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) (*call.Call, error)
-	StartCallHandle(ctx context.Context, cn *channel.Channel, data map[string]string) error
+	StartCallHandle(ctx context.Context, cn *channel.Channel) error
 	Hangup(ctx context.Context, cn *channel.Channel) error
 	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error
 	HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) (*call.Call, error)

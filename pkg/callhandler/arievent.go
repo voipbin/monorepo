@@ -13,10 +13,10 @@ import (
 )
 
 // ARIStasisStart is called when the channel handler received StasisStart.
-func (h *callHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
+func (h *callHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel) error {
 	logrus.WithField("func", "ARIStasisStart").Debugf("Execute the stasis start event handler for call.")
 
-	return h.StartCallHandle(ctx, cn, data)
+	return h.StartCallHandle(ctx, cn)
 }
 
 // ARIChannelDestroyed handles ChannelDestroyed ARI event
@@ -109,9 +109,8 @@ func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Cha
 
 func (h *callHandler) ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ARIChannelLeftBridge",
-		"asterisk_id": cn.AsteriskID,
-		"channel_id":  cn.ID,
+		"func":       "ARIChannelLeftBridge",
+		"channel_id": cn.ID,
 	})
 
 	switch cn.Type {

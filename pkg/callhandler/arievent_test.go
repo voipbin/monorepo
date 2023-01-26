@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -84,8 +85,8 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallAnswered, tt.call)
 			if tt.call.Direction != call.DirectionIncoming {
 				// handleSIPCallID
-				mockReq.EXPECT().AstChannelVariableGet(ctx, tt.channel.AsteriskID, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
-				mockReq.EXPECT().AstChannelVariableSet(ctx, tt.channel.AsteriskID, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
+				mockChannel.EXPECT().VariableGet(ctx, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
+				mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
 
 				// ActionNext
 				// we hangup the call because the flow_id is not set
@@ -93,13 +94,14 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), gomock.Any(), gomock.Any())
 				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{}, nil)
 				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-				mockChannel.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-				mockReq.EXPECT().AstChannelHangup(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), 0).Return(nil)
+				mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			}
 
 			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			time.Sleep(time.Millisecond * 100)
 		})
 	}
 }
@@ -255,8 +257,7 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 				Type: channel.TypeConfbridge,
 			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
-				AsteriskID: "42:01:0a:a4:00:03",
+				ID: uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
 				Action: action.Action{
 					ID: uuid.FromStringOrNil("77a82874-e7dd-11ea-9647-27054cd71830"),
 				},
@@ -267,7 +268,6 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 
 			&call.Call{
 				ID:           uuid.FromStringOrNil("66795a5a-e7dd-11ea-b2df-0757b438501c"),
-				AsteriskID:   "42:01:0a:a4:00:03",
 				Action:       action.Action{},
 				FlowID:       uuid.FromStringOrNil("32c36bf4-156f-11ec-af17-87eb4aca917b"),
 				ActiveFlowID: uuid.FromStringOrNil("244d4566-a7bb-11ec-92eb-fbdbdda3d486"),
