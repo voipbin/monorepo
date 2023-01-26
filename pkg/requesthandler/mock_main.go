@@ -974,6 +974,21 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallSendDigits(ctx, callID, digi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSendDigits", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSendDigits), ctx, callID, digits)
 }
 
+// CallV1CallUpdateConfbridgeID mocks base method.
+func (m *MockRequestHandler) CallV1CallUpdateConfbridgeID(ctx context.Context, callID, confbirdgeID uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallUpdateConfbridgeID", ctx, callID, confbirdgeID)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1CallUpdateConfbridgeID indicates an expected call of CallV1CallUpdateConfbridgeID.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallUpdateConfbridgeID(ctx, callID, confbirdgeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallUpdateConfbridgeID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallUpdateConfbridgeID), ctx, callID, confbirdgeID)
+}
+
 // CallV1CallsCreate mocks base method.
 func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destination []address.Address) ([]call.Call, error) {
 	m.ctrl.T.Helper()
