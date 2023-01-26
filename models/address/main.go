@@ -1,11 +1,6 @@
 package address
 
-import (
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-)
-
-// Address contains source/destination detail info.
+// Address contains source or destination detail info.
 type Address struct {
 	Type       Type   `json:"type"`        // type of address
 	Target     string `json:"target"`      // address endpoint
@@ -14,55 +9,16 @@ type Address struct {
 	Detail     string `json:"detail"`      // detail description.
 }
 
-// Type type
+// Type define
 type Type string
 
 // List of CallAddressType
 const (
-	TypeAgent    Type = "agent"
-	TypeEndpoint Type = "endpoint"
-	TypeLine     Type = "line"
-	TypeSIP      Type = "sip"
-	TypeTel      Type = "tel"
+	TypeNone       Type = ""           // no type specified
+	TypeAgent      Type = "agent"      // target is agent's id.
+	TypeConference Type = "conference" // target is conference's id
+	TypeEndpoint   Type = "endpoint"   // target is registered endpoint's id.
+	TypeLine       Type = "line"       //  target naver line's id
+	TypeSIP        Type = "sip"        // target is sip destination
+	TypeTel        Type = "tel"        // target tel number
 )
-
-// CreateAddressByChannelSource creates and return the Address using channel's source.
-func CreateAddressByChannelSource(cn *channel.Channel) *Address {
-	r := &Address{
-		Type:       TypeTel,
-		Target:     cn.SourceNumber,
-		TargetName: cn.SourceName,
-	}
-	return r
-}
-
-// CreateAddressByChannelDestination creates and return the Address using channel's destination.
-func CreateAddressByChannelDestination(cn *channel.Channel) *Address {
-	r := &Address{
-		Type:       TypeTel,
-		Target:     cn.DestinationNumber,
-		TargetName: cn.DestinationName,
-	}
-	return r
-}
-
-// ParseAddressByCallerID parsing the ari's CallerID and returns Address
-func ParseAddressByCallerID(e *ari.CallerID) *Address {
-	r := &Address{
-		Type:       TypeTel,
-		Target:     e.Number,
-		TargetName: e.Name,
-	}
-
-	return r
-}
-
-// NewAddressByDialplan parsing the ari's CallerID and returns Address
-func NewAddressByDialplan(e *ari.DialplanCEP) *Address {
-	r := &Address{
-		Type:   TypeTel,
-		Target: e.Exten,
-	}
-
-	return r
-}

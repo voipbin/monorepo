@@ -61,7 +61,7 @@ func (r *requestHandler) CallV1CallActionTimeout(ctx context.Context, id uuid.UU
 		return err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsActionTimeout, requestTimeoutDefault, delay, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDActionTimeout, requestTimeoutDefault, delay, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -86,7 +86,7 @@ func (r *requestHandler) CallV1CallActionNext(ctx context.Context, callID uuid.U
 		return err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsActionNext, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDActionNext, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -388,7 +388,7 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 func (r *requestHandler) CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallCallsExternalMedia, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallCallsCallIDExternalMedia, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -479,7 +479,7 @@ func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsRecordingStart, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDRecordingStart, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
@@ -504,7 +504,41 @@ func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uu
 func (r *requestHandler) CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/recording_stop", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmcall.Call
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallV1CallUpdateConfbridgeID sends a request to call-manager
+// to updates the given call's confbridge id.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error) {
+	uri := fmt.Sprintf("/v1/calls/%s/confbridge_id", callID)
+
+	data := &cmrequest.V1DataCallsIDConfbridgeIDPut{
+		ConfbridgeID: confbirdgeID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCallCallsCallIDConfbridgeID, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

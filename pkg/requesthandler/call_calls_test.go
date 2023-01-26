@@ -1132,3 +1132,65 @@ func Test_CallV1CallRecordingStop(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallV1CallUpdateConfbridgeID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID       uuid.UUID
+		confbridgeID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     *cmcall.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("6c2d5016-467d-4d53-86ce-f5b5fc451b1c"),
+			uuid.FromStringOrNil("9955fda3-fc5e-40eb-9c2d-7d0152e3c6ba"),
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/6c2d5016-467d-4d53-86ce-f5b5fc451b1c/confbridge_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"confbridge_id":"9955fda3-fc5e-40eb-9c2d-7d0152e3c6ba"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"6c2d5016-467d-4d53-86ce-f5b5fc451b1c"}`),
+			},
+			&cmcall.Call{
+				ID: uuid.FromStringOrNil("6c2d5016-467d-4d53-86ce-f5b5fc451b1c"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1CallUpdateConfbridgeID(ctx, tt.callID, tt.confbridgeID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

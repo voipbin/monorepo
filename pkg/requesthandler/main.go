@@ -158,12 +158,13 @@ const (
 	resourceCampaignOutplans      resource = "campaign/outplans"
 
 	resourceCallCalls                      resource = "call/calls"
-	resourceCallCallsActionNext            resource = "call/calls/action-next"
-	resourceCallCallsActionTimeout         resource = "call/calls/action-timeout"
+	resourceCallCallsCallIDActionNext      resource = "call/calls/<call-id>/action-next"
+	resourceCallCallsCallIDActionTimeout   resource = "call/calls/<call-id>/action-timeout"
 	resourceCallCallsHealth                resource = "call/calls/health"
-	resourceCallCallsRecordingStart        resource = "call/calls/recording-start"
-	resourceCallCallsRecordingStop         resource = "call/calls/recording-stop"
-	resourceCallCallsExternalMedia         resource = "call/calls/external-media"
+	resourceCallCallsCallIDRecordingStart  resource = "call/calls/<call-id>/recording-start"
+	resourceCallCallsCallIDRecordingStop   resource = "call/calls/<call-id>/recording-stop"
+	resourceCallCallsCallIDConfbridgeID    resource = "call/calls/<call-id>/confbirdge_id"
+	resourceCallCallsCallIDExternalMedia   resource = "call/calls/<call-id>/external-media"
 	resourceCallChannelsHealth             resource = "call/channels/health"
 	resourceCallConfbridges                resource = "call/confbridges"
 	resourceCallConfbridgesIDExternalMedia resource = "call/confbridges/<confbridge-id>/external-media"
@@ -446,6 +447,7 @@ type RequestHandler interface {
 	CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error)
 	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
+	CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 
 	// call-manager channel
