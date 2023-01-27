@@ -3,12 +3,12 @@ package domainhandler
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new domain and returns a created domain info
@@ -23,22 +23,24 @@ func (h *domainHandler) Create(ctx context.Context, customerID uuid.UUID, domain
 	)
 	log.Debugf("Creating domain. domain: %s", domainName)
 
-	// check suffix
-	if !strings.HasSuffix(domainName, constDomainSuffix) {
-		log.Errorf("Wrong domain name. domain_name: %s, suffix: %s", domainName, constDomainSuffix)
-		return nil, fmt.Errorf("wrong domain name. suffix must matched with %s", constDomainSuffix)
+	if !isValidDomainName(domainName) {
+		log.Errorf("Invalid domain name. domain_name: %s", domainName)
+		return nil, fmt.Errorf("invalid domain name")
 	}
 
 	// check duplicated domain
-	_, err := h.dbBin.DomainGetByDomainName(ctx, domainName)
+	tmp, err := h.GetByDomainName(ctx, domainName)
 	if err == nil {
-		logrus.Errorf("The given domain is already exists. err: %v", err)
-		return nil, fmt.Errorf("already exists")
+		if tmp.TMDelete < dbhandler.DefaultTimeStamp {
+			log.Errorf("The given domain is already existed. err: %v", err)
+			return nil, fmt.Errorf("already exists")
+		}
 	}
 
 	// create new domain
+	id := h.utilHandler.CreateUUID()
 	d := &domain.Domain{
-		ID:         uuid.Must(uuid.NewV4()),
+		ID:         id,
 		CustomerID: customerID,
 
 		Name:       name,
@@ -47,14 +49,14 @@ func (h *domainHandler) Create(ctx context.Context, customerID uuid.UUID, domain
 	}
 
 	if err := h.dbBin.DomainCreate(ctx, d); err != nil {
-		logrus.Errorf("Could not create a domain info. err: %v", err)
+		log.Errorf("Could not create a domain info. err: %v", err)
 		return nil, err
 	}
 	log.Debugf("Created new domain. domain: %s, domain_name: %s", d.ID, d.DomainName)
 
-	res, err := h.dbBin.DomainGet(ctx, d.ID)
+	res, err := h.Get(ctx, d.ID)
 	if err != nil {
-		logrus.Errorf("Could not get created domain info. err: %v", err)
+		log.Errorf("Could not get created domain info. err: %v", err)
 		return nil, err
 	}
 	h.notifyHandler.PublishEvent(ctx, domain.EventTypeDomainCreated, res)
@@ -73,16 +75,30 @@ func (h *domainHandler) Get(ctx context.Context, id uuid.UUID) (*domain.Domain, 
 	return res, nil
 }
 
-// Gets returns list of domains
-func (h *domainHandler) Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error) {
-
-	domains, err := h.dbBin.DomainGetsByCustomerID(ctx, customerID, token, limit)
+// GetByDomainName returns domain of the given domain name
+func (h *domainHandler) GetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
+	res, err := h.dbBin.DomainGetByDomainName(ctx, domainName)
 	if err != nil {
-		logrus.Errorf("Could not get domains. err: %v", err)
 		return nil, err
 	}
 
-	return domains, nil
+	return res, nil
+}
+
+// Gets returns list of domains
+func (h *domainHandler) Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Gets",
+		"customer_id": customerID,
+	})
+
+	res, err := h.dbBin.DomainGetsByCustomerID(ctx, customerID, token, limit)
+	if err != nil {
+		log.Errorf("Could not get domains. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // Update updates the domain info
@@ -95,12 +111,12 @@ func (h *domainHandler) Update(ctx context.Context, id uuid.UUID, name, detail s
 	)
 
 	// update
-	if err := h.dbBin.DomainUpdateBasicInfo(ctx, id, name, detail); err != nil {
-		log.Errorf("Could not update the domain. err: %v", err)
-		return nil, err
+	if errUpdate := h.dbBin.DomainUpdateBasicInfo(ctx, id, name, detail); errUpdate != nil {
+		log.Errorf("Could not update the domain. err: %v", errUpdate)
+		return nil, errUpdate
 	}
 
-	res, err := h.dbBin.DomainGet(ctx, id)
+	res, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}

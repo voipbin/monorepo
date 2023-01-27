@@ -108,7 +108,7 @@ func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string)
 	}
 
 	// update cache
-	h.AstContactsSetToCache(ctx, endpoint, res)
+	_ = h.AstContactsSetToCache(ctx, endpoint, res)
 
 	return res, nil
 }

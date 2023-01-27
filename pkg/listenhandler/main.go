@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -45,12 +46,14 @@ var (
 	regV1Contacts = regexp.MustCompile("/v1/contacts")
 
 	// domains
-	regV1Domains   = regexp.MustCompile("/v1/domains")
-	regV1DomainsID = regexp.MustCompile("/v1/domains/" + regUUID)
+	regV1Domains           = regexp.MustCompile("/v1/domains$")
+	regV1DomainsGet        = regexp.MustCompile(`/v1/domains\?`)
+	regV1DomainsID         = regexp.MustCompile("/v1/domains/" + regUUID + "$")
+	regV1DomainsDomainName = regexp.MustCompile("/v1/domains/domain_name/" + regAny)
 
 	// extensions
 	regV1Extensions   = regexp.MustCompile("/v1/extensions")
-	regV1ExtensionsID = regexp.MustCompile("/v1/extensions/" + regUUID)
+	regV1ExtensionsID = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
 )
 
 var (
@@ -146,6 +149,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
+	ctx := context.Background()
+
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
 		uri = "could not unescape uri"
@@ -171,57 +176,61 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// contacts
 	////////////
 	case regV1Contacts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ContactsGet(m)
+		response, err = h.processV1ContactsGet(ctx, m)
 		requestType = "/v1/contacts"
 
 	case regV1Contacts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1ContactsPut(m)
+		response, err = h.processV1ContactsPut(ctx, m)
 		requestType = "/v1/contacts"
 
 	////////////
 	// domains
 	////////////
 	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1DomainsIDGet(m)
-		requestType = "/v1/domains"
+		response, err = h.processV1DomainsIDGet(ctx, m)
+		requestType = "/v1/domains/<domain-id>"
 
 	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1DomainsIDPut(m)
-		requestType = "/v1/domains"
+		response, err = h.processV1DomainsIDPut(ctx, m)
+		requestType = "/v1/domains/<domain-id>"
 
 	case regV1DomainsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1DomainsIDDelete(m)
-		requestType = "/v1/domains"
+		response, err = h.processV1DomainsIDDelete(ctx, m)
+		requestType = "/v1/domains/<domain-id>"
 
 	case regV1Domains.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1DomainsPost(m)
+		response, err = h.processV1DomainsPost(ctx, m)
 		requestType = "/v1/domains"
 
-	case regV1Domains.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1DomainsGet(m)
+	case regV1DomainsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1DomainsGet(ctx, m)
 		requestType = "/v1/domains"
+
+	case regV1DomainsDomainName.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1DomainsDomainNameDomainNameGet(ctx, m)
+		requestType = "/v1/domains/domain_name/<domain-name>"
 
 	/////////////
 	// extensions
 	/////////////
 	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ExtensionsIDGet(m)
+		response, err = h.processV1ExtensionsIDGet(ctx, m)
 		requestType = "/v1/extensions"
 
 	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1ExtensionsIDPut(m)
+		response, err = h.processV1ExtensionsIDPut(ctx, m)
 		requestType = "/v1/extensions"
 
 	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1ExtensionsIDDelete(m)
+		response, err = h.processV1ExtensionsIDDelete(ctx, m)
 		requestType = "/v1/extensions"
 
 	case regV1Extensions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ExtensionsPost(m)
+		response, err = h.processV1ExtensionsPost(ctx, m)
 		requestType = "/v1/extensions"
 
 	case regV1Extensions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ExtensionsGet(m)
+		response, err = h.processV1ExtensionsGet(ctx, m)
 		requestType = "/v1/extensions"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,7 +254,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		).Errorf("Could not process the request correctly. method: %s, uri: %s", m.Method, m.URI)
 		response = simpleResponse(400)
 		err = nil
-		requestType = "notfound"
 	}
 
 	log.WithFields(

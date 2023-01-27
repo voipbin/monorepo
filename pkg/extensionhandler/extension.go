@@ -13,89 +13,100 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
-// ExtensionCreate creates a new extension
+// Create creates a new extension
 // in this func, it creates all releated asterisk resource as well.
-func (h *extensionHandler) ExtensionCreate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
-
+func (h *extensionHandler) Create(
+	ctx context.Context,
+	customerID uuid.UUID,
+	name string,
+	detail string,
+	domainID uuid.UUID,
+	ext string,
+	password string,
+) (*extension.Extension, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"customer_id": e.CustomerID,
-			"domain_id":   e.DomainID,
-			"extension":   e.Extension,
-			"password":    e.Password,
+			"func":        "Create",
+			"customer_id": customerID,
+			"domain_id":   domainID,
+			"extension":   ext,
+			"password":    len(password),
 		},
 	)
 
 	// get domain
-	d, err := h.dbBin.DomainGet(ctx, e.DomainID)
+	d, err := h.dbBin.DomainGet(ctx, domainID)
 	if err != nil {
 		log.Errorf("Could not get domain info. err: %v", err)
 		return nil, err
 	}
 
-	// create id
-	commonID := fmt.Sprintf("%s@%s", e.Extension, d.DomainName)
+	// create aor id
+	aorID := fmt.Sprintf("%s@%s.%s", ext, d.DomainName, constBaseDomainName)
 
 	// create aor
 	maxContacts := 1
 	removeExisting := "yes"
 	aor := &astaor.AstAOR{
-		ID:             &commonID,
+		ID:             &aorID,
 		MaxContacts:    &maxContacts,
 		RemoveExisting: &removeExisting,
 	}
-	if err := h.dbAst.AstAORCreate(ctx, aor); err != nil {
-		log.Errorf("Could not create AOR. err: %v", err)
-		return nil, err
+	if errCreate := h.dbAst.AstAORCreate(ctx, aor); errCreate != nil {
+		log.Errorf("Could not create AOR. err: %v", errCreate)
+		return nil, errCreate
 	}
 
 	// create auth
 	authType := "userpass"
+	realm := fmt.Sprintf("%s.%s", d.DomainName, constBaseDomainName)
 	auth := &astauth.AstAuth{
-		ID:       &commonID,
+		ID:       &aorID,
 		AuthType: &authType,
-		Username: &e.Extension,
-		Password: &e.Password,
-		Realm:    &d.DomainName,
+		Username: &ext,
+		Password: &password,
+		// Realm:    &d.DomainName,
+		Realm: &realm,
 	}
-	if err := h.dbAst.AstAuthCreate(ctx, auth); err != nil {
-		log.Errorf("Could not create Auth. Err: %v", err)
-		return nil, err
+	if errCreate := h.dbAst.AstAuthCreate(ctx, auth); errCreate != nil {
+		log.Errorf("Could not create Auth. Err: %v", errCreate)
+		return nil, errCreate
 	}
 
 	// create endpoint
 	endpoint := &astendpoint.AstEndpoint{
-		ID:   &commonID,
-		AORs: &commonID,
-		Auth: &commonID,
+		ID:   &aorID,
+		AORs: &aorID,
+		Auth: &aorID,
 	}
-	if err := h.dbAst.AstEndpointCreate(ctx, endpoint); err != nil {
-		log.Errorf("Could not create Endpoint. err: %v", err)
-		return nil, err
+	if errCreate := h.dbAst.AstEndpointCreate(ctx, endpoint); errCreate != nil {
+		log.Errorf("Could not create Endpoint. err: %v", errCreate)
+		return nil, errCreate
 	}
 
-	// create extension
-	ext := &extension.Extension{
-		ID:         uuid.Must(uuid.NewV4()),
-		CustomerID: e.CustomerID,
+	// create a new extension
+	id := h.utilHandler.CreateUUID()
+	e := &extension.Extension{
+		ID:         id,
+		CustomerID: customerID,
 
-		Name:     e.Name,
-		Detail:   e.Detail,
-		DomainID: e.DomainID,
+		Name:     name,
+		Detail:   detail,
+		DomainID: domainID,
 
 		EndpointID: *endpoint.ID,
 		AORID:      *aor.ID,
 		AuthID:     *auth.ID,
 
-		Extension: e.Extension,
-		Password:  e.Password,
+		Extension: ext,
+		Password:  password,
 	}
-	if err := h.dbBin.ExtensionCreate(ctx, ext); err != nil {
-		log.Errorf("Could not create extension. err: %v", err)
-		return nil, err
+	if errCreate := h.dbBin.ExtensionCreate(ctx, e); errCreate != nil {
+		log.Errorf("Could not create extension. err: %v", errCreate)
+		return nil, errCreate
 	}
 
-	res, err := h.dbBin.ExtensionGet(ctx, ext.ID)
+	res, err := h.dbBin.ExtensionGet(ctx, e.ID)
 	if err != nil {
 		log.Errorf("Could not get created extension. err: %v", err)
 		return nil, err
@@ -214,7 +225,7 @@ func (h *extensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domain
 	)
 
 	// get extensions
-	exts, err := h.ExtensionGetsByDomainID(ctx, domainID, h.util.GetCurTime(), 1000)
+	exts, err := h.ExtensionGetsByDomainID(ctx, domainID, h.utilHandler.GetCurTime(), 1000)
 	if err != nil {
 		logrus.Errorf("Could not get delete extensions")
 		return nil, err

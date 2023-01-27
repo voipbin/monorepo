@@ -36,19 +36,19 @@ func (m *MockExtensionHandler) EXPECT() *MockExtensionHandlerMockRecorder {
 	return m.recorder
 }
 
-// ExtensionCreate mocks base method.
-func (m *MockExtensionHandler) ExtensionCreate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
+// Create mocks base method.
+func (m *MockExtensionHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, domainID uuid.UUID, ext, password string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionCreate", ctx, e)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, domainID, ext, password)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionCreate indicates an expected call of ExtensionCreate.
-func (mr *MockExtensionHandlerMockRecorder) ExtensionCreate(ctx, e interface{}) *gomock.Call {
+// Create indicates an expected call of Create.
+func (mr *MockExtensionHandlerMockRecorder) Create(ctx, customerID, name, detail, domainID, ext, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCreate", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionCreate), ctx, e)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockExtensionHandler)(nil).Create), ctx, customerID, name, detail, domainID, ext, password)
 }
 
 // ExtensionDelete mocks base method.

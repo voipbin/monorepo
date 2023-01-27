@@ -107,7 +107,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		b.Extension,
 		b.Password,
 
-		h.util.GetCurTime(),
+		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -116,7 +116,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 	}
 
 	// update the cache
-	h.extensionUpdateToCache(ctx, b.ID)
+	_ = h.extensionUpdateToCache(ctx, b.ID)
 
 	return nil
 }
@@ -194,7 +194,7 @@ func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Ex
 	}
 
 	// set to the cache
-	h.extensionSetToCache(ctx, res)
+	_ = h.extensionSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -208,13 +208,13 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ExtensionDelete. err: %v", err)
 	}
 
 	// update the cache
-	h.extensionUpdateToCache(ctx, id)
+	_ = h.extensionUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -235,7 +235,7 @@ func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) e
 		b.Name,
 		b.Detail,
 		b.Password,
-		h.util.GetCurTime(),
+		h.utilHandler.GetCurTime(),
 		b.ID.Bytes(),
 	)
 	if err != nil {
@@ -243,7 +243,7 @@ func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) e
 	}
 
 	// update the cache
-	h.extensionUpdateToCache(ctx, b.ID)
+	_ = h.extensionUpdateToCache(ctx, b.ID)
 
 	return nil
 }

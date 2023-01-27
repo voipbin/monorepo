@@ -161,19 +161,45 @@ func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, 
 // DomainSet sets the domain info into the cache.
 func (h *handler) DomainSet(ctx context.Context, e *domain.Domain) error {
 	key := fmt.Sprintf("domain:%s", e.ID)
+	keyName := fmt.Sprintf("domain_name:%s", e.DomainName)
 
 	if err := h.setSerialize(ctx, key, e); err != nil {
+		return err
+	}
+
+	if err := h.setSerialize(ctx, keyName, e); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// DomainDel deletes the domain info from the cache.
-func (h *handler) DomainDel(ctx context.Context, id uuid.UUID) error {
-	key := fmt.Sprintf("domain:%s", id)
+// DomainGetByDomainName returns cached Domain info
+func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
+	key := fmt.Sprintf("domain_name:%s", domainName)
 
-	return h.delKey(ctx, key)
+	var res domain.Domain
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// DomainDel deletes the domain info from the cache.
+func (h *handler) DomainDel(ctx context.Context, id uuid.UUID, name string) error {
+	key := fmt.Sprintf("domain:%s", id)
+	keyName := fmt.Sprintf("domain_name:%s", name)
+
+	if errDel := h.delKey(ctx, key); errDel != nil {
+		return errDel
+	}
+
+	if errDel := h.delKey(ctx, keyName); errDel != nil {
+		return errDel
+	}
+
+	return nil
 }
 
 // ExtensionGet returns cached Domain info

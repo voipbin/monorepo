@@ -10,9 +10,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/util"
 )
 
 func Test_ExtensionCreate(t *testing.T) {
@@ -68,13 +68,13 @@ func Test_ExtensionCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -152,13 +152,13 @@ func Test_ExtensionDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -250,13 +250,13 @@ func Test_ExtensionGetsByDomainID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -269,7 +269,7 @@ func Test_ExtensionGetsByDomainID(t *testing.T) {
 				}
 			}
 
-			exts, err := h.ExtensionGetsByDomainID(ctx, tt.domainID, util.GetCurTime(), tt.limit)
+			exts, err := h.ExtensionGetsByDomainID(ctx, tt.domainID, utilhandler.GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -340,13 +340,13 @@ func Test_ExtensionUpdate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()

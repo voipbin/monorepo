@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
@@ -16,72 +17,181 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 )
 
-func TestCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := &domainHandler{
-		dbAst:         mockDBAst,
-		dbBin:         mockDBBin,
-		notifyHandler: mockNotify,
-	}
+func Test_Create(t *testing.T) {
 
 	type test struct {
-		name       string
-		customerID uuid.UUID
+		name string
 
+		customerID uuid.UUID
 		domainName string
 		domainN    string
 		detail     string
 
-		domain *domain.Domain
+		responseUUID   uuid.UUID
+		responseDomain *domain.Domain
+
+		expectDomain *domain.Domain
 	}
 
 	tests := []test{
 		{
-			"test normal",
-			uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
+			"normal",
 
-			"test.sip.voipbin.net",
+			uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
+			"test-domain",
 			"test name",
 			"test detail",
 
+			uuid.FromStringOrNil("d7e1a4ce-8b8b-4b28-a300-5ded30918882"),
 			&domain.Domain{
-				CustomerID: uuid.FromStringOrNil("e2531ce4-7fec-11ec-ae7d-4fc565b03cba"),
-				DomainName: "test.sip.voipbin.net",
+				ID: uuid.FromStringOrNil("d7e1a4ce-8b8b-4b28-a300-5ded30918882"),
+			},
+
+			&domain.Domain{
+				ID:         uuid.FromStringOrNil("d7e1a4ce-8b8b-4b28-a300-5ded30918882"),
+				CustomerID: uuid.FromStringOrNil("202b2592-8967-11ec-aeab-3336a440f2c1"),
+				DomainName: "test-domain",
+				Name:       "test name",
+				Detail:     "test detail",
 			},
 		},
 	}
 
 	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDBAst := dbhandler.NewMockDBHandler(mc)
+			mockDBBin := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &domainHandler{
+				utilHandler:   mockUtil,
+				dbAst:         mockDBAst,
+				dbBin:         mockDBBin,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDBBin.EXPECT().DomainGetByDomainName(ctx, tt.expectDomain.DomainName).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockDBBin.EXPECT().DomainCreate(ctx, tt.expectDomain)
+			mockDBBin.EXPECT().DomainGet(ctx, tt.expectDomain.ID).Return(tt.responseDomain, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, domain.EventTypeDomainCreated, tt.responseDomain)
+
+			res, err := h.Create(ctx, tt.customerID, tt.domainName, tt.domainN, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseDomain, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseDomain, res)
+			}
+		})
+	}
+}
+
+func Test_Get(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id uuid.UUID
+
+		responseDomain *domain.Domain
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("a27578e6-756f-45e4-88f0-d97e725f4507"),
+
+			&domain.Domain{
+				CustomerID: uuid.FromStringOrNil("a27578e6-756f-45e4-88f0-d97e725f4507"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &domainHandler{
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
+		}
+
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().DomainGetByDomainName(gomock.Any(), tt.domain.DomainName).Return(nil, fmt.Errorf(""))
-		mockDBBin.EXPECT().DomainCreate(gomock.Any(), gomock.Any())
-		mockDBBin.EXPECT().DomainGet(gomock.Any(), gomock.Any()).Return(&domain.Domain{}, nil)
-		mockNotify.EXPECT().PublishEvent(gomock.Any(), domain.EventTypeDomainCreated, gomock.Any())
-		_, err := h.Create(ctx, tt.customerID, tt.domainName, tt.domainN, tt.detail)
+		mockDBBin.EXPECT().DomainGet(ctx, tt.id).Return(tt.responseDomain, nil)
+		res, err := h.Get(ctx, tt.id)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if !reflect.DeepEqual(tt.responseDomain, res) {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseDomain, res)
 		}
 	}
 }
 
-func TestUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+func Test_GetByDomainName(t *testing.T) {
 
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := &domainHandler{
-		dbAst:         mockDBAst,
-		dbBin:         mockDBBin,
-		notifyHandler: mockNotify,
+	type test struct {
+		name string
+
+		domainName string
+
+		responseDomain *domain.Domain
 	}
+
+	tests := []test{
+		{
+			"normal",
+
+			"test",
+
+			&domain.Domain{
+				CustomerID: uuid.FromStringOrNil("b6ce1618-a5d5-4fe2-a3f4-981c98543175"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &domainHandler{
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
+		}
+
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().DomainGetByDomainName(ctx, tt.domainName).Return(tt.responseDomain, nil)
+		res, err := h.GetByDomainName(ctx, tt.domainName)
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if !reflect.DeepEqual(tt.responseDomain, res) {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseDomain, res)
+		}
+	}
+}
+
+func Test_Update(t *testing.T) {
 
 	type test struct {
 		name string
@@ -112,6 +222,18 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &domainHandler{
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
+		}
+
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().DomainUpdateBasicInfo(gomock.Any(), tt.id, tt.domainN, tt.detail).Return(nil)
@@ -124,20 +246,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	mockExt := extensionhandler.NewMockExtensionHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := &domainHandler{
-		dbAst:         mockDBAst,
-		dbBin:         mockDBBin,
-		extHandler:    mockExt,
-		notifyHandler: mockNotify,
-	}
+func Test_Delete(t *testing.T) {
 
 	type test struct {
 		name string
@@ -164,6 +273,20 @@ func TestDelete(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockExt := extensionhandler.NewMockExtensionHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &domainHandler{
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			extHandler:    mockExt,
+			notifyHandler: mockNotify,
+		}
+
 		ctx := context.Background()
 
 		mockExt.EXPECT().ExtensionDeleteByDomainID(gomock.Any(), tt.domainID).Return([]*extension.Extension{}, nil)
@@ -178,6 +301,5 @@ func TestDelete(t *testing.T) {
 		if !reflect.DeepEqual(tt.expectRes, res) {
 			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 		}
-
 	}
 }

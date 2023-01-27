@@ -72,7 +72,7 @@ func (h *handler) AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpo
 	}
 
 	// update the cache
-	h.astEndpointUpdateToCache(ctx, *b.ID)
+	_ = h.astEndpointUpdateToCache(ctx, *b.ID)
 
 	return nil
 }
@@ -150,7 +150,7 @@ func (h *handler) AstEndpointGet(ctx context.Context, id string) (*astendpoint.A
 	}
 
 	// set to the cache
-	h.astEndpointSetToCache(ctx, res)
+	_ = h.astEndpointSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -171,7 +171,7 @@ func (h *handler) AstEndpointDelete(ctx context.Context, id string) error {
 	}
 
 	// delete from the cache
-	h.cache.AstEndpointDel(ctx, id)
+	_ = h.cache.AstEndpointDel(ctx, id)
 
 	return nil
 }
