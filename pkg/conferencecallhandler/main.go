@@ -4,6 +4,7 @@ package conferencecallhandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -48,6 +49,8 @@ type conferencecallHandler struct {
 const (
 	defaultHealthCheckDelay    = 5000 // 5 secs
 	defaultHealthCheckRetryMax = 2    //
+
+	maxConferencecallDuration = time.Hour * 24 // 1 day(24 hours)
 )
 
 var (

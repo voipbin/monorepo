@@ -5,15 +5,15 @@ go 1.18
 require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/gofrs/uuid v4.3.1+incompatible
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230121103234-0d96435ecdd3
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230121111025-34a739cb7e28
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230126041736-fbf06b138d39
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230127062739-4b5b3f847e48
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230102093540-da6a0504a0ae
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230120110509-eb4908c35288
 )
@@ -38,13 +38,13 @@ require (
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9 // indirect
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901 // indirect
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20221124180605-39b41a7a1ada // indirect
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20221206185501-ee71428c9199 // indirect
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230127044148-d2db8f41581c // indirect
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097 // indirect
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9 // indirect
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230117134054-5234eab5c94d // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
 	golang.org/x/sys v0.4.0 // indirect
-	google.golang.org/genproto v0.0.0-20230119192704-9d59e20e5cd1 // indirect
+	google.golang.org/genproto v0.0.0-20230125152338-dcaf20b6aeaa // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
