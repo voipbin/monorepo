@@ -249,6 +249,66 @@ func Test_processV1DomainsPut(t *testing.T) {
 	}
 }
 
+func Test_processV1DomainsDomainNameDomainNameGet(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request        *rabbitmqhandler.Request
+		responseDomain *domain.Domain
+
+		expectDomainName string
+		expectRes        *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/domains/domain_name/test.domain",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&domain.Domain{
+				ID: uuid.FromStringOrNil("d5829769-dacf-420e-9260-c8931560331e"),
+			},
+
+			"test.domain",
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"d5829769-dacf-420e-9260-c8931560331e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:    mockSock,
+				reqHandler:    mockReq,
+				domainHandler: mockDomain,
+			}
+
+			mockDomain.EXPECT().GetByDomainName(gomock.Any(), tt.expectDomainName).Return(tt.responseDomain, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_processV1DomainsDelete(t *testing.T) {
 
 	type test struct {

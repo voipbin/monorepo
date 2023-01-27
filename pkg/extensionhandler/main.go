@@ -1,6 +1,6 @@
 package extensionhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package extensionhandler -destination ./mock_extensionhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package extensionhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -9,15 +9,23 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/util"
 )
 
 // ExtensionHandler is interface for service handle
 type ExtensionHandler interface {
-	ExtensionCreate(ctx context.Context, e *extension.Extension) (*extension.Extension, error)
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		domainID uuid.UUID,
+		ext string,
+		password string,
+	) (*extension.Extension, error)
 	ExtensionDelete(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error)
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
@@ -27,12 +35,16 @@ type ExtensionHandler interface {
 
 // extensionHandler structure for service handle
 type extensionHandler struct {
-	util          util.Util
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	dbAst         dbhandler.DBHandler
 	dbBin         dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 }
+
+const (
+	constBaseDomainName = "sip.voipbin.net" // base domain name
+)
 
 var (
 	metricsNamespace = "registrar_manager"
@@ -65,7 +77,7 @@ func init() {
 func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) ExtensionHandler {
 
 	h := &extensionHandler{
-		util:          util.NewUtil(),
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    r,
 		dbAst:         dbAst,
 		dbBin:         dbBin,

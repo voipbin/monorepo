@@ -53,12 +53,15 @@ var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for promet
 var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
 
 func main() {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "main",
+	})
 	fmt.Printf("hello world\n")
 
 	// connect to the database asterisk
 	sqlAst, err := sql.Open("mysql", *dbDSNAst)
 	if err != nil {
-		logrus.Errorf("Could not access to database asterisk. err: %v", err)
+		log.Errorf("Could not access to database asterisk. err: %v", err)
 		return
 	}
 	defer sqlAst.Close()
@@ -66,7 +69,7 @@ func main() {
 	// connect to the database bin-manager
 	sqlBin, err := sql.Open("mysql", *dbDSNBin)
 	if err != nil {
-		logrus.Errorf("Could not access to database bin-manager. err: %v", err)
+		log.Errorf("Could not access to database bin-manager. err: %v", err)
 		return
 	}
 	defer sqlBin.Close()
@@ -74,11 +77,13 @@ func main() {
 	// connect to cache
 	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
 	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
+		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
-	run(sqlAst, sqlBin, cache)
+	if errRun := run(sqlAst, sqlBin, cache); errRun != nil {
+		log.Errorf("Could not run. err: %v", errRun)
+	}
 	<-chDone
 
 }

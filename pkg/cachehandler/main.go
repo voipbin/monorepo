@@ -1,6 +1,6 @@
 package cachehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -46,7 +46,8 @@ type CacheHandler interface {
 
 	DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error)
 	DomainSet(ctx context.Context, e *domain.Domain) error
-	DomainDel(ctx context.Context, id uuid.UUID) error
+	DomainDel(ctx context.Context, id uuid.UUID, name string) error
+	DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error)
 
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	ExtensionSet(ctx context.Context, e *extension.Extension) error

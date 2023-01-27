@@ -1,15 +1,15 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/gofrs/uuid"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
@@ -17,7 +17,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/util"
 )
 
 // list of const variables
@@ -67,24 +66,22 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
-	util  util.Util
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
 }
 
 // handler errors
 var (
-	ErrNotFound = errors.New("Record not found")
+	ErrNotFound = errors.New("record not found")
 )
-
-const defaultDelayTimeout = time.Millisecond * 150
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		util:  util.NewUtil(),
-		db:    db,
-		cache: cache,
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       cache,
 	}
 	return h
 }

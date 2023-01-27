@@ -15,8 +15,10 @@ import (
 )
 
 // processV1DomainsPost handles /v1/domains request
-func (h *listenHandler) processV1DomainsPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1DomainsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1DomainsPost",
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {
@@ -25,19 +27,19 @@ func (h *listenHandler) processV1DomainsPost(m *rabbitmqhandler.Request) (*rabbi
 
 	var reqData request.V1DataDomainsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		logrus.Debugf("Could not unmarshal the request data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	tmp, err := h.domainHandler.Create(ctx, reqData.CustomerID, reqData.DomainName, reqData.Name, reqData.Detail)
 	if err != nil {
-		logrus.Errorf("Could not create a new domain correctly. err: %v", err)
+		log.Errorf("Could not create a new domain correctly. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		logrus.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 
@@ -51,8 +53,10 @@ func (h *listenHandler) processV1DomainsPost(m *rabbitmqhandler.Request) (*rabbi
 }
 
 // processV1DomainsIDGet handles /v1/domains/{id} GET request
-func (h *listenHandler) processV1DomainsIDGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1DomainsIDGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1DomainsIDGet",
+	})
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -65,13 +69,13 @@ func (h *listenHandler) processV1DomainsIDGet(req *rabbitmqhandler.Request) (*ra
 
 	domain, err := h.domainHandler.Get(ctx, domainID)
 	if err != nil {
-		logrus.Errorf("Could not get domain info. err: %v", err)
+		log.Errorf("Could not get domain info. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(domain)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -85,8 +89,10 @@ func (h *listenHandler) processV1DomainsIDGet(req *rabbitmqhandler.Request) (*ra
 }
 
 // processV1DomainsIDPut handles /v1/domains/{id} PUT request
-func (h *listenHandler) processV1DomainsIDPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1DomainsIDPut(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1DomainsIDPut",
+	})
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -99,19 +105,19 @@ func (h *listenHandler) processV1DomainsIDPut(req *rabbitmqhandler.Request) (*ra
 
 	var reqData request.V1DataDomainsIDPut
 	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
-		logrus.Debugf("Could not unmarshal the request data. data: %v, err: %v", req.Data, err)
+		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", req.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	domain, err := h.domainHandler.Update(ctx, id, reqData.Name, reqData.Detail)
 	if err != nil {
-		logrus.Errorf("Could not get domain info. err: %v", err)
+		log.Errorf("Could not get domain info. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(domain)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -125,8 +131,10 @@ func (h *listenHandler) processV1DomainsIDPut(req *rabbitmqhandler.Request) (*ra
 }
 
 // processV1DomainsIDDelete handles /v1/domains/{id} DELETE request
-func (h *listenHandler) processV1DomainsIDDelete(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1DomainsIDDelete(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1DomainsIDDelete",
+	})
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -139,13 +147,13 @@ func (h *listenHandler) processV1DomainsIDDelete(req *rabbitmqhandler.Request) (
 
 	tmp, err := h.domainHandler.Delete(ctx, domainID)
 	if err != nil {
-		logrus.Errorf("Could not get domain info. err: %v", err)
+		log.Errorf("Could not get domain info. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -159,8 +167,10 @@ func (h *listenHandler) processV1DomainsIDDelete(req *rabbitmqhandler.Request) (
 }
 
 // processV1DomainsGet handles /v1/domains GET request
-func (h *listenHandler) processV1DomainsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1DomainsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1DomainsGet",
+	})
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -177,13 +187,48 @@ func (h *listenHandler) processV1DomainsGet(req *rabbitmqhandler.Request) (*rabb
 
 	resDomains, err := h.domainHandler.Gets(ctx, customerID, pageToken, pageSize)
 	if err != nil {
-		logrus.Errorf("Could not get domains. err: %v", err)
+		log.Errorf("Could not get domains. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(resDomains)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1DomainsDomainNameDomainNameGet handles /v1/domains/domain_name/<domain-name> GET request
+func (h *listenHandler) processV1DomainsDomainNameDomainNameGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1DomainsDomainNameDomainNameGet",
+	})
+
+	u, err := url.Parse(req.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpVals := strings.Split(u.Path, "/")
+	domainName := tmpVals[4]
+
+	tmp, err := h.domainHandler.GetByDomainName(ctx, domainName)
+	if err != nil {
+		log.Errorf("Could not get domains. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 

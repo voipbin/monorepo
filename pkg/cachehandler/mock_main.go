@@ -228,17 +228,17 @@ func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 }
 
 // DomainDel mocks base method.
-func (m *MockCacheHandler) DomainDel(ctx context.Context, id uuid.UUID) error {
+func (m *MockCacheHandler) DomainDel(ctx context.Context, id uuid.UUID, name string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DomainDel", ctx, id)
+	ret := m.ctrl.Call(m, "DomainDel", ctx, id, name)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DomainDel indicates an expected call of DomainDel.
-func (mr *MockCacheHandlerMockRecorder) DomainDel(ctx, id interface{}) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) DomainDel(ctx, id, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDel", reflect.TypeOf((*MockCacheHandler)(nil).DomainDel), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainDel", reflect.TypeOf((*MockCacheHandler)(nil).DomainDel), ctx, id, name)
 }
 
 // DomainGet mocks base method.
@@ -254,6 +254,21 @@ func (m *MockCacheHandler) DomainGet(ctx context.Context, id uuid.UUID) (*domain
 func (mr *MockCacheHandlerMockRecorder) DomainGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGet", reflect.TypeOf((*MockCacheHandler)(nil).DomainGet), ctx, id)
+}
+
+// DomainGetByDomainName mocks base method.
+func (m *MockCacheHandler) DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DomainGetByDomainName", ctx, domainName)
+	ret0, _ := ret[0].(*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DomainGetByDomainName indicates an expected call of DomainGetByDomainName.
+func (mr *MockCacheHandlerMockRecorder) DomainGetByDomainName(ctx, domainName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainGetByDomainName", reflect.TypeOf((*MockCacheHandler)(nil).DomainGetByDomainName), ctx, domainName)
 }
 
 // DomainSet mocks base method.

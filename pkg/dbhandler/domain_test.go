@@ -10,9 +10,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
 
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/util"
 )
 
 func Test_DomainCreate(t *testing.T) {
@@ -73,13 +73,13 @@ func Test_DomainCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -116,7 +116,7 @@ func Test_DomainGetByDomainName(t *testing.T) {
 
 	tests := []test{
 		{
-			"test normal",
+			"normal",
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("3e765cc0-6ee1-11eb-b9e9-33589a46f50e"),
 				CustomerID: uuid.FromStringOrNil("718fdf92-7fec-11ec-8408-dba09d1a7bd2"),
@@ -141,13 +141,13 @@ func Test_DomainGetByDomainName(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -158,6 +158,8 @@ func Test_DomainGetByDomainName(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
+			mockCache.EXPECT().DomainGetByDomainName(ctx, tt.domain.DomainName).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
 			res, err := h.DomainGetByDomainName(ctx, tt.domain.DomainName)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -232,13 +234,13 @@ func Test_DomainGetsByCustomerID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
@@ -251,7 +253,7 @@ func Test_DomainGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			domains, err := h.DomainGetsByCustomerID(ctx, tt.customerID, util.GetCurTime(), tt.limit)
+			domains, err := h.DomainGetsByCustomerID(ctx, tt.customerID, utilhandler.GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -320,13 +322,13 @@ func Test_DomainUpdateBasicInfo(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()

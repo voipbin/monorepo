@@ -17,22 +17,39 @@ import (
 func Test_processV1ExtensionsPost(t *testing.T) {
 
 	type test struct {
-		name         string
-		reqExtension *extension.Extension
-		resExtension *extension.Extension
-		request      *rabbitmqhandler.Request
-		expectRes    *rabbitmqhandler.Response
+		name string
+
+		request *rabbitmqhandler.Request
+
+		expectCustomerID uuid.UUID
+		expectName       string
+		expectDetail     string
+		expectDomainID   uuid.UUID
+		expectExtension  string
+		expectPassword   string
+
+		responseExtension *extension.Extension
+		expectRes         *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
-			"empty addresses",
-			&extension.Extension{
-				CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
-				DomainID:   uuid.FromStringOrNil("42dd6424-6ebf-11eb-8630-6b91b6089dc4"),
-				Extension:  "45eb6bac-6ebf-11eb-bcf3-3b9157826d22",
-				Password:   "4b1f7a6e-6ebf-11eb-a47e-5351700cd612",
+			"normal",
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/extensions",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "2e341ffa-7fed-11ec-9667-1357b91d745d", "name": "test name", "detail": "test detail", "domain_id": "42dd6424-6ebf-11eb-8630-6b91b6089dc4", "extension": "45eb6bac-6ebf-11eb-bcf3-3b9157826d22", "password": "4b1f7a6e-6ebf-11eb-a47e-5351700cd612"}`),
 			},
+
+			uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+			"test name",
+			"test detail",
+			uuid.FromStringOrNil("42dd6424-6ebf-11eb-8630-6b91b6089dc4"),
+			"45eb6bac-6ebf-11eb-bcf3-3b9157826d22",
+			"4b1f7a6e-6ebf-11eb-a47e-5351700cd612",
+
 			&extension.Extension{
 				ID:         uuid.FromStringOrNil("3f4bc63e-6ebf-11eb-b7de-df47266bf559"),
 				CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
@@ -45,12 +62,6 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 
 				Extension: "45eb6bac-6ebf-11eb-bcf3-3b9157826d22",
 				Password:  "4b1f7a6e-6ebf-11eb-a47e-5351700cd612",
-			},
-			&rabbitmqhandler.Request{
-				URI:      "/v1/extensions",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "2e341ffa-7fed-11ec-9667-1357b91d745d", "domain_id": "42dd6424-6ebf-11eb-8630-6b91b6089dc4", "extension": "45eb6bac-6ebf-11eb-bcf3-3b9157826d22", "password": "4b1f7a6e-6ebf-11eb-a47e-5351700cd612"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -76,7 +87,15 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().ExtensionCreate(gomock.Any(), tt.reqExtension).Return(tt.resExtension, nil)
+			mockExtension.EXPECT().Create(
+				gomock.Any(),
+				tt.expectCustomerID,
+				tt.expectName,
+				tt.expectDetail,
+				tt.expectDomainID,
+				tt.expectExtension,
+				tt.expectPassword,
+			).Return(tt.responseExtension, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

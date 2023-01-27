@@ -81,6 +81,21 @@ func (mr *MockDomainHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDomainHandler)(nil).Get), ctx, id)
 }
 
+// GetByDomainName mocks base method.
+func (m *MockDomainHandler) GetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByDomainName", ctx, domainName)
+	ret0, _ := ret[0].(*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByDomainName indicates an expected call of GetByDomainName.
+func (mr *MockDomainHandlerMockRecorder) GetByDomainName(ctx, domainName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByDomainName", reflect.TypeOf((*MockDomainHandler)(nil).GetByDomainName), ctx, domainName)
+}
+
 // Gets mocks base method.
 func (m *MockDomainHandler) Gets(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*domain.Domain, error) {
 	m.ctrl.T.Helper()

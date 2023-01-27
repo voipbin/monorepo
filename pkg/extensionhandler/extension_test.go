@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
@@ -17,30 +18,48 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
-func Test_ExtensionCreate(t *testing.T) {
+func Test_Create(t *testing.T) {
 
 	type test struct {
-		name     string
-		ext      *extension.Extension
-		domain   *domain.Domain
-		aor      *astaor.AstAOR
-		auth     *astauth.AstAuth
-		endpoint *astendpoint.AstEndpoint
+		name string
+
+		customerID uuid.UUID
+		extName    string
+		detail     string
+		domainID   uuid.UUID
+		ext        string
+		password   string
+
+		responseDomain    *domain.Domain
+		responseUUID      uuid.UUID
+		responseExtension *extension.Extension
+
+		expectAOR       *astaor.AstAOR
+		expectAuth      *astauth.AstAuth
+		expectEndpoint  *astendpoint.AstEndpoint
+		expectExtension *extension.Extension
 	}
 
 	tests := []test{
 		{
-			"test normal",
-			&extension.Extension{
-				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
-				DomainID:   uuid.FromStringOrNil("ce060aae-6ec1-11eb-a550-cb46a3229b89"),
-				Extension:  "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
-				Password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
-			},
+			"normal",
+
+			uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+			"test name",
+			"test detail",
+			uuid.FromStringOrNil("ce060aae-6ec1-11eb-a550-cb46a3229b89"),
+			"ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
+			"cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
+
 			&domain.Domain{
 				ID:         uuid.FromStringOrNil("ce060aae-6ec1-11eb-a550-cb46a3229b89"),
-				DomainName: "test.sip.voipbin.net",
+				DomainName: "test",
 			},
+			uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+			&extension.Extension{
+				ID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+			},
+
 			&astaor.AstAOR{
 				ID:             getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
 				MaxContacts:    getIntegerPointer(1),
@@ -58,17 +77,30 @@ func Test_ExtensionCreate(t *testing.T) {
 				AORs: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
 				Auth: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
 			},
-		},
+			&extension.Extension{
+				ID:         uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+				Name:       "test name",
+				Detail:     "test detail",
+				DomainID:   uuid.FromStringOrNil("ce060aae-6ec1-11eb-a550-cb46a3229b89"),
+				EndpointID: "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net",
+				AORID:      "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net",
+				AuthID:     "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net",
+				Extension:  "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
+				Password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
+			}},
 	}
 
 	for _, tt := range tests {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
+		mockUtil := utilhandler.NewMockUtilHandler(mc)
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 		h := &extensionHandler{
+			utilHandler:   mockUtil,
 			dbAst:         mockDBAst,
 			dbBin:         mockDBBin,
 			notifyHandler: mockNotify,
@@ -76,14 +108,16 @@ func Test_ExtensionCreate(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().DomainGet(gomock.Any(), tt.ext.DomainID).Return(tt.domain, nil)
-		mockDBAst.EXPECT().AstAORCreate(gomock.Any(), tt.aor).Return(nil)
-		mockDBAst.EXPECT().AstAuthCreate(gomock.Any(), tt.auth).Return(nil)
-		mockDBAst.EXPECT().AstEndpointCreate(gomock.Any(), tt.endpoint).Return(nil)
-		mockDBBin.EXPECT().ExtensionCreate(gomock.Any(), gomock.Any()).Return(nil)
-		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), gomock.Any()).Return(tt.ext, nil)
-		mockNotify.EXPECT().PublishEvent(gomock.Any(), extension.EventTypeExtensionCreated, tt.ext)
-		_, err := h.ExtensionCreate(ctx, tt.ext)
+		mockDBBin.EXPECT().DomainGet(ctx, tt.domainID).Return(tt.responseDomain, nil)
+		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR).Return(nil)
+		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
+		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint).Return(nil)
+		mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+		mockDBBin.EXPECT().ExtensionCreate(ctx, tt.expectExtension).Return(nil)
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.expectExtension.ID).Return(tt.responseExtension, nil)
+		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionCreated, tt.responseExtension)
+
+		_, err := h.Create(ctx, tt.customerID, tt.extName, tt.detail, tt.domainID, tt.ext, tt.password)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}

@@ -11,8 +11,10 @@ import (
 )
 
 // processV1ContactsGet handles /v1/contacts GET request
-func (h *listenHandler) processV1ContactsGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	ctx := context.Background()
+func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1ContactsGet",
+	})
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -22,19 +24,19 @@ func (h *listenHandler) processV1ContactsGet(req *rabbitmqhandler.Request) (*rab
 	// get endpoint
 	endpoint, err := url.QueryUnescape(u.Query().Get("endpoint"))
 	if err != nil {
-		logrus.Errorf("Could not unescape the parameter. err: %v", err)
+		log.Errorf("Could not unescape the parameter. err: %v", err)
 		return nil, err
 	}
 
 	resContacts, err := h.contactHandler.ContactGetsByEndpoint(ctx, endpoint)
 	if err != nil {
-		logrus.Errorf("Could not get contacts. err: %v", err)
+		log.Errorf("Could not get contacts. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(resContacts)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -48,9 +50,10 @@ func (h *listenHandler) processV1ContactsGet(req *rabbitmqhandler.Request) (*rab
 }
 
 // processV1ContactsPut handles /v1/contatcs PUT request
-func (h *listenHandler) processV1ContactsPut(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-
-	ctx := context.Background()
+func (h *listenHandler) processV1ContactsPut(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "processV1ContactsPut",
+	})
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
@@ -60,12 +63,12 @@ func (h *listenHandler) processV1ContactsPut(req *rabbitmqhandler.Request) (*rab
 	// get endpoint
 	endpoint, err := url.QueryUnescape(u.Query().Get("endpoint"))
 	if err != nil {
-		logrus.Errorf("Could not unescape the parameter. err: %v", err)
+		log.Errorf("Could not unescape the parameter. err: %v", err)
 		return nil, err
 	}
 
 	if err := h.contactHandler.ContactRefreshByEndpoint(ctx, endpoint); err != nil {
-		logrus.Errorf("Could not refresh the contact info. endpoint: %s, err: %v", endpoint, err)
+		log.Errorf("Could not refresh the contact info. endpoint: %s, err: %v", endpoint, err)
 		return nil, err
 	}
 

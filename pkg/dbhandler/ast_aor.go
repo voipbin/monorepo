@@ -123,7 +123,7 @@ func (h *handler) AstAORCreate(ctx context.Context, b *astaor.AstAOR) error {
 	}
 
 	// update the cache
-	h.astAORUpdateToCache(ctx, *b.ID)
+	_ = h.astAORUpdateToCache(ctx, *b.ID)
 
 	return nil
 }
@@ -201,7 +201,7 @@ func (h *handler) AstAORGet(ctx context.Context, id string) (*astaor.AstAOR, err
 	}
 
 	// set to the cache
-	h.astAORSetToCache(ctx, res)
+	_ = h.astAORSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -222,7 +222,7 @@ func (h *handler) AstAORDelete(ctx context.Context, id string) error {
 	}
 
 	// delete from the cache
-	h.cache.AstAORDel(ctx, id)
+	_ = h.cache.AstAORDel(ctx, id)
 
 	return nil
 }

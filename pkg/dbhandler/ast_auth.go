@@ -102,7 +102,7 @@ func (h *handler) AstAuthCreate(ctx context.Context, b *astauth.AstAuth) error {
 	}
 
 	// update the cache
-	h.astAuthUpdateToCache(ctx, *b.ID)
+	_ = h.astAuthUpdateToCache(ctx, *b.ID)
 
 	return nil
 }
@@ -186,7 +186,7 @@ func (h *handler) AstAuthGet(ctx context.Context, id string) (*astauth.AstAuth, 
 	}
 
 	// set to the cache
-	h.astAuthSetToCache(ctx, res)
+	_ = h.astAuthSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -207,7 +207,7 @@ func (h *handler) AstAuthDelete(ctx context.Context, id string) error {
 	}
 
 	// delete from the cache
-	h.astAuthDeleteFromCache(ctx, id)
+	_ = h.astAuthDeleteFromCache(ctx, id)
 
 	return nil
 }
@@ -229,7 +229,7 @@ func (h *handler) AstAuthUpdate(ctx context.Context, auth *astauth.AstAuth) erro
 	}
 
 	// update to the cache
-	h.astAuthUpdateToCache(ctx, *auth.ID)
+	_ = h.astAuthUpdateToCache(ctx, *auth.ID)
 
 	return nil
 }
