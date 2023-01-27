@@ -3294,6 +3294,21 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainGet(ctx, domainID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1DomainGet", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1DomainGet), ctx, domainID)
 }
 
+// RegistrarV1DomainGetByDomainName mocks base method.
+func (m *MockRequestHandler) RegistrarV1DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1DomainGetByDomainName", ctx, domainName)
+	ret0, _ := ret[0].(*domain.Domain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1DomainGetByDomainName indicates an expected call of RegistrarV1DomainGetByDomainName.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainGetByDomainName(ctx, domainName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1DomainGetByDomainName", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1DomainGetByDomainName), ctx, domainName)
+}
+
 // RegistrarV1DomainGets mocks base method.
 func (m *MockRequestHandler) RegistrarV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]domain.Domain, error) {
 	m.ctrl.T.Helper()
