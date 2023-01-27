@@ -6,6 +6,7 @@ package utilhandler
 
 import (
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -60,6 +61,20 @@ func (m *MockUtilHandler) GetCurTime() string {
 func (mr *MockUtilHandlerMockRecorder) GetCurTime() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurTime", reflect.TypeOf((*MockUtilHandler)(nil).GetCurTime))
+}
+
+// GetCurTimeAdd mocks base method.
+func (m *MockUtilHandler) GetCurTimeAdd(duration time.Duration) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurTimeAdd", duration)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetCurTimeAdd indicates an expected call of GetCurTimeAdd.
+func (mr *MockUtilHandlerMockRecorder) GetCurTimeAdd(duration interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurTimeAdd", reflect.TypeOf((*MockUtilHandler)(nil).GetCurTimeAdd), duration)
 }
 
 // GetCurTimeRFC3339 mocks base method.

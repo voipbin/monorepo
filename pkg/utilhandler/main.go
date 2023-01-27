@@ -3,6 +3,8 @@ package utilhandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package utilhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -11,6 +13,7 @@ type UtilHandler interface {
 	CreateUUID() uuid.UUID
 
 	GetCurTime() string
+	GetCurTimeAdd(duration time.Duration) string
 	GetCurTimeRFC3339() string
 }
 
