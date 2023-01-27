@@ -665,6 +665,7 @@ type RequestHandler interface {
 	RegistrarV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*rmdomain.Domain, error)
 	RegistrarV1DomainDelete(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error)
 	RegistrarV1DomainGet(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error)
+	RegistrarV1DomainGetByDomainName(ctx context.Context, domainName string) (*rmdomain.Domain, error)
 	RegistrarV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmdomain.Domain, error)
 	RegistrarV1DomainUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*rmdomain.Domain, error)
 

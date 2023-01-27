@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	github.com/gofrs/uuid v4.3.1+incompatible
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/prometheus/client_golang v1.14.0
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20221123170257-20a7f901c1fc
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230126041736-fbf06b138d39
@@ -25,7 +25,7 @@ require (
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20221124180605-39b41a7a1ada
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20221206185501-ee71428c9199
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230127044148-d2db8f41581c
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230120110509-eb4908c35288

@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// RMDomainCreate sends a request to registrar-manager
+// RegistrarV1DomainCreate sends a request to registrar-manager
 // to creating a domain.
 // it returns created domain if it succeed.
 func (r *requestHandler) RegistrarV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*rmdomain.Domain, error) {
@@ -50,11 +50,36 @@ func (r *requestHandler) RegistrarV1DomainCreate(ctx context.Context, customerID
 	return &res, nil
 }
 
-// RMDomainGet sends a request to registrar-manager
+// RegistrarV1DomainGet sends a request to registrar-manager
 // to getting a detail domain info.
 // it returns detail domain info if it succeed.
 func (r *requestHandler) RegistrarV1DomainGet(ctx context.Context, domainID uuid.UUID) (*rmdomain.Domain, error) {
 	uri := fmt.Sprintf("/v1/domains/%s", domainID)
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res rmdomain.Domain
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// RegistrarV1DomainGetByDomainName sends a request to registrar-manager
+// to getting a detail domain info using a given domain name.
+// it returns detail domain info if it succeed.
+func (r *requestHandler) RegistrarV1DomainGetByDomainName(ctx context.Context, domainName string) (*rmdomain.Domain, error) {
+	uri := fmt.Sprintf("/v1/domains/domain_name/%s", domainName)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarDomains, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
@@ -99,7 +124,7 @@ func (r *requestHandler) RegistrarV1DomainDelete(ctx context.Context, domainID u
 	return &res, nil
 }
 
-// RMDomainUpdate sends a request to registrar-manager
+// RegistrarV1DomainUpdate sends a request to registrar-manager
 // to update the detail domain info.
 // it returns updated domain info if it succeed.
 func (r *requestHandler) RegistrarV1DomainUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*rmdomain.Domain, error) {
@@ -134,7 +159,7 @@ func (r *requestHandler) RegistrarV1DomainUpdate(ctx context.Context, id uuid.UU
 	return &res, nil
 }
 
-// RMDomainGets sends a request to registrar-manager
+// RegistrarV1DomainGets sends a request to registrar-manager
 // to getting a list of domain info.
 // it returns detail list of domain info if it succeed.
 func (r *requestHandler) RegistrarV1DomainGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmdomain.Domain, error) {
