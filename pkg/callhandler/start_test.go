@@ -62,7 +62,7 @@ func Test_GetTypeContextIncomingCall(t *testing.T) {
 	}
 }
 
-func Test_StartCallHandle_typeConferenceStart(t *testing.T) {
+func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -205,8 +205,8 @@ func Test_StartCallHandle_typeConferenceStart(t *testing.T) {
 			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
 			mockChannel.EXPECT().HangingUpWithDelay(ctx, gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
-			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeSIP).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeConference).Return(tt.responseDestination)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDCall)
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.responseConference, nil)
@@ -235,7 +235,7 @@ func Test_StartCallHandle_typeConferenceStart(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
-			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
+			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -415,7 +415,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
-			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
+			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -495,7 +495,7 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			mockDB.EXPECT().CallSetBridgeID(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)
 
-			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
+			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -553,7 +553,7 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 
 			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
-			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
+			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -608,14 +608,14 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 
 			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
-			if err := h.StartCallHandle(ctx, tt.channel); err != nil {
+			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_StartHandlerContextJoin(t *testing.T) {
+func Test_Start_ContextJoinCall(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -665,7 +665,7 @@ func Test_StartHandlerContextJoin(t *testing.T) {
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, "", defaultDialTimeout).Return(nil)
 
-			if err := h.StartCallHandle(context.Background(), tt.channel); err != nil {
+			if err := h.Start(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

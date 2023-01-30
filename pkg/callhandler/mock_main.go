@@ -417,18 +417,18 @@ func (mr *MockCallHandlerMockRecorder) RecordingStop(ctx, id interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStop", reflect.TypeOf((*MockCallHandler)(nil).RecordingStop), ctx, id)
 }
 
-// StartCallHandle mocks base method.
-func (m *MockCallHandler) StartCallHandle(ctx context.Context, cn *channel.Channel) error {
+// Start mocks base method.
+func (m *MockCallHandler) Start(ctx context.Context, cn *channel.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartCallHandle", ctx, cn)
+	ret := m.ctrl.Call(m, "Start", ctx, cn)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// StartCallHandle indicates an expected call of StartCallHandle.
-func (mr *MockCallHandlerMockRecorder) StartCallHandle(ctx, cn interface{}) *gomock.Call {
+// Start indicates an expected call of Start.
+func (mr *MockCallHandlerMockRecorder) Start(ctx, cn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCallHandle", reflect.TypeOf((*MockCallHandler)(nil).StartCallHandle), ctx, cn)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockCallHandler)(nil).Start), ctx, cn)
 }
 
 // UpdateConfbridgeID mocks base method.

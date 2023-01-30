@@ -52,6 +52,20 @@ func (mr *MockChannelHandlerMockRecorder) AddressGetDestination(cn, addressType 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressGetDestination", reflect.TypeOf((*MockChannelHandler)(nil).AddressGetDestination), cn, addressType)
 }
 
+// AddressGetDestinationWithoutSpecificType mocks base method.
+func (m *MockChannelHandler) AddressGetDestinationWithoutSpecificType(cn *channel.Channel) *address.Address {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressGetDestinationWithoutSpecificType", cn)
+	ret0, _ := ret[0].(*address.Address)
+	return ret0
+}
+
+// AddressGetDestinationWithoutSpecificType indicates an expected call of AddressGetDestinationWithoutSpecificType.
+func (mr *MockChannelHandlerMockRecorder) AddressGetDestinationWithoutSpecificType(cn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressGetDestinationWithoutSpecificType", reflect.TypeOf((*MockChannelHandler)(nil).AddressGetDestinationWithoutSpecificType), cn)
+}
+
 // AddressGetSource mocks base method.
 func (m *MockChannelHandler) AddressGetSource(cn *channel.Channel, addressType address.Type) *address.Address {
 	m.ctrl.T.Helper()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	uuid "github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -26,8 +27,9 @@ const (
 
 // domains
 const (
-	domainConference  = "conference.voipbin.net"
-	domainPSTNService = "pstn.voipbin.net"
+	domainConference = "conference.voipbin.net"
+	domainPSTN       = "pstn.voipbin.net"
+	doaminSIPSuffix  = ".sip.voipbin.net" // suffix domain name for SIP
 )
 
 // list of domain types
@@ -35,6 +37,7 @@ const (
 	domainTypeNone       = "none"
 	domainTypeConference = "conference"
 	domainTypePSTN       = "pstn"
+	domainTypeSIP        = "sip"
 )
 
 // pjsip endpoints
@@ -53,9 +56,9 @@ const (
 	DefaultSipServiceOptionConfbridgeID = "037a20b9-d11d-4b63-a135-ae230cafd495" // default conference ID for conference@sip-service
 )
 
-// StartCallHandle starts the call handle service
+// Start starts the call handle service
 // func (h *callHandler) StartCallHandle(ctx context.Context, asteriskID string, channelID string, source *commonaddress.Address, destination *commonaddress.Address, status call.Status, data map[string]string) error {
-func (h *callHandler) StartCallHandle(ctx context.Context, cn *channel.Channel) error {
+func (h *callHandler) Start(ctx context.Context, cn *channel.Channel) error {
 
 	// check the stasis's context
 	chCtx, ok := cn.StasisData["context"]
@@ -67,38 +70,38 @@ func (h *callHandler) StartCallHandle(ctx context.Context, cn *channel.Channel) 
 	switch chCtx {
 
 	case common.ContextServiceCall:
-		return h.startHandlerContextFromServiceCall(ctx, cn)
+		return h.startContextServiceCall(ctx, cn)
 
 	case common.ContextIncomingCall:
-		return h.startHandlerContextIncomingCall(ctx, cn)
+		return h.startContextIncomingCall(ctx, cn)
 
 	case common.ContextOutgoingCall:
-		return h.startHandlerContextOutgoingCall(ctx, cn)
+		return h.startContextOutgoingCall(ctx, cn)
 
 	case common.ContextRecording:
-		return h.startHandlerContextRecording(ctx, cn)
+		return h.startContextRecording(ctx, cn)
 
 	case common.ContextExternalSoop:
-		return h.startHandlerContextExternalSnoop(ctx, cn)
+		return h.startContextExternalSoop(ctx, cn)
 
 	case common.ContextExternalMedia:
-		return h.startHandlerContextExternalMedia(ctx, cn)
+		return h.startContextExternalMedia(ctx, cn)
 
 	case common.ContextJoinCall:
-		return h.startHandlerContextJoin(ctx, cn)
+		return h.startContextJoinCall(ctx, cn)
 
 	case common.ContextApplication:
-		return h.startHandlerContextApplication(ctx, cn)
+		return h.startContextApplication(ctx, cn)
 
 	default:
 		return fmt.Errorf("no route found for stasisstart. channel_id: %s, stasis_data: %v", cn.ID, cn.StasisData)
 	}
 }
 
-// startHandlerContextFromServiceCall handles contextFromServiceCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextFromServiceCall(ctx context.Context, cn *channel.Channel) error {
+// startContextServiceCall handles contextFromServiceCall context type of StasisStart event.
+func (h *callHandler) startContextServiceCall(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "startHandlerContextFromServiceCall",
+		"func":       "startContextServiceCall",
 		"channel_id": cn.ID,
 	})
 	log.Infof("Executing startHandlerContextFromServiceCall. context: %s", cn.StasisData["context"])
@@ -112,8 +115,8 @@ func (h *callHandler) startHandlerContextFromServiceCall(ctx context.Context, cn
 	}
 }
 
-// startHandlerContextRecording handles contextFromServiceCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextRecording(ctx context.Context, cn *channel.Channel) error {
+// startContextRecording handles contextFromServiceCall context type of StasisStart event.
+func (h *callHandler) startContextRecording(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startHandlerContextRecording",
 		"channel_id": cn.ID,
@@ -147,8 +150,8 @@ func (h *callHandler) startHandlerContextRecording(ctx context.Context, cn *chan
 	return nil
 }
 
-// startHandlerContextExternalSnoop handles contextExternalSnoop context type of StasisStart event.
-func (h *callHandler) startHandlerContextExternalSnoop(ctx context.Context, cn *channel.Channel) error {
+// startContextExternalSoop handles contextExternalSnoop context type of StasisStart event.
+func (h *callHandler) startContextExternalSoop(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":       "startHandlerContextExternalSnoop",
@@ -180,8 +183,8 @@ func (h *callHandler) startHandlerContextExternalSnoop(ctx context.Context, cn *
 	return nil
 }
 
-// startHandlerContextExternalMedia handles contextExternalMedia context type of StasisStart event.
-func (h *callHandler) startHandlerContextExternalMedia(ctx context.Context, cn *channel.Channel) error {
+// startContextExternalMedia handles contextExternalMedia context type of StasisStart event.
+func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":       "startHandlerContextExternalMedia",
@@ -210,11 +213,11 @@ func (h *callHandler) startHandlerContextExternalMedia(ctx context.Context, cn *
 	return nil
 }
 
-// startHandlerContextJoin handles contextJoinCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextJoin(ctx context.Context, cn *channel.Channel) error {
+// startContextJoinCall handles contextJoinCall context type of StasisStart event.
+func (h *callHandler) startContextJoinCall(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":       "startHandlerContextJoin",
+			"func":       "startContextJoinCall",
 			"channel_id": cn.ID,
 		},
 	)
@@ -246,14 +249,12 @@ func (h *callHandler) startHandlerContextJoin(ctx context.Context, cn *channel.C
 	return nil
 }
 
-// startHandlerContextIncomingCall handles contextIncomingCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextIncomingCall(ctx context.Context, cn *channel.Channel) error {
+// startContextIncomingCall handles contextIncomingCall context type of StasisStart event.
+func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "startHandlerContextIncomingCall",
+		"func":        "startContextIncomingCall",
 		"asterisk_id": cn.AsteriskID,
 		"channel_id":  cn.ID,
-		// "source":      source,
-		// "destination": destination,
 	})
 	log.Infof("Executing startHandlerContextIncomingCall. data: %v", cn.StasisData)
 
@@ -273,27 +274,25 @@ func (h *callHandler) startHandlerContextIncomingCall(ctx context.Context, cn *c
 
 	// get call type
 	domainType := getDomainTypeIncomingCall(cn.StasisData["domain"])
-	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeTel)
-	destination := h.channelHandler.AddressGetDestination(cn, commonaddress.TypeTel)
-	status := call.GetStatusByChannelState(cn.State)
-
 	switch domainType {
 	case domainTypeConference:
-		return h.typeConferenceStart(ctx, cn.AsteriskID, cn.ID, source, destination, status, cn.StasisData)
+		return h.startIncomingDomainTypeConference(ctx, cn)
 
 	case domainTypePSTN:
-		return h.typeFlowStart(ctx, cn.AsteriskID, cn.ID, source, destination, status, cn.StasisData)
+		return h.startIncomingDomainTypePSTN(ctx, cn)
+
+	case domainTypeSIP:
+		return h.startIncomingDomainTypeSIP(ctx, cn)
 
 	default:
-		// call.TypeNone will get to here.
 		// no route found
 		log.Errorf("Could not find correct domain type handler. domain_type: %v", domainType)
 		return fmt.Errorf("no route found for stasisstart. channel_id: %s", cn.ID)
 	}
 }
 
-// startHandlerContextOutgoingCall handles contextOutgoingCall context type of StasisStart event.
-func (h *callHandler) startHandlerContextOutgoingCall(ctx context.Context, cn *channel.Channel) error {
+// startContextOutgoingCall handles contextOutgoingCall context type of StasisStart event.
+func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "startHandlerContextOutgoingCall",
 		"asterisk_id": cn.AsteriskID,
@@ -325,7 +324,7 @@ func (h *callHandler) startHandlerContextOutgoingCall(ctx context.Context, cn *c
 	}
 
 	// create call bridge
-	bridgeID, err := h.addCallBridge(ctx, callID, cn.AsteriskID, cn.ID)
+	bridgeID, err := h.addCallBridge(ctx, cn, callID)
 	if err != nil {
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
 		_, _ = h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing)
@@ -349,8 +348,8 @@ func (h *callHandler) startHandlerContextOutgoingCall(ctx context.Context, cn *c
 	return nil
 }
 
-// startHandlerContextApplication handles contextApplication context type of StasisStart event.
-func (h *callHandler) startHandlerContextApplication(ctx context.Context, cn *channel.Channel) error {
+// startContextApplication handles contextApplication context type of StasisStart event.
+func (h *callHandler) startContextApplication(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startHandlerContextApplication",
 		"channel_id": cn.ID,
@@ -369,19 +368,18 @@ func (h *callHandler) startHandlerContextApplication(ctx context.Context, cn *ch
 	}
 }
 
-// addCallBridge creates a join bridge and put the channel into the join bridge.
-func (h *callHandler) addCallBridge(ctx context.Context, id uuid.UUID, asteriskID string, channelID string) (string, error) {
+// addCallBridge creates a call bridge and put the channel into the join bridge.
+func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, callID uuid.UUID) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "addJoinBridge",
-		"call_id":     id,
-		"asterisk_id": asteriskID,
-		"channel_id":  channelID,
+		"func":       "addJoinBridge",
+		"call_id":    callID,
+		"channel_id": cn.ID,
 	})
 
 	// create join bridge
 	bridgeID := h.utilHandler.CreateUUID().String()
-	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCall, id)
-	tmp, err := h.bridgeHandler.Start(ctx, asteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
+	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCall, callID)
+	tmp, err := h.bridgeHandler.Start(ctx, cn.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 	if err != nil {
 		log.Errorf("Could not create a bridge for external media. error: %v", err)
 		return "", err
@@ -389,7 +387,7 @@ func (h *callHandler) addCallBridge(ctx context.Context, id uuid.UUID, asteriskI
 	log.WithField("bridge", tmp).Debugf("Created a call bridge. bridge_id: %s", tmp.ID)
 
 	// add the channel to the bridge
-	if errJoin := h.bridgeHandler.ChannelJoin(ctx, bridgeID, channelID, "", false, false); errJoin != nil {
+	if errJoin := h.bridgeHandler.ChannelJoin(ctx, bridgeID, cn.ID, "", false, false); errJoin != nil {
 		log.Errorf("Could not add the channel to the join bridge. error: %v", errJoin)
 		_ = h.bridgeHandler.Destroy(ctx, bridgeID)
 		return "", errJoin
@@ -406,26 +404,29 @@ func getDomainTypeIncomingCall(domain string) string {
 	case domainConference:
 		return domainTypeConference
 
-	case domainPSTNService:
+	case domainPSTN:
 		return domainTypePSTN
-
-	default:
-		return domainTypeNone
 	}
+
+	if strings.HasSuffix(domain, doaminSIPSuffix) {
+		return domainTypeSIP
+	}
+
+	return domainTypeNone
 }
 
-// serviceConferenceStart handles conference calltype start.
-// func (h *callHandler) typeConferenceStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
-func (h *callHandler) typeConferenceStart(ctx context.Context, asteriskID string, channelID string, source *commonaddress.Address, destination *commonaddress.Address, status call.Status, data map[string]string) error {
+// startIncomingDomainTypeConference handles conference domain type incoming call.
+func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn *channel.Channel) error {
+	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeSIP)
+	destination := h.channelHandler.AddressGetDestination(cn, commonaddress.TypeConference)
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "typeConferenceStart",
-			"channel_id":  channelID,
+			"func":        "startIncomingDomainTypeConference",
+			"channel_id":  cn.ID,
 			"source":      source,
 			"destination": destination,
-			"status":      status,
 		})
-	log.Debugf("Starting the conference to joining. source_target: %s, destination_target: %s", source.Target, destination.Target)
+	log.Debugf("Starting startIncomingDomainTypeConference. source_target: %s, destination_target: %s", source.Target, destination.Target)
 
 	id := h.utilHandler.CreateUUID()
 	cfID := uuid.FromStringOrNil(destination.Target)
@@ -441,7 +442,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, asteriskID string
 		return errors.Wrapf(err, "could not get conference info. conference_id: %s", cfID)
 	}
 
-	callBridgeID, err := h.addCallBridge(ctx, id, asteriskID, channelID)
+	callBridgeID, err := h.addCallBridge(ctx, cn, id)
 	if err != nil {
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
 		return errors.Wrap(err, "could not add the channel to the join bridge")
@@ -455,13 +456,14 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, asteriskID string
 	}
 	log.WithField("activeflow", af).Debugf("Created an active flow. active_flow_id: %s", af.ID)
 
+	status := call.GetStatusByChannelState(cn.State)
 	c, err := h.Create(
 		ctx,
 
 		id,
 		cf.CustomerID,
 
-		channelID,
+		cn.ID,
 		callBridgeID,
 
 		cf.FlowID,
@@ -474,7 +476,7 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, asteriskID string
 
 		status,
 
-		data,
+		cn.StasisData,
 		af.CurrentAction,
 		call.DirectionIncoming,
 
@@ -502,17 +504,16 @@ func (h *callHandler) typeConferenceStart(ctx context.Context, asteriskID string
 	return h.ActionNext(ctx, c)
 }
 
-// typeFlowStart handles flow calltype start.
-// func (h *callHandler) typeFlowStart(ctx context.Context, cn *channel.Channel, data map[string]string) error {
-func (h *callHandler) typeFlowStart(ctx context.Context, asteriskID string, channelID string, source *commonaddress.Address, destination *commonaddress.Address, status call.Status, data map[string]string) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "typeFlowStart",
-			"asterisk_id": asteriskID,
-			"channel_id":  channelID,
-			"source":      source,
-			"destination": destination,
-		})
+// startIncomingDomainTypePSTN handles flow calltype start.
+func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *channel.Channel) error {
+	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeTel)
+	destination := h.channelHandler.AddressGetDestination(cn, commonaddress.TypeTel)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypePSTN",
+		"channel_id":  cn.ID,
+		"source":      source,
+		"destination": destination,
+	})
 	log.Debugf("Starting the flow incoming call handler. source_target: %s, destinaiton_target: %s", source.Target, destination.Target)
 
 	id := h.utilHandler.CreateUUID()
@@ -526,7 +527,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, asteriskID string, chan
 	}
 
 	// create call bridge
-	callBridgeID, err := h.addCallBridge(ctx, id, asteriskID, channelID)
+	callBridgeID, err := h.addCallBridge(ctx, cn, id)
 	if err != nil {
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
 		return errors.Wrap(err, "could not add the channel to the join bridge")
@@ -540,17 +541,14 @@ func (h *callHandler) typeFlowStart(ctx context.Context, asteriskID string, chan
 	}
 	log.Debugf("Created an active flow. active-flow: %v", af)
 
-	// source := commonaddress.CreateAddressByChannelSource(cn)
-	// destination := commonaddress.CreateAddressByChannelDestination(cn)
-	// status := call.GetStatusByChannelState(cn.State)
-
+	status := call.GetStatusByChannelState(cn.State)
 	c, err := h.Create(
 		ctx,
 
 		id,
 		numb.CustomerID,
 
-		channelID,
+		cn.ID,
 		callBridgeID,
 
 		numb.CallFlowID,
@@ -563,7 +561,7 @@ func (h *callHandler) typeFlowStart(ctx context.Context, asteriskID string, chan
 
 		status,
 
-		data,
+		cn.StasisData,
 		af.CurrentAction,
 		call.DirectionIncoming,
 

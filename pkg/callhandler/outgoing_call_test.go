@@ -110,7 +110,9 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			},
 			"pjsip/call-out/sip:testoutgoing@test.com",
 			map[string]string{
-				"CALLERID(all)":                         `"test" <sip:testsrc@test.com>`,
+				"CALLERID(pres)":                        "prohib",
+				"PJSIP_HEADER(add,P-Asserted-Identity)": "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>",
+				"PJSIP_HEADER(add,Privacy)":             "id",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 		},
@@ -277,7 +279,9 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
 			"pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
 			map[string]string{
-				"CALLERID(all)":                         "+99999888",
+				// "CALLERID(all)":                         "+99999888",
+				"CALLERID(name)":                        "test",
+				"CALLERID(num)":                         "+99999888",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 		},
@@ -740,6 +744,10 @@ func Test_createChannel(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("6f3fd136-534d-11ed-90a2-ff71219800e5"),
 
 				ChannelID: "7fd0947a-5f39-11ed-8ce5-7b34330a9d7c",
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000002",
+				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -762,7 +770,8 @@ func Test_createChannel(t *testing.T) {
 			"context=call-out,call_id=7e0a846a-5d96-11ed-9005-07794a4f93cb",
 			"pjsip/call-out/sip:+821100000001@test.com;transport=udp",
 			map[string]string{
-				"CALLERID(all)":                         `"" <sip:>`,
+				"CALLERID(name)":                        "",
+				"CALLERID(num)":                         "+821100000002",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 		},
@@ -824,6 +833,10 @@ func Test_createFailoverChannel(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
 
 				ChannelID: "263bc88c-5f7d-11ed-a26c-735426e79b33",
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000002",
+				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -847,6 +860,10 @@ func Test_createFailoverChannel(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
 
 				ChannelID: "2902a512-5f7e-11ed-8cb0-ef43ac5ddea8",
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000002",
+				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
@@ -873,7 +890,8 @@ func Test_createFailoverChannel(t *testing.T) {
 			"context=call-out,call_id=25c7a29a-5f7d-11ed-86cc-bb999f3cccaf",
 			"pjsip/call-out/sip:+821100000001@test.com;transport=udp",
 			map[string]string{
-				"CALLERID(all)":                         `"" <sip:>`,
+				"CALLERID(name)":                        "",
+				"CALLERID(num)":                         "+821100000002",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 
@@ -882,6 +900,10 @@ func Test_createFailoverChannel(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("260b56c0-5f7d-11ed-8930-cbd2b7cb46ff"),
 
 				ChannelID: "2902a512-5f7e-11ed-8cb0-ef43ac5ddea8",
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000002",
+				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",

@@ -129,9 +129,8 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "call-manager", false, false, false, h.processEventRun)
-			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "call-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
+				logrus.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 			}
 		}
 	}()
@@ -139,12 +138,11 @@ func (h *subscribeHandler) Run() error {
 	return nil
 }
 
+// processEventRun runs the event process handler.
 func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
-	go func() {
-		if err := h.processEvent(m); err != nil {
-			logrus.Errorf("Could not consume the ARI event message correctly. err: %v", err)
-		}
-	}()
+	if errProcess := h.processEvent(m); errProcess != nil {
+		logrus.Errorf("Could not consume the ARI event message correctly. err: %v", errProcess)
+	}
 
 	return nil
 }

@@ -16,7 +16,7 @@ import (
 func (h *callHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel) error {
 	logrus.WithField("func", "ARIStasisStart").Debugf("Execute the stasis start event handler for call.")
 
-	return h.StartCallHandle(ctx, cn)
+	return h.Start(ctx, cn)
 }
 
 // ARIChannelDestroyed handles ChannelDestroyed ARI event

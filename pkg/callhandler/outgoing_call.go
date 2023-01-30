@@ -343,22 +343,21 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 	sdpTransport := h.getEndpointSDPTransport(dialURI)
 	log.Debugf("Endpoint detail. endpoint_destination: %s, sdp_transport: %s", dialURI, sdpTransport)
 
-	// create a source endpoint
-	var endpointSrc string
-	if c.Source.Type == commonaddress.TypeTel {
-		endpointSrc = c.Source.Target
-	} else {
-		endpointSrc = fmt.Sprintf("\"%s\" <sip:%s>", c.Source.TargetName, c.Source.Target)
+	// get source address
+	source := h.getSourceForOutgoingCall(ctx, c)
+	log.WithField("source", source).Debugf("Source detail.")
+
+	// set variables
+	variables := map[string]string{
+		"PJSIP_HEADER(add,VBOUT-SDP_Transport)": sdpTransport,
+	}
+
+	for k, v := range source {
+		variables[k] = v
 	}
 
 	// set app args
 	appArgs := fmt.Sprintf("context=%s,call_id=%s", common.ContextOutgoingCall, c.ID)
-
-	// set variables
-	variables := map[string]string{
-		"CALLERID(all)":                         endpointSrc,
-		"PJSIP_HEADER(add,VBOUT-SDP_Transport)": sdpTransport,
-	}
 
 	// create a channel
 	tmp, err := h.channelHandler.StartChannel(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", variables)
@@ -425,4 +424,23 @@ func (h *callHandler) getNextDialroute(ctx context.Context, c *call.Call) (*rmro
 	}
 
 	return &c.Dialroutes[idx+1], nil
+}
+
+// getSourceForOutgoingCall returns a source address for outgoing call
+func (h *callHandler) getSourceForOutgoingCall(ctx context.Context, c *call.Call) map[string]string {
+
+	res := map[string]string{}
+	switch c.Source.Type {
+	case commonaddress.TypeTel:
+		res["CALLERID(name)"] = c.Source.TargetName
+		res["CALLERID(num)"] = c.Source.Target
+
+	default:
+		// currently we are making a call in anonymous caller.
+		res["CALLERID(pres)"] = "prohib"
+		res["PJSIP_HEADER(add,P-Asserted-Identity)"] = "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>"
+		res["PJSIP_HEADER(add,Privacy)"] = "id"
+	}
+
+	return res
 }
