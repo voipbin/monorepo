@@ -12,12 +12,12 @@ import (
 // If the queueName was not defined, then defines with default values.
 func (r *rabbit) ConsumeMessage(queueName, consumerName string, messageConsume CbMsgConsume) error {
 
-	return r.ConsumeMessageOpt(queueName, consumerName, false, false, false, messageConsume)
+	return r.ConsumeMessageOpt(queueName, consumerName, false, false, false, 1, messageConsume)
 }
 
 // ConsumeMessageOpt consumes message with given options
 // If the queueName was not defined, then uses with default queue name values.
-func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, messageConsume CbMsgConsume) error {
+func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume CbMsgConsume) error {
 	log := logrus.WithField("func", "ConsumeMessageOpt")
 
 	queue := r.queueGet(queueName)
@@ -25,32 +25,40 @@ func (r *rabbit) ConsumeMessageOpt(queueName, consumerName string, exclusive boo
 		return fmt.Errorf("queue not found")
 	}
 
-	messages, err := queue.channel.Consume(
-		queueName,    // queue
-		consumerName, // messageConsumer
-		false,        // auto-ack
-		exclusive,    // exclusive
-		noLocal,      // no-local
-		noWait,       // no-wait
-		nil,          // args
-	)
-	if err != nil {
-		return fmt.Errorf("could not consume the message. err: %v", err)
-	}
-
-	// process message
-	for message := range messages {
-		// execute callback
-		err := r.executeConsumeMessage(message, messageConsume)
+	workers := make(chan int, numWorkers)
+	for {
+		// fetch the messages
+		messages, err := queue.channel.Consume(
+			queueName,    // queue
+			consumerName, // messageConsumer
+			false,        // auto-ack
+			exclusive,    // exclusive
+			noLocal,      // no-local
+			noWait,       // no-wait
+			nil,          // args
+		)
 		if err != nil {
-			logrus.Errorf("Could not execute the message consume callback. err: %v", err)
+			return fmt.Errorf("could not consume the message. err: %v", err)
 		}
-		if err := message.Ack(false); err != nil {
-			log.Errorf("Could not ack the message. err: %v", err)
+
+		// process message
+		for message := range messages {
+
+			workers <- 1 // will block if there is MAX ints in workers
+			go func(m amqp.Delivery) {
+				// execute callback
+				if errConsume := r.executeConsumeMessage(m, messageConsume); errConsume != nil {
+					logrus.Errorf("Could not execute the message consume callback. err: %v", errConsume)
+				}
+
+				// ack
+				if errAck := m.Ack(false); errAck != nil {
+					log.Errorf("Could not ack the message. err: %v", errAck)
+				}
+				<-workers // removes an int from workers, allowing another to proceed
+			}(message)
 		}
 	}
-
-	return nil
 }
 
 // executeConsumeMessage runs the callback with the given amqp message
@@ -75,7 +83,7 @@ func (r *rabbit) ConsumeRPC(queueName, consumerName string, cbConsume CbMsgRPC) 
 }
 
 // ConsumeRPCOpt consumes RPC message with given options
-func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume CbMsgRPC) error {
+func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, cbConsume CbMsgRPC) error {
 	log := logrus.WithField("func", "ConsumeRPCOpt")
 
 	queue := r.queueGet(queueName)
@@ -83,8 +91,9 @@ func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, n
 		return fmt.Errorf("queue not found")
 	}
 
-	workers := make(chan int, workerNum)
+	workers := make(chan int, numWorkers)
 	for {
+		// fetch teh messages
 		messages, err := queue.channel.Consume(
 			queueName,    // queue
 			consumerName, // messageConsumer
@@ -103,53 +112,19 @@ func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, n
 
 			workers <- 1 // will block if there is MAX ints in workers
 			go func(m amqp.Delivery) {
-				if err := r.executeConsumeRPC(m, cbConsume); err != nil {
-					log.Errorf("Could not consume the RPC message correctly. err: %v", err)
+				if errConsume := r.executeConsumeRPC(m, cbConsume); errConsume != nil {
+					log.Errorf("Could not consume the RPC message correctly. err: %v", errConsume)
 				}
+
+				// ack
 				if err := m.Ack(false); err != nil {
 					log.Errorf("Could not ack the message. err: %v", err)
 				}
-				<-workers // removes an int from sem, allowing another to proceed
+				<-workers // removes an int from workers, allowing another to proceed
 			}(message)
 		}
 	}
 }
-
-// // ConsumeRPCOpt consumes RPC message with given options
-// func (r *rabbit) ConsumeRPCOpt(queueName, consumerName string, exclusive bool, noLocal bool, noWait bool, cbConsume CbMsgRPC) error {
-// 	log := logrus.WithField("func", "ConsumeRPCOpt")
-
-// 	queue := r.queueGet(queueName)
-// 	if queue == nil {
-// 		return fmt.Errorf("queue not found")
-// 	}
-
-// 	messages, err := queue.channel.Consume(
-// 		queueName,    // queue
-// 		consumerName, // messageConsumer
-// 		false,        // auto-ack
-// 		exclusive,    // exclusive
-// 		noLocal,      // no-local
-// 		noWait,       // no-wait
-// 		nil,          // args
-// 	)
-// 	if err != nil {
-// 		return fmt.Errorf("could not consume the RPC message. err: %v", err)
-// 	}
-
-// 	// process message
-// 	for message := range messages {
-
-// 		if err := r.executeConsumeRPC(message, cbConsume); err != nil {
-// 			log.Errorf("Could not consume the RPC message correctly. err: %v", err)
-// 		}
-// 		if err := message.Ack(false); err != nil {
-// 			log.Errorf("Could not ack the message. err: %v", err)
-// 		}
-// 	}
-
-// 	return nil
-// }
 
 // executeConsumeRPC runs the callback with the given amqp message
 func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) error {
