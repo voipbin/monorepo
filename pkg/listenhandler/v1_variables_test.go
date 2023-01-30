@@ -91,7 +91,7 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 				URI:      "/v1/variables/f842de3c-ccfd-11ec-bfcb-670259cb01f7/variables",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"key1": "value1", "key2": "value2}`),
+				Data:     []byte(`{"variables":{"key1": "value1", "key2": "value2"}}`),
 			},
 
 			uuid.FromStringOrNil("f842de3c-ccfd-11ec-bfcb-670259cb01f7"),
