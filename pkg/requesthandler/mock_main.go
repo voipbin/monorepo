@@ -2492,17 +2492,17 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1VariableGet(ctx, variableID inte
 }
 
 // FlowV1VariableSetVariable mocks base method.
-func (m *MockRequestHandler) FlowV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key, value string) error {
+func (m *MockRequestHandler) FlowV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, variables map[string]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowV1VariableSetVariable", ctx, variableID, key, value)
+	ret := m.ctrl.Call(m, "FlowV1VariableSetVariable", ctx, variableID, variables)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlowV1VariableSetVariable indicates an expected call of FlowV1VariableSetVariable.
-func (mr *MockRequestHandlerMockRecorder) FlowV1VariableSetVariable(ctx, variableID, key, value interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowV1VariableSetVariable(ctx, variableID, variables interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1VariableSetVariable", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1VariableSetVariable), ctx, variableID, key, value)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1VariableSetVariable", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1VariableSetVariable), ctx, variableID, variables)
 }
 
 // MessageV1Hook mocks base method.

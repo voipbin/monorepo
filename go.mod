@@ -13,13 +13,13 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/prometheus/client_golang v1.14.0
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20221123170257-20a7f901c1fc
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230126041736-fbf06b138d39
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230130112141-b8c637e103a4
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20221207172609-98006dd828f9
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230127080612-bfc3f45fc578
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230102093540-da6a0504a0ae
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230130114358-80e8126c46dc
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20221216125212-e74e4c409422
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9

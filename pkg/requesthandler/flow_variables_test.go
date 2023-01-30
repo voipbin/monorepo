@@ -82,8 +82,7 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 		name string
 
 		variableID uuid.UUID
-		key        string
-		value      string
+		variables  map[string]string
 
 		response *rabbitmqhandler.Response
 
@@ -94,8 +93,10 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("4d3c129c-cd07-11ec-bd2f-2fcee708f983"),
-			"key 1",
-			"value 1",
+			map[string]string{
+				"key 1": "value 1",
+				"key 2": "value 2",
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -107,7 +108,7 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 				URI:      "/v1/variables/4d3c129c-cd07-11ec-bd2f-2fcee708f983/variables",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"key":"key 1","value":"value 1"}`),
+				Data:     []byte(`{"variables":{"key 1":"value 1","key 2":"value 2"}}`),
 			},
 		},
 	}
@@ -125,7 +126,7 @@ func Test_FlowV1VariableSetVariable(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.FlowV1VariableSetVariable(ctx, tt.variableID, tt.key, tt.value); err != nil {
+			if err := reqHandler.FlowV1VariableSetVariable(ctx, tt.variableID, tt.variables); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
