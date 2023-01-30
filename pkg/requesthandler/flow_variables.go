@@ -38,12 +38,11 @@ func (r *requestHandler) FlowV1VariableGet(ctx context.Context, variableID uuid.
 // FlowV1VariableSetVariable sends a request to flow-manager
 // to set the detail variable info.
 // it returns error if it failed.
-func (r *requestHandler) FlowV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, key string, value string) error {
+func (r *requestHandler) FlowV1VariableSetVariable(ctx context.Context, variableID uuid.UUID, variables map[string]string) error {
 	uri := fmt.Sprintf("/v1/variables/%s/variables", variableID)
 
 	data := &fmrequest.V1DataVariablesIDVariablesPost{
-		Key:   key,
-		Value: value,
+		Variables: variables,
 	}
 
 	m, err := json.Marshal(data)
