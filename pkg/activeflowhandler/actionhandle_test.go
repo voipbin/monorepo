@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
@@ -1271,7 +1272,7 @@ func Test_actionHandleAgentCall(t *testing.T) {
 		agentID uuid.UUID
 
 		activeFlow         *activeflow.Activeflow
-		responseConference *cfconference.Conference
+		responseConfbridge *cmconfbridge.Confbridge
 		call               *cmcall.Call
 
 		expectReqActions []action.Action
@@ -1314,11 +1315,8 @@ func Test_actionHandleAgentCall(t *testing.T) {
 				},
 			},
 
-			responseConference: &cfconference.Conference{
-				ID:           uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
-				FlowID:       uuid.FromStringOrNil("b7eb3420-410b-11ec-ad87-cf5b4e34b7ed"),
-				ConfbridgeID: uuid.FromStringOrNil("9e60e850-53fe-11ec-a557-d7a7cce806ba"),
-				Status:       cfconference.StatusProgressing,
+			responseConfbridge: &cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
 			},
 			call: &cmcall.Call{
 				ID: uuid.FromStringOrNil("edee9f1c-53fd-11ec-a387-cb7cbdc7d345"),
@@ -1331,7 +1329,7 @@ func Test_actionHandleAgentCall(t *testing.T) {
 			expectReqActions: []action.Action{
 				{
 					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"9e60e850-53fe-11ec-a557-d7a7cce806ba"}`),
+					Option: []byte(`{"confbridge_id":"b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
 				},
 			},
 			resoponseFlow: &flow.Flow{
@@ -1342,7 +1340,7 @@ func Test_actionHandleAgentCall(t *testing.T) {
 			responsePushAction: &action.Action{
 				ID:     uuid.FromStringOrNil("7f1d2664-d4d4-11ec-90ed-d381da69c089"),
 				Type:   action.TypeConfbridgeJoin,
-				Option: []byte(`{"confbridge_id":"9e60e850-53fe-11ec-a557-d7a7cce806ba"}`),
+				Option: []byte(`{"confbridge_id":"b7c84d66-410b-11ec-ab21-23726c7dc3b9"}`),
 			},
 
 			expectUpdateActiveflow: &activeflow.Activeflow{
@@ -1389,7 +1387,7 @@ func Test_actionHandleAgentCall(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceCreate(ctx, tt.activeFlow.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.responseConference, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.activeFlow.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.call, nil)
 
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.activeFlow.CustomerID, flow.TypeFlow, gomock.Any(), "", tt.expectReqActions, false).Return(tt.resoponseFlow, nil)
