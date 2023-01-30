@@ -22,7 +22,7 @@ type VariableHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*variable.Variable, error)
 	Set(ctx context.Context, t *variable.Variable) error
 
-	SetVariable(ctx context.Context, id uuid.UUID, key string, value string) error
+	SetVariable(ctx context.Context, id uuid.UUID, variables map[string]string) error
 	DeleteVariable(ctx context.Context, id uuid.UUID, key string) error
 
 	SubstituteString(ctx context.Context, data string, v *variable.Variable) string

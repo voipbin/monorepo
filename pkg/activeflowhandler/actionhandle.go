@@ -795,11 +795,12 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 	af.ForwardStackID = resStackID
 	af.ForwardActionID = resAction.ID
 
-	// update active flow
+	// update activeflow
 	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
 		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
 		return err
 	}
+	log.Debugf("Updated activeflow. activeflow_id: %s", af.ID)
 
 	return nil
 }
@@ -904,8 +905,11 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 	targetVar := v.Variables[tmpVar]
 
 	// reset the variable
+	variables := map[string]string{
+		tmpVar: "",
+	}
 	log.Debugf("Resetting a variable. variable: %s", tmpVar)
-	if errVar := h.variableHandler.SetVariable(ctx, af.ID, tmpVar, ""); errVar != nil {
+	if errVar := h.variableHandler.SetVariable(ctx, af.ID, variables); errVar != nil {
 		log.Errorf("Could not reset the variable. But Keep going the flow. err: %v", err)
 	}
 
@@ -1025,14 +1029,17 @@ func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *act
 		return fmt.Errorf("could not unmarshal the option. err: %v", errUnmarshal)
 	}
 
-	if errVariable := h.variableHandler.SetVariable(ctx, af.ID, opt.Key, opt.Value); errVariable != nil {
+	variables := map[string]string{
+		opt.Key: opt.Value,
+	}
+	if errVariable := h.variableHandler.SetVariable(ctx, af.ID, variables); errVariable != nil {
 		return fmt.Errorf("could not set varialbe. err: %v", errVariable)
 	}
 
 	return nil
 }
 
-// actionHandleVariableSet handles action variable_set with active flow.
+// actionHandleWebhookSend handles action webhook_send with active flow.
 func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "actionHandleWebhookSend",

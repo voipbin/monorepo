@@ -76,8 +76,8 @@ func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *rabbi
 		return nil, err
 	}
 
-	if err := h.variableHandler.SetVariable(ctx, variableID, req.Key, req.Value); err != nil {
-		log.Errorf("Could not set variable info. key: %s, value: %s, err: %v", req.Key, req.Value, err)
+	if err := h.variableHandler.SetVariable(ctx, variableID, req.Variables); err != nil {
+		log.WithField("variables", req.Variables).Errorf("Could not set variable info err: %v", err)
 		return nil, err
 	}
 

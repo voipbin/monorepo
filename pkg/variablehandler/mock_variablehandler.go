@@ -95,17 +95,17 @@ func (mr *MockVariableHandlerMockRecorder) Set(ctx, t interface{}) *gomock.Call 
 }
 
 // SetVariable mocks base method.
-func (m *MockVariableHandler) SetVariable(ctx context.Context, id uuid.UUID, key, value string) error {
+func (m *MockVariableHandler) SetVariable(ctx context.Context, id uuid.UUID, variables map[string]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetVariable", ctx, id, key, value)
+	ret := m.ctrl.Call(m, "SetVariable", ctx, id, variables)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetVariable indicates an expected call of SetVariable.
-func (mr *MockVariableHandlerMockRecorder) SetVariable(ctx, id, key, value interface{}) *gomock.Call {
+func (mr *MockVariableHandlerMockRecorder) SetVariable(ctx, id, variables interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVariable", reflect.TypeOf((*MockVariableHandler)(nil).SetVariable), ctx, id, key, value)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVariable", reflect.TypeOf((*MockVariableHandler)(nil).SetVariable), ctx, id, variables)
 }
 
 // SubstituteByte mocks base method.

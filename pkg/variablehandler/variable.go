@@ -66,25 +66,30 @@ func (h *variableHandler) Set(ctx context.Context, t *variable.Variable) error {
 }
 
 // SetVariable sets the variable with value
-func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, key string, value string) error {
+// func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, variables map[string]string  key string, value string) error {
+func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, variables map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SetVariable",
 		"variable_id": id,
-		"key":         key,
-		"value":       value,
 	})
-	log.Debug("Setting a variable.")
+	log.WithField("variables", variables).Debug("Setting a variable.")
 
 	// get variable
-	v, err := h.Get(ctx, id)
+	vars, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get variable. err: %v", err)
 		return err
 	}
 
-	val := h.SubstituteString(ctx, value, v)
-	v.Variables[key] = val
-	if err := h.Set(ctx, v); err != nil {
+	for k, v := range variables {
+		val := h.SubstituteString(ctx, v, vars)
+		vars.Variables[k] = val
+	}
+
+	// val := h.SubstituteString(ctx, value, vars)
+	// vars.Variables[key] = val
+
+	if err := h.Set(ctx, vars); err != nil {
 		log.Errorf("Could not set variable. err: %v", err)
 		return err
 	}

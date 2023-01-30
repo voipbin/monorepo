@@ -1414,7 +1414,7 @@ func Test_actionHandleBranch(t *testing.T) {
 		activeFlow     *activeflow.Activeflow
 		targetActionID uuid.UUID
 
-		expectVariable string
+		expectVariables map[string]string
 
 		responseVariable *variable.Variable
 		responseStackID  uuid.UUID
@@ -1455,7 +1455,9 @@ func Test_actionHandleBranch(t *testing.T) {
 			},
 			targetActionID: uuid.FromStringOrNil("623e8e48-91a4-11ec-aab0-d741c6c9423c"),
 
-			expectVariable: "voipbin.call.tmpdigits",
+			expectVariables: map[string]string{
+				"voipbin.call.tmpdigits": "",
+			},
 
 			responseVariable: &variable.Variable{
 				Variables: map[string]string{
@@ -1532,7 +1534,9 @@ func Test_actionHandleBranch(t *testing.T) {
 			},
 			targetActionID: uuid.FromStringOrNil("59e4a526-91a3-11ec-83a3-7373495be152"),
 
-			expectVariable: "voipbin.call.digits",
+			expectVariables: map[string]string{
+				"voipbin.call.digits": "",
+			},
 
 			responseVariable: &variable.Variable{
 				Variables: map[string]string{
@@ -1598,7 +1602,7 @@ func Test_actionHandleBranch(t *testing.T) {
 			ctx := context.Background()
 
 			mockVar.EXPECT().Get(ctx, tt.activeFlow.ID).Return(tt.responseVariable, nil)
-			mockVar.EXPECT().SetVariable(ctx, tt.activeFlow.ID, tt.expectVariable, "").Return(nil)
+			mockVar.EXPECT().SetVariable(ctx, tt.activeFlow.ID, tt.expectVariables).Return(nil)
 			mockStack.EXPECT().GetAction(ctx, tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.targetActionID, false).Return(tt.responseStackID, tt.responseAction, nil)
 
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveFlow).Return(nil)
@@ -3263,8 +3267,7 @@ func Test_actionHandleVariableSet(t *testing.T) {
 		activeflowID uuid.UUID
 		af           *activeflow.Activeflow
 
-		key   string
-		value string
+		expectVariables map[string]string
 	}{
 		{
 			"single destination with flow id",
@@ -3292,8 +3295,9 @@ func Test_actionHandleVariableSet(t *testing.T) {
 				},
 			},
 
-			"key 1",
-			"value 1",
+			map[string]string{
+				"key 1": "value 1",
+			},
 		},
 	}
 
@@ -3317,7 +3321,7 @@ func Test_actionHandleVariableSet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockVariable.EXPECT().SetVariable(ctx, tt.af.ID, tt.key, tt.value).Return(nil)
+			mockVariable.EXPECT().SetVariable(ctx, tt.af.ID, tt.expectVariables).Return(nil)
 
 			if errCall := h.actionHandleVariableSet(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)
