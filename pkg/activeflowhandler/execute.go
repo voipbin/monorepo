@@ -43,6 +43,7 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 		"activeflow_id":     activeflowID,
 		"current_action_id": caID,
 	})
+	log.Debugf("Getting next action. activeflow_id: %s", activeflowID)
 
 	// get next action from the active
 	nextStackID, nextAction, err := h.getNextAction(ctx, activeflowID, caID)

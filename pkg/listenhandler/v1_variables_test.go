@@ -81,8 +81,7 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 		request *rabbitmqhandler.Request
 
 		variableID uuid.UUID
-		key        string
-		value      string
+		variables  map[string]string
 
 		expectRes *rabbitmqhandler.Response
 	}{
@@ -92,12 +91,14 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 				URI:      "/v1/variables/f842de3c-ccfd-11ec-bfcb-670259cb01f7/variables",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"key": "key 1", "value": "value 1"}`),
+				Data:     []byte(`{"key1": "value1", "key2": "value2}`),
 			},
 
 			uuid.FromStringOrNil("f842de3c-ccfd-11ec-bfcb-670259cb01f7"),
-			"key 1",
-			"value 1",
+			map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
 
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -119,7 +120,7 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 				variableHandler: mockVariableHandler,
 			}
 
-			mockVariableHandler.EXPECT().SetVariable(gomock.Any(), tt.variableID, tt.key, tt.value).Return(nil)
+			mockVariableHandler.EXPECT().SetVariable(gomock.Any(), tt.variableID, tt.variables).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
