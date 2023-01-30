@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
@@ -87,20 +89,10 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 		return err
 	}
 
-	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, fetchedActions, af.CurrentStackID, af.CurrentAction.ID)
-	if err != nil {
-		log.Errorf("Could not push the actions. err: %s", err)
-		return err
-	}
-
-	// update forward actions
-	af.ForwardStackID = resStackID
-	af.ForwardActionID = resAction.ID
-
-	// update active flow
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+	// push the actions
+	if errPush := h.PushStack(ctx, af, fetchedActions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errPush
 	}
 
 	return nil
@@ -131,20 +123,10 @@ func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activ
 		return err
 	}
 
-	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, fetchedActions, af.CurrentStackID, af.CurrentAction.ID)
-	if err != nil {
-		log.Errorf("Could not push the actions. err: %s", err)
-		return err
-	}
-
-	// update forward actions
-	af.ForwardStackID = resStackID
-	af.ForwardActionID = resAction.ID
-
-	// update active flow
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+	// push the actions
+	if errPush := h.PushStack(ctx, af, fetchedActions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errPush
 	}
 
 	return nil
@@ -492,20 +474,10 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 		return err
 	}
 
-	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, f.Actions, af.CurrentStackID, af.CurrentAction.ID)
-	if err != nil {
-		log.Errorf("Could not push the actions. err: %s", err)
-		return err
-	}
-
-	// update forward actions
-	af.ForwardStackID = resStackID
-	af.ForwardActionID = resAction.ID
-
-	// update active flow
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+	// push the actions
+	if errPush := h.PushStack(ctx, af, f.Actions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errPush
 	}
 
 	return nil
@@ -586,20 +558,10 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		},
 	}
 
-	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, tmpActions, af.CurrentStackID, af.CurrentAction.ID)
-	if err != nil {
-		log.Errorf("Could not push the actions. err: %s", err)
-		return err
-	}
-
-	// update forward actions
-	af.ForwardStackID = resStackID
-	af.ForwardActionID = resAction.ID
-
-	// update active flow
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+	// push the actions
+	if errPush := h.PushStack(ctx, af, tmpActions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errPush
 	}
 
 	return nil
@@ -731,34 +693,31 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 	}
 	log = log.WithField("agent_id", opt.AgentID)
 
-	// create conference room for agent_call
-	cf, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
+	// create confbridge
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.CustomerID, cmconfbridge.TypeConnect)
 	if err != nil {
-		log.Errorf("Could not create conference for agent_call. err: %v", err)
-		return fmt.Errorf("could not create conference for agent_call. err: %v", err)
+		log.Errorf("Could not create confbridge for agent dial. err: %v", err)
+		return errors.Wrap(err, "could not create confbridge for agent dial")
 	}
 	log = log.WithFields(logrus.Fields{
-		"conference_id": cf.ID,
+		"confbridge_id": cb.ID,
 	})
-	log.Debug("Created conference for agent_call.")
+	log.Debug("Created confbridge for agent_call.")
 
-	// get call info
 	c, err := h.reqHandler.CallV1CallGet(ctx, af.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
-		return err
+		return errors.Wrap(err, "could not get call info")
 	}
-	log.WithField("call", c).Debug("Found call info.")
 
 	// generate the flow for the agent call
-	f, err := h.generateFlowForAgentCall(ctx, c.CustomerID, cf.ConfbridgeID)
+	f, err := h.generateFlowForAgentCall(ctx, af.CustomerID, cb.ID)
 	if err != nil {
 		log.Errorf("Could not create the flow. err: %v", err)
-		return err
+		return errors.Wrap(err, "could not create the flow")
 	}
 	log.WithField("flow", f).Debug("Created a flow.")
 
-	// call to the agent
 	log.Debugf("Dialing to the agent. call_id: %s, flow_id: %s", af.ReferenceID, f.ID)
 	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, af.ReferenceID)
 	if err != nil {
@@ -768,8 +727,8 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 	log.WithField("agent_dial", agentDial).Debugf("Created agent_dial. agent_dial_id: %s", agentDial.ID)
 
 	// create action connect for conference join
-	optJoin := action.OptionConferenceJoin{
-		ConferenceID: cf.ID,
+	optJoin := action.OptionConfbridgeJoin{
+		ConfbridgeID: cb.ID,
 	}
 	optString, err := json.Marshal(optJoin)
 	if err != nil {
@@ -777,30 +736,20 @@ func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activ
 		return fmt.Errorf("could not marshal the conference join option. err: %v", err)
 	}
 
+	// push the actions
 	tmpActions := []action.Action{
 		{
 			ID:     uuid.Must(uuid.NewV4()),
-			Type:   action.TypeConferenceJoin,
+			Type:   action.TypeConfbridgeJoin,
 			Option: optString,
 		},
 	}
 
-	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, tmpActions, af.CurrentStackID, af.CurrentAction.ID)
-	if err != nil {
-		log.Errorf("Could not push the actions. err: %s", err)
-		return err
+	// push the actions
+	if errPush := h.PushStack(ctx, af, tmpActions); errPush != nil {
+		log.Errorf("Could not push the actions. err: %v", errPush)
+		return errPush
 	}
-
-	// update forward actions
-	af.ForwardStackID = resStackID
-	af.ForwardActionID = resAction.ID
-
-	// update activeflow
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
-	}
-	log.Debugf("Updated activeflow. activeflow_id: %s", af.ID)
 
 	return nil
 }
@@ -846,20 +795,10 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 	}
 	log.WithField("fetched_actions", fetchedActions).Debugf("Fetched actions detail.")
 
-	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, fetchedActions, af.CurrentStackID, af.CurrentAction.ID)
-	if err != nil {
-		log.Errorf("Could not push the actions. err: %s", err)
-		return err
-	}
-
-	// update forward actions
-	af.ForwardStackID = resStackID
-	af.ForwardActionID = resAction.ID
-
-	// update active flow
-	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
-		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
-		return err
+	// push the actions
+	if errPush := h.PushStack(ctx, af, fetchedActions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errPush
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueuecallUpdateStatusWaiting(ctx, qc.ID)

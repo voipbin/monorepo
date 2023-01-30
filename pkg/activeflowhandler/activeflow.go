@@ -240,3 +240,30 @@ func (h *activeflowHandler) GetsByCustomerID(ctx context.Context, customerID uui
 
 	return res, nil
 }
+
+// PushStack pushes the given action to the stack
+func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Activeflow, actions []action.Action) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "PushStack",
+		"activeflow_id": af.ID,
+		"actions":       actions,
+	})
+
+	resStackID, resAction, err := h.stackHandler.Push(ctx, af.StackMap, actions, af.CurrentStackID, af.CurrentAction.ID)
+	if err != nil {
+		log.Errorf("Could not push the actions. err: %s", err)
+		return err
+	}
+
+	// update forward actions
+	af.ForwardStackID = resStackID
+	af.ForwardActionID = resAction.ID
+
+	// update activeflow
+	if err := h.db.ActiveflowUpdate(ctx, af); err != nil {
+		log.Errorf("Could not update the active flow after appended the patched actions. err: %v", err)
+		return err
+	}
+
+	return nil
+}
