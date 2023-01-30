@@ -44,7 +44,10 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 		// we are setting the dtmf here even it is not dtmf receive action.
 		// this is needed, because if the user press the dtmf in the prior of dtmf receive(i.e play action),
 		// the user exepects pressed dtmf could be collected in the dtmf received action in next.
-		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digit); errSet != nil {
+		variables := map[string]string{
+			variableCallDigits: digit,
+		}
+		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
 			log.Errorf("Could not set DTMF. err: %v", err)
 		}
 
@@ -58,7 +61,10 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 	}
 
 	digits := fmt.Sprintf("${%s}%s", variableCallDigits, digit)
-	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digits); errSet != nil {
+	variables := map[string]string{
+		variableCallDigits: digits,
+	}
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
 		log.Errorf("Could not set DTMF. err: %v", err)
 		return nil
 	}
@@ -127,7 +133,10 @@ func (h *callHandler) DigitsSet(ctx context.Context, id uuid.UUID, digits string
 		return err
 	}
 
-	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variableCallDigits, digits); errSet != nil {
+	variables := map[string]string{
+		variableCallDigits: digits,
+	}
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
 		log.Errorf("Could not set DTMF. err: %v", err)
 		return errSet
 	}
