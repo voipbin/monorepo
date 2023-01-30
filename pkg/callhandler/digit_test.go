@@ -23,6 +23,8 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 		call     *call.Call
 		digit    string
 		duration int
+
+		expectVariables map[string]string
 	}{
 		{
 			"normal",
@@ -31,14 +33,18 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 				AsteriskID: "80:fa:5b:5e:da:81",
 			},
 			&call.Call{
-				ID:         uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
-				ChannelID:  "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
+				ID:        uuid.FromStringOrNil("b2a45cf6-9ace-11ea-9354-4baa7f3ad331"),
+				ChannelID: "47c4df8c-9ace-11ea-82a2-b7e1b384317c",
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
 			},
 			"4",
 			100,
+
+			map[string]string{
+				variableCallDigits: "4",
+			},
 		},
 	}
 
@@ -56,7 +62,7 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 			}
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.call.ActiveFlowID, variableCallDigits, tt.digit).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.call.ActiveFlowID, tt.expectVariables).Return(nil)
 
 			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -74,11 +80,11 @@ func Test_DTMFReceivedContinue(t *testing.T) {
 		digit    string
 		duration int
 
-		expectVariable string
-
 		responseCall *call.Call
 		responseVar  *variable.Variable
 		savedDTMFs   string
+
+		expectVariables map[string]string
 	}{
 		{
 			"length not enough",
@@ -89,11 +95,9 @@ func Test_DTMFReceivedContinue(t *testing.T) {
 			"4",
 			100,
 
-			"${" + variableCallDigits + "}4",
-
 			&call.Call{
-				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
-				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				ID:        uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3}`),
@@ -105,6 +109,10 @@ func Test_DTMFReceivedContinue(t *testing.T) {
 				},
 			},
 			"",
+
+			map[string]string{
+				variableCallDigits: "${" + variableCallDigits + "}4",
+			},
 		},
 	}
 
@@ -123,7 +131,7 @@ func Test_DTMFReceivedContinue(t *testing.T) {
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, variableCallDigits, tt.expectVariable).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
 
 			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -146,6 +154,8 @@ func Test_DTMFReceivedStop(t *testing.T) {
 		responseCall *call.Call
 		responseVar  *variable.Variable
 		responseVar2 *variable.Variable
+
+		expectVariables map[string]string
 	}{
 		{
 			"finish key #",
@@ -160,8 +170,8 @@ func Test_DTMFReceivedStop(t *testing.T) {
 			"${" + variableCallDigits + "}#",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
-				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				ID:        uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3, "key": "#*"}`),
@@ -177,6 +187,10 @@ func Test_DTMFReceivedStop(t *testing.T) {
 					variableCallDigits: "#",
 				},
 			},
+
+			map[string]string{
+				variableCallDigits: "${" + variableCallDigits + "}#",
+			},
 		},
 		{
 			"finish key *",
@@ -191,8 +205,8 @@ func Test_DTMFReceivedStop(t *testing.T) {
 			"${" + variableCallDigits + "}*",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
-				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				ID:        uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3, "key": "#*"}`),
@@ -209,6 +223,10 @@ func Test_DTMFReceivedStop(t *testing.T) {
 					variableCallDigits: "*",
 				},
 			},
+
+			map[string]string{
+				variableCallDigits: "${" + variableCallDigits + "}*",
+			},
 		},
 		{
 			"finish by max number key 2",
@@ -223,8 +241,8 @@ func Test_DTMFReceivedStop(t *testing.T) {
 			"${" + variableCallDigits + "}2",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
-				ChannelID:  "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
+				ID:        uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
+				ChannelID: "f7ac13c4-695a-11eb-aba7-7f6e7457f0b8",
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 2}`),
@@ -239,6 +257,10 @@ func Test_DTMFReceivedStop(t *testing.T) {
 				Variables: map[string]string{
 					variableCallDigits: "12",
 				},
+			},
+
+			map[string]string{
+				variableCallDigits: "${" + variableCallDigits + "}2",
 			},
 		},
 	}
@@ -258,7 +280,7 @@ func Test_DTMFReceivedStop(t *testing.T) {
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 
-			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, variableCallDigits, tt.expectDigits).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
 			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar2, nil)
 			mockReq.EXPECT().CallV1CallActionNext(gomock.Any(), tt.responseCall.ID, false)
 

@@ -81,9 +81,7 @@ func Test_setVariables(t *testing.T) {
 				variableCallDigits:            "",
 			}
 
-			for k, v := range variables {
-				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.call.ActiveFlowID, k, v).Return(nil)
-			}
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.call.ActiveFlowID, variables).Return(nil)
 
 			if err := h.setVariablesCall(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
