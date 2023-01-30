@@ -46,6 +46,7 @@ type ChannelHandler interface {
 
 	AddressGetSource(cn *channel.Channel, addressType commonaddress.Type) *commonaddress.Address
 	AddressGetDestination(cn *channel.Channel, addressType commonaddress.Type) *commonaddress.Address
+	AddressGetDestinationWithoutSpecificType(cn *channel.Channel) *commonaddress.Address
 
 	UpdateStasisName(ctx context.Context, id string, stasisName string) (*channel.Channel, error)
 	UpdateState(ctx context.Context, id string, state ari.ChannelState) (*channel.Channel, error)

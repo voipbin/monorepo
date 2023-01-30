@@ -193,12 +193,19 @@ func runRequestListen(
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 ) error {
+
+	// for i := 0; i < 10; i++ {
+	// 	// rabbitmq sock connect
+	// 	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	// 	rabbitSock.Connect()
+
 	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
+	// }
 
 	return nil
 }

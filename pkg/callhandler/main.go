@@ -51,7 +51,7 @@ type CallHandler interface {
 
 	CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destinations []commonaddress.Address) ([]*call.Call, error)
 	CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) (*call.Call, error)
-	StartCallHandle(ctx context.Context, cn *channel.Channel) error
+	Start(ctx context.Context, cn *channel.Channel) error
 	Hangup(ctx context.Context, cn *channel.Channel) error
 	HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error
 	HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) (*call.Call, error)

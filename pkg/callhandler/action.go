@@ -154,6 +154,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 		logrus.Fields{
 			"func":              "ActionNext",
 			"call_id":           c.ID,
+			"activeflow_id":     c.ActiveFlowID,
 			"flow_id":           c.FlowID,
 			"current_action_id": c.Action.ID,
 		})

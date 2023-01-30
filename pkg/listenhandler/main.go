@@ -160,12 +160,11 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
-	// receive requests
+	// process requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "call-manager", false, false, false, h.processRequest)
-			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+			if errConsume := h.rabbitSock.ConsumeRPCOpt(queue, "call-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+				logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}
 	}()
