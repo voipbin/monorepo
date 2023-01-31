@@ -98,7 +98,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "agent-manager", false, false, false, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "agent-manager", false, false, false, 10, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}

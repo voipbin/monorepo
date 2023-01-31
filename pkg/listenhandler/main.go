@@ -101,8 +101,12 @@ func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, agentHandler agenthandl
 }
 
 func (h *listenHandler) Run(queue, exchangeDelay string) error {
-	logrus.WithFields(logrus.Fields{
-		"queue": queue,
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Run",
+	})
+	log.WithFields(logrus.Fields{
+		"queue":          queue,
+		"exchange_delay": exchangeDelay,
 	}).Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue
@@ -112,7 +116,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// Set QoS
 	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
-		logrus.Errorf("Could not set the queue's qos. err: %v", err)
+		log.Errorf("Could not set the queue's qos. err: %v", err)
 		return err
 	}
 
@@ -129,9 +133,9 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "call-manager", false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, "agent-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
 		}
 	}()
