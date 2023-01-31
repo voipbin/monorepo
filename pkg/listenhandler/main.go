@@ -124,7 +124,7 @@ func (h *listenHandler) runListenQueue(queue string) error {
 	go func() {
 		for {
 			// consume the request
-			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -149,7 +149,7 @@ func (h *listenHandler) runListenQueueVolatile(queue string) error {
 	go func() {
 		for {
 			// consume the request
-			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
