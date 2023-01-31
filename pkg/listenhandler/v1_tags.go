@@ -49,7 +49,6 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *rabbitmqhandl
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -86,7 +85,6 @@ func (h *listenHandler) processV1TagsIDGet(ctx context.Context, m *rabbitmqhandl
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -130,7 +128,6 @@ func (h *listenHandler) processV1TagsIDPut(ctx context.Context, m *rabbitmqhandl
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -176,7 +173,6 @@ func (h *listenHandler) processV1TagsPost(ctx context.Context, m *rabbitmqhandle
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -213,7 +209,6 @@ func (h *listenHandler) processV1TagsIDDelete(ctx context.Context, m *rabbitmqha
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
