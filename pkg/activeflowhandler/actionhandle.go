@@ -495,35 +495,34 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	act := &af.CurrentAction
 
 	// create conference room for connect
-	cf, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil)
+	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.CustomerID, cmconfbridge.TypeConnect)
 	if err != nil {
-		log.Errorf("Could not create conference for connect. err: %v", err)
-		return fmt.Errorf("could not create conference for connect. err: %v", err)
+		log.Errorf("Could not create a confbridge for connect. err: %v", err)
+		return errors.Wrap(err, "could not create a confbridge for connect")
 	}
 	log = log.WithFields(logrus.Fields{
-		"conference_id": cf.ID,
+		"confbridge_id": cb.ID,
 	})
-	log.WithField("conference", cf).Debug("Created conference for connect.")
+	log.WithField("confbridge", cb).Debug("Created confbridge for connect.")
 
-	// create a temp flow connect conference join
-	optJoin := action.OptionConferenceJoin{
-		ConferenceID: cf.ID,
+	// create a temp flow connect confbridge join
+	opt := action.OptionConfbridgeJoin{
+		ConfbridgeID: cb.ID,
 	}
-	optString, err := json.Marshal(optJoin)
+	optString, err := json.Marshal(opt)
 	if err != nil {
-		log.Errorf("Could not marshal the conference join option. err: %v", err)
-		return fmt.Errorf("could not marshal the conference join option. err: %v", err)
+		log.Errorf("Could not marshal the confbridge join option. err: %v", err)
+		return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
 	}
-
 	actions := []action.Action{
 		{
-			Type:   action.TypeConferenceJoin,
+			Type:   action.TypeConfbridgeJoin,
 			Option: optString,
 		},
 	}
 
 	// create a flow
-	connectCF, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", actions, false)
+	f, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", actions, false)
 	if err != nil {
 		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
 		return fmt.Errorf("could not create a call flow. err: %v", err)
@@ -542,7 +541,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a call
-	resCall, err := h.reqHandler.CallV1CallsCreate(ctx, connectCF.CustomerID, connectCF.ID, masterCallID, &optConnect.Source, optConnect.Destinations)
+	resCall, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, masterCallID, &optConnect.Source, optConnect.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
@@ -553,7 +552,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	tmpActions := []action.Action{
 		{
 			ID:     uuid.Must(uuid.NewV4()),
-			Type:   action.TypeConferenceJoin,
+			Type:   action.TypeConfbridgeJoin,
 			Option: optString,
 		},
 	}
