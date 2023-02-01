@@ -2,6 +2,7 @@ package action
 
 import (
 	"github.com/gofrs/uuid"
+
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
@@ -161,7 +162,7 @@ type OptionGoto struct {
 
 // OptionHangup defines action hangup's option.
 type OptionHangup struct {
-	// no option
+	Reason string // hangup reason code. See detail cmcall.HangupReason
 }
 
 // OptionMessageSend defines action message_send's option.
