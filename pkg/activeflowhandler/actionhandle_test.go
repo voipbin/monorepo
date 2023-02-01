@@ -42,7 +42,7 @@ func Test_actionHandleConnect(t *testing.T) {
 
 		af *activeflow.Activeflow
 
-		responseConference *cfconference.Conference
+		responseConfbridge *cmconfbridge.Confbridge
 		responseFlow       *flow.Flow
 
 		expectCallSource       *commonaddress.Address
@@ -81,7 +81,7 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 
-			responseConference: &cfconference.Conference{
+			responseConfbridge: &cmconfbridge.Confbridge{
 				ID:         uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
 				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 			},
@@ -135,8 +135,8 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			expectFlowCreateActions: []action.Action{
 				{
-					Type:   action.TypeConferenceJoin,
-					Option: []byte(`{"conference_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
 				},
 			},
 		},
@@ -167,7 +167,7 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 
-			responseConference: &cfconference.Conference{
+			responseConfbridge: &cmconfbridge.Confbridge{
 				ID:         uuid.FromStringOrNil("cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"),
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
@@ -226,8 +226,8 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			expectFlowCreateActions: []action.Action{
 				{
-					Type:   action.TypeConferenceJoin,
-					Option: []byte(`{"conference_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
 				},
 			},
 		},
@@ -257,7 +257,7 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 
-			responseConference: &cfconference.Conference{
+			responseConfbridge: &cmconfbridge.Confbridge{
 				ID:         uuid.FromStringOrNil("2266e688-2712-11eb-aab4-eb00b0a3efbe"),
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
@@ -315,8 +315,8 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			expectFlowCreateActions: []action.Action{
 				{
-					Type:   action.TypeConferenceJoin,
-					Option: []byte(`{"conference_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
 				},
 			},
 		},
@@ -342,7 +342,7 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceCreate(ctx, tt.af.CustomerID, cfconference.TypeConnect, "", "", 86400, nil, nil, nil).Return(tt.responseConference, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
 
 			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.expectCallMasterCallID, tt.expectCallSource, tt.expectCallDestinations).Return([]cmcall.Call{{ID: uuid.Nil}}, nil)
