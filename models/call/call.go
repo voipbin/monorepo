@@ -420,3 +420,26 @@ func IsUpdatableStatus(oldStatus, newStatus Status) bool {
 	// should not reach to here
 	return false
 }
+
+// ConvertHangupReasonToChannelCause returns ari channel cause code for call hanging up.
+func ConvertHangupReasonToChannelCause(reason HangupReason) ari.ChannelCause {
+
+	mapCause := map[HangupReason]ari.ChannelCause{
+		HangupReasonNone:     ari.ChannelCauseNormalClearing,
+		HangupReasonNormal:   ari.ChannelCauseNormalClearing,
+		HangupReasonFailed:   ari.ChannelCauseNoUserResponse, // the call attempt(signal) was not reached to the phone network.
+		HangupReasonBusy:     ari.ChannelCauseUserBusy,       // the destination is on the line with another caller.
+		HangupReasonCanceled: ari.ChannelCauseNormalClearing, // call was cancelled by the originator before it was answered.
+		HangupReasonTimeout:  ari.ChannelCauseNormalClearing, // call reached max call duration after it was answered.
+		HangupReasonNoanswer: ari.ChannelCauseNoAnswer,       // The call rejected with noanswer status.
+		HangupReasonDialout:  ari.ChannelCauseNoAnswer,       // The call reached dialing timeout before it was answered. This timeout is fired by our time out(outgoing call).
+		HangupReasonAMD:      ari.ChannelCauseCallAMD,        // the call's amd action result hung up the call.
+	}
+
+	cause, ok := mapCause[reason]
+	if !ok {
+		return ari.ChannelCauseNormalClearing
+	}
+
+	return cause
+}

@@ -522,7 +522,7 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 }
 
 // CallSetStatus sets the call status
-func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error {
+func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) error {
 
 	// prepare
 	q := `
@@ -538,7 +538,8 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, string(call.StatusHangup), hangupBy, reason, tmUpdate, tmUpdate, id.Bytes())
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, string(call.StatusHangup), hangupBy, reason, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetHangup. err: %v", err)
 	}

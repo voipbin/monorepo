@@ -24,9 +24,9 @@ import (
 func Test_Hangup(t *testing.T) {
 
 	tests := []struct {
-		name    string
-		channel *channel.Channel
-		call    *call.Call
+		name         string
+		channel      *channel.Channel
+		responseCall *call.Call
 	}{
 		{
 			"normal",
@@ -92,14 +92,14 @@ func Test_Hangup(t *testing.T) {
 
 			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 
-			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.call, nil)
-			mockBridge.EXPECT().Destroy(ctx, tt.call.BridgeID).Return(nil)
-			mockDB.EXPECT().CallSetHangup(ctx, tt.call.ID, call.HangupReasonNormal, call.HangupByRemote, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallHungup, gomock.Any())
-			mockReq.EXPECT().FlowV1ActiveflowDelete(ctx, tt.call.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
+			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.responseCall, nil)
+			mockBridge.EXPECT().Destroy(ctx, tt.responseCall.BridgeID).Return(nil)
+			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHungup, gomock.Any())
+			mockReq.EXPECT().FlowV1ActiveflowDelete(ctx, tt.responseCall.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
 
-			for _, chainedCallID := range tt.call.ChainedCallIDs {
+			for _, chainedCallID := range tt.responseCall.ChainedCallIDs {
 				// Hangingup
 				tmpCall := &call.Call{
 					ChannelID: "b0c8ac74-1779-11ec-8038-fbb981f4ed27",
@@ -112,65 +112,11 @@ func Test_Hangup(t *testing.T) {
 				// updateStatus
 				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating).Return(nil)
 				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
-				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, gomock.Any())
+				mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, gomock.Any())
 				mockChannel.EXPECT().HangingUp(ctx, tmpCall.ChannelID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
 			}
 
 			if err := h.Hangup(ctx, tt.channel); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func TestHangupWithReason(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		call     *call.Call
-		reason   call.HangupReason
-		hangupBy call.HangupBy
-	}{
-		{
-			"normal",
-			&call.Call{
-				ID:        uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
-				ChannelID: "70271162-1772-11ec-a941-fb10a2f9c2e7",
-				Status:    call.StatusProgressing,
-				Action: fmaction.Action{
-					Type: fmaction.TypeEcho,
-				},
-			},
-			call.HangupReasonNormal,
-			call.HangupByRemote,
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &callHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotfiy,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().CallSetHangup(ctx, tt.call.ID, tt.reason, tt.hangupBy, gomock.Any()).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallHungup, tt.call)
-
-			if err := h.HangupWithReason(ctx, tt.call, tt.reason, tt.hangupBy, utilhandler.GetCurTime()); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -268,7 +214,7 @@ func Test_HanginUp(t *testing.T) {
 
 			mockChannel.EXPECT().HangingUp(ctx, tt.responseCall.ChannelID, tt.cause).Return(&channel.Channel{}, nil)
 
-			res, err := h.HangingUp(ctx, tt.id, tt.cause)
+			res, err := h.hangingUpWithCause(ctx, tt.id, tt.cause)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

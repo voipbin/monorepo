@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
@@ -83,7 +83,7 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 	// send next action request
 	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); errNext != nil {
 		log.Errorf("Could not get next action. err: %v", errNext)
-		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 	}
 
 	return nil

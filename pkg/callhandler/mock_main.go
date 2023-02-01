@@ -10,7 +10,6 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -345,18 +344,18 @@ func (mr *MockCallHandlerMockRecorder) Gets(ctx, customerID, size, token interfa
 }
 
 // HangingUp mocks base method.
-func (m *MockCallHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) (*call.Call, error) {
+func (m *MockCallHandler) HangingUp(ctx context.Context, id uuid.UUID, reason call.HangupReason) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HangingUp", ctx, id, cause)
+	ret := m.ctrl.Call(m, "HangingUp", ctx, id, reason)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // HangingUp indicates an expected call of HangingUp.
-func (mr *MockCallHandlerMockRecorder) HangingUp(ctx, id, cause interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) HangingUp(ctx, id, reason interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangingUp", reflect.TypeOf((*MockCallHandler)(nil).HangingUp), ctx, id, cause)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangingUp", reflect.TypeOf((*MockCallHandler)(nil).HangingUp), ctx, id, reason)
 }
 
 // Hangup mocks base method.
@@ -371,20 +370,6 @@ func (m *MockCallHandler) Hangup(ctx context.Context, cn *channel.Channel) error
 func (mr *MockCallHandlerMockRecorder) Hangup(ctx, cn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockCallHandler)(nil).Hangup), ctx, cn)
-}
-
-// HangupWithReason mocks base method.
-func (m *MockCallHandler) HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HangupWithReason", ctx, c, reason, hangupBy, timestamp)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// HangupWithReason indicates an expected call of HangupWithReason.
-func (mr *MockCallHandlerMockRecorder) HangupWithReason(ctx, c, reason, hangupBy, timestamp interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangupWithReason", reflect.TypeOf((*MockCallHandler)(nil).HangupWithReason), ctx, c, reason, hangupBy, timestamp)
 }
 
 // RecordingStart mocks base method.
