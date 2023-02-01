@@ -42,6 +42,7 @@ func (h *eventHandler) EventHandlerStasisStart(ctx context.Context, evt interfac
 		_, _ = h.channelHandler.HangingUp(ctx, e.Channel.ID, ari.ChannelCauseUnallocated)
 		return err
 	}
+	log.WithField("channel", cn).Debugf("Updated channel info. channel_id: %s", cn.ID)
 
 	contextType := getContextType(stasisData["context"])
 	switch contextType {

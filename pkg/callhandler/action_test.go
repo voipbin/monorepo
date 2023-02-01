@@ -37,6 +37,7 @@ func Test_ActionExecute_actionExecuteConfbridgeJoin(t *testing.T) {
 			&call.Call{
 				ID: uuid.FromStringOrNil("ed1620aa-3e6e-11ec-902b-170b2849173a"),
 				Action: fmaction.Action{
+					ID:     uuid.FromStringOrNil("012c12c8-7552-4ec9-85b7-d39d78fa789f"),
 					Type:   fmaction.TypeConfbridgeJoin,
 					Option: []byte(`{"confbridge_id":"3f5ff42c-3e6e-11ec-8c17-039eb294368c"}`),
 				},
@@ -83,6 +84,7 @@ func Test_ActionExecute_actionExecuteStreamEcho(t *testing.T) {
 			&call.Call{
 				ID: uuid.FromStringOrNil("741a0f32-6bb2-11ed-bf34-9b3f75da5e87"),
 				Action: fmaction.Action{
+					ID:     uuid.FromStringOrNil("d5ab7c42-10dc-4363-8f06-89443f9a2c3b"),
 					Type:   fmaction.TypeStreamEcho,
 					Option: []byte(`{}`),
 				},
@@ -130,6 +132,7 @@ func Test_ActionExecute_actionExecuteAnswer(t *testing.T) {
 				ID:        uuid.FromStringOrNil("4371b0d6-df48-11ea-9a8c-177968c165e9"),
 				ChannelID: "5b21353a-df48-11ea-8207-6fc0fa36a3fe",
 				Action: fmaction.Action{
+					ID:     uuid.FromStringOrNil("87ea1d71-dd34-4c53-bd82-14082d5944aa"),
 					Type:   fmaction.TypeAnswer,
 					Option: []byte(`{}`),
 				},

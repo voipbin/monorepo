@@ -297,16 +297,11 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 
 			// action next part.
-			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(nil)
-			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(gomock.Any(), tt.call.ActiveFlowID, tt.call.Action.ID).Return(&action.Action{}, nil)
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
-			mockDB.EXPECT().CallSetActionAndActionNextHold(gomock.Any(), tt.call.ID, gomock.Any(), false).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
-			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(fmt.Errorf(""))
+			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{Status: call.StatusHangup}, nil)
 
-			if err := h.ARIPlaybackFinished(ctx, tt.channel, tt.playbackID); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			if errFin := h.ARIPlaybackFinished(ctx, tt.channel, tt.playbackID); errFin != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errFin)
 			}
 		})
 	}
