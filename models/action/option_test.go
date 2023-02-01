@@ -637,3 +637,39 @@ func Test_marshalOptionConditionVariable(t *testing.T) {
 		})
 	}
 }
+
+func Test_marshalOptionHangup(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionHangup
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			[]byte(`{"reason": "busy"}`),
+
+			OptionHangup{
+				Reason: "busy",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionHangup{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
