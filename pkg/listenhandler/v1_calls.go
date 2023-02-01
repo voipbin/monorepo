@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 )
@@ -246,7 +246,7 @@ func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *rabbi
 	log.Debug("Executing processV1CallsIDHangupPost.")
 
 	// hanging up the call
-	tmp, err := h.callHandler.HangingUp(ctx, id, ari.ChannelCauseNormalClearing)
+	tmp, err := h.callHandler.HangingUp(ctx, id, call.HangupReasonNormal)
 	if err != nil {
 		log.Debugf("Could not hanging up the call. err: %v", err)
 		return simpleResponse(500), nil

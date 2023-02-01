@@ -614,3 +614,62 @@ func Test_UpdateExternalMediaID(t *testing.T) {
 		})
 	}
 }
+
+func Test_UpdateHangup(t *testing.T) {
+
+	tests := []struct {
+		name         string
+		id           uuid.UUID
+		reason       call.HangupReason
+		hangupBy     call.HangupBy
+		responseCall *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
+			call.HangupReasonNormal,
+			call.HangupByRemote,
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
+				ChannelID: "70271162-1772-11ec-a941-fb10a2f9c2e7",
+				Status:    call.StatusProgressing,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotfiy,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, tt.reason, tt.hangupBy).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHungup, tt.responseCall)
+
+			_, err := h.UpdateHangupInfo(ctx, tt.responseCall.ID, tt.reason, tt.hangupBy)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

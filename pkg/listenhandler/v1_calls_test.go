@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
@@ -707,7 +706,7 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().HangingUp(context.Background(), tt.expectID, ari.ChannelCauseNormalClearing).Return(tt.responseCall, nil)
+			mockCall.EXPECT().HangingUp(context.Background(), tt.expectID, call.HangupReasonNormal).Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

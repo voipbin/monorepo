@@ -138,9 +138,6 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 	)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing call. err: %v", err)
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.utilHandler.GetCurTime()); err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
 		return nil, err
 	}
 
@@ -331,11 +328,6 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 	dialURI, err := h.getDialURI(ctx, c)
 	if err != nil {
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
-
-		// hangup
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.utilHandler.GetCurTime()); err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
 		return err
 	}
 
@@ -363,10 +355,6 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 	tmp, err := h.channelHandler.StartChannel(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", variables)
 	if err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
-
-		if err := h.HangupWithReason(ctx, c, call.HangupReasonFailed, call.HangupByLocal, h.utilHandler.GetCurTime()); err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
 		return err
 	}
 	log.WithField("channel", tmp).Debugf("Created a new channel. channel_id: %s", tmp.ID)

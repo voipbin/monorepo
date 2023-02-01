@@ -15,6 +15,7 @@ import (
 // Hangup Hangup the call
 func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":       "Hangup",
 		"channel_id": cn.ID,
 	})
 
@@ -36,7 +37,6 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	// determine route-failover required
 	if h.isRetryable(ctx, c, cn) {
 		// retry the dial
-
 		tmp, err := h.createFailoverChannel(ctx, c)
 		if err == nil {
 			log.Debugf("Created route failover channel succesfully. channel_id: %s", tmp.ChannelID)
@@ -50,7 +50,8 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	hangupBy := call.CalculateHangupBy(c.Status)
 
 	// set hangup
-	if err := h.HangupWithReason(ctx, c, reason, hangupBy, cn.TMEnd); err != nil {
+	cc, err := h.UpdateHangupInfo(ctx, c.ID, reason, hangupBy)
+	if err != nil {
 		// we don't channel hangup here, because the channel has already gone.
 		log.Errorf("Could not set the hangup reason. err: %v", err)
 		return err
@@ -65,9 +66,9 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	}
 
 	// hangup the chained call
-	for _, callID := range c.ChainedCallIDs {
+	for _, callID := range cc.ChainedCallIDs {
 		// hang up the call
-		_, err := h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		if err != nil {
 			log.Errorf("Could not hangup the chained call. err: %v", err)
 		}
@@ -76,32 +77,30 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	return nil
 }
 
-// HangupWithReason set the hangup call with the given reason
-func (h *callHandler) HangupWithReason(ctx context.Context, c *call.Call, reason call.HangupReason, hangupBy call.HangupBy, timestamp string) error {
-	if err := h.db.CallSetHangup(ctx, c.ID, reason, hangupBy, timestamp); err != nil {
-		// we don't channel hangup here, we are assumming the channel has already gone.
-		return err
-	}
-	tmpCall, err := h.db.CallGet(ctx, c.ID)
-	if err != nil {
-		logrus.Errorf("Could not get hungup call data. call: %s, err: %v", c.ID, err)
-		return nil
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, tmpCall.CustomerID, call.EventTypeCallHungup, tmpCall)
-
-	promCallHangupTotal.WithLabelValues(string(c.Direction), string(c.Type), string(reason)).Inc()
-	return nil
-}
-
 // HangingUp starts hangup process.
 // It sets the call status to the terminating and sends the hangup request to the Asterisk.
-func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) (*call.Call, error) {
+func (h *callHandler) HangingUp(ctx context.Context, id uuid.UUID, reason call.HangupReason) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "HangingUp",
-		"call_id":       id,
-		"hangup reason": cause,
+		"func":    "HangingUp",
+		"call_id": id,
+		"reason":  reason,
 	})
-	log.Debug("Hanging up the call.")
+
+	cause := call.ConvertHangupReasonToChannelCause(reason)
+	log.Debugf("Hanging up the call. reason: %s, cause: %d", reason, cause)
+
+	return h.hangingUpWithCause(ctx, id, cause)
+}
+
+// hangingUpWithCause starts hangup process.
+// It sets the call status to the terminating and sends the hangup request to the Asterisk.
+func (h *callHandler) hangingUpWithCause(ctx context.Context, id uuid.UUID, cause ari.ChannelCause) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "hangingUpWithCause",
+		"call_id":       id,
+		"channel_cause": cause,
+	})
+	log.Debugf("Hanging up the call. cause: %d", cause)
 
 	c, err := h.Get(ctx, id)
 	if err != nil {

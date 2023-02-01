@@ -174,14 +174,14 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 
 	if c.FlowID == uuid.Nil {
 		log.WithField("call", c).Info("No flow id found. Hangup the call.")
-		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		return nil
 	}
 
 	// set action next hold
 	if errHold := h.updateActionNextHold(ctx, c.ID, true); errHold != nil {
 		log.Errorf("Could not set the action next hold. err: %v", errHold)
-		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		return nil
 	}
 
@@ -190,7 +190,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	if err != nil {
 		// could not get the next action from the flow-manager.
 		log.WithField("action", c.Action).Infof("Could not get the next action from the flow-manager. err: %v", err)
-		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		return nil
 	}
 	log.WithField("action", nextAction).Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
@@ -205,7 +205,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 
 	if err := h.ActionExecute(ctx, cc); err != nil {
 		log.Errorf("Could not execute the next action correctly. Hanging up the call. err: %v", err)
-		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		return nil
 	}
 
@@ -491,9 +491,15 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call) err
 		}
 	}
 
-	tmp, err := h.HangingUp(ctx, c.ID, ari.ChannelCauseNormalClearing)
+	reason := call.HangupReason(option.Reason)
+	if reason == call.HangupReasonNone {
+		reason = call.HangupReasonNormal
+	}
+
+	tmp, err := h.HangingUp(ctx, c.ID, reason)
 	if err != nil {
 		log.Errorf("Could not hangup the call. err: %v", err)
+		return nil
 	}
 	log.WithField("call", tmp).Debugf("Hanging up the call. call_id: %s", tmp.ID)
 

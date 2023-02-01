@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 )
 
@@ -57,8 +58,9 @@ func (h *callHandler) startServiceFromAMD(ctx context.Context, channelID string,
 	if status == amdStatusMachine && amd.MachineHandle == callapplication.AMDMachineHandleHangup {
 		// hangup the call
 		log.Infof("The amd option is machine hangup. machine_handle: %s", amd.MachineHandle)
-		_, _ = h.HangingUp(ctx, amd.CallID, ari.ChannelCauseCallAMD)
+		_, _ = h.HangingUp(ctx, amd.CallID, call.HangupReasonAMD)
 		return nil
+
 	}
 
 	if !amd.Async {

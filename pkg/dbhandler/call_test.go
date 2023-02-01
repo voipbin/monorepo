@@ -828,8 +828,9 @@ func Test_CallSetHangup(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
-			if err := h.CallSetHangup(context.Background(), tt.id, tt.reason, tt.hangupBy, tt.responseCurTime); err != nil {
+			if err := h.CallSetHangup(context.Background(), tt.id, tt.reason, tt.hangupBy); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

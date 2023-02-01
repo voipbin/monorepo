@@ -447,17 +447,17 @@ func (mr *MockDBHandlerMockRecorder) CallSetForRouteFailover(ctx, id, channelID,
 }
 
 // CallSetHangup mocks base method.
-func (m *MockDBHandler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy, tmUpdate string) error {
+func (m *MockDBHandler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSetHangup", ctx, id, reason, hangupBy, tmUpdate)
+	ret := m.ctrl.Call(m, "CallSetHangup", ctx, id, reason, hangupBy)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallSetHangup indicates an expected call of CallSetHangup.
-func (mr *MockDBHandlerMockRecorder) CallSetHangup(ctx, id, reason, hangupBy, tmUpdate interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CallSetHangup(ctx, id, reason, hangupBy interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetHangup", reflect.TypeOf((*MockDBHandler)(nil).CallSetHangup), ctx, id, reason, hangupBy, tmUpdate)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetHangup", reflect.TypeOf((*MockDBHandler)(nil).CallSetHangup), ctx, id, reason, hangupBy)
 }
 
 // CallSetMasterCallID mocks base method.

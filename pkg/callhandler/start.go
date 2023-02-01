@@ -311,7 +311,7 @@ func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.
 	// set channel's type call.
 	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-TYPE", string(channel.TypeCall)); errSet != nil {
 		log.Errorf("Could not set channel's type. err: %v", errSet)
-		_, _ = h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		return errors.Wrap(errSet, "could not set channel's type")
 	}
 
@@ -327,20 +327,20 @@ func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.
 	bridgeID, err := h.addCallBridge(ctx, cn, callID)
 	if err != nil {
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
-		_, _ = h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		return errors.Wrap(err, "could not add the channel to the join bridge")
 	}
 
 	if errSet := h.db.CallSetBridgeID(ctx, callID, bridgeID); errSet != nil {
 		log.Errorf("Could not set call bridge id. err: %v", errSet)
-		_, _ = h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		return errors.Wrap(errSet, "could not set call bridge id")
 	}
 
 	// dial
 	if errDial := h.channelHandler.Dial(ctx, cn.ID, cn.ID, defaultDialTimeout); errDial != nil {
 		log.Errorf("Could not dial the channel. err: %v", errDial)
-		_, _ = h.HangingUp(ctx, callID, ari.ChannelCauseNormalClearing)
+		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		return errors.Wrap(errDial, "could not dial the channel")
 	}
 
@@ -542,14 +542,14 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 		// we are hanging up the call here. Because we've created a call above.
 		// hangup the call with ari.ChannelCauseNetworkOutOfOrder.
 		// this will response the 500.
-		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		_, _ = h.hangingUpWithCause(ctx, c.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
 		return
 	}
 
 	// execute the action
 	if errNext := h.ActionNext(ctx, c); errNext != nil {
 		// failed execute the action. hanging up the call with the given cause code
-		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		_, _ = h.hangingUpWithCause(ctx, c.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
 		return
 	}
 

@@ -378,3 +378,29 @@ func (h *callHandler) UpdateConfbridgeID(ctx context.Context, id uuid.UUID, conf
 
 	return res, nil
 }
+
+// UpdateHangupInfo updates call's the hangup info
+func (h *callHandler) UpdateHangupInfo(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "UpdateHangupInfo",
+		"call_id":   id,
+		"hangup_by": hangupBy,
+		"reason":    reason,
+	})
+
+	if errSet := h.db.CallSetHangup(ctx, id, reason, hangupBy); errSet != nil {
+		log.Errorf("Could not update the call info. err: %v", errSet)
+		// we don't channel hangup here, we are assumming the channel has already gone.
+		return nil, errSet
+	}
+
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get hungup call data. call: %s, err: %v", id, err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallHungup, res)
+	promCallHangupTotal.WithLabelValues(string(res.Direction), string(res.Type), string(reason)).Inc()
+
+	return res, nil
+}
