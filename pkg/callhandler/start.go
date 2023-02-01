@@ -57,7 +57,6 @@ const (
 )
 
 // Start starts the call handle service
-// func (h *callHandler) StartCallHandle(ctx context.Context, asteriskID string, channelID string, source *commonaddress.Address, destination *commonaddress.Address, status call.Status, data map[string]string) error {
 func (h *callHandler) Start(ctx context.Context, cn *channel.Channel) error {
 
 	// check the stasis's context
@@ -261,7 +260,8 @@ func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.
 	// set channel's type call.
 	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-TYPE", string(channel.TypeCall)); errSet != nil {
 		log.Errorf("Could not set the call type for the channel. err: %v", errSet)
-		return errors.Wrap(errSet, "could not set the call type for the channel")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // response 500
+		return nil
 	}
 
 	// set the call durationtimeout
@@ -428,80 +428,23 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 		})
 	log.Debugf("Starting startIncomingDomainTypeConference. source_target: %s, destination_target: %s", source.Target, destination.Target)
 
-	id := h.utilHandler.CreateUUID()
-	cfID := uuid.FromStringOrNil(destination.Target)
+	conferenceID := uuid.FromStringOrNil(destination.Target)
 	log = log.WithFields(logrus.Fields{
-		"call_id":       id,
-		"conference_id": cfID,
+		"conference_id": conferenceID,
 	})
 
 	// get conference info
-	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, cfID)
+	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, conferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
-		return errors.Wrapf(err, "could not get conference info. conference_id: %s", cfID)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
 	}
 
-	callBridgeID, err := h.addCallBridge(ctx, cn, id)
-	if err != nil {
-		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
-		return errors.Wrap(err, "could not add the channel to the join bridge")
-	}
+	// start the call type flow
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, cf.FlowID, source, destination, ari.ChannelCauseNormalClearing)
 
-	// create active flow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, cf.FlowID, fmactiveflow.ReferenceTypeCall, id)
-	if err != nil {
-		log.Errorf("Could not create active flow. call: %s, flow: %s", id, cf.FlowID)
-		return errors.Wrap(err, "could not create an activeflow")
-	}
-	log.WithField("activeflow", af).Debugf("Created an active flow. active_flow_id: %s", af.ID)
-
-	status := call.GetStatusByChannelState(cn.State)
-	c, err := h.Create(
-		ctx,
-
-		id,
-		cf.CustomerID,
-
-		cn.ID,
-		callBridgeID,
-
-		cf.FlowID,
-		af.ID,
-		uuid.Nil,
-		call.TypeFlow,
-
-		source,
-		destination,
-
-		status,
-
-		cn.StasisData,
-		af.CurrentAction,
-		call.DirectionIncoming,
-
-		uuid.Nil,
-		[]rmroute.Route{},
-	)
-	if err != nil {
-		log.Errorf("Could not create a call info. err: %v", err)
-		return errors.Wrap(err, "could not create a call for channel")
-	}
-	log = log.WithFields(
-		logrus.Fields{
-			"call_type":      c.Type,
-			"call_direction": c.Direction,
-		})
-	log.WithField("call", c).Debugf("Created a call. call_id: %s", c.ID)
-
-	// set variables
-	if errVariables := h.setVariablesCall(ctx, c); errVariables != nil {
-		log.Errorf("Could not set variables. err: %v", errVariables)
-		_, _ = h.HangingUp(ctx, id, ari.ChannelCauseNormalClearing)
-		return errors.Wrap(errVariables, "could not set variables")
-	}
-
-	return h.ActionNext(ctx, c)
+	return nil
 }
 
 // startIncomingDomainTypePSTN handles flow calltype start.
@@ -516,42 +459,60 @@ func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *chann
 	})
 	log.Debugf("Starting the flow incoming call handler. source_target: %s, destinaiton_target: %s", source.Target, destination.Target)
 
-	id := h.utilHandler.CreateUUID()
-	log = log.WithField("call_id", id)
-
 	// get number info
 	numb, err := h.reqHandler.NumberV1NumberGetByNumber(ctx, destination.Target)
 	if err != nil {
 		log.Debugf("Could not get a number info of the destination. err: %v", err)
-		return errors.Wrap(err, "could not get a number info of the destination")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
 	}
+	log.WithField("number", numb).Debugf("Found number info. number_id: %s", numb.ID)
+
+	// start the call type flow
+	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination, ari.ChannelCauseNormalClearing)
+	return nil
+}
+
+// startCallTypeFlow handles flow calltype start.
+func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel, customerID uuid.UUID, flowID uuid.UUID, source *commonaddress.Address, destination *commonaddress.Address, causeActionFail ari.ChannelCause) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startCallTypeFlow",
+		"channel_id":  cn.ID,
+		"customer_id": customerID,
+		"flow_id":     flowID,
+	})
+
+	// create call id
+	id := h.utilHandler.CreateUUID()
 
 	// create call bridge
 	callBridgeID, err := h.addCallBridge(ctx, cn, id)
 	if err != nil {
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
-		return errors.Wrap(err, "could not add the channel to the join bridge")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return
 	}
 
-	// create active flow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, numb.CallFlowID, fmactiveflow.ReferenceTypeCall, id)
+	// create activeflow
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, flowID, fmactiveflow.ReferenceTypeCall, id)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)
-		return errors.Wrap(err, "could not create an activeflow")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return
 	}
-	log.Debugf("Created an active flow. active-flow: %v", af)
+	log.WithField("activeflow", af).Debugf("Created an active flow. activeflow_id: %s", af.ID)
 
 	status := call.GetStatusByChannelState(cn.State)
 	c, err := h.Create(
 		ctx,
 
 		id,
-		numb.CustomerID,
+		customerID,
 
 		cn.ID,
 		callBridgeID,
 
-		numb.CallFlowID,
+		flowID,
 		af.ID,
 		uuid.Nil,
 		call.TypeFlow,
@@ -568,23 +529,28 @@ func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *chann
 		uuid.Nil,
 		[]rmroute.Route{},
 	)
-
 	if err != nil {
 		log.Errorf("Could not create a call info. call_id: %s, err: %v", id, err)
-		return errors.Wrap(err, "could not create a call")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return
 	}
-	log = log.WithFields(
-		logrus.Fields{
-			"call": c,
-		})
-	log.Debugf("Created a call. call: %s", c.ID)
+	log.WithField("call", c).Debugf("Created a call. call: %s", c.ID)
 
 	// set variables
 	if errVariables := h.setVariablesCall(ctx, c); errVariables != nil {
 		log.Errorf("Could not set variables. err: %v", errVariables)
-		_, _ = h.HangingUp(ctx, id, ari.ChannelCauseNormalClearing)
-		return errors.Wrap(errVariables, "could not set variables")
+		// we are hanging up the call here. Because we've created a call above.
+		// hangup the call with ari.ChannelCauseNetworkOutOfOrder.
+		// this will response the 500.
+		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return
 	}
 
-	return h.ActionNext(ctx, c)
+	// execute the action
+	if errNext := h.ActionNext(ctx, c); errNext != nil {
+		// failed execute the action. hanging up the call with the given cause code
+		_, _ = h.HangingUp(ctx, c.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return
+	}
+
 }

@@ -3,22 +3,17 @@ package callhandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
-	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"github.com/gofrs/uuid"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
@@ -39,7 +34,8 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 	d, err := h.reqHandler.RegistrarV1DomainGetByDomainName(ctx, domainName)
 	if err != nil {
 		log.Errorf("Could not get domain info. err: %v", err)
-		return errors.Wrap(err, "could not get domain info")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
 	}
 	log.WithField("domain", d).Debugf("Found domain info. domain_id: %s", d.ID)
 
@@ -48,7 +44,7 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 		return h.startIncomingDomainTypeSIPDestinationTypeAgent(ctx, cn, d, source, destination)
 
 	case commonaddress.TypeConference:
-		log.Debugf("The destination type is conference. Will execute the TypeSIPDestinationConference.")
+		return h.startIncomingDomainTypeSIPDestinationTypeConference(ctx, cn, d, source, destination)
 
 	case commonaddress.TypeEndpoint:
 		log.Debugf("The destination type is %s. Will execute the TypeSIPDestinationTypeEndpoint", destination.Type)
@@ -57,17 +53,19 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 		log.Debugf("The destination type is %s. Will execute the TypeSIPDestinationTypeLine", destination.Type)
 
 	case commonaddress.TypeTel:
-		log.Debugf("The destination type is %s. Will execute the TypeSIPDestinationTypeTel", destination.Type)
+		return h.startIncomingDomainTypeSIPDestinationTypeTel(ctx, cn, d, source, destination)
 
 	default:
 		log.Errorf("Unsupported destination type. destination_type: %s", destination.Type)
 	}
 
+	log.Errorf("Could not find correct destination type handler. destination_type: %s", destination.Type)
+	_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
 	return nil
 }
 
 // startIncomingDomainTypeSIPDestinationTypeAgent handles incoming call.
-// SIP doamin type and destination type is ßagent.
+// SIP doamin type and destination type is agent.
 func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 	ctx context.Context,
 	cn *channel.Channel,
@@ -88,26 +86,16 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 	a, err := h.reqHandler.AgentV1AgentGet(ctx, agentID)
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
-		return errors.Wrap(err, "could not get agent info")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
 	}
 	log.WithField("agent", a).Debugf("Found agent info. agent_id: %s", a.ID)
 
 	// validate the ownership
 	if a.CustomerID != d.CustomerID {
 		log.Errorf("The agent does not belong to the same customer. domain_customer_id: %s, agent_customer_id: %s", d.CustomerID, a.CustomerID)
-		return fmt.Errorf("wrong customer")
-	}
-
-	id := h.utilHandler.CreateUUID()
-	log = log.WithFields(logrus.Fields{
-		"call_id":  id,
-		"agent_id": a.ID,
-	})
-
-	callBridgeID, err := h.addCallBridge(ctx, cn, id)
-	if err != nil {
-		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
-		return errors.Wrap(err, "could not add the channel to the join bridge")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
 	}
 
 	// create tmp flow for agent call
@@ -117,9 +105,9 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 	optionData, err := json.Marshal(&option)
 	if err != nil {
 		log.Errorf("Could not marshal the action option. err: %v", err)
-		return errors.Wrap(err, "could not marshal the action option")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return nil
 	}
-
 	actions := []fmaction.Action{
 		{
 			Type:   fmaction.TypeAgentCall,
@@ -132,68 +120,152 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 		ctx,
 		d.CustomerID,
 		fmflow.TypeFlow,
-		"",
-		"",
+		"tmp",
+		"tmp flow for agent dialing",
 		actions,
 		false,
 	)
 	if err != nil {
 		log.Errorf("Could not create flow. err: %v", err)
-		return errors.Wrap(err, "could not create flow")
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return nil
 	}
 
-	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, f.ID, fmactiveflow.ReferenceTypeCall, id)
+	// start the call type flow
+	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination, ari.ChannelCauseUserBusy)
+
+	return nil
+}
+
+// startIncomingDomainTypeSIPDestinationTypeConference handles incoming call.
+// SIP doamin type and destination type is conference.
+func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeConference(
+	ctx context.Context,
+	cn *channel.Channel,
+	d *rmdomain.Domain,
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
+) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypeSIPDestinationTypeConference",
+		"channel_id":  cn.ID,
+		"domain_id":   d.ID,
+		"source":      source,
+		"destination": destination,
+	})
+
+	// get conference info
+	conferenceID := uuid.FromStringOrNil(destination.Target)
+	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, conferenceID)
 	if err != nil {
-		log.Errorf("Could not create active flow. call_id: %s, flow+id: %s", id, f.ID)
-		return errors.Wrap(err, "could not create an activeflow")
+		log.Errorf("Could not get conference info. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
 	}
-	log.WithField("activeflow", af).Debugf("Created an active flow. active_flow_id: %s", af.ID)
+	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
 
-	status := call.GetStatusByChannelState(cn.State)
-	c, err := h.Create(
+	// validate the ownership
+	if cf.CustomerID != d.CustomerID {
+		log.Errorf("The conference does not belong to the same customer. domain_customer_id: %s, conference_customer_id: %s", d.CustomerID, cf.CustomerID)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
+	}
+
+	// create tmp flow for conference join
+	option := fmaction.OptionConferenceJoin{
+		ConferenceID: cf.ID,
+	}
+	optionData, err := json.Marshal(&option)
+	if err != nil {
+		log.Errorf("Could not marshal the action option. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return nil
+	}
+	actions := []fmaction.Action{
+		{
+			Type:   fmaction.TypeConferenceJoin,
+			Option: optionData,
+		},
+	}
+
+	// create tmp flow
+	f, err := h.reqHandler.FlowV1FlowCreate(
 		ctx,
-
-		id,
 		d.CustomerID,
-
-		cn.ID,
-		callBridgeID,
-
-		f.ID,
-		af.ID,
-		uuid.Nil,
-		call.TypeFlow,
-
-		source,
-		destination,
-
-		status,
-
-		cn.StasisData,
-		af.CurrentAction,
-		call.DirectionIncoming,
-
-		uuid.Nil,
-		[]rmroute.Route{},
+		fmflow.TypeFlow,
+		"tmp",
+		"tmp flow for conference join",
+		actions,
+		false,
 	)
 	if err != nil {
-		log.Errorf("Could not create a call info. err: %v", err)
-		return errors.Wrap(err, "could not create a call for channel")
-	}
-	log = log.WithFields(
-		logrus.Fields{
-			"call_type":      c.Type,
-			"call_direction": c.Direction,
-		})
-	log.WithField("call", c).Debugf("Created a call. call_id: %s", c.ID)
-
-	// set variables
-	if errVariables := h.setVariablesCall(ctx, c); errVariables != nil {
-		log.Errorf("Could not set variables. err: %v", errVariables)
-		_, _ = h.HangingUp(ctx, id, ari.ChannelCauseNormalClearing)
-		return errors.Wrap(errVariables, "could not set variables")
+		log.Errorf("Could not create flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return nil
 	}
 
-	return h.ActionNext(ctx, c)
+	// start the call type flow
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, f.ID, source, destination, ari.ChannelCauseUserBusy)
+
+	return nil
+}
+
+// startIncomingDomainTypeSIPDestinationTypeTel handles incoming call.
+// SIP doamin type and destination type is tel.
+func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeTel(
+	ctx context.Context,
+	cn *channel.Channel,
+	d *rmdomain.Domain,
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
+) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypeSIPDestinationTypeTel",
+		"channel_id":  cn.ID,
+		"domain_id":   d.ID,
+		"source":      source,
+		"destination": destination,
+	})
+
+	// create tmp flow for connect
+	option := fmaction.OptionConnect{
+		Source: *source,
+		Destinations: []commonaddress.Address{
+			*destination,
+		},
+		Unchained: false,
+	}
+	optionData, err := json.Marshal(&option)
+	if err != nil {
+		log.Errorf("Could not marshal the action option. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return nil
+	}
+	actions := []fmaction.Action{
+		{
+			Type:   fmaction.TypeConnect,
+			Option: optionData,
+		},
+	}
+
+	// create tmp flow
+	f, err := h.reqHandler.FlowV1FlowCreate(
+		ctx,
+		d.CustomerID,
+		fmflow.TypeFlow,
+		"tmp",
+		"tmp flow for outgoing call dialing",
+		actions,
+		false,
+	)
+	if err != nil {
+		log.Errorf("Could not create flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return nil
+	}
+
+	// start the call type flow
+	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination, ari.ChannelCauseNormalClearing)
+
+	return nil
 }

@@ -78,7 +78,10 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call) error {
 	start := time.Now()
 	var err error
 
-	if c.Action.ID == fmaction.IDFinish {
+	if c.Action.ID == fmaction.IDEmpty {
+		log.Infof("The action_id is empty. Consider failed to execute the first action. Hangup the call. action_id: %s", c.Action.ID)
+		c.Action.Type = fmaction.TypeHangup
+	} else if c.Action.ID == fmaction.IDFinish {
 		log.Infof("The action_id is finish. Hangup the call. action_id: %s", c.Action.ID)
 		c.Action.Type = fmaction.TypeHangup
 	}

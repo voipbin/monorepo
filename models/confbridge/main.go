@@ -2,7 +2,7 @@ package confbridge
 
 import "github.com/gofrs/uuid"
 
-// Confbridge type
+// Confbridge define
 type Confbridge struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
@@ -12,9 +12,14 @@ type Confbridge struct {
 
 	ChannelCallIDs map[string]uuid.UUID `json:"channel_call_ids"` // channelid:callid
 
-	RecordingID     uuid.UUID   `json:"recording_id"`
-	RecordingIDs    []uuid.UUID `json:"recording_ids"`
-	ExternalMediaID uuid.UUID   `json:"external_media_id"`
+	// recording id for currently recording this confbridge. if recording is ongoing, the recording request will be rejected.
+	// but this is optional. by the recording handler, it is possible to recording the confbridge without this limitation and
+	// it will not set the recording id here.
+	RecordingID  uuid.UUID   `json:"recording_id"`
+	RecordingIDs []uuid.UUID `json:"recording_ids"` // list of recording ids.
+
+	// current external media id
+	ExternalMediaID uuid.UUID `json:"external_media_id"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -26,6 +31,6 @@ type Type string
 
 // list of types
 const (
-	TypeConnect    Type = "connect"    //
-	TypeConference Type = "conference" //
+	TypeConnect    Type = "connect"    // the confbridge will be terminated if there is only 1 channel left in the bridge.
+	TypeConference Type = "conference" // the confbridge will not be terminated until someone sends a request to destroy it.
 )
