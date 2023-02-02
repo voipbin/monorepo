@@ -13,6 +13,7 @@ import (
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
@@ -21,8 +22,7 @@ import (
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	tstranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
+	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -42,19 +42,20 @@ func Test_actionHandleConnect(t *testing.T) {
 
 		af *activeflow.Activeflow
 
-		responseConfbridge *cmconfbridge.Confbridge
-		responseFlow       *flow.Flow
-
-		expectCallSource       *commonaddress.Address
-		expectCallDestinations []commonaddress.Address
-		expectCallMasterCallID uuid.UUID
-
-		responsePushStackID uuid.UUID
-		responsePushAction  *action.Action
-
-		expectUpdateActiveflow *activeflow.Activeflow
+		responseConfbridge     *cmconfbridge.Confbridge
+		responseFlow           *flow.Flow
+		responseCalls          []cmcall.Call
+		responseUUIDConfbridge uuid.UUID
+		responseUUIDHangup     uuid.UUID
+		responsePushStackID    uuid.UUID
+		responsePushAction     *action.Action
 
 		expectFlowCreateActions []action.Action
+		expectCallSource        *commonaddress.Address
+		expectCallDestinations  []commonaddress.Address
+		expectCallMasterCallID  uuid.UUID
+		expectPushActions       []action.Action
+		expectUpdateActiveflow  *activeflow.Activeflow
 	}{
 		{
 			name: "single destination",
@@ -82,14 +83,26 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 
 			responseConfbridge: &cmconfbridge.Confbridge{
-				ID:         uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
-				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				ID: uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
 			},
 			responseFlow: &flow.Flow{
-				ID:         uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
-				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				ID: uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
 			},
 
+			responseUUIDConfbridge: uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
+			responsePushStackID:    uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
+			responsePushAction: &action.Action{
+				ID:   uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+				Type: action.TypeConfbridgeJoin,
+			},
+
+			expectFlowCreateActions: []action.Action{
+				{
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
+				},
+			},
+			expectCallMasterCallID: uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
 			expectCallSource: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+123456789",
@@ -100,14 +113,13 @@ func Test_actionHandleConnect(t *testing.T) {
 					Target: "+987654321",
 				},
 			},
-			expectCallMasterCallID: uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
-
-			responsePushStackID: uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
-			responsePushAction: &action.Action{
-				ID:   uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
-				Type: action.TypeConferenceJoin,
+			expectPushActions: []action.Action{
+				{
+					ID:     uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
+				},
 			},
-
 			expectUpdateActiveflow: &activeflow.Activeflow{
 				CustomerID:      uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 				ReferenceID:     uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
@@ -130,13 +142,6 @@ func Test_actionHandleConnect(t *testing.T) {
 							},
 						},
 					},
-				},
-			},
-
-			expectFlowCreateActions: []action.Action{
-				{
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
 				},
 			},
 		},
@@ -175,7 +180,24 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID:         uuid.FromStringOrNil("cc480ff8-2710-11eb-8869-0fcf3d58fd6a"),
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
+			responseCalls: []cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("2f03e863-5cba-4661-84d0-972c1e860815"),
+				},
+			},
+			responseUUIDConfbridge: uuid.FromStringOrNil("8b138d81-5d06-44d0-b7fb-36dea3a00ded"),
+			responsePushStackID:    uuid.FromStringOrNil("73af2dfc-d4c2-11ec-a692-9b1eafe93075"),
+			responsePushAction: &action.Action{
+				ID:   uuid.FromStringOrNil("845b566c-d4c2-11ec-ba4e-f739bb357410"),
+				Type: action.TypeConferenceJoin,
+			},
 
+			expectFlowCreateActions: []action.Action{
+				{
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
+				},
+			},
 			expectCallSource: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+123456789",
@@ -191,13 +213,13 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 			expectCallMasterCallID: uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
-
-			responsePushStackID: uuid.FromStringOrNil("73af2dfc-d4c2-11ec-a692-9b1eafe93075"),
-			responsePushAction: &action.Action{
-				ID:   uuid.FromStringOrNil("845b566c-d4c2-11ec-ba4e-f739bb357410"),
-				Type: action.TypeConferenceJoin,
+			expectPushActions: []action.Action{
+				{
+					ID:     uuid.FromStringOrNil("8b138d81-5d06-44d0-b7fb-36dea3a00ded"),
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
+				},
 			},
-
 			expectUpdateActiveflow: &activeflow.Activeflow{
 				CustomerID:      uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				ReferenceID:     uuid.FromStringOrNil("cb4accf8-2710-11eb-8e49-e73409394bef"),
@@ -221,13 +243,6 @@ func Test_actionHandleConnect(t *testing.T) {
 							},
 						},
 					},
-				},
-			},
-
-			expectFlowCreateActions: []action.Action{
-				{
-					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
 				},
 			},
 		},
@@ -265,7 +280,19 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID:         uuid.FromStringOrNil("229ef410-2712-11eb-9dea-a737f7b6ef2b"),
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
+			responseUUIDConfbridge: uuid.FromStringOrNil("6f9adfc1-7d2e-49bc-b8b2-ca5123b013c3"),
+			responsePushStackID:    uuid.FromStringOrNil("d913dcf6-d4c2-11ec-902b-37f50ff7b4b4"),
+			responsePushAction: &action.Action{
+				ID:   uuid.FromStringOrNil("d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"),
+				Type: action.TypeConferenceJoin,
+			},
 
+			expectFlowCreateActions: []action.Action{
+				{
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
+				},
+			},
 			expectCallSource: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+123456789",
@@ -281,13 +308,13 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 			expectCallMasterCallID: uuid.Nil,
-
-			responsePushStackID: uuid.FromStringOrNil("d913dcf6-d4c2-11ec-902b-37f50ff7b4b4"),
-			responsePushAction: &action.Action{
-				ID:   uuid.FromStringOrNil("d96a09aa-d4c2-11ec-bcea-0bce8dd7e065"),
-				Type: action.TypeConferenceJoin,
+			expectPushActions: []action.Action{
+				{
+					ID:     uuid.FromStringOrNil("6f9adfc1-7d2e-49bc-b8b2-ca5123b013c3"),
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
+				},
 			},
-
 			expectUpdateActiveflow: &activeflow.Activeflow{
 				CustomerID:      uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 				ReferenceID:     uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
@@ -312,11 +339,106 @@ func Test_actionHandleConnect(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			name: "single destination with relay reason",
+
+			af: &activeflow.Activeflow{
+				CustomerID:  uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				ReferenceID: uuid.FromStringOrNil("0bd920ac-a253-11ed-b372-371e3ba29e82"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+					Type:   action.TypeConnect,
+					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}],"relay_reason":true}`),
+				},
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+								Type:   action.TypeConnect,
+								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}],"relay_reason":true}`),
+							},
+						},
+					},
+				},
+			},
+
+			responseConfbridge: &cmconfbridge.Confbridge{
+				ID:         uuid.FromStringOrNil("0c3bd774-a253-11ed-b6f4-2b405333577e"),
+				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+			},
+			responseFlow: &flow.Flow{
+				ID:         uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
+				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+			},
+			responseCalls: []cmcall.Call{
+				{
+					ID: uuid.FromStringOrNil("f7e05cb8-a253-11ed-9f37-0fef5e1b2aa9"),
+				},
+			},
+
+			expectCallSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+123456789",
+			},
+			expectCallDestinations: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+987654321",
+				},
+			},
+			expectCallMasterCallID: uuid.FromStringOrNil("0bd920ac-a253-11ed-b372-371e3ba29e82"),
+
+			responseUUIDConfbridge: uuid.FromStringOrNil("222a9d00-a257-11ed-8e79-5309100e27e4"),
+			responseUUIDHangup:     uuid.FromStringOrNil("2257c8e8-a257-11ed-b228-a38777d47451"),
+			responsePushStackID:    uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
+			responsePushAction: &action.Action{
+				ID:   uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+				Type: action.TypeConferenceJoin,
+			},
 
 			expectFlowCreateActions: []action.Action{
 				{
 					Type:   action.TypeConfbridgeJoin,
-					Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
+					Option: []byte(`{"confbridge_id":"0c3bd774-a253-11ed-b6f4-2b405333577e"}`),
+				},
+			},
+			expectPushActions: []action.Action{
+				{
+					ID:     uuid.FromStringOrNil("222a9d00-a257-11ed-8e79-5309100e27e4"),
+					Type:   action.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"0c3bd774-a253-11ed-b6f4-2b405333577e"}`),
+				},
+				{
+					ID:     uuid.FromStringOrNil("2257c8e8-a257-11ed-b228-a38777d47451"),
+					Type:   action.TypeHangupRelay,
+					Option: []byte(`{"reference_id":"f7e05cb8-a253-11ed-9f37-0fef5e1b2aa9"}`),
+				},
+			},
+			expectUpdateActiveflow: &activeflow.Activeflow{
+				CustomerID:      uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				ReferenceID:     uuid.FromStringOrNil("0bd920ac-a253-11ed-b372-371e3ba29e82"),
+				ForwardStackID:  uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
+				ForwardActionID: uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+					Type:   action.TypeConnect,
+					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}],"relay_reason":true}`),
+				},
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:     uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+								Type:   action.TypeConnect,
+								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}],"relay_reason":true}`),
+							},
+						},
+					},
 				},
 			},
 		},
@@ -327,14 +449,16 @@ func Test_actionHandleConnect(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
 			mockStack := stackhandler.NewMockStackHandler(mc)
 
 			h := &activeflowHandler{
-				db:         mockDB,
-				reqHandler: mockReq,
+				utilHandler: mockUtil,
+				db:          mockDB,
+				reqHandler:  mockReq,
 
 				actionHandler: mockAction,
 				stackHandler:  mockStack,
@@ -343,11 +467,15 @@ func Test_actionHandleConnect(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.expectCallMasterCallID, tt.expectCallSource, tt.expectCallDestinations).Return([]cmcall.Call{{ID: uuid.Nil}}, nil)
-			mockStack.EXPECT().Push(ctx, tt.af.StackMap, gomock.Any(), tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(tt.responsePushStackID, tt.responsePushAction, nil)
-			mockDB.EXPECT().ActiveflowUpdate(gomock.Any(), tt.expectUpdateActiveflow).Return(nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.expectCallMasterCallID, tt.expectCallSource, tt.expectCallDestinations).Return(tt.responseCalls, nil)
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDConfbridge)
+			if tt.responseUUIDHangup != uuid.Nil {
+				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDHangup)
+			}
+			mockStack.EXPECT().Push(ctx, tt.af.StackMap, tt.expectPushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(tt.responsePushStackID, tt.responsePushAction, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
 			if err := h.actionHandleConnect(ctx, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -2839,10 +2967,10 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 
 		customerID    uuid.UUID
 		referenceID   uuid.UUID
-		referenceType tstranscribe.ReferenceType
+		referenceType tmtranscribe.ReferenceType
 		language      string
 
-		response *tstranscribe.Transcribe
+		response *tmtranscribe.Transcribe
 	}
 
 	tests := []test{
@@ -2861,12 +2989,12 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 
 			uuid.FromStringOrNil("b4d3fb66-8795-11ec-997c-7f2786edbef2"),
 			uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
-			tstranscribe.ReferenceTypeCall,
+			tmtranscribe.ReferenceTypeCall,
 			"en-US",
 
-			&tstranscribe.Transcribe{
+			&tmtranscribe.Transcribe{
 				ID:            uuid.FromStringOrNil("e1e69720-0c08-11ec-9f5c-db1f63f63215"),
-				ReferenceType: tstranscribe.ReferenceTypeCall,
+				ReferenceType: tmtranscribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("01f28ffc-0c08-11ec-8b28-0f1dd70b3428"),
 				HostID:        uuid.FromStringOrNil("f91b4f58-0c08-11ec-88fd-cfbbb1957a54"),
 				Language:      "en-US",
@@ -3337,8 +3465,8 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 
 		expectSync     bool
 		expectURI      string
-		expectMethod   webhook.MethodType
-		expectDataType webhook.DataType
+		expectMethod   wmwebhook.MethodType
+		expectDataType wmwebhook.DataType
 		expectData     []byte
 	}{
 		{
@@ -3369,8 +3497,8 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 
 			true,
 			"test.com",
-			webhook.MethodTypePOST,
-			webhook.DataTypeJSON,
+			wmwebhook.MethodTypePOST,
+			wmwebhook.DataTypeJSON,
 			[]byte(`test message.`),
 		},
 	}
@@ -3416,8 +3544,8 @@ func Test_actionHandleConversationSend(t *testing.T) {
 
 		expectSync           bool
 		expectURI            string
-		expectMethod         webhook.MethodType
-		expectDataType       webhook.DataType
+		expectMethod         wmwebhook.MethodType
+		expectDataType       wmwebhook.DataType
 		expectConversationID uuid.UUID
 		expectText           string
 	}{
@@ -3450,8 +3578,8 @@ func Test_actionHandleConversationSend(t *testing.T) {
 
 			true,
 			"test.com",
-			webhook.MethodTypePOST,
-			webhook.DataTypeJSON,
+			wmwebhook.MethodTypePOST,
+			wmwebhook.DataTypeJSON,
 			uuid.FromStringOrNil("7e5116e2-f477-11ec-9c08-b343a05abaee"),
 			"test message.",
 		},

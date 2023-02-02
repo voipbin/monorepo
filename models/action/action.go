@@ -30,7 +30,7 @@ func (a *Action) String() string {
 	return fmt.Sprintf("%v", *a)
 }
 
-// list of ActionID
+// list of pre-defined ActionID
 var (
 	IDEmpty  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000000") // empty action
 	IDStart  uuid.UUID = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001") // reserved action id for start.
@@ -49,42 +49,153 @@ type Type string
 
 // List of Action types
 const (
-	TypeAgentCall           Type = "agent_call"            // agent-manager. make a call to the agent.
-	TypeAMD                 Type = "amd"                   // call-manager. answering machine detection.
-	TypeAnswer              Type = "answer"                // call-manager. answer the call.
-	TypeBeep                Type = "beep"                  // call-manager. play the beep sound.
-	TypeBranch              Type = "branch"                // flow-manager. branch the flow
-	TypeCall                Type = "call"                  // flow-manager. make a call.
+	// TypeAgentCall creates a call to the agent and connect.
+	// agent-manager
+	TypeAgentCall Type = "agent_call" // agent-manager. make a call to the agent.
+
+	// TypeAMD detects the answering machine.
+	// call-manager
+	TypeAMD Type = "amd"
+
+	// TypeAnswer answers the call.
+	// call-manager
+	TypeAnswer Type = "answer"
+
+	// TypeBeep plays the beep sound.
+	// call-manager
+	TypeBeep Type = "beep"
+
+	// TypeBranch gets the variable then execute the correspond action.
+	// for example. gets the dtmf input saved variable and jump to the action.
+	// flow-manager
+	TypeBranch Type = "branch"
+
+	// TypeCall starts a new independent outgoing call with a given flow.
+	// it executes
+	// flow-manager
+	TypeCall Type = "call"
+
+	// TypeConditionCallDigits deprecated. use the TypeConditionVariable instead.
 	TypeConditionCallDigits Type = "condition_call_digits" // flow-manager. condition check(call's digits)
+
+	// TypeConditionCallStatus deprecated. use the TypeConditionVariable instead.
 	TypeConditionCallStatus Type = "condition_call_status" // flow-manager. condition check(call's status)
-	TypeConditionDatetime   Type = "condition_datetime"    // flow-manager. condition check(datetime)
-	TypeConditionVariable   Type = "condition_variable"    // flow-manager. condition check(variable)
-	TypeConfbridgeJoin      Type = "confbridge_join"       // call-manager. join to the confbridge.
-	TypeConferenceJoin      Type = "conference_join"       // conference-manager. join to the conference.
-	TypeConnect             Type = "connect"               // flow-manager. connect to the other destination.
-	TypeConversationSend    Type = "conversation_send"     // conversation-manager. Send the message to the conversation.
-	TypeDigitsReceive       Type = "digits_receive"        // call-manager. receive the digits(dtmfs).
-	TypeDigitsSend          Type = "digits_send"           // call-manager. send the digits(dtmfs).
-	TypeEcho                Type = "echo"                  // call-manager.
-	TypeExternalMediaStart  Type = "external_media_start"  // call-manager.
-	TypeExternalMediaStop   Type = "external_media_stop"   // call-manager.
-	TypeFetch               Type = "fetch"                 // flow-manager.
-	TypeFetchFlow           Type = "fetch_flow"            // flow-manager.
-	TypeGoto                Type = "goto"                  // flow-manager.
-	TypeHangup              Type = "hangup"                // call-manager.
-	TypeMessageSend         Type = "message_send"          // message-manager.
-	TypePlay                Type = "play"                  // call-manager.
-	TypeQueueJoin           Type = "queue_join"            // flow-manager. put the call into the queue.
-	TypeRecordingStart      Type = "recording_start"       // call-manager. startr the record of the given call.
-	TypeRecordingStop       Type = "recording_stop"        // call-manager. stop the record of the given call.
-	TypeSleep               Type = "sleep"                 // call-manager. Sleep.
-	TypeStreamEcho          Type = "stream_echo"           // call-manager.
-	TypeTalk                Type = "talk"                  // call-manager. generate audio from the given text(ssml or plain text) and play it.
-	TypeTranscribeStart     Type = "transcribe_start"      // transcribe-manager. start transcribe the call
-	TypeTranscribeStop      Type = "transcribe_stop"       // transcribe-manager. stop transcribe the call
-	TypeTranscribeRecording Type = "transcribe_recording"  // transcribe-manager. transcribe the recording and send it to webhook.
-	TypeVariableSet         Type = "variable_set"          // flow-manager: sets the variable
-	TypeWebhookSend         Type = "webhook_send"          // webhook-manageR: send a webhook.
+
+	// TypeConditionDatetime checks the condition with the current datetime.
+	// flow-manager
+	TypeConditionDatetime Type = "condition_datetime"
+
+	// TypeConditionVariable checks the condition with the given variable.
+	// flow-manager
+	TypeConditionVariable Type = "condition_variable"
+
+	// TypeConfbridgeJoin joins the reference to the given confbridge.
+	// call-manager
+	TypeConfbridgeJoin Type = "confbridge_join"
+
+	// TypeConferenceJoin joins the reference to the given conference.
+	// conference-manager
+	TypeConferenceJoin Type = "conference_join"
+
+	// TypeConnect creates a new call to the destinations and connects to them.
+	// flow-manager
+	TypeConnect Type = "connect"
+
+	// conversation_send sends a message to the conversation.
+	// conversation-manager
+	TypeConversationSend Type = "conversation_send"
+
+	// TypeDigitsReceive receives the digits(dtmfs).
+	// call-manager
+	TypeDigitsReceive Type = "digits_receive" // call-manager. receive the digits(dtmfs).
+
+	// TypeDigitsSend sends the digits(dtmfs).
+	// call-manager
+	TypeDigitsSend Type = "digits_send"
+
+	// TypeEcho echo the sound.
+	// call-manager
+	TypeEcho Type = "echo"
+
+	// TypeExternalMediaStart starts the external media.
+	// call-manager
+	TypeExternalMediaStart Type = "external_media_start"
+
+	// TypeExternalMediaStop stops the external media.
+	// call-manager
+	TypeExternalMediaStop Type = "external_media_stop"
+
+	// TypeFetch fetchs the action from the given event url
+	// flow-manager
+	TypeFetch Type = "fetch"
+
+	// TypeFetchFlow fetchs the flow.
+	// flow-manager
+	TypeFetchFlow Type = "fetch_flow" // flow-manager.
+
+	// TypeGoto forward the action cursor to the given action id with loop count.
+	// flow-manager
+	TypeGoto Type = "goto"
+
+	// TypeHangup hangs up the call with a given reason.
+	// call-manager
+	TypeHangup Type = "hangup"
+
+	// TypeHangupRelay hangs up the call with the same reason of the given reference id.
+	// call-manager
+	TypeHangupRelay Type = "hangup_relay"
+
+	// TypeMessageSend sends the SMS to the given destinations.
+	// message-manager
+	TypeMessageSend Type = "message_send"
+
+	// TypePlay plays the given urls.
+	// call-manager
+	TypePlay Type = "play"
+
+	// TypeQueueJoin joins the call to the given queue id.
+	// flow-manager
+	TypeQueueJoin Type = "queue_join"
+
+	// TypeRecordingStart starts the recording.
+	// call-manager
+	TypeRecordingStart Type = "recording_start"
+
+	// TypeRecordingStop stops the recording.
+	// call-manager
+	TypeRecordingStop Type = "recording_stop"
+
+	// TypeSleep sleeps the call.
+	// call-manager
+	TypeSleep Type = "sleep"
+
+	// TypeStreamEcho echo the sound.
+	// call-manager
+	TypeStreamEcho Type = "stream_echo"
+
+	// TypeTalk generates the audio from the given text(ssml or plain text) and play it.
+	// call-manager
+	TypeTalk Type = "talk"
+
+	// TypeTranscribeStart starts the transcribe.
+	// transcribe-manager
+	TypeTranscribeStart Type = "transcribe_start"
+
+	// TypeTranscribeStop stops the transcribe.
+	// transcribe-manager
+	TypeTranscribeStop Type = "transcribe_stop"
+
+	// TypeTranscribeRecording transcribes the recording file and send it to the webhook.
+	// transcribe-manager
+	TypeTranscribeRecording Type = "transcribe_recording"
+
+	// TypeVariableSet sets the variable.
+	// flow-manager
+	TypeVariableSet Type = "variable_set"
+
+	// TypeWebhookSend sends a webhook.
+	// webhook-manager
+	TypeWebhookSend Type = "webhook_send"
 )
 
 // TypeList list of type array
@@ -112,6 +223,7 @@ var TypeList []Type = []Type{
 	TypeFetchFlow,
 	TypeGoto,
 	TypeHangup,
+	TypeHangupRelay,
 	TypeMessageSend,
 	TypePlay,
 	TypeQueueJoin,

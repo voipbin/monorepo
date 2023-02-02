@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -67,14 +68,14 @@ func Test_Execute(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockStack := stackhandler.NewMockStackHandler(mc)
 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
-				util:            mockUtil,
+				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				stackHandler:    mockStack,
@@ -237,7 +238,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
@@ -245,7 +246,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
-				util:            mockUtil,
+				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				actionHandler:   mockAction,
@@ -382,14 +383,14 @@ func Test_executeAction(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockStack := stackhandler.NewMockStackHandler(mc)
 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
 			h := &activeflowHandler{
-				util:            mockUtil,
+				utilHandler:     mockUtil,
 				db:              mockDB,
 				notifyHandler:   mockNotify,
 				stackHandler:    mockStack,
