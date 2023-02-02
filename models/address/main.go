@@ -12,13 +12,14 @@ type Address struct {
 // Type define
 type Type string
 
-// List of CallAddressType
+// List of Types
 const (
 	TypeNone       Type = ""           // no type specified
 	TypeAgent      Type = "agent"      // target is agent's id.
 	TypeConference Type = "conference" // target is conference's id
-	TypeEndpoint   Type = "endpoint"   // target is registered endpoint's id.
-	TypeLine       Type = "line"       //  target naver line's id
+	TypeEndpoint   Type = "endpoint"   // target is registered endpoint.
+	TypeExtension  Type = "extension"  // target is extension
+	TypeLine       Type = "line"       // target is naver line's id
 	TypeSIP        Type = "sip"        // target is sip destination
 	TypeTel        Type = "tel"        // target tel number
 )
