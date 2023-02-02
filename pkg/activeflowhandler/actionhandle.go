@@ -425,7 +425,7 @@ func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, a
 // it gets the given conference's flow and replace it.
 func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionConferenceJoin",
+		"func":              "actionHandleConferenceJoin",
 		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
@@ -486,7 +486,7 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 // actionHandleConnect handles action connect with active flow.
 func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionConnect",
+		"func":              "actionHandleConnect",
 		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
@@ -494,7 +494,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	})
 	act := &af.CurrentAction
 
-	// create conference room for connect
+	// create a confbridge for connect
 	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.CustomerID, cmconfbridge.TypeConnect)
 	if err != nil {
 		log.Errorf("Could not create a confbridge for connect. err: %v", err)
@@ -505,60 +505,84 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	})
 	log.WithField("confbridge", cb).Debug("Created confbridge for connect.")
 
-	// create a temp flow connect confbridge join
-	opt := action.OptionConfbridgeJoin{
-		ConfbridgeID: cb.ID,
-	}
-	optString, err := json.Marshal(opt)
-	if err != nil {
-		log.Errorf("Could not marshal the confbridge join option. err: %v", err)
-		return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
-	}
-	actions := []action.Action{
-		{
-			Type:   action.TypeConfbridgeJoin,
-			Option: optString,
-		},
-	}
-
-	// create a flow
-	f, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "", "", actions, false)
-	if err != nil {
-		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
-		return fmt.Errorf("could not create a call flow. err: %v", err)
-	}
-
 	var optConnect action.OptionConnect
 	if err := json.Unmarshal(act.Option, &optConnect); err != nil {
 		log.Errorf("Could not unmarshal the connect option. err: %v", err)
 		return fmt.Errorf("could not unmarshal the connect option. err: %v", err)
 	}
 
-	// set master call id.
+	// create a temp flow connect confbridge join
+	tmpOpt := action.OptionConfbridgeJoin{
+		ConfbridgeID: cb.ID,
+	}
+	tmpOptString, err := json.Marshal(tmpOpt)
+	if err != nil {
+		log.Errorf("Could not marshal the confbridge join option. err: %v", err)
+		return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
+	}
+	tmpActions := []action.Action{
+		{
+			Type:   action.TypeConfbridgeJoin,
+			Option: tmpOptString,
+		},
+	}
+
+	// create a flow for connect call
+	f, err := h.reqHandler.FlowV1FlowCreate(ctx, af.CustomerID, flow.TypeFlow, "tmp", "tmp flow for action connect", tmpActions, false)
+	if err != nil {
+		log.Errorf("Could not create a temporary flow for connect. err: %v", err)
+		return fmt.Errorf("could not create a call flow. err: %v", err)
+	}
+
+	// get master call id.
 	masterCallID := af.ReferenceID
 	if optConnect.Unchained {
 		masterCallID = uuid.Nil
 	}
 
-	// create a call
-	resCall, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, masterCallID, &optConnect.Source, optConnect.Destinations)
+	// create a call for connect
+	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, masterCallID, &optConnect.Source, optConnect.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
 	}
-	log.WithField("calls", resCall).Debugf("Created outgoing call for connect without master call id. count: %d", len(resCall))
+	log.WithField("calls", resCalls).Debugf("Created outgoing calls for connect. count: %d", len(resCalls))
 
+	// create push actions for activeflow
 	// put original call into the created conference
-	tmpActions := []action.Action{
+	pushActions := []action.Action{
 		{
-			ID:     uuid.Must(uuid.NewV4()),
+			ID:     h.utilHandler.CreateUUID(),
 			Type:   action.TypeConfbridgeJoin,
-			Option: optString,
+			Option: tmpOptString,
 		},
 	}
 
+	if optConnect.RelayReason {
+		// get reference id
+		// we cosider the first call of get the reference
+		referenceID := resCalls[0].ID
+		log.Debugf("The connect action has relay reason option enabled. Adding the hangup relay action. reference_id: %s", referenceID)
+
+		optRelay := action.OptionHangupRelay{
+			ReferenceID: referenceID,
+		}
+		optStringRelay, err := json.Marshal(optRelay)
+		if err != nil {
+			log.Errorf("Could not marshal the confbridge join option. err: %v", err)
+			return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
+		}
+		actionRelay := action.Action{
+			ID:     h.utilHandler.CreateUUID(),
+			Type:   action.TypeHangupRelay,
+			Option: optStringRelay,
+		}
+
+		pushActions = append(pushActions, actionRelay)
+	}
+
 	// push the actions
-	if errPush := h.PushStack(ctx, af, tmpActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, pushActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}
@@ -569,7 +593,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 // actionHandleGoto handles action goto with active flow.
 func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionGoto",
+		"func":              "actionHandleGoto",
 		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,
@@ -813,7 +837,7 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 // actionHandleBranch handles branch action type.
 func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "activeFlowHandleActionBranch",
+		"func":              "actionHandleBranch",
 		"activeflow_id":     af.ID,
 		"reference_type":    af.ReferenceType,
 		"reference_id":      af.ReferenceID,

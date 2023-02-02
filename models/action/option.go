@@ -2,7 +2,6 @@ package action
 
 import (
 	"github.com/gofrs/uuid"
-
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
@@ -99,6 +98,7 @@ type OptionConnect struct {
 	Source       commonaddress.Address   `json:"source"`       // source infromation.
 	Destinations []commonaddress.Address `json:"destinations"` // target destinations.
 	Unchained    bool                    `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
+	RelayReason  bool                    `json:"relay_reason"` // if it sets to true, the master call will be hungup with the same reason with destination call's hangup when the one of destination calls hang up.
 }
 
 // OptionConversationSend defines action conversation_send's optoin.
@@ -162,7 +162,12 @@ type OptionGoto struct {
 
 // OptionHangup defines action hangup's option.
 type OptionHangup struct {
-	Reason string // hangup reason code. See detail cmcall.HangupReason
+	Reason string `json:"reason"` // hangup reason code. See detail cmcall.HangupReason
+}
+
+// OptionHangupRelay defines action hangup_relay's option.
+type OptionHangupRelay struct {
+	ReferenceID uuid.UUID `json:"reference_id"` // reference call id
 }
 
 // OptionMessageSend defines action message_send's option.
