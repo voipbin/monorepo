@@ -293,7 +293,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeTel(t *testing.T) {
 			expectActions: []fmaction.Action{
 				{
 					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"sip","target":"test01","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"unchained":false}`),
+					Option: []byte(`{"source":{"type":"sip","target":"test01","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"unchained":false,"relay_reason":true}`),
 				},
 			},
 		},

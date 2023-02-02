@@ -162,7 +162,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		}
 	}
 	if res.Data == nil {
-		res.Data = map[string]string{}
+		res.Data = map[call.DataType]string{}
 	}
 
 	// Action

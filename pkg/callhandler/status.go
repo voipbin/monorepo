@@ -62,7 +62,13 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		return nil
 	}
 
+	// set the call's SIP call id
 	go h.handleSIPCallID(ctx, cn, c)
+
+	if c.Data[call.DataTypeEarlyExecution] == "true" {
+		// the call's flow execution is already on going.
+		return nil
+	}
 
 	return h.ActionNext(ctx, res)
 }
