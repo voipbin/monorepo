@@ -205,11 +205,12 @@ func Test_CallV1CallsCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID   uuid.UUID
-		flowID       uuid.UUID
-		masterCallID uuid.UUID
-		source       *address.Address
-		destinations []address.Address
+		customerID     uuid.UUID
+		flowID         uuid.UUID
+		masterCallID   uuid.UUID
+		source         *address.Address
+		destinations   []address.Address
+		ealryExecution bool
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -232,13 +233,14 @@ func Test_CallV1CallsCreate(t *testing.T) {
 					Target: "+821021656522",
 				},
 			},
+			true,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"flow_id":"0783c168-4c70-11ec-a613-bfcd98aaa6da","customer_id":"3a09efda-7f52-11ec-a775-cfd868cdc292","master_call_id":"ecd7b104-8c97-11ec-895d-67294ed5a4d0","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}]}`),
+				Data:     []byte(`{"flow_id":"0783c168-4c70-11ec-a613-bfcd98aaa6da","customer_id":"3a09efda-7f52-11ec-a775-cfd868cdc292","master_call_id":"ecd7b104-8c97-11ec-895d-67294ed5a4d0","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"early_execution":true}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -266,7 +268,7 @@ func Test_CallV1CallsCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations)
+			res, err := reqHandler.CallV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.ealryExecution)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -283,11 +285,12 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID       uuid.UUID
-		customerID   uuid.UUID
-		flowID       uuid.UUID
-		activeflowID uuid.UUID
-		masterCallID uuid.UUID
+		callID         uuid.UUID
+		customerID     uuid.UUID
+		flowID         uuid.UUID
+		activeflowID   uuid.UUID
+		masterCallID   uuid.UUID
+		earlyExecution bool
 
 		source      *address.Address
 		destination *address.Address
@@ -305,6 +308,7 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 			uuid.FromStringOrNil("9f4b89b6-4d1c-11ec-a565-af220567858d"),
 			uuid.FromStringOrNil("0a5273c9-73ac-4590-87de-4c7f33da7614"),
 			uuid.FromStringOrNil("f993c284-8c97-11ec-aaa3-a76b1106d031"),
+			true,
 
 			&address.Address{
 				Type:   address.TypeTel,
@@ -320,7 +324,7 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 				URI:      "/v1/calls/9dcdc9a0-4d1c-11ec-81cc-bf06212a283e",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"flow_id":"9f4b89b6-4d1c-11ec-a565-af220567858d","activeflow_id":"0a5273c9-73ac-4590-87de-4c7f33da7614","customer_id":"45a4dbac-7f52-11ec-98a8-7f1e6d2fae52","master_call_id":"f993c284-8c97-11ec-aaa3-a76b1106d031","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destination":{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}}`),
+				Data:     []byte(`{"flow_id":"9f4b89b6-4d1c-11ec-a565-af220567858d","activeflow_id":"0a5273c9-73ac-4590-87de-4c7f33da7614","customer_id":"45a4dbac-7f52-11ec-98a8-7f1e6d2fae52","master_call_id":"f993c284-8c97-11ec-aaa3-a76b1106d031","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destination":{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""},"early_execution":true}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -346,7 +350,7 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination)
+			res, err := reqHandler.CallV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

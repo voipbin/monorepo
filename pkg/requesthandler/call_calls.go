@@ -101,15 +101,16 @@ func (r *requestHandler) CallV1CallActionNext(ctx context.Context, callID uuid.U
 // CallV1CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address) ([]cmcall.Call, error) {
+func (r *requestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address, ealryExecution bool) ([]cmcall.Call, error) {
 	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsPost{
-		CustomerID:   customerID,
-		FlowID:       flowID,
-		MasterCallID: masterCallID,
-		Source:       *source,
-		Destinations: destinations,
+		CustomerID:     customerID,
+		FlowID:         flowID,
+		MasterCallID:   masterCallID,
+		Source:         *source,
+		Destinations:   destinations,
+		EarlyExecution: ealryExecution,
 	}
 
 	m, err := json.Marshal(data)
@@ -139,16 +140,17 @@ func (r *requestHandler) CallV1CallsCreate(ctx context.Context, customerID, flow
 // CallV1CallCreateWithID sends a request to call-manager
 // to creating a call with the given id.
 // it returns created call if it succeed.
-func (r *requestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, earlyExecution bool) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
 	data := &cmrequest.V1DataCallsIDPost{
-		CustomerID:   customerID,
-		FlowID:       flowID,
-		ActiveflosID: activeflowID,
-		MasterCallID: masterCallID,
-		Source:       *source,
-		Destination:  *destination,
+		CustomerID:     customerID,
+		FlowID:         flowID,
+		ActiveflosID:   activeflowID,
+		MasterCallID:   masterCallID,
+		Source:         *source,
+		Destination:    *destination,
+		EarlyExecution: earlyExecution,
 	}
 
 	m, err := json.Marshal(data)
