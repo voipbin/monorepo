@@ -294,11 +294,11 @@ func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.
 // startContextOutgoingCall handles contextOutgoingCall context type of StasisStart event.
 func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "startHandlerContextOutgoingCall",
+		"func":        "startContextOutgoingCall",
 		"asterisk_id": cn.AsteriskID,
 		"channel_id":  cn.ID,
 	})
-	log.Infof("Executing startHandlerContextOutgoingCall. channel_id: %s, data: %v", cn.ID, cn.StasisData)
+	log.Infof("Executing startContextOutgoingCall. channel_id: %s, data: %v", cn.ID, cn.StasisData)
 
 	// get
 	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])
@@ -344,8 +344,21 @@ func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.
 		return errors.Wrap(errDial, "could not dial the channel")
 	}
 
-	// do nothing here
-	return nil
+	// get call
+	c, err := h.Get(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get a call info. err: %v", err)
+		return errors.Wrap(err, "could not get call info")
+	}
+
+	// check the call's early execution
+	if c.Data[call.DataTypeEarlyExecution] != "true" {
+		// do nothing here
+		return nil
+	}
+	log.Debugf("The call has early exection option.")
+
+	return h.ActionNext(ctx, c)
 }
 
 // startContextApplication handles contextApplication context type of StasisStart event.
@@ -522,7 +535,7 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 
 		status,
 
-		cn.StasisData,
+		map[call.DataType]string{},
 		af.CurrentAction,
 		call.DirectionIncoming,
 

@@ -27,7 +27,14 @@ const (
 )
 
 // CreateCallsOutgoing creates multiple outgoing calls.
-func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destinations []commonaddress.Address) ([]*call.Call, error) {
+func (h *callHandler) CreateCallsOutgoing(
+	ctx context.Context,
+	customerID uuid.UUID,
+	flowID uuid.UUID,
+	masterCallID uuid.UUID,
+	source commonaddress.Address,
+	destinations []commonaddress.Address,
+) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CreateCallsOutgoing",
 		"customer_id": customerID,
@@ -42,7 +49,7 @@ func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowI
 
 		switch destination.Type {
 		case commonaddress.TypeSIP, commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination)
+			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, map[call.DataType]string{})
 			if err != nil {
 				log.Errorf("Could not create an outgoing call. err: %v", err)
 				continue
@@ -67,7 +74,17 @@ func (h *callHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowI
 }
 
 // CreateCallOutgoing creates a call for outgoing
-func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) (*call.Call, error) {
+func (h *callHandler) CreateCallOutgoing(
+	ctx context.Context,
+	id uuid.UUID,
+	customerID uuid.UUID,
+	flowID uuid.UUID,
+	activeflowID uuid.UUID,
+	masterCallID uuid.UUID,
+	source commonaddress.Address,
+	destination commonaddress.Address,
+	data map[call.DataType]string,
+) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":          "CreateCallOutgoing",
 		"id":             id,
@@ -128,7 +145,7 @@ func (h *callHandler) CreateCallOutgoing(ctx context.Context, id, customerID, fl
 		&source,
 		&destination,
 		call.StatusDialing,
-		map[string]string{},
+		data,
 
 		af.CurrentAction,
 		call.DirectionOutgoing,

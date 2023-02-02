@@ -34,7 +34,7 @@ func (h *callHandler) Create(
 	destination *commonaddress.Address,
 
 	status call.Status,
-	data map[string]string,
+	data map[call.DataType]string,
 
 	action fmaction.Action,
 	direction call.Direction,

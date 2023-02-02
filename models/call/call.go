@@ -39,13 +39,13 @@ type Call struct {
 	Destination commonaddress.Address `json:"destination"`
 
 	// info
-	Status         Status            `json:"status"`
-	Data           map[string]string `json:"data"`             //
-	Action         fmaction.Action   `json:"action"`           // call's current action.
-	ActionNextHold bool              `json:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
-	Direction      Direction         `json:"direction"`
-	HangupBy       HangupBy          `json:"hangup_by"`
-	HangupReason   HangupReason      `json:"hangup_reason"`
+	Status         Status              `json:"status"`
+	Data           map[DataType]string `json:"data"`             //
+	Action         fmaction.Action     `json:"action"`           // call's current action.
+	ActionNextHold bool                `json:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
+	Direction      Direction           `json:"direction"`
+	HangupBy       HangupBy            `json:"hangup_by"`
+	HangupReason   HangupReason        `json:"hangup_reason"`
 
 	// dialroute(valid only tel type outgoing call)
 	DialrouteID uuid.UUID       `json:"dialroute_id"` // dialroute id(current use)
@@ -83,6 +83,14 @@ const (
 	StatusTerminating Status = "terminating" // The call is terminating.
 	StatusCanceling   Status = "canceling"   // The call originator is canceling the call.
 	StatusHangup      Status = "hangup"      // The call has been completed.
+)
+
+// DataType define
+type DataType string
+
+// list of DataType types.
+const (
+	DataTypeEarlyExecution DataType = "early_execution" // if it sets to true, the call will not wait for answer for flow execution.
 )
 
 // Direction type

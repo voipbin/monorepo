@@ -233,7 +233,8 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeTel(
 		Destinations: []commonaddress.Address{
 			*destination,
 		},
-		Unchained: false,
+		Unchained:   false,
+		RelayReason: true,
 	}
 	optionData, err := json.Marshal(&option)
 	if err != nil {

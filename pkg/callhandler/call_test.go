@@ -38,7 +38,7 @@ func Test_Create(t *testing.T) {
 		destination *commonaddress.Address
 
 		status call.Status
-		data   map[string]string
+		data   map[call.DataType]string
 
 		action    fmaction.Action
 		direction call.Direction
@@ -83,9 +83,9 @@ func Test_Create(t *testing.T) {
 			},
 
 			call.StatusRinging,
-			map[string]string{
-				"context": "call-in",
-				"domain":  "pstn.voipbin.net",
+			map[call.DataType]string{
+				call.DataTypeEarlyExecution: "false",
+				// "domain":  "pstn.voipbin.net",
 			},
 
 			fmaction.Action{
@@ -133,9 +133,8 @@ func Test_Create(t *testing.T) {
 				},
 
 				Status: call.StatusRinging,
-				Data: map[string]string{
-					"context": "call-in",
-					"domain":  "pstn.voipbin.net",
+				Data: map[call.DataType]string{
+					call.DataTypeEarlyExecution: "false",
 				},
 
 				Action: fmaction.Action{

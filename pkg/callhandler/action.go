@@ -117,6 +117,9 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call) error {
 	case fmaction.TypeHangup:
 		err = h.actionExecuteHangup(ctx, c)
 
+	case fmaction.TypeHangupRelay:
+		err = h.actionExecuteHangupRelay(ctx, c)
+
 	case fmaction.TypePlay:
 		err = h.actionExecutePlay(ctx, c)
 
@@ -172,8 +175,8 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 		return nil
 	}
 
-	if c.FlowID == uuid.Nil {
-		log.WithField("call", c).Info("No flow id found. Hangup the call.")
+	if c.ActiveFlowID == uuid.Nil {
+		log.WithField("call", c).Info("No activeflow id found. Hangup the call.")
 		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		return nil
 	}
@@ -216,9 +219,9 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 func (h *callHandler) ActionNextForce(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(
 		logrus.Fields{
+			"func":    "ActionNextForce",
 			"call_id": c.ID,
 			"flow_id": c.FlowID,
-			"func":    "ActionNextForce",
 		})
 	log.WithField("action", c.Action).Debug("Getting a next action for the call.")
 
@@ -282,10 +285,10 @@ func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *fm
 // actionExecuteAnswer executes the action type answer
 func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteAnswer",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteAnswer",
 	})
 
 	var option fmaction.OptionAnswer
@@ -311,10 +314,10 @@ func (h *callHandler) actionExecuteAnswer(ctx context.Context, c *call.Call) err
 // actionExecuteBeep executes the action type beep
 func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteBeep",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteBeep",
 	})
 
 	var option fmaction.OptionBeep
@@ -347,10 +350,10 @@ func (h *callHandler) actionExecuteBeep(ctx context.Context, c *call.Call) error
 // actionExecuteEcho executes the action type echo
 func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteEcho",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteEcho",
 	})
 
 	var option fmaction.OptionEcho
@@ -380,10 +383,10 @@ func (h *callHandler) actionExecuteEcho(ctx context.Context, c *call.Call) error
 // actionExecuteConfbridgeJoin executes the action type ConferenceEnter
 func (h *callHandler) actionExecuteConfbridgeJoin(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteConfbridgeJoin",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteConfbridgeJoin",
 	})
 
 	var option fmaction.OptionConfbridgeJoin
@@ -404,10 +407,10 @@ func (h *callHandler) actionExecuteConfbridgeJoin(ctx context.Context, c *call.C
 // actionExecutePlay executes the action type play
 func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecutePlay",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecutePlay",
 	})
 
 	var option fmaction.OptionPlay
@@ -442,10 +445,10 @@ func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call) error
 // need to set the channel timeout before call this action.
 func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteStreamEcho",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteStreamEcho",
 	})
 	log.Debug("Executing action.")
 
@@ -477,10 +480,10 @@ func (h *callHandler) actionExecuteStreamEcho(ctx context.Context, c *call.Call)
 // actionExecuteHangup executes the action type hangup
 func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteHangup",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteHangup",
 	})
 
 	var option fmaction.OptionHangup
@@ -506,13 +509,58 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call) err
 	return nil
 }
 
-// actionExecuteTalk executes the action type talk
-func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error {
+// actionExecuteHangupRelay executes the action type hangup_relay
+func (h *callHandler) actionExecuteHangupRelay(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteHangupRelay",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
+	})
+
+	var option fmaction.OptionHangupRelay
+	if c.Action.Option != nil {
+		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
+			log.Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		}
+	}
+
+	// get call info
+	referenceCall, err := h.Get(ctx, option.ReferenceID)
+	if err != nil {
+		log.Errorf("Could not get referenced call info. err: %v", err)
+		return errors.Wrap(err, "could not get referenced call info")
+	}
+	log.WithField("reference_call", referenceCall).Debugf("Found referenced call info. reference_id: %s", referenceCall.ID)
+
+	if referenceCall.Status != call.StatusHangup {
+		log.Infof("The call is not hung up yet. Hang up the call with normal reason. reference_id: %s", referenceCall.ID)
+		_, err := h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
+		if err != nil {
+			log.Errorf("Could not hangup the call. err: %v", err)
+			return nil
+		}
+	}
+
+	// hangup the call
+	tmp, err := h.HangingUp(ctx, c.ID, referenceCall.HangupReason)
+	if err != nil {
+		log.Errorf("Could not hangup the call. err: %v", err)
+		return nil
+	}
+	log.WithField("call", tmp).Debugf("Hanging up the call. call_id: %s", tmp.ID)
+
+	return nil
+}
+
+// actionExecuteTalk executes the action type talk
+func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error {
+	log := logrus.WithFields(logrus.Fields{
 		"func":        "actionExecuteTalk",
+		"call_id":     c.ID,
+		"action_id":   c.Action.ID,
+		"action_type": c.Action.Type,
 	})
 	log.WithField("call", c).Debugf("Executing talk.")
 
@@ -560,10 +608,10 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 // It starts recording.
 func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteRecordingStart",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteRecordingStart",
 	})
 
 	var option fmaction.OptionRecordingStart
@@ -600,10 +648,10 @@ func (h *callHandler) actionExecuteRecordingStart(ctx context.Context, c *call.C
 // It stops recording.
 func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteRecordingStop",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteRecordingStop",
 	})
 
 	var option fmaction.OptionRecordingStop
@@ -633,10 +681,10 @@ func (h *callHandler) actionExecuteRecordingStop(ctx context.Context, c *call.Ca
 // It collects the dtmfs within duration.
 func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteDigitsReceive",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteDigitsReceive",
 	})
 
 	var option fmaction.OptionDigitsReceive
@@ -673,10 +721,10 @@ func (h *callHandler) actionExecuteDigitsReceive(ctx context.Context, c *call.Ca
 // It sends the DTMFs to the call.
 func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteDigitsSend",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteDigitsSend",
 	})
 
 	var option fmaction.OptionDigitsSend
@@ -710,10 +758,10 @@ func (h *callHandler) actionExecuteDigitsSend(ctx context.Context, c *call.Call)
 // actionExecuteExternalMediaStart executes the action type external_media_start.
 func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteExternalMediaStart",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteExternalMediaStart",
 	})
 
 	var option fmaction.OptionExternalMediaStart
@@ -738,10 +786,10 @@ func (h *callHandler) actionExecuteExternalMediaStart(ctx context.Context, c *ca
 // actionExecuteExternalMediaStop executes the action type external_media_stop.
 func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "actionExecuteExternalMediaStop",
 		"call_id":     c.ID,
 		"action_id":   c.Action.ID,
 		"action_type": c.Action.Type,
-		"func":        "actionExecuteExternalMediaStop",
 	})
 
 	if c.ExternalMediaID == uuid.Nil {
@@ -764,9 +812,9 @@ func (h *callHandler) actionExecuteExternalMediaStop(ctx context.Context, c *cal
 // actionExecuteAMD executes the action type external_media_start.
 func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":      "actionExecuteAMD",
 		"call_id":   c.ID,
 		"action_id": c.Action.ID,
-		"func":      "actionExecuteAMD",
 	})
 
 	var option fmaction.OptionAMD
@@ -818,9 +866,9 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call) error 
 // actionExecuteSleep executes the action type sleep.
 func (h *callHandler) actionExecuteSleep(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
+		"func":      "actionExecuteSleep",
 		"call_id":   c.ID,
 		"action_id": c.Action.ID,
-		"func":      "actionExecuteSleep",
 	})
 
 	var option fmaction.OptionSleep
