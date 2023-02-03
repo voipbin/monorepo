@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -26,9 +25,6 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 		name       string
 		channel    *channel.Channel
 		confbridge *confbridge.Confbridge
-
-		responseAddressSource      *commonaddress.Address
-		responseAddressDestination *commonaddress.Address
 	}{
 		{
 			"normal",
@@ -49,11 +45,6 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 				BridgeID:       "80c2e1ae-3748-11ec-b52c-c7e704ec1140",
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
-			},
-
-			&commonaddress.Address{},
-			&commonaddress.Address{
-				Target: "69e97312-3748-11ec-a94b-2357c957d67e",
 			},
 		},
 	}
@@ -82,12 +73,9 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseAddressSource)
-			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseAddressDestination)
 			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseAddressDestination.Target, tt.channel.ID, "", false, false).Return(nil)
-			mockChannel.EXPECT().Answer(ctx, tt.channel.ID).Return(nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.confbridge.BridgeID, tt.channel.ID, "", false, false).Return(nil)
 
 			err := h.ARIStasisStart(ctx, tt.channel)
 			if err != nil {
@@ -149,92 +137,6 @@ func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
 
 			if err := h.ARIStasisStart(ctx, tt.channel); err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
-			}
-		})
-	}
-}
-
-func Test_ARIStasisStartTypeConnect(t *testing.T) {
-
-	tests := []struct {
-		name       string
-		channel    *channel.Channel
-		confbridge *confbridge.Confbridge
-
-		responseAddressSource      *commonaddress.Address
-		responseAddressDestination *commonaddress.Address
-	}{
-		{
-			"call already exist",
-			&channel.Channel{
-				ID:                "asterisk-call-5765d977d8-c4k5q-1629605410.6626",
-				AsteriskID:        "80:fa:5b:5e:da:81",
-				Name:              "PJSIP/in-voipbin-00000948",
-				DestinationNumber: "d93fdf46-977c-11ec-8403-5b0f71484cde",
-				StasisData: map[string]string{
-					"context":       contextConfbridgeIncoming,
-					"confbridge_id": "d9d609ee-977c-11ec-9a6c-af64f3e8859b",
-					"call_id":       "d9ff2afe-977c-11ec-8b60-ffaa217bff41",
-				},
-			},
-			&confbridge.Confbridge{
-				ID:       uuid.FromStringOrNil("d9d609ee-977c-11ec-9a6c-af64f3e8859b"),
-				Type:     confbridge.TypeConnect,
-				BridgeID: "d93fdf46-977c-11ec-8403-5b0f71484cde",
-				ChannelCallIDs: map[string]uuid.UUID{
-					"a6b4bf78-9741-11ec-a688-73fbff5fe5e8": uuid.FromStringOrNil("a70ee066-9741-11ec-baba-ebfa678d2fce"),
-				},
-				RecordingIDs: []uuid.UUID{},
-			},
-
-			&commonaddress.Address{},
-			&commonaddress.Address{
-				Target: "d93fdf46-977c-11ec-8403-5b0f71484cde",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			mockChannel := channelhandler.NewMockChannelHandler(mc)
-			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
-
-			h := &confbridgeHandler{
-				db:             mockDB,
-				reqHandler:     mockReq,
-				notifyHandler:  mockNotify,
-				cache:          mockCache,
-				channelHandler: mockChannel,
-				bridgeHandler:  mockBridge,
-			}
-
-			ctx := context.Background()
-
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseAddressSource)
-			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseAddressDestination)
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.channel.DestinationNumber, tt.channel.ID, "", false, false).Return(nil)
-
-			if len(tt.confbridge.ChannelCallIDs) > 0 {
-				mockChannel.EXPECT().Answer(ctx, tt.channel.ID).Return(nil)
-
-				for channelID := range tt.confbridge.ChannelCallIDs {
-					mockChannel.EXPECT().Answer(ctx, channelID).Return(nil)
-				}
-			}
-
-			err := h.ARIStasisStart(ctx, tt.channel)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

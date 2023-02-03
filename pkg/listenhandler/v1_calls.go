@@ -121,7 +121,7 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 	})
 
 	log.Debug("Creating outgoing call.")
-	calls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations)
+	calls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
@@ -171,10 +171,7 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 	})
 
 	log.Debug("Creating outgoing call.")
-	callData := map[call.DataType]string{
-		call.DataTypeEarlyExecution: strconv.FormatBool(req.EarlyExecution),
-	}
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.Source, req.Destination, callData)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.Source, req.Destination, req.EarlyExecution)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", req.FlowID, req.Source, req.Destination, err)
 		return simpleResponse(500), nil

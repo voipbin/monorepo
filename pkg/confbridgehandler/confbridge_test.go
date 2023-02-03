@@ -2,6 +2,7 @@ package confbridgehandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -202,6 +203,79 @@ func Test_UpdateExternalMediaID(t *testing.T) {
 			_, err := h.UpdateExternalMediaID(ctx, tt.id, tt.externalMediaID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AddChannelCallID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id        uuid.UUID
+		channelID string
+		callID    uuid.UUID
+
+		responseConfbridge *confbridge.Confbridge
+		expectEvent        *confbridge.EventConfbridgeJoined
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("be4c1f74-a3bf-11ed-a9e6-4b424bee3fa9"),
+			"becfe048-a3bf-11ed-9a79-139a910fe7a0",
+			uuid.FromStringOrNil("bea13a86-a3bf-11ed-b7b9-efc804ecc73e"),
+
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("be4c1f74-a3bf-11ed-a9e6-4b424bee3fa9"),
+			},
+			&confbridge.EventConfbridgeJoined{
+				Confbridge: confbridge.Confbridge{
+					ID: uuid.FromStringOrNil("be4c1f74-a3bf-11ed-a9e6-4b424bee3fa9"),
+				},
+				JoinedCallID: uuid.FromStringOrNil("bea13a86-a3bf-11ed-b7b9-efc804ecc73e"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &confbridgeHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				cache:          mockCache,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConfbridgeAddChannelCallID(ctx, tt.id, tt.channelID, tt.callID).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, tt.expectEvent)
+
+			res, err := h.AddChannelCallID(ctx, tt.id, tt.channelID, tt.callID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConfbridge) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConfbridge, res)
 			}
 		})
 	}

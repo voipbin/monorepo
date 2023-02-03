@@ -1122,12 +1122,13 @@ func Test_actionExecuteHangupRelay(t *testing.T) {
 		name string
 		call *call.Call
 
-		responseReferenceCall *call.Call
+		responseReferenceCall    *call.Call
+		responseReferenceChannel *channel.Channel
 
 		expectCause ari.ChannelCause
 	}{
 		{
-			"normal",
+			"call hungup by user busy",
 			&call.Call{
 				ID:        uuid.FromStringOrNil("12ea8d3e-52b3-4c8e-a46c-a9d66a40c94c"),
 				ChannelID: "eeddbb76-4bd8-4aa7-a6fd-c18690474eb6",
@@ -1140,11 +1141,41 @@ func Test_actionExecuteHangupRelay(t *testing.T) {
 
 			&call.Call{
 				ID:           uuid.FromStringOrNil("94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4"),
+				ChannelID:    "f4cf0996-a3d1-11ed-8aca-97c846819d72",
 				Status:       call.StatusHangup,
 				HangupReason: call.HangupReasonBusy,
 			},
+			&channel.Channel{
+				ID:          "f4cf0996-a3d1-11ed-8aca-97c846819d72",
+				HangupCause: ari.ChannelCauseUserBusy,
+			},
 
 			ari.ChannelCauseUserBusy,
+		},
+		{
+			"reason failed with no route destination",
+			&call.Call{
+				ID:        uuid.FromStringOrNil("69788128-a3d2-11ed-8721-235dc7d17c81"),
+				ChannelID: "6997f17a-a3d2-11ed-a9db-ff2c89c38193",
+				Action: fmaction.Action{
+					ID:     uuid.FromStringOrNil("69b5bb6a-a3d2-11ed-b24e-33e293af5d6d"),
+					Type:   fmaction.TypeHangupRelay,
+					Option: []byte(`{"reference_id":"69d1ff28-a3d2-11ed-be5d-f3ea54e96121"}`),
+				},
+			},
+
+			&call.Call{
+				ID:           uuid.FromStringOrNil("69d1ff28-a3d2-11ed-be5d-f3ea54e96121"),
+				ChannelID:    "7888691c-a3d2-11ed-9e53-5ba62e8286cb",
+				Status:       call.StatusHangup,
+				HangupReason: call.HangupReasonFailed,
+			},
+			&channel.Channel{
+				ID:          "7888691c-a3d2-11ed-9e53-5ba62e8286cb",
+				HangupCause: ari.ChannelCauseNoRouteDestination,
+			},
+
+			ari.ChannelCauseNoRouteDestination,
 		},
 	}
 
@@ -1171,6 +1202,7 @@ func Test_actionExecuteHangupRelay(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallGet(ctx, tt.responseReferenceCall.ID).Return(tt.responseReferenceCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseReferenceCall.ChannelID).Return(tt.responseReferenceChannel, nil)
 
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)

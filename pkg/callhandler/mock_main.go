@@ -210,33 +210,33 @@ func (mr *MockCallHandlerMockRecorder) ChainedCallIDRemove(ctx, id, chainedCallI
 }
 
 // CreateCallOutgoing mocks base method.
-func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination address.Address, data map[call.DataType]string) (*call.Call, error) {
+func (m *MockCallHandler) CreateCallOutgoing(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination address.Address, earlyExecution bool) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCallOutgoing", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, data)
+	ret := m.ctrl.Call(m, "CreateCallOutgoing", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, earlyExecution)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCallOutgoing indicates an expected call of CreateCallOutgoing.
-func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, data interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) CreateCallOutgoing(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, earlyExecution interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallOutgoing), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, earlyExecution)
 }
 
 // CreateCallsOutgoing mocks base method.
-func (m *MockCallHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source address.Address, destinations []address.Address) ([]*call.Call, error) {
+func (m *MockCallHandler) CreateCallsOutgoing(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source address.Address, destinations []address.Address, earlyExecution bool) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCallsOutgoing", ctx, customerID, flowID, masterCallID, source, destinations)
+	ret := m.ctrl.Call(m, "CreateCallsOutgoing", ctx, customerID, flowID, masterCallID, source, destinations, earlyExecution)
 	ret0, _ := ret[0].([]*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCallsOutgoing indicates an expected call of CreateCallsOutgoing.
-func (mr *MockCallHandlerMockRecorder) CreateCallsOutgoing(ctx, customerID, flowID, masterCallID, source, destinations interface{}) *gomock.Call {
+func (mr *MockCallHandlerMockRecorder) CreateCallsOutgoing(ctx, customerID, flowID, masterCallID, source, destinations, earlyExecution interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallsOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallsOutgoing), ctx, customerID, flowID, masterCallID, source, destinations)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCallsOutgoing", reflect.TypeOf((*MockCallHandler)(nil).CreateCallsOutgoing), ctx, customerID, flowID, masterCallID, source, destinations, earlyExecution)
 }
 
 // Delete mocks base method.

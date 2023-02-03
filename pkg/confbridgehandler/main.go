@@ -45,6 +45,9 @@ type ConfbridgeHandler interface {
 	Leaved(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	Terminate(ctx context.Context, id uuid.UUID) error
 
+	Ring(ctx context.Context, id uuid.UUID) error
+	Answer(ctx context.Context, id uuid.UUID) error
+
 	RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*confbridge.Confbridge, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 

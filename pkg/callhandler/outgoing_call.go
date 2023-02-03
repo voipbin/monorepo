@@ -3,6 +3,7 @@ package callhandler
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -34,6 +35,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	masterCallID uuid.UUID,
 	source commonaddress.Address,
 	destinations []commonaddress.Address,
+	earlyExecution bool,
 ) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CreateCallsOutgoing",
@@ -49,7 +51,7 @@ func (h *callHandler) CreateCallsOutgoing(
 
 		switch destination.Type {
 		case commonaddress.TypeSIP, commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, map[call.DataType]string{})
+			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, earlyExecution)
 			if err != nil {
 				log.Errorf("Could not create an outgoing call. err: %v", err)
 				continue
@@ -83,17 +85,18 @@ func (h *callHandler) CreateCallOutgoing(
 	masterCallID uuid.UUID,
 	source commonaddress.Address,
 	destination commonaddress.Address,
-	data map[call.DataType]string,
+	earlyExecution bool,
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"funcs":          "CreateCallOutgoing",
-		"id":             id,
-		"customer_id":    customerID,
-		"flow":           flowID,
-		"activeflow_id":  activeflowID,
-		"master_call_id": masterCallID,
-		"source":         source,
-		"destination":    destination,
+		"funcs":           "CreateCallOutgoing",
+		"id":              id,
+		"customer_id":     customerID,
+		"flow":            flowID,
+		"activeflow_id":   activeflowID,
+		"master_call_id":  masterCallID,
+		"source":          source,
+		"destination":     destination,
+		"early_execution": earlyExecution,
 	})
 	log.Debug("Creating a call for outgoing.")
 
@@ -126,6 +129,11 @@ func (h *callHandler) CreateCallOutgoing(
 
 	// create channel id
 	channelID := h.utilHandler.CreateUUID().String()
+
+	// create data
+	data := map[call.DataType]string{
+		call.DataTypeEarlyExecution: strconv.FormatBool(earlyExecution),
+	}
 
 	// create a call
 	c, err := h.Create(

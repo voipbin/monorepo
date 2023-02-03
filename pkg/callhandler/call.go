@@ -375,6 +375,7 @@ func (h *callHandler) UpdateConfbridgeID(ctx context.Context, id uuid.UUID, conf
 		log.Errorf("Could not get updated call. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallUpdated, res)
 
 	return res, nil
 }
