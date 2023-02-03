@@ -234,9 +234,9 @@ func Test_marshalOptionCall(t *testing.T) {
 
 	tests := []test{
 		{
-			"flow id set",
+			"have all",
 
-			[]byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "flow_id": "5ba29abc-a93b-11ec-ae94-6b77822f1a16"}`),
+			[]byte(`{"source": {"type": "tel", "target": "+821100000001"}, "destinations": [{"type": "tel", "target": "+821100000002"}, {"type": "tel", "target": "+821100000003"}], "flow_id": "5ba29abc-a93b-11ec-ae94-6b77822f1a16", "early_execution":true}`),
 
 			OptionCall{
 				Source: &commonaddress.Address{
@@ -253,7 +253,8 @@ func Test_marshalOptionCall(t *testing.T) {
 						Target: "+821100000003",
 					},
 				},
-				FlowID: uuid.FromStringOrNil("5ba29abc-a93b-11ec-ae94-6b77822f1a16"),
+				FlowID:         uuid.FromStringOrNil("5ba29abc-a93b-11ec-ae94-6b77822f1a16"),
+				EarlyExecution: true,
 			},
 		},
 		{

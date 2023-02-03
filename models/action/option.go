@@ -35,11 +35,12 @@ type OptionBranch struct {
 
 // OptionCall defines action call's option.
 type OptionCall struct {
-	Source       *commonaddress.Address  `json:"source"`
-	Destinations []commonaddress.Address `json:"destinations"`
-	FlowID       uuid.UUID               `json:"flow_id"`
-	Actions      []Action                `json:"actions"`
-	Chained      bool                    `json:"chained"` // If it sets to true, created calls will be hungup when the master call is hangup. Default false.
+	Source         *commonaddress.Address  `json:"source"`
+	Destinations   []commonaddress.Address `json:"destinations"`
+	FlowID         uuid.UUID               `json:"flow_id"`
+	Actions        []Action                `json:"actions"`
+	Chained        bool                    `json:"chained"`         // If it sets to true, the created calls will be hungup when the master call is hangup. Default false.
+	EarlyExecution bool                    `json:"early_execution"` // if it sets to true, the created call executes the flow(activeflow) before call answer.
 }
 
 // OptionConfbridgeJoin defines action confbridge_join's option.
@@ -95,10 +96,18 @@ type OptionConferenceJoin struct {
 
 // OptionConnect defines action connect's optoin.
 type OptionConnect struct {
-	Source       commonaddress.Address   `json:"source"`       // source infromation.
-	Destinations []commonaddress.Address `json:"destinations"` // target destinations.
-	Unchained    bool                    `json:"unchained"`    // If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
-	RelayReason  bool                    `json:"relay_reason"` // if it sets to true, the master call will be hungup with the same reason with destination call's hangup when the one of destination calls hang up.
+	// source address.
+	Source commonaddress.Address `json:"source"`
+
+	// target destinatino addresses.
+	Destinations []commonaddress.Address `json:"destinations"`
+
+	// If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
+	Unchained bool `json:"unchained"`
+
+	// if it sets to true, the master call will try to the hangup the call with the same reason of the first of the destination calls.
+	// this is valid only the first destination call hungup earlier than the master call.
+	RelayReason bool `json:"relay_reason"`
 }
 
 // OptionConversationSend defines action conversation_send's optoin.
