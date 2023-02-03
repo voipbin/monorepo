@@ -81,6 +81,20 @@ func (mr *MockConfbridgeHandlerMockRecorder) ARIStasisStart(ctx, cn interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIStasisStart), ctx, cn)
 }
 
+// Answer mocks base method.
+func (m *MockConfbridgeHandler) Answer(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Answer", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Answer indicates an expected call of Answer.
+func (mr *MockConfbridgeHandlerMockRecorder) Answer(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Answer", reflect.TypeOf((*MockConfbridgeHandler)(nil).Answer), ctx, id)
+}
+
 // Create mocks base method.
 func (m *MockConfbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
@@ -225,6 +239,20 @@ func (m *MockConfbridgeHandler) RecordingStop(ctx context.Context, id uuid.UUID)
 func (mr *MockConfbridgeHandlerMockRecorder) RecordingStop(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingStop", reflect.TypeOf((*MockConfbridgeHandler)(nil).RecordingStop), ctx, id)
+}
+
+// Ring mocks base method.
+func (m *MockConfbridgeHandler) Ring(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Ring", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Ring indicates an expected call of Ring.
+func (mr *MockConfbridgeHandlerMockRecorder) Ring(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ring", reflect.TypeOf((*MockConfbridgeHandler)(nil).Ring), ctx, id)
 }
 
 // Terminate mocks base method.

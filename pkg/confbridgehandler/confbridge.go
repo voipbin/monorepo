@@ -198,5 +198,12 @@ func (h *confbridgeHandler) AddChannelCallID(ctx context.Context, id uuid.UUID, 
 		return nil, errors.Wrap(err, "could not get updated confbridge")
 	}
 
+	// Publish the event
+	evt := &confbridge.EventConfbridgeJoined{
+		Confbridge:   *res,
+		JoinedCallID: callID,
+	}
+	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, evt)
+
 	return res, nil
 }

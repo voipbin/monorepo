@@ -539,12 +539,23 @@ func (h *callHandler) actionExecuteHangupRelay(ctx context.Context, c *call.Call
 		_, err := h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		if err != nil {
 			log.Errorf("Could not hangup the call. err: %v", err)
-			return nil
 		}
+		return nil
+	}
+
+	// get channel
+	ch, err := h.channelHandler.Get(ctx, referenceCall.ChannelID)
+	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
+		_, err := h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
+		if err != nil {
+			log.Errorf("Could not hangup the call. err: %v", err)
+		}
+		return nil
 	}
 
 	// hangup the call
-	tmp, err := h.HangingUp(ctx, c.ID, referenceCall.HangupReason)
+	tmp, err := h.hangingUpWithCause(ctx, c.ID, ch.HangupCause)
 	if err != nil {
 		log.Errorf("Could not hangup the call. err: %v", err)
 		return nil

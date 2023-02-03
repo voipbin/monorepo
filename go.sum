@@ -89,6 +89,8 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230130030553-90cf9661
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230130030553-90cf9661a11c/go.mod h1:NCJWd+06Pa6oTk6NZi4F6GkrxtKe8EPZX0oyCAhfYl4=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230130120221-1190ed8ac947 h1:tpE8hXCH0AUuf1s6N5FyYRreKOzY3kCTm0BQVF7ati4=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230130120221-1190ed8ac947/go.mod h1:GLscJoaLrjX3MoVYm3YXRRoBYs6VQ5vMFIToqj9Jn6A=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230202072049-052d17038a59 h1:R4qqb+UGmnRK7B+4yzkjiyPF+SETr+uTJNWi26/q91w=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230202072049-052d17038a59/go.mod h1:WPE9kNXkGf8s7uwe0fJQHmKnzD8pgjCDQmYDWi/hn+Y=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230121114959-5eb900e19fcf h1:dJgcL8Gq+I48eZoWe05YuVPmBqRJZXI7n9WXhLrwXFE=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230121114959-5eb900e19fcf/go.mod h1:B4VVv2W6HJjwZYlpPHJLyImO8kFEuvNM2hw86wvajy8=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230127080612-bfc3f45fc578 h1:L/hT3ngP1dRzbyAVMwmIftGv6GfGgQoq6qwuN98DT3Y=
@@ -188,6 +190,8 @@ google.golang.org/genproto v0.0.0-20230127162408-596548ed4efa h1:GZXdWYIKckxQE2E
 google.golang.org/genproto v0.0.0-20230127162408-596548ed4efa/go.mod h1:RGgjbofJ8xD9Sq1VVhDM1Vok1vRONV+rg+CjzG4SZKM=
 google.golang.org/genproto v0.0.0-20230131230820-1c016267d619 h1:p0kMzw6AG0JEzd7Z+kXqOiLhC6gjUQTbtS2zR0Q3DbI=
 google.golang.org/genproto v0.0.0-20230131230820-1c016267d619/go.mod h1:RGgjbofJ8xD9Sq1VVhDM1Vok1vRONV+rg+CjzG4SZKM=
+google.golang.org/genproto v0.0.0-20230202175211-008b39050e57 h1:vArvWooPH749rNHpBGgVl+U9B9dATjiEhJzcWGlovNs=
+google.golang.org/genproto v0.0.0-20230202175211-008b39050e57/go.mod h1:RGgjbofJ8xD9Sq1VVhDM1Vok1vRONV+rg+CjzG4SZKM=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp09yW+WbY/TyQbw=
 google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=

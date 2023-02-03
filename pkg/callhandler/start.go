@@ -384,12 +384,12 @@ func (h *callHandler) startContextApplication(ctx context.Context, cn *channel.C
 // addCallBridge creates a call bridge and put the channel into the join bridge.
 func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, callID uuid.UUID) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "addJoinBridge",
+		"func":       "addCallBridge",
 		"call_id":    callID,
 		"channel_id": cn.ID,
 	})
 
-	// create join bridge
+	// create call bridge
 	bridgeID := h.utilHandler.CreateUUID().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCall, callID)
 	tmp, err := h.bridgeHandler.Start(ctx, cn.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})

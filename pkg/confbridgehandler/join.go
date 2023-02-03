@@ -14,48 +14,20 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
 
-// createEndpointTarget creates target endpoint(destination) address for conference join.
-// This will create a SIP destination address towards conference Asterisk to joining the conference.
-func (h *confbridgeHandler) createEndpointTarget(ctx context.Context, cb *confbridge.Confbridge) (string, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"confbridge_id": cb.ID,
-		},
-	)
-
-	// get bridge
-	bridge, err := h.bridgeHandler.Get(ctx, cb.BridgeID)
-	if err != nil {
-		log.Errorf("Could not get bridgie info. bridge: %s, err: %v", cb.BridgeID, err)
-		return "", err
-	}
-
-	// get bridge asterisk's address
-	address, err := h.cache.AsteriskAddressInternalGet(ctx, bridge.AsteriskID)
-	if err != nil {
-		log.Errorf("Could not get conference Asterisk internal address. asterisk: %s", bridge.AsteriskID)
-		return "", err
-	}
-
-	res := fmt.Sprintf("PJSIP/conf-join/sip:%s@%s:5060", bridge.ID, address)
-
-	return res, nil
-}
-
 // Join handles call's join request.
 // 1. Creates a bridge(confbridge joining type) and put the call's channel into the bridge
 // 2. Creates a new channel for joining to the confbridge.
-func (h *confbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.UUID) error {
+func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.UUID) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":          "Join",
-			"confbridge_id": confbridgeID.String(),
-			"call_id":       callID.String(),
+			"confbridge_id": id,
+			"call_id":       callID,
 		})
 	log.Info("Starting to join the call to the confbridge.")
 
 	// get confbridge
-	cb, err := h.db.ConfbridgeGet(ctx, confbridgeID)
+	cb, err := h.db.ConfbridgeGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get confbridge. err: %v", err)
 		return err
@@ -127,12 +99,30 @@ func (h *confbridgeHandler) createConfbridgeBridge(ctx context.Context, id uuid.
 		},
 	)
 
+	cb, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get confbridge info. err: %v", err)
+		return nil, errors.Wrap(err, "could not get confbridge info")
+	}
+
+	var bridgeTypes []bridge.Type
+	switch cb.Type {
+	case confbridge.TypeConnect:
+		bridgeTypes = []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}
+
+	case confbridge.TypeConference:
+		bridgeTypes = []bridge.Type{bridge.TypeMixing}
+
+	default:
+		return nil, fmt.Errorf("unsupported confbridge type. confbridge_type: %s", cb.Type)
+	}
+
 	bridgeID := h.utilHandler.CreateUUID().String()
 	bridgeName := generateBridgeName(bridge.ReferenceTypeConfbridge, id)
 	log.Debugf("Creating a bridge for confbridge. birdge_id: %s, birdge_name: %s", bridgeID, bridgeName)
 
 	// create a bridge
-	br, err := h.bridgeHandler.Start(ctx, requesthandler.AsteriskIDConference, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing})
+	br, err := h.bridgeHandler.Start(ctx, requesthandler.AsteriskIDConference, bridgeID, bridgeName, bridgeTypes)
 	if err != nil {
 		log.Errorf("Could not create bridge for a confbridge. err: %v", err)
 		return nil, errors.Wrap(err, "could not create a bridge for the confbridge")
@@ -140,12 +130,41 @@ func (h *confbridgeHandler) createConfbridgeBridge(ctx context.Context, id uuid.
 	log.WithField("bridge", br).Debugf("Created a bridge for confbridge. bridge_id: %s", br.ID)
 
 	// set new bridge id to the confbridge
-	res, err := h.UpdateBridgeID(ctx, id, br.ID)
+	res, err := h.UpdateBridgeID(ctx, cb.ID, br.ID)
 	if err != nil {
 		log.Errorf("Could not update the bridge id. err: %v", err)
 		return nil, errors.Wrap(err, "could not update the bridge id")
 	}
 	log.WithField("confbridge", res).Debugf("Updated conbridge info. confbridge_id: %s", res.ID)
+
+	return res, nil
+}
+
+// createEndpointTarget creates target endpoint(destination) address for conference join.
+// This will create a SIP destination address towards conference Asterisk to joining the conference.
+func (h *confbridgeHandler) createEndpointTarget(ctx context.Context, cb *confbridge.Confbridge) (string, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":          "createEndpointTarget",
+			"confbridge_id": cb.ID,
+		},
+	)
+
+	// get bridge
+	bridge, err := h.bridgeHandler.Get(ctx, cb.BridgeID)
+	if err != nil {
+		log.Errorf("Could not get bridgie info. bridge: %s, err: %v", cb.BridgeID, err)
+		return "", err
+	}
+
+	// get bridge asterisk's address
+	address, err := h.cache.AsteriskAddressInternalGet(ctx, bridge.AsteriskID)
+	if err != nil {
+		log.Errorf("Could not get conference Asterisk internal address. asterisk: %s", bridge.AsteriskID)
+		return "", err
+	}
+
+	res := fmt.Sprintf("PJSIP/conf-join/sip:%s@%s:5060", bridge.ID, address)
 
 	return res, nil
 }

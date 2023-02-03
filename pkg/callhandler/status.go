@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -32,6 +33,12 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallRinging, res)
 
+	if res.ConfbridgeID != uuid.Nil {
+		if errRing := h.confbridgeHandler.Ring(ctx, c.ConfbridgeID); errRing != nil {
+			log.Errorf("Could not ring the confbridge. err: %v", errRing)
+		}
+	}
+
 	return nil
 }
 
@@ -57,15 +64,21 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallAnswered, res)
 
-	if c.Direction == call.DirectionIncoming {
+	if res.Direction == call.DirectionIncoming {
 		// nothing to do with incoming call at here.
 		return nil
 	}
 
 	// set the call's SIP call id
-	go h.handleSIPCallID(ctx, cn, c)
+	go h.handleSIPCallID(ctx, cn, res)
 
-	if c.Data[call.DataTypeEarlyExecution] == "true" {
+	if res.ConfbridgeID != uuid.Nil {
+		if errAnswer := h.confbridgeHandler.Answer(ctx, res.ConfbridgeID); errAnswer != nil {
+			log.Errorf("Could not answer the confbridge. err: %v", errAnswer)
+		}
+	}
+
+	if res.Data[call.DataTypeEarlyExecution] == "true" {
 		// the call's flow execution is already on going.
 		return nil
 	}
