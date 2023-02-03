@@ -541,7 +541,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a call for connect
-	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, masterCallID, &optConnect.Source, optConnect.Destinations)
+	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, masterCallID, &optConnect.Source, optConnect.Destinations, true)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
@@ -560,25 +560,25 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 
 	if optConnect.RelayReason {
 		// get reference id
-		// we cosider the first call of get the reference
+		// we consider the first call of get the reference
 		referenceID := resCalls[0].ID
 		log.Debugf("The connect action has relay reason option enabled. Adding the hangup relay action. reference_id: %s", referenceID)
 
-		optRelay := action.OptionHangupRelay{
+		optHangupRelay := action.OptionHangupRelay{
 			ReferenceID: referenceID,
 		}
-		optStringRelay, err := json.Marshal(optRelay)
+		optStringHangupRelay, err := json.Marshal(optHangupRelay)
 		if err != nil {
 			log.Errorf("Could not marshal the confbridge join option. err: %v", err)
 			return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
 		}
-		actionRelay := action.Action{
+
+		actionHangupRelay := action.Action{
 			ID:     h.utilHandler.CreateUUID(),
 			Type:   action.TypeHangupRelay,
-			Option: optStringRelay,
+			Option: optStringHangupRelay,
 		}
-
-		pushActions = append(pushActions, actionRelay)
+		pushActions = append(pushActions, actionHangupRelay)
 	}
 
 	// push the actions
@@ -962,7 +962,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 		masterCallID = af.ReferenceID
 	}
 
-	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations)
+	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
