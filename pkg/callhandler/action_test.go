@@ -269,7 +269,7 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 				Gender:        tmtts.GenderMale,
 				Text:          "hello world",
 				Language:      "en-US",
-				MediaFilepath: "temp/tts/tmp_filename.wav",
+				MediaFilepath: "tts/tmp_filename.wav",
 			},
 			[]string{"sound:http://localhost:8000/temp/tts/tmp_filename.wav"},
 		},
@@ -294,6 +294,7 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			if tt.call.Status != call.StatusProgressing {
 				mockChannel.EXPECT().Answer(ctx, tt.call.ChannelID).Return(nil)
 			}

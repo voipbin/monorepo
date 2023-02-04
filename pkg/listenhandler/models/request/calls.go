@@ -107,3 +107,12 @@ type V1DataCallsIDRecordingStartPost struct {
 	EndOfKey     string           `json:"end_of_key"`     // DTMF input to terminate recording. none, any, *, #
 	Duration     int              `json:"duration"`       // Maximum duration of the recording, in seconds. 0 for no limit.
 }
+
+// V1DataCallsIDTalkPost is
+// v1 data type for
+// /v1/calls/<call-id>/talk POST
+type V1DataCallsIDTalkPost struct {
+	Text     string `json:"text"`     // the text to read(SSML format or plain text)
+	Gender   string `json:"gender"`   // gender(male/female/neutral)
+	Language string `json:"language"` // IETF locale-name(ko-KR, en-US)
+}

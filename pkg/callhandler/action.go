@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -583,36 +582,7 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 		}
 	}
 
-	// answer the call if not answered
-	if c.Status != call.StatusProgressing {
-		if errAnswer := h.channelHandler.Answer(ctx, c.ChannelID); errAnswer != nil {
-			log.Errorf("Could not answer the call. err: %v", errAnswer)
-			return fmt.Errorf("could not answer the call. err: %v", errAnswer)
-		}
-	}
-
-	// send request for create wav file
-	tts, err := h.reqHandler.TTSV1SpeecheCreate(ctx, c.ID, option.Text, tmtts.Gender(option.Gender), option.Language, 10000)
-	if err != nil {
-		log.Errorf("Could not create speech file. err: %v", err)
-		return fmt.Errorf("could not create tts wav. err: %v", err)
-	}
-	log.WithField("tts", tts).Debugf("Received tts speech result. medial_filepath: %s", tts.MediaFilepath)
-
-	url := fmt.Sprintf("http://localhost:8000/%s", tts.MediaFilepath)
-
-	// create a media string array
-	var medias []string
-	media := fmt.Sprintf("sound:%s", url)
-	medias = append(medias, media)
-
-	// play
-	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, c.Action.ID, medias, ""); errPlay != nil {
-		log.Errorf("Could not play the media for tts. medias: %v, err: %v", medias, errPlay)
-		return errors.Wrap(errPlay, "could not play the media for tts")
-	}
-
-	return nil
+	return h.Talk(ctx, c.ID, true, option.Text, option.Gender, option.Language)
 }
 
 // actionExecuteRecordingStart executes the action type recording_start.

@@ -55,17 +55,23 @@ func (h *callHandler) ARIChannelDtmfReceived(ctx context.Context, cn *channel.Ch
 // ARIPlaybackFinished handles PlaybackFinished ARI event
 // parsed playbackID to the action id, and execute the next action if its correct.
 func (h *callHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ARIPlaybackFinished",
+		"channel_id":  cn.ID,
+		"playback_id": playbackID,
+	})
+
 	actionID := uuid.FromStringOrNil(playbackID)
 
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
-		logrus.Errorf("Could not get call info. channel: %s, err: %v", cn.ID, err)
+		log.Errorf("Could not get call info. channel: %s, err: %v", cn.ID, err)
 		return err
 	}
 
 	// compare actionID
 	if c.Action.ID != actionID {
-		logrus.Debugf("The call's action id does not match. call: %s, channel: %s, action: %s", c.ID, cn.ID, actionID)
+		log.Debugf("The call's action id does not match. call: %s, channel: %s, action: %s", c.ID, cn.ID, actionID)
 		return nil
 	}
 

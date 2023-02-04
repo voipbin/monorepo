@@ -416,6 +416,20 @@ func (mr *MockCallHandlerMockRecorder) Start(ctx, cn interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockCallHandler)(nil).Start), ctx, cn)
 }
 
+// Talk mocks base method.
+func (m *MockCallHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, text, gender, language string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Talk", ctx, callID, runNext, text, gender, language)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Talk indicates an expected call of Talk.
+func (mr *MockCallHandlerMockRecorder) Talk(ctx, callID, runNext, text, gender, language interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Talk", reflect.TypeOf((*MockCallHandler)(nil).Talk), ctx, callID, runNext, text, gender, language)
+}
+
 // UpdateConfbridgeID mocks base method.
 func (m *MockCallHandler) UpdateConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
