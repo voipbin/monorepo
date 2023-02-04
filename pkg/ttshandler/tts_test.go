@@ -23,7 +23,11 @@ func Test_Create(t *testing.T) {
 		text     string
 		gender   tts.Gender
 		language string
-		filename string
+
+		responseBucketName string
+
+		expectFilename string
+		expectFilepath string
 
 		expectRes *tts.TTS
 	}
@@ -36,13 +40,18 @@ func Test_Create(t *testing.T) {
 			"<speak>Hello world</speak>",
 			tts.GenderFemale,
 			"en-US",
+
+			"voipbin-tmp-bucket-europe-west4",
+
 			"766e587168455d862b8ef2a931341e7adaa106e1.wav",
+			"tts/766e587168455d862b8ef2a931341e7adaa106e1.wav",
 
 			&tts.TTS{
-				Gender:        tts.GenderFemale,
-				Text:          "<speak>Hello world</speak>",
-				Language:      "en-US",
-				MediaFilepath: "temp/tts/766e587168455d862b8ef2a931341e7adaa106e1.wav",
+				Gender:          tts.GenderFemale,
+				Text:            "<speak>Hello world</speak>",
+				Language:        "en-US",
+				MediaBucketName: "voipbin-tmp-bucket-europe-west4",
+				MediaFilepath:   "tts/766e587168455d862b8ef2a931341e7adaa106e1.wav",
 			},
 		},
 	}
@@ -62,11 +71,12 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			target := fmt.Sprintf("%s/%s", bucketDirectory, tt.filename)
+			target := fmt.Sprintf("%s/%s", bucketDirectory, tt.expectFilename)
 
+			mockBucket.EXPECT().GetBucketName().Return(tt.responseBucketName)
 			mockBucket.EXPECT().FileExist(ctx, target).Return(false)
-			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.filename).Return(nil)
-			mockBucket.EXPECT().FileUpload(ctx, tt.filename, target).Return(nil)
+			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.expectFilename).Return(nil)
+			mockBucket.EXPECT().FileUpload(ctx, tt.expectFilename, target).Return(nil)
 
 			res, err := h.Create(ctx, tt.callID, tt.text, tt.language, tt.gender)
 			if err != nil {

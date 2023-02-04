@@ -2,10 +2,11 @@ package tts
 
 // TTS define
 type TTS struct {
-	Gender        Gender `json:"gender"`
-	Text          string `json:"text"`
-	Language      string `json:"language"`
-	MediaFilepath string `json:"media_filepath"`
+	Gender          Gender `json:"gender"`
+	Text            string `json:"text"`
+	Language        string `json:"language"`
+	MediaBucketName string `json:"media_bucket_name"`
+	MediaFilepath   string `json:"media_filepath"`
 }
 
 // Gender define

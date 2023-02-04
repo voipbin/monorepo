@@ -37,10 +37,11 @@ func Test_v1SpeechesPost(t *testing.T) {
 			},
 
 			&tts.TTS{
-				Gender:        tts.GenderFemale,
-				Text:          "hello world",
-				Language:      "en-US",
-				MediaFilepath: "temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav",
+				Gender:          tts.GenderFemale,
+				Text:            "hello world",
+				Language:        "en-US",
+				MediaBucketName: "voipbin-tmp-bucket-europe-west4",
+				MediaFilepath:   "temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav",
 			},
 
 			uuid.FromStringOrNil("107d1f0e-9665-11ed-b3f3-039937430300"),
@@ -50,7 +51,7 @@ func Test_v1SpeechesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"gender":"female","text":"hello world","language":"en-US","media_filepath":"temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav"}`),
+				Data:       []byte(`{"gender":"female","text":"hello world","language":"en-US","media_bucket_name":"voipbin-tmp-bucket-europe-west4","media_filepath":"temp/tts/11271770-9665-11ed-ba40-bf3763460bd6.wav"}`),
 			},
 		},
 	}
