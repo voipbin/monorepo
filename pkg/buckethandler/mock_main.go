@@ -92,3 +92,17 @@ func (mr *MockBucketHandlerMockRecorder) FileUpload(ctx, src, dest interface{}) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileUpload", reflect.TypeOf((*MockBucketHandler)(nil).FileUpload), ctx, src, dest)
 }
+
+// GetBucketName mocks base method.
+func (m *MockBucketHandler) GetBucketName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBucketName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetBucketName indicates an expected call of GetBucketName.
+func (mr *MockBucketHandlerMockRecorder) GetBucketName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBucketName", reflect.TypeOf((*MockBucketHandler)(nil).GetBucketName))
+}
