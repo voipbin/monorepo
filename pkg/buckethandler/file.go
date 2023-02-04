@@ -46,7 +46,8 @@ func (h *bucketHandler) FileUpload(ctx context.Context, src, dest string) error 
 // FileExist return the true if the given target is exists in the bucket
 func (h *bucketHandler) FileExist(ctx context.Context, target string) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "FileExist",
+		"func":   "FileExist",
+		"target": target,
 	})
 
 	f := h.client.Bucket(h.bucketName).Object(target)

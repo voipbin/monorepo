@@ -19,6 +19,8 @@ type BucketHandler interface {
 	FileGetDownloadURL(target string, expire time.Time) (string, error)
 	FileExist(ctx context.Context, target string) bool
 	FileUpload(ctx context.Context, src, dest string) error
+
+	GetBucketName() string
 }
 
 type bucketHandler struct {
