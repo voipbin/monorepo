@@ -63,6 +63,7 @@ type CallHandler interface {
 		duration int,
 	) (*call.Call, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
+	Talk(ctx context.Context, callID uuid.UUID, runNext bool, text string, gender string, language string) error
 
 	ActionNext(ctx context.Context, c *call.Call) error
 	ActionNextForce(ctx context.Context, c *call.Call) error
@@ -95,6 +96,11 @@ type contextType string
 const (
 	contextTypeConference contextType = "conf"
 	contextTypeCall       contextType = "call"
+)
+
+// asterisk rel
+const (
+	constTempBucketMount = "temp" // asterisk's tmp bucket mount path.
 )
 
 // List of default values

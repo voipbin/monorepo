@@ -109,6 +109,8 @@ gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230201072727-81e6de9527
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230201072727-81e6de952733/go.mod h1:OGu0tA/TrM7SjKtT5BwGnzNqp60eUFj42QFDl6IjGCE=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230202033500-e295776aa43c h1:Z5HPPuQlHurcpJhbGgAGt1noXJmcLVSTQUsquH51wfI=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230202033500-e295776aa43c/go.mod h1:OGu0tA/TrM7SjKtT5BwGnzNqp60eUFj42QFDl6IjGCE=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230203154425-8d2aff84eb6e h1:k6d8eDJfG7SBQfmzTADmtjSAshvsWcjdcJXDXp3BwNU=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230203154425-8d2aff84eb6e/go.mod h1:s9ujrwsENNB5fQof0sSOn95kfsrtF0MRAZAKumOQoH8=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600 h1:BCrfSskH3gjLBXZhC1PkYTyw1HLbAzPTZ1WGMJewPIg=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600/go.mod h1:XnEvGVrxHrwNie+5H0Us8OTwbonbk5terGYZOip0ZmU=
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20221216125212-e74e4c409422 h1:Xf4QSsOsDSJnnk4s7XwZAwjBEDqEXXKIFMGf/K18Eo4=
@@ -131,6 +133,8 @@ gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230131002226-28fc
 gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230131002226-28fcd0534b57/go.mod h1:yZYjxrf4VCqPXcRWmhWQ4skDYxL+FyD6XphAsltPzfg=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230117134054-5234eab5c94d h1:4m36DVEbfjCbWIhWtNg8zQLS1IOaLrby5svm1pWR3RA=
 gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230117134054-5234eab5c94d/go.mod h1:gZ2iohzLUJFfgy9YOiDtBg/cNsFdQ60pOwoQtV68n+E=
+gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230204142400-175f62ac7400 h1:lc+/Yd5SniY8RrC4WRvFKq0rCO32KgxF9zGFr1aPG6o=
+gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230204142400-175f62ac7400/go.mod h1:G35TrpsJsPSHs9+B4g3FOSTuXvBm6Ae/COrEaiex9pI=
 gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 h1:ti87QfvFKnGwwuQZroaLlYZnTq6q7WrxQ+2uR4I3cxM=
 gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0/go.mod h1:halzSanfMvCY67OsxG+1D5PZHc6mwK/ClOZ1VEJGTxM=
 gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 h1:QqGwAymiQn1xLKl/1a/ujDhdrS9zCm8a/bZtliKT+JA=

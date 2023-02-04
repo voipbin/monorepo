@@ -1356,3 +1356,65 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1CallsIDTalkPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		expectID       uuid.UUID
+		expectText     string
+		expectGender   string
+		expectLanguage string
+		expectRes      *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/deb5c376-a4a2-11ed-b6d3-4f72b2fef2c1/talk",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"text":"hello world","gender":"female","language":"en-US"}`),
+			},
+
+			uuid.FromStringOrNil("deb5c376-a4a2-11ed-b6d3-4f72b2fef2c1"),
+			"hello world",
+			"female",
+			"en-US",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				// DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().Talk(gomock.Any(), tt.expectID, false, tt.expectText, tt.expectGender, tt.expectLanguage).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

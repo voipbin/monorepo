@@ -60,7 +60,7 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, req *rabbitmqhand
 	return res, nil
 }
 
-// processV1CallsIDGet handles GET /v1/calls/<id> request
+// processV1CallsIDGet handles GET /v1/calls/<call-id> request
 func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -143,7 +143,7 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 	return res, nil
 }
 
-// processV1CallsIDPost handles POST /v1/calls/<id> request
+// processV1CallsIDPost handles POST /v1/calls/<call-id> request
 // It creates a new call.
 func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
@@ -193,7 +193,7 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 	return res, nil
 }
 
-// processV1CallsIDDelete handles Post /v1/calls/<id> request
+// processV1CallsIDDelete handles Post /v1/calls/<call-id> request
 // It hangs up the call.
 func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
@@ -230,7 +230,7 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqh
 	return res, nil
 }
 
-// processV1CallsIDHangupPost handles Post /v1/calls/<id>/hangup request
+// processV1CallsIDHangupPost handles Post /v1/calls/<call-id>/hangup request
 // It hangs up the call.
 func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
@@ -267,7 +267,7 @@ func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *rabbi
 	return res, nil
 }
 
-// processV1CallsIDGet handles /v1/calls/<id>/health-check request
+// processV1CallsIDGet handles /v1/calls/<call-id>/health-check request
 func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -289,7 +289,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *rabbi
 	return nil, nil
 }
 
-// processV1CallsIDGet handles /v1/calls/<id>/action-timeout request
+// processV1CallsIDGet handles /v1/calls/<call-id>/action-timeout request
 func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 
@@ -331,7 +331,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m
 	return res, nil
 }
 
-// processV1CallsIDGet handles /v1/calls/<id>/action-next request
+// processV1CallsIDGet handles /v1/calls/<call-id>/action-next request
 func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -377,7 +377,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *r
 	return res, nil
 }
 
-// processV1CallsIDChainedCallIDsPost handles /v1/calls/<id>/chained-call-ids POST request
+// processV1CallsIDChainedCallIDsPost handles /v1/calls/<call-id>/chained-call-ids POST request
 func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -420,7 +420,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, 
 	return res, nil
 }
 
-// processV1CallsIDChainedCallIDsDelete handles /v1/calls/<id>/chained-call-ids/<chained-call-id> DELETE request
+// processV1CallsIDChainedCallIDsDelete handles /v1/calls/<call-id>/chained-call-ids/<chained-call-id> DELETE request
 func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -457,7 +457,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context
 	return res, nil
 }
 
-// processV1CallsIDExternalMediaPost handles /v1/calls/<id>/external-media POST request
+// processV1CallsIDExternalMediaPost handles /v1/calls/<call-id>/external-media POST request
 func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -500,7 +500,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 	return res, nil
 }
 
-// processV1CallsIDExternalMediaDelete handles /v1/calls/<id>/external-media DELETE request
+// processV1CallsIDExternalMediaDelete handles /v1/calls/<call-id>/external-media DELETE request
 func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -536,7 +536,7 @@ func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context,
 	return res, nil
 }
 
-// processV1CallsIDDigitsGet handles /v1/calls/<id>/digits GET request
+// processV1CallsIDDigitsGet handles /v1/calls/<call-id>/digits GET request
 func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -575,7 +575,7 @@ func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *rabbit
 	return res, nil
 }
 
-// processV1CallsIDDigitsSet handles /v1/calls/<id>/digits POST request
+// processV1CallsIDDigitsSet handles /v1/calls/<call-id>/digits POST request
 func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -610,7 +610,7 @@ func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *rabbit
 	return res, nil
 }
 
-// processV1CallsIDRecordingIDPut handles /v1/calls/<id>/recording_id PUT request
+// processV1CallsIDRecordingIDPut handles /v1/calls/<call-id>/recording_id PUT request
 func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -696,7 +696,7 @@ func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *
 	return res, nil
 }
 
-// processV1CallsIDRecordingStartPost handles /v1/calls/<id>/recording_start POST request
+// processV1CallsIDRecordingStartPost handles /v1/calls/<call-id>/recording_start POST request
 func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -739,7 +739,7 @@ func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, 
 	return res, nil
 }
 
-// processV1CallsIDRecordingStopPost handles /v1/calls/<id>/recording_stop POST request
+// processV1CallsIDRecordingStopPost handles /v1/calls/<call-id>/recording_stop POST request
 func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -769,6 +769,37 @@ func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDTalkPost handles /v1/calls/<call-id>/talk POST request
+func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1CallsIDTalkPost.")
+
+	var req request.V1DataCallsIDTalkPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	if errTalk := h.callHandler.Talk(ctx, id, false, req.Text, req.Gender, req.Language); errTalk != nil {
+		log.Errorf("Could not talk to the call. err: %v", errTalk)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
 	}
 
 	return res, nil
