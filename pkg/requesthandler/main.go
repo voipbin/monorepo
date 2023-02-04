@@ -165,6 +165,7 @@ const (
 	resourceCallCallsCallIDRecordingStop   resource = "call/calls/<call-id>/recording-stop"
 	resourceCallCallsCallIDConfbridgeID    resource = "call/calls/<call-id>/confbirdge_id"
 	resourceCallCallsCallIDExternalMedia   resource = "call/calls/<call-id>/external-media"
+	resourceCallCallsCallIDTalk            resource = "call/calls/<call-id>/talk"
 	resourceCallChannelsHealth             resource = "call/channels/health"
 	resourceCallConfbridges                resource = "call/confbridges"
 	resourceCallConfbridgesIDExternalMedia resource = "call/confbridges/<confbridge-id>/external-media"
@@ -313,6 +314,7 @@ type RequestHandler interface {
 	AgentV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error)
 	AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error)
 
+	// agent-manager tag
 	AgentV1TagCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -323,6 +325,59 @@ type RequestHandler interface {
 	AgentV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error)
 	AgentV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*amtag.Tag, error)
 	AgentV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
+
+	// call-manager call
+	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
+	CallV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallRemoveChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallExternalMediaStart(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmcall.Call, error)
+	CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
+	CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
+	CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *commonaddress.Address, destination []commonaddress.Address, ealryExecution bool) ([]cmcall.Call, error)
+	CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *commonaddress.Address, ealryExecution bool) (*cmcall.Call, error)
+	CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
+	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
+	CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error)
+	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
+	CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string) error
+	CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
+
+	// call-manager channel
+	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error
+
+	// call-manager confbridge
+	CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) error
+	CallV1ConfbridgeCallKick(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
+	CallV1ConfbridgeCallAdd(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
+	CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeRecordingStart(ctx context.Context, confbridgeID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeRecordingStop(ctx context.Context, callID uuid.UUID) (*cmconfbridge.Confbridge, error)
+
+	// call-manager external-media
+	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
+	CallV1ExternalMediaStart(ctx context.Context, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmexternalmedia.ExternalMedia, error)
+	CallV1ExternalMediaStop(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
+
+	// call-manager recordings
+	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
+	CallV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error)
+	CallV1RecordingDelete(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
+	CallV1RecordingStart(
+		ctx context.Context,
+		referenceType cmrecording.ReferenceType,
+		referenceID uuid.UUID,
+		format cmrecording.Format,
+		endOfSilence int,
+		endOfKey string,
+		duration int,
+	) (*cmrecording.Recording, error)
+	CallV1RecordingStop(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error)
 
 	// campaign-manager campaigns
 	CampaignV1CampaignCreate(
@@ -429,58 +484,6 @@ type RequestHandler interface {
 	ChatV1MessagechatGet(ctx context.Context, messagechatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 	ChatV1MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechat.Messagechat, error)
 	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
-
-	// call-manager call
-	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
-	CallV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallRemoveChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallExternalMediaStart(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmcall.Call, error)
-	CallV1CallExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallActionNext(ctx context.Context, callID uuid.UUID, force bool) error
-	CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *fmaction.Action) error
-	CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *commonaddress.Address, destination []commonaddress.Address, ealryExecution bool) ([]cmcall.Call, error)
-	CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *commonaddress.Address, ealryExecution bool) (*cmcall.Call, error)
-	CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
-	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
-	CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error)
-	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
-	CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-
-	// call-manager channel
-	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error
-
-	// call-manager confbridge
-	CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
-	CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) error
-	CallV1ConfbridgeCallKick(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
-	CallV1ConfbridgeCallAdd(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
-	CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
-	CallV1ConfbridgeRecordingStart(ctx context.Context, confbridgeID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmconfbridge.Confbridge, error)
-	CallV1ConfbridgeRecordingStop(ctx context.Context, callID uuid.UUID) (*cmconfbridge.Confbridge, error)
-
-	// call-manager external-media
-	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
-	CallV1ExternalMediaStart(ctx context.Context, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmexternalmedia.ExternalMedia, error)
-	CallV1ExternalMediaStop(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
-
-	// call-manager recordings
-	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
-	CallV1RecordingGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]cmrecording.Recording, error)
-	CallV1RecordingDelete(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
-	CallV1RecordingStart(
-		ctx context.Context,
-		referenceType cmrecording.ReferenceType,
-		referenceID uuid.UUID,
-		format cmrecording.Format,
-		endOfSilence int,
-		endOfKey string,
-		duration int,
-	) (*cmrecording.Recording, error)
-	CallV1RecordingStop(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error)
 
 	// customer-manager customer
 	CustomerV1CustomerCreate(

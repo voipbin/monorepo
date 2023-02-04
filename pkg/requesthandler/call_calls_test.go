@@ -1198,3 +1198,58 @@ func Test_CallV1CallUpdateConfbridgeID(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallV1CallTalk(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID   uuid.UUID
+		text     string
+		gender   string
+		language string
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("966842b8-a4b3-11ed-afc1-cfd28f99c181"),
+			"hello world",
+			"female",
+			"en-US",
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/966842b8-a4b3-11ed-afc1-cfd28f99c181/talk",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"text":"hello world","gender":"female","language":"en-US"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
