@@ -27,27 +27,27 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 
 	// create hash/target/result
 	filename := h.filenameHashGenerator(text, lang, gender)
-	target := fmt.Sprintf("%s/%s", bucketDirectory, filename)
-	filepath := fmt.Sprintf("temp/%s", target)
+	filepath := fmt.Sprintf("%s/%s", bucketDirectory, filename)
 	res := &tts.TTS{
-		Gender:        gender,
-		Text:          text,
-		Language:      lang,
-		MediaFilepath: filepath,
+		Gender:          gender,
+		Text:            text,
+		Language:        lang,
+		MediaBucketName: h.bucketHandler.GetBucketName(),
+		MediaFilepath:   filepath,
 	}
 
 	log = log.WithFields(
 		logrus.Fields{
 			"filename": filename,
-			"target":   target,
+			"filepath": filepath,
 			"tts":      res,
 		},
 	)
-	log.Debugf("Creating a new tts target. target: %s", target)
+	log.Debugf("Creating a new tts target. target: %s", filepath)
 
 	// check exists
-	if h.bucketHandler.FileExist(ctx, target) {
-		log.Infof("The target file is already exsits. target: %s", target)
+	if h.bucketHandler.FileExist(ctx, filepath) {
+		log.Infof("The target file is already exsits. target: %s", filepath)
 		return res, nil
 	}
 
@@ -60,11 +60,11 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	defer os.Remove(filename)
 
 	// upload to bucket
-	if err := h.bucketHandler.FileUpload(ctx, filename, target); err != nil {
+	if err := h.bucketHandler.FileUpload(ctx, filename, filepath); err != nil {
 		log.Errorf("Could not upload the file to the bucket. err: %v", err)
 		return nil, fmt.Errorf("could not upload the file to the bucket. err: %v", err)
 	}
-	log.Debugf("Created and uploaded tts wav file to the bucket correctly. target: %s", target)
+	log.Debugf("Created and uploaded tts wav file to the bucket correctly. target: %s", filepath)
 
 	return res, nil
 }
