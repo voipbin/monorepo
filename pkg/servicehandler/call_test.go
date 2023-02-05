@@ -268,7 +268,7 @@ func Test_CallCreate(t *testing.T) {
 				targetFlowID = uuid.Must(uuid.NewV4())
 				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customer.ID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(&fmflow.Flow{ID: targetFlowID}, nil)
 			}
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations, false).Return(tt.responseCall, nil)
 
 			res, err := h.CallCreate(ctx, tt.customer, tt.flowID, tt.actions, tt.source, tt.destinations)
 			if err != nil {
@@ -397,6 +397,61 @@ func Test_CallHangup(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
 			}
+		})
+	}
+}
+
+func Test_CallTalk(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer *cscustomer.Customer
+		callID   uuid.UUID
+		text     string
+		gender   string
+		language string
+
+		call *cmcall.Call
+	}{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+			},
+			uuid.FromStringOrNil("89f97b66-a4b6-11ed-b3a8-9732500c39be"),
+			"hello world",
+			"female",
+			"en-US",
+
+			&cmcall.Call{
+				ID:         uuid.FromStringOrNil("89f97b66-a4b6-11ed-b3a8-9732500c39be"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+				TMDelete:   defaultTimestamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.call, nil)
+			mockReq.EXPECT().CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language, 10000).Return(nil)
+
+			if err := h.CallTalk(ctx, tt.customer, tt.callID, tt.text, tt.gender, tt.language); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
 		})
 	}
 }

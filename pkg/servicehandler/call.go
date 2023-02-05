@@ -74,7 +74,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer,
 		targetFlowID = f.ID
 	}
 
-	tmps, err := h.reqHandler.CallV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations)
+	tmps, err := h.reqHandler.CallV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations, false)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err
@@ -207,4 +207,32 @@ func (h *serviceHandler) CallHangup(ctx context.Context, u *cscustomer.Customer,
 	res := tmp.ConvertWebhookMessage()
 
 	return res, nil
+}
+
+// CallTalk sends a request to call-manager
+// to talk to the call.
+// it returns call if it succeed.
+func (h *serviceHandler) CallTalk(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, text string, gender string, language string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CallTalk",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"call_id":     callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errTalk := h.reqHandler.CallV1CallTalk(ctx, callID, text, gender, language, 10000); errTalk != nil {
+		// no call info found
+		log.Infof("Could not talk to the call. err: %v", errTalk)
+		return errTalk
+	}
+
+	return nil
 }
