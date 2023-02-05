@@ -13,4 +13,5 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	calls.DELETE("/:id", callsIDDelete)
 	calls.GET("/:id", callsIDGET)
 	calls.POST("/:id/hangup", callsIDHangupPOST)
+	calls.POST("/:id/talk", callsIDTalkPOST)
 }

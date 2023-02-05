@@ -279,3 +279,56 @@ func callsIDHangupPOST(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// callsIDTalkPOST handles GET /calls/{id}/talk request.
+// It talks to the call.
+// @Summary Talk to the call.
+// @Description Talks to the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/talk [post]
+func callsIDTalkPOST(c *gin.Context) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":            "callsIDTalkPOST",
+			"request_address": c.ClientIP,
+		},
+	)
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDTalkPOST.")
+
+	var req request.BodyCallsIDTalkPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallTalk(c.Request.Context(), &u, id, req.Text, req.Gender, req.Language); err != nil {
+		log.Errorf("Could not talk to the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
