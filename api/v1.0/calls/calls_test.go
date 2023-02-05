@@ -385,3 +385,71 @@ func Test_callsIDHangupPOST(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallsTalkPOST(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+		reqBody  request.BodyCallsIDTalkPOST
+
+		expectCallID uuid.UUID
+		expectRes    string
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/ed229366-a4b7-11ed-bfe7-b38647d68a3d/talk",
+			request.BodyCallsIDTalkPOST{
+				Text:     "hello world",
+				Gender:   "female",
+				Language: "en-US",
+			},
+
+			uuid.FromStringOrNil("ed229366-a4b7-11ed-bfe7-b38647d68a3d"),
+			`[{"id":"98b963ac-8df9-11ec-b26b-031d30ff93df","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_progressing":"","tm_ringing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}]`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.reqBody)
+			if err != nil {
+				t.Errorf("Wong match. expect: ok, got: %v", err)
+			}
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallTalk(req.Context(), &tt.customer, tt.expectCallID, tt.reqBody.Text, tt.reqBody.Gender, tt.reqBody.Language).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
