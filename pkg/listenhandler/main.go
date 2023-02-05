@@ -416,7 +416,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
+		log.Errorf("Could not handle the request message correctly. method: %s, uri: %s, err: %v", m.Method, uri, err)
 		response = simpleResponse(400)
 		err = nil
 	} else {

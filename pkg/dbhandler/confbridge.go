@@ -144,13 +144,13 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 	}
 
 	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, cb.ID)
+	_ = h.confbridgeUpdateToCache(ctx, cb.ID)
 
 	return nil
 }
 
-// ConfbridgeGetFromCache returns conference from the cache if possible.
-func (h *handler) ConfbridgeGetFromCache(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+// confbridgeGetFromCache returns conference from the cache if possible.
+func (h *handler) confbridgeGetFromCache(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 
 	// get from cache
 	res, err := h.cache.ConfbridgeGet(ctx, id)
@@ -161,8 +161,8 @@ func (h *handler) ConfbridgeGetFromCache(ctx context.Context, id uuid.UUID) (*co
 	return res, nil
 }
 
-// ConfbridgeGetFromDB gets confbridge.
-func (h *handler) ConfbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+// confbridgeGetFromDB gets confbridge.
+func (h *handler) confbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", confbridgeSelect)
@@ -185,16 +185,16 @@ func (h *handler) ConfbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confb
 	return res, nil
 }
 
-// ConfbridgeUpdateToCache gets the confbridge from the DB and update the cache.
-func (h *handler) ConfbridgeUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// confbridgeUpdateToCache gets the confbridge from the DB and update the cache.
+func (h *handler) confbridgeUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.ConfbridgeGetFromDB(ctx, id)
+	res, err := h.confbridgeGetFromDB(ctx, id)
 	if err != nil {
 		logrus.Errorf("Could not get confbridge from the DB. err: %v", err)
 		return err
 	}
 
-	if err := h.ConfbridgeSetToCache(ctx, res); err != nil {
+	if err := h.confbridgeSetToCache(ctx, res); err != nil {
 		logrus.Errorf("Could not set confbridge to the cache. err: %v", err)
 		return err
 	}
@@ -202,8 +202,8 @@ func (h *handler) ConfbridgeUpdateToCache(ctx context.Context, id uuid.UUID) err
 	return nil
 }
 
-// ConfbridgeSetToCache sets the given conference to the cache
-func (h *handler) ConfbridgeSetToCache(ctx context.Context, data *confbridge.Confbridge) error {
+// confbridgeSetToCache sets the given conference to the cache
+func (h *handler) confbridgeSetToCache(ctx context.Context, data *confbridge.Confbridge) error {
 	if err := h.cache.ConfbridgeSet(ctx, data); err != nil {
 		return err
 	}
@@ -214,18 +214,18 @@ func (h *handler) ConfbridgeSetToCache(ctx context.Context, data *confbridge.Con
 // ConfbridgeGet gets conference.
 func (h *handler) ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 
-	res, err := h.ConfbridgeGetFromCache(ctx, id)
+	res, err := h.confbridgeGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.ConfbridgeGetFromDB(ctx, id)
+	res, err = h.confbridgeGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	_ = h.ConfbridgeSetToCache(ctx, res)
+	_ = h.confbridgeSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -271,7 +271,7 @@ func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 	}
 
 	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, id)
+	_ = h.confbridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -292,7 +292,7 @@ func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, id)
+	_ = h.confbridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -314,7 +314,7 @@ func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, re
 	}
 
 	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, id)
+	_ = h.confbridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -340,7 +340,7 @@ func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 	}
 
 	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, id)
+	_ = h.confbridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -362,7 +362,7 @@ func (h *handler) ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID
 	}
 
 	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, id)
+	_ = h.confbridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -388,7 +388,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 	}
 
 	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, id)
+	_ = h.confbridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -413,7 +413,7 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 	}
 
 	// update the cache
-	_ = h.ConfbridgeUpdateToCache(ctx, id)
+	_ = h.confbridgeUpdateToCache(ctx, id)
 
 	return nil
 }

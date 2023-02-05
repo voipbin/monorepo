@@ -143,19 +143,19 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 	}
 
 	// update the cache
-	_ = h.BridgeUpdateToCache(ctx, b.ID)
+	_ = h.bridgeUpdateToCache(ctx, b.ID)
 
 	return nil
 }
 
-// BridgeGetFromDB returns bridge from the DB.
-func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error) {
+// bridgeGetFromDB returns bridge from the DB.
+func (h *handler) bridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error) {
 
 	q := fmt.Sprintf("%s where id = ?", bridgeSelect)
 
 	row, err := h.db.Query(q, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. BridgeGet. err: %v", err)
+		return nil, fmt.Errorf("could not query. bridgeGetFromDB. err: %v", err)
 	}
 	defer row.Close()
 
@@ -165,29 +165,29 @@ func (h *handler) BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridg
 
 	res, err := h.bridgeGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. BridgeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. bridgeGetFromDB. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// BridgeUpdateToCache gets the bridge from the DB and update the cache.
-func (h *handler) BridgeUpdateToCache(ctx context.Context, id string) error {
+// bridgeUpdateToCache gets the bridge from the DB and update the cache.
+func (h *handler) bridgeUpdateToCache(ctx context.Context, id string) error {
 
-	res, err := h.BridgeGetFromDB(ctx, id)
+	res, err := h.bridgeGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.BridgeSetToCache(ctx, res); err != nil {
+	if err := h.bridgeSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// BridgeSetToCache sets the given bridge to the cache
-func (h *handler) BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error {
+// bridgeSetToCache sets the given bridge to the cache
+func (h *handler) bridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error {
 	if err := h.cache.BridgeSet(ctx, bridge); err != nil {
 		return err
 	}
@@ -195,8 +195,8 @@ func (h *handler) BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) e
 	return nil
 }
 
-// BridgeGetFromCache returns bridge from the cache.
-func (h *handler) BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error) {
+// bridgeGetFromCache returns bridge from the cache.
+func (h *handler) bridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error) {
 
 	// get from cache
 	res, err := h.cache.BridgeGet(ctx, id)
@@ -210,18 +210,18 @@ func (h *handler) BridgeGetFromCache(ctx context.Context, id string) (*bridge.Br
 // BridgeGet returns bridge.
 func (h *handler) BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error) {
 
-	res, err := h.BridgeGetFromCache(ctx, id)
+	res, err := h.bridgeGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.BridgeGetFromDB(ctx, id)
+	res, err = h.bridgeGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	_ = h.BridgeSetToCache(ctx, res)
+	_ = h.bridgeSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -244,7 +244,7 @@ func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 	}
 
 	// update the cache
-	_ = h.BridgeUpdateToCache(ctx, id)
+	_ = h.bridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -270,7 +270,7 @@ func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) 
 	}
 
 	// update the cache
-	_ = h.BridgeUpdateToCache(ctx, id)
+	_ = h.bridgeUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -302,7 +302,7 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 	}
 
 	// update the cache
-	_ = h.BridgeUpdateToCache(ctx, id)
+	_ = h.bridgeUpdateToCache(ctx, id)
 
 	return nil
 }

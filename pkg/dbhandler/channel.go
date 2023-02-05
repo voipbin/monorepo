@@ -228,7 +228,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, c.ID)
+	_ = h.channelUpdateToCache(ctx, c.ID)
 
 	return nil
 }
@@ -236,18 +236,18 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 // ChannelGet returns channel.
 func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, error) {
 
-	res, err := h.ChannelGetFromCache(ctx, id)
+	res, err := h.channelGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.ChannelGetFromDB(ctx, id)
+	res, err = h.channelGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	_ = h.ChannelSetToCache(ctx, res)
+	_ = h.channelSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -274,7 +274,7 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -290,7 +290,7 @@ func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string,
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -312,7 +312,7 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -336,7 +336,7 @@ func (h *handler) ChannelSetStateAnswer(ctx context.Context, id string, state ar
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -360,7 +360,7 @@ func (h *handler) ChannelSetStateRinging(ctx context.Context, id string, state a
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -382,7 +382,7 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -404,7 +404,7 @@ func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction 
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -426,7 +426,7 @@ func (h *handler) ChannelSetType(ctx context.Context, id string, cType channel.T
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -448,7 +448,7 @@ func (h *handler) ChannelSetSIPTransport(ctx context.Context, id string, transpo
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -470,7 +470,7 @@ func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID stri
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -492,7 +492,7 @@ func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackI
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -517,7 +517,7 @@ func (h *handler) ChannelEndAndDelete(ctx context.Context, id string, hangup ari
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -545,13 +545,13 @@ func (h *handler) ChannelSetStasisNameAndStasisData(ctx context.Context, id stri
 	}
 
 	// update the cache
-	_ = h.ChannelUpdateToCache(ctx, id)
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }
 
-// ChannelGetFromCache returns channel from the cache if possible.
-func (h *handler) ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error) {
+// channelGetFromCache returns channel from the cache if possible.
+func (h *handler) channelGetFromCache(ctx context.Context, id string) (*channel.Channel, error) {
 
 	// get from cache
 	res, err := h.cache.ChannelGet(ctx, id)
@@ -562,8 +562,8 @@ func (h *handler) ChannelGetFromCache(ctx context.Context, id string) (*channel.
 	return res, nil
 }
 
-// ChannelGetFromDB returns channel from the DB.
-func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error) {
+// channelGetFromDB returns channel from the DB.
+func (h *handler) channelGetFromDB(ctx context.Context, id string) (*channel.Channel, error) {
 
 	row, err := h.db.Query(channelSelect, id)
 	if err != nil {
@@ -583,23 +583,23 @@ func (h *handler) ChannelGetFromDB(ctx context.Context, id string) (*channel.Cha
 	return res, nil
 }
 
-// ChannelUpdateToCache gets the channel from the DB and update the cache.
-func (h *handler) ChannelUpdateToCache(ctx context.Context, id string) error {
+// channelUpdateToCache gets the channel from the DB and update the cache.
+func (h *handler) channelUpdateToCache(ctx context.Context, id string) error {
 
-	res, err := h.ChannelGetFromDB(ctx, id)
+	res, err := h.channelGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.ChannelSetToCache(ctx, res); err != nil {
+	if err := h.channelSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ChannelSetToCache sets the given channel to the cache
-func (h *handler) ChannelSetToCache(ctx context.Context, channel *channel.Channel) error {
+// channelSetToCache sets the given channel to the cache
+func (h *handler) channelSetToCache(ctx context.Context, channel *channel.Channel) error {
 	if err := h.cache.ChannelSet(ctx, channel); err != nil {
 		return err
 	}

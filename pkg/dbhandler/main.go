@@ -29,11 +29,7 @@ type DBHandler interface {
 	BridgeCreate(ctx context.Context, b *bridge.Bridge) error
 	BridgeEnd(ctx context.Context, id string) error
 	BridgeGet(ctx context.Context, id string) (*bridge.Bridge, error)
-	BridgeGetFromCache(ctx context.Context, id string) (*bridge.Bridge, error)
-	BridgeGetFromDB(ctx context.Context, id string) (*bridge.Bridge, error)
 	BridgeRemoveChannelID(ctx context.Context, id, channelID string) error
-	BridgeSetToCache(ctx context.Context, bridge *bridge.Bridge) error
-	BridgeUpdateToCache(ctx context.Context, id string) error
 
 	// calls
 	CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
@@ -44,8 +40,6 @@ type DBHandler interface {
 	CallDelete(ctx context.Context, id uuid.UUID) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
-	CallGetFromCache(ctx context.Context, id uuid.UUID) (*call.Call, error)
-	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error)
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error
@@ -60,20 +54,16 @@ type DBHandler interface {
 	CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error
 	CallSetStatusRinging(ctx context.Context, id uuid.UUID) error
 	CallSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
-	CallSetToCache(ctx context.Context, call *call.Call) error
 	CallSetForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) error
 	CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
 	CallTXFinish(tx *sql.Tx, commit bool)
 	CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error
 	CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error)
-	CallUpdateToCache(ctx context.Context, id uuid.UUID) error
 
 	// channels
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
 	ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelGetFromCache(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelGetFromDB(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
 	ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error
 	ChannelSetStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) error
@@ -86,8 +76,6 @@ type DBHandler interface {
 	ChannelSetStateAnswer(ctx context.Context, id string, state ari.ChannelState) error
 	ChannelSetStateRinging(ctx context.Context, id string, state ari.ChannelState) error
 	ChannelSetType(ctx context.Context, id string, cType channel.Type) error
-	ChannelSetToCache(ctx context.Context, channel *channel.Channel) error
-	ChannelUpdateToCache(ctx context.Context, id string) error
 
 	// confbridges
 	ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) error
@@ -96,14 +84,10 @@ type DBHandler interface {
 	ConfbridgeDelete(ctx context.Context, id uuid.UUID) error
 	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) (*confbridge.Confbridge, error)
-	ConfbridgeGetFromCache(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
-	ConfbridgeGetFromDB(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
-	ConfbridgeUpdateToCache(ctx context.Context, id uuid.UUID) error
 	ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error
 	ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error
 	ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
-	ConfbridgeSetToCache(ctx context.Context, data *confbridge.Confbridge) error
 
 	// external media
 	ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error
