@@ -26,3 +26,10 @@ type BodyCallsIDTranscribePOST struct {
 	FlowID       uuid.UUID               `json:"flow_id"`
 	Actions      []fmaction.Action       `json:"actions"`
 }
+
+// BodyCallsIDTalkPOST is rquest body define for POST /calls/<call-id>/talk
+type BodyCallsIDTalkPOST struct {
+	Text     string `json:"text"`
+	Gender   string `json:"gender"`
+	Language string `json:"language"`
+}
