@@ -1204,10 +1204,11 @@ func Test_CallV1CallTalk(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID   uuid.UUID
-		text     string
-		gender   string
-		language string
+		callID         uuid.UUID
+		text           string
+		gender         string
+		language       string
+		requestTimeout int
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -1220,6 +1221,7 @@ func Test_CallV1CallTalk(t *testing.T) {
 			"hello world",
 			"female",
 			"en-US",
+			10000,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
@@ -1247,7 +1249,7 @@ func Test_CallV1CallTalk(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language); err != nil {
+			if err := reqHandler.CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language, tt.requestTimeout); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

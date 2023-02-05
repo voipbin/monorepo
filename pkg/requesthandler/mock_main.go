@@ -975,17 +975,17 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallSendDigits(ctx, callID, digi
 }
 
 // CallV1CallTalk mocks base method.
-func (m *MockRequestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text, gender, language string) error {
+func (m *MockRequestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text, gender, language string, rqeuestTimeout int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallTalk", ctx, callID, text, gender, language)
+	ret := m.ctrl.Call(m, "CallV1CallTalk", ctx, callID, text, gender, language, rqeuestTimeout)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallV1CallTalk indicates an expected call of CallV1CallTalk.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallTalk(ctx, callID, text, gender, language interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallTalk(ctx, callID, text, gender, language, rqeuestTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallTalk", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallTalk), ctx, callID, text, gender, language)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallTalk", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallTalk), ctx, callID, text, gender, language, rqeuestTimeout)
 }
 
 // CallV1CallUpdateConfbridgeID mocks base method.
