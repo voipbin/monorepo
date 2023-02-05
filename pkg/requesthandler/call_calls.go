@@ -562,7 +562,8 @@ func (r *requestHandler) CallV1CallUpdateConfbridgeID(ctx context.Context, callI
 // CallV1CallTalk sends a request to call-manager
 // to talk to the call directly.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string) error {
+// rqeuestTimeout: timeout in milliseconds
+func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string, rqeuestTimeout int) error {
 	uri := fmt.Sprintf("/v1/calls/%s/talk", callID)
 
 	data := &cmrequest.V1DataCallsIDTalkPost{
@@ -576,7 +577,7 @@ func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, t
 		return err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDTalk, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDTalk, rqeuestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
