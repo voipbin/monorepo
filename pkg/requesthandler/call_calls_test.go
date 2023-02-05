@@ -1224,7 +1224,7 @@ func Test_CallV1CallTalk(t *testing.T) {
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/966842b8-a4b3-11ed-afc1-cfd28f99c181/talk",
-				Method:   rabbitmqhandler.RequestMethodPut,
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"text":"hello world","gender":"female","language":"en-US"}`),
 			},

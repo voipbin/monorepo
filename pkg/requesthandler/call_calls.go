@@ -576,7 +576,7 @@ func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, t
 		return err
 	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCallCallsCallIDTalk, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDTalk, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
