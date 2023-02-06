@@ -104,7 +104,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "webhook-manager", false, false, false, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "conference-manager", false, false, false, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
