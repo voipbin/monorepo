@@ -10,7 +10,7 @@ resources:
   - service.yml
 
 images:
-- name: webhook-manager-image
-  newName: webhook-manager
+- name: conference-manager-image
+  newName: conference-manager
   newTag: latest
 
