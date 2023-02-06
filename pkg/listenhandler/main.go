@@ -9,12 +9,10 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
 // pagination parameters
@@ -29,12 +27,13 @@ const (
 
 // ListenHandler interface
 type ListenHandler interface {
-	Run(queue, exchangeDelay string) error
+	Run() error
 }
 
 type listenHandler struct {
 	rabbitSock    rabbitmqhandler.Rabbit
-	notifyHandler notifyhandler.NotifyHandler
+	queueListen   string
+	exchangeDelay string
 
 	conferenceHandler     conferencehandler.ConferenceHandler
 	conferencecallHandler conferencecallhandler.ConferencecallHandler
@@ -95,14 +94,16 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
-	db dbhandler.DBHandler,
-	notifyHandler notifyhandler.NotifyHandler,
+	queueListen string,
+	exchangeDelay string,
 	conferenceHandler conferencehandler.ConferenceHandler,
 	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock:            rabbitSock,
-		notifyHandler:         notifyHandler,
+		rabbitSock:    rabbitSock,
+		queueListen:   queueListen,
+		exchangeDelay: exchangeDelay,
+
 		conferenceHandler:     conferenceHandler,
 		conferencecallHandler: conferencecallHandler,
 	}
@@ -110,29 +111,30 @@ func NewListenHandler(
 	return h
 }
 
-func (h *listenHandler) Run(queue, exchangeDelay string) error {
+// func (h *listenHandler) Run(queue, exchangeDelay string) error {
+func (h *listenHandler) Run() error {
 	logrus.WithFields(logrus.Fields{
-		"queue": queue,
+		"func": "Run",
 	}).Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue
-	if err := h.rabbitSock.QueueDeclare(queue, true, false, false, false); err != nil {
+	if err := h.rabbitSock.QueueDeclare(h.queueListen, true, false, false, false); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
 	// Set QoS
-	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
+	if err := h.rabbitSock.QueueQoS(h.queueListen, 1, 0); err != nil {
 		logrus.Errorf("Could not set the queue's qos. err: %v", err)
 		return err
 	}
 
 	// create a exchange for delayed message
-	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
+	if err := h.rabbitSock.ExchangeDeclareForDelay(h.exchangeDelay, true, false, false, false); err != nil {
 		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
-	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
+	if err := h.rabbitSock.QueueBind(h.queueListen, h.queueListen, h.exchangeDelay, false, nil); err != nil {
 		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
@@ -140,7 +142,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	go func() {
 		for {
 			// consume the request
-			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(h.queueListen, constCosumerName, false, false, false, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
