@@ -51,15 +51,74 @@ func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, 
 		url,
 	}
 
-	actionID := uuid.Nil
-	if runNext {
-		actionID = c.Action.ID
+	actionID := c.Action.ID
+	if !runNext {
+		// we don't want to execut the next action
+		actionID = uuid.Nil
 	}
 
 	// play
 	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, actionID, medias, ""); errPlay != nil {
 		log.Errorf("Could not play the media for tts. medias: %v, err: %v", medias, errPlay)
 		return errors.Wrap(errPlay, "could not play the media for tts")
+	}
+
+	return nil
+}
+
+// Play plays the media to the given call id.
+// runNext: if it true, the call will execute the next action after talk.
+func (h *callHandler) Play(ctx context.Context, callID uuid.UUID, runNext bool, urls []string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "Play",
+		"call_id":  callID,
+		"run_next": runNext,
+	})
+
+	c, err := h.Get(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return errors.Wrap(err, "could not get call info")
+	}
+
+	// create a media string array
+	var medias []string
+	for _, url := range urls {
+		media := fmt.Sprintf("sound:%s", url)
+		medias = append(medias, media)
+	}
+
+	// get action id
+	actionID := c.Action.ID
+	if !runNext {
+		// we don't want to execut the next action
+		actionID = uuid.Nil
+	}
+
+	// play
+	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, actionID, medias, ""); errPlay != nil {
+		log.Errorf("Could not play the media. media: %v, err: %v", medias, errPlay)
+		return errors.Wrap(errPlay, "could not play the media")
+	}
+
+	return nil
+}
+
+// MediaStop stops the media currently playing on the call.
+func (h *callHandler) MediaStop(ctx context.Context, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "MediaStop",
+		"call_id": callID,
+	})
+
+	c, err := h.Get(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return errors.Wrap(err, "could not get call info")
+	}
+
+	if errStop := h.channelHandler.PlaybackStop(ctx, c.ChannelID); errStop != nil {
+		log.Errorf("Could not stop the talk ")
 	}
 
 	return nil

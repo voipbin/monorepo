@@ -116,3 +116,10 @@ type V1DataCallsIDTalkPost struct {
 	Gender   string `json:"gender"`   // gender(male/female/neutral)
 	Language string `json:"language"` // IETF locale-name(ko-KR, en-US)
 }
+
+// V1DataCallsIDPlayPost is
+// v1 data type for
+// /v1/calls/<call-id>/play POST
+type V1DataCallsIDPlayPost struct {
+	MediaURLs []string `json:"media_urls"` // url for media
+}

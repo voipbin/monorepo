@@ -372,6 +372,34 @@ func (mr *MockCallHandlerMockRecorder) Hangup(ctx, cn interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockCallHandler)(nil).Hangup), ctx, cn)
 }
 
+// MediaStop mocks base method.
+func (m *MockCallHandler) MediaStop(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MediaStop", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MediaStop indicates an expected call of MediaStop.
+func (mr *MockCallHandlerMockRecorder) MediaStop(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MediaStop", reflect.TypeOf((*MockCallHandler)(nil).MediaStop), ctx, callID)
+}
+
+// Play mocks base method.
+func (m *MockCallHandler) Play(ctx context.Context, callID uuid.UUID, runNext bool, urls []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Play", ctx, callID, runNext, urls)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Play indicates an expected call of Play.
+func (mr *MockCallHandlerMockRecorder) Play(ctx, callID, runNext, urls interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Play", reflect.TypeOf((*MockCallHandler)(nil).Play), ctx, callID, runNext, urls)
+}
+
 // RecordingStart mocks base method.
 func (m *MockCallHandler) RecordingStart(ctx context.Context, id uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*call.Call, error) {
 	m.ctrl.T.Helper()

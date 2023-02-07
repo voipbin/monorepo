@@ -415,25 +415,12 @@ func (h *callHandler) actionExecutePlay(ctx context.Context, c *call.Call) error
 	var option fmaction.OptionPlay
 	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
 		log.Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
+		return errors.Wrapf(err, "could not parse the option. action: %v, err: %v", c.Action, err)
 	}
 
-	// create a media string array
-	var medias []string
-	for _, streamURL := range option.StreamURLs {
-		media := fmt.Sprintf("sound:%s", streamURL)
-		medias = append(medias, media)
-	}
-	log.WithFields(
-		logrus.Fields{
-			"media": medias,
-		},
-	).Debugf("Sending a request to the asterisk for media playing.")
-
-	// play
-	if errPlay := h.channelHandler.Play(ctx, c.ChannelID, c.Action.ID, medias, ""); errPlay != nil {
-		log.Errorf("Could not play the media. media: %v, err: %v", medias, errPlay)
-		return errors.Wrap(errPlay, "could not play the media")
+	if errPlay := h.Play(ctx, c.ID, true, option.StreamURLs); errPlay != nil {
+		log.Errorf("Could not play the media correctly. err: %v", errPlay)
+		return errors.Wrap(errPlay, "could not play the media correctly")
 	}
 
 	return nil
@@ -582,7 +569,12 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 		}
 	}
 
-	return h.Talk(ctx, c.ID, true, option.Text, option.Gender, option.Language)
+	if errTalk := h.Talk(ctx, c.ID, true, option.Text, option.Gender, option.Language); errTalk != nil {
+		log.Errorf("Could not talk correctly. err: %v", errTalk)
+		return errors.Wrap(errTalk, "could not talk correctly")
+	}
+
+	return nil
 }
 
 // actionExecuteRecordingStart executes the action type recording_start.

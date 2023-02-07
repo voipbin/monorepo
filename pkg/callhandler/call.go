@@ -405,3 +405,24 @@ func (h *callHandler) UpdateHangupInfo(ctx context.Context, id uuid.UUID, reason
 
 	return res, nil
 }
+
+// UpdateData updates call's data
+func (h *callHandler) UpdateData(ctx context.Context, id uuid.UUID, data map[call.DataType]string) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "UpdateData",
+		"call_id": id,
+	})
+
+	if errSet := h.db.CallSetData(ctx, id, data); errSet != nil {
+		log.Errorf("Could not update the data. err: %v", errSet)
+		return nil, errSet
+	}
+
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call info. call_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return res, nil
+}

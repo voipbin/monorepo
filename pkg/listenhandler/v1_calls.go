@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -795,6 +796,63 @@ func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *rabbitm
 
 	if errTalk := h.callHandler.Talk(ctx, id, false, req.Text, req.Gender, req.Language); errTalk != nil {
 		log.Errorf("Could not talk to the call. err: %v", errTalk)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDPlayPost handles /v1/calls/<call-id>/play POST request
+func (h *listenHandler) processV1CallsIDPlayPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1CallsIDPlayPost.")
+
+	var req request.V1DataCallsIDPlayPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	if errPlay := h.callHandler.Play(ctx, id, false, req.MediaURLs); errPlay != nil {
+		log.Errorf("Could not play the medias. err: %v", errPlay)
+		return nil, errors.Wrap(errPlay, "could not play the medias")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDMediaStopPost handles /v1/calls/<call-id>/media_stop POST request
+func (h *listenHandler) processV1CallsIDMediaStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(
+		logrus.Fields{
+			"call_id": id,
+		})
+	log.WithField("request", m).Debug("Executing processV1CallsIDMediaStopPost.")
+
+	if errStop := h.callHandler.MediaStop(ctx, id); errStop != nil {
+		log.Errorf("Could not stop the media. err: %v", errStop)
 		return simpleResponse(500), nil
 	}
 

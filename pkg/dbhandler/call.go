@@ -1014,3 +1014,32 @@ func (h *handler) CallDelete(ctx context.Context, id uuid.UUID) error {
 
 	return nil
 }
+
+// CallSetData sets the call data
+func (h *handler) CallSetData(ctx context.Context, id uuid.UUID, data map[call.DataType]string) error {
+	// prepare
+	q := `
+	update
+		calls
+	set
+		data = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	tmpData, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("could not marshal data. CallSetData. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q, tmpData, h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetData. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.callUpdateToCache(ctx, id)
+
+	return nil
+}

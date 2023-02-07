@@ -54,6 +54,7 @@ type CallHandler interface {
 	Hangup(ctx context.Context, cn *channel.Channel) error
 	HangingUp(ctx context.Context, id uuid.UUID, reason call.HangupReason) (*call.Call, error)
 
+	Play(ctx context.Context, callID uuid.UUID, runNext bool, urls []string) error
 	RecordingStart(
 		ctx context.Context,
 		id uuid.UUID,
@@ -64,6 +65,7 @@ type CallHandler interface {
 	) (*call.Call, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	Talk(ctx context.Context, callID uuid.UUID, runNext bool, text string, gender string, language string) error
+	MediaStop(ctx context.Context, callID uuid.UUID) error
 
 	ActionNext(ctx context.Context, c *call.Call) error
 	ActionNextForce(ctx context.Context, c *call.Call) error
