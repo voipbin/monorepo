@@ -915,6 +915,34 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallHealth(ctx, id, delay, retry
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHealth), ctx, id, delay, retryCount)
 }
 
+// CallV1CallMediaStop mocks base method.
+func (m *MockRequestHandler) CallV1CallMediaStop(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallMediaStop", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallMediaStop indicates an expected call of CallV1CallMediaStop.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallMediaStop(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMediaStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMediaStop), ctx, callID)
+}
+
+// CallV1CallPlay mocks base method.
+func (m *MockRequestHandler) CallV1CallPlay(ctx context.Context, callID uuid.UUID, mediaURLs []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallPlay", ctx, callID, mediaURLs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallPlay indicates an expected call of CallV1CallPlay.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallPlay(ctx, callID, mediaURLs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallPlay", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallPlay), ctx, callID, mediaURLs)
+}
+
 // CallV1CallRecordingStart mocks base method.
 func (m *MockRequestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int) (*call.Call, error) {
 	m.ctrl.T.Helper()

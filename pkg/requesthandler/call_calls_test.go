@@ -1255,3 +1255,104 @@ func Test_CallV1CallTalk(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallV1CallPlay(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID    uuid.UUID
+		meidaURLs []string
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("ae44f0c7-887b-4cd2-9f30-a7ff80dd7300"),
+			[]string{
+				"https://test.com/735efc89-5255-4ca0-8181-8ad802d2e24b.wav",
+				"https://test.com/a3366726-8fcc-4730-a03b-256bc343c1ea.wav",
+			},
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/ae44f0c7-887b-4cd2-9f30-a7ff80dd7300/play",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"media_urls":["https://test.com/735efc89-5255-4ca0-8181-8ad802d2e24b.wav","https://test.com/a3366726-8fcc-4730-a03b-256bc343c1ea.wav"]}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallPlay(ctx, tt.callID, tt.meidaURLs); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallMediaStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("582ad5a4-e787-4b0b-8480-09253372a518"),
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/582ad5a4-e787-4b0b-8480-09253372a518/media_stop",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallMediaStop(ctx, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

@@ -166,6 +166,7 @@ const (
 	resourceCallCallsCallIDConfbridgeID    resource = "call/calls/<call-id>/confbirdge_id"
 	resourceCallCallsCallIDExternalMedia   resource = "call/calls/<call-id>/external-media"
 	resourceCallCallsCallIDTalk            resource = "call/calls/<call-id>/talk"
+	resourceCallCallsCallIDPlay            resource = "call/calls/<call-id>/play"
 	resourceCallChannelsHealth             resource = "call/channels/health"
 	resourceCallConfbridges                resource = "call/confbridges"
 	resourceCallConfbridgesIDExternalMedia resource = "call/confbridges/<confbridge-id>/external-media"
@@ -340,6 +341,8 @@ type RequestHandler interface {
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmcall.Call, error)
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
+	CallV1CallMediaStop(ctx context.Context, callID uuid.UUID) error
+	CallV1CallPlay(ctx context.Context, callID uuid.UUID, mediaURLs []string) error
 	CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error)
 	CallV1CallRecordingStop(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error
