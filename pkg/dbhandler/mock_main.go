@@ -316,6 +316,20 @@ func (mr *MockDBHandlerMockRecorder) CallSetConfbridgeID(ctx, id, confbridgeID i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetConfbridgeID", reflect.TypeOf((*MockDBHandler)(nil).CallSetConfbridgeID), ctx, id, confbridgeID)
 }
 
+// CallSetData mocks base method.
+func (m *MockDBHandler) CallSetData(ctx context.Context, id uuid.UUID, data map[call.DataType]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetData", ctx, id, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetData indicates an expected call of CallSetData.
+func (mr *MockDBHandlerMockRecorder) CallSetData(ctx, id, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetData", reflect.TypeOf((*MockDBHandler)(nil).CallSetData), ctx, id, data)
+}
+
 // CallSetExternalMediaID mocks base method.
 func (m *MockDBHandler) CallSetExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
 	m.ctrl.T.Helper()

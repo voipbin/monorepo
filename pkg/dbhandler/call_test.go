@@ -1766,3 +1766,94 @@ func Test_CallDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallSetData(t *testing.T) {
+	type test struct {
+		name string
+		call *call.Call
+
+		id              uuid.UUID
+		data            map[call.DataType]string
+		responseCurTime string
+
+		expectRes *call.Call
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("8d80157e-98bf-49e8-9827-06c744bfa81a"),
+			},
+
+			uuid.FromStringOrNil("8d80157e-98bf-49e8-9827-06c744bfa81a"),
+			map[call.DataType]string{
+				call.DataTypeEarlyExecution: "true",
+			},
+			"2020-04-18T03:22:17.995000",
+
+			&call.Call{
+				ID: uuid.FromStringOrNil("8d80157e-98bf-49e8-9827-06c744bfa81a"),
+
+				ChainedCallIDs: []uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+
+				Data: map[call.DataType]string{
+					call.DataTypeEarlyExecution: "true",
+				},
+
+				Dialroutes: []rmroute.Route{},
+
+				TMCreate: "2020-04-18T03:22:17.995000",
+				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
+
+				TMRinging:     DefaultTimeStamp,
+				TMProgressing: DefaultTimeStamp,
+				TMHangup:      DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallCreate(ctx, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			if err := h.CallSetData(ctx, tt.id, tt.data); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CallSet(ctx, gomock.Any())
+			res, err := h.CallGet(ctx, tt.call.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

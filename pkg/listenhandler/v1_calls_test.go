@@ -1385,10 +1385,8 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 			"hello world",
 			"female",
 			"en-US",
-
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
-				// DataType:   "application/json",
 			},
 		},
 	}
@@ -1407,6 +1405,118 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 			}
 
 			mockCall.EXPECT().Talk(gomock.Any(), tt.expectID, false, tt.expectText, tt.expectGender, tt.expectLanguage).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1CallsIDPlayPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		expectID     uuid.UUID
+		expectMedias []string
+		expectRes    *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/3dce82e3-ffca-47d3-96e6-0679195c7949/play",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"media_urls":["https://test.com/3d55ea46-5a91-442a-b1bc-d6100be0e11d.wav","https://test.com/6a094e77-a837-4511-8c4f-e2fec3aac44b.wav"]}`),
+			},
+
+			uuid.FromStringOrNil("3dce82e3-ffca-47d3-96e6-0679195c7949"),
+			[]string{
+				"https://test.com/3d55ea46-5a91-442a-b1bc-d6100be0e11d.wav",
+				"https://test.com/6a094e77-a837-4511-8c4f-e2fec3aac44b.wav",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().Play(gomock.Any(), tt.expectID, false, tt.expectMedias).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1CallsIDMediaStopPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		expectID  uuid.UUID
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/f2caffa0-ab13-4d7d-857e-a6ea64986f40/media_stop",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("f2caffa0-ab13-4d7d-857e-a6ea64986f40"),
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().MediaStop(gomock.Any(), tt.expectID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

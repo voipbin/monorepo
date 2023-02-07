@@ -132,3 +132,146 @@ func Test_Talk(t *testing.T) {
 		})
 	}
 }
+
+func Test_Play(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID  uuid.UUID
+		runNext bool
+		urls    []string
+
+		responseCall *call.Call
+
+		expectURI      []string
+		expectActionID uuid.UUID
+	}{
+		{
+			"run next is true",
+
+			uuid.FromStringOrNil("9a78ee81-8462-4350-9fd2-6bbf93cc26f2"),
+			true,
+			[]string{
+				"https://test.com/test-1.wav",
+				"https://test.com/test-2.wav",
+			},
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("9a78ee81-8462-4350-9fd2-6bbf93cc26f2"),
+				ChannelID: "c486e658-25b2-416b-a5df-0d11c7c633ab",
+				Action: fmaction.Action{
+					ID: uuid.FromStringOrNil("19baefc2-5de9-4acb-b6a7-0f4a55089934"),
+				},
+			},
+
+			[]string{
+				"sound:https://test.com/test-1.wav",
+				"sound:https://test.com/test-2.wav",
+			},
+			uuid.FromStringOrNil("19baefc2-5de9-4acb-b6a7-0f4a55089934"),
+		},
+		{
+			"run next is false",
+
+			uuid.FromStringOrNil("3d0c6c4a-a17f-4c5d-ae2b-635e5866fbd0"),
+			false,
+			[]string{
+				"https://test.com/139ddf48-1110-4ba1-b3b3-be4ded864089.wav",
+				"https://test.com/0d604e92-96cc-4521-a787-9745f0ae70c3.wav",
+			},
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("3d0c6c4a-a17f-4c5d-ae2b-635e5866fbd0"),
+				ChannelID: "d13fff6a-99ab-4a04-b5d3-754ab00efb00",
+				Action: fmaction.Action{
+					ID: uuid.FromStringOrNil("abe00434-bcfb-445d-a8b1-33d936f3ebc3"),
+				},
+			},
+
+			[]string{
+				"sound:https://test.com/139ddf48-1110-4ba1-b3b3-be4ded864089.wav",
+				"sound:https://test.com/0d604e92-96cc-4521-a787-9745f0ae70c3.wav",
+			},
+			uuid.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectActionID, tt.expectURI, "").Return(nil)
+
+			if err := h.Play(ctx, tt.callID, tt.runNext, tt.urls); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_MediaStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		responseCall *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("40c63616-5a28-43f8-b016-5f198f155535"),
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("40c63616-5a28-43f8-b016-5f198f155535"),
+				ChannelID: "996e51e1-0d70-4115-89e8-20f9fc1ea45c",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().PlaybackStop(ctx, tt.responseCall.ChannelID).Return(nil)
+
+			if err := h.MediaStop(ctx, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
