@@ -590,3 +590,52 @@ func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, t
 
 	return nil
 }
+
+// CallV1CallPlay sends a request to call-manager
+// to play the given media urls.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallPlay(ctx context.Context, callID uuid.UUID, mediaURLs []string) error {
+	uri := fmt.Sprintf("/v1/calls/%s/play", callID)
+
+	data := &cmrequest.V1DataCallsIDPlayPost{
+		MediaURLs: mediaURLs,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDPlay, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallMediaStop sends a request to call-manager
+// to stop the media playing(play, talk).
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallMediaStop(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/media_stop", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDPlay, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
