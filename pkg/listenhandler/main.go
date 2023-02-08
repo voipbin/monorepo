@@ -1,0 +1,233 @@
+package listenhandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+	"fmt"
+	"net/url"
+	"regexp"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbotcallhandler"
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
+)
+
+// pagination parameters
+const (
+	PageSize  = "page_size"
+	PageToken = "page_token"
+)
+
+// ListenHandler interface
+type ListenHandler interface {
+	Run() error
+}
+
+// listenHandler define
+type listenHandler struct {
+	rabbitSock    rabbitmqhandler.Rabbit
+	queueListen   string
+	exchangeDelay string
+
+	chatbotHandler     chatbothandler.ChatbotHandler
+	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler
+}
+
+var (
+	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+	//// v1
+
+	// chatbots
+	regV1ChatbotsGet = regexp.MustCompile(`/v1/chatbots\?`)
+	regV1Chatbots    = regexp.MustCompile("/v1/chatbots$")
+	regV1ChatbotsID  = regexp.MustCompile("/v1/chatbots/" + regUUID + "$")
+
+	// chatbotcalls
+	regV1ChatbotcallsGet = regexp.MustCompile(`/v1/chatbotcalls\?`)
+
+	// service
+	regV1ServicesTypeChatbotcall = regexp.MustCompile("/v1/services/type/chatbotcall$")
+)
+
+var (
+	metricsNamespace = "chatbot_manager"
+
+	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "receive_request_process_time",
+			Help:      "Process time of received request",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000,
+			},
+		},
+		[]string{"type", "method"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promReceivedRequestProcessTime,
+	)
+}
+
+// simpleResponse returns simple rabbitmq response
+func simpleResponse(code int) *rabbitmqhandler.Response {
+	return &rabbitmqhandler.Response{
+		StatusCode: code,
+	}
+}
+
+// NewListenHandler return ListenHandler interface
+func NewListenHandler(
+	rabbitSock rabbitmqhandler.Rabbit,
+	queueListen string,
+	exchangeDelay string,
+	chatbotHandler chatbothandler.ChatbotHandler,
+	chatbotcallHandler chatbotcallhandler.ChatbotcallHandler,
+) ListenHandler {
+	h := &listenHandler{
+		rabbitSock:         rabbitSock,
+		queueListen:        queueListen,
+		exchangeDelay:      exchangeDelay,
+		chatbotHandler:     chatbotHandler,
+		chatbotcallHandler: chatbotcallHandler,
+	}
+
+	return h
+}
+
+// Run runs the listenhandler
+func (h *listenHandler) Run() error {
+	logrus.WithFields(logrus.Fields{
+		"func": "Run",
+	}).Info("Run the listenhandler.")
+
+	// declare the queue
+	if err := h.rabbitSock.QueueDeclare(h.queueListen, true, false, false, false); err != nil {
+		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+	}
+
+	// Set QoS
+	if err := h.rabbitSock.QueueQoS(h.queueListen, 1, 0); err != nil {
+		logrus.Errorf("Could not set the queue's qos. err: %v", err)
+		return err
+	}
+
+	// create a exchange for delayed message
+	if err := h.rabbitSock.ExchangeDeclareForDelay(h.exchangeDelay, true, false, false, false); err != nil {
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
+	}
+
+	// bind a queue with delayed exchange
+	if err := h.rabbitSock.QueueBind(h.queueListen, h.queueListen, h.exchangeDelay, false, nil); err != nil {
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
+	}
+
+	// process requests
+	go func() {
+		for {
+			if errConsume := h.rabbitSock.ConsumeRPCOpt(h.queueListen, "chatbot-manager", false, false, false, 10, h.processRequest); errConsume != nil {
+				logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	var requestType string
+	var err error
+	var response *rabbitmqhandler.Response
+
+	ctx := context.Background()
+
+	uri, err := url.QueryUnescape(m.URI)
+	if err != nil {
+		uri = "could not unescape uri"
+	}
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"request": m,
+		})
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+
+	start := time.Now()
+	switch {
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// v1
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	////////////
+	// chatbots
+	////////////
+	// GET /chatbots
+	case regV1ChatbotsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ChatbotsGet(ctx, m)
+		requestType = "/v1/chatbotcalls"
+
+	// POST /chatbots
+	case regV1Chatbots.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ChatbotsPost(ctx, m)
+		requestType = "/v1/chatbotcalls"
+
+	// GET /chatbots/<chatbot-id>
+	case regV1ChatbotsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ChatbotsIDGet(ctx, m)
+		requestType = "/v1/chatbots/<chatbot-id>"
+
+	// DELETE /chatbots/<chatbot-id>
+	case regV1ChatbotsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ChatbotsIDDelete(ctx, m)
+		requestType = "/v1/chatbots/<chatbot-id>"
+
+	///////////////
+	// chatbotcalls
+	///////////////
+	// GET /chatbotcalls
+	case regV1ChatbotcallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ChatbotcallsGet(ctx, m)
+		requestType = "/v1/chatbotcalls"
+
+	/////////////////
+	// services
+	////////////////
+	// POST
+	case regV1ServicesTypeChatbotcall.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ServicesTypeChatbotcallPost(ctx, m)
+		requestType = "/v1/services/type/chatbotcall"
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// No handler found
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	default:
+		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
+		response = simpleResponse(404)
+		err = nil
+		requestType = "notfound"
+	}
+	elapsed := time.Since(start)
+	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
+
+	if err != nil {
+		log.Errorf("Could not handle the request message correctly. method: %s, uri: %s, err: %v", m.Method, uri, err)
+		response = simpleResponse(400)
+		err = nil
+	} else {
+		log.WithFields(
+			logrus.Fields{
+				"response": response,
+			},
+		).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
+	}
+
+	return response, err
+}
