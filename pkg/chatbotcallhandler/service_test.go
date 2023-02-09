@@ -111,7 +111,7 @@ func Test_ServiceStart(t *testing.T) {
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChatbotcall)
 			mockDB.EXPECT().ChatbotcallCreate(ctx, tt.expectChatbotcall).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDAction)
 
 			res, err := h.ServiceStart(ctx, tt.customerID, tt.chatbotID, tt.referenceType, tt.referenceID, tt.gender, tt.language)

@@ -18,11 +18,12 @@ import (
 // DBHandler interface for call_manager database handle
 type DBHandler interface {
 	ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error
+	ChatbotDelete(ctx context.Context, id uuid.UUID) error
 	ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
 	ChatbotGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbot.Chatbot, error)
-	ChatbotDelete(ctx context.Context, id uuid.UUID) error
 
 	ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbotcall) error
+	ChatbotcallDelete(ctx context.Context, id uuid.UUID) error
 	ChatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	ChatbotcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	ChatbotcallGetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error)

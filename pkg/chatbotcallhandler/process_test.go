@@ -70,6 +70,7 @@ func Test_ProcessStart(t *testing.T) {
 			mockReq.EXPECT().TranscribeV1TranscribeStart(ctx, tt.chatbotcall.CustomerID, tmtranscribe.ReferenceTypeCall, tt.chatbotcall.ReferenceID, tt.chatbotcall.Language, tmtranscribe.DirectionIn).Return(tt.responseTranscribe, nil)
 			mockDB.EXPECT().ChatbotcallUpdateStatusProgressing(ctx, tt.chatbotcall.ID, tt.responseTranscribe.ID).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.chatbotcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.chatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallProgressing, tt.chatbotcall)
 
 			res, err := h.ProcessStart(ctx, tt.chatbotcall)
 			if err != nil {
@@ -134,6 +135,7 @@ func Test_ProcessEnd(t *testing.T) {
 			mockDB.EXPECT().ChatbotcallUpdateStatusEnd(ctx, tt.chatbotcall.ID).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.chatbotcall, nil)
 			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.chatbotcall.ConfbridgeID).Return(nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.chatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallEnd, tt.chatbotcall)
 
 			res, err := h.ProcessEnd(ctx, tt.chatbotcall)
 			if err != nil {

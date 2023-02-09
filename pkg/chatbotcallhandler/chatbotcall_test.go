@@ -91,7 +91,7 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
 			mockDB.EXPECT().ChatbotcallCreate(ctx, tt.expectChatbotcall).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUID).Return(tt.responseChatbotcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
 
 			res, err := h.Create(ctx, tt.customerID, tt.chatbotID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language)
 			if err != nil {
@@ -323,6 +323,7 @@ func Test_UpdateStatusStart(t *testing.T) {
 
 			mockDB.EXPECT().ChatbotcallUpdateStatusProgressing(ctx, tt.id, tt.transcribeID).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.id).Return(tt.responseChatbotcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallProgressing, tt.responseChatbotcall)
 
 			res, err := h.UpdateStatusStart(ctx, tt.id, tt.transcribeID)
 			if err != nil {
@@ -381,8 +382,63 @@ func Test_UpdateStatusEnd(t *testing.T) {
 
 			mockDB.EXPECT().ChatbotcallUpdateStatusEnd(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.id).Return(tt.responseChatbotcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallEnd, tt.responseChatbotcall)
 
 			res, err := h.UpdateStatusEnd(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseChatbotcall) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseChatbotcall, res)
+			}
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseChatbotcall *chatbotcall.Chatbotcall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("301029b6-578f-41c4-905a-906e4e8ebbb3"),
+
+			&chatbotcall.Chatbotcall{
+				ID: uuid.FromStringOrNil("301029b6-578f-41c4-905a-906e4e8ebbb3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &chatbotcallHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChatbotcallDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().ChatbotcallGet(ctx, tt.id).Return(tt.responseChatbotcall, nil)
+
+			res, err := h.Delete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

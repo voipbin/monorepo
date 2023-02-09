@@ -51,6 +51,21 @@ func (mr *MockChatbotcallHandlerMockRecorder) Chat(ctx, cb, message interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Chat", reflect.TypeOf((*MockChatbotcallHandler)(nil).Chat), ctx, cb, message)
 }
 
+// Delete mocks base method.
+func (m *MockChatbotcallHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockChatbotcallHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockChatbotcallHandler)(nil).Delete), ctx, id)
+}
+
 // Get mocks base method.
 func (m *MockChatbotcallHandler) Get(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error) {
 	m.ctrl.T.Helper()

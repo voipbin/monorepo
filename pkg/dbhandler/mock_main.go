@@ -109,6 +109,20 @@ func (mr *MockDBHandlerMockRecorder) ChatbotcallCreate(ctx, cb interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallCreate", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallCreate), ctx, cb)
 }
 
+// ChatbotcallDelete mocks base method.
+func (m *MockDBHandler) ChatbotcallDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotcallDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatbotcallDelete indicates an expected call of ChatbotcallDelete.
+func (mr *MockDBHandlerMockRecorder) ChatbotcallDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallDelete", reflect.TypeOf((*MockDBHandler)(nil).ChatbotcallDelete), ctx, id)
+}
+
 // ChatbotcallGet mocks base method.
 func (m *MockDBHandler) ChatbotcallGet(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error) {
 	m.ctrl.T.Helper()
