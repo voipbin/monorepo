@@ -235,3 +235,11 @@ func (r *requestHandler) sendRequestRoute(ctx context.Context, uri string, metho
 
 	return r.sendRequest(ctx, queueRoute, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestChatbot send a request to the chatbot-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestChatbot(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(ctx, queueChatbot, uri, method, resource, timeout, delayed, dataType, data)
+}

@@ -122,23 +122,23 @@ func (r *requestHandler) ConferenceV1ConferenceCreate(
 		return nil, err
 	}
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var conference cfconference.Conference
-	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &conference, nil
+	return &res, nil
 }
 
 // ConferenceV1ConferenceUpdate sends a request to conference-manager
@@ -160,23 +160,23 @@ func (r *requestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uu
 		return nil, err
 	}
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		// not found
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var conference cfconference.Conference
-	if err := json.Unmarshal([]byte(res.Data), &conference); err != nil {
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &conference, nil
+	return &res, nil
 }
 
 // ConferenceV1ConferenceUpdateRecordingID sends a request to conference-manager

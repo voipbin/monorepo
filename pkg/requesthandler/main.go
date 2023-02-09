@@ -26,6 +26,10 @@ import (
 	chatmedia "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	chatbotchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	chatchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	chatbotservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -95,6 +99,7 @@ const (
 	queueCall         = "bin-manager.call-manager.request"
 	queueCampaign     = "bin-manager.campaign-manager.request"
 	queueChat         = "bin-manager.chat-manager.request"
+	queueChatbot      = "bin-manager.chatbot-manager.request"
 	queueConference   = "bin-manager.conference-manager.request"
 	queueConversation = "bin-manager.conversation-manager.request"
 	queueCustomer     = "bin-manager.customer-manager.request"
@@ -179,6 +184,14 @@ const (
 	resourceChatChatrooms        resource = "chat/chatrooms"
 	resourceChatMessagechats     resource = "chat/messagechats"
 	resourceChatMessagechatrooms resource = "chat/messagechatrooms"
+
+	resourceChatbotChatbots   resource = "chatbot/chatbots"
+	resourceChatbotChatbotsID resource = "chatbot/chatbots/<chatbot-id>"
+
+	resourceChatbotChatbotcalls   resource = "chatbot/chatbots"
+	resourceChatbotChatbotcallsID resource = "chatbot/chatbots/<chatbot-id>"
+
+	resourceChatbotServiceTypeChatbotcall resource = "chatbot/services/type/chatbotcall"
 
 	resourceConferenceConferences                  resource = "conference/conferences"
 	resourceConferenceConferencesIDRecordingStart  resource = "conference/conferences/<conference-id>/recording_start"
@@ -487,6 +500,34 @@ type RequestHandler interface {
 	ChatV1MessagechatGet(ctx context.Context, messagechatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 	ChatV1MessagechatGetsByChatID(ctx context.Context, chatID uuid.UUID, pageToken string, pageSize uint64) ([]chatmessagechat.Messagechat, error)
 	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
+
+	// chatbot-manager chatbot
+	ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*chatbotchatbot.Chatbot, error)
+	ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatbotchatbot.Chatbot, error)
+	ChatbotV1ChatbotCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		engineType chatbotchatbot.EngineType,
+	) (*chatbotchatbot.Chatbot, error)
+	ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*chatbotchatbot.Chatbot, error)
+
+	// chatbot-manager chatbotcall
+	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatbotchatbotcall.Chatbotcall, error)
+	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*chatbotchatbotcall.Chatbotcall, error)
+	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*chatbotchatbotcall.Chatbotcall, error)
+
+	// chatbot-manager service
+	ChatbotV1ServiceTypeChabotcallStart(
+		ctx context.Context,
+		customerID uuid.UUID,
+		chatbotID uuid.UUID,
+		referenceType chatchatbotcall.ReferenceType,
+		referenceID uuid.UUID,
+		gender chatchatbotcall.Gender,
+		language string,
+	) (*chatbotservice.Service, error)
 
 	// customer-manager customer
 	CustomerV1CustomerCreate(
