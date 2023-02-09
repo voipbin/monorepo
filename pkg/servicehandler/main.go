@@ -21,6 +21,8 @@ import (
 	chatmedia "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	chatbotchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
@@ -139,6 +141,23 @@ type ServiceHandler interface {
 	ChatUpdateOwnerID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, ownerID uuid.UUID) (*chatchat.WebhookMessage, error)
 	ChatAddParticipantID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
 	ChatRemoveParticipantID(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
+
+	// chatbot handlers
+	ChatbotCreate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		name string,
+		detail string,
+		engineType chatbotchatbot.EngineType,
+	) (*chatbotchatbot.WebhookMessage, error)
+	ChatbotGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*chatbotchatbot.WebhookMessage, error)
+	ChatbotGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error)
+	ChatbotDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error)
+
+	// chatbotcall handlers
+	ChatbotcallGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*chatbotchatbotcall.WebhookMessage, error)
+	ChatbotcallGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbotcall.WebhookMessage, error)
+	ChatbotcallDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbotcall.WebhookMessage, error)
 
 	// chatmessage handlers
 	ChatmessageCreate(
