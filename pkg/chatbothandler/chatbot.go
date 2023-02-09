@@ -45,6 +45,7 @@ func (h *chatbotHandler) Create(
 		log.Errorf("Could not get a created call. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chatbot.EventTypeChatbotCreated, res)
 
 	return res, nil
 }
@@ -102,6 +103,7 @@ func (h *chatbotHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbot.Cha
 		log.Errorf("Could not updated chatbot. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chatbot.EventTypeChatbotDeleted, res)
 
 	return res, nil
 }

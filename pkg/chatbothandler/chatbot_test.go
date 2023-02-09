@@ -75,6 +75,7 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
 			mockDB.EXPECT().ChatbotCreate(ctx, tt.expectChatbot).Return(nil)
 			mockDB.EXPECT().ChatbotGet(ctx, tt.responseUUID).Return(tt.responseChatbot, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbot.CustomerID, chatbot.EventTypeChatbotCreated, tt.responseChatbot)
 
 			res, err := h.Create(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType)
 			if err != nil {
@@ -182,6 +183,7 @@ func Test_Delete(t *testing.T) {
 
 			mockDB.EXPECT().ChatbotDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().ChatbotGet(ctx, tt.id).Return(tt.responseChatbot, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbot.CustomerID, chatbot.EventTypeChatbotDeleted, tt.responseChatbot)
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {

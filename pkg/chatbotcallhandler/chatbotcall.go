@@ -59,7 +59,7 @@ func (h *chatbotcallHandler) Create(
 		log.Errorf("Could not get created chatbotcall info. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishEvent(ctx, chatbotcall.EventTypeChatbotcallInitializing, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, res)
 
 	// todo: start health check
 
@@ -83,6 +83,30 @@ func (h *chatbotcallHandler) Get(ctx context.Context, id uuid.UUID) (*chatbotcal
 
 	return res, nil
 }
+
+// Delete deletes the chatbotcall.
+func (h *chatbotcallHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "Delete",
+			"chatbotcall_id": id,
+		},
+	)
+
+	if err := h.db.ChatbotcallDelete(ctx, id); err != nil {
+		log.Errorf("Could not delete the chatbotcall. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.ChatbotcallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not updated chatbotcall. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 
 // GetByReferenceID returns a chatbotcall by the reference_id.
 func (h *chatbotcallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
@@ -139,6 +163,7 @@ func (h *chatbotcallHandler) UpdateStatusStart(ctx context.Context, id uuid.UUID
 		log.Errorf("Could not get updated chatbotcall info. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chatbotcall.EventTypeChatbotcallProgressing, res)
 
 	return res, nil
 }
@@ -162,6 +187,7 @@ func (h *chatbotcallHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID) 
 		log.Errorf("Could not get updated chatbotcall info. err: %v", err)
 		return nil, err
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chatbotcall.EventTypeChatbotcallEnd, res)
 
 	return res, nil
 }

@@ -50,6 +50,7 @@ var (
 
 	// chatbotcalls
 	regV1ChatbotcallsGet = regexp.MustCompile(`/v1/chatbotcalls\?`)
+	regV1ChatbotcallsID  = regexp.MustCompile("/v1/chatbotcalls/" + regUUID + "$")
 
 	// service
 	regV1ServicesTypeChatbotcall = regexp.MustCompile("/v1/services/type/chatbotcall$")
@@ -196,6 +197,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ChatbotcallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ChatbotcallsGet(ctx, m)
 		requestType = "/v1/chatbotcalls"
+
+	// GET /chatbotcalls/<chatbotcall-id>
+	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ChatbotcallsIDGet(ctx, m)
+		requestType = "/v1/chatbotcalls/<chatbotcall-id>"
+
+	// DELETE /chatbotcalls/<chatbotcall-id>
+	case regV1ChatbotcallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ChatbotcallsIDDelete(ctx, m)
+		requestType = "/v1/chatbotcalls/<chatbotcall-id>"
 
 	/////////////////
 	// services

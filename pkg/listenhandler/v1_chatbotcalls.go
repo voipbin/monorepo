@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -47,6 +48,80 @@ func (h *listenHandler) processV1ChatbotcallsGet(ctx context.Context, m *rabbitm
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ChatbotcallsIDGet handles GET /v1/chatbotcalls/<chatbotcall-id> request
+func (h *listenHandler) processV1ChatbotcallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"handler": "processV1ChatbotcallsIDGet",
+			"uri":     m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.chatbotcallHandler.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get chatbot. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ChatbotcallsIDDelete handles DELETE /v1/chatbotcalls/<chatbotcall-id> request
+func (h *listenHandler) processV1ChatbotcallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"handler": "processV1ChatbotcallsIDDelete",
+			"uri":     m.URI,
+		},
+	)
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.chatbotcallHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete chatbotcall. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 

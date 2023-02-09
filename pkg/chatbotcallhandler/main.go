@@ -29,6 +29,7 @@ type ChatbotcallHandler interface {
 	// 	gender chatbotcall.Gender,
 	// 	language string,
 	// ) (*chatbotcall.Chatbotcall, error)
+	Delete(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	GetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error)
