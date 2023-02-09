@@ -49,16 +49,16 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 		},
 	}
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	reqHandler := requestHandler{
-		sock: mockSock,
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceGet(context.Background(), tt.conferenceID)
@@ -69,7 +69,6 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
-
 		})
 	}
 }
@@ -130,7 +129,6 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
-
 			ctx := context.Background()
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
@@ -182,8 +180,8 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
-
 			ctx := context.Background()
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.ConferenceV1ConferenceDelete(ctx, tt.conferenceID); err != nil {
@@ -237,8 +235,8 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
-
 			ctx := context.Background()
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			cf, err := reqHandler.ConferenceV1ConferenceCreate(ctx, tt.expectConference.CustomerID, tt.expectConference.Type, tt.expectConference.Name, tt.expectConference.Detail, tt.expectConference.Timeout, nil, nil, nil)
@@ -299,8 +297,8 @@ func Test_ConferenceV1ConferenceUpdateRecordingID(t *testing.T) {
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
-
 			ctx := context.Background()
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceUpdateRecordingID(ctx, tt.id, tt.recordingID)
@@ -357,8 +355,8 @@ func Test_ConferenceV1ConferenceRecordingStart(t *testing.T) {
 			reqHandler := requestHandler{
 				sock: mockSock,
 			}
-
 			ctx := context.Background()
+
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferenceRecordingStart(ctx, tt.id)

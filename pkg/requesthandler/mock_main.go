@@ -28,6 +28,9 @@ import (
 	media "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	messagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	messagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	chatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	chatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	service "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
@@ -1849,6 +1852,126 @@ func (m *MockRequestHandler) ChatV1MessagechatroomGetsByChatroomID(ctx context.C
 func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatroomGetsByChatroomID(ctx, chatroomID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatroomGetsByChatroomID", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatroomGetsByChatroomID), ctx, chatroomID, pageToken, pageSize)
+}
+
+// ChatbotV1ChatbotCreate mocks base method.
+func (m *MockRequestHandler) ChatbotV1ChatbotCreate(ctx context.Context, customerID uuid.UUID, name, detail string, engineType chatbot.EngineType) (*chatbot.Chatbot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1ChatbotCreate", ctx, customerID, name, detail, engineType)
+	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1ChatbotCreate indicates an expected call of ChatbotV1ChatbotCreate.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotCreate(ctx, customerID, name, detail, engineType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotCreate", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotCreate), ctx, customerID, name, detail, engineType)
+}
+
+// ChatbotV1ChatbotDelete mocks base method.
+func (m *MockRequestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*chatbot.Chatbot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1ChatbotDelete", ctx, chatbotID)
+	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1ChatbotDelete indicates an expected call of ChatbotV1ChatbotDelete.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotDelete(ctx, chatbotID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotDelete", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotDelete), ctx, chatbotID)
+}
+
+// ChatbotV1ChatbotGet mocks base method.
+func (m *MockRequestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*chatbot.Chatbot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1ChatbotGet", ctx, chatbotID)
+	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1ChatbotGet indicates an expected call of ChatbotV1ChatbotGet.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotGet(ctx, chatbotID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotGet", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotGet), ctx, chatbotID)
+}
+
+// ChatbotV1ChatbotGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatbot.Chatbot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1ChatbotGetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]chatbot.Chatbot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1ChatbotGetsByCustomerID indicates an expected call of ChatbotV1ChatbotGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotGetsByCustomerID), ctx, customerID, pageToken, pageSize)
+}
+
+// ChatbotV1ChatbotcallDelete mocks base method.
+func (m *MockRequestHandler) ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1ChatbotcallDelete", ctx, chatbotcallID)
+	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1ChatbotcallDelete indicates an expected call of ChatbotV1ChatbotcallDelete.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotcallDelete(ctx, chatbotcallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotcallDelete", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotcallDelete), ctx, chatbotcallID)
+}
+
+// ChatbotV1ChatbotcallGet mocks base method.
+func (m *MockRequestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1ChatbotcallGet", ctx, chatbotcallID)
+	ret0, _ := ret[0].(*chatbotcall.Chatbotcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1ChatbotcallGet indicates an expected call of ChatbotV1ChatbotcallGet.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotcallGet(ctx, chatbotcallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotcallGet", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotcallGet), ctx, chatbotcallID)
+}
+
+// ChatbotV1ChatbotcallGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatbotcall.Chatbotcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1ChatbotcallGetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]chatbotcall.Chatbotcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1ChatbotcallGetsByCustomerID indicates an expected call of ChatbotV1ChatbotcallGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ChatbotcallGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ChatbotcallGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ChatbotcallGetsByCustomerID), ctx, customerID, pageToken, pageSize)
+}
+
+// ChatbotV1ServiceTypeChabotcallStart mocks base method.
+func (m *MockRequestHandler) ChatbotV1ServiceTypeChabotcallStart(ctx context.Context, customerID, chatbotID uuid.UUID, referenceType chatbotcall.ReferenceType, referenceID uuid.UUID, gender chatbotcall.Gender, language string) (*service.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotV1ServiceTypeChabotcallStart", ctx, customerID, chatbotID, referenceType, referenceID, gender, language)
+	ret0, _ := ret[0].(*service.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotV1ServiceTypeChabotcallStart indicates an expected call of ChatbotV1ServiceTypeChabotcallStart.
+func (mr *MockRequestHandlerMockRecorder) ChatbotV1ServiceTypeChabotcallStart(ctx, customerID, chatbotID, referenceType, referenceID, gender, language interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ServiceTypeChabotcallStart", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ServiceTypeChabotcallStart), ctx, customerID, chatbotID, referenceType, referenceID, gender, language)
 }
 
 // ConferenceV1ConferenceAddConferencecallID mocks base method.
