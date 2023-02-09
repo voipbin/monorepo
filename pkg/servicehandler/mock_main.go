@@ -23,6 +23,8 @@ import (
 	media "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	messagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	messagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
+	chatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	chatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
@@ -637,6 +639,111 @@ func (m *MockServiceHandler) ChatUpdateOwnerID(ctx context.Context, u *customer.
 func (mr *MockServiceHandlerMockRecorder) ChatUpdateOwnerID(ctx, u, id, ownerID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatUpdateOwnerID", reflect.TypeOf((*MockServiceHandler)(nil).ChatUpdateOwnerID), ctx, u, id, ownerID)
+}
+
+// ChatbotCreate mocks base method.
+func (m *MockServiceHandler) ChatbotCreate(ctx context.Context, u *customer.Customer, name, detail string, engineType chatbot.EngineType) (*chatbot.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotCreate", ctx, u, name, detail, engineType)
+	ret0, _ := ret[0].(*chatbot.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotCreate indicates an expected call of ChatbotCreate.
+func (mr *MockServiceHandlerMockRecorder) ChatbotCreate(ctx, u, name, detail, engineType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotCreate", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotCreate), ctx, u, name, detail, engineType)
+}
+
+// ChatbotDelete mocks base method.
+func (m *MockServiceHandler) ChatbotDelete(ctx context.Context, u *customer.Customer, id uuid.UUID) (*chatbot.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotDelete", ctx, u, id)
+	ret0, _ := ret[0].(*chatbot.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotDelete indicates an expected call of ChatbotDelete.
+func (mr *MockServiceHandlerMockRecorder) ChatbotDelete(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotDelete", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotDelete), ctx, u, id)
+}
+
+// ChatbotGet mocks base method.
+func (m *MockServiceHandler) ChatbotGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*chatbot.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotGet", ctx, u, id)
+	ret0, _ := ret[0].(*chatbot.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotGet indicates an expected call of ChatbotGet.
+func (mr *MockServiceHandlerMockRecorder) ChatbotGet(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotGet", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotGet), ctx, u, id)
+}
+
+// ChatbotGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) ChatbotGetsByCustomerID(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*chatbot.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotGetsByCustomerID", ctx, u, size, token)
+	ret0, _ := ret[0].([]*chatbot.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotGetsByCustomerID indicates an expected call of ChatbotGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) ChatbotGetsByCustomerID(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotGetsByCustomerID), ctx, u, size, token)
+}
+
+// ChatbotcallDelete mocks base method.
+func (m *MockServiceHandler) ChatbotcallDelete(ctx context.Context, u *customer.Customer, id uuid.UUID) (*chatbotcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotcallDelete", ctx, u, id)
+	ret0, _ := ret[0].(*chatbotcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotcallDelete indicates an expected call of ChatbotcallDelete.
+func (mr *MockServiceHandlerMockRecorder) ChatbotcallDelete(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallDelete", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotcallDelete), ctx, u, id)
+}
+
+// ChatbotcallGet mocks base method.
+func (m *MockServiceHandler) ChatbotcallGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*chatbotcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotcallGet", ctx, u, id)
+	ret0, _ := ret[0].(*chatbotcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotcallGet indicates an expected call of ChatbotcallGet.
+func (mr *MockServiceHandlerMockRecorder) ChatbotcallGet(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGet", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotcallGet), ctx, u, id)
+}
+
+// ChatbotcallGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) ChatbotcallGetsByCustomerID(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*chatbotcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatbotcallGetsByCustomerID", ctx, u, size, token)
+	ret0, _ := ret[0].([]*chatbotcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatbotcallGetsByCustomerID indicates an expected call of ChatbotcallGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) ChatbotcallGetsByCustomerID(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotcallGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).ChatbotcallGetsByCustomerID), ctx, u, size, token)
 }
 
 // ChatmessageCreate mocks base method.

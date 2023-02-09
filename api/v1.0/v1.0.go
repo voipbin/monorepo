@@ -8,6 +8,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/calls"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/campaigncalls"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/campaigns"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/chatbotcalls"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/chatbots"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/chatmessages"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/chatroommessages"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/chatrooms"
@@ -46,6 +48,8 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	calls.ApplyRoutes(v1)
 	campaigns.ApplyRoutes(v1)
 	campaigncalls.ApplyRoutes(v1)
+	chatbots.ApplyRoutes(v1)
+	chatbotcalls.ApplyRoutes(v1)
 	chats.ApplyRoutes(v1)
 	chatmessages.ApplyRoutes(v1)
 	chatrooms.ApplyRoutes(v1)
