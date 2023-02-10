@@ -114,9 +114,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			},
 			"pjsip/call-out/sip:testoutgoing@test.com",
 			map[string]string{
-				"CALLERID(pres)":                        "prohib",
-				"PJSIP_HEADER(add,P-Asserted-Identity)": "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>",
-				"PJSIP_HEADER(add,Privacy)":             "id",
+				"CALLERID(name)":                        "test",
+				"CALLERID(num)":                         "testsrc@test.com",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
 			},
 		},
@@ -287,7 +286,6 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
 			"pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
 			map[string]string{
-				// "CALLERID(all)":                         "+99999888",
 				"CALLERID(name)":                        "test",
 				"CALLERID(num)":                         "+99999888",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
@@ -364,7 +362,6 @@ func Test_getDialURI_Tel(t *testing.T) {
 
 		call *call.Call
 
-		// responseRoutes   []rmroute.Route
 		responseProvider *rmprovider.Provider
 
 		expectProviderID uuid.UUID
@@ -1188,57 +1185,118 @@ func Test_getDialroutes(t *testing.T) {
 	}
 }
 
-func Test_getEndpointSDPTransport(t *testing.T) {
+func Test_getVariablesCallerID(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		endpointDestination string
+		call *call.Call
 
-		expectRes string
+		expectRes map[string]string
 	}{
 		{
-			"transport udp",
+			"destination type tel and source target is anonymous",
 
-			"transport=udp",
+			&call.Call{
+				Source: commonaddress.Address{
+					Target: "anonymous",
+				},
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+			},
 
-			"RTP/AVP",
+			map[string]string{
+				"CALLERID(pres)":                        "prohib",
+				"PJSIP_HEADER(add,P-Asserted-Identity)": "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>",
+				"PJSIP_HEADER(add,Privacy)":             "id",
+			},
 		},
 		{
-			"transport ws",
+			"destination type is sip",
 
-			"transport=ws",
+			&call.Call{
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
+					Target: "sip:test@test.sip.voipbin.net",
+				},
+			},
 
-			"UDP/TLS/RTP/SAVPF",
-		},
-		{
-			"transport wss",
-
-			"transport=wss",
-
-			"UDP/TLS/RTP/SAVPF",
+			map[string]string{
+				"CALLERID(name)": "",
+				"CALLERID(num)":  "+821100000001",
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &callHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				db:            mockDB,
+			res := map[string]string{}
+			setChannelVariablesCallerID(res, tt.call)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
+		})
+	}
+}
 
-			res := h.getEndpointSDPTransport(tt.endpointDestination)
-			if res != tt.expectRes {
+func Test_getSourceForOutgoingCall(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		source      *commonaddress.Address
+		destination *commonaddress.Address
+
+		expectRes *commonaddress.Address
+	}{
+		{
+			"destination type tel and source target is anonymous",
+
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+		},
+		{
+			"destination type is tel but source has + prefix",
+
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "821100000001",
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+
+			&commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				TargetName: "Anonymous",
+				Target:     "anonymous",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := getSourceForOutgoingCall(tt.source, tt.destination)
+			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})

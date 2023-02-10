@@ -135,6 +135,9 @@ func (h *callHandler) CreateCallOutgoing(
 		call.DataTypeEarlyExecution: strconv.FormatBool(earlyExecution),
 	}
 
+	// get source for outgoing
+	s := getSourceForOutgoingCall(&source, &destination)
+
 	// create a call
 	c, err := h.Create(
 		ctx,
@@ -150,7 +153,7 @@ func (h *callHandler) CreateCallOutgoing(
 		uuid.Nil,
 		call.TypeFlow,
 
-		&source,
+		s,
 		&destination,
 		call.StatusDialing,
 		data,
@@ -272,17 +275,6 @@ func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, err
 	}
 }
 
-// getEndpointSDPTransport returns corresponded sdp-transport
-func (h *callHandler) getEndpointSDPTransport(endpointDestination string) string {
-
-	// webrtc allows only UDP/TLS/RTP/SAVPF
-	if strings.Contains(endpointDestination, "transport=ws") || strings.Contains(endpointDestination, "transport=wss") {
-		return "UDP/TLS/RTP/SAVPF"
-	}
-
-	return "RTP/AVP"
-}
-
 // CreateCallOutgoingAgent creates an outgoing call to the agent
 func (h *callHandler) createCallOutgoingAgent(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) ([]*call.Call, error) {
 
@@ -356,28 +348,17 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 		return err
 	}
 
-	// get sdp-transport
-	sdpTransport := h.getEndpointSDPTransport(dialURI)
-	log.Debugf("Endpoint detail. endpoint_destination: %s, sdp_transport: %s", dialURI, sdpTransport)
-
-	// get source address
-	source := h.getSourceForOutgoingCall(ctx, c)
-	log.WithField("source", source).Debugf("Source detail.")
-
-	// set variables
-	variables := map[string]string{
-		"PJSIP_HEADER(add,VBOUT-SDP_Transport)": sdpTransport,
-	}
-
-	for k, v := range source {
-		variables[k] = v
-	}
+	// set channel variables
+	channelVariables := map[string]string{}
+	setChannelVariableTransport(channelVariables, dialURI)
+	setChannelVariablesCallerID(channelVariables, c)
+	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v", dialURI, channelVariables)
 
 	// set app args
 	appArgs := fmt.Sprintf("context=%s,call_id=%s", common.ContextOutgoingCall, c.ID)
 
 	// create a channel
-	tmp, err := h.channelHandler.StartChannel(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", variables)
+	tmp, err := h.channelHandler.StartChannel(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", channelVariables)
 	if err != nil {
 		log.Errorf("Could not create a channel for outgoing call. err: %v", err)
 		return err
@@ -439,21 +420,51 @@ func (h *callHandler) getNextDialroute(ctx context.Context, c *call.Call) (*rmro
 	return &c.Dialroutes[idx+1], nil
 }
 
-// getSourceForOutgoingCall returns a source address for outgoing call
-func (h *callHandler) getSourceForOutgoingCall(ctx context.Context, c *call.Call) map[string]string {
+// setChannelVariableTransport sets the outgoit call's media transport type
+func setChannelVariableTransport(variables map[string]string, endpointDestination string) {
 
-	res := map[string]string{}
-	switch c.Source.Type {
-	case commonaddress.TypeTel:
-		res["CALLERID(name)"] = c.Source.TargetName
-		res["CALLERID(num)"] = c.Source.Target
-
-	default:
-		// currently we are making a call in anonymous caller.
-		res["CALLERID(pres)"] = "prohib"
-		res["PJSIP_HEADER(add,P-Asserted-Identity)"] = "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>"
-		res["PJSIP_HEADER(add,Privacy)"] = "id"
+	// webrtc allows only UDP/TLS/RTP/SAVPF
+	if strings.Contains(endpointDestination, "transport=ws") || strings.Contains(endpointDestination, "transport=wss") {
+		variables["PJSIP_HEADER(add,VBOUT-SDP_Transport)"] = "UDP/TLS/RTP/SAVPF"
+		return
 	}
 
-	return res
+	variables["PJSIP_HEADER(add,VBOUT-SDP_Transport)"] = "RTP/AVP"
+}
+
+// setChannelVariablesCallerID sets the outgoit call's caller
+func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
+
+	if c.Destination.Type == commonaddress.TypeTel && c.Source.Target == "anonymous" {
+		// we can't verify the caller's id. setting the anonymous caller id
+		variables["CALLERID(pres)"] = "prohib"
+		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>"
+		variables["PJSIP_HEADER(add,Privacy)"] = "id"
+
+		return
+	}
+
+	variables["CALLERID(name)"] = c.Source.TargetName
+	variables["CALLERID(num)"] = c.Source.Target
+}
+
+// getSourceForOutgoingCall returns a source address for outgoing call
+func getSourceForOutgoingCall(source *commonaddress.Address, destination *commonaddress.Address) *commonaddress.Address {
+
+	if destination.Type != commonaddress.TypeTel {
+		// the only tel type destination need a source address chage
+		return source
+	}
+
+	// validate source number
+	if strings.HasPrefix(source.Target, "+") {
+		return source
+	}
+
+	// invalid source address for the tel type destination. we need to set the caller id to the anonymous
+	return &commonaddress.Address{
+		Type:       source.Type,
+		TargetName: "Anonymous",
+		Target:     "anonymous",
+	}
 }
