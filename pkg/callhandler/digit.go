@@ -15,13 +15,13 @@ import (
 )
 
 // digitsReceived handles DTMF Recevied event
-func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration int) error {
-	ctx := context.Background()
-
+func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, digit string, duration int) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"channel": cn,
-			"func":    "digitsReceived",
+			"func":     "digitsReceived",
+			"channel":  cn,
+			"digits":   digit,
+			"duration": duration,
 		},
 	)
 
@@ -31,16 +31,82 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 		return nil
 	}
 	log.WithField("call", c).Debug("Found call info.")
+
 	log = log.WithFields(
 		logrus.Fields{
 			"call_id": c.ID,
 		},
 	)
 
-	if c.Action.Type != fmaction.TypeDigitsReceive {
+	switch c.Action.Type {
+	case fmaction.TypeDigitsReceive:
+
+		digits := fmt.Sprintf("${%s}%s", variableCallDigits, digit)
+		variables := map[string]string{
+			variableCallDigits: digits,
+		}
+		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
+			log.Errorf("Could not set DTMF. err: %v", err)
+			return nil
+		}
+
+		var option fmaction.OptionDigitsReceive
+		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
+			log.WithField("action", c.Action).Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
+		}
+
+		condition, err := h.checkDigitsCondition(ctx, c.ActiveFlowID, &option)
+		if err != nil {
+			log.Errorf("Could not validate the digits. err: %v", err)
+			return nil
+		}
+
+		if !condition {
+			log.Debug("The digit recieved not finished yet. Waiting next digit.")
+			return nil
+		}
+
+		if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); errNext != nil {
+			log.Errorf("Could not get next action. err: %v", errNext)
+			_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
+		}
+
+		return nil
+
+	case fmaction.TypeTalk:
 		// overwrite dtmf receive cache.
+		// we are setting the dtmf here even it is not dtmf receive action.
+		// this is needed, because if the user press the dtmf in the prior of dtmf receive(i.e play action),
+		// the user exepects pressed dtmf could be collected in the dtmf received action in next.
+		variables := map[string]string{
+			variableCallDigits: digit,
+		}
+		if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
+			log.Errorf("Could not set DTMF. err: %v", err)
+		}
+
+		var option fmaction.OptionTalk
+		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
+			log.WithField("action", c.Action).Errorf("could not parse the option. err: %v", err)
+			return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
+		}
+
+		// send next action request
+		if option.DigitsHandle == fmaction.OptionTalkDigitsHandleNext {
+			log.Debugf("Digits handle is next. Moving to the next. digits_handle: %s", option.DigitsHandle)
+			if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.ID, true); errNext != nil {
+				log.Errorf("Could not get next action. err: %v", errNext)
+				_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
+			}
+		}
+
+		return nil
+
+	default:
 		log.WithField("action_type", c.Action.Type).Debug("The current action is not dtmf receive.")
 
+		// overwrite dtmf receive cache.
 		// we are setting the dtmf here even it is not dtmf receive action.
 		// this is needed, because if the user press the dtmf in the prior of dtmf receive(i.e play action),
 		// the user exepects pressed dtmf could be collected in the dtmf received action in next.
@@ -53,40 +119,6 @@ func (h *callHandler) digitsReceived(cn *channel.Channel, digit string, duration
 
 		return nil
 	}
-
-	var option fmaction.OptionDigitsReceive
-	if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-		log.WithField("action", c.Action).Errorf("could not parse the option. err: %v", err)
-		return fmt.Errorf("could not parse option. action: %v, err: %v", c.Action, err)
-	}
-
-	digits := fmt.Sprintf("${%s}%s", variableCallDigits, digit)
-	variables := map[string]string{
-		variableCallDigits: digits,
-	}
-	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveFlowID, variables); errSet != nil {
-		log.Errorf("Could not set DTMF. err: %v", err)
-		return nil
-	}
-
-	condition, err := h.checkDigitsCondition(ctx, c.ActiveFlowID, &option)
-	if err != nil {
-		log.Errorf("Could not validate the digits. err: %v", err)
-		return nil
-	}
-
-	if !condition {
-		log.Debug("The digit recieved not finished yet. Waiting next digit.")
-		return nil
-	}
-
-	// send next action request
-	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.ID, false); errNext != nil {
-		log.Errorf("Could not get next action. err: %v", errNext)
-		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
-	}
-
-	return nil
 }
 
 // DigitsGet returns received dtmfs
