@@ -11,6 +11,8 @@ import (
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -3613,6 +3615,106 @@ func Test_actionHandleConversationSend(t *testing.T) {
 			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.expectConversationID, tt.expectText, []conversationmedia.Media{}).Return(&conversationmessage.Message{}, nil)
 
 			if errCall := h.actionHandleConversationSend(ctx, tt.af); errCall != nil {
+				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		})
+	}
+}
+
+func Test_actionHandleChatbotTalk(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		af *activeflow.Activeflow
+
+		responseService *cbservice.Service
+
+		expectCustomerID    uuid.UUID
+		expectChatbotID     uuid.UUID
+		expectReferenceType cbchatbotcall.ReferenceType
+		expectReferenceID   uuid.UUID
+		expectGender        cbchatbotcall.Gender
+		expectLanguage      string
+	}{
+		{
+			"normal",
+
+			&activeflow.Activeflow{
+				ID:            uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
+				CustomerID:    uuid.FromStringOrNil("baba6a92-a8f5-11ed-926f-fb93cea60103"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
+				CurrentAction: action.Action{
+					ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
+					Type:   action.TypeChatbotTalk,
+					Option: []byte(`{"chatbot_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","gender":"female","language":"en-US"}`),
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:     uuid.FromStringOrNil("baea2278-a8f5-11ed-bac8-cf57f2d8de20"),
+								Type:   action.TypeChatbotTalk,
+								Option: []byte(`{"chatbot_id":"bb17f504-a8f5-11ed-a974-2f810c03cbf8","gender":"female","language":"en-US"}`),
+							},
+						},
+					},
+				},
+			},
+
+			&cbservice.Service{
+				ID:   uuid.FromStringOrNil("bb68f67a-a8f5-11ed-9a2f-63b973d60f8c"),
+				Type: cbservice.TypeChatbotcall,
+				PushActions: []action.Action{
+					{
+						ID: uuid.FromStringOrNil("bb9239cc-a8f5-11ed-b21f-f7e43c6b6a60"),
+					},
+				},
+			},
+
+			uuid.FromStringOrNil("baba6a92-a8f5-11ed-926f-fb93cea60103"),
+			uuid.FromStringOrNil("bb17f504-a8f5-11ed-a974-2f810c03cbf8"),
+			cbchatbotcall.ReferenceTypeCall,
+			uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
+			cbchatbotcall.GenderFemale,
+			"en-US",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAction := actionhandler.NewMockActionHandler(mc)
+			mockVariable := variablehandler.NewMockVariableHandler(mc)
+			mockStack := stackhandler.NewMockStackHandler(mc)
+
+			h := &activeflowHandler{
+				db:         mockDB,
+				reqHandler: mockReq,
+
+				actionHandler:   mockAction,
+				variableHandler: mockVariable,
+				stackHandler:    mockStack,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectCustomerID, tt.expectChatbotID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage).Return(tt.responseService, nil)
+
+			// push stack
+			mockStack.EXPECT().Push(ctx, tt.af.StackMap, tt.responseService.PushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
+
+			if errCall := h.actionHandleChatbotTalk(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
 			}
 

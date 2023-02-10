@@ -71,9 +71,13 @@ const (
 	TypeBranch Type = "branch"
 
 	// TypeCall starts a new independent outgoing call with a given flow.
-	// it executes
+	// it creates a new outgoing call with a new flow.
 	// flow-manager
 	TypeCall Type = "call"
+
+	// TypeChatbotTalk starts a talk with chatbot.
+	// chatbot-manager
+	TypeChatbotTalk Type = "chatbot_talk"
 
 	// TypeConditionCallDigits deprecated. use the TypeConditionVariable instead.
 	TypeConditionCallDigits Type = "condition_call_digits" // flow-manager. condition check(call's digits)
@@ -206,6 +210,7 @@ var TypeList []Type = []Type{
 	TypeBeep,
 	TypeBranch,
 	TypeCall,
+	TypeChatbotTalk,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
 	TypeConditionDatetime,
