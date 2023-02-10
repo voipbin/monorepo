@@ -2,6 +2,7 @@ package action
 
 import (
 	"github.com/gofrs/uuid"
+	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
@@ -41,6 +42,14 @@ type OptionCall struct {
 	Actions        []Action                `json:"actions"`
 	Chained        bool                    `json:"chained"`         // If it sets to true, the created calls will be hungup when the master call is hangup. Default false.
 	EarlyExecution bool                    `json:"early_execution"` // if it sets to true, the created call executes the flow(activeflow) before call answer.
+}
+
+// OptionChatbotTalk defines action chatbot_talk's option.
+type OptionChatbotTalk struct {
+	ChatbotID uuid.UUID            `json:"chatbot_id"`
+	Gender    cbchatbotcall.Gender `json:"gender"`
+	Language  string               `json:"language"` // BCP47 format. en-US
+	Duration  int                  `json:"duration"` // chatbot talk duration. seconds
 }
 
 // OptionConfbridgeJoin defines action confbridge_join's option.
@@ -222,9 +231,10 @@ type OptionStreamEcho struct {
 
 // OptionTalk defines action talk's option.
 type OptionTalk struct {
-	Text     string `json:"text"`     // the text to read(SSML format or plain text)
-	Gender   string `json:"gender"`   // gender(male/female/neutral)
-	Language string `json:"language"` // IETF locale-name(ko-KR, en-US)
+	Text         string                 `json:"text"`          // the text to read(SSML format or plain text)
+	Gender       string                 `json:"gender"`        // gender(male/female/neutral)
+	Language     string                 `json:"language"`      // IETF locale-name(ko-KR, en-US)
+	DigitsHandle OptionTalkDigitsHandle `json:"digits_handle"` // define action when it receives the digits.
 }
 
 // OptionTranscribeStart defines action TypeTranscribeStart's option.

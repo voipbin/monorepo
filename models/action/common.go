@@ -50,3 +50,12 @@ const (
 const (
 	OptionBranchVariableDefault = "voipbin.call.digits" // Default variable for branch option.
 )
+
+// OptionTalkDigitsHandle define
+type OptionTalkDigitsHandle string
+
+// list of OptionTalkDigitsHandle
+const (
+	OptionTalkDigitsHandleNone OptionTalkDigitsHandle = ""     // do nothing
+	OptionTalkDigitsHandleNext OptionTalkDigitsHandle = "next" // if it receives digits, move to the next action
+)

@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
@@ -1070,6 +1071,48 @@ func (h *activeflowHandler) actionHandleConversationSend(ctx context.Context, af
 			}
 			log.WithField("message", res).Debugf("Sent the conversation message correctly. message_id: %s", res.ID)
 		}()
+	}
+
+	return nil
+}
+
+// actionHandleChatbotTalk handles action chatbot_talk with activeflow.
+// it starts chatbot talk service.
+func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleChatbotTalk",
+		"activeflow_id":     af.ID,
+		"reference_type":    af.ReferenceType,
+		"reference_id":      af.ReferenceID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	act := &af.CurrentAction
+
+	log.Debugf("Action detail. action: %v", act)
+
+	var opt action.OptionChatbotTalk
+	if err := json.Unmarshal(act.Option, &opt); err != nil {
+		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
+		return err
+	}
+
+	if af.ReferenceType != activeflow.ReferenceTypeCall {
+		log.Errorf("Wrong type of reference. Only reference type call is supported. reference_type: %s", af.ReferenceType)
+		return fmt.Errorf("wrong reference type. reference_type: %s", af.ReferenceType)
+	}
+
+	// start service
+	sv, err := h.reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, af.CustomerID, opt.ChatbotID, cbchatbotcall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language)
+	if err != nil {
+		log.Errorf("Could not start the service. err: %v", err)
+		return errors.Wrap(err, "Could not start the service.")
+	}
+	log.WithField("service", sv).Debugf("Started service. service_type: %s, service_id: %s", sv.Type, sv.ID)
+
+	// push the actions
+	if errPush := h.PushStack(ctx, af, sv.PushActions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errPush
 	}
 
 	return nil

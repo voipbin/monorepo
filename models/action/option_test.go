@@ -766,3 +766,47 @@ func Test_marshal_OptionConnect(t *testing.T) {
 		})
 	}
 }
+
+func Test_marshal_OptionChatbotTalk(t *testing.T) {
+	type test struct {
+		name string
+
+		option []byte
+
+		expectRes OptionChatbotTalk
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			[]byte(`{
+				"chatbot_id":"d1c4f676-a8a5-11ed-85ca-7fe57e970bcd",
+				"gender":"female",
+				"language":"en-US",
+				"duration":6000
+			}`),
+
+			OptionChatbotTalk{
+				ChatbotID: uuid.FromStringOrNil("d1c4f676-a8a5-11ed-85ca-7fe57e970bcd"),
+				Gender:    "female",
+				Language:  "en-US",
+				Duration:  6000,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := OptionChatbotTalk{}
+			if err := json.Unmarshal(tt.option, &res); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
