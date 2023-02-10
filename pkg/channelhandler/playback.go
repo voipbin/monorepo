@@ -29,6 +29,11 @@ func (h *channelHandler) PlaybackStop(ctx context.Context, id string) error {
 		return fmt.Errorf("the channel has hungup already")
 	}
 
+	if cn.PlaybackID == "" {
+		// no playback is playing. nothing to do
+		return nil
+	}
+
 	if errStop := h.reqHandler.AstPlaybackStop(ctx, cn.AsteriskID, cn.PlaybackID); errStop != nil {
 		log.Errorf("Could not stop the playback. err: %v", errStop)
 		return errors.Wrap(errStop, "could not stop the playback")

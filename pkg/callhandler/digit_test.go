@@ -60,18 +60,19 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
+			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.call.ActiveFlowID, tt.expectVariables).Return(nil)
 
-			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
+			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_DTMFReceivedContinue(t *testing.T) {
+func Test_DTMFReceived_action_digits_receive_continue(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -128,19 +129,20 @@ func Test_DTMFReceivedContinue(t *testing.T) {
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
+			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
 
-			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
+			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_DTMFReceivedStop(t *testing.T) {
+func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -151,9 +153,8 @@ func Test_DTMFReceivedStop(t *testing.T) {
 
 		expectDigits string
 
-		responseCall *call.Call
-		responseVar  *variable.Variable
-		responseVar2 *variable.Variable
+		responseCall     *call.Call
+		responseVariable *variable.Variable
 
 		expectVariables map[string]string
 	}{
@@ -175,11 +176,6 @@ func Test_DTMFReceivedStop(t *testing.T) {
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3, "key": "#*"}`),
-				},
-			},
-			&variable.Variable{
-				Variables: map[string]string{
-					variableCallDigits: "",
 				},
 			},
 			&variable.Variable{
@@ -210,12 +206,6 @@ func Test_DTMFReceivedStop(t *testing.T) {
 				Action: fmaction.Action{
 					Type:   fmaction.TypeDigitsReceive,
 					Option: []byte(`{"length": 3, "key": "#*"}`),
-				},
-			},
-
-			&variable.Variable{
-				Variables: map[string]string{
-					variableCallDigits: "",
 				},
 			},
 			&variable.Variable{
@@ -250,11 +240,6 @@ func Test_DTMFReceivedStop(t *testing.T) {
 			},
 			&variable.Variable{
 				Variables: map[string]string{
-					variableCallDigits: "1",
-				},
-			},
-			&variable.Variable{
-				Variables: map[string]string{
 					variableCallDigits: "12",
 				},
 			},
@@ -277,14 +262,146 @@ func Test_DTMFReceivedStop(t *testing.T) {
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
+			ctx := context.Background()
 
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 
 			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
-			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVar2, nil)
+			mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), tt.responseCall.ActiveFlowID).Return(tt.responseVariable, nil)
 			mockReq.EXPECT().CallV1CallActionNext(gomock.Any(), tt.responseCall.ID, false)
 
-			if err := h.digitsReceived(tt.channel, tt.digit, tt.duration); err != nil {
+			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_DTMFReceived_action_talk_digits_handle_next(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		channel  *channel.Channel
+		digit    string
+		duration int
+
+		expectDigits string
+
+		responseCall *call.Call
+
+		expectVariables map[string]string
+	}{
+		{
+			"digits",
+
+			&channel.Channel{
+				ID:         "c0b5711e-a902-11ed-9f51-c74975f93e22",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+			"1",
+			100,
+
+			"1",
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("c102c248-a902-11ed-9cdd-439f377ef6a3"),
+				ChannelID: "c0b5711e-a902-11ed-9f51-c74975f93e22",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeTalk,
+					Option: []byte(`{"digits_handle": "next"}`),
+				},
+			},
+
+			map[string]string{
+				variableCallDigits: "1",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
+			mockReq.EXPECT().CallV1CallActionNext(gomock.Any(), tt.responseCall.ID, true)
+
+			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_DTMFReceived_action_talk_digits_handle_none(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		channel  *channel.Channel
+		digit    string
+		duration int
+
+		responseCall *call.Call
+
+		expectDigits    string
+		expectVariables map[string]string
+	}{
+		{
+			"digits",
+
+			&channel.Channel{
+				ID:         "4f273ce6-a905-11ed-8509-2f79d7c536a1",
+				AsteriskID: "80:fa:5b:5e:da:81",
+			},
+			"1",
+			100,
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("4f4b048c-a905-11ed-8dfa-07f2bde8ba51"),
+				ChannelID: "4f273ce6-a905-11ed-8509-2f79d7c536a1",
+				Action: fmaction.Action{
+					Type:   fmaction.TypeTalk,
+					Option: []byte(`{"digits_handle": ""}`),
+				},
+			},
+
+			"1",
+			map[string]string{
+				variableCallDigits: "1",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveFlowID, tt.expectVariables).Return(nil)
+
+			if err := h.digitsReceived(ctx, tt.channel, tt.digit, tt.duration); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

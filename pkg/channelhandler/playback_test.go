@@ -1,0 +1,152 @@
+package channelhandler
+
+import (
+	"context"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+)
+
+func Test_PlaybackStop(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id string
+
+		responseChannel *channel.Channel
+		expectRes       *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"has playback id",
+
+			"56142206-a911-11ed-8d5d-c74b3f540ca7",
+
+			&channel.Channel{
+				ID:         "56142206-a911-11ed-8d5d-c74b3f540ca7",
+				PlaybackID: "56f595f6-a911-11ed-b7d1-7f7aea3d1dcb",
+				TMDelete:   dbhandler.DefaultTimeStamp,
+			},
+			&channel.Channel{
+				ID: "56142206-a911-11ed-8d5d-c74b3f540ca7",
+			},
+		},
+		{
+			"has empty playback id",
+
+			"9371421e-a911-11ed-9f6f-77336360bb04",
+
+			&channel.Channel{
+				ID:         "9371421e-a911-11ed-9f6f-77336360bb04",
+				PlaybackID: "",
+				TMDelete:   dbhandler.DefaultTimeStamp,
+			},
+			&channel.Channel{
+				ID: "9371421e-a911-11ed-9f6f-77336360bb04",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+
+			if tt.responseChannel.PlaybackID != "" {
+				mockReq.EXPECT().AstPlaybackStop(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.PlaybackID).Return(nil)
+			}
+
+			if err := h.PlaybackStop(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_Play(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id       string
+		actionID uuid.UUID
+		medias   []string
+		language string
+
+		responseChannel *channel.Channel
+		expectRes       *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			"b3bb9556-a911-11ed-82b4-5b1a0561bc34",
+			uuid.FromStringOrNil("b3ecb76c-a911-11ed-ba75-1fd6a1f4a8dc"),
+			[]string{
+				"https://test.com/b41231e0-a911-11ed-826d-b783a5e07b3b.wav",
+				"https://test.com/b43af49a-a911-11ed-a9b1-1f8d8b922359.wav",
+			},
+			"",
+
+			&channel.Channel{
+				ID:       "b3bb9556-a911-11ed-82b4-5b1a0561bc34",
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			&channel.Channel{
+				ID: "b3bb9556-a911-11ed-82b4-5b1a0561bc34",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelPlay(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.actionID, tt.medias, "").Return(nil)
+
+			if err := h.Play(ctx, tt.id, tt.actionID, tt.medias, tt.language); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
