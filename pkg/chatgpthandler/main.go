@@ -4,7 +4,6 @@ package chatgpthandler
 
 import (
 	"context"
-	"os"
 
 	"github.com/otiai10/openaigo"
 )
@@ -25,7 +24,7 @@ type chatgptHandler struct {
 
 // NewChatgptHandler define
 func NewChatgptHandler(apiKey string) ChatgptHandler {
-	client := openaigo.NewClient(os.Getenv(apiKey))
+	client := openaigo.NewClient(apiKey)
 
 	return &chatgptHandler{
 		client: client,
