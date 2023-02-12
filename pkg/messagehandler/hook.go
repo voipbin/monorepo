@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
@@ -120,6 +121,13 @@ func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Mess
 	}
 	log.WithField("activeflow", af).Debugf("Created activeflow. activeflow_id: %s", af.ID)
 
+	// set variables
+	if errVariable := h.setVariables(ctx, af.ID, m); errVariable != nil {
+		log.Errorf("Could not set the variables. err: %v", errVariable)
+		return nil, errors.Wrap(errVariable, "Could not set the variables.")
+	}
+
+	// execute the activeflow
 	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
 		log.Errorf("Could not execute the activeflow. err: %v", errExecute)
 		return nil, errExecute
