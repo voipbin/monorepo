@@ -84,8 +84,8 @@ func Test_Create(t *testing.T) {
 
 			call.StatusRinging,
 			map[call.DataType]string{
-				call.DataTypeEarlyExecution: "false",
-				call.DataTypeConnect:        "false",
+				call.DataTypeEarlyExecution:            "false",
+				call.DataTypeExecuteNextMasterOnHangup: "false",
 			},
 
 			fmaction.Action{
@@ -134,8 +134,8 @@ func Test_Create(t *testing.T) {
 
 				Status: call.StatusRinging,
 				Data: map[call.DataType]string{
-					call.DataTypeEarlyExecution: "false",
-					call.DataTypeConnect:        "false",
+					call.DataTypeEarlyExecution:            "false",
+					call.DataTypeExecuteNextMasterOnHangup: "false",
 				},
 
 				Action: fmaction.Action{

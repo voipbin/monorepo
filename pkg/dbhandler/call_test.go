@@ -1789,7 +1789,7 @@ func Test_CallSetData(t *testing.T) {
 
 			uuid.FromStringOrNil("8d80157e-98bf-49e8-9827-06c744bfa81a"),
 			map[call.DataType]string{
-				call.DataTypeConnect: "false",
+				call.DataTypeExecuteNextMasterOnHangup: "false",
 			},
 			"2020-04-18T03:22:17.995000",
 
@@ -1800,7 +1800,7 @@ func Test_CallSetData(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 
 				Data: map[call.DataType]string{
-					call.DataTypeConnect: "false",
+					call.DataTypeExecuteNextMasterOnHangup: "false",
 				},
 
 				Dialroutes: []rmroute.Route{},

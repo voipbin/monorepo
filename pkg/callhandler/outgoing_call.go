@@ -87,19 +87,19 @@ func (h *callHandler) CreateCallOutgoing(
 	source commonaddress.Address,
 	destination commonaddress.Address,
 	earlyExecution bool,
-	connect bool,
+	executeNextMasterOnHangup bool,
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"funcs":           "CreateCallOutgoing",
-		"id":              id,
-		"customer_id":     customerID,
-		"flow":            flowID,
-		"activeflow_id":   activeflowID,
-		"master_call_id":  masterCallID,
-		"source":          source,
-		"destination":     destination,
-		"early_execution": earlyExecution,
-		"connect":         connect,
+		"funcs":                         "CreateCallOutgoing",
+		"id":                            id,
+		"customer_id":                   customerID,
+		"flow":                          flowID,
+		"activeflow_id":                 activeflowID,
+		"master_call_id":                masterCallID,
+		"source":                        source,
+		"destination":                   destination,
+		"early_execution":               earlyExecution,
+		"execute_next_master_on_hangup": executeNextMasterOnHangup,
 	})
 	log.Debug("Creating a call for outgoing.")
 
@@ -138,8 +138,8 @@ func (h *callHandler) CreateCallOutgoing(
 
 	// create data
 	data := map[call.DataType]string{
-		call.DataTypeEarlyExecution: strconv.FormatBool(earlyExecution),
-		call.DataTypeConnect:        strconv.FormatBool(connect),
+		call.DataTypeEarlyExecution:            strconv.FormatBool(earlyExecution),
+		call.DataTypeExecuteNextMasterOnHangup: strconv.FormatBool(executeNextMasterOnHangup),
 	}
 
 	// create a call
