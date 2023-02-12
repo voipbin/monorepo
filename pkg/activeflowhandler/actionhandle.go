@@ -1130,3 +1130,27 @@ func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *act
 
 	return nil
 }
+
+// actionHandleStop handles action stop with activeflow.
+func (h *activeflowHandler) actionHandleStop(ctx context.Context, af *activeflow.Activeflow) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "actionHandleStop",
+		"activeflow_id":     af.ID,
+		"reference_type":    af.ReferenceType,
+		"reference_id":      af.ReferenceID,
+		"current_action_id": af.CurrentAction.ID,
+	})
+	log.WithField("action", af.CurrentAction).Debug("Handle action stop.")
+
+	actions := []action.Action{
+		action.ActionFinish,
+	}
+
+	// push the actions
+	if errPush := h.PushStack(ctx, af, actions); errPush != nil {
+		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
+		return errPush
+	}
+
+	return nil
+}
