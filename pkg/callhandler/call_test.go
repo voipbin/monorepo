@@ -85,7 +85,7 @@ func Test_Create(t *testing.T) {
 			call.StatusRinging,
 			map[call.DataType]string{
 				call.DataTypeEarlyExecution: "false",
-				// "domain":  "pstn.voipbin.net",
+				call.DataTypeConnect:        "false",
 			},
 
 			fmaction.Action{
@@ -135,6 +135,7 @@ func Test_Create(t *testing.T) {
 				Status: call.StatusRinging,
 				Data: map[call.DataType]string{
 					call.DataTypeEarlyExecution: "false",
+					call.DataTypeConnect:        "false",
 				},
 
 				Action: fmaction.Action{

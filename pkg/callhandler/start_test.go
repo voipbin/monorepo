@@ -426,7 +426,6 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 
 		responseUUIDBridge uuid.UUID
 		responseBridge     *bridge.Bridge
-		responseCall       *call.Call
 		expectCallID       uuid.UUID
 	}{
 		{
@@ -449,12 +448,6 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			responseBridge: &bridge.Bridge{
 				ID: "694c7770-5e60-11ed-8fe2-7f388186ee27",
 			},
-			responseCall: &call.Call{
-				ID:        uuid.FromStringOrNil("086c90e2-8b31-11eb-b3a0-4ba972148103"),
-				ChannelID: "08959a96-8b31-11eb-a5aa-cb0965a824f8",
-				Type:      call.TypeSipService,
-				Direction: call.DirectionIncoming,
-			},
 			expectCallID: uuid.FromStringOrNil("086c90e2-8b31-11eb-b3a0-4ba972148103"),
 		},
 		{
@@ -475,16 +468,6 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			responseUUIDBridge: uuid.FromStringOrNil("694c7770-5e60-11ed-8fe2-7f388186ee27"),
 			responseBridge: &bridge.Bridge{
 				ID: "694c7770-5e60-11ed-8fe2-7f388186ee27",
-			},
-			responseCall: &call.Call{
-				ID:           uuid.FromStringOrNil("d4420dd7-0b31-4bc1-b933-9c0283b8e93d"),
-				ChannelID:    "08959a96-8b31-11eb-a5aa-cb0965a824f8",
-				ActiveFlowID: uuid.FromStringOrNil("1c2788e0-34da-460e-bebb-005982f7df93"),
-				Type:         call.TypeSipService,
-				Direction:    call.DirectionIncoming,
-				Data: map[call.DataType]string{
-					call.DataTypeEarlyExecution: "true",
-				},
 			},
 			expectCallID: uuid.FromStringOrNil("d4420dd7-0b31-4bc1-b933-9c0283b8e93d"),
 		},
@@ -522,18 +505,6 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 			mockDB.EXPECT().CallSetBridgeID(ctx, tt.expectCallID, gomock.Any()).Return(nil)
 			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)
-
-			mockDB.EXPECT().CallGet(ctx, tt.expectCallID).Return(tt.responseCall, nil)
-			if tt.responseCall.Data[call.DataTypeEarlyExecution] == "true" {
-				// action next part.
-				mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
-				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-				mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating).Return(nil)
-				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-				mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
-			}
 
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

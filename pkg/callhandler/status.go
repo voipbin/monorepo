@@ -33,10 +33,9 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallRinging, res)
 
-	if res.ConfbridgeID != uuid.Nil {
-		if errRing := h.confbridgeHandler.Ring(ctx, c.ConfbridgeID); errRing != nil {
-			log.Errorf("Could not ring the confbridge. err: %v", errRing)
-		}
+	if c.Data[call.DataTypeEarlyExecution] == "true" {
+		log.Debugf("The call has early execution. Executing the flow. early_execution: %s", c.Data[call.DataTypeEarlyExecution])
+		return h.ActionNext(ctx, c)
 	}
 
 	return nil
@@ -72,14 +71,15 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 	// set the call's SIP call id
 	go h.handleSIPCallID(ctx, cn, res)
 
+	// send answer all if the call is in the confbridge
 	if res.ConfbridgeID != uuid.Nil {
 		if errAnswer := h.confbridgeHandler.Answer(ctx, res.ConfbridgeID); errAnswer != nil {
 			log.Errorf("Could not answer the confbridge. err: %v", errAnswer)
 		}
 	}
 
-	if res.Data[call.DataTypeEarlyExecution] == "true" {
-		// the call's flow execution is already on going.
+	if c.Data[call.DataTypeEarlyExecution] == "true" {
+		log.Debugf("The call has early execution. Consider the flow execution is already on going. early_execution: %s", c.Data[call.DataTypeEarlyExecution])
 		return nil
 	}
 

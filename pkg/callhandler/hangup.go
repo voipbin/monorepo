@@ -74,6 +74,9 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 		}
 	}
 
+	// execute the master call execution
+	h.handleMasterCallExecution(ctx, cc)
+
 	return nil
 }
 
@@ -160,6 +163,11 @@ func (h *callHandler) isRetryable(ctx context.Context, c *call.Call, cn *channel
 		return false
 	}
 
+	if c.Data[call.DataTypeEarlyExecution] == "true" && c.Status == call.StatusRinging {
+		log.Debug("The call's early execution is set and status is ringing. Consider the flow has started already.")
+		return false
+	}
+
 	// check the channel cause code is retryable
 	notRetryableCodes := []ari.ChannelCause{
 		ari.ChannelCauseNormalClearing,
@@ -194,4 +202,41 @@ func (h *callHandler) isRetryable(ctx context.Context, c *call.Call, cn *channel
 	log.Debugf("The call is dial retryable. call_id: %s", c.ID)
 
 	return true
+}
+
+// handleMasterCallExecution handles master call execution.
+// this is useful for connect calls.
+// if the connecting(ougtoing) call failed the dialing, the master call will wait in the confbridge forever.
+// so, to prevent that, we need to execute the master call's next action manually.
+func (h *callHandler) handleMasterCallExecution(ctx context.Context, c *call.Call) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "handleMasterCallExecution",
+		"call_id": c.ID,
+	})
+
+	if c.Direction == call.DirectionIncoming {
+		// nothing to do for the incoming call
+		return
+	}
+
+	if c.MasterCallID == uuid.Nil {
+		return
+	}
+
+	if c.Data[call.DataTypeEarlyExecution] == "true" {
+		return
+	}
+
+	if c.Data[call.DataTypeConnect] == "false" {
+		return
+	}
+
+	if c.HangupReason == call.HangupReasonNormal {
+		return
+	}
+
+	// execut the master call action next
+	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.MasterCallID, false); errNext != nil {
+		log.Errorf("Could not execute the master call's next action. err: %v", errNext)
+	}
 }

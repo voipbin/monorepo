@@ -268,7 +268,6 @@ func Test_joinedTypeConnect(t *testing.T) {
 				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 			}
-
 			ctx := context.Background()
 
 			if len(tt.confbridge.ChannelCallIDs) == 0 {
@@ -287,8 +286,8 @@ func Test_joinedTypeConnect(t *testing.T) {
 				}
 			}
 
-			if err := h.joinedTypeConnect(ctx, tt.channelID, tt.call, tt.confbridge); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			if errConnect := h.joinedTypeConnect(ctx, tt.channelID, tt.call, tt.confbridge); errConnect != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errConnect)
 			}
 		})
 	}

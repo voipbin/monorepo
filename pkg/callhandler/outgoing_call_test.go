@@ -38,6 +38,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 		source         commonaddress.Address
 		destination    commonaddress.Address
 		earlyExecution bool
+		connect        bool
 
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseUUIDChannel uuid.UUID
@@ -65,6 +66,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				Target:     "testoutgoing@test.com",
 				TargetName: "test target",
 			},
+			true,
 			true,
 
 			&fmactiveflow.Activeflow{
@@ -99,6 +101,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				},
 				Data: map[call.DataType]string{
 					call.DataTypeEarlyExecution: "true",
+					call.DataTypeConnect:        "true",
 				},
 				Action: fmaction.Action{
 					ID: fmaction.IDStart,
@@ -167,7 +170,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", common.ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution, tt.connect)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -191,7 +194,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 		masterCallID   uuid.UUID
 		source         commonaddress.Address
 		destination    commonaddress.Address
-		earlyExeuction bool
+		earlyExecution bool
+		connect        bool
 
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseRoutes      []rmroute.Route
@@ -222,6 +226,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				Target:     "+821121656521",
 				TargetName: "test target",
 			},
+			true,
 			true,
 
 			&fmactiveflow.Activeflow{
@@ -254,6 +259,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				Status:         call.StatusDialing,
 				Data: map[call.DataType]string{
 					call.DataTypeEarlyExecution: "true",
+					call.DataTypeConnect:        "true",
 				},
 				Direction: call.DirectionOutgoing,
 				Source: commonaddress.Address{
@@ -343,7 +349,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", common.ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExeuction)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution, tt.connect)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

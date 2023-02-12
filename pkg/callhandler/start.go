@@ -344,21 +344,7 @@ func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.
 		return errors.Wrap(errDial, "could not dial the channel")
 	}
 
-	// get call
-	c, err := h.Get(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get a call info. err: %v", err)
-		return errors.Wrap(err, "could not get call info")
-	}
-
-	// check the call's early execution
-	if c.Data[call.DataTypeEarlyExecution] != "true" {
-		// do nothing here
-		return nil
-	}
-	log.Debugf("The call has early exection option.")
-
-	return h.ActionNext(ctx, c)
+	return nil
 }
 
 // startContextApplication handles contextApplication context type of StasisStart event.
