@@ -52,12 +52,14 @@ func Test_actionHandleConnect(t *testing.T) {
 		responsePushStackID    uuid.UUID
 		responsePushAction     *action.Action
 
-		expectFlowCreateActions []action.Action
-		expectCallSource        *commonaddress.Address
-		expectCallDestinations  []commonaddress.Address
-		expectCallMasterCallID  uuid.UUID
-		expectPushActions       []action.Action
-		expectUpdateActiveflow  *activeflow.Activeflow
+		expectFlowCreateActions         []action.Action
+		expectCallSource                *commonaddress.Address
+		expectCallDestinations          []commonaddress.Address
+		expectCallMasterCallID          uuid.UUID
+		expectEarlyExecution            bool
+		expectExecuteNextMasterOnHangup bool
+		expectPushActions               []action.Action
+		expectUpdateActiveflow          *activeflow.Activeflow
 	}{
 		{
 			name: "single destination",
@@ -103,6 +105,9 @@ func Test_actionHandleConnect(t *testing.T) {
 					Type:   action.TypeConfbridgeJoin,
 					Option: []byte(`{"confbridge_id":"363b4ae8-0a9b-11eb-9d08-436d6934a451"}`),
 				},
+				{
+					Type: action.TypeHangup,
+				},
 			},
 			expectCallMasterCallID: uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
 			expectCallSource: &commonaddress.Address{
@@ -115,6 +120,8 @@ func Test_actionHandleConnect(t *testing.T) {
 					Target: "+987654321",
 				},
 			},
+			expectEarlyExecution:            false,
+			expectExecuteNextMasterOnHangup: true,
 			expectPushActions: []action.Action{
 				{
 					ID:     uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
@@ -199,6 +206,9 @@ func Test_actionHandleConnect(t *testing.T) {
 					Type:   action.TypeConfbridgeJoin,
 					Option: []byte(`{"confbridge_id":"cc131f96-2710-11eb-b3b2-1b43dc6ffa2f"}`),
 				},
+				{
+					Type: action.TypeHangup,
+				},
 			},
 			expectCallSource: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -249,7 +259,7 @@ func Test_actionHandleConnect(t *testing.T) {
 			},
 		},
 		{
-			name: "multiple unchained destinations",
+			name: "multiple destinations with early media",
 
 			af: &activeflow.Activeflow{
 				CustomerID:  uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
@@ -257,7 +267,7 @@ func Test_actionHandleConnect(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
 					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
+					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "early_media": true}`),
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -267,7 +277,7 @@ func Test_actionHandleConnect(t *testing.T) {
 							{
 								ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
 								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
+								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "early_media": true}`),
 							},
 						},
 					},
@@ -294,6 +304,9 @@ func Test_actionHandleConnect(t *testing.T) {
 					Type:   action.TypeConfbridgeJoin,
 					Option: []byte(`{"confbridge_id":"2266e688-2712-11eb-aab4-eb00b0a3efbe"}`),
 				},
+				{
+					Type: action.TypeHangup,
+				},
 			},
 			expectCallSource: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -309,7 +322,9 @@ func Test_actionHandleConnect(t *testing.T) {
 					Target: "+9876543210",
 				},
 			},
-			expectCallMasterCallID: uuid.Nil,
+			expectCallMasterCallID:          uuid.FromStringOrNil("211a68fe-2712-11eb-ad71-97e2b1546a91"),
+			expectEarlyExecution:            true,
+			expectExecuteNextMasterOnHangup: false,
 			expectPushActions: []action.Action{
 				{
 					ID:     uuid.FromStringOrNil("6f9adfc1-7d2e-49bc-b8b2-ca5123b013c3"),
@@ -325,7 +340,7 @@ func Test_actionHandleConnect(t *testing.T) {
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
 					Type:   action.TypeConnect,
-					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
+					Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "early_media": true}`),
 				},
 
 				StackMap: map[uuid.UUID]*stack.Stack{
@@ -335,7 +350,7 @@ func Test_actionHandleConnect(t *testing.T) {
 							{
 								ID:     uuid.FromStringOrNil("22311f94-2712-11eb-8550-0f0b066f8120"),
 								Type:   action.TypeConnect,
-								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "unchained": true}`),
+								Option: []byte(`{"source":{"type": "tel", "target": "+123456789"}, "destinations": [{"type": "tel", "name": "", "target": "+987654321"}, {"type": "tel", "name": "", "target": "+9876543210"}], "early_media": true}`),
 							},
 						},
 					},
@@ -398,11 +413,15 @@ func Test_actionHandleConnect(t *testing.T) {
 					Target: "+987654321",
 				},
 			},
-			expectCallMasterCallID: uuid.FromStringOrNil("0bd920ac-a253-11ed-b372-371e3ba29e82"),
+			expectCallMasterCallID:          uuid.FromStringOrNil("0bd920ac-a253-11ed-b372-371e3ba29e82"),
+			expectExecuteNextMasterOnHangup: true,
 			expectFlowCreateActions: []action.Action{
 				{
 					Type:   action.TypeConfbridgeJoin,
 					Option: []byte(`{"confbridge_id":"0c3bd774-a253-11ed-b6f4-2b405333577e"}`),
+				},
+				{
+					Type: action.TypeHangup,
 				},
 			},
 			expectPushActions: []action.Action{
@@ -469,7 +488,7 @@ func Test_actionHandleConnect(t *testing.T) {
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.expectCallMasterCallID, tt.expectCallSource, tt.expectCallDestinations, true).Return(tt.responseCalls, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.expectCallMasterCallID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup).Return(tt.responseCalls, nil)
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDConfbridge)
 			if tt.responseUUIDHangup != uuid.Nil {
 				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDHangup)
@@ -3384,7 +3403,7 @@ func Test_actionHandleCall(t *testing.T) {
 				flowID = tt.responseFlow.ID
 			}
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false).Return(tt.responseCall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)

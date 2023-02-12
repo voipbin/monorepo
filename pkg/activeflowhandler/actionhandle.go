@@ -495,6 +495,12 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	})
 	act := &af.CurrentAction
 
+	var opt action.OptionConnect
+	if errMarshal := json.Unmarshal(act.Option, &opt); errMarshal != nil {
+		log.Errorf("Could not unmarshal the connect option. err: %v", errMarshal)
+		return fmt.Errorf("could not unmarshal the connect option. err: %v", errMarshal)
+	}
+
 	// create a confbridge for connect
 	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.CustomerID, cmconfbridge.TypeConnect)
 	if err != nil {
@@ -505,12 +511,6 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		"confbridge_id": cb.ID,
 	})
 	log.WithField("confbridge", cb).Debug("Created confbridge for connect.")
-
-	var optConnect action.OptionConnect
-	if err := json.Unmarshal(act.Option, &optConnect); err != nil {
-		log.Errorf("Could not unmarshal the connect option. err: %v", err)
-		return fmt.Errorf("could not unmarshal the connect option. err: %v", err)
-	}
 
 	// create a temp flow connect confbridge join
 	tmpOpt := action.OptionConfbridgeJoin{
@@ -526,6 +526,9 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 			Type:   action.TypeConfbridgeJoin,
 			Option: tmpOptString,
 		},
+		{
+			Type: action.TypeHangup,
+		},
 	}
 
 	// create a flow for connect call
@@ -535,14 +538,24 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		return fmt.Errorf("could not create a call flow. err: %v", err)
 	}
 
-	// get master call id.
-	masterCallID := af.ReferenceID
-	if optConnect.Unchained {
-		masterCallID = uuid.Nil
+	// get call create options
+	var earlyExecution bool
+	var executeNext bool
+	if opt.EarlyMedia {
+		earlyExecution = true
+		executeNext = false
+	} else {
+		earlyExecution = false
+		if len(opt.Destinations) > 1 {
+			// we are making more than 1 call. so it's not
+			executeNext = false
+		} else {
+			executeNext = true
+		}
 	}
 
 	// create a call for connect
-	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, masterCallID, &optConnect.Source, optConnect.Destinations, true)
+	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, af.ReferenceID, &opt.Source, opt.Destinations, earlyExecution, executeNext)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
@@ -559,7 +572,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		},
 	}
 
-	if optConnect.RelayReason {
+	if opt.RelayReason {
 		// get reference id
 		// we consider the first call of get the reference
 		referenceID := resCalls[0].ID
@@ -963,7 +976,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 		masterCallID = af.ReferenceID
 	}
 
-	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution)
+	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution, false)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err

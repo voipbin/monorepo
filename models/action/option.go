@@ -108,11 +108,11 @@ type OptionConnect struct {
 	// source address.
 	Source commonaddress.Address `json:"source"`
 
-	// target destinatino addresses.
+	// target destination addresses.
 	Destinations []commonaddress.Address `json:"destinations"`
 
-	// If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
-	Unchained bool `json:"unchained"`
+	// if it sets to true, the call will get early media from the destination.
+	EarlyMedia bool `json:"early_media"`
 
 	// if it sets to true, the master call will try to the hangup the call with the same reason of the first of the destination calls.
 	// this is valid only the first destination call hungup earlier than the master call.
