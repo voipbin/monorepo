@@ -7,12 +7,14 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/messagehandlermessagebird"
 )
@@ -132,8 +134,8 @@ func Test_executeMessageFlow(t *testing.T) {
 	tests := []struct {
 		name string
 
-		m   *message.Message
-		num *nmnumber.Number
+		message *message.Message
+		num     *nmnumber.Number
 
 		expectRes *fmactiveflow.Activeflow
 	}{
@@ -141,7 +143,13 @@ func Test_executeMessageFlow(t *testing.T) {
 			"normal",
 
 			&message.Message{
-				ID: uuid.FromStringOrNil("1491e9e4-a8b8-11ec-bbe9-4b9389eaa6f7"),
+				ID:     uuid.FromStringOrNil("1491e9e4-a8b8-11ec-bbe9-4b9389eaa6f7"),
+				Source: &commonaddress.Address{},
+				Targets: []target.Target{
+					{
+						Destination: commonaddress.Address{},
+					},
+				},
 			},
 			&nmnumber.Number{
 				ID:            uuid.FromStringOrNil("1f2db1da-a8b8-11ec-82b1-2bb474596df1"),
@@ -175,10 +183,11 @@ func Test_executeMessageFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.m.ID).Return(tt.expectRes, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.num.MessageFlowID, fmactiveflow.ReferenceTypeMessage, tt.message.ID).Return(tt.expectRes, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectRes.ID, gomock.Any()).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.expectRes.ID).Return(nil)
 
-			res, err := h.executeMessageFlow(ctx, tt.m, tt.num)
+			res, err := h.executeMessageFlow(ctx, tt.message, tt.num)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
