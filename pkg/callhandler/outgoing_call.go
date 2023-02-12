@@ -36,6 +36,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	source commonaddress.Address,
 	destinations []commonaddress.Address,
 	earlyExecution bool,
+	connect bool,
 ) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CreateCallsOutgoing",
@@ -51,7 +52,7 @@ func (h *callHandler) CreateCallsOutgoing(
 
 		switch destination.Type {
 		case commonaddress.TypeSIP, commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, earlyExecution)
+			c, err := h.CreateCallOutgoing(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, earlyExecution, connect)
 			if err != nil {
 				log.Errorf("Could not create an outgoing call. err: %v", err)
 				continue
@@ -86,6 +87,7 @@ func (h *callHandler) CreateCallOutgoing(
 	source commonaddress.Address,
 	destination commonaddress.Address,
 	earlyExecution bool,
+	connect bool,
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":           "CreateCallOutgoing",
@@ -97,6 +99,7 @@ func (h *callHandler) CreateCallOutgoing(
 		"source":          source,
 		"destination":     destination,
 		"early_execution": earlyExecution,
+		"connect":         connect,
 	})
 	log.Debug("Creating a call for outgoing.")
 
@@ -130,13 +133,14 @@ func (h *callHandler) CreateCallOutgoing(
 	// create channel id
 	channelID := h.utilHandler.CreateUUID().String()
 
+	// get source address for outgoing
+	s := getSourceForOutgoingCall(&source, &destination)
+
 	// create data
 	data := map[call.DataType]string{
 		call.DataTypeEarlyExecution: strconv.FormatBool(earlyExecution),
+		call.DataTypeConnect:        strconv.FormatBool(connect),
 	}
-
-	// get source for outgoing
-	s := getSourceForOutgoingCall(&source, &destination)
 
 	// create a call
 	c, err := h.Create(
@@ -309,7 +313,8 @@ func (h *callHandler) createCallOutgoingAgent(ctx context.Context, customerID, f
 // getDialroutes generates dialroutes for outgoing call
 func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "generateDialroutes",
+		"func":        "getDialroutes",
+		"customer_id": customerID,
 	})
 
 	if destination.Type != commonaddress.TypeTel {

@@ -18,6 +18,7 @@ type V1DataCallsPost struct {
 	Source         commonaddress.Address   `json:"source"`
 	Destinations   []commonaddress.Address `json:"destinations"`
 	EarlyExecution bool                    `json:"early_execution"` // if it sets to true, the call's flow exection will not wait for call answer.
+	Connect        bool                    `json:"connect"`         // if it sets to true, the master call will execute the next action when the outgoing call has failed.
 }
 
 // V1DataCallsIDPost is
@@ -31,6 +32,7 @@ type V1DataCallsIDPost struct {
 	Source         commonaddress.Address `json:"source"`
 	Destination    commonaddress.Address `json:"destination"`
 	EarlyExecution bool                  `json:"early_execution"` // if it sets to true, the call's flow exection will not wait for call answer.
+	Connect        bool                  `json:"connect"`         // if it sets to true, the master call will execute the next action when the outgoing call has failed.
 }
 
 // V1DataCallsIDHealthPost is

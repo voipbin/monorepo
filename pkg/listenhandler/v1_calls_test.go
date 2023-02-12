@@ -283,6 +283,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 		source         commonaddress.Address
 		destination    commonaddress.Address
 		earlyExecution bool
+		connect        bool
 
 		call      *call.Call
 		expectRes *rabbitmqhandler.Response
@@ -307,6 +308,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 			destination: commonaddress.Address{},
 
 			earlyExecution: false,
+			connect:        false,
 
 			call: &call.Call{
 				ID:          uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
@@ -329,7 +331,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "ffeda266-7f50-11ec-8089-df3388aef0cc", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "2e9f9862-9803-47f0-8f40-66f1522ef7f3", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {"type":"tel","target":"+821100000001"}, "early_execution": true}`),
+				Data:     []byte(`{"customer_id": "ffeda266-7f50-11ec-8089-df3388aef0cc", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "activeflow_id": "2e9f9862-9803-47f0-8f40-66f1522ef7f3", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destination": {"type":"tel","target":"+821100000001"}, "early_execution": true, "connect": true}`),
 			},
 
 			callID:       uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
@@ -348,6 +350,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				Target: "+821100000001",
 			},
 			earlyExecution: true,
+			connect:        true,
 
 			call: &call.Call{
 				ID:         uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
@@ -385,7 +388,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution).Return(tt.call, nil)
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution, tt.connect).Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -409,6 +412,7 @@ func Test_processV1CallsPost(t *testing.T) {
 		source         commonaddress.Address
 		destinations   []commonaddress.Address
 		earlyExeuction bool
+		connect        bool
 
 		responseCall []*call.Call
 		request      *rabbitmqhandler.Request
@@ -434,6 +438,7 @@ func Test_processV1CallsPost(t *testing.T) {
 				},
 			},
 			true,
+			true,
 
 			[]*call.Call{
 				{
@@ -444,7 +449,7 @@ func Test_processV1CallsPost(t *testing.T) {
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destinations": [{"type":"tel", "target": "+821100000001"}], "early_execution": true}`),
+				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destinations": [{"type":"tel", "target": "+821100000001"}], "early_execution": true, "connect": true}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -460,6 +465,7 @@ func Test_processV1CallsPost(t *testing.T) {
 			uuid.FromStringOrNil("a1c63272-8c91-11ec-8ee7-8b50458d3214"),
 			commonaddress.Address{},
 			[]commonaddress.Address{},
+			false,
 			false,
 
 			[]*call.Call{
@@ -498,7 +504,7 @@ func Test_processV1CallsPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction).Return(tt.responseCall, nil)
+			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect).Return(tt.responseCall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -90,7 +90,15 @@ type DataType string
 
 // list of DataType types.
 const (
-	DataTypeEarlyExecution DataType = "early_execution" // if it sets to true, the call will not wait for answer for flow execution.
+	// if it sets to true, the call will execute the flow when the ringing started.
+	// because it starts the flow with ringing status, it is possible to could not handle the route failover correctly.
+	DataTypeEarlyExecution DataType = "early_execution"
+
+	// if it sets to true, the master call will move to the next action when the connect call is failed.
+	// this is important if the call is connect call, the call will move to the confbridge(type connect) after call answer.
+	// but if the call was failed and the call could not execute the action(which is confbridge join), the master call will wait in the
+	// confbridge forever. So, we need to trigger the master call's next action manually if the call was failed.
+	DataTypeConnect DataType = "connect"
 )
 
 // Direction type
