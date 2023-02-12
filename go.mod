@@ -14,9 +14,9 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230131002231-39f618279ca5
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230207053459-e6665298a1f4
-	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230209041401-359dd843a452
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230209024338-1dc7460d8a10
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230212084833-f00ba0a8a49e
+	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230210081649-48f1a33defc6
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230212085912-52bcafed9276
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230206053408-48096fff3918
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20221216125212-e74e4c409422

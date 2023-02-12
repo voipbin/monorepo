@@ -727,7 +727,7 @@ func Test_marshal_OptionConnect(t *testing.T) {
 			[]byte(`{
 				"source":{"type":"tel","target":"+821100000001"},
 				"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],
-				"unchained":true,
+				"early_media":true,
 				"relay_reason":true
 			}`),
 
@@ -746,7 +746,7 @@ func Test_marshal_OptionConnect(t *testing.T) {
 						Target: "+821100000003",
 					},
 				},
-				Unchained:   true,
+				EarlyMedia:  true,
 				RelayReason: true,
 			},
 		},
