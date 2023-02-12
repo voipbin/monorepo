@@ -785,18 +785,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallAddChainedCall(ctx, callID, 
 }
 
 // CallV1CallCreateWithID mocks base method.
-func (m *MockRequestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, ealryExecution bool) (*call.Call, error) {
+func (m *MockRequestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, ealryExecution, connect bool) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution)
+	ret := m.ctrl.Call(m, "CallV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution, connect)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1CallCreateWithID indicates an expected call of CallV1CallCreateWithID.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallCreateWithID(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallCreateWithID(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution, connect interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallCreateWithID), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallCreateWithID), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution, connect)
 }
 
 // CallV1CallDelete mocks base method.
@@ -1035,18 +1035,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallUpdateConfbridgeID(ctx, call
 }
 
 // CallV1CallsCreate mocks base method.
-func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destination []address.Address, ealryExecution bool) ([]call.Call, error) {
+func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address, ealryExecution, connect bool) ([]call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallsCreate", ctx, customerID, flowID, masterCallID, source, destination, ealryExecution)
+	ret := m.ctrl.Call(m, "CallV1CallsCreate", ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect)
 	ret0, _ := ret[0].([]call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1CallsCreate indicates an expected call of CallV1CallsCreate.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallsCreate(ctx, customerID, flowID, masterCallID, source, destination, ealryExecution interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallsCreate(ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallsCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallsCreate), ctx, customerID, flowID, masterCallID, source, destination, ealryExecution)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallsCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallsCreate), ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect)
 }
 
 // CallV1ChannelHealth mocks base method.

@@ -13,7 +13,7 @@ import (
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -101,7 +101,16 @@ func (r *requestHandler) CallV1CallActionNext(ctx context.Context, callID uuid.U
 // CallV1CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created call if it succeed.
-func (r *requestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address, ealryExecution bool) ([]cmcall.Call, error) {
+func (r *requestHandler) CallV1CallsCreate(
+	ctx context.Context,
+	customerID uuid.UUID,
+	flowID uuid.UUID,
+	masterCallID uuid.UUID,
+	source *commonaddress.Address,
+	destinations []commonaddress.Address,
+	ealryExecution bool,
+	connect bool,
+) ([]cmcall.Call, error) {
 	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsPost{
@@ -111,6 +120,7 @@ func (r *requestHandler) CallV1CallsCreate(ctx context.Context, customerID, flow
 		Source:         *source,
 		Destinations:   destinations,
 		EarlyExecution: ealryExecution,
+		Connect:        connect,
 	}
 
 	m, err := json.Marshal(data)
@@ -140,7 +150,18 @@ func (r *requestHandler) CallV1CallsCreate(ctx context.Context, customerID, flow
 // CallV1CallCreateWithID sends a request to call-manager
 // to creating a call with the given id.
 // it returns created call if it succeed.
-func (r *requestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, earlyExecution bool) (*cmcall.Call, error) {
+func (r *requestHandler) CallV1CallCreateWithID(
+	ctx context.Context,
+	id uuid.UUID,
+	customerID uuid.UUID,
+	flowID uuid.UUID,
+	activeflowID uuid.UUID,
+	masterCallID uuid.UUID,
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
+	earlyExecution bool,
+	connect bool,
+) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
 	data := &cmrequest.V1DataCallsIDPost{
@@ -151,6 +172,7 @@ func (r *requestHandler) CallV1CallCreateWithID(ctx context.Context, id, custome
 		Source:         *source,
 		Destination:    *destination,
 		EarlyExecution: earlyExecution,
+		Connect:        connect,
 	}
 
 	m, err := json.Marshal(data)
