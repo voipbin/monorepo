@@ -100,8 +100,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 					TargetName: "test target",
 				},
 				Data: map[call.DataType]string{
-					call.DataTypeEarlyExecution: "true",
-					call.DataTypeConnect:        "true",
+					call.DataTypeEarlyExecution:            "true",
+					call.DataTypeExecuteNextMasterOnHangup: "true",
 				},
 				Action: fmaction.Action{
 					ID: fmaction.IDStart,
@@ -258,8 +258,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 				Status:         call.StatusDialing,
 				Data: map[call.DataType]string{
-					call.DataTypeEarlyExecution: "true",
-					call.DataTypeConnect:        "true",
+					call.DataTypeEarlyExecution:            "true",
+					call.DataTypeExecuteNextMasterOnHangup: "true",
 				},
 				Direction: call.DirectionOutgoing,
 				Source: commonaddress.Address{

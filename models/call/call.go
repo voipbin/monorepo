@@ -98,7 +98,7 @@ const (
 	// this is important if the call is connect call, the call will move to the confbridge(type connect) after call answer.
 	// but if the call was failed and the call could not execute the action(which is confbridge join), the master call will wait in the
 	// confbridge forever. So, we need to trigger the master call's next action manually if the call was failed.
-	DataTypeConnect DataType = "connect"
+	DataTypeExecuteNextMasterOnHangup DataType = "execute_next_master_on_hangup"
 )
 
 // Direction type

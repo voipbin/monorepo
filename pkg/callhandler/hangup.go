@@ -227,7 +227,7 @@ func (h *callHandler) handleMasterCallExecution(ctx context.Context, c *call.Cal
 		return
 	}
 
-	if c.Data[call.DataTypeConnect] == "false" {
+	if c.Data[call.DataTypeExecuteNextMasterOnHangup] == "false" {
 		return
 	}
 
