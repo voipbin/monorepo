@@ -173,6 +173,10 @@ const (
 	// call-manager
 	TypeSleep Type = "sleep"
 
+	// TypeStop stops the flow.
+	// flow-manager
+	TypeStop Type = "stop"
+
 	// TypeStreamEcho echo the sound.
 	// call-manager
 	TypeStreamEcho Type = "stream_echo"
@@ -234,8 +238,9 @@ var TypeList []Type = []Type{
 	TypeQueueJoin,
 	TypeRecordingStart,
 	TypeRecordingStop,
-	TypeStreamEcho,
 	TypeSleep,
+	TypeStop,
+	TypeStreamEcho,
 	TypeTalk,
 	TypeTranscribeStart,
 	TypeTranscribeStop,

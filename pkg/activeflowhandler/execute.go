@@ -54,6 +54,12 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 	}
 	log.WithField("action", nextAction).Debug("Found next action.")
 
+	if nextAction.ID == action.IDFinish {
+		log.Debugf("Next action is finish. Stop the flow execution. activeflow_id: %s", activeflowID)
+		_, _ = h.Delete(ctx, activeflowID)
+		return &action.ActionFinish, nil
+	}
+
 	// execute the active action
 	res, err := h.executeAction(ctx, activeflowID, nextStackID, nextAction)
 	if err != nil {
@@ -96,67 +102,67 @@ func (h *activeflowHandler) executeAction(ctx context.Context, activeflowID uuid
 	switch act.Type {
 	case action.TypeAgentCall:
 		if errHandle := h.actionHandleAgentCall(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the agent_call action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the agent_call action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeBranch:
 		if errHandle := h.actionHandleBranch(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the branch action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the branch action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeCall:
 		if errHandle := h.actionHandleCall(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the call action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the call action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeChatbotTalk:
 		if errHandle := h.actionHandleChatbotTalk(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the chatbot talk action correctly. err: %v", errHandle)
-			return nil, err
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeConditionCallDigits:
 		if errHandle := h.actionHandleConditionCallDigits(ctx, af); errHandle != nil {
-			return nil, err
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeConditionCallStatus:
 		if errHandle := h.actionHandleConditionCallStatus(ctx, af); errHandle != nil {
-			return nil, err
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeConditionDatetime:
 		if errHandle := h.actionHandleConditionDatetime(ctx, af); errHandle != nil {
-			return nil, err
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeConditionVariable:
 		if errHandle := h.actionHandleConditionVariable(ctx, af); errHandle != nil {
-			return nil, err
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeConferenceJoin:
 		if errHandle := h.actionHandleConferenceJoin(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the conference_join action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the conference_join action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeConnect:
 		if errHandle := h.actionHandleConnect(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the connect action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the connect action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
@@ -168,36 +174,43 @@ func (h *activeflowHandler) executeAction(ctx context.Context, activeflowID uuid
 
 	case action.TypeGoto:
 		if errHandle := h.actionHandleGoto(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the goto action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the goto action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeMessageSend:
-		if errHandler := h.actionHandleMessageSend(ctx, af); errHandler != nil {
-			log.Errorf("Could not handle the message_send action correctly. err: %v", errHandler)
-			return nil, err
+		if errHandle := h.actionHandleMessageSend(ctx, af); errHandle != nil {
+			log.Errorf("Could not handle the message_send action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeFetch:
 		if errHandle := h.actionHandleFetch(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the patch action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the patch action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeFetchFlow:
 		if errHandle := h.actionHandleFetchFlow(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the patch_flow action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the patch_flow action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
 	case action.TypeQueueJoin:
 		if errHandle := h.actionHandleQueueJoin(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the queue_join action correctly. err: %v", err)
-			return nil, err
+			log.Errorf("Could not handle the queue_join action correctly. err: %v", errHandle)
+			return nil, errHandle
+		}
+		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
+
+	case action.TypeStop:
+		if errHandle := h.actionHandleStop(ctx, af); errHandle != nil {
+			log.Errorf("Could not handle the stop action correctly. err: %v", errHandle)
+			return nil, errHandle
 		}
 		return h.ExecuteNextAction(ctx, activeflowID, af.CurrentAction.ID)
 
