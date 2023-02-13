@@ -13,7 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -448,35 +447,14 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 		return fmt.Errorf("wrong reference type. reference_type: %s", af.ReferenceType)
 	}
 
-	// create conferencecall
-	cc, err := h.reqHandler.ConferenceV1ConferencecallCreate(ctx, opt.ConferenceID, cfconferencecall.ReferenceTypeCall, af.ReferenceID)
+	sv, err := h.reqHandler.ConferenceV1ServiceTypeConferencecallStart(ctx, opt.ConferenceID, cfconferencecall.ReferenceTypeCall, af.ReferenceID)
 	if err != nil {
-		log.Errorf("Could not create a conferencecall. err: %v", err)
-		return err
-	}
-	log.WithField("conferencecall", cc).Debugf("Created a conferencecall. conferencecall_id: %s", cc.ID)
-	log = log.WithField("conferencecall_id", cc.ID)
-
-	// get conference
-	conf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, opt.ConferenceID)
-	if err != nil {
-		log.Errorf("Could not get conference. err: %v", err)
-		return err
-	}
-	if conf.Status != cfconference.StatusProgressing {
-		log.Errorf("The conference is not ready. status: %s", conf.Status)
-		return fmt.Errorf("conference is not ready")
-	}
-
-	// get flow
-	f, err := h.reqHandler.FlowV1FlowGet(ctx, conf.FlowID)
-	if err != nil {
-		log.Errorf("Could not get flow. err: %v", err)
-		return err
+		log.Errorf("Could not start the service. err: %v", err)
+		return errors.Wrap(err, "Could not start the service.")
 	}
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, f.Actions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, sv.PushActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}

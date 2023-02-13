@@ -16,8 +16,8 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	cfservice "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	conversationmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
@@ -1283,22 +1283,17 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 	tests := []struct {
 		name string
 
-		activeFlow         *activeflow.Activeflow
-		responseConference *cfconference.Conference
-		responseFlow       *flow.Flow
+		activeflow *activeflow.Activeflow
 
-		conferenceID uuid.UUID
+		responseService *cfservice.Service
 
-		responseConferencecall *cfconferencecall.Conferencecall
-		responseStackID        uuid.UUID
-		responseAction         *action.Action
-
-		expectActiveFlow *activeflow.Activeflow
+		expectConferenceID uuid.UUID
+		expectActiveFlow   *activeflow.Activeflow
 	}{
 		{
 			name: "normal",
 
-			activeFlow: &activeflow.Activeflow{
+			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
 					ID:     uuid.FromStringOrNil("7dbc6998-410d-11ec-91b8-d722b27bb799"),
 					Type:   action.TypeConferenceJoin,
@@ -1319,40 +1314,18 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("c71e769a-155f-11ed-9bfb-9b3081a1b9f0"),
 			},
-			responseConference: &cfconference.Conference{
-				ID:     uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
-				FlowID: uuid.FromStringOrNil("b7eb3420-410b-11ec-ad87-cf5b4e34b7ed"),
-				Status: cfconference.StatusProgressing,
-			},
-			responseFlow: &flow.Flow{
-				ID: uuid.FromStringOrNil("b7eb3420-410b-11ec-ad87-cf5b4e34b7ed"),
-				Actions: []action.Action{
+
+			responseService: &cfservice.Service{
+				ID:   uuid.FromStringOrNil("2b2f8fe8-ab74-11ed-a3a0-b7d673c42e64"),
+				Type: cfservice.TypeConferencecall,
+				PushActions: []action.Action{
 					{
-						ID:   uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("c76c25d4-410c-11ec-9e97-e34e56d4cc4e"),
-						Type: action.TypeConfbridgeJoin,
-					},
-					{
-						ID:   uuid.FromStringOrNil("c785c6b0-410c-11ec-bd9f-5f698d905eef"),
-						Type: action.TypeHangup,
+						ID: uuid.FromStringOrNil("3dba7cea-ab74-11ed-83b9-2b746a7d46a1"),
 					},
 				},
 			},
 
-			conferenceID: uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
-
-			responseConferencecall: &cfconferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("1ef16ac6-1560-11ed-bbad-0775d313f1ee"),
-			},
-			responseStackID: uuid.FromStringOrNil("fd6d9b84-d4e3-11ec-a53b-879007c0bc0a"),
-			responseAction: &action.Action{
-				ID:   uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
-				Type: action.TypeAnswer,
-			},
-
+			expectConferenceID: uuid.FromStringOrNil("b7c84d66-410b-11ec-ab21-23726c7dc3b9"),
 			expectActiveFlow: &activeflow.Activeflow{
 				ForwardStackID:  uuid.FromStringOrNil("fd6d9b84-d4e3-11ec-a53b-879007c0bc0a"),
 				ForwardActionID: uuid.FromStringOrNil("c74b311c-410c-11ec-84ac-1759f56d04b5"),
@@ -1396,13 +1369,13 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferencecallCreate(ctx, tt.conferenceID, cfconferencecall.ReferenceTypeCall, tt.activeFlow.ReferenceID).Return(tt.responseConferencecall, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConference.ID).Return(tt.responseConference, nil)
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.responseConference.FlowID).Return(tt.responseFlow, nil)
-			mockStack.EXPECT().Push(ctx, tt.activeFlow.StackMap, tt.responseFlow.Actions, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveFlow).Return(nil)
+			mockReq.EXPECT().ConferenceV1ServiceTypeConferencecallStart(ctx, tt.expectConferenceID, cfconferencecall.ReferenceTypeCall, tt.activeflow.ReferenceID).Return(tt.responseService, nil)
 
-			if err := h.actionHandleConferenceJoin(ctx, tt.activeFlow); err != nil {
+			// push stack
+			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
+
+			if err := h.actionHandleConferenceJoin(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -3647,7 +3620,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 	tests := []struct {
 		name string
 
-		af *activeflow.Activeflow
+		activeflow *activeflow.Activeflow
 
 		responseService *cbservice.Service
 
@@ -3730,10 +3703,10 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectCustomerID, tt.expectChatbotID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage).Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().Push(ctx, tt.af.StackMap, tt.responseService.PushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
+			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
-			if errCall := h.actionHandleChatbotTalk(ctx, tt.af); errCall != nil {
+			if errCall := h.actionHandleChatbotTalk(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
 			}
 
