@@ -205,7 +205,6 @@ type ServiceHandler interface {
 
 	// conferencecall handlers
 	ConferencecallGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconferencecall.WebhookMessage, error)
-	ConferencecallCreate(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfconferencecall.WebhookMessage, error)
 	ConferencecallKick(ctx context.Context, u *cscustomer.Customer, conferencecallID uuid.UUID) (*cfconferencecall.WebhookMessage, error)
 
 	// conversation handlers

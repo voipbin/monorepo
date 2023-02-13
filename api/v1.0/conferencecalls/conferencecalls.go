@@ -7,58 +7,8 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
-	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
-
-// conferencecallsPOST handles POST /conferencecalls request.
-// It creates a new conferencecall and returns the created conferencecall of the given customer.
-// @Summary Create a new conferencecall
-// @Description Create a new conferencecall with the given information.
-// @Produce json
-// @Param conference body request.BodyConferencecallsPOST true "The conferencecall detail"
-// @Success 200 {object} conferencecall.Conferencecall
-// @Router /v1.0/conferencecalls [post]
-func conferencecallsPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencecallsPOST",
-			"request_address": c.ClientIP,
-		},
-	)
-
-	tmp, exists := c.Get("customer")
-	if !exists {
-		log.Errorf("Could not find customer info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
-
-	var requestBody request.BodyConferencecallsPOST
-	if err := c.BindJSON(&requestBody); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferencecallCreate(c.Request.Context(), &u, requestBody.ConferenceID, requestBody.ReferenceType, requestBody.ReferenceID)
-	if err != nil || res == nil {
-		log.Errorf("Could not create the conference. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
 
 // conferencecallsIDGET handles GET /conferencecalls/{id} request.
 // It returns detail conferencecall info.
