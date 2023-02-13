@@ -12,7 +12,6 @@ import (
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -55,14 +54,11 @@ func Test_TranscribeStart(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockConferencecall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-
-				conferencecallHandler: mockConferencecall,
 			}
 			ctx := context.Background()
 
@@ -120,14 +116,11 @@ func Test_TranscribeStop(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockConferencecall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-
-				conferencecallHandler: mockConferencecall,
 			}
 			ctx := context.Background()
 

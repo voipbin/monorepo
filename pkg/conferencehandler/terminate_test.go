@@ -11,9 +11,6 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -68,15 +65,10 @@ func Test_TerminateConference(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			mockConferencecall := conferencecallhandler.NewMockConferencecallHandler(mc)
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				db:            mockDB,
-				cache:         mockCache,
-
-				conferencecallHandler: mockConferencecall,
 			}
 
 			ctx := context.Background()
@@ -84,21 +76,10 @@ func Test_TerminateConference(t *testing.T) {
 			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.conference.ID, conference.StatusTerminating).Return(nil)
 			mockReq.EXPECT().FlowV1FlowDelete(gomock.Any(), tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
 
-			for _, conferencecallID := range tt.conference.ConferencecallIDs {
-				referenceID := uuid.Must(uuid.NewV4())
-				mockConferencecall.EXPECT().Get(ctx, conferencecallID).Return(&conferencecall.Conferencecall{
-					ID:          conferencecallID,
-					ReferenceID: referenceID,
-				}, nil)
-				mockReq.EXPECT().CallV1ConfbridgeCallKick(gomock.Any(), tt.conference.ConfbridgeID, referenceID).Return(nil)
-			}
-
-			if len(tt.conference.ConferencecallIDs) == 0 {
-				mockReq.EXPECT().CallV1ConfbridgeDelete(gomock.Any(), tt.conference.ConfbridgeID).Return(nil)
-				mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
-				mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)
-			}
+			mockReq.EXPECT().CallV1ConfbridgeDelete(gomock.Any(), tt.conference.ConfbridgeID).Return(nil)
+			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
+			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)
 
 			if err := h.Terminate(ctx, tt.conference.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -12,9 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -45,9 +42,8 @@ type ConferenceHandler interface {
 	) (*conference.Conference, error)
 	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*conference.Conference, error)
 	AddConferencecallID(ctx context.Context, id uuid.UUID, conferencecallID uuid.UUID) (*conference.Conference, error)
-
-	Join(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
 	RemoveConferencecallID(ctx context.Context, cfID uuid.UUID, ccID uuid.UUID) (*conference.Conference, error)
+
 	Terminate(ctx context.Context, id uuid.UUID) error
 
 	RecordingStart(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
@@ -62,9 +58,6 @@ type conferenceHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
-	cache         cachehandler.CacheHandler
-
-	conferencecallHandler conferencecallhandler.ConferencecallHandler
 }
 
 // List of default values
@@ -118,17 +111,12 @@ func NewConferenceHandler(
 	req requesthandler.RequestHandler,
 	notify notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
-	cache cachehandler.CacheHandler,
-	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) ConferenceHandler {
 
 	h := &conferenceHandler{
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,
-		cache:         cache,
-
-		conferencecallHandler: conferencecallHandler,
 	}
 
 	return h

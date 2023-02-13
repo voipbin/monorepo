@@ -81,6 +81,21 @@ func (mr *MockCacheHandlerMockRecorder) ConferencecallGet(ctx, id interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallGet", reflect.TypeOf((*MockCacheHandler)(nil).ConferencecallGet), ctx, id)
 }
 
+// ConferencecallGetByReferenceID mocks base method.
+func (m *MockCacheHandler) ConferencecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferencecallGetByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferencecallGetByReferenceID indicates an expected call of ConferencecallGetByReferenceID.
+func (mr *MockCacheHandlerMockRecorder) ConferencecallGetByReferenceID(ctx, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallGetByReferenceID", reflect.TypeOf((*MockCacheHandler)(nil).ConferencecallGetByReferenceID), ctx, referenceID)
+}
+
 // ConferencecallSet mocks base method.
 func (m *MockCacheHandler) ConferencecallSet(ctx context.Context, conference *conferencecall.Conferencecall) error {
 	m.ctrl.T.Helper()

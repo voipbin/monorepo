@@ -7,13 +7,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -26,7 +25,6 @@ func Test_Terminate_kickable(t *testing.T) {
 		retryCount int
 
 		responseConferencecall *conferencecall.Conferencecall
-		responseCall           *cmcall.Call
 		responseConference     *conference.Conference
 
 		expectRetryCount int
@@ -42,11 +40,6 @@ func Test_Terminate_kickable(t *testing.T) {
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("338cffc8-94da-11ed-95e4-2754365ed8a0"),
 			},
-			responseCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("338cffc8-94da-11ed-95e4-2754365ed8a0"),
-				ConfbridgeID: uuid.FromStringOrNil("33b512ba-94da-11ed-8a65-27c4c9eb7665"),
-				Status:       cmcall.StatusProgressing,
-			},
 			responseConference: &conference.Conference{
 				ID:           uuid.FromStringOrNil("33db117c-94da-11ed-aa96-ab85ca5dc13a"),
 				ConfbridgeID: uuid.FromStringOrNil("33b512ba-94da-11ed-8a65-27c4c9eb7665"),
@@ -61,21 +54,20 @@ func Test_Terminate_kickable(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockConference := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := conferencecallHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				cache:         mockCache,
-				notifyHandler: mockNotify,
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				conferenceHandler: mockConference,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID).Return(tt.responseCall, nil)
+			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
 			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.id, conferencecall.StatusLeaving).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
@@ -102,7 +94,6 @@ func Test_Terminate_unkickable(t *testing.T) {
 		retryCount int
 
 		responseConferencecall *conferencecall.Conferencecall
-		responseCall           *cmcall.Call
 		responseConference     *conference.Conference
 
 		expectRetryCount int
@@ -118,11 +109,6 @@ func Test_Terminate_unkickable(t *testing.T) {
 				Status:      conferencecall.StatusLeaving,
 				ReferenceID: uuid.FromStringOrNil("bfc9be3a-94db-11ed-939f-d72160afc80c"),
 			},
-			responseCall: &cmcall.Call{
-				ID:           uuid.FromStringOrNil("bfc9be3a-94db-11ed-939f-d72160afc80c"),
-				ConfbridgeID: uuid.FromStringOrNil("bff40334-94db-11ed-8a5f-3f6b77b599f1"),
-				Status:       cmcall.StatusProgressing,
-			},
 			responseConference: &conference.Conference{
 				ID:           uuid.FromStringOrNil("c0219010-94db-11ed-b38d-13f659f67758"),
 				ConfbridgeID: uuid.FromStringOrNil("bff40334-94db-11ed-8a5f-3f6b77b599f1"),
@@ -137,26 +123,25 @@ func Test_Terminate_unkickable(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockConference := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := conferencecallHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				cache:         mockCache,
-				notifyHandler: mockNotify,
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				conferenceHandler: mockConference,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID).Return(tt.responseCall, nil)
+			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
 
 			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.id, conferencecall.StatusLeaved).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
-			mockReq.EXPECT().ConferenceV1ConferenceRemoveConferencecallID(ctx, tt.responseConferencecall.ConferenceID, tt.responseConferencecall.ID).Return(tt.responseConference, nil)
+			mockConference.EXPECT().RemoveConferencecallID(ctx, tt.responseConferencecall.ConferenceID, tt.responseConferencecall.ID).Return(tt.responseConference, nil)
 
 			res, err := h.Terminate(ctx, tt.id)
 			if err != nil {
@@ -176,8 +161,6 @@ func Test_isKickable(t *testing.T) {
 		name string
 
 		conferencecall *conferencecall.Conferencecall
-		conference     *conference.Conference
-		call           *cmcall.Call
 
 		expectRes bool
 	}{
@@ -186,14 +169,6 @@ func Test_isKickable(t *testing.T) {
 
 			conferencecall: &conferencecall.Conferencecall{
 				Status: conferencecall.StatusJoined,
-			},
-			call: &cmcall.Call{
-				Status:       cmcall.StatusProgressing,
-				ConfbridgeID: uuid.FromStringOrNil("5a9c168e-94db-11ed-af00-7f26c4a3bc9f"),
-			},
-			conference: &conference.Conference{
-				ConfbridgeID: uuid.FromStringOrNil("5a9c168e-94db-11ed-af00-7f26c4a3bc9f"),
-				Status:       conference.StatusProgressing,
 			},
 
 			expectRes: true,
@@ -216,51 +191,6 @@ func Test_isKickable(t *testing.T) {
 
 			expectRes: false,
 		},
-		{
-			name: "conferencecall has invalid status",
-
-			conferencecall: &conferencecall.Conferencecall{
-				Status: conferencecall.StatusJoined,
-			},
-			call: &cmcall.Call{
-				Status: cmcall.StatusHangup,
-			},
-
-			expectRes: false,
-		},
-		{
-			name: "call and conference has different confbridge id",
-
-			conferencecall: &conferencecall.Conferencecall{
-				Status: conferencecall.StatusJoined,
-			},
-			call: &cmcall.Call{
-				Status:       cmcall.StatusProgressing,
-				ConfbridgeID: uuid.FromStringOrNil("5a5134f2-94db-11ed-89e8-d7b862a311dc"),
-			},
-			conference: &conference.Conference{
-				ConfbridgeID: uuid.FromStringOrNil("5a251f3e-94db-11ed-a286-17c661fa5cac"),
-			},
-
-			expectRes: false,
-		},
-		{
-			name: "conference has invalid status",
-
-			conferencecall: &conferencecall.Conferencecall{
-				Status: conferencecall.StatusJoined,
-			},
-			call: &cmcall.Call{
-				Status:       cmcall.StatusProgressing,
-				ConfbridgeID: uuid.FromStringOrNil("5a7416fc-94db-11ed-bbcb-87f491662154"),
-			},
-			conference: &conference.Conference{
-				ConfbridgeID: uuid.FromStringOrNil("5a7416fc-94db-11ed-bbcb-87f491662154"),
-				Status:       conference.StatusTerminated,
-			},
-
-			expectRes: false,
-		},
 	}
 
 	for _, tt := range tests {
@@ -270,19 +200,17 @@ func Test_isKickable(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
-			res := h.isKickable(ctx, tt.conferencecall, tt.conference, tt.call)
+			res := h.isKickable(ctx, tt.conferencecall)
 			if res != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -298,8 +226,7 @@ func Test_Terminated(t *testing.T) {
 		conferencecall *conferencecall.Conferencecall
 
 		responseConference *conference.Conference
-
-		expectRes *conferencecall.Conferencecall
+		expectRes          *conferencecall.Conferencecall
 	}{
 		{
 			name: "normal",
@@ -312,7 +239,6 @@ func Test_Terminated(t *testing.T) {
 			responseConference: &conference.Conference{
 				ConfbridgeID: uuid.FromStringOrNil("dcae37aa-94dc-11ed-a462-07f286738971"),
 			},
-
 			expectRes: &conferencecall.Conferencecall{
 				ID:           uuid.FromStringOrNil("cf8520fc-94dc-11ed-bacf-13ff11224cdb"),
 				ConferenceID: uuid.FromStringOrNil("dcae37aa-94dc-11ed-a462-07f286738971"),
@@ -327,14 +253,14 @@ func Test_Terminated(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockConference := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := conferencecallHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				cache:         mockCache,
-				notifyHandler: mockNotify,
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				conferenceHandler: mockConference,
 			}
 
 			ctx := context.Background()
@@ -342,7 +268,7 @@ func Test_Terminated(t *testing.T) {
 			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.conferencecall.ID, conferencecall.StatusLeaved).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.conferencecall.ID).Return(tt.conferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
-			mockReq.EXPECT().ConferenceV1ConferenceRemoveConferencecallID(ctx, tt.conferencecall.ConferenceID, tt.conferencecall.ID).Return(tt.responseConference, nil)
+			mockConference.EXPECT().RemoveConferencecallID(ctx, tt.conferencecall.ConferenceID, tt.conferencecall.ID).Return(tt.responseConference, nil)
 
 			res, err := h.Terminated(ctx, tt.conferencecall)
 			if err != nil {

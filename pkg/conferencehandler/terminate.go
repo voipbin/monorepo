@@ -44,34 +44,10 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 		log.WithField("flow_id", cf.FlowID).Errorf("Could not delete the conference. But keep moving on. err: %v", err)
 	}
 
-	// kick out the all calls from the conference.
-	log.Debugf("Kicking out all calls from the conference. call_count: %d", len(cf.ConferencecallIDs))
-	for _, conferencecallID := range cf.ConferencecallIDs {
-
-		cc, err := h.conferencecallHandler.Get(ctx, conferencecallID)
-		if err != nil {
-			log.Errorf("Could not get conferencecall info. err: %v", err)
-			continue
-		}
-
-		switch cc.ReferenceType {
-
-		default:
-			// todo: we have to check the conferencecall's type and run the corresponded kick handler here.
-			// but we have only 1 conferencecall type, so we don't check the type here.
-			log.Debugf("Kicking out the conferencecall. reference_type: %s, reference_id: %s", cc.ReferenceType, cc.ReferenceID)
-			if errHangup := h.reqHandler.CallV1ConfbridgeCallKick(ctx, cf.ConfbridgeID, cc.ReferenceID); errHangup != nil {
-				log.WithField("call_id", cc.ReferenceID).Errorf("Could not kicking out the call. err: %v", errHangup)
-			}
-
-		}
-	}
-
-	if len(cf.ConferencecallIDs) == 0 {
-		if err := h.Destroy(ctx, cf); err != nil {
-			log.Errorf("Could not destroy the conference. err: %v", err)
-			return err
-		}
+	// delete the conference
+	if err := h.Destroy(ctx, cf); err != nil {
+		log.Errorf("Could not destroy the conference. err: %v", err)
+		return err
 	}
 
 	return nil

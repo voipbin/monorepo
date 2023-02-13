@@ -5,9 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
@@ -28,20 +26,13 @@ func (h *conferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*c
 	}
 
 	// get conference
-	cf, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, cc.ConferenceID)
+	cf, err := h.conferenceHandler.Get(ctx, cc.ConferenceID)
 	if err != nil {
 		log.Errorf("Could not get conference info. conference_id: %s, err: %v", cf.ID, err)
 		return nil, err
 	}
 
-	// get call info
-	c, err := h.reqHandler.CallV1CallGet(ctx, cc.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
-		return nil, err
-	}
-
-	if !h.isKickable(ctx, cc, cf, c) {
+	if !h.isKickable(ctx, cc) {
 		res, err := h.Terminated(ctx, cc)
 		if err != nil {
 			log.Errorf("Could not remove the conferencecall id from the conference. err: %v", err)
@@ -69,25 +60,10 @@ func (h *conferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*c
 }
 
 // isKickable returns true if the given conferencecall is kickable
-func (h *conferencecallHandler) isKickable(ctx context.Context, cc *conferencecall.Conferencecall, cf *conference.Conference, c *cmcall.Call) bool {
+func (h *conferencecallHandler) isKickable(ctx context.Context, cc *conferencecall.Conferencecall) bool {
 
 	// check the conferencecall's status
 	if cc.Status == conferencecall.StatusLeaved || cc.Status == conferencecall.StatusLeaving {
-		return false
-	}
-
-	// check the call status
-	if c.Status != cmcall.StatusProgressing {
-		return false
-	}
-
-	// check the call's confbridge info
-	if c.ConfbridgeID != cf.ConfbridgeID {
-		return false
-	}
-
-	// check the confernce status
-	if cf.Status == conference.StatusTerminated {
 		return false
 	}
 
@@ -111,7 +87,7 @@ func (h *conferencecallHandler) Terminated(ctx context.Context, cc *conferenceca
 	}
 
 	// send request
-	cf, err := h.reqHandler.ConferenceV1ConferenceRemoveConferencecallID(ctx, cc.ConferenceID, cc.ID)
+	cf, err := h.conferenceHandler.RemoveConferencecallID(ctx, cc.ConferenceID, cc.ID)
 	if err != nil {
 		log.Errorf("Could not remove the conferencecall id from the conference. err: %v", err)
 		return nil, err

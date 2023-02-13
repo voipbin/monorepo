@@ -25,7 +25,7 @@ func (h *conferencecallHandler) Joined(ctx context.Context, cc *conferencecall.C
 	}
 
 	// add conferencecall to the conference
-	cf, err := h.reqHandler.ConferenceV1ConferenceAddConferencecallID(ctx, cc.ConferenceID, cc.ID)
+	cf, err := h.conferenceHandler.AddConferencecallID(ctx, cc.ConferenceID, cc.ID)
 	if err != nil {
 		log.Errorf("Could not remove the conferencecall id from the conference. err: %v", err)
 		return nil, err
