@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencecallhandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -51,14 +50,11 @@ func Test_RecordingStart(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockConferencecall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-
-				conferencecallHandler: mockConferencecall,
 			}
 			ctx := context.Background()
 
@@ -116,14 +112,11 @@ func Test_RecordingStop(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockConferencecall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
-
-				conferencecallHandler: mockConferencecall,
 			}
 			ctx := context.Background()
 

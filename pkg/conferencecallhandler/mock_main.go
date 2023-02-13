@@ -11,6 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	service "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
 )
 
 // MockConferencecallHandler is a mock of ConferencecallHandler interface.
@@ -106,6 +107,21 @@ func (m *MockConferencecallHandler) Joined(ctx context.Context, cc *conferenceca
 func (mr *MockConferencecallHandlerMockRecorder) Joined(ctx, cc interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockConferencecallHandler)(nil).Joined), ctx, cc)
+}
+
+// ServiceStart mocks base method.
+func (m *MockConferencecallHandler) ServiceStart(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceStart", ctx, conferenceID, referenceType, referenceID)
+	ret0, _ := ret[0].(*service.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceStart indicates an expected call of ServiceStart.
+func (mr *MockConferencecallHandlerMockRecorder) ServiceStart(ctx, conferenceID, referenceType, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockConferencecallHandler)(nil).ServiceStart), ctx, conferenceID, referenceType, referenceID)
 }
 
 // Terminate mocks base method.

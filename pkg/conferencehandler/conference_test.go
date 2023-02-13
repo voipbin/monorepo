@@ -14,7 +14,6 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -78,13 +77,11 @@ func Test_Create(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -160,13 +157,11 @@ func Test_createConferenceFlow(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -230,13 +225,11 @@ func Test_createConferenceFlowActions(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -279,13 +272,11 @@ func Test_GetByConfbridgeID(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -344,13 +335,11 @@ func Test_UpdateRecordingID(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -413,13 +402,11 @@ func Test_UpdateTranscribeID(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -472,13 +459,11 @@ func Test_AddConferencecallID(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -528,13 +513,11 @@ func Test_Delete(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferenceHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 

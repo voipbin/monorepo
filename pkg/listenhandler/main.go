@@ -44,22 +44,21 @@ var (
 
 	// v1
 	// conferences
-	regV1Conferences                      = regexp.MustCompile("/v1/conferences$")
-	regV1ConferencesGet                   = regexp.MustCompile(`/v1/conferences\?`)
-	regV1ConferencesID                    = regexp.MustCompile("/v1/conferences/" + regUUID + "$")
-	regV1ConferencesIDJoin                = regexp.MustCompile("/v1/conferences/" + regUUID + "/join$")
-	regV1ConferencesIDRecordingID         = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_id$")
-	regV1ConferencesIDRecordingStart      = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_start$")
-	regV1ConferencesIDRecordingStop       = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_stop$")
-	regV1ConferencesIDTranscribeStart     = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_start$")
-	regV1ConferencesIDTranscribeStop      = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_stop$")
-	regV1ConferencesIDConferencecallIDs   = regexp.MustCompile("/v1/conferences/" + regUUID + "/conferencecall_ids$")
-	regV1ConferencesIDConferencecallIDsID = regexp.MustCompile("/v1/conferences/" + regUUID + "/conferencecall_ids/" + regUUID + "$")
+	regV1Conferences                  = regexp.MustCompile("/v1/conferences$")
+	regV1ConferencesGet               = regexp.MustCompile(`/v1/conferences\?`)
+	regV1ConferencesID                = regexp.MustCompile("/v1/conferences/" + regUUID + "$")
+	regV1ConferencesIDRecordingID     = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_id$")
+	regV1ConferencesIDRecordingStart  = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_start$")
+	regV1ConferencesIDRecordingStop   = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_stop$")
+	regV1ConferencesIDTranscribeStart = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_start$")
+	regV1ConferencesIDTranscribeStop  = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_stop$")
 
 	// conferencecalls
-	regV1Conferencecalls              = regexp.MustCompile("/v1/conferencecalls$")
 	regV1ConferencecallsID            = regexp.MustCompile("/v1/conferencecalls/" + regUUID + "$")
 	regV1ConferencecallsIDHealthCheck = regexp.MustCompile("/v1/conferencecalls/" + regUUID + "/health-check$")
+
+	// services
+	regV1ServicesTypeConferencecall = regexp.MustCompile("/v1/services/type/conferencecall$")
 )
 
 var (
@@ -142,7 +141,7 @@ func (h *listenHandler) Run() error {
 	go func() {
 		for {
 			// consume the request
-			err := h.rabbitSock.ConsumeRPCOpt(h.queueListen, constCosumerName, false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(h.queueListen, constCosumerName, false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -212,11 +211,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ConferencesIDRecordingIDPut(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/recording_id"
 
-	// POST /conferences/<conference-id>/join
-	case regV1ConferencesIDJoin.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencesIDJoinPost(ctx, m)
-		requestType = "/v1/conferences/<conference-id>/join"
-
 	// POST /conferences/<conference-id>/recording_start
 	case regV1ConferencesIDRecordingStart.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConferencesIDRecordingStartPost(ctx, m)
@@ -237,24 +231,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ConferencesIDTranscribeStopPost(ctx, m)
 		requestType = "/v1/conferences/<conference-id>/transcirbe_stop"
 
-	// POST /conferences/<conference-id>/conferencecall_ids
-	case regV1ConferencesIDConferencecallIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencesIDConferencecallIDsPost(ctx, m)
-		requestType = "/v1/conferences/<conference-id>/conferencecall_ids"
-
-	// DELETE /conferences/<conference-id>/conferencecall_ids/<conferencecall-id>
-	case regV1ConferencesIDConferencecallIDsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1ConferencesIDConferencecallsConferencecallIDsIDDelete(ctx, m)
-		requestType = "/v1/conferences/<conference-id>/conferencecall_ids/<conferencecall-id>"
-
 	//////////////////
 	// conferencecalls
 	////////////////////
 
-	// POST /conferencecalls
-	case regV1Conferencecalls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ConferencecallsPost(ctx, m)
-		requestType = "/v1/conferencescalls/<conferencecall-id>"
+	// // POST /conferencecalls
+	// case regV1Conferencecalls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+	// 	response, err = h.processV1ConferencecallsPost(ctx, m)
+	// 	requestType = "/v1/conferencescalls/<conferencecall-id>"
 
 	// GET /conferencecalls/<conferencecall-id>
 	case regV1ConferencecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
@@ -270,6 +254,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ConferencecallsIDHealthCheck.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConferencecallsIDHealthCheckPost(ctx, m)
 		requestType = "/v1/conferencescalls/<conferencecall-id>/health-check"
+
+	/////////////////
+	// services
+	////////////////
+	// POST /services/type/conferencecall
+	case regV1ServicesTypeConferencecall.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ServicesTypeConferencecallPost(ctx, m)
+		requestType = "/v1/services/type/conferencecall"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

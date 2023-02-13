@@ -40,7 +40,7 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 
 // ConferenceGet returns conference info
 func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
-	key := fmt.Sprintf("conference:%s", id)
+	key := fmt.Sprintf("conference:conference:%s", id)
 
 	var res conference.Conference
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -52,7 +52,7 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 
 // ConferenceSet sets the conference info into the cache.
 func (h *handler) ConferenceSet(ctx context.Context, conference *conference.Conference) error {
-	key := fmt.Sprintf("conference:%s", conference.ID)
+	key := fmt.Sprintf("conference:conference:%s", conference.ID)
 
 	if err := h.setSerialize(ctx, key, conference, time.Hour*24); err != nil {
 		return err
@@ -63,7 +63,7 @@ func (h *handler) ConferenceSet(ctx context.Context, conference *conference.Conf
 
 // ConferencecallGet returns conferencecall info
 func (h *handler) ConferencecallGet(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
-	key := fmt.Sprintf("conferencecall:%s", id)
+	key := fmt.Sprintf("conference:conferencecall:%s", id)
 
 	var res conferencecall.Conferencecall
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -74,12 +74,28 @@ func (h *handler) ConferencecallGet(ctx context.Context, id uuid.UUID) (*confere
 }
 
 // ConferencecallSet sets the conferencecall info into the cache.
-func (h *handler) ConferencecallSet(ctx context.Context, conference *conferencecall.Conferencecall) error {
-	key := fmt.Sprintf("conferencecall:%s", conference.ID)
+func (h *handler) ConferencecallSet(ctx context.Context, data *conferencecall.Conferencecall) error {
+	key := fmt.Sprintf("conference:conferencecall:%s", data.ID)
+	if err := h.setSerialize(ctx, key, data, time.Hour*24); err != nil {
+		return err
+	}
 
-	if err := h.setSerialize(ctx, key, conference, time.Hour*24); err != nil {
+	keyWithReferenceID := fmt.Sprintf("conference:conferencecall:reference_id:%s", data.ID)
+	if err := h.setSerialize(ctx, keyWithReferenceID, data, time.Hour*24); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// ConferencecallGetByReferenceID returns cached conferencecall info of the given reference id.
+func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
+	key := fmt.Sprintf("conference:conferencecall:reference_id:%s", referenceID)
+
+	var res conferencecall.Conferencecall
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }

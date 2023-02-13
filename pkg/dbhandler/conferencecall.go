@@ -184,6 +184,11 @@ func (h *handler) ConferencecallGet(ctx context.Context, id uuid.UUID) (*confere
 // ConferencecallGetByReferenceID gets conferencecall of the given reference_id.
 func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
 
+	tmp, err := h.cache.ConferencecallGetByReferenceID(ctx, referenceID)
+	if err == nil {
+		return tmp, nil
+	}
+
 	// prepare
 	q := fmt.Sprintf("%s where reference_id = ? order by tm_create desc", conferencecallSelect)
 
@@ -201,6 +206,8 @@ func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceI
 	if err != nil {
 		return nil, fmt.Errorf("could not get call. ConferencecallGetByReferenceID, err: %v", err)
 	}
+
+	_ = h.conferencecallSetToCache(ctx, res)
 
 	return res, nil
 }

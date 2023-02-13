@@ -13,7 +13,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -31,6 +32,13 @@ type ConferencecallHandler interface {
 
 	Joined(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error)
 
+	ServiceStart(
+		ctx context.Context,
+		conferenceID uuid.UUID,
+		referenceType conferencecall.ReferenceType,
+		referenceID uuid.UUID,
+	) (*service.Service, error)
+
 	Terminate(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	Terminated(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error)
 
@@ -43,7 +51,8 @@ type conferencecallHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
-	cache         cachehandler.CacheHandler
+
+	conferenceHandler conferencehandler.ConferenceHandler
 }
 
 const (
@@ -73,14 +82,15 @@ func init() {
 }
 
 // NewConferencecallHandler returns new service handler
-func NewConferencecallHandler(req requesthandler.RequestHandler, notify notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler) ConferencecallHandler {
+func NewConferencecallHandler(req requesthandler.RequestHandler, notify notifyhandler.NotifyHandler, db dbhandler.DBHandler, conferenceHandler conferencehandler.ConferenceHandler) ConferencecallHandler {
 
 	h := &conferencecallHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,
-		cache:         cache,
+
+		conferenceHandler: conferenceHandler,
 	}
 
 	return h

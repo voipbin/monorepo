@@ -214,49 +214,6 @@ func (h *listenHandler) processV1ConferencesIDGet(ctx context.Context, m *rabbit
 	return res, nil
 }
 
-// processV1ConferencesIDJoinPost handles /v1/conferences/<id>/join POST request
-func (h *listenHandler) processV1ConferencesIDJoinPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDJoinPost",
-			"uri":  m.URI,
-		},
-	)
-
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 5 {
-		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
-		return simpleResponse(400), nil
-	}
-	cfID := uuid.FromStringOrNil(uriItems[3])
-
-	var data request.V1DataConferencesIDJoinPost
-	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
-		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-		return nil, err
-	}
-
-	cc, err := h.conferenceHandler.Join(ctx, cfID, data.ReferenceType, data.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not join the conference. err: %v", err)
-		return nil, err
-	}
-
-	tmp, err := json.Marshal(cc)
-	if err != nil {
-		log.Errorf("Could not marshal the conferencecall. err: %v", err)
-		return simpleResponse(400), nil
-	}
-
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       tmp,
-	}
-
-	return res, nil
-}
-
 // processV1ConferencesIDRecordingIDPut handles /v1/conferences/<id>/recording_id PUT request
 func (h *listenHandler) processV1ConferencesIDRecordingIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(
@@ -357,87 +314,6 @@ func (h *listenHandler) processV1ConferencesIDRecordingStopPost(ctx context.Cont
 	if errRecording != nil {
 		log.Errorf("Could not stop the conference recording. err: %v", errRecording)
 		return nil, errRecording
-	}
-
-	data, err := json.Marshal(tmp)
-	if err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
-		return simpleResponse(400), nil
-	}
-
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
-
-	return res, nil
-}
-
-// processV1ConferencesIDConferencecallIDsPost handles /v1/conferences/<conference-id>/conferencecall_ids POST request
-func (h *listenHandler) processV1ConferencesIDConferencecallIDsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDConferencecallIDsPost",
-			"uri":  m.URI,
-		},
-	)
-
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 5 {
-		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
-		return simpleResponse(400), nil
-	}
-	cfID := uuid.FromStringOrNil(uriItems[3])
-
-	var req request.V1DataConferencesIDConferencecallIDsPost
-	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-		return nil, err
-	}
-
-	tmp, err := h.conferenceHandler.AddConferencecallID(ctx, cfID, req.ConferencecallID)
-	if err != nil {
-		log.Errorf("Could not add the conferencecall id. err: %v", err)
-		return simpleResponse(400), nil
-	}
-
-	data, err := json.Marshal(tmp)
-	if err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
-		return simpleResponse(400), nil
-	}
-
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
-
-	return res, nil
-}
-
-// processV1ConferencesIDConferencecallsConferencecallIDsIDDelete handles /v1/conferences/<conference-id>/conferencecall_ids/<conferencecall-id> DELETE request
-func (h *listenHandler) processV1ConferencesIDConferencecallsConferencecallIDsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDConferencecallsConferencecallIDsIDDelete",
-			"uri":  m.URI,
-		},
-	)
-
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 6 {
-		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
-		return simpleResponse(400), nil
-	}
-	cfID := uuid.FromStringOrNil(uriItems[3])
-	ccID := uuid.FromStringOrNil(uriItems[5])
-
-	tmp, err := h.conferenceHandler.RemoveConferencecallID(ctx, cfID, ccID)
-	if err != nil {
-		log.Errorf("Could not stop the conference recording. err: %v", err)
-		return simpleResponse(400), nil
 	}
 
 	data, err := json.Marshal(tmp)

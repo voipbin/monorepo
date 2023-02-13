@@ -15,7 +15,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -66,14 +66,12 @@ func Test_HealthCheck(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -276,15 +274,16 @@ func Test_HealthCheck_error(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockConference := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := conferencecallHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
+
+				conferenceHandler: mockConference,
 			}
 
 			ctx := context.Background()
@@ -292,8 +291,7 @@ func Test_HealthCheck_error(t *testing.T) {
 			if tt.retryCount > defaultHealthCheckRetryMax {
 				// terminate
 				mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-				mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
-				mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID).Return(tt.responseCall, nil)
+				mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
 				mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.id, conferencecall.StatusLeaving).Return(nil)
 				mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())

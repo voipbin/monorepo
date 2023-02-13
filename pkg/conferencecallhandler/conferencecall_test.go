@@ -13,7 +13,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -53,14 +52,12 @@ func Test_Create(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -112,13 +109,11 @@ func Test_GetByReferenceID(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -166,13 +161,11 @@ func Test_updateStatus(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -219,13 +212,11 @@ func Test_updateStatusJoined(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -274,13 +265,11 @@ func Test_updateStatusLeaving(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 
@@ -329,13 +318,11 @@ func Test_updateStatusLeaved(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := conferencecallHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
 			}
 

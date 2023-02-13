@@ -11,7 +11,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
-	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
@@ -126,21 +125,6 @@ func (m *MockConferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, 
 func (mr *MockConferenceHandlerMockRecorder) Gets(ctx, customerID, confType, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferenceHandler)(nil).Gets), ctx, customerID, confType, size, token)
-}
-
-// Join mocks base method.
-func (m *MockConferenceHandler) Join(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Join", ctx, conferenceID, referenceType, referenceID)
-	ret0, _ := ret[0].(*conferencecall.Conferencecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Join indicates an expected call of Join.
-func (mr *MockConferenceHandlerMockRecorder) Join(ctx, conferenceID, referenceType, referenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockConferenceHandler)(nil).Join), ctx, conferenceID, referenceType, referenceID)
 }
 
 // RecordingStart mocks base method.

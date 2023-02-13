@@ -12,7 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
@@ -39,14 +39,15 @@ func Test_Joined(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockConference := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := conferencecallHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				cache:         mockCache,
 				notifyHandler: mockNotify,
+
+				conferenceHandler: mockConference,
 			}
 
 			ctx := context.Background()
@@ -55,7 +56,7 @@ func Test_Joined(t *testing.T) {
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.conferencecall.ID).Return(tt.conferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallJoined, tt.conferencecall)
 
-			mockReq.EXPECT().ConferenceV1ConferenceAddConferencecallID(ctx, tt.conferencecall.ConferenceID, tt.conferencecall.ID).Return(&conference.Conference{}, nil)
+			mockConference.EXPECT().AddConferencecallID(ctx, tt.conferencecall.ConferenceID, tt.conferencecall.ID).Return(&conference.Conference{}, nil)
 
 			res, err := h.Joined(ctx, tt.conferencecall)
 			if err != nil {

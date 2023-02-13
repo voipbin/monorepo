@@ -146,8 +146,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	requestHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, requestHandler, *rabbitExchangeDelay, *rabbitQueueNotify, serviceName)
 
-	conferencecallHandler := conferencecallhandler.NewConferencecallHandler(requestHandler, notifyHandler, db, cache)
-	conferenceHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db, cache, conferencecallHandler)
+	conferenceHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db)
+	conferencecallHandler := conferencecallhandler.NewConferencecallHandler(requestHandler, notifyHandler, db, conferenceHandler)
 
 	// run listen
 	if err := runListen(rabbitSock, conferenceHandler, conferencecallHandler); err != nil {

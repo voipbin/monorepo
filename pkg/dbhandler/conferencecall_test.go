@@ -151,7 +151,9 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.ConferencecallGetByReferenceID(ctx, tt.conferencecall.ReferenceID)
+			mockCache.EXPECT().ConferencecallGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
+			res, err := h.ConferencecallGetByReferenceID(ctx, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
