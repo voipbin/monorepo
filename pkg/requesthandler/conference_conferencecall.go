@@ -34,42 +34,6 @@ func (r *requestHandler) ConferenceV1ConferencecallGet(ctx context.Context, conf
 	return &res, nil
 }
 
-// ConferenceV1ConferencecallCreate sends a request to conference-manager
-// to creating a conferencecall.
-// it returns created conference if it succeed.
-func (r *requestHandler) ConferenceV1ConferencecallCreate(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfconferencecall.Conferencecall, error) {
-	uri := "/v1/conferencecalls"
-
-	d := &cfrequest.V1DataConferencecallsPost{
-		ConferenceID:  conferenceID,
-		ReferenceType: referenceType,
-		ReferenceID:   referenceID,
-	}
-
-	m, err := json.Marshal(d)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var res cfconferencecall.Conferencecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
 // ConferenceV1ConferencecallKick sends a request to conference-manager
 // to kick the given conferencecall from the conference
 // it returns kicked conferencecall if it succeed.

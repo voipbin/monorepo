@@ -34,6 +34,7 @@ import (
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	service0 "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media0 "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -1974,21 +1975,6 @@ func (mr *MockRequestHandlerMockRecorder) ChatbotV1ServiceTypeChabotcallStart(ct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatbotV1ServiceTypeChabotcallStart", reflect.TypeOf((*MockRequestHandler)(nil).ChatbotV1ServiceTypeChabotcallStart), ctx, customerID, chatbotID, referenceType, referenceID, gender, language)
 }
 
-// ConferenceV1ConferenceAddConferencecallID mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferenceAddConferencecallID(ctx context.Context, conferenceID, conferencecallID uuid.UUID) (*conference.Conference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceV1ConferenceAddConferencecallID", ctx, conferenceID, conferencecallID)
-	ret0, _ := ret[0].(*conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferenceV1ConferenceAddConferencecallID indicates an expected call of ConferenceV1ConferenceAddConferencecallID.
-func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceAddConferencecallID(ctx, conferenceID, conferencecallID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceAddConferencecallID", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceAddConferencecallID), ctx, conferenceID, conferencecallID)
-}
-
 // ConferenceV1ConferenceCreate mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferenceCreate(ctx context.Context, customerID uuid.UUID, conferenceType conference.Type, name, detail string, timeout int, data map[string]interface{}, preActions, postActions []action.Action) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
@@ -2092,21 +2078,6 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceRecordingStop(ct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceRecordingStop", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceRecordingStop), ctx, conferenceID)
 }
 
-// ConferenceV1ConferenceRemoveConferencecallID mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferenceRemoveConferencecallID(ctx context.Context, conferenceID, conferencecallID uuid.UUID) (*conference.Conference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceV1ConferenceRemoveConferencecallID", ctx, conferenceID, conferencecallID)
-	ret0, _ := ret[0].(*conference.Conference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferenceV1ConferenceRemoveConferencecallID indicates an expected call of ConferenceV1ConferenceRemoveConferencecallID.
-func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceRemoveConferencecallID(ctx, conferenceID, conferencecallID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceRemoveConferencecallID", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceRemoveConferencecallID), ctx, conferenceID, conferencecallID)
-}
-
 // ConferenceV1ConferenceTranscribeStart mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferenceTranscribeStart(ctx context.Context, conferenceID uuid.UUID, language string) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
@@ -2167,21 +2138,6 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceUpdateRecordingI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceUpdateRecordingID", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceUpdateRecordingID), ctx, id, recordingID)
 }
 
-// ConferenceV1ConferencecallCreate mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferencecallCreate(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallCreate", ctx, conferenceID, referenceType, referenceID)
-	ret0, _ := ret[0].(*conferencecall.Conferencecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferenceV1ConferencecallCreate indicates an expected call of ConferenceV1ConferencecallCreate.
-func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallCreate(ctx, conferenceID, referenceType, referenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallCreate", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallCreate), ctx, conferenceID, referenceType, referenceID)
-}
-
 // ConferenceV1ConferencecallGet mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferencecallGet(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
@@ -2224,6 +2180,21 @@ func (m *MockRequestHandler) ConferenceV1ConferencecallKick(ctx context.Context,
 func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallKick(ctx, conferencecallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallKick", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallKick), ctx, conferencecallID)
+}
+
+// ConferenceV1ServiceTypeConferencecallStart mocks base method.
+func (m *MockRequestHandler) ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*service0.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ServiceTypeConferencecallStart", ctx, conferenceID, referenceType, referenceID)
+	ret0, _ := ret[0].(*service0.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ServiceTypeConferencecallStart indicates an expected call of ConferenceV1ServiceTypeConferencecallStart.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ServiceTypeConferencecallStart(ctx, conferenceID, referenceType, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ServiceTypeConferencecallStart", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ServiceTypeConferencecallStart), ctx, conferenceID, referenceType, referenceID)
 }
 
 // ConversationV1ConversationGet mocks base method.

@@ -32,6 +32,7 @@ import (
 	chatbotservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	cfservice "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -199,6 +200,8 @@ const (
 	resourceConferenceConferencesIDTranscribeStart resource = "conference/conferences/<conference-id>/transdribe_start"
 	resourceConferenceConferencesIDTranscribeStop  resource = "conference/conferences/<conference-id>/transcribe_stop"
 	resourceConferenceConferencecalls              resource = "conference/conferencecalls"
+
+	resourceConferenceServiceTypeConferencecall resource = "conference/services/type/conferencecall"
 
 	resourceCustomerCustomers resource = "customer/customers"
 	resourceCustomerLogin     resource = "customer/login"
@@ -596,14 +599,14 @@ type RequestHandler interface {
 	ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceTranscribeStart(ctx context.Context, conferenceID uuid.UUID, language string) (*cfconference.Conference, error)
 	ConferenceV1ConferenceTranscribeStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
-	ConferenceV1ConferenceAddConferencecallID(ctx context.Context, conferenceID uuid.UUID, conferencecallID uuid.UUID) (*cfconference.Conference, error)
-	ConferenceV1ConferenceRemoveConferencecallID(ctx context.Context, conferenceID uuid.UUID, conferencecallID uuid.UUID) (*cfconference.Conference, error)
 
 	// conference-manager conferencecall
 	ConferenceV1ConferencecallGet(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
-	ConferenceV1ConferencecallCreate(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfconferencecall.Conferencecall, error)
 	ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
 	ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int, delay int) error
+
+	// conference-manager service
+	ConferenceV1ServiceTypeConferencecallStart(ctx context.Context, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfservice.Service, error)
 
 	// conversation-manager conversation
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
