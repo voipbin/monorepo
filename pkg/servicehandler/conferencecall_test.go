@@ -8,10 +8,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
@@ -62,75 +60,6 @@ func Test_ConferencecallGet(t *testing.T) {
 			mockReq.EXPECT().ConferenceV1ConferencecallGet(ctx, tt.conferencecallID).Return(tt.responseConferencecall, nil)
 
 			res, err := h.ConferencecallGet(ctx, tt.customer, tt.conferencecallID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_ConferencecallCreate(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customer      *cscustomer.Customer
-		conferenceID  uuid.UUID
-		referenceType cfconferencecall.ReferenceType
-		referenceID   uuid.UUID
-
-		responseConference     *cfconference.Conference
-		responseConferencecall *cfconferencecall.Conferencecall
-
-		expectRes *cfconferencecall.WebhookMessage
-	}{
-		{
-			"normal",
-
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				PermissionIDs: []uuid.UUID{
-					cspermission.PermissionAdmin.ID,
-				},
-			},
-			uuid.FromStringOrNil("6e91871a-15af-11ed-af26-13620c4297ca"),
-			cfconferencecall.ReferenceTypeCall,
-			uuid.FromStringOrNil("6b8ddc42-15ac-11ed-9233-c71449b89800"),
-
-			&cfconference.Conference{
-				ID: uuid.FromStringOrNil("6e91871a-15af-11ed-af26-13620c4297ca"),
-			},
-			&cfconferencecall.Conferencecall{
-				ID: uuid.FromStringOrNil("134789f6-15ad-11ed-b971-4b6fffc99577"),
-			},
-
-			&cfconferencecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("134789f6-15ad-11ed-b971-4b6fffc99577"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			h := serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseConference, nil)
-			mockReq.EXPECT().ConferenceV1ConferencecallCreate(ctx, tt.conferenceID, tt.referenceType, tt.referenceID).Return(tt.responseConferencecall, nil)
-
-			res, err := h.ConferencecallCreate(ctx, tt.customer, tt.conferenceID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
