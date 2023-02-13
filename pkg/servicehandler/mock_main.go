@@ -1030,21 +1030,6 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceUpdate(ctx, u, cfID, name, d
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceUpdate), ctx, u, cfID, name, detail, timeout, preActions, postActions)
 }
 
-// ConferencecallCreate mocks base method.
-func (m *MockServiceHandler) ConferencecallCreate(ctx context.Context, u *customer.Customer, conferenceID uuid.UUID, referenceType conferencecall.ReferenceType, referenceID uuid.UUID) (*conferencecall.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferencecallCreate", ctx, u, conferenceID, referenceType, referenceID)
-	ret0, _ := ret[0].(*conferencecall.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferencecallCreate indicates an expected call of ConferencecallCreate.
-func (mr *MockServiceHandlerMockRecorder) ConferencecallCreate(ctx, u, conferenceID, referenceType, referenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallCreate), ctx, u, conferenceID, referenceType, referenceID)
-}
-
 // ConferencecallGet mocks base method.
 func (m *MockServiceHandler) ConferencecallGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*conferencecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()

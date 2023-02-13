@@ -268,7 +268,7 @@ func Test_CallCreate(t *testing.T) {
 				targetFlowID = uuid.Must(uuid.NewV4())
 				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customer.ID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(&fmflow.Flow{ID: targetFlowID}, nil)
 			}
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations, false).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations, false, false).Return(tt.responseCall, nil)
 
 			res, err := h.CallCreate(ctx, tt.customer, tt.flowID, tt.actions, tt.source, tt.destinations)
 			if err != nil {
