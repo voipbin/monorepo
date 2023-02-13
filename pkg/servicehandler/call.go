@@ -74,7 +74,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer,
 		targetFlowID = f.ID
 	}
 
-	tmps, err := h.reqHandler.CallV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations, false)
+	tmps, err := h.reqHandler.CallV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations, false, false)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err

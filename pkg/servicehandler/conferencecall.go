@@ -58,36 +58,6 @@ func (h *serviceHandler) ConferencecallGet(ctx context.Context, u *cscustomer.Cu
 	return res, nil
 }
 
-// ConferencecallCreate is a service handler for conferencecall creating.
-func (h *serviceHandler) ConferencecallCreate(ctx context.Context, u *cscustomer.Customer, conferenceID uuid.UUID, referenceType cfconferencecall.ReferenceType, referenceID uuid.UUID) (*cfconferencecall.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"conference_id":  conferenceID,
-			"reference_type": referenceType,
-			"reference_id":   referenceID,
-		},
-	)
-	log.Debugf("Creating a new conferencecall.")
-
-	// get conference for ownership check
-	_, err := h.conferenceGet(ctx, u, conferenceID)
-	if err != nil {
-		log.Errorf("Could not get conference info. err: %v", err)
-		return nil, err
-	}
-
-	tmp, err := h.reqHandler.ConferenceV1ConferencecallCreate(ctx, conferenceID, referenceType, referenceID)
-	if err != nil {
-		log.Errorf("Could not create a conference. err: %v", err)
-		return nil, err
-	}
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
 // ConferencecallKick is a service handler for kick the conferencecall from the conference.
 func (h *serviceHandler) ConferencecallKick(ctx context.Context, u *cscustomer.Customer, conferencecallID uuid.UUID) (*cfconferencecall.WebhookMessage, error) {
 	log := logrus.WithFields(

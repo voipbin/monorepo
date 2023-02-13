@@ -1,7 +1,6 @@
 package conferencecalls
 
 import (
-	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,67 +20,6 @@ import (
 func setupServer(app *gin.Engine) {
 	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
 	ApplyRoutes(v1)
-}
-
-func Test_conferencecallsPOST(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-
-		conferenceID  uuid.UUID
-		referenceType cfconferencecall.ReferenceType
-		referenceID   uuid.UUID
-
-		responseConferencecall *cfconferencecall.WebhookMessage
-		request                []byte
-	}{
-		{
-			"reference type call",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-			},
-
-			uuid.FromStringOrNil("90fa3988-15b3-11ed-918b-e3c155fcc880"),
-			cfconferencecall.ReferenceTypeCall,
-			uuid.FromStringOrNil("a42f781a-15b3-11ed-aa52-2bc25e2dce16"),
-
-			&cfconferencecall.WebhookMessage{
-				ID: uuid.FromStringOrNil("b5ca8e2a-15b3-11ed-8aba-831ab1a0e559"),
-			},
-			[]byte(`{"conference_id": "90fa3988-15b3-11ed-918b-e3c155fcc880", "reference_type": "call", "reference_id": "a42f781a-15b3-11ed-aa52-2bc25e2dce16"}`),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// create mock
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
-			})
-			setupServer(r)
-
-			req, _ := http.NewRequest("POST", "/v1.0/conferencecalls", bytes.NewBuffer(tt.request))
-			req.Header.Set("Content-Type", "application/json")
-
-			mockSvc.EXPECT().ConferencecallCreate(req.Context(), &tt.customer, tt.conferenceID, tt.referenceType, tt.referenceID).Return(tt.responseConferencecall, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-
-		})
-	}
 }
 
 func TestConferencesIDGET(t *testing.T) {
