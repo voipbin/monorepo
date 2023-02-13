@@ -12,52 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/listenhandler/models/request"
 )
 
-// // processV1ConferencecallsPost handles /v1/conferencecalls POST request
-// func (h *listenHandler) processV1ConferencecallsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-// 	log := logrus.WithFields(
-// 		logrus.Fields{
-// 			"handler": "processV1ConferencecallsPost",
-// 			"uri":     m.URI,
-// 			"data":    m.Data,
-// 		},
-// 	)
-
-// 	var data request.V1DataConferencecallsPost
-// 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
-// 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
-// 		return nil, err
-// 	}
-
-// 	// get conferernce info
-// 	cf, err := h.conferenceHandler.Get(ctx, data.ConferenceID)
-// 	if err != nil {
-// 		log.Errorf("Could not find conference info. err: %v", err)
-// 		return simpleResponse(400), nil
-// 	}
-
-// 	// create conferencecall
-// 	cc, err := h.conferencecallHandler.Create(ctx, cf.CustomerID, cf.ID, data.ReferenceType, data.ReferenceID)
-// 	if err != nil {
-// 		log.Errorf("Could not create a conference. err: %v", err)
-// 		return nil, err
-// 	}
-// 	log.WithField("conferencecall", cc).Debugf("Created a new conferencecall. conferencecall_id: %s", cc.ID)
-
-// 	tmp, err := json.Marshal(cc)
-// 	if err != nil {
-// 		log.Errorf("Could not marshal the conference. err: %v", err)
-// 		return simpleResponse(400), nil
-// 	}
-
-// 	res := &rabbitmqhandler.Response{
-// 		StatusCode: 200,
-// 		DataType:   "application/json",
-// 		Data:       tmp,
-// 	}
-
-// 	return res, nil
-// }
-
 // processV1ConferencecallsIDGet handles /v1/conferencecalls/<id> GET request
 func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(

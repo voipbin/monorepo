@@ -14,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230212084833-f00ba0a8a49e
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230212085912-52bcafed9276
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230213075159-c8a08a34696c
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230212162311-1183d627e1a4
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230131002226-28fcd0534b57
 )
