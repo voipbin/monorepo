@@ -76,6 +76,8 @@ gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230210081649-48f1a33
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230210081649-48f1a33defc6/go.mod h1:Gqqw76WriuUAditPEorkYAWOmmxM4GujOu0oPH1E074=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230212085912-52bcafed9276 h1:IQaGYjxpQAtS2LI9DKfxyLeTZX/cgmiQOXwuArnOA14=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230212085912-52bcafed9276/go.mod h1:ujaD0+PuEpILP071NYQm4A8u/u2QwEcU6d9D+2oSAVc=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230213075159-c8a08a34696c h1:SRlAXN5lT+Mi08yERgL8kWz5GuBRMNTHNcwNWdteyaE=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230213075159-c8a08a34696c/go.mod h1:y2DZRCrQFVXqT0G8clb9O/rUdJbXLX0MDV/DhLg0Hjc=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a h1:6tQaB5eQ8du+G2tXWGrm1E9oI2fPZQT+slbcYFcVqPE=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a/go.mod h1:DtQoH7ZODkzXBZR0i6J4PH0NyS2/v+BkhLZhxbf585Q=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5 h1:l2PNnUrTq8qZNqqi9eu2b6EaQKNz/oar9P9/H0d+6hU=
