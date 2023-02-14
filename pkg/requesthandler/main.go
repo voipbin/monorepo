@@ -724,6 +724,7 @@ type RequestHandler interface {
 	QueueV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QueueV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QueueV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
+	QueueV1QueuecallExecute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*qmqueuecall.Queuecall, error)
 
 	// queue-manager queuecallreference
 	QueueV1QueuecallReferenceGet(ctx context.Context, referenceID uuid.UUID) (*qmqueuecallreference.QueuecallReference, error)
