@@ -104,6 +104,101 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 	}
 }
 
+func Test_QueueV1QueuecallGetsByQueueIDAndStatus(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queueID   uuid.UUID
+		status    qmqueuecall.Status
+		pageToken string
+		pageSize  uint64
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     []qmqueuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("6f8a8f87-13fa-4731-b005-e23bcdbb4854"),
+			qmqueuecall.StatusWaiting,
+			"2020-09-20T03:23:20.995000",
+			10,
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&queue_id=6f8a8f87-13fa-4731-b005-e23bcdbb4854&status=waiting",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"2612aaf4-f56c-44ee-b00f-cb7c22e79796"}]`),
+			},
+			[]qmqueuecall.Queuecall{
+				{
+					ID: uuid.FromStringOrNil("2612aaf4-f56c-44ee-b00f-cb7c22e79796"),
+				},
+			},
+		},
+		{
+			"2 results",
+
+			uuid.FromStringOrNil("0edb7686-df53-4fdb-82c0-72915cccedbc"),
+			qmqueuecall.StatusWaiting,
+			"2020-09-20T03:23:20.995000",
+			10,
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&queue_id=0edb7686-df53-4fdb-82c0-72915cccedbc&status=waiting",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"1907094d-57e3-40d0-a26e-fbd0b981fc67"},{"id":"fac9b2b8-b54f-4e52-b6cb-d844b2d62eb2"}]`),
+			},
+			[]qmqueuecall.Queuecall{
+				{
+					ID: uuid.FromStringOrNil("1907094d-57e3-40d0-a26e-fbd0b981fc67"),
+				},
+				{
+					ID: uuid.FromStringOrNil("fac9b2b8-b54f-4e52-b6cb-d844b2d62eb2"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.QueueV1QueuecallGetsByQueueIDAndStatus(ctx, tt.queueID, tt.status, tt.pageToken, tt.pageSize)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_QueueV1QueuecallGet(t *testing.T) {
 
 	tests := []struct {

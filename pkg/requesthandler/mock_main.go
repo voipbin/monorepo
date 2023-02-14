@@ -3298,6 +3298,21 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGets(ctx, customerID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGets", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGets), ctx, customerID, pageToken, pageSize)
 }
 
+// QueueV1QueuecallGetsByQueueIDAndStatus mocks base method.
+func (m *MockRequestHandler) QueueV1QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, pageToken string, pageSize uint64) ([]queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1QueuecallGetsByQueueIDAndStatus", ctx, queueID, status, pageToken, pageSize)
+	ret0, _ := ret[0].([]queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueV1QueuecallGetsByQueueIDAndStatus indicates an expected call of QueueV1QueuecallGetsByQueueIDAndStatus.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGetsByQueueIDAndStatus(ctx, queueID, status, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGetsByQueueIDAndStatus", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGetsByQueueIDAndStatus), ctx, queueID, status, pageToken, pageSize)
+}
+
 // QueueV1QueuecallReferenceGet mocks base method.
 func (m *MockRequestHandler) QueueV1QueuecallReferenceGet(ctx context.Context, referenceID uuid.UUID) (*queuecallreference.QueuecallReference, error) {
 	m.ctrl.T.Helper()
