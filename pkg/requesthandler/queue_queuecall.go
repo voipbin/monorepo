@@ -18,22 +18,46 @@ import (
 func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resData []qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res []qmqueuecall.Queuecall
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return resData, nil
+	return res, nil
+}
+
+// QueueV1QueuecallGetsByQueueIDAndStatus sends a request to queue-manager
+// to get a list of queuecalls by the given queue id and status.
+// Returns list of queuecalls
+func (r *requestHandler) QueueV1QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status qmqueuecall.Status, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error) {
+	uri := fmt.Sprintf("/v1/queuecalls?page_token=%s&page_size=%d&queue_id=%s&status=%s", url.QueryEscape(pageToken), pageSize, queueID, status)
+
+	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res []qmqueuecall.Queuecall
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // QueueV1QueuecallGet sends a request to queue-manager
