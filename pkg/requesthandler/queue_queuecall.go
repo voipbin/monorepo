@@ -191,3 +191,37 @@ func (r *requestHandler) QueueV1QueuecallUpdateStatusWaiting(ctx context.Context
 
 	return &res, nil
 }
+
+// QueueV1QueuecallExecute sends the request for queuecall execute.
+func (r *requestHandler) QueueV1QueuecallExecute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+	uri := fmt.Sprintf("/v1/queuecalls/%s/execute", queuecallID)
+
+	data := &struct {
+		AgentID uuid.UUID `json:"agent_id"`
+	}{
+		AgentID: agentID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceQueueQueuecalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res qmqueuecall.Queuecall
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}

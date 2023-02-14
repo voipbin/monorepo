@@ -3268,6 +3268,21 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallDeleteByReferenceID(ct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallDeleteByReferenceID", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallDeleteByReferenceID), ctx, referenceID)
 }
 
+// QueueV1QueuecallExecute mocks base method.
+func (m *MockRequestHandler) QueueV1QueuecallExecute(ctx context.Context, queuecallID, agentID uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1QueuecallExecute", ctx, queuecallID, agentID)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueV1QueuecallExecute indicates an expected call of QueueV1QueuecallExecute.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallExecute(ctx, queuecallID, agentID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallExecute", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallExecute), ctx, queuecallID, agentID)
+}
+
 // QueueV1QueuecallGet mocks base method.
 func (m *MockRequestHandler) QueueV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
