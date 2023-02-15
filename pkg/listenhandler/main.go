@@ -57,6 +57,9 @@ var (
 	regV1QueuecallsIDTimeoutWait    = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_wait$")
 	regV1QueuecallsIDTimeoutService = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_service$")
 	regV1QueuecallsIDExecute        = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/execute$")
+
+	// services
+	regV1ServicesTypeQueuecall = regexp.MustCompile("/v1/services/type/queuecall$")
 )
 
 var (
@@ -260,6 +263,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1QueuecallsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDExecutePost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/execute"
+
+	/////////////////
+	// services
+	////////////////
+	// POST /services/type/queuecall
+	case regV1ServicesTypeQueuecall.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ServicesTypeQueuecallPost(ctx, m)
+		requestType = "/v1/services/type/queuecall"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
