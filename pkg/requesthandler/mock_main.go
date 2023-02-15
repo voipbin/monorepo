@@ -51,7 +51,6 @@ import (
 	outdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	queuecallreference "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
@@ -3326,21 +3325,6 @@ func (m *MockRequestHandler) QueueV1QueuecallGetsByQueueIDAndStatus(ctx context.
 func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGetsByQueueIDAndStatus(ctx, queueID, status, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGetsByQueueIDAndStatus", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGetsByQueueIDAndStatus), ctx, queueID, status, pageToken, pageSize)
-}
-
-// QueueV1QueuecallReferenceGet mocks base method.
-func (m *MockRequestHandler) QueueV1QueuecallReferenceGet(ctx context.Context, referenceID uuid.UUID) (*queuecallreference.QueuecallReference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueuecallReferenceGet", ctx, referenceID)
-	ret0, _ := ret[0].(*queuecallreference.QueuecallReference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueueV1QueuecallReferenceGet indicates an expected call of QueueV1QueuecallReferenceGet.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallReferenceGet(ctx, referenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallReferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallReferenceGet), ctx, referenceID)
 }
 
 // QueueV1QueuecallTimeoutService mocks base method.

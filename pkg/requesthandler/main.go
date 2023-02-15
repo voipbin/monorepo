@@ -49,7 +49,6 @@ import (
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	qmqueuecallreference "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
 	rmastcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
@@ -725,9 +724,6 @@ type RequestHandler interface {
 	QueueV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QueueV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QueueV1QueuecallExecute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*qmqueuecall.Queuecall, error)
-
-	// queue-manager queuecallreference
-	QueueV1QueuecallReferenceGet(ctx context.Context, referenceID uuid.UUID) (*qmqueuecallreference.QueuecallReference, error)
 
 	// registrar-manager contact
 	RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]*rmastcontact.AstContact, error)
