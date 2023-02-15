@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
 )
 
 // getSerialize returns cached serialized info.
@@ -41,7 +40,7 @@ func (h *handler) setSerialize(ctx context.Context, key string, data interface{}
 
 // QueueGet returns cached agent info
 func (h *handler) QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, error) {
-	key := fmt.Sprintf("queue:%s", id)
+	key := fmt.Sprintf("queue:queue:%s", id)
 
 	var res queue.Queue
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -53,7 +52,7 @@ func (h *handler) QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, err
 
 // QueueSet sets the agent info into the cache.
 func (h *handler) QueueSet(ctx context.Context, u *queue.Queue) error {
-	key := fmt.Sprintf("queue:%s", u.ID)
+	key := fmt.Sprintf("queue:queue:%s", u.ID)
 
 	if err := h.setSerialize(ctx, key, u); err != nil {
 		return err
@@ -64,7 +63,7 @@ func (h *handler) QueueSet(ctx context.Context, u *queue.Queue) error {
 
 // QueuecallGet returns cached queuecall info
 func (h *handler) QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
-	key := fmt.Sprintf("queuecall:%s", id)
+	key := fmt.Sprintf("queue:queuecall:%s", id)
 
 	var res queuecall.Queuecall
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -75,35 +74,28 @@ func (h *handler) QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Qu
 }
 
 // QueuecallSet sets the queuecall info into the cache.
-func (h *handler) QueuecallSet(ctx context.Context, u *queuecall.Queuecall) error {
-	key := fmt.Sprintf("queuecall:%s", u.ID)
+func (h *handler) QueuecallSet(ctx context.Context, data *queuecall.Queuecall) error {
+	key := fmt.Sprintf("queue:queuecall:%s", data.ID)
+	if err := h.setSerialize(ctx, key, data); err != nil {
+		return err
+	}
 
-	if err := h.setSerialize(ctx, key, u); err != nil {
+	keyWithReferenceID := fmt.Sprintf("queue:queuecall:reference_id:%s", data.ID)
+	if err := h.setSerialize(ctx, keyWithReferenceID, data); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// QueuecallReferenceGet returns cached queuecall info
-func (h *handler) QueuecallReferenceGet(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error) {
-	key := fmt.Sprintf("queuecallreference:%s", id)
+// QueuecallGetByReferenceID returns cached queuecall info of the given reference id.
+func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
+	key := fmt.Sprintf("queue:queuecall:reference_id:%s", referenceID)
 
-	var res queuecallreference.QueuecallReference
+	var res queuecall.Queuecall
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
-}
-
-// QueuecallReferenceSet sets the queuecall info into the cache.
-func (h *handler) QueuecallReferenceSet(ctx context.Context, u *queuecallreference.QueuecallReference) error {
-	key := fmt.Sprintf("queuecallreference:%s", u.ID)
-
-	if err := h.setSerialize(ctx, key, u); err != nil {
-		return err
-	}
-
-	return nil
 }

@@ -462,9 +462,9 @@ func (h *handler) QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UU
 	return nil
 }
 
-// QueueAddQueueCallID adds the queue call id to the queue.
+// QueueAddWaitQueueCallID adds the queue call id to the queue.
 // it increases the total_incoming_count + 1
-func (h *handler) QueueAddQueueCallID(ctx context.Context, id, queueCallID uuid.UUID) error {
+func (h *handler) QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID uuid.UUID) error {
 	// prepare
 	q := `
 	update queues set
@@ -481,7 +481,7 @@ func (h *handler) QueueAddQueueCallID(ctx context.Context, id, queueCallID uuid.
 
 	_, err := h.db.Exec(q, queueCallID.String(), GetCurTime(), id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. QueueAddQueueCallID. err: %v", err)
+		return fmt.Errorf("could not execute. QueueAddWaitQueueCallID. err: %v", err)
 	}
 
 	// update the cache
@@ -568,7 +568,6 @@ func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCall
 	// prepare
 	q := `
 	update queues set
-		total_serviced_count = total_serviced_count + 1,
 		service_queue_call_ids = json_remove(
 			service_queue_call_ids, replace(
 				json_search(

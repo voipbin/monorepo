@@ -8,7 +8,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
-// deleteVariables sets the queue's variables
+// setVariables sets the queue's variables
 func (h *queuecallHandler) setVariables(ctx context.Context, q *queue.Queue, qc *queuecall.Queuecall) error {
 
 	variables := map[string]string{
@@ -21,10 +21,8 @@ func (h *queuecallHandler) setVariables(ctx context.Context, q *queue.Queue, qc 
 		"voipbin.queuecall.timeout_service": strconv.Itoa(qc.TimeoutService),
 	}
 
-	for key, value := range variables {
-		if err := h.reqHandler.FlowV1VariableSetVariable(ctx, qc.ReferenceActiveflowID, key, value); err != nil {
-			return err
-		}
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, qc.ReferenceActiveflowID, variables); errSet != nil {
+		return errSet
 	}
 
 	return nil

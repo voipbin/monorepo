@@ -10,6 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
 )
 
 // processV1QueuecallsGet handles Get /v1/queuecalls request
@@ -26,6 +28,8 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 
 	// get customer
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	queueID := uuid.FromStringOrNil(u.Query().Get("queue_id"))
+	status := queuecall.Status(u.Query().Get("status"))
 
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "processV1QueuecallsGet",
@@ -34,7 +38,12 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 		"token":       pageToken,
 	})
 
-	tmp, err := h.queuecallHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken)
+	var tmp []*queuecall.Queuecall
+	if queueID != uuid.Nil {
+		tmp, err = h.queuecallHandler.GetsByQueueIDAndStatus(ctx, queueID, status, pageSize, pageToken)
+	} else {
+		tmp, err = h.queuecallHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken)
+	}
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
 		return simpleResponse(500), nil
@@ -179,8 +188,8 @@ func (h *listenHandler) processV1QueuecallsIDTimeoutServicePost(ctx context.Cont
 	return res, nil
 }
 
-// processV1QueuecallsIDStatusWaitingPost handles Post /v1/queuecalls/<queuecall-id>/status_waiting request
-func (h *listenHandler) processV1QueuecallsIDStatusWaitingPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1QueuecallsIDExecutePost handles Post /v1/queuecalls/<queuecall-id>/execute request
+func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -189,12 +198,18 @@ func (h *listenHandler) processV1QueuecallsIDStatusWaitingPost(ctx context.Conte
 	id := uuid.FromStringOrNil(uriItems[3])
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":         "processV1QueuecallsIDStatusWaitingPost",
+			"func":         "processV1QueuecallsIDExecutePost",
 			"queuecall_id": id,
 		})
-	log.Debug("Executing processV1QueuecallsIDStatusWaitingPost.")
+	log.Debug("Executing processV1QueuecallsIDExecutePost.")
 
-	tmp, err := h.queuecallHandler.UpdateStatusWaiting(ctx, id)
+	var req request.V1DataQueuecallsIDExecutePost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.queuecallHandler.Execute(ctx, id, req.AgentID)
 	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
 		return simpleResponse(500), nil

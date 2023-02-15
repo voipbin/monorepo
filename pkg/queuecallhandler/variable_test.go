@@ -75,9 +75,7 @@ func Test_setVariables(t *testing.T) {
 				"voipbin.queuecall.timeout_service": strconv.Itoa(tt.queuecall.TimeoutService),
 			}
 
-			for key, value := range variables {
-				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.queuecall.ReferenceActiveflowID, key, value).Return(nil)
-			}
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.queuecall.ReferenceActiveflowID, variables).Return(nil)
 
 			if err := h.setVariables(ctx, tt.queue, tt.queuecall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

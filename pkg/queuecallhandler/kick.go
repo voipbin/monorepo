@@ -12,16 +12,16 @@ import (
 )
 
 // Kick kicks the queuecall from the queue
-func (h *queuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error) {
+func (h *queuecallHandler) Kick(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":         "Kick",
-			"queuecall_id": queuecallID,
+			"queuecall_id": id,
 		},
 	)
 
 	// get queuecall
-	qc, err := h.db.QueuecallGet(ctx, queuecallID)
+	qc, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get queuecall. err: %v", err)
 		return nil, err
@@ -40,32 +40,16 @@ func (h *queuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*qu
 
 	if qc.Status == queuecall.StatusService {
 		// nothing to do here.
-		// the conference-manager's conference_leaved message event subscribe will handle it.
+		// the call-manager's confbridge_leaved message event subscribe will handle it.
 		return qc, nil
 	}
 
-	// calculate the duration and set the duration_service
-	curTime := dbhandler.GetCurTime()
-	duration := getDuration(ctx, qc.TMCreate, curTime)
-	log.Debug("Calculated duration. duration: %ld", duration.Milliseconds())
-
-	if err := h.db.QueuecallSetDurationWaiting(ctx, qc.ID, int(duration.Milliseconds())); err != nil {
-		log.Errorf("Could not update queuecall's duration_waiting. err: %v", err)
-		return nil, err
-	}
-
-	if err := h.db.QueuecallDelete(ctx, qc.ID, queuecall.StatusAbandoned, curTime); err != nil {
-		log.Errorf("Could not delete the queuecall. err: %v", err)
-		return nil, err
-	}
-
-	// get updated queuecall and notify.
-	res, err := h.db.QueuecallGet(ctx, qc.ID)
+	// update status to abandoned
+	res, err := h.UpdateStatusAbandoned(ctx, qc)
 	if err != nil {
-		log.Errorf("Could not get updated queuecall. err: %v", err)
+		log.Errorf("Could not update the queuecall status to abandoned. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallAbandoned, res)
 
 	if errVariables := h.deleteVariables(ctx, res); errVariables != nil {
 		log.Errorf("Could not delete variables. err: %v", errVariables)
@@ -84,15 +68,18 @@ func (h *queuecallHandler) KickByReferenceID(ctx context.Context, referenceID uu
 	)
 	log.Debugf("Kicking the call. reference_id: %s", referenceID)
 
-	// get queuecallreference
-	qcr, err := h.queuecallReferenceHandler.Get(ctx, referenceID)
+	qc, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get queuecall reference. err: %v", err)
+		log.Errorf("Could not get queuecall info. err: %v", err)
 		return nil, err
 	}
-	log = log.WithField("queuecall_id", qcr.CurrentQueuecallID)
 
-	res, err := h.Kick(ctx, qcr.CurrentQueuecallID)
+	if qc.TMEnd < dbhandler.DefaultTimeStamp {
+		// already ended
+		return qc, nil
+	}
+
+	res, err := h.Kick(ctx, qc.ID)
 	if err != nil {
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		return nil, err

@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
@@ -24,14 +23,20 @@ func Test_Execute(t *testing.T) {
 	tests := []struct {
 		name string
 
-		queuecall *queuecall.Queuecall
-		agent     *amagent.Agent
+		id      uuid.UUID
+		agentID uuid.UUID
 
+		responseQueuecall *queuecall.Queuecall
 		responseFlow      *fmflow.Flow
 		responseAgentDial *amagentdial.AgentDial
+
+		expcetFlowActions []fmaction.Action
 	}{
 		{
 			"normal",
+
+			uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+			uuid.FromStringOrNil("624e1cd6-d1b0-11ec-8b3b-db12aa2e35f6"),
 
 			&queuecall.Queuecall{
 				ID:              uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
@@ -40,7 +45,7 @@ func Test_Execute(t *testing.T) {
 				ReferenceID:     uuid.FromStringOrNil("b658394e-5ee0-11ec-92ba-5f2f2eabf000"),
 				ForwardActionID: uuid.FromStringOrNil("bedfbc86-5ee0-11ec-a327-cbb8abfda595"),
 				ExitActionID:    uuid.FromStringOrNil("d708bbbe-5ee0-11ec-aca3-530babc708dd"),
-				ConferenceID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
+				ConfbridgeID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
 					Target: "+821021656521",
@@ -52,15 +57,18 @@ func Test_Execute(t *testing.T) {
 
 				Status: queuecall.StatusWaiting,
 			},
-			&amagent.Agent{
-				ID: uuid.FromStringOrNil("624e1cd6-d1b0-11ec-8b3b-db12aa2e35f6"),
-			},
-
 			&fmflow.Flow{
 				ID: uuid.FromStringOrNil("af9486dc-d1b1-11ec-b34e-8fea9e29488f"),
 			},
 			&amagentdial.AgentDial{
 				ID: uuid.FromStringOrNil("f8942964-d1b1-11ec-a8ca-837d4eb91b31"),
+			},
+
+			[]fmaction.Action{
+				{
+					Type:   fmaction.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"d7357136-5ee0-11ec-abd0-a7463d258061"}`),
+				},
 			},
 		},
 	}
@@ -79,25 +87,28 @@ func Test_Execute(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
+			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
+
 			// generateFlowForAgentCall
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.queuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expcetFlowActions, false).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().AgentV1AgentDial(ctx, tt.agent.ID, &tt.queuecall.Source, tt.responseFlow.ID, tt.queuecall.ReferenceID).Return(tt.responseAgentDial, nil)
-			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.queuecall.ID, tt.agent.ID).Return(nil)
-			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.queuecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.queuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.queuecall)
-			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.queuecall.ReferenceActiveflowID, tt.queuecall.ForwardActionID, true).Return(nil)
+			mockReq.EXPECT().AgentV1AgentDial(ctx, tt.agentID, &tt.responseQueuecall.Source, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID).Return(tt.responseAgentDial, nil)
 
-			res, err := h.Execute(ctx, tt.queuecall, tt.agent)
+			//UpdateStatusConnecting
+			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.responseQueuecall)
+			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ForwardActionID, true).Return(nil)
+
+			res, err := h.Execute(ctx, tt.id, tt.agentID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.queuecall, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.queuecall, res)
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseQueuecall, res)
 			}
 		})
 	}
@@ -122,8 +133,8 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 
 			[]fmaction.Action{
 				{
-					Type:   fmaction.TypeConferenceJoin,
-					Option: []byte(`{"conference_id":"f42361d2-d1b2-11ec-8303-5baaf068dbab"}`),
+					Type:   fmaction.TypeConfbridgeJoin,
+					Option: []byte(`{"confbridge_id":"f42361d2-d1b2-11ec-8303-5baaf068dbab"}`),
 				},
 			},
 
@@ -147,10 +158,9 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeFlow, "automatically generated for the agent call by the queue-manager", "", tt.expectActions, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
 
 			res, err := h.generateFlowForAgentCall(ctx, tt.customerID, tt.conferenceID)
 			if err != nil {

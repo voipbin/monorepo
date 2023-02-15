@@ -20,7 +20,7 @@ type Queuecall struct {
 	FlowID          uuid.UUID `json:"flow_id"`           // queuecall's queue flow id.
 	ForwardActionID uuid.UUID `json:"forward_action_id"` // action id for forward. This is for the conference_join's action id.
 	ExitActionID    uuid.UUID `json:"exit_action_id"`    // action id for queue exit. When the queuecall has ended, the queuemanager will send the request forward to this action id.
-	ConferenceID    uuid.UUID `json:"conference_id"`     // conference id
+	ConfbridgeID    uuid.UUID `json:"confbridge_id"`     // confbridge id
 
 	Source        commonaddress.Address `json:"source"`         // source address for calling to the agent.
 	RoutingMethod queue.RoutingMethod   `json:"routing_method"` // queue's routing method
@@ -38,6 +38,7 @@ type Queuecall struct {
 	TMCreate  string `json:"tm_create"`  // Created timestamp.
 	TMService string `json:"tm_service"` // Serviced timestamp.
 	TMUpdate  string `json:"tm_update"`  // Updated timestamp.
+	TMEnd     string `json:"tm_end"`     // ended timestamp.
 	TMDelete  string `json:"tm_delete"`  // Deleted timestamp.
 }
 

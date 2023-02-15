@@ -13,7 +13,6 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
 // MockQueueHandler is a mock of QueueHandler interface.
@@ -37,6 +36,51 @@ func NewMockQueueHandler(ctrl *gomock.Controller) *MockQueueHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockQueueHandler) EXPECT() *MockQueueHandlerMockRecorder {
 	return m.recorder
+}
+
+// AddAbandonedQueuecallID mocks base method.
+func (m *MockQueueHandler) AddAbandonedQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) (*queue.Queue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddAbandonedQueuecallID", ctx, id, queuecallID)
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddAbandonedQueuecallID indicates an expected call of AddAbandonedQueuecallID.
+func (mr *MockQueueHandlerMockRecorder) AddAbandonedQueuecallID(ctx, id, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAbandonedQueuecallID", reflect.TypeOf((*MockQueueHandler)(nil).AddAbandonedQueuecallID), ctx, id, queuecallID)
+}
+
+// AddServiceQueuecallID mocks base method.
+func (m *MockQueueHandler) AddServiceQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) (*queue.Queue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddServiceQueuecallID", ctx, id, queuecallID)
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddServiceQueuecallID indicates an expected call of AddServiceQueuecallID.
+func (mr *MockQueueHandlerMockRecorder) AddServiceQueuecallID(ctx, id, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddServiceQueuecallID", reflect.TypeOf((*MockQueueHandler)(nil).AddServiceQueuecallID), ctx, id, queuecallID)
+}
+
+// AddWaitQueueCallID mocks base method.
+func (m *MockQueueHandler) AddWaitQueueCallID(ctx context.Context, id, queuecallID uuid.UUID) (*queue.Queue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddWaitQueueCallID", ctx, id, queuecallID)
+	ret0, _ := ret[0].(*queue.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddWaitQueueCallID indicates an expected call of AddWaitQueueCallID.
+func (mr *MockQueueHandlerMockRecorder) AddWaitQueueCallID(ctx, id, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWaitQueueCallID", reflect.TypeOf((*MockQueueHandler)(nil).AddWaitQueueCallID), ctx, id, queuecallID)
 }
 
 // Create mocks base method.
@@ -126,19 +170,19 @@ func (mr *MockQueueHandlerMockRecorder) Gets(ctx, customerID, size, token interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueueHandler)(nil).Gets), ctx, customerID, size, token)
 }
 
-// Join mocks base method.
-func (m *MockQueueHandler) Join(ctx context.Context, queueID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, exitActionID uuid.UUID) (*queuecall.Queuecall, error) {
+// RemoveServiceQueuecallID mocks base method.
+func (m *MockQueueHandler) RemoveServiceQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Join", ctx, queueID, referenceType, referenceID, referenceActiveflowID, exitActionID)
-	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret := m.ctrl.Call(m, "RemoveServiceQueuecallID", ctx, id, queuecallID)
+	ret0, _ := ret[0].(*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Join indicates an expected call of Join.
-func (mr *MockQueueHandlerMockRecorder) Join(ctx, queueID, referenceType, referenceID, referenceActiveflowID, exitActionID interface{}) *gomock.Call {
+// RemoveServiceQueuecallID indicates an expected call of RemoveServiceQueuecallID.
+func (mr *MockQueueHandlerMockRecorder) RemoveServiceQueuecallID(ctx, id, queuecallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Join", reflect.TypeOf((*MockQueueHandler)(nil).Join), ctx, queueID, referenceType, referenceID, referenceActiveflowID, exitActionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveServiceQueuecallID", reflect.TypeOf((*MockQueueHandler)(nil).RemoveServiceQueuecallID), ctx, id, queuecallID)
 }
 
 // UpdateBasicInfo mocks base method.

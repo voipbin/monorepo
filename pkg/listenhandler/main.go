@@ -1,6 +1,6 @@
 package listenhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_listenhandler_listenhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -14,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
@@ -32,9 +31,8 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	queueHandler              queuehandler.QueueHandler
-	queuecallHandler          queuecallhandler.QueuecallHandler
-	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler
+	queueHandler     queuehandler.QueueHandler
+	queuecallHandler queuecallhandler.QueuecallHandler
 }
 
 var (
@@ -48,7 +46,6 @@ var (
 	reqV1QueuesID              = regexp.MustCompile("/v1/queues/" + regUUID + "$")
 	reqV1QueuesIDTagIDs        = regexp.MustCompile("/v1/queues/" + regUUID + "/tag_ids$")
 	reqV1QueuesIDRoutingMethod = regexp.MustCompile("/v1/queues/" + regUUID + "/routing_method$")
-	reqV1QueuesIDQueuecalls    = regexp.MustCompile("/v1/queues/" + regUUID + "/queuecalls$")
 	reqV1QueuesIDWaitActions   = regexp.MustCompile("/v1/queues/" + regUUID + "/wait_actions$")
 	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents\?`)
 	reqV1QueuesIDExecute       = regexp.MustCompile("/v1/queues/" + regUUID + "/execute$")
@@ -59,10 +56,7 @@ var (
 	regV1QueuecallsID               = regexp.MustCompile("/v1/queuecalls/" + regUUID + "$")
 	regV1QueuecallsIDTimeoutWait    = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_wait$")
 	regV1QueuecallsIDTimeoutService = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_service$")
-	regV1QueuecallsIDStatusWaiting  = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/status_waiting$")
-
-	// queuecallreferences
-	regV1QueuecallreferencesID = regexp.MustCompile("/v1/queuecallreferences/" + regUUID + "$")
+	regV1QueuecallsIDExecute        = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/execute$")
 )
 
 var (
@@ -99,14 +93,12 @@ func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
-	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
 
-		queueHandler:              queueHandler,
-		queuecallHandler:          queuecallHandler,
-		queuecallReferenceHandler: queuecallReferenceHandler,
+		queueHandler:     queueHandler,
+		queuecallHandler: queuecallHandler,
 	}
 
 	return h
@@ -141,7 +133,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "queue-manager", false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, "queue-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -215,11 +207,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuesIDRoutingMethodPut(ctx, m)
 		requestType = "/v1/queues/<queue-id>/routing_method"
 
-	// POST /queues/<queue-id>/queuecalls
-	case reqV1QueuesIDQueuecalls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1QueuesIDQueuecallsPost(ctx, m)
-		requestType = "/v1/queues/<queue-id>/queuecalls"
-
 	// PUT /queues/<queue-id>/wait_actions
 	case reqV1QueuesIDWaitActions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1QueuesIDWaitActionsPut(ctx, m)
@@ -269,23 +256,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuecallsIDTimeoutServicePost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/timeout_service"
 
-	// POST /queuecalls/queuecall-id>/status_waiting
-	case regV1QueuecallsIDStatusWaiting.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1QueuecallsIDStatusWaitingPost(ctx, m)
-		requestType = "/v1/queuecalls/<queuecall-id>/status_waiting"
-
-	//////////////////////
-	// queuecallreferences
-	//////////////////////
-	// GET /queuecallreferences/<queuecallreference-id>
-	case regV1QueuecallreferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1QueuecallreferencesIDGet(ctx, m)
-		requestType = "/v1/queuecallreferences"
-
-	// DELETE /queuecallreferences/<queuecallreference-id>
-	case regV1QueuecallreferencesID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1QueuecallreferencesIDDelete(ctx, m)
-		requestType = "/v1/queuecallreferences"
+	// POST /queuecalls/queuecall-id>/execute
+	case regV1QueuecallsIDExecute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1QueuecallsIDExecutePost(ctx, m)
+		requestType = "/v1/queuecalls/<queuecall-id>/execute"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

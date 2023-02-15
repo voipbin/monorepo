@@ -2,15 +2,14 @@ package queuecallhandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
 // Gets returns queuecalls
@@ -68,22 +67,10 @@ func (h *queuecallHandler) GetByReferenceID(ctx context.Context, referenceID uui
 			"reference_id": referenceID,
 		})
 
-	qcf, err := h.queuecallReferenceHandler.Get(ctx, referenceID)
+	res, err := h.db.QueuecallGetByReferenceID(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get queuecall reference. err: %v", err)
-		return nil, err
-	}
-
-	if qcf.CurrentQueuecallID == uuid.Nil {
-		log.Errorf("No current queuecall info exist.")
-		return nil, fmt.Errorf("no current queuecall id info")
-	}
-
-	// get current queuecall info
-	res, err := h.db.QueuecallGet(ctx, qcf.CurrentQueuecallID)
-	if err != nil {
-		log.Errorf("Could not get queuecall reference info. err: %v", err)
-		return nil, err
+		log.Errorf("Could not get queuecall info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get queuecall info")
 	}
 
 	return res, nil
@@ -96,7 +83,7 @@ func (h *queuecallHandler) Create(
 	referenceType queuecall.ReferenceType,
 	referenceID uuid.UUID,
 	referenceActiveflowID uuid.UUID,
-	flowID uuid.UUID,
+	flowID uuid.UUID, // todo: remove this. we don't use this anymore
 	forwardActionID uuid.UUID,
 	exitActionID uuid.UUID,
 	conferenceID uuid.UUID,
@@ -112,10 +99,10 @@ func (h *queuecallHandler) Create(
 	log.Debug("Creating a new queuecall.")
 
 	// generate queue id
-	id := uuid.Must(uuid.NewV4())
-	log = log.WithField("queuecall_id", id)
+	id := h.utilHandler.CreateUUID()
+	log = log.WithField("id", id)
 
-	c := &queuecall.Queuecall{
+	qc := &queuecall.Queuecall{
 		ID:         id,
 		CustomerID: q.CustomerID,
 		QueueID:    q.ID,
@@ -127,7 +114,7 @@ func (h *queuecallHandler) Create(
 		FlowID:          flowID,
 		ForwardActionID: forwardActionID,
 		ExitActionID:    exitActionID,
-		ConferenceID:    conferenceID,
+		ConfbridgeID:    conferenceID,
 
 		Source:        source,
 		RoutingMethod: q.RoutingMethod,
@@ -141,21 +128,16 @@ func (h *queuecallHandler) Create(
 
 		DurationWaiting: 0,
 		DurationService: 0,
-
-		TMCreate:  dbhandler.GetCurTime(),
-		TMService: dbhandler.DefaultTimeStamp,
-		TMUpdate:  dbhandler.DefaultTimeStamp,
-		TMDelete:  dbhandler.DefaultTimeStamp,
 	}
 
 	// create
-	if err := h.db.QueuecallCreate(ctx, c); err != nil {
+	if err := h.db.QueuecallCreate(ctx, qc); err != nil {
 		log.Errorf("Could not create a new queuecall. err: %v", err)
 		return nil, err
 	}
 
 	// get created queuecall and notify
-	res, err := h.db.QueuecallGet(ctx, c.ID)
+	res, err := h.db.QueuecallGet(ctx, qc.ID)
 	if err != nil {
 		log.Errorf("Could not get created queuecall. err: %v", err)
 		return nil, err
@@ -200,30 +182,106 @@ func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.U
 	return res, nil
 }
 
-// UpdateStatusConnecting updates the queuecall's status to the waiting.
-func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
+// UpdateStatusService updates the queuecall's status to the service.
+func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "UpdateStatusConnecting",
-		"queuecall_id": id,
+		"func":         "UpdateStatusService",
+		"queuecall_id": qc.ID,
 	})
 	log.Debug("Updating queuecall status to waiting.")
 
-	if err := h.db.QueuecallSetStatusWaiting(ctx, id); err != nil {
-		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
-		return nil, err
+	curTime := h.utilHandler.GetCurTime()
+	duration := getDuration(ctx, qc.TMCreate, curTime)
+
+	if errService := h.db.QueuecallSetStatusService(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
+		log.Errorf("Could not update queuecall's status to service. err: %v", errService)
+		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
 	}
 
-	res, err := h.db.QueuecallGet(ctx, id)
+	res, err := h.db.QueuecallGet(ctx, qc.ID)
 	if err != nil {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
 	}
-	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallWaiting, res)
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallServiced, res)
 
-	// send queue execute update request
-	go func() {
-		_, _ = h.reqHandler.QueueV1QueueUpdateExecute(context.Background(), res.QueueID, queue.ExecuteRun)
-	}()
+	_, err = h.queueHandler.AddServiceQueuecallID(ctx, qc.QueueID, qc.ID)
+	if err != nil {
+		log.Errorf("Could not add the service queuecall. queuecall_id: %s", res.ID)
+	}
+
+	return res, nil
+}
+
+// UpdateStatusAbandoned updates the queuecall's status to the abandoned.
+func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateStatusAbandoned",
+		"queuecall_id": qc.ID,
+	})
+	log.Debug("Updating queuecall status to waiting.")
+
+	curTime := h.utilHandler.GetCurTime()
+	duration := getDuration(ctx, qc.TMCreate, curTime)
+
+	if errService := h.db.QueuecallSetStatusAbandoned(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
+		log.Errorf("Could not update queuecall's status to service. err: %v", errService)
+		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
+	}
+
+	res, err := h.db.QueuecallGet(ctx, qc.ID)
+	if err != nil {
+		log.Errorf("Could not get updated queuecall. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallAbandoned, res)
+
+	_, err = h.queueHandler.AddAbandonedQueuecallID(ctx, res.QueueID, res.ID)
+	if err != nil {
+		log.Errorf("Could not add the abandoned queuecall. queuecall_id: %s", qc.ID)
+	}
+
+	// delete confbridge
+	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, qc.ConfbridgeID); errDelete != nil {
+		log.Errorf("Could not delete the confbridge. err: %v", errDelete)
+	}
+
+	return res, nil
+}
+
+// UpdateStatusDone updates the queuecall's status to the done.
+func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateStatusDone",
+		"queuecall_id": qc.ID,
+	})
+	log.Debug("Updating queuecall status to waiting.")
+
+	curTime := h.utilHandler.GetCurTime()
+	duration := getDuration(ctx, qc.TMCreate, curTime)
+
+	if errService := h.db.QueuecallSetStatusDone(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
+		log.Errorf("Could not update queuecall's status to service. err: %v", errService)
+		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
+	}
+
+	res, err := h.db.QueuecallGet(ctx, qc.ID)
+	if err != nil {
+		log.Errorf("Could not get updated queuecall. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallDone, res)
+
+	// remove the service queuecall info from the queue
+	_, err = h.queueHandler.RemoveServiceQueuecallID(ctx, res.QueueID, res.ID)
+	if err != nil {
+		log.Errorf("Could not remove the service queuecall. queuecall_id: %s", res.ID)
+	}
+
+	// delete confbridge
+	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, qc.ConfbridgeID); errDelete != nil {
+		log.Errorf("Could not delete the confbridge. err: %v", errDelete)
+	}
 
 	return res, nil
 }

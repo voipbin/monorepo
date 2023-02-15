@@ -9,11 +9,11 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
 )
 
 func Test_Execute(t *testing.T) {
@@ -24,7 +24,8 @@ func Test_Execute(t *testing.T) {
 		queueID uuid.UUID
 
 		responseQueue     *queue.Queue
-		responseQueuecall []*queuecall.Queuecall
+		responseCurTime   string
+		responseQueuecall []queuecall.Queuecall
 		responseAgent     []amagent.Agent
 	}{
 		{
@@ -41,7 +42,8 @@ func Test_Execute(t *testing.T) {
 				},
 				RoutingMethod: queue.RoutingMethodRandom,
 			},
-			[]*queuecall.Queuecall{
+			"2023-02-14 03:22:17.995000",
+			[]queuecall.Queuecall{
 				{
 					ID: uuid.FromStringOrNil("0313ffe8-d1af-11ec-a1e7-3b1e1fb76015"),
 				},
@@ -59,29 +61,29 @@ func Test_Execute(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &queueHandler{
+				utilhandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
-
-				queuecallHandler: mockQueuecall,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
-			mockQueuecall.EXPECT().GetsByQueueIDAndStatus(ctx, tt.queueID, queuecall.StatusWaiting, uint64(1), gomock.Any()).Return(tt.responseQueuecall, nil)
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockReq.EXPECT().QueueV1QueuecallGetsByQueueIDAndStatus(ctx, tt.responseQueue.ID, queuecall.StatusWaiting, tt.responseCurTime, uint64(1)).Return(tt.responseQueuecall, nil)
 
 			// GetAgents
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockReq.EXPECT().AgentV1AgentGetsByTagIDsAndStatus(ctx, tt.responseQueue.CustomerID, tt.responseQueue.TagIDs, amagent.StatusAvailable).Return(tt.responseAgent, nil)
 
-			mockQueuecall.EXPECT().Execute(ctx, tt.responseQueuecall[0], gomock.Any()).Return(&queuecall.Queuecall{}, nil)
+			mockReq.EXPECT().QueueV1QueuecallExecute(ctx, tt.responseQueuecall[0].ID, gomock.Any()).Return(&queuecall.Queuecall{}, nil)
 			mockReq.EXPECT().QueueV1QueueExecuteRun(ctx, tt.queueID, 100)
 
 			h.Execute(ctx, tt.queueID)

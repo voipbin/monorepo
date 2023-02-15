@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -75,11 +76,13 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &queueHandler{
+				utilhandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
@@ -87,6 +90,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockDB.EXPECT().QueueCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueueGet(ctx, gomock.Any()).Return(&queue.Queue{}, nil)
 
@@ -101,88 +105,6 @@ func Test_Create(t *testing.T) {
 				tt.waitTimeout,
 				tt.serviceTimeout,
 			)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_createQueueFlow(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customerID   uuid.UUID
-		queueID      uuid.UUID
-		conferenceID uuid.UUID
-		waitActions  []fmaction.Action
-
-		flowName     string
-		flowActions  []fmaction.Action
-		responseFlow *fmflow.Flow
-
-		expectRes *fmflow.Flow
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("66f84114-7f56-11ec-8e9a-ff1aed535827"),
-			uuid.FromStringOrNil("61a4651c-60e3-11ec-86ff-efca21ef8707"),
-			uuid.FromStringOrNil("61d32f5a-60e3-11ec-943d-db1b16329a1c"),
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-					ID:   uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-				},
-			},
-
-			"queue-61a4651c-60e3-11ec-86ff-efca21ef8707",
-			[]fmaction.Action{
-				{
-					Type:   fmaction.TypeAnswer,
-					ID:     uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-					NextID: uuid.FromStringOrNil("290f9c8a-adf5-11ec-93c7-4f5277bca38c"),
-				},
-				{
-					Type:   fmaction.TypeConferenceJoin,
-					Option: []byte(`{"conference_id":"61d32f5a-60e3-11ec-943d-db1b16329a1c"}`),
-				},
-			},
-			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("ebcbfe7a-60e4-11ec-aaf3-738bb5a45bb0"),
-			},
-
-			&fmflow.Flow{
-				ID: uuid.FromStringOrNil("ebcbfe7a-60e4-11ec-aaf3-738bb5a45bb0"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &queueHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyhandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeQueue, tt.flowName, "generated for queue by queue-manager.", tt.flowActions, false).Return(tt.responseFlow, nil)
-
-			res, err := h.createQueueFlow(ctx, tt.customerID, tt.queueID, tt.conferenceID, tt.waitActions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
