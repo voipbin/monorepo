@@ -49,6 +49,7 @@ import (
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	qmservice "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
 	rmastcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
@@ -222,9 +223,10 @@ const (
 	resourceOutdialOutdials       resource = "outdial/outdials"
 	resourceOutdialOutdialTargets resource = "outdial/outdial_targets"
 
-	resourceQueueQueues              resource = "queue/queues"
-	resourceQueueQueuecalls          resource = "queue/queuecalls"
-	resourceQueueQueuecallreferences resource = "queue/queuecallreferences"
+	resourceQueueQueues     resource = "queue/queues"
+	resourceQueueQueuecalls resource = "queue/queuecalls"
+
+	resourceQueueServiceTypeQueuecall resource = "queue/services/type/queuecall"
 
 	resourceRegistrarDomains    resource = "registrar/domain"
 	resourceRegistrarExtensions resource = "registrar/extension"
@@ -719,11 +721,13 @@ type RequestHandler interface {
 	QueueV1QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status qmqueuecall.Status, pageToken string, pageSize uint64) ([]qmqueuecall.Queuecall, error)
 	QueueV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QueueV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
-	QueueV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QueueV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QueueV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QueueV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QueueV1QueuecallExecute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*qmqueuecall.Queuecall, error)
+
+	// queue-manager service
+	QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*qmservice.Service, error)
 
 	// registrar-manager contact
 	RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]*rmastcontact.AstContact, error)

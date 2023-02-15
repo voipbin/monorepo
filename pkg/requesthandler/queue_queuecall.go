@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	qmrequest "gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -109,30 +110,6 @@ func (r *requestHandler) QueueV1QueuecallDelete(ctx context.Context, queuecallID
 	return &res, nil
 }
 
-// QueueV1QueuecallreferenceDelete sends a request to queue-manager
-// to delete the queuecallreference and exit the queuecall from the queue.
-func (r *requestHandler) QueueV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error) {
-	uri := fmt.Sprintf("/v1/queuecallreferences/%s", referenceID)
-
-	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceQueueQueuecallreferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var res qmqueuecall.Queuecall
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
 // QueueV1QueuecallTimeoutWait sends the request for queuecall wait timeout.
 //
 // delay: millisecond
@@ -196,9 +173,7 @@ func (r *requestHandler) QueueV1QueuecallUpdateStatusWaiting(ctx context.Context
 func (r *requestHandler) QueueV1QueuecallExecute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls/%s/execute", queuecallID)
 
-	data := &struct {
-		AgentID uuid.UUID `json:"agent_id"`
-	}{
+	data := &qmrequest.V1DataQueuecallsIDExecutePost{
 		AgentID: agentID,
 	}
 

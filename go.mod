@@ -25,7 +25,7 @@ require (
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230212162339-c9e22d6f99d1
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901
-	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20221124180605-39b41a7a1ada
+	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230215070022-0e4ec6ea5774
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230127044148-d2db8f41581c
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
