@@ -15,6 +15,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
@@ -48,6 +49,15 @@ type QueuecallHandler interface {
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error)
 	GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
+
+	ServiceStart(
+		ctx context.Context,
+		queueID uuid.UUID,
+		activeflowID uuid.UUID,
+		referenceType queuecall.ReferenceType,
+		referenceID uuid.UUID,
+		exitActionID uuid.UUID,
+	) (*service.Service, error)
 }
 
 // queuecallHandler define

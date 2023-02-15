@@ -13,6 +13,7 @@ import (
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	service "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
 )
 
 // MockQueuecallHandler is a mock of QueuecallHandler interface.
@@ -192,6 +193,21 @@ func (m *MockQueuecallHandler) KickByReferenceID(ctx context.Context, referenceI
 func (mr *MockQueuecallHandlerMockRecorder) KickByReferenceID(ctx, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KickByReferenceID", reflect.TypeOf((*MockQueuecallHandler)(nil).KickByReferenceID), ctx, referenceID)
+}
+
+// ServiceStart mocks base method.
+func (m *MockQueuecallHandler) ServiceStart(ctx context.Context, queueID, activeflowID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, exitActionID uuid.UUID) (*service.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceStart", ctx, queueID, activeflowID, referenceType, referenceID, exitActionID)
+	ret0, _ := ret[0].(*service.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceStart indicates an expected call of ServiceStart.
+func (mr *MockQueuecallHandlerMockRecorder) ServiceStart(ctx, queueID, activeflowID, referenceType, referenceID, exitActionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceStart", reflect.TypeOf((*MockQueuecallHandler)(nil).ServiceStart), ctx, queueID, activeflowID, referenceType, referenceID, exitActionID)
 }
 
 // TimeoutService mocks base method.
