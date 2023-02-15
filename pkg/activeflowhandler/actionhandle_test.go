@@ -21,6 +21,7 @@ import (
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	conversationmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	qmservice "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
@@ -709,7 +710,6 @@ func Test_actionHandleGotoLoopOver(t *testing.T) {
 			if err := h.actionHandleGoto(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
 		})
 	}
 }
@@ -789,6 +789,8 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			// PushStack
 			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
+
+			mockReq.EXPECT().QueueV1QueuecallUpdateStatusWaiting(ctx, tt.responseService.ID).Return(&queuecall.Queuecall{}, nil)
 
 			if err := h.actionHandleQueueJoin(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
