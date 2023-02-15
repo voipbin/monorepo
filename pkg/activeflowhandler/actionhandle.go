@@ -785,43 +785,23 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
 		return err
 	}
-	queueID := opt.QueueID
-	log = log.WithField("queue_id", queueID)
+	log = log.WithField("queue_id", opt.QueueID)
 
+	// get exit action info
 	exitStackID, exitAction := h.stackHandler.GetNextAction(ctx, af.StackMap, af.CurrentStackID, &af.CurrentAction, false)
 	log.WithField("exit_action", exitAction).Debugf("Found exit action info. stack_id: %s, action_id: %s", exitStackID, exitAction.ID)
 
-	// send the queue join request
-	qc, err := h.reqHandler.QueueV1QueueCreateQueuecall(ctx, queueID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, af.ID, exitAction.ID)
+	sv, err := h.reqHandler.QueueV1ServiceTypeQueuecallStart(ctx, opt.QueueID, af.ID, qmqueuecall.ReferenceTypeCall, af.ReferenceID, exitAction.ID)
 	if err != nil {
-		log.WithField("exit_action_id", exitAction.ID).Errorf("Could not create the queuecall. Forward to the exit action. err: %v", err)
-		errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, af.ReferenceID, exitAction.ID, true)
-		if errForward != nil {
-			log.Errorf("Could not forward the active flow. err: %v", errForward)
-		}
+		log.Errorf("Could not start the service. err: %v", err)
+		return errors.Wrap(err, "Could not start the service.")
 	}
-	log.WithField("queuecall", qc).Debug("Created the queuecall.")
-
-	// get flow's action
-	fetchedActions, err := h.getActionsFromFlow(ctx, qc.FlowID, qc.CustomerID)
-	if err != nil {
-		log.Errorf("Could not get queue flow's actions. err: %v", err)
-		return err
-	}
-	log.WithField("fetched_actions", fetchedActions).Debugf("Fetched actions detail.")
 
 	// push the actions
-	if errPush := h.PushStack(ctx, af, fetchedActions); errPush != nil {
+	if errPush := h.PushStack(ctx, af, sv.PushActions); errPush != nil {
 		log.Errorf("Could not push the actions to the stack. err: %v", errPush)
 		return errPush
 	}
-
-	tmp, err := h.reqHandler.QueueV1QueuecallUpdateStatusWaiting(ctx, qc.ID)
-	if err != nil {
-		log.Errorf("Could not update the queuecall status to waiting. err: %v", err)
-		return err
-	}
-	log.WithField("queuecall", tmp).Debugf("Updated queuecall status waiting. activeflow_id: %s, queuecall_id: %s", af.ID, tmp.ID)
 
 	return nil
 }
