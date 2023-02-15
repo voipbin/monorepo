@@ -803,6 +803,17 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 		return errPush
 	}
 
+	// update the queuecall status to waiting.
+	// updating the status to waiting after push the stack is important.
+	// becasue in case of execute the exit action immediately after status set to waiting
+	// it is possible to causing the race condition.
+	// to avoid the race condition, we have change the status after push the stack.
+	_, err = h.reqHandler.QueueV1QueuecallUpdateStatusWaiting(ctx, sv.ID)
+	if err != nil {
+		log.Errorf("Could not update the queuecall status to waiting. err: %v", err)
+		return errors.Wrap(err, "Could not update the queuecall status to waiting.")
+	}
+
 	return nil
 }
 
