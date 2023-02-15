@@ -12,7 +12,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	queuecallreference "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -96,33 +95,19 @@ func (mr *MockCacheHandlerMockRecorder) QueuecallGet(ctx, id interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGet", reflect.TypeOf((*MockCacheHandler)(nil).QueuecallGet), ctx, id)
 }
 
-// QueuecallReferenceGet mocks base method.
-func (m *MockCacheHandler) QueuecallReferenceGet(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error) {
+// QueuecallGetByReferenceID mocks base method.
+func (m *MockCacheHandler) QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallReferenceGet", ctx, id)
-	ret0, _ := ret[0].(*queuecallreference.QueuecallReference)
+	ret := m.ctrl.Call(m, "QueuecallGetByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// QueuecallReferenceGet indicates an expected call of QueuecallReferenceGet.
-func (mr *MockCacheHandlerMockRecorder) QueuecallReferenceGet(ctx, id interface{}) *gomock.Call {
+// QueuecallGetByReferenceID indicates an expected call of QueuecallGetByReferenceID.
+func (mr *MockCacheHandlerMockRecorder) QueuecallGetByReferenceID(ctx, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallReferenceGet", reflect.TypeOf((*MockCacheHandler)(nil).QueuecallReferenceGet), ctx, id)
-}
-
-// QueuecallReferenceSet mocks base method.
-func (m *MockCacheHandler) QueuecallReferenceSet(ctx context.Context, u *queuecallreference.QueuecallReference) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallReferenceSet", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueuecallReferenceSet indicates an expected call of QueuecallReferenceSet.
-func (mr *MockCacheHandlerMockRecorder) QueuecallReferenceSet(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallReferenceSet", reflect.TypeOf((*MockCacheHandler)(nil).QueuecallReferenceSet), ctx, u)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGetByReferenceID", reflect.TypeOf((*MockCacheHandler)(nil).QueuecallGetByReferenceID), ctx, referenceID)
 }
 
 // QueuecallSet mocks base method.

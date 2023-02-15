@@ -13,7 +13,7 @@ import (
 
 const (
 	// select query for  queuecall get
-	queueCallSelect = `
+	queuecallSelect = `
 	select
 		id,
 		customer_id,
@@ -26,7 +26,7 @@ const (
 		flow_id,
 		forward_action_id,
 		exit_action_id,
-		conference_id,
+		confbridge_id,
 
 		source,
 		routing_method,
@@ -44,6 +44,7 @@ const (
 		tm_create,
 		tm_service,
 		tm_update,
+		tm_end,
 		tm_delete
 	from
 		queuecalls
@@ -69,7 +70,7 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 		&res.FlowID,
 		&res.ForwardActionID,
 		&res.ExitActionID,
-		&res.ConferenceID,
+		&res.ConfbridgeID,
 
 		&source,
 		&res.RoutingMethod,
@@ -87,6 +88,7 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 		&res.TMCreate,
 		&res.TMService,
 		&res.TMUpdate,
+		&res.TMEnd,
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. queueCallGetFromRow. err: %v", err)
@@ -120,7 +122,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		flow_id,
 		forward_action_id,
 		exit_action_id,
-		conference_id,
+		confbridge_id,
 
 		source,
 		routing_method,
@@ -138,6 +140,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		tm_create,
 		tm_service,
 		tm_update,
+		tm_end,
 		tm_delete
 	) values(
 		?, ?, ?,
@@ -147,7 +150,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		?, ?,
 		?, ?,
 		?, ?,
-		?, ?, ?, ?
+		?, ?, ?, ?, ?
 		)
 	`
 
@@ -173,7 +176,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		a.FlowID.Bytes(),
 		a.ForwardActionID.Bytes(),
 		a.ExitActionID.Bytes(),
-		a.ConferenceID.Bytes(),
+		a.ConfbridgeID.Bytes(),
 
 		tmpSource,
 		a.RoutingMethod,
@@ -188,10 +191,11 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		a.DurationWaiting,
 		a.DurationService,
 
-		a.TMCreate,
-		a.TMService,
-		a.TMUpdate,
-		a.TMDelete,
+		h.utilHandler.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallCreate. err: %v", err)
@@ -243,7 +247,7 @@ func (h *handler) queuecallGetFromCache(ctx context.Context, id uuid.UUID) (*que
 func (h *handler) queuecallGetFromDB(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
 
 	// prepare
-	q := fmt.Sprintf("%s where id = ?", queueCallSelect)
+	q := fmt.Sprintf("%s where id = ?", queuecallSelect)
 
 	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
@@ -281,10 +285,40 @@ func (h *handler) QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Qu
 	return res, nil
 }
 
+// QueuecallGetByReferenceID get queuecall of the given reference id.
+func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
+	tmp, err := h.cache.QueuecallGetByReferenceID(ctx, referenceID)
+	if err == nil {
+		return tmp, nil
+	}
+
+	// prepare
+	q := fmt.Sprintf("%s where reference_id = ? order by tm_create desc", queuecallSelect)
+
+	row, err := h.db.Query(q, referenceID.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("could not query. QueuecallGetByReferenceID. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.queuecallGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not get call. QueuecallGetByReferenceID, err: %v", err)
+	}
+
+	_ = h.queuecallSetToCache(ctx, res)
+
+	return res, nil
+}
+
 // QueuecallGetsByCustomerID returns QueueCalls.
 func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error) {
 	// prepare
-	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", queueCallSelect)
+	q := fmt.Sprintf("%s where customer_id = ? and tm_create < ? order by tm_create desc limit ?", queuecallSelect)
 
 	rows, err := h.db.Query(q, customerID.Bytes(), token, size)
 	if err != nil {
@@ -308,7 +342,7 @@ func (h *handler) QueuecallGetsByCustomerID(ctx context.Context, customerID uuid
 // QueuecallGetsByReferenceID returns QueueCalls.
 func (h *handler) QueuecallGetsByReferenceID(ctx context.Context, referenceID uuid.UUID) ([]*queuecall.Queuecall, error) {
 	// prepare
-	q := fmt.Sprintf("%s where reference_id = ? order by tm_create desc", queueCallSelect)
+	q := fmt.Sprintf("%s where reference_id = ? order by tm_create desc", queuecallSelect)
 
 	rows, err := h.db.Query(q, referenceID.Bytes())
 	if err != nil {
@@ -332,7 +366,7 @@ func (h *handler) QueuecallGetsByReferenceID(ctx context.Context, referenceID uu
 // QueuecallGetsByQueueIDAndStatus returns QueueCalls.
 func (h *handler) QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error) {
 	// prepare
-	q := fmt.Sprintf("%s where queue_id = ? and status = ? and tm_create < ? order by tm_create asc limit ?", queueCallSelect)
+	q := fmt.Sprintf("%s where queue_id = ? and status = ? and tm_create < ? order by tm_create asc limit ?", queuecallSelect)
 
 	rows, err := h.db.Query(q, queueID.Bytes(), status, token, size)
 	if err != nil {
@@ -354,7 +388,7 @@ func (h *handler) QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID u
 }
 
 // QueuecallDelete deletes the queuecall.
-func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status, timestamp string) error {
+func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error {
 	// prepare
 	q := `
 	update
@@ -367,33 +401,10 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queu
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, timestamp, timestamp, id.Bytes())
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, status, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallDelete. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.queuecallUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// QueuecallSetStatusWaiting sets the QueueCall's status to the waiting.
-func (h *handler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		queuecalls
-	set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, queuecall.StatusWaiting, GetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusWaiting. err: %v", err)
 	}
 
 	// update the cache
@@ -416,7 +427,7 @@ func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queuecall.StatusConnecting, serviceAgentID.Bytes(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queuecall.StatusConnecting, serviceAgentID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetStatusConnecting. err: %v", err)
 	}
@@ -427,23 +438,76 @@ func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID
 	return nil
 }
 
-// QueuecallSetStatusService sets the QueueCall's status to the service.
-func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, timestamp string) error {
+// QueuecallSetStatusService sets the Queuecall's status to the service.
+func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
 	// prepare
 	q := `
 	update
 		queuecalls
 	set
 		status = ?,
+		duration_waiting = ?,
 		tm_service = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queuecall.StatusService, timestamp, timestamp, id.Bytes())
+	_, err := h.db.Exec(q, queuecall.StatusService, durationWaiting, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetStatusService. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// QueuecallSetStatusAbandoned sets the Queuecall's status to the abandoned.
+func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
+	// prepare
+	q := `
+	update
+		queuecalls
+	set
+		status = ?,
+		duration_waiting = ?,
+		tm_end = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, queuecall.StatusAbandoned, durationWaiting, ts, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusAbandoned. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// QueuecallSetStatusDone sets the Queuecall's status to the done.
+func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error {
+	// prepare
+	q := `
+	update
+		queuecalls
+	set
+		status = ?,
+		duration_service = ?,
+		tm_end = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, queuecall.StatusDone, durationService, ts, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusDone. err: %v", err)
 	}
 
 	// update the cache
@@ -473,51 +537,4 @@ func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) e
 	_ = h.queuecallUpdateToCache(ctx, id)
 
 	return nil
-}
-
-// QueuecallSetDurationWaiting sets the QueueCall's duration_waiting.
-func (h *handler) QueuecallSetDurationWaiting(ctx context.Context, id uuid.UUID, duration int) error {
-	// prepare
-	q := `
-	update
-		queuecalls
-	set
-		duration_waiting = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, duration, GetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetDurationWaiting. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.queuecallUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// QueuecallSetDurationService sets the QueueCall's duration_service.
-func (h *handler) QueuecallSetDurationService(ctx context.Context, id uuid.UUID, duration int) error {
-	// prepare
-	q := `
-	update
-		queuecalls
-	set
-		duration_service = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, duration, GetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetDurationService. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.queuecallUpdateToCache(ctx, id)
-
-	return nil
-
 }

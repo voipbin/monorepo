@@ -13,7 +13,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -234,54 +233,54 @@ func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *rabbitmqhan
 	return res, nil
 }
 
-// processV1QueuesIDQueuecallsPost handles Post /v1/queues/<queue-id>/queuecalls request
-func (h *listenHandler) processV1QueuesIDQueuecallsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 5 {
-		return simpleResponse(400), nil
-	}
+// // processV1QueuesIDQueuecallsPost handles Post /v1/queues/<queue-id>/queuecalls request
+// func (h *listenHandler) processV1QueuesIDQueuecallsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// 	uriItems := strings.Split(m.URI, "/")
+// 	if len(uriItems) < 5 {
+// 		return simpleResponse(400), nil
+// 	}
 
-	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1QueuesIDQueuecallsPost",
-			"queue_id": id,
-		})
-	log.Debug("Executing processV1QueuesIDQueuecallsPost.")
+// 	id := uuid.FromStringOrNil(uriItems[3])
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func":     "processV1QueuesIDQueuecallsPost",
+// 			"queue_id": id,
+// 		})
+// 	log.Debug("Executing processV1QueuesIDQueuecallsPost.")
 
-	var req request.V1DataQueuesIDQueuecallsPost
-	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
-		return simpleResponse(400), nil
-	}
-	log = log.WithFields(logrus.Fields{
-		"reference_type": req.ReferenceType,
-		"reference_id":   req.ReferenceID,
-	})
-	log.Debug("Joining to the queue.")
+// 	var req request.V1DataQueuesIDQueuecallsPost
+// 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+// 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+// 		return simpleResponse(400), nil
+// 	}
+// 	log = log.WithFields(logrus.Fields{
+// 		"reference_type": req.ReferenceType,
+// 		"reference_id":   req.ReferenceID,
+// 	})
+// 	log.Debug("Joining to the queue.")
 
-	// join to the queue
-	tmp, err := h.queueHandler.Join(ctx, id, queuecall.ReferenceType(req.ReferenceType), req.ReferenceID, req.ReferenceActiveflowID, req.ExitActionID)
-	if err != nil {
-		log.Errorf("Could not joining to the queue. err: %v", err)
-		return simpleResponse(500), nil
-	}
+// 	// join to the queue
+// 	tmp, err := h.queueHandler.Join(ctx, id, queuecall.ReferenceType(req.ReferenceType), req.ReferenceID, req.ReferenceActiveflowID, req.ExitActionID)
+// 	if err != nil {
+// 		log.Errorf("Could not joining to the queue. err: %v", err)
+// 		return simpleResponse(500), nil
+// 	}
 
-	data, err := json.Marshal(tmp)
-	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
-		return simpleResponse(500), nil
-	}
-	log.Debugf("Sending result: %v", data)
+// 	data, err := json.Marshal(tmp)
+// 	if err != nil {
+// 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+// 		return simpleResponse(500), nil
+// 	}
+// 	log.Debugf("Sending result: %v", data)
 
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
+// 	res := &rabbitmqhandler.Response{
+// 		StatusCode: 200,
+// 		DataType:   "application/json",
+// 		Data:       data,
+// 	}
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
 // processV1QueuesIDTagIDsPut handles Put /v1/queues/<queue-id>/tag_ids request
 func (h *listenHandler) processV1QueuesIDTagIDsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {

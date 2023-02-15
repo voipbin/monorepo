@@ -1,23 +1,19 @@
 package queuehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package queuehandler -destination ./mock_queuehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package queuehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
 // List of default values
@@ -43,30 +39,25 @@ type QueueHandler interface {
 	Execute(ctx context.Context, id uuid.UUID)
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error)
-	Join(
-		ctx context.Context,
-		queueID uuid.UUID,
-		referenceType queuecall.ReferenceType,
-		referenceID uuid.UUID,
-		referenceActiveflowID uuid.UUID,
-		exitActionID uuid.UUID,
-	) (*queuecall.Queuecall, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*queue.Queue, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error)
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error)
 	UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error)
 	UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error)
 
+	AddWaitQueueCallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)
+	AddServiceQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)
+	AddAbandonedQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)
+	RemoveServiceQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)
+
 	GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
 }
 
 type queueHandler struct {
+	utilhandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyhandler notifyhandler.NotifyHandler
-
-	queuecallHandler          queuecallhandler.QueuecallHandler
-	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler
 }
 
 // NewQueueHandler return AgentHandler interface
@@ -74,23 +65,11 @@ func NewQueueHandler(
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
-	queuecallHandler queuecallhandler.QueuecallHandler,
-	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
 ) QueueHandler {
 	return &queueHandler{
+		utilhandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyhandler: notifyHandler,
-
-		queuecallHandler:          queuecallHandler,
-		queuecallReferenceHandler: queuecallReferenceHandler,
 	}
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

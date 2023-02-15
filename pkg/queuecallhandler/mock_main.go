@@ -10,7 +10,6 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
@@ -54,19 +53,55 @@ func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, referenceType, refere
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID, source)
 }
 
-// Execute mocks base method.
-func (m *MockQueuecallHandler) Execute(ctx context.Context, qc *queuecall.Queuecall, agent *agent.Agent) (*queuecall.Queuecall, error) {
+// EventCallCallHungup mocks base method.
+func (m *MockQueuecallHandler) EventCallCallHungup(ctx context.Context, referenceID uuid.UUID) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Execute", ctx, qc, agent)
+	m.ctrl.Call(m, "EventCallCallHungup", ctx, referenceID)
+}
+
+// EventCallCallHungup indicates an expected call of EventCallCallHungup.
+func (mr *MockQueuecallHandlerMockRecorder) EventCallCallHungup(ctx, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallCallHungup", reflect.TypeOf((*MockQueuecallHandler)(nil).EventCallCallHungup), ctx, referenceID)
+}
+
+// EventCallConfbridgeJoined mocks base method.
+func (m *MockQueuecallHandler) EventCallConfbridgeJoined(ctx context.Context, referenceID, confbridgeID uuid.UUID) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventCallConfbridgeJoined", ctx, referenceID, confbridgeID)
+}
+
+// EventCallConfbridgeJoined indicates an expected call of EventCallConfbridgeJoined.
+func (mr *MockQueuecallHandlerMockRecorder) EventCallConfbridgeJoined(ctx, referenceID, confbridgeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallConfbridgeJoined", reflect.TypeOf((*MockQueuecallHandler)(nil).EventCallConfbridgeJoined), ctx, referenceID, confbridgeID)
+}
+
+// EventCallConfbridgeLeaved mocks base method.
+func (m *MockQueuecallHandler) EventCallConfbridgeLeaved(ctx context.Context, referenceID, confbridgeID uuid.UUID) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventCallConfbridgeLeaved", ctx, referenceID, confbridgeID)
+}
+
+// EventCallConfbridgeLeaved indicates an expected call of EventCallConfbridgeLeaved.
+func (mr *MockQueuecallHandlerMockRecorder) EventCallConfbridgeLeaved(ctx, referenceID, confbridgeID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallConfbridgeLeaved", reflect.TypeOf((*MockQueuecallHandler)(nil).EventCallConfbridgeLeaved), ctx, referenceID, confbridgeID)
+}
+
+// Execute mocks base method.
+func (m *MockQueuecallHandler) Execute(ctx context.Context, queuecallID, agentID uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, queuecallID, agentID)
 	ret0, _ := ret[0].(*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockQueuecallHandlerMockRecorder) Execute(ctx, qc, agent interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Execute(ctx, queuecallID, agentID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueuecallHandler)(nil).Execute), ctx, qc, agent)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueuecallHandler)(nil).Execute), ctx, queuecallID, agentID)
 }
 
 // Get mocks base method.
@@ -129,30 +164,6 @@ func (mr *MockQueuecallHandlerMockRecorder) GetsByQueueIDAndStatus(ctx, queueID,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByQueueIDAndStatus", reflect.TypeOf((*MockQueuecallHandler)(nil).GetsByQueueIDAndStatus), ctx, queueID, status, size, token)
 }
 
-// Hungup mocks base method.
-func (m *MockQueuecallHandler) Hungup(ctx context.Context, referenceID uuid.UUID) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Hungup", ctx, referenceID)
-}
-
-// Hungup indicates an expected call of Hungup.
-func (mr *MockQueuecallHandlerMockRecorder) Hungup(ctx, referenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hungup", reflect.TypeOf((*MockQueuecallHandler)(nil).Hungup), ctx, referenceID)
-}
-
-// Joined mocks base method.
-func (m *MockQueuecallHandler) Joined(ctx context.Context, referenceID, conferenceID uuid.UUID) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Joined", ctx, referenceID, conferenceID)
-}
-
-// Joined indicates an expected call of Joined.
-func (mr *MockQueuecallHandlerMockRecorder) Joined(ctx, referenceID, conferenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockQueuecallHandler)(nil).Joined), ctx, referenceID, conferenceID)
-}
-
 // Kick mocks base method.
 func (m *MockQueuecallHandler) Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
@@ -183,18 +194,6 @@ func (mr *MockQueuecallHandlerMockRecorder) KickByReferenceID(ctx, referenceID i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KickByReferenceID", reflect.TypeOf((*MockQueuecallHandler)(nil).KickByReferenceID), ctx, referenceID)
 }
 
-// Leaved mocks base method.
-func (m *MockQueuecallHandler) Leaved(ctx context.Context, referenceID, conferenceID uuid.UUID) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Leaved", ctx, referenceID, conferenceID)
-}
-
-// Leaved indicates an expected call of Leaved.
-func (mr *MockQueuecallHandlerMockRecorder) Leaved(ctx, referenceID, conferenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockQueuecallHandler)(nil).Leaved), ctx, referenceID, conferenceID)
-}
-
 // TimeoutService mocks base method.
 func (m *MockQueuecallHandler) TimeoutService(ctx context.Context, queuecallID uuid.UUID) {
 	m.ctrl.T.Helper()
@@ -217,34 +216,4 @@ func (m *MockQueuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid
 func (mr *MockQueuecallHandlerMockRecorder) TimeoutWait(ctx, queuecallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeoutWait", reflect.TypeOf((*MockQueuecallHandler)(nil).TimeoutWait), ctx, queuecallID)
-}
-
-// UpdateStatusConnecting mocks base method.
-func (m *MockQueuecallHandler) UpdateStatusConnecting(ctx context.Context, id, agentID uuid.UUID) (*queuecall.Queuecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatusConnecting", ctx, id, agentID)
-	ret0, _ := ret[0].(*queuecall.Queuecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateStatusConnecting indicates an expected call of UpdateStatusConnecting.
-func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusConnecting(ctx, id, agentID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusConnecting", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusConnecting), ctx, id, agentID)
-}
-
-// UpdateStatusWaiting mocks base method.
-func (m *MockQueuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatusWaiting", ctx, id)
-	ret0, _ := ret[0].(*queuecall.Queuecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateStatusWaiting indicates an expected call of UpdateStatusWaiting.
-func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusWaiting(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusWaiting", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusWaiting), ctx, id)
 }

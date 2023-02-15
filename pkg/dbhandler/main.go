@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	context "context"
@@ -9,11 +9,11 @@ import (
 	"time"
 
 	uuid "github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/cachehandler"
 )
 
@@ -24,7 +24,7 @@ const (
 
 // DBHandler interface
 type DBHandler interface {
-	QueueAddQueueCallID(ctx context.Context, id, queueCallID uuid.UUID) error
+	QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueCreate(ctx context.Context, a *queue.Queue) error
 	QueueDelete(ctx context.Context, id uuid.UUID) error
 	QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
@@ -39,28 +39,24 @@ type DBHandler interface {
 	QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) error
 
 	QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
+	QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error)
 	QueuecallGetsByReferenceID(ctx context.Context, referenceID uuid.UUID) ([]*queuecall.Queuecall, error)
 	QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
-	QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status, timestamp string) error
-	QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error
+	QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error
 	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
-	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, timestamp string) error
+	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
+	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
+	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error
 	QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
-	QueuecallSetDurationService(ctx context.Context, id uuid.UUID, duration int) error
-	QueuecallSetDurationWaiting(ctx context.Context, id uuid.UUID, duration int) error
-
-	QueuecallReferenceCreate(ctx context.Context, a *queuecallreference.QueuecallReference) error
-	QueuecallReferenceDelete(ctx context.Context, id uuid.UUID) error
-	QueuecallReferenceGet(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error)
-	QueuecallReferenceSetCurrentQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) error
 }
 
 // handler database handler
 type handler struct {
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
 }
 
 // handler errors
@@ -71,8 +67,9 @@ var (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		db:    db,
-		cache: cache,
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       cache,
 	}
 	return h
 }

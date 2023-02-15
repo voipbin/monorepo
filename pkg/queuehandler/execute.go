@@ -10,11 +10,10 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
 // Execute handles queue execution.
-// it checks the waiting queuecall and
+// it checks the waiting queuecall and dials to the available agent
 func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -38,7 +37,7 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 	}
 
 	// get queuecalls
-	qcs, err := h.queuecallHandler.GetsByQueueIDAndStatus(ctx, id, queuecall.StatusWaiting, 1, dbhandler.GetCurTime())
+	qcs, err := h.reqHandler.QueueV1QueuecallGetsByQueueIDAndStatus(ctx, id, queuecall.StatusWaiting, h.utilhandler.GetCurTime(), 1)
 	if err != nil {
 		log.Errorf("Could not get queuecalls. err: %v", err)
 		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay) // retry after 1 sec.
@@ -77,13 +76,14 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 
 	default:
 		log.Errorf("Unsupported routing method. Exit from the queue. routing_method: %s", q.RoutingMethod)
-		if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ExitActionID, true); errForward != nil {
+		if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ExitActionID, true); errForward != nil {
 			log.Errorf("Could not forward the call. err: %v", errForward)
 		}
 		return
 	}
 
-	tmp, err := h.queuecallHandler.Execute(ctx, qc, &targetAgent)
+	// execute the queuecall with target agent
+	tmp, err := h.reqHandler.QueueV1QueuecallExecute(ctx, qc.ID, targetAgent.ID)
 	if err != nil {
 		log.Errorf("Could not handle the queuecall execution correctly. err: %v", err)
 		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay)

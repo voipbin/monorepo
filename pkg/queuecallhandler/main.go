@@ -1,6 +1,6 @@
 package queuecallhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package queuecallhandler -destination ./mock_queuecallhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package queuecallhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -8,15 +8,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
 // QueuecallHandler interface
@@ -33,12 +33,13 @@ type QueuecallHandler interface {
 		conferenceID uuid.UUID,
 		source commonaddress.Address,
 	) (*queuecall.Queuecall, error)
-	Execute(ctx context.Context, qc *queuecall.Queuecall, agent *amagent.Agent) (*queuecall.Queuecall, error)
-	Hungup(ctx context.Context, referenceID uuid.UUID)
+	Execute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error)
 	Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error)
 	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
-	Leaved(ctx context.Context, referenceID, conferenceID uuid.UUID)
-	Joined(ctx context.Context, referenceID, conferenceID uuid.UUID)
+
+	EventCallCallHungup(ctx context.Context, referenceID uuid.UUID)
+	EventCallConfbridgeJoined(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
+	EventCallConfbridgeLeaved(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)
 	TimeoutWait(ctx context.Context, queuecallID uuid.UUID)
@@ -47,18 +48,16 @@ type QueuecallHandler interface {
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error)
 	GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
-
-	UpdateStatusConnecting(ctx context.Context, id uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error)
-	UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 }
 
 // queuecallHandler define
 type queuecallHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyhandler notifyhandler.NotifyHandler
 
-	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler
+	queueHandler queuehandler.QueueHandler
 }
 
 // NewQueuecallHandler return AgentHandler interface
@@ -66,14 +65,15 @@ func NewQueuecallHandler(
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
-	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
+	queueHandler queuehandler.QueueHandler,
 ) QueuecallHandler {
 	return &queuecallHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyhandler: notifyHandler,
 
-		queuecallReferenceHandler: queuecallReferenceHandler,
+		queueHandler: queueHandler,
 	}
 }
 

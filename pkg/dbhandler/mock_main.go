@@ -13,7 +13,6 @@ import (
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	queuecallreference "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
 )
 
 // MockDBHandler is a mock of DBHandler interface.
@@ -39,18 +38,18 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// QueueAddQueueCallID mocks base method.
-func (m *MockDBHandler) QueueAddQueueCallID(ctx context.Context, id, queueCallID uuid.UUID) error {
+// QueueAddWaitQueueCallID mocks base method.
+func (m *MockDBHandler) QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueAddQueueCallID", ctx, id, queueCallID)
+	ret := m.ctrl.Call(m, "QueueAddWaitQueueCallID", ctx, id, queueCallID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// QueueAddQueueCallID indicates an expected call of QueueAddQueueCallID.
-func (mr *MockDBHandlerMockRecorder) QueueAddQueueCallID(ctx, id, queueCallID interface{}) *gomock.Call {
+// QueueAddWaitQueueCallID indicates an expected call of QueueAddWaitQueueCallID.
+func (mr *MockDBHandlerMockRecorder) QueueAddWaitQueueCallID(ctx, id, queueCallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueAddQueueCallID", reflect.TypeOf((*MockDBHandler)(nil).QueueAddQueueCallID), ctx, id, queueCallID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueAddWaitQueueCallID", reflect.TypeOf((*MockDBHandler)(nil).QueueAddWaitQueueCallID), ctx, id, queueCallID)
 }
 
 // QueueCreate mocks base method.
@@ -238,17 +237,17 @@ func (mr *MockDBHandlerMockRecorder) QueuecallCreate(ctx, a interface{}) *gomock
 }
 
 // QueuecallDelete mocks base method.
-func (m *MockDBHandler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status, timestamp string) error {
+func (m *MockDBHandler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallDelete", ctx, id, status, timestamp)
+	ret := m.ctrl.Call(m, "QueuecallDelete", ctx, id, status)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // QueuecallDelete indicates an expected call of QueuecallDelete.
-func (mr *MockDBHandlerMockRecorder) QueuecallDelete(ctx, id, status, timestamp interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) QueuecallDelete(ctx, id, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallDelete", reflect.TypeOf((*MockDBHandler)(nil).QueuecallDelete), ctx, id, status, timestamp)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallDelete", reflect.TypeOf((*MockDBHandler)(nil).QueuecallDelete), ctx, id, status)
 }
 
 // QueuecallGet mocks base method.
@@ -264,6 +263,21 @@ func (m *MockDBHandler) QueuecallGet(ctx context.Context, id uuid.UUID) (*queuec
 func (mr *MockDBHandlerMockRecorder) QueuecallGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGet", reflect.TypeOf((*MockDBHandler)(nil).QueuecallGet), ctx, id)
+}
+
+// QueuecallGetByReferenceID mocks base method.
+func (m *MockDBHandler) QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallGetByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallGetByReferenceID indicates an expected call of QueuecallGetByReferenceID.
+func (mr *MockDBHandlerMockRecorder) QueuecallGetByReferenceID(ctx, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).QueuecallGetByReferenceID), ctx, referenceID)
 }
 
 // QueuecallGetsByCustomerID mocks base method.
@@ -311,89 +325,18 @@ func (mr *MockDBHandlerMockRecorder) QueuecallGetsByReferenceID(ctx, referenceID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGetsByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).QueuecallGetsByReferenceID), ctx, referenceID)
 }
 
-// QueuecallReferenceCreate mocks base method.
-func (m *MockDBHandler) QueuecallReferenceCreate(ctx context.Context, a *queuecallreference.QueuecallReference) error {
+// QueuecallSetStatusAbandoned mocks base method.
+func (m *MockDBHandler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallReferenceCreate", ctx, a)
+	ret := m.ctrl.Call(m, "QueuecallSetStatusAbandoned", ctx, id, durationWaiting, ts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// QueuecallReferenceCreate indicates an expected call of QueuecallReferenceCreate.
-func (mr *MockDBHandlerMockRecorder) QueuecallReferenceCreate(ctx, a interface{}) *gomock.Call {
+// QueuecallSetStatusAbandoned indicates an expected call of QueuecallSetStatusAbandoned.
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusAbandoned(ctx, id, durationWaiting, ts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallReferenceCreate", reflect.TypeOf((*MockDBHandler)(nil).QueuecallReferenceCreate), ctx, a)
-}
-
-// QueuecallReferenceDelete mocks base method.
-func (m *MockDBHandler) QueuecallReferenceDelete(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallReferenceDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueuecallReferenceDelete indicates an expected call of QueuecallReferenceDelete.
-func (mr *MockDBHandlerMockRecorder) QueuecallReferenceDelete(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallReferenceDelete", reflect.TypeOf((*MockDBHandler)(nil).QueuecallReferenceDelete), ctx, id)
-}
-
-// QueuecallReferenceGet mocks base method.
-func (m *MockDBHandler) QueuecallReferenceGet(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallReferenceGet", ctx, id)
-	ret0, _ := ret[0].(*queuecallreference.QueuecallReference)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueuecallReferenceGet indicates an expected call of QueuecallReferenceGet.
-func (mr *MockDBHandlerMockRecorder) QueuecallReferenceGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallReferenceGet", reflect.TypeOf((*MockDBHandler)(nil).QueuecallReferenceGet), ctx, id)
-}
-
-// QueuecallReferenceSetCurrentQueuecallID mocks base method.
-func (m *MockDBHandler) QueuecallReferenceSetCurrentQueuecallID(ctx context.Context, id, queuecallID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallReferenceSetCurrentQueuecallID", ctx, id, queuecallID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueuecallReferenceSetCurrentQueuecallID indicates an expected call of QueuecallReferenceSetCurrentQueuecallID.
-func (mr *MockDBHandlerMockRecorder) QueuecallReferenceSetCurrentQueuecallID(ctx, id, queuecallID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallReferenceSetCurrentQueuecallID", reflect.TypeOf((*MockDBHandler)(nil).QueuecallReferenceSetCurrentQueuecallID), ctx, id, queuecallID)
-}
-
-// QueuecallSetDurationService mocks base method.
-func (m *MockDBHandler) QueuecallSetDurationService(ctx context.Context, id uuid.UUID, duration int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallSetDurationService", ctx, id, duration)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueuecallSetDurationService indicates an expected call of QueuecallSetDurationService.
-func (mr *MockDBHandlerMockRecorder) QueuecallSetDurationService(ctx, id, duration interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetDurationService", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetDurationService), ctx, id, duration)
-}
-
-// QueuecallSetDurationWaiting mocks base method.
-func (m *MockDBHandler) QueuecallSetDurationWaiting(ctx context.Context, id uuid.UUID, duration int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallSetDurationWaiting", ctx, id, duration)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueuecallSetDurationWaiting indicates an expected call of QueuecallSetDurationWaiting.
-func (mr *MockDBHandlerMockRecorder) QueuecallSetDurationWaiting(ctx, id, duration interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetDurationWaiting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetDurationWaiting), ctx, id, duration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusAbandoned", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusAbandoned), ctx, id, durationWaiting, ts)
 }
 
 // QueuecallSetStatusConnecting mocks base method.
@@ -408,6 +351,20 @@ func (m *MockDBHandler) QueuecallSetStatusConnecting(ctx context.Context, id, se
 func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusConnecting(ctx, id, serviceAgentID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusConnecting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusConnecting), ctx, id, serviceAgentID)
+}
+
+// QueuecallSetStatusDone mocks base method.
+func (m *MockDBHandler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallSetStatusDone", ctx, id, durationService, ts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueuecallSetStatusDone indicates an expected call of QueuecallSetStatusDone.
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusDone(ctx, id, durationService, ts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusDone", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusDone), ctx, id, durationService, ts)
 }
 
 // QueuecallSetStatusKicking mocks base method.
@@ -425,29 +382,15 @@ func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusKicking(ctx, id interface
 }
 
 // QueuecallSetStatusService mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, timestamp string) error {
+func (m *MockDBHandler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallSetStatusService", ctx, id, timestamp)
+	ret := m.ctrl.Call(m, "QueuecallSetStatusService", ctx, id, durationWaiting, ts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // QueuecallSetStatusService indicates an expected call of QueuecallSetStatusService.
-func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusService(ctx, id, timestamp interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusService(ctx, id, durationWaiting, ts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusService", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusService), ctx, id, timestamp)
-}
-
-// QueuecallSetStatusWaiting mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallSetStatusWaiting", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueuecallSetStatusWaiting indicates an expected call of QueuecallSetStatusWaiting.
-func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusWaiting(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusWaiting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusWaiting), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusService", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusService), ctx, id, durationWaiting, ts)
 }

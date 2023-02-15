@@ -1,6 +1,6 @@
 package cachehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler_cachehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
 )
 
 type handler struct {
@@ -29,10 +28,8 @@ type CacheHandler interface {
 	QueueSet(ctx context.Context, u *queue.Queue) error
 
 	QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
+	QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallSet(ctx context.Context, u *queuecall.Queuecall) error
-
-	QueuecallReferenceGet(ctx context.Context, id uuid.UUID) (*queuecallreference.QueuecallReference, error)
-	QueuecallReferenceSet(ctx context.Context, u *queuecallreference.QueuecallReference) error
 }
 
 // NewHandler creates DBHandler

@@ -66,7 +66,7 @@ func (h *queueHandler) Create(
 		TotalServicedCount:  0,
 		TotalAbandonedCount: 0,
 
-		TMCreate: getCurTime(),
+		TMCreate: h.utilhandler.GetCurTime(),
 		TMUpdate: dbhandler.DefaultTimeStamp,
 		TMDelete: dbhandler.DefaultTimeStamp,
 	}
@@ -86,35 +86,35 @@ func (h *queueHandler) Create(
 	return res, nil
 }
 
-// createQueueFlow creates a queue flow and returns created flow.
-func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID, queueID uuid.UUID, conferenceID uuid.UUID, waitActions []fmaction.Action) (*fmflow.Flow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "createQueueFlow",
-			"queue_id": queueID,
-		})
+// // createQueueFlow creates a queue flow and returns created flow.
+// func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID, queueID uuid.UUID, conferenceID uuid.UUID, waitActions []fmaction.Action) (*fmflow.Flow, error) {
+// 	log := logrus.WithFields(
+// 		logrus.Fields{
+// 			"func":     "createQueueFlow",
+// 			"queue_id": queueID,
+// 		})
 
-	// create flow actions
-	actions, err := h.createQueueFlowActions(waitActions, conferenceID)
-	if err != nil {
-		log.Errorf("Could not create actions. err: %v", err)
-		return nil, err
-	}
-	log.WithField("actions", actions).Debugf("Created queue flow actions. actions: %v", actions)
+// 	// create flow actions
+// 	actions, err := h.createQueueFlowActions(waitActions, conferenceID)
+// 	if err != nil {
+// 		log.Errorf("Could not create actions. err: %v", err)
+// 		return nil, err
+// 	}
+// 	log.WithField("actions", actions).Debugf("Created queue flow actions. actions: %v", actions)
 
-	// create flow name
-	flowName := fmt.Sprintf("queue-%s", queueID.String())
+// 	// create flow name
+// 	flowName := fmt.Sprintf("queue-%s", queueID.String())
 
-	// create flow
-	resFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", actions, false)
-	if err != nil {
-		log.Errorf("Could not create a queue flow. err: %v", err)
-		return nil, err
-	}
-	log.Debugf("Created a queue flow. res: %v", resFlow)
+// 	// create flow
+// 	resFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", actions, false)
+// 	if err != nil {
+// 		log.Errorf("Could not create a queue flow. err: %v", err)
+// 		return nil, err
+// 	}
+// 	log.Debugf("Created a queue flow. res: %v", resFlow)
 
-	return resFlow, nil
-}
+// 	return resFlow, nil
+// }
 
 // createQueueFlowActions creates the actions for queue join.
 func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, conferenceID uuid.UUID) ([]fmaction.Action, error) {

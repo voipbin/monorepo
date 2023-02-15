@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
@@ -195,6 +196,98 @@ func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute 
 		log.Debugf("The queue execute need to be run.")
 		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, 100)
 	}
+
+	return res, nil
+}
+
+// AddWaitQueueCallID adds the queuecall to the wait queuecall ids.
+func (h *queueHandler) AddWaitQueueCallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "AddWaitQueueCallID",
+		"queue_id":     id,
+		"queuecall_id": queuecallID,
+	})
+
+	if errAdd := h.db.QueueAddWaitQueueCallID(ctx, id, queuecallID); errAdd != nil {
+		log.Errorf("Could not add the queuecall id to the queue. err: %v", errAdd)
+		return nil, errors.Wrap(errAdd, "Could not add the queuecall id to the queue.")
+	}
+
+	res, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queue info. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
+
+	return res, nil
+}
+
+// RemoveQueueCallID removes the queuecall from the queue.
+func (h *queueHandler) RemoveServiceQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "RemoveServiceQueuecallID",
+		"queue_id":     id,
+		"queuecall_id": queuecallID,
+	})
+
+	if errAdd := h.db.QueueRemoveServiceQueueCall(ctx, id, queuecallID); errAdd != nil {
+		log.Errorf("Could not add the queuecall id to the queue. err: %v", errAdd)
+		return nil, errors.Wrap(errAdd, "Could not add the queuecall id to the queue.")
+	}
+
+	res, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queue info. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
+
+	return res, nil
+}
+
+// AddServiceQueuecallID adds the given queuecall id to the service queue call of the queue.
+func (h *queueHandler) AddServiceQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "AddServiceQueuecallID",
+		"queue_id":     id,
+		"queuecall_id": queuecallID,
+	})
+
+	if errIncrease := h.db.QueueIncreaseTotalServicedCount(ctx, id, queuecallID); errIncrease != nil {
+		log.Errorf("Could not increase the total serviced count. err: %v", errIncrease)
+		return nil, errors.Wrap(errIncrease, "Could not add the queuecall info to the service queue.")
+	}
+
+	res, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queue info. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
+
+	return res, nil
+}
+
+// AddAbandonedQueuecallID adds the given queuecall id to the abandoned queue call of the queue.
+func (h *queueHandler) AddAbandonedQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "AddAbandonedQueuecallID",
+		"queue_id":     id,
+		"queuecall_id": queuecallID,
+	})
+
+	if errIncrease := h.db.QueueIncreaseTotalAbandonedCount(ctx, id, queuecallID); errIncrease != nil {
+		log.Errorf("Could not increase the total serviced count. err: %v", errIncrease)
+		return nil, errors.Wrap(errIncrease, "Could not add the queuecall info to the service queue.")
+	}
+
+	res, err := h.db.QueueGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queue info. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
 
 	return res, nil
 }

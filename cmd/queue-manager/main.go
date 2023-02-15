@@ -21,7 +21,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/subscribehandler"
 )
@@ -150,18 +149,17 @@ func run(db dbhandler.DBHandler) error {
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
-	queuecallReferenceHandler := queuecallreferencehandler.NewQueuecallReferenceHandler(reqHandler, db, notifyHandler)
-	queuecallHandler := queuecallhandler.NewQueuecallHandler(reqHandler, db, notifyHandler, queuecallReferenceHandler)
-	queueHandler := queuehandler.NewQueueHandler(reqHandler, db, notifyHandler, queuecallHandler, queuecallReferenceHandler)
+	queueHandler := queuehandler.NewQueueHandler(reqHandler, db, notifyHandler)
+	queuecallHandler := queuecallhandler.NewQueuecallHandler(reqHandler, db, notifyHandler, queueHandler)
 
 	// run listen
-	if err := runListen(rabbitSock, queueHandler, queuecallHandler, queuecallReferenceHandler); err != nil {
+	if err := runListen(rabbitSock, queueHandler, queuecallHandler); err != nil {
 		log.Errorf("Could not run listen. err: %v", err)
 		return err
 	}
 
 	// run subscribe
-	if err := runSubscribe(rabbitSock, queueHandler, queuecallHandler, queuecallReferenceHandler); err != nil {
+	if err := runSubscribe(rabbitSock, queueHandler, queuecallHandler); err != nil {
 		log.Errorf("Could not run subscribe. err: %v", err)
 		return err
 	}
@@ -174,9 +172,7 @@ func runSubscribe(
 	rabbitSock rabbitmqhandler.Rabbit,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
-	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
 ) error {
-
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
 		*rabbitQueueSubscribe,
@@ -198,9 +194,8 @@ func runListen(
 	rabbitSock rabbitmqhandler.Rabbit,
 	queueHandler queuehandler.QueueHandler,
 	queuecallHandler queuecallhandler.QueuecallHandler,
-	queuecallReferenceHandler queuecallreferencehandler.QueuecallReferenceHandler,
 ) error {
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, queueHandler, queuecallHandler, queuecallReferenceHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, queueHandler, queuecallHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

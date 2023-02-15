@@ -10,12 +10,11 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecallreference"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallreferencehandler"
 )
 
 func Test_GetsByCustomerID(t *testing.T) {
@@ -213,20 +212,14 @@ func Test_GetByReferenceID(t *testing.T) {
 
 		referenceID uuid.UUID
 
-		responseQueuecallReference *queuecallreference.QueuecallReference
-		response                   *queuecall.Queuecall
-
-		expectRes *queuecall.Queuecall
+		responseQueuecall *queuecall.Queuecall
+		expectRes         *queuecall.Queuecall
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("ba4d1864-6401-11ec-8970-97b9f94d41cf"),
 
-			&queuecallreference.QueuecallReference{
-				ID:                 uuid.FromStringOrNil("ba4d1864-6401-11ec-8970-97b9f94d41cf"),
-				CurrentQueuecallID: uuid.FromStringOrNil("dc96c7e4-6401-11ec-87e2-0b5e8ae66d96"),
-			},
 			&queuecall.Queuecall{
 				ID: uuid.FromStringOrNil("dc96c7e4-6401-11ec-87e2-0b5e8ae66d96"),
 			},
@@ -246,20 +239,16 @@ func Test_GetByReferenceID(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockQueuecallReference := queuecallreferencehandler.NewMockQueuecallReferenceHandler(mc)
 
 			h := &queuecallHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
-
-				queuecallReferenceHandler: mockQueuecallReference,
 			}
 
 			ctx := context.Background()
 
-			mockQueuecallReference.EXPECT().Get(gomock.Any(), tt.referenceID).Return(tt.responseQueuecallReference, nil)
-			mockDB.EXPECT().QueuecallGet(gomock.Any(), tt.responseQueuecallReference.CurrentQueuecallID).Return(tt.response, nil)
+			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
 
 			res, err := h.GetByReferenceID(ctx, tt.referenceID)
 			if err != nil {
@@ -278,8 +267,7 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		queue *queue.Queue
-
+		queue                 *queue.Queue
 		referenceType         queuecall.ReferenceType
 		referenceID           uuid.UUID
 		referenceActiveflowID uuid.UUID
@@ -287,18 +275,18 @@ func Test_Create(t *testing.T) {
 		flowID          uuid.UUID
 		forwardActionID uuid.UUID
 		exitActionID    uuid.UUID
-		conferenceID    uuid.UUID
+		confbridgeID    uuid.UUID
+		source          commonaddress.Address
 
-		source commonaddress.Address
-
-		queuecall *queuecall.Queuecall
-
-		expectRes *queuecall.Queuecall
+		responseUUID      uuid.UUID
+		responseQueuecall *queuecall.Queuecall
+		expectQueuecall   *queuecall.Queuecall
+		expectRes         *queuecall.Queuecall
 	}{
 		{
-			"normal",
+			name: "have all",
 
-			&queue.Queue{
+			queue: &queue.Queue{
 				ID:         uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
 				CustomerID: uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
 
@@ -310,30 +298,50 @@ func Test_Create(t *testing.T) {
 				WaitTimeout:    100000,
 				ServiceTimeout: 1000000,
 			},
-
-			queuecall.ReferenceTypeCall,
-			uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
-			uuid.FromStringOrNil("28063f02-af52-11ec-9025-6775fa083464"),
-
-			uuid.FromStringOrNil("c9e87138-7699-11ec-aa80-0321af12db91"),
-			uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
-			uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
-			uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
-
-			commonaddress.Address{
+			referenceType:         queuecall.ReferenceTypeCall,
+			referenceID:           uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
+			referenceActiveflowID: uuid.FromStringOrNil("28063f02-af52-11ec-9025-6775fa083464"),
+			flowID:                uuid.FromStringOrNil("c9e87138-7699-11ec-aa80-0321af12db91"),
+			forwardActionID:       uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
+			exitActionID:          uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
+			confbridgeID:          uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
+			source: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821021656521",
 			},
 
-			&queuecall.Queuecall{
-				Source:      commonaddress.Address{},
-				TagIDs:      []uuid.UUID{},
-				TimeoutWait: 100000,
+			responseUUID: uuid.FromStringOrNil("a57a7650-2da5-468f-b15b-bb1552c96205"),
+			responseQueuecall: &queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("a57a7650-2da5-468f-b15b-bb1552c96205"),
 			},
-			&queuecall.Queuecall{
-				Source:      commonaddress.Address{},
-				TagIDs:      []uuid.UUID{},
-				TimeoutWait: 100000,
+			expectQueuecall: &queuecall.Queuecall{
+				ID:                    uuid.FromStringOrNil("a57a7650-2da5-468f-b15b-bb1552c96205"),
+				CustomerID:            uuid.FromStringOrNil("c910ccc8-7f55-11ec-9c6e-a356bdf34421"),
+				QueueID:               uuid.FromStringOrNil("9b75a91c-5e5a-11ec-883b-ab05ca15277b"),
+				ReferenceType:         queuecall.ReferenceTypeCall,
+				ReferenceID:           uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
+				ReferenceActiveflowID: uuid.FromStringOrNil("28063f02-af52-11ec-9025-6775fa083464"),
+				FlowID:                uuid.FromStringOrNil("c9e87138-7699-11ec-aa80-0321af12db91"),
+				ForwardActionID:       uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
+				ExitActionID:          uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
+				ConfbridgeID:          uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821021656521",
+				},
+				RoutingMethod: queue.RoutingMethodRandom,
+				TagIDs: []uuid.UUID{
+					uuid.FromStringOrNil("a8f7abf8-5e5a-11ec-b03a-0f722823a0ca"),
+				},
+				Status:          queuecall.StatusInitiating,
+				ServiceAgentID:  uuid.Nil,
+				TimeoutWait:     100000,
+				TimeoutService:  1000000,
+				DurationWaiting: 0,
+				DurationService: 0,
+			},
+			expectRes: &queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("a57a7650-2da5-468f-b15b-bb1552c96205"),
 			},
 		},
 	}
@@ -343,26 +351,28 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &queuecallHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyhandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(tt.queuecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.queuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.queuecall)
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockDB.EXPECT().QueuecallCreate(ctx, tt.expectQueuecall).Return(nil)
+			mockDB.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.responseQueuecall)
 
 			// setVariables
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 
-			if tt.queue.WaitTimeout > 0 {
+			if tt.responseQueuecall.TimeoutWait > 0 {
 				mockReq.EXPECT().QueueV1QueuecallTimeoutWait(gomock.Any(), gomock.Any(), tt.queue.WaitTimeout).Return(nil)
 			}
 
@@ -375,7 +385,7 @@ func Test_Create(t *testing.T) {
 				tt.flowID,
 				tt.forwardActionID,
 				tt.exitActionID,
-				tt.conferenceID,
+				tt.confbridgeID,
 				tt.source,
 			)
 			if err != nil {
@@ -433,60 +443,6 @@ func Test_UpdateStatusConnecting(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.responseQueuecall)
 
 			res, err := h.UpdateStatusConnecting(ctx, tt.queuecallID, tt.agentID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.responseQueuecall, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueuecall, res)
-			}
-		})
-	}
-}
-
-func Test_UpdateStatusWaiting(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		queuecallID uuid.UUID
-
-		responseQueuecall *queuecall.Queuecall
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("1713ed3e-d1cb-11ec-b70b-3f756e5181f3"),
-
-			&queuecall.Queuecall{
-				ID: uuid.FromStringOrNil("1713ed3e-d1cb-11ec-b70b-3f756e5181f3"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-			h := &queuecallHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyhandler: mockNotify,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().QueuecallSetStatusWaiting(ctx, tt.queuecallID).Return(nil)
-			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallWaiting, tt.responseQueuecall)
-			mockReq.EXPECT().QueueV1QueueUpdateExecute(ctx, tt.responseQueuecall.QueueID, queue.ExecuteRun).Return(&queue.Queue{}, nil).AnyTimes()
-
-			res, err := h.UpdateStatusWaiting(ctx, tt.queuecallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
