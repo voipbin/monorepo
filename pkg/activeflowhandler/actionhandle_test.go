@@ -21,8 +21,8 @@ import (
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	conversationmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	qmservice "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
@@ -718,29 +718,16 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 	tests := []struct {
 		name string
 
-		act *action.Action
+		activeflow *activeflow.Activeflow
 
 		responseExitStackID uuid.UUID
 		responseExitAction  *action.Action
+		responseService     *qmservice.Service
 
-		activeflow *activeflow.Activeflow
-		queue      *qmqueue.Queue
-		queueFlow  *flow.Flow
-
-		expectActiveFlow  *activeflow.Activeflow
-		responseQueuecall *qmqueuecall.Queuecall
-
-		responseStackID uuid.UUID
-		responseAction  *action.Action
+		expectQueueID uuid.UUID
 	}{
 		{
 			name: "normal",
-
-			act: &action.Action{
-				ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
-				Type:   action.TypeQueueJoin,
-				Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
-			},
 
 			activeflow: &activeflow.Activeflow{
 				CurrentAction: action.Action{
@@ -763,22 +750,6 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 								Type: action.TypeTalk,
 							},
 						},
-					},
-				},
-			},
-			queue: &qmqueue.Queue{
-				ID: uuid.FromStringOrNil("bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"),
-			},
-			queueFlow: &flow.Flow{
-				ID: uuid.FromStringOrNil("0f0a4864-6591-11ec-bc0e-db27e08ddec2"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("5e0bb1c2-6592-11ec-ad88-63adb38da11e"),
-						Type: action.TypeConfbridgeJoin,
 					},
 				},
 			},
@@ -788,139 +759,11 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 				ID:   uuid.FromStringOrNil("cdd46f0e-6591-11ec-aff5-63bb1f2f2e5f"),
 				Type: action.TypeTalk,
 			},
-
-			expectActiveFlow: &activeflow.Activeflow{
-				ForwardStackID:  uuid.FromStringOrNil("86f1de00-d4ea-11ec-80fc-dfbceef939e8"),
-				ForwardActionID: uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
-				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
-					Type:   action.TypeQueueJoin,
-					Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
-				},
-				ReferenceID: uuid.FromStringOrNil("3de1fb7a-adfb-11ec-8765-9bb130635c87"),
-				StackMap: map[uuid.UUID]*stack.Stack{
-					stack.IDMain: {
-						ID: stack.IDMain,
-						Actions: []action.Action{
-							{
-								ID:     uuid.FromStringOrNil("bf1f9cb4-6590-11ec-8502-ffcab16cf0d1"),
-								Type:   action.TypeQueueJoin,
-								Option: []byte(`{"queue_id": "bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"}`),
-							},
-							{
-								ID:   uuid.FromStringOrNil("cdd46f0e-6591-11ec-aff5-63bb1f2f2e5f"),
-								Type: action.TypeTalk,
-							},
-						},
-					},
-				},
-			},
-			responseQueuecall: &qmqueuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("c9002972-6592-11ec-af59-afccad96c5a4"),
-				FlowID: uuid.FromStringOrNil("0f0a4864-6591-11ec-bc0e-db27e08ddec2"),
+			responseService: &qmservice.Service{
+				ID: uuid.FromStringOrNil("af231114-ad02-11ed-a485-2bce52de1ce4"),
 			},
 
-			responseStackID: uuid.FromStringOrNil("86f1de00-d4ea-11ec-80fc-dfbceef939e8"),
-			responseAction: &action.Action{
-				ID:   uuid.FromStringOrNil("5de173bc-6592-11ec-bd97-bfe78cdda0f5"),
-				Type: action.TypeAnswer,
-			},
-		},
-		{
-			name: "timeout wait",
-
-			act: &action.Action{
-				ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
-				Type:   action.TypeQueueJoin,
-				Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
-			},
-
-			activeflow: &activeflow.Activeflow{
-				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
-					Type:   action.TypeQueueJoin,
-					Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
-				},
-				ReferenceID: uuid.FromStringOrNil("9bd98a0e-adfb-11ec-8fa1-4b1e5a5964a7"),
-
-				StackMap: map[uuid.UUID]*stack.Stack{
-					stack.IDMain: {
-						ID: stack.IDMain,
-						Actions: []action.Action{
-							{
-								ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
-								Type:   action.TypeQueueJoin,
-								Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
-							},
-							{
-								ID:   uuid.FromStringOrNil("d2b8883c-7691-11ec-a001-075712b96511"),
-								Type: action.TypeTalk,
-							},
-						},
-					},
-				},
-			},
-			queue: &qmqueue.Queue{
-				ID:          uuid.FromStringOrNil("d28cb860-7691-11ec-b24f-a31daa9b0585"),
-				WaitTimeout: 600000,
-			},
-			queueFlow: &flow.Flow{
-				ID: uuid.FromStringOrNil("d2e1b810-7691-11ec-b63f-a7af3ca6f888"),
-				Actions: []action.Action{
-					{
-						ID:   uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
-						Type: action.TypeAnswer,
-					},
-					{
-						ID:   uuid.FromStringOrNil("5e0bb1c2-6592-11ec-ad88-63adb38da11e"),
-						Type: action.TypeConfbridgeJoin,
-					},
-				},
-			},
-
-			responseExitStackID: stack.IDMain,
-			responseExitAction: &action.Action{
-				ID:   uuid.FromStringOrNil("d2b8883c-7691-11ec-a001-075712b96511"),
-				Type: action.TypeTalk,
-			},
-
-			expectActiveFlow: &activeflow.Activeflow{
-				ForwardStackID:  uuid.FromStringOrNil("077711e2-d4f2-11ec-8d55-f306cf094cd4"),
-				ForwardActionID: uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
-				CurrentAction: action.Action{
-					ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
-					Type:   action.TypeQueueJoin,
-					Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
-				},
-				ReferenceID: uuid.FromStringOrNil("9bd98a0e-adfb-11ec-8fa1-4b1e5a5964a7"),
-				StackMap: map[uuid.UUID]*stack.Stack{
-					stack.IDMain: {
-						ID: stack.IDMain,
-						Actions: []action.Action{
-							{
-								ID:     uuid.FromStringOrNil("d25ebcc6-7691-11ec-a4ed-8f4cf715eb08"),
-								Type:   action.TypeQueueJoin,
-								Option: []byte(`{"queue_id": "d28cb860-7691-11ec-b24f-a31daa9b0585"}`),
-							},
-							{
-								ID:   uuid.FromStringOrNil("d2b8883c-7691-11ec-a001-075712b96511"),
-								Type: action.TypeTalk,
-							},
-						},
-					},
-				},
-			},
-
-			responseQueuecall: &qmqueuecall.Queuecall{
-				ID:     uuid.FromStringOrNil("c9002972-6592-11ec-af59-afccad96c5a4"),
-				FlowID: uuid.FromStringOrNil("d2e1b810-7691-11ec-b63f-a7af3ca6f888"),
-			},
-
-			responseStackID: uuid.FromStringOrNil("077711e2-d4f2-11ec-8d55-f306cf094cd4"),
-			responseAction: &action.Action{
-				ID:   uuid.FromStringOrNil("1d9b0492-7692-11ec-96dc-c3f3ba1b6fae"),
-				Type: action.TypeAnswer,
-			},
+			expectQueueID: uuid.FromStringOrNil("bf45ea2c-6590-11ec-9a8c-ff92b7ef9aad"),
 		},
 	}
 
@@ -938,17 +781,14 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 				reqHandler:   mockReq,
 				stackHandler: mockStack,
 			}
-
 			ctx := context.Background()
+
 			mockStack.EXPECT().GetNextAction(ctx, tt.activeflow.StackMap, tt.activeflow.CurrentStackID, &tt.activeflow.CurrentAction, false).Return(tt.responseExitStackID, tt.responseExitAction)
+			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID, tt.responseExitAction.ID).Return(tt.responseService, nil)
 
-			mockReq.EXPECT().QueueV1QueueCreateQueuecall(ctx, tt.queue.ID, gomock.Any(), tt.activeflow.ReferenceID, tt.activeflow.ID, tt.responseExitAction.ID).Return(tt.responseQueuecall, nil)
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.responseQueuecall.FlowID).Return(tt.queueFlow, nil)
-
-			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.queueFlow.Actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStackID, tt.responseAction, nil)
-
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveFlow).Return(nil)
-			mockReq.EXPECT().QueueV1QueuecallUpdateStatusWaiting(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
+			// PushStack
+			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, gomock.Any()).Return(nil)
 
 			if err := h.actionHandleQueueJoin(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
