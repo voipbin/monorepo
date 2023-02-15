@@ -51,6 +51,7 @@ import (
 	outdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 	queue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
+	service1 "gitlab.com/voipbin/bin-manager/queue-manager.git/models/service"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
@@ -3252,21 +3253,6 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallDelete(ctx, queuecallI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallDelete", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallDelete), ctx, queuecallID)
 }
 
-// QueueV1QueuecallDeleteByReferenceID mocks base method.
-func (m *MockRequestHandler) QueueV1QueuecallDeleteByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueuecallDeleteByReferenceID", ctx, referenceID)
-	ret0, _ := ret[0].(*queuecall.Queuecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueueV1QueuecallDeleteByReferenceID indicates an expected call of QueueV1QueuecallDeleteByReferenceID.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallDeleteByReferenceID(ctx, referenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallDeleteByReferenceID", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallDeleteByReferenceID), ctx, referenceID)
-}
-
 // QueueV1QueuecallExecute mocks base method.
 func (m *MockRequestHandler) QueueV1QueuecallExecute(ctx context.Context, queuecallID, agentID uuid.UUID) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
@@ -3368,6 +3354,21 @@ func (m *MockRequestHandler) QueueV1QueuecallUpdateStatusWaiting(ctx context.Con
 func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallUpdateStatusWaiting(ctx, queuecallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallUpdateStatusWaiting", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallUpdateStatusWaiting), ctx, queuecallID)
+}
+
+// QueueV1ServiceTypeQueuecallStart mocks base method.
+func (m *MockRequestHandler) QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID, activeflowID uuid.UUID, referenceType queuecall.ReferenceType, referenceID, exitActionID uuid.UUID) (*service1.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1ServiceTypeQueuecallStart", ctx, queueID, activeflowID, referenceType, referenceID, exitActionID)
+	ret0, _ := ret[0].(*service1.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueV1ServiceTypeQueuecallStart indicates an expected call of QueueV1ServiceTypeQueuecallStart.
+func (mr *MockRequestHandlerMockRecorder) QueueV1ServiceTypeQueuecallStart(ctx, queueID, activeflowID, referenceType, referenceID, exitActionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1ServiceTypeQueuecallStart", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1ServiceTypeQueuecallStart), ctx, queueID, activeflowID, referenceType, referenceID, exitActionID)
 }
 
 // RegistrarV1ContactGets mocks base method.
