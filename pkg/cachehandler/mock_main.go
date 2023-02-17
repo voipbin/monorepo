@@ -53,6 +53,35 @@ func (mr *MockCacheHandlerMockRecorder) ActiveflowGet(ctx, id interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveflowGet), ctx, id)
 }
 
+// ActiveflowGetWithLock mocks base method.
+func (m *MockCacheHandler) ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowGetWithLock", ctx, id)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveflowGetWithLock indicates an expected call of ActiveflowGetWithLock.
+func (mr *MockCacheHandlerMockRecorder) ActiveflowGetWithLock(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGetWithLock", reflect.TypeOf((*MockCacheHandler)(nil).ActiveflowGetWithLock), ctx, id)
+}
+
+// ActiveflowReleaseLock mocks base method.
+func (m *MockCacheHandler) ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowReleaseLock", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActiveflowReleaseLock indicates an expected call of ActiveflowReleaseLock.
+func (mr *MockCacheHandlerMockRecorder) ActiveflowReleaseLock(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowReleaseLock", reflect.TypeOf((*MockCacheHandler)(nil).ActiveflowReleaseLock), ctx, id)
+}
+
 // ActiveflowSet mocks base method.
 func (m *MockCacheHandler) ActiveflowSet(ctx context.Context, cf *activeflow.Activeflow) error {
 	m.ctrl.T.Helper()

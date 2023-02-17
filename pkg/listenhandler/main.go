@@ -147,21 +147,26 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 
+	ctx := context.Background()
+
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
 
-	ctx := context.Background()
-
-	logrus.WithFields(
+	log := logrus.WithFields(
 		logrus.Fields{
 			"uri":       m.URI,
 			"method":    m.Method,
 			"data_type": m.DataType,
 			"data":      m.Data,
-		}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
+		})
 
 	start := time.Now()
+	defer func() {
+		elapsed := time.Since(start)
+		promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
+	}()
+
 	switch {
 
 	// v1
@@ -237,35 +242,18 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.v1VariablesIDVariablesKeyDelete(ctx, m)
 
 	default:
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		log.Errorf("Could not find corresponded message handler. data: %s", m.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
 	}
-	elapsed := time.Since(start)
-	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	// default error handler
 	if err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-				"error":  err,
-			}).Errorf("Could not process the request correctly. data: %s", m.Data)
+		log.Errorf("Could not process the request correctly. data: %s", m.Data)
 		response = simpleResponse(400)
 		err = nil
 	}
-
-	logrus.WithFields(
-		logrus.Fields{
-			"response": response,
-			"err":      err,
-		}).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }

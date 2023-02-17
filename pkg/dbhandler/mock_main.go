@@ -82,6 +82,21 @@ func (mr *MockDBHandlerMockRecorder) ActiveflowGet(ctx, id interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGet", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowGet), ctx, id)
 }
 
+// ActiveflowGetWithLock mocks base method.
+func (m *MockDBHandler) ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowGetWithLock", ctx, id)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveflowGetWithLock indicates an expected call of ActiveflowGetWithLock.
+func (mr *MockDBHandlerMockRecorder) ActiveflowGetWithLock(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGetWithLock", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowGetWithLock), ctx, id)
+}
+
 // ActiveflowGetsByCustomerID mocks base method.
 func (m *MockDBHandler) ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
@@ -95,6 +110,20 @@ func (m *MockDBHandler) ActiveflowGetsByCustomerID(ctx context.Context, customer
 func (mr *MockDBHandlerMockRecorder) ActiveflowGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowGetsByCustomerID), ctx, customerID, token, limit)
+}
+
+// ActiveflowReleaseLock mocks base method.
+func (m *MockDBHandler) ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowReleaseLock", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActiveflowReleaseLock indicates an expected call of ActiveflowReleaseLock.
+func (mr *MockDBHandlerMockRecorder) ActiveflowReleaseLock(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowReleaseLock", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowReleaseLock), ctx, id)
 }
 
 // ActiveflowUpdate mocks base method.

@@ -1,12 +1,14 @@
 package cachehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_cachehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package cachehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redsync/redsync/v4"
+	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 	"github.com/gofrs/uuid"
+	"github.com/redis/go-redis/v9"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -18,7 +20,10 @@ type handler struct {
 	Password string
 	DB       int
 
-	Cache *redis.Client
+	Cache  *redis.Client
+	Locker *redsync.Redsync
+
+	mapMutex map[string]*redsync.Mutex
 }
 
 // CacheHandler interface
@@ -27,6 +32,8 @@ type CacheHandler interface {
 
 	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowSet(ctx context.Context, cf *activeflow.Activeflow) error
+	ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 
 	FlowDel(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
@@ -45,11 +52,18 @@ func NewHandler(addr string, password string, db int) CacheHandler {
 		DB:       db,
 	})
 
+	// redis lock
+	pool := goredis.NewPool(cache)
+	locker := redsync.New(pool)
+
 	h := &handler{
 		Addr:     addr,
 		Password: password,
 		DB:       db,
 		Cache:    cache,
+		Locker:   locker,
+
+		mapMutex: make(map[string]*redsync.Mutex),
 	}
 
 	return h

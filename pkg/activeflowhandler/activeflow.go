@@ -100,12 +100,14 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 	})
 
 	// get active flow
-	af, err := h.db.ActiveflowGet(ctx, id)
+	af, err := h.GetWithLock(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get active flow. err: %v", err)
 		return err
 	}
-	log.WithField("active_flow", af).Debug("Found active flow.")
+	defer func() {
+		_ = h.ReleaseLock(ctx, id)
+	}()
 
 	// get target action
 	targetStackID, targetAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, actionID, false)
@@ -123,18 +125,20 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 		return errUpdate
 	}
 
-	// send action next
-	if forwardNow {
-		switch af.ReferenceType {
-		case activeflow.ReferenceTypeCall:
-			if err := h.reqHandler.CallV1CallActionNext(ctx, af.ReferenceID, true); err != nil {
-				log.Errorf("Could not send action next request. err: %v", err)
-				return err
+	go func() {
+		// send action next
+		if forwardNow {
+			switch af.ReferenceType {
+			case activeflow.ReferenceTypeCall:
+				if err := h.reqHandler.CallV1CallActionNext(ctx, af.ReferenceID, true); err != nil {
+					log.Errorf("Could not send action next request. err: %v", err)
+					return
+				}
+			default:
+				log.Errorf("Unsupported reference type for forward now. reference_type: %s", af.ReferenceType)
 			}
-		default:
-			log.Errorf("Unsupported reference type for forward now. reference_type: %s", af.ReferenceType)
 		}
-	}
+	}()
 
 	return nil
 }
@@ -219,6 +223,27 @@ func (h *activeflowHandler) Get(ctx context.Context, id uuid.UUID) (*activeflow.
 	}
 
 	return res, nil
+}
+
+// GetWithLock returns activeflow
+func (h *activeflowHandler) GetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "GetWithLock",
+		"activeflow_id": id,
+	})
+
+	res, err := h.db.ActiveflowGetWithLock(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get activeflow. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ReleaseLock releases activeflow lock
+func (h *activeflowHandler) ReleaseLock(ctx context.Context, id uuid.UUID) error {
+	return h.db.ActiveflowReleaseLock(ctx, id)
 }
 
 // FlowGets returns list of activeflows

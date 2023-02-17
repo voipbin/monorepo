@@ -105,6 +105,42 @@ func (h *handler) ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.
 	return &res, nil
 }
 
+// ActiveflowGet returns cached activeflow info
+func (h *handler) ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	keyLock := fmt.Sprintf("activeflow:lock:%s", id)
+	mutex := h.Locker.NewMutex(keyLock)
+	if errLock := mutex.Lock(); errLock != nil {
+		return nil, errLock
+	}
+
+	key := fmt.Sprintf("activeflow:%s", id)
+	var res activeflow.Activeflow
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		_, _ = mutex.Unlock()
+		return nil, err
+	}
+
+	h.mapMutex[id.String()] = mutex
+	return &res, nil
+}
+
+// ActiveflowReleaseLock returns cached activeflow info
+func (h *handler) ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error {
+
+	mutex, ok := h.mapMutex[id.String()]
+	if !ok {
+		return fmt.Errorf("no mutex")
+	}
+	defer delete(h.mapMutex, id.String())
+
+	_, err := mutex.Unlock()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ActiveflowSet sets the variable info into the cache
 func (h *handler) VariableSet(ctx context.Context, t *variable.Variable) error {
 	key := fmt.Sprintf("variable:%s", t.ID)
