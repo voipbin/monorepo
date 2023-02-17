@@ -54,7 +54,7 @@ spec:
           resources:
             limits:
               cpu: "30m"
-              memory: "20M"
+              memory: "40M"
           ports:
             - name: metrics
               protocol: "TCP"
