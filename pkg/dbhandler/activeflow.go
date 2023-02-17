@@ -265,6 +265,32 @@ func (h *handler) ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.
 	return res, nil
 }
 
+// ActiveflowGetWithLock returns activeflow.
+func (h *handler) ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+
+	// get data from the cache
+	_, err := h.activeflowGetFromCache(ctx, id)
+	if err == nil {
+		// if not exist in the cache, update it to the cahce
+		if errUpdate := h.activeflowUpdateToCache(ctx, id); errUpdate != nil {
+			return nil, errUpdate
+		}
+	}
+
+	// get with lock
+	res, err := h.cache.ActiveflowGetWithLock(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ActiveflowReleaseLock releases the lock
+func (h *handler) ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error {
+	return h.cache.ActiveflowReleaseLock(ctx, id)
+}
+
 // ActiveflowGetsByCustomerID returns list of activeflows.
 func (h *handler) ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error) {
 

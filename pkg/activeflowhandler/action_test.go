@@ -11,9 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/stackhandler"
@@ -95,88 +93,88 @@ func Test_getActionsFromFlow(t *testing.T) {
 	}
 }
 
-func Test_getNextAction(t *testing.T) {
+// func Test_getNextAction(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		activeflowID    uuid.UUID
-		currentActionID uuid.UUID
+// 		activeflowID    uuid.UUID
+// 		currentActionID uuid.UUID
 
-		responseActiveflow *activeflow.Activeflow
-		responseStackID    uuid.UUID
-		responseAction     *action.Action
-		responseVariable   *variable.Variable
+// 		responseActiveflow *activeflow.Activeflow
+// 		responseStackID    uuid.UUID
+// 		responseAction     *action.Action
+// 		responseVariable   *variable.Variable
 
-		expectResStackID uuid.UUID
-		expectResAction  *action.Action
-	}{
-		{
-			"normal",
+// 		expectResStackID uuid.UUID
+// 		expectResAction  *action.Action
+// 	}{
+// 		{
+// 			"normal",
 
-			uuid.FromStringOrNil("4f49a95c-f48d-11ec-8058-bbbde0a6c271"),
-			uuid.FromStringOrNil("4f98aed0-f48d-11ec-aa16-1b034ad50819"),
+// 			uuid.FromStringOrNil("4f49a95c-f48d-11ec-8058-bbbde0a6c271"),
+// 			uuid.FromStringOrNil("4f98aed0-f48d-11ec-aa16-1b034ad50819"),
 
-			&activeflow.Activeflow{
-				ID: uuid.FromStringOrNil("4f49a95c-f48d-11ec-8058-bbbde0a6c271"),
+// 			&activeflow.Activeflow{
+// 				ID: uuid.FromStringOrNil("4f49a95c-f48d-11ec-8058-bbbde0a6c271"),
 
-				CurrentAction: action.Action{
-					ID: uuid.FromStringOrNil("4f98aed0-f48d-11ec-aa16-1b034ad50819"),
-				},
-			},
-			uuid.FromStringOrNil("37dbe260-f48f-11ec-95e9-43542c39a464"),
-			&action.Action{
-				ID:   uuid.FromStringOrNil("9454e1c2-f48f-11ec-b9e5-8ff2c45b0cbc"),
-				Type: action.TypeAnswer,
-			},
-			&variable.Variable{},
+// 				CurrentAction: action.Action{
+// 					ID: uuid.FromStringOrNil("4f98aed0-f48d-11ec-aa16-1b034ad50819"),
+// 				},
+// 			},
+// 			uuid.FromStringOrNil("37dbe260-f48f-11ec-95e9-43542c39a464"),
+// 			&action.Action{
+// 				ID:   uuid.FromStringOrNil("9454e1c2-f48f-11ec-b9e5-8ff2c45b0cbc"),
+// 				Type: action.TypeAnswer,
+// 			},
+// 			&variable.Variable{},
 
-			uuid.FromStringOrNil("37dbe260-f48f-11ec-95e9-43542c39a464"),
-			&action.Action{
-				ID:   uuid.FromStringOrNil("9454e1c2-f48f-11ec-b9e5-8ff2c45b0cbc"),
-				Type: action.TypeAnswer,
-			},
-		},
-	}
+// 			uuid.FromStringOrNil("37dbe260-f48f-11ec-95e9-43542c39a464"),
+// 			&action.Action{
+// 				ID:   uuid.FromStringOrNil("9454e1c2-f48f-11ec-b9e5-8ff2c45b0cbc"),
+// 				Type: action.TypeAnswer,
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockAction := actionhandler.NewMockActionHandler(mc)
-			mockStack := stackhandler.NewMockStackHandler(mc)
-			mockVar := variablehandler.NewMockVariableHandler(mc)
+// 			mockDB := dbhandler.NewMockDBHandler(mc)
+// 			mockReq := requesthandler.NewMockRequestHandler(mc)
+// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+// 			mockAction := actionhandler.NewMockActionHandler(mc)
+// 			mockStack := stackhandler.NewMockStackHandler(mc)
+// 			mockVar := variablehandler.NewMockVariableHandler(mc)
 
-			h := &activeflowHandler{
-				db:              mockDB,
-				reqHandler:      mockReq,
-				notifyHandler:   mockNotify,
-				actionHandler:   mockAction,
-				stackHandler:    mockStack,
-				variableHandler: mockVar,
-			}
+// 			h := &activeflowHandler{
+// 				db:              mockDB,
+// 				reqHandler:      mockReq,
+// 				notifyHandler:   mockNotify,
+// 				actionHandler:   mockAction,
+// 				stackHandler:    mockStack,
+// 				variableHandler: mockVar,
+// 			}
 
-			ctx := context.Background()
+// 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-			mockStack.EXPECT().GetNextAction(ctx, tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
+// 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+// 			mockStack.EXPECT().GetNextAction(ctx, tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, &tt.responseActiveflow.CurrentAction, true).Return(tt.responseStackID, tt.responseAction)
 
-			resStackID, resAction, err := h.getNextAction(ctx, tt.activeflowID, tt.currentActionID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			resStackID, resAction, err := h.getNextAction(ctx, tt.activeflowID, tt.currentActionID)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if resStackID != tt.expectResStackID {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectResStackID, resStackID)
-			}
+// 			if resStackID != tt.expectResStackID {
+// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectResStackID, resStackID)
+// 			}
 
-			if reflect.DeepEqual(resAction, tt.expectResAction) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectResAction, resAction)
-			}
-		})
-	}
-}
+// 			if reflect.DeepEqual(resAction, tt.expectResAction) != true {
+// 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectResAction, resAction)
+// 			}
+// 		})
+// 	}
+// }

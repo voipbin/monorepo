@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -530,7 +531,7 @@ func Test_SetForwardActionID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.af, nil)
+			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.id).Return(tt.af, nil)
 			mockStack.EXPECT().GetAction(ctx, tt.af.StackMap, tt.af.CurrentStackID, tt.actionID, false).Return(tt.responseStackID, tt.responseAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)
 
@@ -538,9 +539,12 @@ func Test_SetForwardActionID(t *testing.T) {
 				mockReq.EXPECT().CallV1CallActionNext(ctx, tt.af.ReferenceID, true).Return(nil)
 			}
 
+			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.id).Return(nil)
 			if err := h.SetForwardActionID(ctx, tt.id, tt.actionID, tt.forwardNow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			time.Sleep(time.Microsecond * 100)
 		})
 	}
 }

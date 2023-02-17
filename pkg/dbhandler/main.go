@@ -1,6 +1,6 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -26,6 +26,8 @@ type DBHandler interface {
 	ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error
 	ActiveflowDelete(ctx context.Context, id uuid.UUID) error
 	ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error)
+	ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 
 	// flow
 	FlowCreate(ctx context.Context, f *flow.Flow) error

@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
 )
 
@@ -34,51 +35,68 @@ func (h *activeflowHandler) getActionsFromFlow(ctx context.Context, flowID uuid.
 	return f.Actions, nil
 }
 
-// getNextAction returns next action from the active-flow
+// updateNextAction updates the next action to the current action.
 // It sets next action to current action.
-func (h *activeflowHandler) getNextAction(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) (uuid.UUID, *action.Action, error) {
+func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "getNextAction",
+		"func":              "updateNextAction",
 		"activeflow_id":     activeflowID,
 		"current_action_id": caID,
 	})
 	log.Debug("Getting next action.")
 
-	// get active-flow
-	af, err := h.Get(ctx, activeflowID)
+	// get activeflow with lock
+	af, err := h.GetWithLock(ctx, activeflowID)
 	if err != nil {
-		log.Errorf("Could not get active-flow. err: %v", err)
-		return stack.IDEmpty, nil, err
+		log.Errorf("Could not get activeflow. err: %v", err)
+		return nil, err
 	}
-	log = log.WithField("active_flow_current_action_id", af.CurrentAction.ID)
-	log.WithField("active_flow", af).Debug("Found active flow.")
+	defer func() {
+		_ = h.ReleaseLock(ctx, activeflowID)
+	}()
 
 	// check execute count.
 	if af.ExecuteCount > maxActiveFlowExecuteCount {
-		log.Errorf("Exceed maximum action execution count. execute_count: %d", af.ExecuteCount)
-		return stack.IDEmpty, nil, fmt.Errorf("exceed maximum action execution count")
+		log.Errorf("Exceeded maximum action execution count. execute_count: %d", af.ExecuteCount)
+		return nil, fmt.Errorf("exceed maximum action execution count")
 	}
 
 	if af.CurrentAction.ID != action.IDEmpty && af.CurrentAction.ID != caID {
-		log.Error("The current action does not match.")
-		return stack.IDEmpty, nil, fmt.Errorf("current action does not match")
+		log.Error("The current action info does not match.")
+		return nil, fmt.Errorf("current action does not match")
 	}
 
 	// get next action
-	var stackID uuid.UUID
-	var act *action.Action
+	var resStackID uuid.UUID
+	var resAct *action.Action
 	if af.ForwardStackID != stack.IDEmpty && af.ForwardActionID != action.IDEmpty {
 		log.Debugf("The forward action ID exist. forward_stack_id: %s, forward_action_id: %s", af.ForwardStackID, af.ForwardActionID)
-		stackID, act, err = h.stackHandler.GetAction(ctx, af.StackMap, af.ForwardStackID, af.ForwardActionID, true)
+		resStackID, resAct, err = h.stackHandler.GetAction(ctx, af.StackMap, af.ForwardStackID, af.ForwardActionID, true)
 		if err != nil {
 			log.Errorf("Could not get action. err: %v", err)
-			return stack.IDEmpty, nil, err
+			return nil, err
 		}
 	} else {
 		log.Debugf("The forward action ID does not exist. current_stack_id: %s, current_action_id: %s", af.CurrentStackID, &af.CurrentAction.ID)
-		stackID, act = h.stackHandler.GetNextAction(ctx, af.StackMap, af.CurrentStackID, &af.CurrentAction, true)
+		resStackID, resAct = h.stackHandler.GetNextAction(ctx, af.StackMap, af.CurrentStackID, &af.CurrentAction, true)
 	}
-	log.Debugf("Found next action. stack_id: %s, action_id: %s", stackID, act.ID)
+	log.Debugf("Found next action. stack_id: %s, action_id: %s, action_type: %s", resStackID, resAct.ID, resAct.Type)
 
-	return stackID, act, nil
+	// substitute the option variables.
+	v, err := h.variableHandler.Get(ctx, activeflowID)
+	if err != nil {
+		log.Errorf("Could not get variables. err: %v", err)
+		return nil, err
+	}
+	resAct.Option = h.variableHandler.SubstituteByte(ctx, resAct.Option, v)
+
+	// update current action in activeflow
+	res, err := h.updateCurrentAction(ctx, activeflowID, resStackID, resAct)
+	if err != nil {
+		log.Errorf("Could not update the current action. err: %v", err)
+		return nil, fmt.Errorf("could not update the current action. err: %v", err)
+	}
+	log.WithField("action", res.CurrentAction).Debugf("Updated current action. action_type: %s", res.CurrentAction.Type)
+
+	return res, nil
 }

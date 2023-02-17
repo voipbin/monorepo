@@ -1,11 +1,12 @@
 package activeflowhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package activeflowhandler -destination ./mock_activeflowhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package activeflowhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -66,4 +67,26 @@ func NewActiveflowHandler(
 		variableHandler: variableHandler,
 		stackHandler:    stackHandler,
 	}
+}
+
+var (
+	metricsNamespace = "flow_manager"
+
+	promActionExecuteDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "action_exeucte_duration",
+			Help:      "Execute duration of action",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000,
+			},
+		},
+		[]string{"type"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promActionExecuteDuration,
+	)
 }
