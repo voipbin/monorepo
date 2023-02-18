@@ -103,14 +103,13 @@ func (h *callHandler) hangingUpWithCause(ctx context.Context, id uuid.UUID, caus
 		"call_id":       id,
 		"channel_cause": cause,
 	})
-	log.Debugf("Hanging up the call. cause: %d", cause)
 
 	c, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("call", c).Debug("Call info.")
+	log.WithField("call", c).Debugf("Hanging up the call. call_id: %s, cause: %d", c.ID, cause)
 
 	if c.Status == call.StatusCanceling || c.Status == call.StatusHangup || c.Status == call.StatusTerminating {
 		// already hanging up
@@ -125,7 +124,6 @@ func (h *callHandler) hangingUpWithCause(ctx context.Context, id uuid.UUID, caus
 	}
 
 	// update call status
-	log.Debugf("Updating call status for hanging up. status: %v", status)
 	res, err := h.UpdateStatus(ctx, c.ID, status)
 	if err != nil {
 		// update status failed, just write log here. No need error handle here.
@@ -133,12 +131,12 @@ func (h *callHandler) hangingUpWithCause(ctx context.Context, id uuid.UUID, caus
 		return nil, err
 	}
 
-	tmp, err := h.channelHandler.HangingUp(ctx, c.ChannelID, cause)
+	cn, err := h.channelHandler.HangingUp(ctx, c.ChannelID, cause)
 	if err != nil {
 		log.Errorf("Could not hang up the call channel. err: %v", err)
 		return nil, err
 	}
-	log.WithField("channel", tmp).Debugf("Hanging up the call channel. call_id: %s", c.ID)
+	log.WithField("channel", cn).Debugf("Hanging up the call channel. call_id: %s, channel_id: %s", c.ID, cn.ID)
 
 	return res, nil
 }

@@ -52,6 +52,9 @@ func Test_Joined_type_connect(t *testing.T) {
 				ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
 				BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 				Type:     confbridge.TypeConnect,
+				ChannelCallIDs: map[string]uuid.UUID{
+					"4268f036-38d0-11ec-a912-ebca1cd51965": uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
+				},
 			},
 			responseCall: &call.Call{
 				ID: uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
@@ -64,6 +67,9 @@ func Test_Joined_type_connect(t *testing.T) {
 					ID:       uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
 					BridgeID: "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
 					Type:     confbridge.TypeConnect,
+					ChannelCallIDs: map[string]uuid.UUID{
+						"4268f036-38d0-11ec-a912-ebca1cd51965": uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
+					},
 				},
 				JoinedCallID: uuid.FromStringOrNil("ebb3c432-38cf-11ec-ad96-fb9640d4c6ee"),
 			},
@@ -212,6 +218,9 @@ func Test_joinedTypeConnect(t *testing.T) {
 			},
 			confbridge: &confbridge.Confbridge{
 				ID: uuid.FromStringOrNil("aff70e90-a3bd-11ed-8099-7b4446aef7ad"),
+				ChannelCallIDs: map[string]uuid.UUID{
+					"9a6c08b2-ae91-11ed-b460-a377b7040b7c": uuid.FromStringOrNil("9a99bbae-ae91-11ed-971f-9b7ae6d5063d"),
+				},
 			},
 		},
 		{
@@ -270,7 +279,7 @@ func Test_joinedTypeConnect(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			if len(tt.confbridge.ChannelCallIDs) == 0 {
+			if len(tt.confbridge.ChannelCallIDs) == 1 {
 				mockChannel.EXPECT().Ring(ctx, tt.channelID).Return(nil)
 			} else {
 				if tt.call.Status == call.StatusRinging {

@@ -67,7 +67,7 @@ func (h *confbridgeHandler) joinedTypeConnect(ctx context.Context, channelID str
 		},
 	)
 
-	if len(cb.ChannelCallIDs) == 0 {
+	if len(cb.ChannelCallIDs) == 1 {
 		// if it's the first channel, send a ring
 		log.Debugf("First channel. Send a ring. call_id: %s", c.ID)
 		if errRing := h.channelHandler.Ring(ctx, channelID); errRing != nil {

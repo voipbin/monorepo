@@ -140,7 +140,6 @@ func Test_EventHandlerChannelCreated(t *testing.T) {
 				tt.expectDestinationNumber,
 				tt.expectState,
 			).Return(tt.responseChannel, nil)
-			mockRequest.EXPECT().CallV1ChannelHealth(gomock.Any(), tt.responseChannel.ID, gomock.Any(), gomock.Any(), gomock.Any())
 
 			if err := h.EventHandlerChannelCreated(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

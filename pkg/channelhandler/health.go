@@ -9,7 +9,7 @@ import (
 )
 
 // HealthCheck checks the given channel is still vaild
-func (h *channelHandler) HealthCheck(ctx context.Context, channelID string, retryCount int, retryCountMax int, delay int) {
+func (h *channelHandler) HealthCheck(ctx context.Context, channelID string, retryCount int) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":       "HealthCheck",
@@ -23,13 +23,10 @@ func (h *channelHandler) HealthCheck(ctx context.Context, channelID string, retr
 		log.Errorf("Could not get the channel from the database. channel_id: %s, err: %v", channelID, err)
 		return
 	}
-	log = logrus.WithField("asterisk_id", cn.AsteriskID)
 
 	// check if the channel has deleted already, we don't go further.
 	if cn.TMEnd != dbhandler.DefaultTimeStamp {
-		log.WithField(
-			"channel", cn,
-		).Debug("The channel has hungup already. Stop to health-check.")
+		// the channel has hungup already. no need to check the health anymore
 		return
 	}
 
@@ -43,14 +40,13 @@ func (h *channelHandler) HealthCheck(ctx context.Context, channelID string, retr
 
 	// todo: if the retry count is bigger than 2,
 	// then generate fake-ChannelDestroyed event
-	if retryCount >= retryCountMax {
-		log.Info("Could not get channel info correctly. Terminating the channel.")
+	if retryCount > defaultHealthMaxRetryCount {
+		log.WithField("channel", cn).Info("Could not get channel info correctly. Terminating the channel.")
 		return
 	}
 
-	// send another health check.
-	log.Debugf("Sending health-check request. retry: %d, retry_max: %d, delay: %d", retryCount, retryCountMax, delay)
-	if err := h.reqHandler.CallV1ChannelHealth(ctx, channelID, delay, retryCount, retryCountMax); err != nil {
+	// send health check.
+	if err := h.reqHandler.CallV1ChannelHealth(ctx, channelID, defaultHealthDelay, retryCount, defaultHealthMaxRetryCount); err != nil {
 		log.Errorf("Could not send the channel check request. err: %v", err)
 		return
 	}

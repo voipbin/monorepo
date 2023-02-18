@@ -25,13 +25,13 @@ func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *rab
 	event, evt, err := ari.Parse([]byte(m.Data))
 	if err != nil {
 		log.Errorf("Could not parse the ari event. err: %v", err)
-		return errors.Wrapf(err, "could not parse the message")
+		return errors.Wrapf(err, "Could not parse the message")
 	}
 	log = log.WithFields(logrus.Fields{"event_type": event.Type})
 	log.WithField("event", event).Debugf("Received ARI event. event_type: %s", event.Type)
 
-	// processMap maps ARIEvent name and event handler.
-	var processMap = map[ari.EventType]func(context.Context, interface{}) error{
+	// mapProcess maps ARIEvent name and event handler.
+	var mapProcess = map[ari.EventType]func(context.Context, interface{}) error{
 		ari.EventTypeBridgeCreated:        h.ariEventHandler.EventHandlerBridgeCreated,
 		ari.EventTypeBridgeDestroyed:      h.ariEventHandler.EventHandlerBridgeDestroyed,
 		ari.EventTypeChannelCreated:       h.ariEventHandler.EventHandlerChannelCreated,
@@ -51,10 +51,9 @@ func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *rab
 	}
 
 	// get handler
-	handler := processMap[event.Type]
-	if handler == nil {
+	handler, ok := mapProcess[event.Type]
+	if !ok {
 		// no handler
-		log.Debugf("No handler registered for event. event_type: %s", event.Type)
 		return nil
 	}
 

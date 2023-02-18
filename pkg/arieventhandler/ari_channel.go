@@ -6,7 +6,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -45,13 +44,6 @@ func (h *eventHandler) EventHandlerChannelCreated(ctx context.Context, evt inter
 		return err
 	}
 	log.WithField("channel", cn).Debugf("Created a channel info. channel_id: %s", cn.ID)
-
-	// start channel watcher
-	if err := h.reqHandler.CallV1ChannelHealth(ctx, cn.ID, requesthandler.DelaySecond*10, 0, 2); err != nil {
-		logrus.Errorf("Could not start the channel water. err: %v", err)
-		return nil
-	}
-	log.Debugf("Started channel watcher.")
 
 	return nil
 }

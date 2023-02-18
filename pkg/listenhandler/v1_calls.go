@@ -19,9 +19,13 @@ import (
 )
 
 // processV1CallsGet handles GET /v1/calls request
-func (h *listenHandler) processV1CallsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1CallsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsGet",
+		"request": m,
+	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +37,6 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, req *rabbitmqhand
 
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
-	log := logrus.WithFields(logrus.Fields{
-		"user":  customerID,
-		"size":  pageSize,
-		"token": pageToken,
-	})
 
 	calls, err := h.callHandler.Gets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
@@ -63,17 +61,17 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, req *rabbitmqhand
 
 // processV1CallsIDGet handles GET /v1/calls/<call-id> request
 func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDGet",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDGet.")
 
 	c, err := h.callHandler.Get(ctx, id)
 	if err != nil {
@@ -98,16 +96,15 @@ func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *rabbitmqhand
 // processV1CallsPost handles POST /v1/calls request
 // It creates a new call.
 func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {
 		return simpleResponse(400), nil
 	}
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1CallsPost",
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsPost.")
 
 	var req request.V1DataCallsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -121,13 +118,11 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 		"destinations": req.Destinations,
 	})
 
-	log.Debug("Creating outgoing call.")
 	calls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.ExecuteNextMasterOnHangup)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.WithField("calls", calls).Debugf("Created outgoing call. count: %d", len(calls))
 
 	data, err := json.Marshal(calls)
 	if err != nil {
@@ -147,17 +142,17 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 // processV1CallsIDPost handles POST /v1/calls/<call-id> request
 // It creates a new call.
 func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDPost.")
 
 	var req request.V1DataCallsIDPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -171,13 +166,11 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 		"destination": req.Destination,
 	})
 
-	log.Debug("Creating outgoing call.")
 	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.Source, req.Destination, req.EarlyExecution, req.ExecuteNextMasterOnHangup)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", req.FlowID, req.Source, req.Destination, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Created outgoing call. call: %v", c)
 
 	data, err := json.Marshal(c)
 	if err != nil {
@@ -197,17 +190,17 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 // processV1CallsIDDelete handles Post /v1/calls/<call-id> request
 // It hangs up the call.
 func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDDelete",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDDelete.")
 
 	// delete the call
 	tmp, err := h.callHandler.Delete(ctx, id)
@@ -234,17 +227,17 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *rabbitmqh
 // processV1CallsIDHangupPost handles Post /v1/calls/<call-id>/hangup request
 // It hangs up the call.
 func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDHangupPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDHangupPost.")
 
 	// hanging up the call
 	tmp, err := h.callHandler.HangingUp(ctx, id, call.HangupReasonNormal)
@@ -270,39 +263,40 @@ func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *rabbi
 
 // processV1CallsIDGet handles /v1/calls/<call-id>/health-check request
 func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDHealthPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDHealthPost.")
 
-	var data request.V1DataCallsIDHealthPost
-	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
+	var req request.V1DataCallsIDHealthPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not marshal the request message. message: %v, err: %v", req, err)
 		return nil, err
 	}
 
-	h.callHandler.CallHealthCheck(ctx, id, data.RetryCount, data.Delay)
+	h.callHandler.CallHealthCheck(ctx, id, req.RetryCount, req.Delay)
 	return nil, nil
 }
 
 // processV1CallsIDGet handles /v1/calls/<call-id>/action-timeout request
 func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDActionTimeoutPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDActionTimeoutPost.")
 
 	var data request.V1DataCallsIDActionTimeoutPost
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
@@ -320,8 +314,8 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m
 		TMExecute: data.TMExecute,
 	}
 
-	log.Debug("Executing the action timeout.")
 	if err := h.callHandler.ActionTimeout(ctx, id, action); err != nil {
+		log.Debugf("Could not handle the action timeout request. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
@@ -334,17 +328,16 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m
 
 // processV1CallsIDGet handles /v1/calls/<call-id>/action-next request
 func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDActionNextPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDActionNextPost.")
 
 	var data request.V1DataCallsIDActionNextPost
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
@@ -380,25 +373,21 @@ func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *r
 
 // processV1CallsIDChainedCallIDsPost handles /v1/calls/<call-id>/chained-call-ids POST request
 func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDChainedCallIDsPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDChainedCallIDsPost.")
 
 	var req request.V1DataCallsIDChainedCallIDsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
-	log.WithFields(logrus.Fields{
-		"chained_call_ids": req,
-	}).Debugf("Parsed request data.")
 
 	tmp, err := h.callHandler.ChainedCallIDAdd(ctx, id, req.ChainedCallID)
 	if err != nil {
@@ -423,6 +412,11 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, 
 
 // processV1CallsIDChainedCallIDsDelete handles /v1/calls/<call-id>/chained-call-ids/<chained-call-id> DELETE request
 func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDChainedCallIDsDelete",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
@@ -430,12 +424,6 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context
 
 	id := uuid.FromStringOrNil(uriItems[3])
 	chainedCallID := uuid.FromStringOrNil(uriItems[5])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id":              id,
-			"chained_call_id": chainedCallID,
-		})
-	log.Debug("Executing processV1CallsIDChainedCallIDsDelete.")
 
 	tmp, err := h.callHandler.ChainedCallIDRemove(ctx, id, chainedCallID)
 	if err != nil {
@@ -460,25 +448,21 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context
 
 // processV1CallsIDExternalMediaPost handles /v1/calls/<call-id>/external-media POST request
 func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDExternalMediaPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDExternalMediaPost.")
 
 	var req request.V1DataCallsIDExternalMediaPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
-	log.WithFields(logrus.Fields{
-		"external_media": req,
-	}).Debugf("Parsed request data.")
 
 	tmp, err := h.callHandler.ExternalMediaStart(ctx, id, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
 	if err != nil {
@@ -503,24 +487,22 @@ func (h *listenHandler) processV1CallsIDExternalMediaPost(ctx context.Context, m
 
 // processV1CallsIDExternalMediaDelete handles /v1/calls/<call-id>/external-media DELETE request
 func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDExternalMediaDelete",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDExternalMediaDelete.")
 
 	tmp, err := h.callHandler.ExternalMediaStop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not stop the external media. call_id: %s, err: %v", id, err)
 		return nil, err
 	}
-	log.Debugf("Stopped external media channel. external: %v", tmp)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
@@ -539,17 +521,16 @@ func (h *listenHandler) processV1CallsIDExternalMediaDelete(ctx context.Context,
 
 // processV1CallsIDDigitsGet handles /v1/calls/<call-id>/digits GET request
 func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDDigitsGet",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDActionNextPost.")
 
 	digit, err := h.callHandler.DigitsGet(ctx, id)
 	if err != nil {
@@ -578,25 +559,21 @@ func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *rabbit
 
 // processV1CallsIDDigitsSet handles /v1/calls/<call-id>/digits POST request
 func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDDigitsSet",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDActionNextPost.")
 
 	var req request.V1DataCallsIDDigitsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
-	log.WithFields(logrus.Fields{
-		"request": req,
-	}).Debugf("Parsed request data.")
 
 	if err := h.callHandler.DigitsSet(ctx, id, req.Digits); err != nil {
 		log.Errorf("Could not get call's digits. err: %v", err)
@@ -613,25 +590,21 @@ func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *rabbit
 
 // processV1CallsIDRecordingIDPut handles /v1/calls/<call-id>/recording_id PUT request
 func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDRecordingIDPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDRecordingIDPut.")
 
 	var req request.V1DataCallsIDRecordingIDPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
-	log.WithFields(logrus.Fields{
-		"request": req,
-	}).Debugf("Parsed request data.")
 
 	tmp, err := h.callHandler.UpdateRecordingID(ctx, id, req.RecordingID)
 	if err != nil {
@@ -656,25 +629,21 @@ func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *r
 
 // processV1CallsIDConfbridgeIDPut handles /v1/calls/<call-id>/confbridge_id PUT request
 func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDConfbridgeIDPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDConfbridgeIDPut.")
 
 	var req request.V1DataCallsIDConfbridgeIDPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
-	log.WithFields(logrus.Fields{
-		"request": req,
-	}).Debugf("Parsed request data.")
 
 	tmp, err := h.callHandler.UpdateConfbridgeID(ctx, id, req.ConfbridgeID)
 	if err != nil {
@@ -699,25 +668,21 @@ func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *
 
 // processV1CallsIDRecordingStartPost handles /v1/calls/<call-id>/recording_start POST request
 func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDRecordingStartPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
-
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDRecordingIDPut.")
 
 	var req request.V1DataCallsIDRecordingStartPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
-	log.WithFields(logrus.Fields{
-		"request": req,
-	}).Debugf("Parsed request data.")
 
 	tmp, err := h.callHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration)
 	if err != nil {
@@ -742,17 +707,17 @@ func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, 
 
 // processV1CallsIDRecordingStopPost handles /v1/calls/<call-id>/recording_stop POST request
 func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDRecordingStopPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDRecordingStopPost.")
 
 	tmp, err := h.callHandler.RecordingStop(ctx, id)
 	if err != nil {
@@ -777,17 +742,17 @@ func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m
 
 // processV1CallsIDTalkPost handles /v1/calls/<call-id>/talk POST request
 func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDTalkPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDTalkPost.")
 
 	var req request.V1DataCallsIDTalkPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -808,17 +773,17 @@ func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *rabbitm
 
 // processV1CallsIDPlayPost handles /v1/calls/<call-id>/play POST request
 func (h *listenHandler) processV1CallsIDPlayPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDPlayPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDPlayPost.")
 
 	var req request.V1DataCallsIDPlayPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -839,17 +804,17 @@ func (h *listenHandler) processV1CallsIDPlayPost(ctx context.Context, m *rabbitm
 
 // processV1CallsIDMediaStopPost handles /v1/calls/<call-id>/media_stop POST request
 func (h *listenHandler) processV1CallsIDMediaStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDMediaStopPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1CallsIDMediaStopPost.")
 
 	if errStop := h.callHandler.MediaStop(ctx, id); errStop != nil {
 		log.Errorf("Could not stop the media. err: %v", errStop)
