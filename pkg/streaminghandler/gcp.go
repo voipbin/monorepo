@@ -97,8 +97,7 @@ func (h *streamingHandler) gcpProcessResult(ctx context.Context, st *streaming.S
 			log.Errorf("Could not received the result. err: %v", err)
 			return
 		} else if len(tmp.Results) == 0 {
-			// end
-			log.Debug("Result end.")
+			// result end
 			return
 		}
 
@@ -201,7 +200,7 @@ func (h *streamingHandler) gcpProcessRTPToSTT(ctx context.Context, st *streaming
 
 		case data, ok := <-chanRTP:
 			if !ok {
-				log.Debugf("Streaming has finished.")
+				log.Debug("Streaming has finished.")
 				return
 			}
 

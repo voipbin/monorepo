@@ -18,7 +18,7 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230212084833-f00ba0a8a49e
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230218072504-af51ee98fb87
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230215072212-a4a31680cc3a
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
@@ -54,7 +54,7 @@ require (
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230213110854-5fda5ad5ace2 // indirect
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a // indirect
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5 // indirect
-	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230217052315-72d4c1bb9a07 // indirect
+	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230218122107-31fb15165405 // indirect
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600 // indirect
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230212162339-c9e22d6f99d1 // indirect
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9 // indirect

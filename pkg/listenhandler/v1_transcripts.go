@@ -11,17 +11,18 @@ import (
 )
 
 // processV1TranscriptsGet handles GET /v1/transcripts request
-func (h *listenHandler) processV1TranscriptsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TranscriptsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1TranscriptsGet",
+		"request": m,
+	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
 
 	transcribeID := uuid.FromStringOrNil(u.Query().Get("transcribe_id"))
-	log := logrus.WithFields(logrus.Fields{
-		"transcribe_id": transcribeID,
-	})
 
 	tmp, err := h.transcriptHandler.Gets(ctx, transcribeID)
 	if err != nil {
