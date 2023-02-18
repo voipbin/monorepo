@@ -17,35 +17,27 @@ import (
 // processV1TranscribesPost handles POST /v1/transcribes request
 // It creates a new transcribe.
 func (h *listenHandler) processV1TranscribesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1TranscribesPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 3 {
 		return simpleResponse(400), nil
 	}
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1TranscribesPost",
-		})
-	log.WithField("request", m).Debug("Executing processV1TranscribesPost.")
 
 	var req request.V1DataTranscribesPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
-	log = log.WithFields(logrus.Fields{
-		"customer_id":    req.CustomerID,
-		"reference_type": req.ReferenceType,
-		"reference_id":   req.ReferenceID,
-	})
 
-	log.Debug("Starting transcribe.")
 	tmp, err := h.transcribeHandler.Start(ctx, req.CustomerID, req.ReferenceType, req.ReferenceID, req.Language, req.Direction)
 	if err != nil {
 		log.Debugf("Could not create a transcribe. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.WithField("transcribe", tmp).Debugf("Created transcribe. transcribe_id: %s", tmp.ID)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
@@ -63,9 +55,13 @@ func (h *listenHandler) processV1TranscribesPost(ctx context.Context, m *rabbitm
 }
 
 // processV1TranscribesGet handles GET /v1/transcribes request
-func (h *listenHandler) processV1TranscribesGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1TranscribesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1TranscribesGet",
+		"request": m,
+	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +73,6 @@ func (h *listenHandler) processV1TranscribesGet(ctx context.Context, req *rabbit
 
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
-	log := logrus.WithFields(logrus.Fields{
-		"user":  customerID,
-		"size":  pageSize,
-		"token": pageToken,
-	})
 
 	calls, err := h.transcribeHandler.Gets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
@@ -107,20 +97,21 @@ func (h *listenHandler) processV1TranscribesGet(ctx context.Context, req *rabbit
 
 // processV1TranscribesIDGet handles GET /v1/transcribes/<id> request
 func (h *listenHandler) processV1TranscribesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1TranscribesIDGet",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1TranscribesIDGet.")
 
 	c, err := h.transcribeHandler.Get(ctx, id)
 	if err != nil {
+		log.Errorf("Could not get transcribe. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
@@ -140,17 +131,17 @@ func (h *listenHandler) processV1TranscribesIDGet(ctx context.Context, m *rabbit
 
 // processV1TranscribesIDDelete handles Delete /v1/transcribes/<id> request
 func (h *listenHandler) processV1TranscribesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1TranscribesIDDelete",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1TranscribesIDDelete.")
 
 	tmp, err := h.transcribeHandler.Delete(ctx, id)
 	if err != nil {
@@ -178,7 +169,7 @@ func (h *listenHandler) processV1TranscribesIDStopPost(ctx context.Context, m *r
 	log := logrus.WithFields(
 		logrus.Fields{
 			"handler": "processV1TranscribesIDStopPost",
-			"uri":     m.URI,
+			"request": m,
 		},
 	)
 

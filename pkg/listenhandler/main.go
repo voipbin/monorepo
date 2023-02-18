@@ -212,12 +212,15 @@ func (h *listenHandler) Run(queue, queueVolatile, exchangeDelay string) error {
 
 // processRequest handles all of requests of the listen queue.
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processRequest",
+		"request": m,
+	})
+	ctx := context.Background()
 
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
-
-	ctx := context.Background()
 
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
@@ -225,13 +228,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	}
 	m.URI = uri
 
-	logrus.WithFields(
-		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
 	switch {
@@ -279,11 +276,10 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		log.WithFields(logrus.Fields{
+			"uri":    m.URI,
+			"method": m.Method,
+		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -293,21 +289,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// default error handler
 	if err != nil {
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-				"error":  err,
-			}).Errorf("Could not process the request correctly. data: %s", m.Data)
+		log.WithFields(logrus.Fields{
+			"uri":    m.URI,
+			"method": m.Method,
+			"error":  err,
+		}).Errorf("Could not process the request correctly. data: %s", m.Data)
 		response = simpleResponse(400)
 		err = nil
 	}
 
-	logrus.WithFields(
-		logrus.Fields{
-			"response": response,
-		},
-	).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
+	log.WithField("response", response).Debugf("Response the request. method: %s, uri: %s", m.Method, uri)
 
 	return response, err
 }
