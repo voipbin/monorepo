@@ -17,7 +17,6 @@ type Queuecall struct {
 	ReferenceID           uuid.UUID     `json:"reference_id"`            // referenced resource's id.
 	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id"` // referenced resource's activeflow id
 
-	FlowID          uuid.UUID `json:"flow_id"`           // queuecall's queue flow id.
 	ForwardActionID uuid.UUID `json:"forward_action_id"` // action id for forward. This is for the conference_join's action id.
 	ExitActionID    uuid.UUID `json:"exit_action_id"`    // action id for queue exit. When the queuecall has ended, the queuemanager will send the request forward to this action id.
 	ConfbridgeID    uuid.UUID `json:"confbridge_id"`     // confbridge id

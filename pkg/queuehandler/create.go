@@ -2,16 +2,13 @@ package queuehandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
-	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new queue.
@@ -35,7 +32,7 @@ func (h *queueHandler) Create(
 	log.Debug("Creating a new queue.")
 
 	// generate queue id
-	id := uuid.Must(uuid.NewV4())
+	id := h.utilhandler.CreateUUID()
 	log = log.WithField("queue_id", id)
 
 	if routingMethod != queue.RoutingMethodRandom {
@@ -65,10 +62,6 @@ func (h *queueHandler) Create(
 		TotalIncomingCount:  0,
 		TotalServicedCount:  0,
 		TotalAbandonedCount: 0,
-
-		TMCreate: h.utilhandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	if err := h.db.QueueCreate(ctx, a); err != nil {
@@ -82,108 +75,6 @@ func (h *queueHandler) Create(
 		return nil, err
 	}
 	log.WithField("queue", res).Debug("Created a new queue.")
-
-	return res, nil
-}
-
-// // createQueueFlow creates a queue flow and returns created flow.
-// func (h *queueHandler) createQueueFlow(ctx context.Context, customerID uuid.UUID, queueID uuid.UUID, conferenceID uuid.UUID, waitActions []fmaction.Action) (*fmflow.Flow, error) {
-// 	log := logrus.WithFields(
-// 		logrus.Fields{
-// 			"func":     "createQueueFlow",
-// 			"queue_id": queueID,
-// 		})
-
-// 	// create flow actions
-// 	actions, err := h.createQueueFlowActions(waitActions, conferenceID)
-// 	if err != nil {
-// 		log.Errorf("Could not create actions. err: %v", err)
-// 		return nil, err
-// 	}
-// 	log.WithField("actions", actions).Debugf("Created queue flow actions. actions: %v", actions)
-
-// 	// create flow name
-// 	flowName := fmt.Sprintf("queue-%s", queueID.String())
-
-// 	// create flow
-// 	resFlow, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeQueue, flowName, "generated for queue by queue-manager.", actions, false)
-// 	if err != nil {
-// 		log.Errorf("Could not create a queue flow. err: %v", err)
-// 		return nil, err
-// 	}
-// 	log.Debugf("Created a queue flow. res: %v", resFlow)
-
-// 	return resFlow, nil
-// }
-
-// createQueueFlowActions creates the actions for queue join.
-func (h *queueHandler) createQueueFlowActions(waitActions []fmaction.Action, conferenceID uuid.UUID) ([]fmaction.Action, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "createQueueFlowActions",
-			"conference_id": conferenceID,
-		})
-
-	res := []fmaction.Action{}
-
-	// append the wait actions
-	if len(waitActions) == 0 {
-		act := fmaction.Action{
-			ID:     uuid.Must(uuid.NewV4()),
-			Type:   fmaction.TypeSleep,
-			Option: []byte(`{"duration": 10000}`),
-		}
-		res = append(res, act)
-	} else {
-		for _, act := range waitActions {
-			if act.ID == uuid.Nil {
-				act.ID = uuid.Must(uuid.NewV4())
-			}
-			res = append(res, act)
-		}
-	}
-
-	// set next id for loop
-	res[len(res)-1].NextID = res[0].ID
-
-	// append the conference join
-	option := fmaction.OptionConferenceJoin{
-		ConferenceID: conferenceID,
-	}
-	opt, err := json.Marshal(option)
-	if err != nil {
-		log.Errorf("Could not marshal the option. err: %v", err)
-		return nil, err
-	}
-	act := fmaction.Action{
-		Type:   fmaction.TypeConferenceJoin,
-		Option: opt,
-	}
-	res = append(res, act)
-
-	return res, nil
-}
-
-// getForwardActionID returns action id for froward.
-func (h *queueHandler) getForwardActionID(ctx context.Context, f *fmflow.Flow) (uuid.UUID, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "getForwardActionID",
-			"flow_id": f.ID,
-		},
-	)
-
-	res := uuid.Nil
-	for _, act := range f.Actions {
-		if act.Type == fmaction.TypeConferenceJoin {
-			res = act.ID
-		}
-	}
-
-	if res == uuid.Nil {
-		log.Errorf("Could not find forward action id.")
-		return uuid.Nil, fmt.Errorf("forward action id not found")
-	}
 
 	return res, nil
 }

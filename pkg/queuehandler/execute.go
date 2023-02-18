@@ -62,7 +62,9 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 		log.Errorf("Could not get available agents. Send the queue execution request again with 1 sec delay. err: %v", err)
 		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay)
 		return
-	} else if len(agents) == 0 {
+	}
+
+	if len(agents) == 0 {
 		log.Info("No available agent now. Send the queue execution request again with 1 sec delay.")
 		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay)
 		return

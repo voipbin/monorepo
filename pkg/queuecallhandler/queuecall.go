@@ -48,12 +48,9 @@ func (h *queuecallHandler) GetsByQueueIDAndStatus(ctx context.Context, queueID u
 
 // Get returns queuecall info.
 func (h *queuecallHandler) Get(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
-	log := logrus.WithField("func", "Get")
-
 	res, err := h.db.QueuecallGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get queuecall info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Could not get queuecall info.")
 	}
 
 	return res, nil
@@ -61,16 +58,9 @@ func (h *queuecallHandler) Get(ctx context.Context, id uuid.UUID) (*queuecall.Qu
 
 // GetByReferenceID returns queuecall info of the given referenceID.
 func (h *queuecallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "GetByReferenceID",
-			"reference_id": referenceID,
-		})
-
 	res, err := h.db.QueuecallGetByReferenceID(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get queuecall info. err: %v", err)
-		return nil, errors.Wrap(err, "Could not get queuecall info")
+		return nil, errors.Wrap(err, "Could not get queuecall info of the given reference id")
 	}
 
 	return res, nil
@@ -83,7 +73,6 @@ func (h *queuecallHandler) Create(
 	referenceType queuecall.ReferenceType,
 	referenceID uuid.UUID,
 	referenceActiveflowID uuid.UUID,
-	flowID uuid.UUID, // todo: remove this. we don't use this anymore
 	forwardActionID uuid.UUID,
 	exitActionID uuid.UUID,
 	conferenceID uuid.UUID,
@@ -111,7 +100,6 @@ func (h *queuecallHandler) Create(
 		ReferenceID:           referenceID,
 		ReferenceActiveflowID: referenceActiveflowID,
 
-		FlowID:          flowID,
 		ForwardActionID: forwardActionID,
 		ExitActionID:    exitActionID,
 		ConfbridgeID:    conferenceID,
@@ -188,7 +176,7 @@ func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecal
 		"func":         "UpdateStatusService",
 		"queuecall_id": qc.ID,
 	})
-	log.Debug("Updating queuecall status to waiting.")
+	log.Debug("Updating queuecall status to service.")
 
 	curTime := h.utilHandler.GetCurTime()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
@@ -198,16 +186,23 @@ func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecal
 		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
 	}
 
-	res, err := h.db.QueuecallGet(ctx, qc.ID)
+	res, err := h.Get(ctx, qc.ID)
 	if err != nil {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallServiced, res)
 
-	_, err = h.queueHandler.AddServiceQueuecallID(ctx, qc.QueueID, qc.ID)
+	_, err = h.queueHandler.AddServiceQueuecallID(ctx, res.QueueID, res.ID)
 	if err != nil {
 		log.Errorf("Could not add the service queuecall. queuecall_id: %s", res.ID)
+	}
+
+	// send the queuecall timeout-service if it exists
+	if qc.TimeoutService > 0 {
+		if errTimeout := h.reqHandler.QueueV1QueuecallTimeoutService(ctx, res.ID, res.TimeoutService); errTimeout != nil {
+			log.Errorf("Could not send the timeout-service request. err: %v", errTimeout)
+		}
 	}
 
 	return res, nil
@@ -229,21 +224,27 @@ func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuec
 		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
 	}
 
-	res, err := h.db.QueuecallGet(ctx, qc.ID)
+	res, err := h.Get(ctx, qc.ID)
 	if err != nil {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallAbandoned, res)
 
+	// add abandoned call to the queue
 	_, err = h.queueHandler.AddAbandonedQueuecallID(ctx, res.QueueID, res.ID)
 	if err != nil {
 		log.Errorf("Could not add the abandoned queuecall. queuecall_id: %s", qc.ID)
 	}
 
 	// delete confbridge
-	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, qc.ConfbridgeID); errDelete != nil {
+	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, res.ConfbridgeID); errDelete != nil {
 		log.Errorf("Could not delete the confbridge. err: %v", errDelete)
+	}
+
+	// delete variables
+	if errVariables := h.deleteVariables(ctx, res); errVariables != nil {
+		log.Errorf("Could not delete variables. err: %v", errVariables)
 	}
 
 	return res, nil
@@ -265,7 +266,7 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
 	}
 
-	res, err := h.db.QueuecallGet(ctx, qc.ID)
+	res, err := h.Get(ctx, qc.ID)
 	if err != nil {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
 		return nil, err
@@ -279,9 +280,46 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 	}
 
 	// delete confbridge
-	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, qc.ConfbridgeID); errDelete != nil {
+	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, res.ConfbridgeID); errDelete != nil {
 		log.Errorf("Could not delete the confbridge. err: %v", errDelete)
 	}
+
+	// delete variables
+	if errVariables := h.deleteVariables(ctx, res); errVariables != nil {
+		log.Errorf("Could not delete variables. err: %v", errVariables)
+	}
+
+	return res, nil
+}
+
+// UpdateStatusWaiting updates the queuecall's status to the waiting.
+func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateStatusWaiting",
+		"queuecall_id": id,
+	})
+	log.Debug("Updating queuecall status to waiting.")
+
+	if err := h.db.QueuecallSetStatusWaiting(ctx, id); err != nil {
+		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.QueuecallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated queuecall. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallWaiting, res)
+
+	// send queue execute update request
+	go func() {
+		// add the queuecall to the queue.
+		_, err = h.queueHandler.AddWaitQueueCallID(ctx, res.QueueID, res.ID)
+		if err != nil {
+			log.Errorf("Could not add the queuecall to the queue. err: %v", err)
+		}
+	}()
 
 	return res, nil
 }

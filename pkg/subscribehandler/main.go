@@ -124,13 +124,12 @@ func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
 
 // processEvent processes the event message
 func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
-
 	log := logrus.WithFields(
 		logrus.Fields{
-			"message": m,
+			"func":  "processEvent",
+			"event": m,
 		},
 	)
-	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
 
 	var err error
 	start := time.Now()

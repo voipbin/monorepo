@@ -12,7 +12,7 @@ import (
 func (h *queueHandler) GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "SearchAgent",
+			"func": "GetAgents",
 			"id":   id,
 		},
 	)

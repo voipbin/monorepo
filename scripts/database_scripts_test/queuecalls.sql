@@ -8,7 +8,6 @@ create table queuecalls(
   reference_id            binary(16),   -- reference's id
   reference_activeflow_id binary(16),   -- reference's activeflow id
 
-  flow_id           binary(16),   -- queuecall's queue flow id.
   forward_action_id binary(16),   -- action id for forward.
   exit_action_id    binary(16),   -- action id for queue exit.
   confbridge_id     binary(16),

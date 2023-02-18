@@ -26,6 +26,12 @@ func TestParseTime(t *testing.T) {
 
 			time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC),
 		},
+		{
+			"longer",
+
+			"2023-02-15 08:00:19.951052128",
+			time.Date(2023, time.February, 15, 8, 0, 19, 951052000, time.UTC),
+		},
 	}
 
 	for _, tt := range tests {

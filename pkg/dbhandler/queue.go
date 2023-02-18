@@ -191,9 +191,9 @@ func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
 		a.TotalServicedCount,
 		a.TotalAbandonedCount,
 
-		a.TMCreate,
-		a.TMUpdate,
-		a.TMDelete,
+		h.utilHandler.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueCreate. err: %v", err)
@@ -320,7 +320,7 @@ func (h *handler) QueueDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	t := GetCurTime()
+	t := h.utilHandler.GetCurTime()
 	_, err := h.db.Exec(q, t, t, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueDelete. err: %v", err)
@@ -345,7 +345,7 @@ func (h *handler) QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, det
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueSetBasicInfo. err: %v", err)
 	}
@@ -368,7 +368,7 @@ func (h *handler) QueueSetRoutingMethod(ctx context.Context, id uuid.UUID, routi
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, routingMethod, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, routingMethod, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueSetRoutingMethod. err: %v", err)
 	}
@@ -397,7 +397,7 @@ func (h *handler) QueueSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, t, GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, t, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueSetTagIDs. err: %v", err)
 	}
@@ -420,7 +420,7 @@ func (h *handler) QueueSetExecute(ctx context.Context, id uuid.UUID, execute que
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, execute, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, execute, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueSetExecute. err: %v", err)
 	}
@@ -451,7 +451,7 @@ func (h *handler) QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UU
 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, t, waitTimeout, serviceTimeout, GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, t, waitTimeout, serviceTimeout, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueSetWaitActionsAndTimeouts. err: %v", err)
 	}
@@ -479,7 +479,7 @@ func (h *handler) QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID u
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueAddWaitQueueCallID. err: %v", err)
 	}
@@ -518,7 +518,7 @@ func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queue
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), queueCallID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), queueCallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueIncreaseTotalServicedCount. err: %v", err)
 	}
@@ -552,7 +552,7 @@ func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queu
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueIncreaseTotalAbandonedCount. err: %v", err)
 	}
@@ -584,7 +584,7 @@ func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCall
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueRemoveServiceQueueCall. err: %v", err)
 	}

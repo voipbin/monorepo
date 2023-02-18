@@ -6,7 +6,6 @@ import (
 	context "context"
 	"database/sql"
 	"errors"
-	"time"
 
 	uuid "github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -50,6 +49,7 @@ type DBHandler interface {
 	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
 	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error
 	QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
+	QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler
@@ -72,11 +72,4 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 		cache:       cache,
 	}
 	return h
-}
-
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-
-	return now[:len("2006-01-02 15:04:05.999999")]
 }

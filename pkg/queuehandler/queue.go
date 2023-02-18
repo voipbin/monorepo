@@ -213,9 +213,9 @@ func (h *queueHandler) AddWaitQueueCallID(ctx context.Context, id uuid.UUID, que
 		return nil, errors.Wrap(errAdd, "Could not add the queuecall id to the queue.")
 	}
 
-	res, err := h.db.QueueGet(ctx, id)
+	res, err := h.UpdateExecute(ctx, id, queue.ExecuteRun)
 	if err != nil {
-		log.Errorf("Could not get updated queue info. err: %v", err)
+		log.Errorf("Could not update queue execute info. err: %v", err)
 		return nil, err
 	}
 	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)

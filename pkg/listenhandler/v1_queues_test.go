@@ -11,7 +11,9 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuecallhandler"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
@@ -800,6 +802,66 @@ func Test_processV1QueuesIDExecutePut(t *testing.T) {
 			}
 
 			mockQueue.EXPECT().UpdateExecute(gomock.Any(), tt.queueID, tt.execute).Return(tt.responseQueue, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1QueuecallsIDStatusWaitingPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		queuecallID uuid.UUID
+
+		responseQueuecall *queuecall.Queuecall
+		expectRes         *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/queuecalls/7c9e9cae-d1ca-11ec-a81e-0baaef8ce608/status_waiting",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("7c9e9cae-d1ca-11ec-a81e-0baaef8ce608"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("7c9e9cae-d1ca-11ec-a81e-0baaef8ce608"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"7c9e9cae-d1ca-11ec-a81e-0baaef8ce608","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				queuecallHandler: mockQueuecall,
+			}
+
+			mockQueuecall.EXPECT().UpdateStatusWaiting(gomock.Any(), tt.queuecallID).Return(tt.responseQueuecall, nil)
+
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
