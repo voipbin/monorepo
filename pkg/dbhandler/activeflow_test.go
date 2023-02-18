@@ -8,12 +8,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/stack"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 func Test_ActiveflowCreate(t *testing.T) {
@@ -70,7 +70,7 @@ func Test_ActiveflowCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -80,7 +80,7 @@ func Test_ActiveflowCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -204,7 +204,7 @@ func Test_ActiveflowUpdate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -213,7 +213,7 @@ func Test_ActiveflowUpdate(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.activeflow); err != nil {
@@ -294,7 +294,7 @@ func Test_ActiveflowDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -304,13 +304,13 @@ func Test_ActiveflowDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockCache.EXPECT().ActiveflowSet(ctx, gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockCache.EXPECT().ActiveflowSet(ctx, gomock.Any())
 			if err := h.ActiveflowDelete(ctx, tt.af.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -378,7 +378,7 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -389,7 +389,7 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, activeflow := range tt.activeflows {
-				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+				mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 				mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 				if err := h.ActiveflowCreate(ctx, &activeflow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -397,7 +397,7 @@ func Test_ActiveflowGetsByCustomerID(t *testing.T) {
 			}
 
 			// time.Sleep(time.Microsecond * 100)
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			flows, err := h.ActiveflowGetsByCustomerID(ctx, tt.customerID, h.util.GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

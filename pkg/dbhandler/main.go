@@ -8,13 +8,13 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/variable"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 // DBHandler interface for call_manager database handle
@@ -46,7 +46,7 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
-	util  util.Util
+	util  utilhandler.UtilHandler
 	db    *sql.DB
 	cache cachehandler.CacheHandler
 }
@@ -64,7 +64,7 @@ const (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		util:  util.NewUtil(),
+		util:  utilhandler.NewUtilHandler(),
 		db:    db,
 		cache: cache,
 	}

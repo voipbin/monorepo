@@ -8,17 +8,17 @@ import (
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/activeflowhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 type flowHandler struct {
-	util          util.Util
+	util          utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -57,7 +57,7 @@ func NewFlowHandler(
 	activeflowHandler activeflowhandler.ActiveflowHandler,
 ) FlowHandler {
 	h := &flowHandler{
-		util:          util.NewUtil(),
+		util:          utilhandler.NewUtilHandler(),
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,

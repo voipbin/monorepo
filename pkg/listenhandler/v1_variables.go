@@ -15,12 +15,10 @@ import (
 
 // v1VariablesIDGet handles /v1/variables/{id} GET request
 func (h *listenHandler) v1VariablesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1VariablesIDGet",
-		},
-	)
-	log.WithField("request", m).Debug("Received request.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1VariablesIDGet",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -54,12 +52,10 @@ func (h *listenHandler) v1VariablesIDGet(ctx context.Context, m *rabbitmqhandler
 
 // v1VariablesIDVariablesPost handles /v1/variables/{id}/variables POST request
 func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1VariablesIDVariablesPost",
-		},
-	)
-	log.WithField("request", m).Debug("Received request.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1VariablesIDVariablesPost",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -91,12 +87,10 @@ func (h *listenHandler) v1VariablesIDVariablesPost(ctx context.Context, m *rabbi
 
 // v1VariablesIDVariablesKeyDelete handles /v1/variables/{id}/variables/{key} POST request
 func (h *listenHandler) v1VariablesIDVariablesKeyDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1VariablesIDVariablesKeyDelete",
-		},
-	)
-	log.WithField("request", m).Debug("Received request.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1VariablesIDVariablesKeyDelete",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {

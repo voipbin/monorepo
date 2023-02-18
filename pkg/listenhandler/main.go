@@ -1,6 +1,6 @@
 package listenhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_listenhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -107,9 +107,12 @@ func NewListenHandler(
 }
 
 func (h *listenHandler) Run(queue, exchangeDelay string) error {
-	logrus.WithFields(logrus.Fields{
-		"queue": queue,
-	}).Info("Creating rabbitmq queue for listen.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Run",
+		"queue":          queue,
+		"exchange_delay": exchangeDelay,
+	})
+	log.Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue
 	if err := h.rabbitSock.QueueDeclare(queue, true, false, false, false); err != nil {
@@ -118,7 +121,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// Set QoS
 	if err := h.rabbitSock.QueueQoS(queue, 1, 0); err != nil {
-		logrus.Errorf("Could not set the queue's qos. err: %v", err)
+		log.Errorf("Could not set the queue's qos. err: %v", err)
 		return err
 	}
 
@@ -137,7 +140,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 		for {
 			err := h.rabbitSock.ConsumeRPCOpt(queue, "flow-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
 		}
 	}()
@@ -146,6 +149,10 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 }
 
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processRequest",
+		"request": m,
+	})
 
 	ctx := context.Background()
 
@@ -153,20 +160,13 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var err error
 	var response *rabbitmqhandler.Response
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		})
-
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
 		promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 	}()
 
+	log.Debugf("Received request. uri: %s, method: %s", m.URI, m.Method)
 	switch {
 
 	// v1
@@ -242,7 +242,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.v1VariablesIDVariablesKeyDelete(ctx, m)
 
 	default:
-		log.Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		log.Errorf("Could not find corresponded request handler. data: %s", m.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -254,6 +254,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response = simpleResponse(400)
 		err = nil
 	}
+
+	log.WithField("response", response).Debugf("Response the request. uri: %s, method: %s", m.URI, m.Method)
 
 	return response, err
 }
