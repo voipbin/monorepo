@@ -18,10 +18,8 @@ func Test_HealthCheck(t *testing.T) {
 	type test struct {
 		name string
 
-		id            string
-		retryCount    int
-		retryCountMax int
-		delay         int
+		id         string
+		retryCount int
 
 		responseChannel *channel.Channel
 	}
@@ -32,8 +30,6 @@ func Test_HealthCheck(t *testing.T) {
 
 			"27959a54-6e79-11ed-aef7-df3a51cc2639",
 			3,
-			5,
-			10000,
 
 			&channel.Channel{
 				ID:         "27959a54-6e79-11ed-aef7-df3a51cc2639",
@@ -63,8 +59,8 @@ func Test_HealthCheck(t *testing.T) {
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 			mockReq.EXPECT().AstChannelGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().CallV1ChannelHealth(ctx, tt.id, tt.delay, 0, tt.retryCountMax).Return(nil)
-			h.HealthCheck(ctx, tt.id, tt.retryCount, tt.retryCountMax, tt.delay)
+			mockReq.EXPECT().CallV1ChannelHealth(ctx, tt.id, defaultHealthDelay, 0, defaultHealthMaxRetryCount).Return(nil)
+			h.HealthCheck(ctx, tt.id, tt.retryCount)
 		})
 	}
 }

@@ -191,7 +191,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		logrus.Fields{
 			"request": m,
 		})
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
 	switch {
@@ -424,20 +423,15 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		err = nil
 		requestType = "notfound"
 	}
-	elapsed := time.Since(start)
-	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
 		log.Errorf("Could not handle the request message correctly. method: %s, uri: %s, err: %v", m.Method, uri, err)
 		response = simpleResponse(400)
 		err = nil
-	} else {
-		log.WithFields(
-			logrus.Fields{
-				"response": response,
-			},
-		).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 	}
+
+	elapsed := time.Since(start)
+	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	return response, err
 }

@@ -14,13 +14,10 @@ import (
 
 // processV1ConfbridgesPost handles /v1/confbriges request
 func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ConfbridgesPost",
-			"uri":     m.URI,
-			"data":    m.Data,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesPost",
+		"request": m,
+	})
 
 	var req request.V1DataConfbridgesPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -38,7 +35,6 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *rabbitm
 		log.Errorf("Could not create the confbridge. err: %v", err)
 		return simpleResponse(400), nil
 	}
-	log.WithField("confbridge", cb).Debugf("Created a new confbridge. confbridge_id: %s", cb.ID)
 
 	tmp, err := json.Marshal(cb)
 	if err != nil {
@@ -57,17 +53,17 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *rabbitm
 
 // processV1ConfbridgesIDGet handles /v1/confbriges/<id> Get request
 func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDGet",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1ConfbridgesIDGet.")
 
 	cb, err := h.confbridgeHandler.Get(ctx, id)
 	if err != nil {
@@ -91,13 +87,10 @@ func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *rabbit
 
 // processV1ConfbridgesIDDelete handles /v1/confbridges/<id> DELETE request
 func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ConfbridgesIDDelete",
-			"uri":     m.URI,
-		},
-	)
-	log.Debugf("Deleting confbridge. request: %v", m)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDDelete",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -116,12 +109,10 @@ func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *rab
 
 // processV1ConfbridgesIDCallsIDDelete handles /v1/confbridges/<confbridge-id>/calls/<call-id> DELETE request
 func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ConfbridgesIDCallsIDDelete",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDCallsIDDelete",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 6 {
@@ -141,12 +132,10 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(ctx context.Context,
 
 // processV1ConfbridgesIDCallsIDPost handles /v1/confbridges/<confbridge-id>/calls/<call-id> DELETE request
 func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ConfbridgesIDCallsIDPost",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDCallsIDPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 6 {
@@ -166,23 +155,22 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m
 
 // processV1ConfbridgesIDExternalMediaPost handles /v1/confbridges/<confbridge-id>/external-media POST request
 func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDExternalMediaPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1ConfbridgessIDExternalMediaPost.")
 
 	var req request.V1DataConfbridgesIDExternalMediaPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
-	log.WithField("request", req).Debugf("Parsed request data.")
 
 	tmp, err := h.confbridgeHandler.ExternalMediaStart(ctx, id, req.ExternalHost, req.Encapsulation, req.Transport, req.ConnectionType, req.Format, req.Direction)
 	if err != nil {
@@ -207,24 +195,23 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaPost(ctx context.Cont
 
 // processV1ConfbridgesIDExternalMediaDelete handles /v1/confbridges/<confbridge-id>/external-media DELETE request
 func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDExternalMediaDelete",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1ConfbridgesIDExternalMediaDelete.")
 
 	tmp, err := h.confbridgeHandler.ExternalMediaStop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not stop the external media. confbridge_id: %s, err: %v", id, err)
 		return nil, err
 	}
-	log.Debugf("Stopped external media channel. external: %v", tmp)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
@@ -243,25 +230,22 @@ func (h *listenHandler) processV1ConfbridgesIDExternalMediaDelete(ctx context.Co
 
 // processV1ConfbridgesIDRecordingStartPost handles /v1/confbridges/<confbridge-id>/recording_start POST request
 func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDRecordingStartPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"confbridge_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1ConfbridgesIDRecordingStartPost.")
 
 	var req request.V1DataConfbridgesIDRecordingStartPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
-	log.WithFields(logrus.Fields{
-		"request": req,
-	}).Debugf("Parsed request data.")
 
 	tmp, err := h.confbridgeHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration)
 	if err != nil {
@@ -286,17 +270,17 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Con
 
 // processV1ConfbridgesIDRecordingStopPost handles /v1/confbridges/<confbridge-id>/recording_stop POST request
 func (h *listenHandler) processV1ConfbridgesIDRecordingStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDRecordingStopPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"call_id": id,
-		})
-	log.WithField("request", m).Debug("Executing processV1ConfbridgesIDRecordingStopPost.")
 
 	tmp, err := h.confbridgeHandler.RecordingStop(ctx, id)
 	if err != nil {

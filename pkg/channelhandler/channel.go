@@ -78,6 +78,11 @@ func (h *channelHandler) Create(
 	}
 	promChannelCreateTotal.WithLabelValues(string(c.Direction), string(c.Type)).Inc()
 
+	// start channel watcher
+	if errHealth := h.reqHandler.CallV1ChannelHealth(ctx, res.ID, defaultHealthDelay, 0, defaultHealthMaxRetryCount); errHealth != nil {
+		logrus.Errorf("Could not start the channel water. err: %v", errHealth)
+	}
+
 	return res, nil
 }
 

@@ -68,7 +68,7 @@ type ChannelHandler interface {
 	HangingUpWithAsteriskID(ctx context.Context, asteriskID string, id string, cause ari.ChannelCause) error
 	HangingUpWithDelay(ctx context.Context, id string, cause ari.ChannelCause, delay int) (*channel.Channel, error)
 
-	HealthCheck(ctx context.Context, channelID string, retryCount int, retryCountMax int, delay int)
+	HealthCheck(ctx context.Context, channelID string, retryCount int)
 
 	Continue(ctx context.Context, id string, context string, exten string, priority int, label string) error
 
@@ -95,8 +95,10 @@ type channelHandler struct {
 
 // list of default values
 const (
-	defaultDelayTimeout = time.Millisecond * 150
-	defaultExistTimeout = time.Second * 3
+	defaultDelayTimeout        = time.Millisecond * 150
+	defaultExistTimeout        = time.Second * 3
+	defaultHealthMaxRetryCount = 2
+	defaultHealthDelay         = 10000 // 10 seconds
 )
 
 var (

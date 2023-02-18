@@ -156,7 +156,6 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 			"type":      m.Type,
 		},
 	)
-	log.WithField("event", m).Debugf("received event. type: %s", m.Type)
 
 	ctx := context.Background()
 
@@ -171,12 +170,14 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 
 	default:
 		// ignore the event.
+		return nil
 	}
 
 	elapsed := time.Since(start)
 	promSubscribeProcessTime.WithLabelValues(m.Publisher, m.Type).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
+		log.Errorf("Could not handle the subscribed event correctly. err: %v", err)
 		return fmt.Errorf("could not process the ari event correctly. err: %v", err)
 	}
 

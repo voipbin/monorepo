@@ -31,7 +31,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		"call_id":       callID,
 		"confbridge_id": confbridgeID,
 	})
-	log.Debug("Leaved channel to the confbridge.")
+	log.Debug("Leaved channel from the confbridge.")
 
 	cb, err := h.RemoveChannelCallID(ctx, confbridgeID, cn.ID)
 	if err != nil {

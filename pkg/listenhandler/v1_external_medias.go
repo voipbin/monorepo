@@ -14,14 +14,10 @@ import (
 
 // processV1ExternalMediasPost handles POST /v1/external-medias request
 func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ExternalMediasPost",
-			"uri":     m.URI,
-			"data":    m.Data,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ExternalMediasPost",
+		"request": m,
+	})
 
 	var req request.V1DataExternalMediasPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -50,7 +46,6 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *rabb
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -63,23 +58,23 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *rabb
 
 // processV1ExternalMediasIDGet handles GET /v1/external-medias/<external-media-id> request
 func (h *listenHandler) processV1ExternalMediasIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ExternalMediasIDGet",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1ExternalMediasIDGet.")
 
 	tmp, err := h.externalMediaHandler.Get(ctx, id)
 	if err != nil {
+		log.Errorf("Could not get external media. err: %v", err)
 		return simpleResponse(404), nil
 	}
-	log.WithField("external_media", tmp).Debugf("Found external_media. external_media_id: %s", tmp.ID)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
@@ -97,23 +92,23 @@ func (h *listenHandler) processV1ExternalMediasIDGet(ctx context.Context, m *rab
 
 // processV1ExternalMediasIDDelete handles DELETE /v1/external-medias/<id> request
 func (h *listenHandler) processV1ExternalMediasIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ExternalMediasIDDelete",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1ExternalMediasIDDelete.")
 
 	tmp, err := h.externalMediaHandler.Stop(ctx, id)
 	if err != nil {
+		log.Errorf("Could not stop the extneral media. err: %v", err)
 		return simpleResponse(404), nil
 	}
-	log.WithField("external_media", tmp).Debugf("Stopped external media. external_media_id: %s", tmp.ID)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {

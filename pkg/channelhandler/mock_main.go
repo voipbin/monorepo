@@ -241,15 +241,15 @@ func (mr *MockChannelHandlerMockRecorder) Hangup(ctx, id, cause interface{}) *go
 }
 
 // HealthCheck mocks base method.
-func (m *MockChannelHandler) HealthCheck(ctx context.Context, channelID string, retryCount, retryCountMax, delay int) {
+func (m *MockChannelHandler) HealthCheck(ctx context.Context, channelID string, retryCount int) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "HealthCheck", ctx, channelID, retryCount, retryCountMax, delay)
+	m.ctrl.Call(m, "HealthCheck", ctx, channelID, retryCount)
 }
 
 // HealthCheck indicates an expected call of HealthCheck.
-func (mr *MockChannelHandlerMockRecorder) HealthCheck(ctx, channelID, retryCount, retryCountMax, delay interface{}) *gomock.Call {
+func (mr *MockChannelHandlerMockRecorder) HealthCheck(ctx, channelID, retryCount interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockChannelHandler)(nil).HealthCheck), ctx, channelID, retryCount, retryCountMax, delay)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockChannelHandler)(nil).HealthCheck), ctx, channelID, retryCount)
 }
 
 // Play mocks base method.

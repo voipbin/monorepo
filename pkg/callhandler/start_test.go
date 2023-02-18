@@ -226,12 +226,6 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 			// action next part.
 			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -254,7 +248,6 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 		responseBridge      *bridge.Bridge
 		responseNumber      *number.Number
 		responseActiveflow  *fmactiveflow.Activeflow
-		responseCurTime     string
 		responseCall        *call.Call
 
 		expectCall *call.Call
@@ -302,7 +295,6 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
 				},
 			},
-			"2020-04-18T03:22:17.995000",
 			&call.Call{
 				ID:           uuid.FromStringOrNil("72a902d8-09ef-11eb-92f7-1b906bde6408"),
 				ChannelID:    "6e872d74-09ef-11eb-b3a6-37860f73cbd8",
@@ -404,11 +396,6 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			// action next part.
 			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, call.StatusTerminating).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -26,7 +26,7 @@ func (h *recordingHandler) Start(
 	duration int,
 ) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "Create",
+		"func":           "Start",
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 	})
@@ -155,7 +155,7 @@ func (h *recordingHandler) createReferenceTypeConfbridge(
 	duration int,
 ) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "createReferenceTypeConference",
+		"func":           "createReferenceTypeConfbridge",
 		"reference_type": recording.ReferenceTypeConfbridge,
 		"reference_id":   confbridgeID,
 	})

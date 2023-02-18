@@ -55,7 +55,7 @@ func Test_processV1ChannelsIDHealthPost(t *testing.T) {
 				channelHandler: mockChannel,
 			}
 
-			mockChannel.EXPECT().HealthCheck(gomock.Any(), tt.channelID, tt.retryCount, tt.retryCountMax, tt.delay)
+			mockChannel.EXPECT().HealthCheck(gomock.Any(), tt.channelID, tt.retryCount)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

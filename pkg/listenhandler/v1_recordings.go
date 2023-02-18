@@ -15,9 +15,13 @@ import (
 )
 
 // processV1RecordingGet handles GET /v1/recordings request
-func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1RecordingsGet",
+		"request": m,
+	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -29,13 +33,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitm
 
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-	log := logrus.WithFields(logrus.Fields{
-		"customer_id": customerID,
-		"size":        pageSize,
-		"token":       pageToken,
-	})
 
-	log.Debug("Getting recordings.")
 	tmps, err := h.recordingHandler.GetsByCustomerID(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
@@ -47,7 +45,6 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitm
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmps, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -60,14 +57,10 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, req *rabbitm
 
 // processV1RecordingsPost handles POST /v1/recordings request
 func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1RecordingsPost",
-			"uri":     m.URI,
-			"data":    m.Data,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1RecordingsPost",
+		"request": m,
+	})
 
 	var req request.V1DataRecordingsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -86,7 +79,6 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmq
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -99,23 +91,23 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *rabbitmq
 
 // processV1RecordingsIDGet handles GET /v1/recordings/<id> request
 func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1RecordingsIDGet",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1CallsIDGet.")
 
 	tmp, err := h.recordingHandler.Get(ctx, id)
 	if err != nil {
+		log.Errorf("Could not get recording. err: %v", err)
 		return simpleResponse(404), nil
 	}
-	log.Debugf("Found record. record: %v", tmp)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
@@ -133,23 +125,23 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *rabbitm
 
 // processV1RecordingsIDDelete handles DELETE /v1/recordings/<id> request
 func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1RecordingsIDDelete",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1RecordingsIDDelete.")
 
 	tmp, err := h.recordingHandler.Delete(ctx, id)
 	if err != nil {
+		log.Errorf("Could not delete the recording. err: %v", err)
 		return simpleResponse(404), nil
 	}
-	log.Debugf("Found record. record: %v", tmp)
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
@@ -167,20 +159,21 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *rabb
 
 // processV1RecordingsIDStopPost handles POST /v1/recordings/<id>/stop request
 func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1RecordingsIDStopPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debug("Executing processV1RecordingsIDStopPost.")
 
 	tmp, err := h.recordingHandler.Stop(ctx, id)
 	if err != nil {
+		log.Errorf("Could not stop the recording: %v", err)
 		return simpleResponse(404), nil
 	}
 

@@ -191,8 +191,8 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	nextAction, err := h.reqHandler.FlowV1ActiveflowGetNextAction(ctx, c.ActiveFlowID, c.Action.ID)
 	if err != nil {
 		// could not get the next action from the flow-manager.
+		// we don't hangup the call here. because it is possible to fetching the action with wrong current action id.
 		log.WithField("action", c.Action).Infof("Could not get the next action from the flow-manager. err: %v", err)
-		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		return nil
 	}
 	log.WithField("action", nextAction).Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
