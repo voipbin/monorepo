@@ -20,7 +20,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/stackhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
@@ -272,7 +271,7 @@ func Test_updateCurrentAction(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectActiveflowUpdate).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)

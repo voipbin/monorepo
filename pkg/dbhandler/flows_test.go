@@ -8,11 +8,11 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 func Test_FlowCreate(t *testing.T) {
@@ -104,7 +104,7 @@ func Test_FlowCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -114,7 +114,7 @@ func Test_FlowCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -192,7 +192,7 @@ func Test_FlowGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -203,14 +203,14 @@ func Test_FlowGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, flow := range tt.flows {
-				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime()).AnyTimes()
+				mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
 				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 				if err := h.FlowCreate(ctx, &flow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			res, err := h.FlowGetsByCustomerID(ctx, tt.customerID, util.GetCurTime(), tt.limit)
+			res, err := h.FlowGetsByCustomerID(ctx, tt.customerID, utilhandler.GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -288,7 +288,7 @@ func Test_FlowGetsByType(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -299,14 +299,14 @@ func Test_FlowGetsByType(t *testing.T) {
 			ctx := context.Background()
 
 			for _, flow := range tt.flows {
-				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+				mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 				if err := h.FlowCreate(ctx, &flow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			flows, err := h.FlowGetsByType(ctx, tt.customerID, tt.flowType, util.GetCurTime(), tt.limit)
+			flows, err := h.FlowGetsByType(ctx, tt.customerID, tt.flowType, utilhandler.GetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -405,7 +405,7 @@ func Test_FlowUpdate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -415,13 +415,13 @@ func Test_FlowUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowUpdate(context.Background(), tt.flow.ID, tt.flowName, tt.detail, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -543,7 +543,7 @@ func Test_FlowUpdateActions(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -553,13 +553,13 @@ func Test_FlowUpdateActions(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowUpdateActions(ctx, tt.flow.ID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

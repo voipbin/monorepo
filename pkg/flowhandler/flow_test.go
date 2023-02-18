@@ -9,12 +9,12 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/actionhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/util"
 )
 
 func Test_Create(t *testing.T) {
@@ -85,7 +85,7 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAction := actionhandler.NewMockActionHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
@@ -100,7 +100,7 @@ func Test_Create(t *testing.T) {
 
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 			if tt.persist == true {
 				mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)

@@ -99,7 +99,6 @@ func (h *flowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID
 			"token":       token,
 			"limit":       limit,
 		})
-	log.Debug("Getting flows.")
 
 	res, err := h.db.FlowGetsByCustomerID(ctx, customerID, token, limit)
 	if err != nil {
@@ -119,7 +118,6 @@ func (h *flowHandler) GetsByType(ctx context.Context, customerID uuid.UUID, flow
 			"token":       token,
 			"limit":       limit,
 		})
-	log.Debug("Getting flows.")
 
 	res, err := h.db.FlowGetsByType(ctx, customerID, flowType, token, limit)
 	if err != nil {
