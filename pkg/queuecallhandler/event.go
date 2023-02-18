@@ -21,12 +21,13 @@ func (h *queuecallHandler) EventCallCallHungup(ctx context.Context, referenceID 
 
 	qc, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
-		// no queuecall exist
+		// no queuecall exist. nothing to do
 		return
 	}
 
-	// validate queuecall
-	if !h.validateForCallHungup(qc) {
+	if qc.TMEnd < dbhandler.DefaultTimeStamp || qc.Status == queuecall.StatusService {
+		// already done or other handler will deal with it.
+		// nothing to do.
 		return
 	}
 
@@ -48,37 +49,23 @@ func (h *queuecallHandler) EventCallConfbridgeJoined(ctx context.Context, refere
 
 	qc, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get queuecall. err: %v", err)
-		return
-	}
-	log = log.WithField("queuecall_id", qc.ID)
-	log.WithField("queuecall", qc).Debug("Found queuecall.")
-
-	if qc.TMEnd < dbhandler.DefaultTimeStamp {
-		log.Errorf("Unexepcted queuecall joined. queuecall_id: %s", qc.ID)
-		// already done
+		// no queuecall exist. nothing to do
 		return
 	}
 
-	// compare confbridge info
-	if qc.ConfbridgeID != confbridgeID {
-		log.WithField("queuecall", qc).Infof("The conference info incorrect. Ignore the request. conference_id: %s", confbridgeID)
+	if qc.TMEnd < dbhandler.DefaultTimeStamp || qc.ConfbridgeID != confbridgeID {
+		// already done or other handler will deal with it.
+		// nothing to do.
 		return
 	}
 
 	// update queuecall info
-	qc, err = h.UpdateStatusService(ctx, qc)
+	res, err := h.UpdateStatusService(ctx, qc)
 	if err != nil {
 		log.Errorf("Could not update the queuecall status to service. err: %v", err)
 		return
 	}
-
-	// send the queuecall timeout-service if it exists
-	if qc.TimeoutService > 0 {
-		if errTimeout := h.reqHandler.QueueV1QueuecallTimeoutService(ctx, qc.ID, qc.TimeoutService); errTimeout != nil {
-			log.Errorf("Could not send the timeout-service request. err: %v", errTimeout)
-		}
-	}
+	log.WithField("queuecall", res).Debugf("Updated queuecall status service. queuecall_id: %s", res.ID)
 }
 
 // EventCallConfbridgeLeaved handles call-manager confbridge_leaved
@@ -94,48 +81,20 @@ func (h *queuecallHandler) EventCallConfbridgeLeaved(ctx context.Context, refere
 	// get queuecall
 	qc, err := h.GetByReferenceID(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get queuecall. err: %v", err)
 		return
 	}
-	log = log.WithField("queuecall_id", qc.ID)
 
 	// validate the queuecall info
 	if qc.ConfbridgeID != confbridgeID || qc.TMEnd < dbhandler.DefaultTimeStamp {
 		// queuecall is not valid.
 		return
 	}
-	log.WithField("queuecall", qc).Debugf("Found queuecall info. queuecall_id: %s", qc.ID)
-
-	// we are expecting the queuecall's status was being serviced here.
-	// because the only serviced status can be leave the queue.
-	if qc.Status != queuecall.StatusService {
-		log.Errorf("Invalid status. status: %s", qc.Status)
-		return
-	}
 
 	// update queuecall status to done
-	qc, err = h.UpdateStatusDone(ctx, qc)
+	res, err := h.UpdateStatusDone(ctx, qc)
 	if err != nil {
 		log.Errorf("Could not update the queuecall status to done. err: %v", err)
 		return
 	}
-
-	// delete variables
-	if errVariables := h.deleteVariables(ctx, qc); errVariables != nil {
-		log.Errorf("Could not delete variables. err: %v", errVariables)
-	}
-}
-
-func (h *queuecallHandler) validateForCallHungup(qc *queuecall.Queuecall) bool {
-	if qc.TMEnd < dbhandler.DefaultTimeStamp {
-		// queuecall already done
-		return false
-	}
-
-	if qc.Status == queuecall.StatusService {
-		// call-manager's confbridge leaved event handler will handle
-		return false
-	}
-
-	return true
+	log.WithField("queuecall", res).Debugf("Updated queuecall status done. queuecall_id: %s", res.ID)
 }

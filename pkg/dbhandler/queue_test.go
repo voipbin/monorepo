@@ -8,24 +8,22 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/cachehandler"
 )
 
-func TestQueueCreate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
+func Test_QueueCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		q         *queue.Queue
-		expectRes *queue.Queue
+		queue *queue.Queue
+
+		responseCurTime string
+		expectRes       *queue.Queue
 	}{
 		{
 			"normal",
@@ -49,6 +47,8 @@ func TestQueueCreate(t *testing.T) {
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
 			},
+
+			"2023-02-15 03:22:17.994000",
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
 				CustomerID:    uuid.FromStringOrNil("4fc7cef8-7f54-11ec-8e1f-6f6a91905190"),
@@ -68,6 +68,9 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
+				TMCreate:            "2023-02-15 03:22:17.994000",
+				TMUpdate:            DefaultTimeStamp,
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 		{
@@ -94,6 +97,8 @@ func TestQueueCreate(t *testing.T) {
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
 			},
+
+			"2023-02-15 03:22:17.994000",
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("731e523e-59e1-11ec-9156-abd8ba26f843"),
 				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
@@ -115,6 +120,9 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
+				TMCreate:            "2023-02-15 03:22:17.994000",
+				TMUpdate:            DefaultTimeStamp,
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 		{
@@ -144,6 +152,8 @@ func TestQueueCreate(t *testing.T) {
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
 			},
+
+			"2023-02-15 03:22:17.994000",
 			&queue.Queue{
 				ID:            uuid.FromStringOrNil("2c4c233c-5f67-11ec-8eea-bbf4408ec1d8"),
 				CustomerID:    uuid.FromStringOrNil("59724cda-7f54-11ec-8372-07ae1d19e1f3"),
@@ -168,22 +178,35 @@ func TestQueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
+				TMCreate:            "2023-02-15 03:22:17.994000",
+				TMUpdate:            DefaultTimeStamp,
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueueGet(gomock.Any(), tt.q.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-
-			if err := h.QueueCreate(ctx, tt.q); err != nil {
+			mockCache.EXPECT().QueueGet(gomock.Any(), tt.queue.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.QueueCreate(ctx, tt.queue); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.QueueGet(ctx, tt.q.ID)
+			res, err := h.QueueGet(ctx, tt.queue.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -196,27 +219,21 @@ func TestQueueCreate(t *testing.T) {
 }
 
 func TestQueueGets(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
-
 	type test struct {
-		name       string
-		customerID uuid.UUID
-
+		name string
 		data []*queue.Queue
 
-		size      uint64
-		token     string
-		expectRes []*queue.Queue
+		customerID uuid.UUID
+		size       uint64
+		token      string
+
+		responseCurtime string
+		expectRes       []*queue.Queue
 	}
 
 	tests := []test{
 		{
 			"normal",
-			uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 			[]*queue.Queue{
 				{
 					ID:                  uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
@@ -227,7 +244,6 @@ func TestQueueGets(t *testing.T) {
 					WaitActions:         []fmaction.Action{},
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-04-18T03:22:17.995000",
 				},
 				{
 					ID:                  uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
@@ -238,11 +254,14 @@ func TestQueueGets(t *testing.T) {
 					WaitActions:         []fmaction.Action{},
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-04-18T03:22:17.994000",
 				},
 			},
+
+			uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 			2,
 			"2021-04-18T03:22:17.994000",
+
+			"2020-04-18T03:22:17.995000",
 			[]*queue.Queue{
 				{
 					ID:                  uuid.FromStringOrNil("779a3f74-4b42-11ec-881e-2f7238a54efd"),
@@ -254,6 +273,8 @@ func TestQueueGets(t *testing.T) {
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
 					TMCreate:            "2020-04-18T03:22:17.995000",
+					TMUpdate:            DefaultTimeStamp,
+					TMDelete:            DefaultTimeStamp,
 				},
 				{
 					ID:                  uuid.FromStringOrNil("a2cae478-4b42-11ec-afb2-3f23cd119aa6"),
@@ -264,7 +285,9 @@ func TestQueueGets(t *testing.T) {
 					WaitActions:         []fmaction.Action{},
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-04-18T03:22:17.994000",
+					TMCreate:            "2020-04-18T03:22:17.995000",
+					TMUpdate:            DefaultTimeStamp,
+					TMDelete:            DefaultTimeStamp,
 				},
 			},
 		},
@@ -272,10 +295,21 @@ func TestQueueGets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
 			ctx := context.Background()
 
-			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).AnyTimes()
 			for _, u := range tt.data {
+				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurtime)
+				mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 				if err := h.QueueCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
@@ -293,61 +327,67 @@ func TestQueueGets(t *testing.T) {
 	}
 }
 
-func TestQueueDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
-
+func Test_QueueDelete(t *testing.T) {
 	tests := []struct {
-		name      string
-		data      *queue.Queue
-		expectRes *queue.Queue
+		name string
+		data *queue.Queue
+
+		responseCurTime string
+		expectRes       *queue.Queue
 	}{
 		{
-			"test normal",
+			"normal",
 			&queue.Queue{
-				ID:       uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
-				TMCreate: "2020-04-18T03:22:17.995000",
+				ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
 			},
+
+			"2023-02-18 03:22:17.995000",
 			&queue.Queue{
 				ID:                  uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
 				TagIDs:              []uuid.UUID{},
 				WaitActions:         []fmaction.Action{},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18T03:22:17.995000",
+				TMCreate:            "2023-02-18 03:22:17.995000",
+				TMUpdate:            "2023-02-18 03:22:17.995000",
+				TMDelete:            "2023-02-18 03:22:17.995000",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
 			ctx := context.Background()
 
-			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).AnyTimes()
-
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			if err := h.QueueDelete(ctx, tt.data.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.QueueGet(context.Background(), tt.data.ID)
+			mockCache.EXPECT().QueueGet(ctx, tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
+			res, err := h.QueueGet(ctx, tt.data.ID)
 			if err != nil {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == "" {
-				t.Error("Wrong match. expect: not empty, got: empty.")
-			}
-
-			tt.expectRes.TMUpdate = res.TMUpdate
-			tt.expectRes.TMDelete = res.TMDelete
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -355,13 +395,7 @@ func TestQueueDelete(t *testing.T) {
 	}
 }
 
-func TestQueueSetBasicInfo(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
-
+func Test_QueueSetBasicInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -371,18 +405,20 @@ func TestQueueSetBasicInfo(t *testing.T) {
 		queueName string
 		detail    string
 
-		expectRes *queue.Queue
+		responseCurTime string
+		expectRes       *queue.Queue
 	}{
 		{
 			"test normal",
 
 			&queue.Queue{
-				ID:       uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
-				TMCreate: "2020-04-18T03:22:17.995000",
+				ID: uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
 			},
 			uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
 			"new name",
 			"new detail",
+
+			"2020-04-18T03:22:17.995000",
 			&queue.Queue{
 				ID:                  uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
 				Name:                "new name",
@@ -392,31 +428,45 @@ func TestQueueSetBasicInfo(t *testing.T) {
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
 				TMCreate:            "2020-04-18T03:22:17.995000",
+				TMUpdate:            "2020-04-18T03:22:17.995000",
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
 			ctx := context.Background()
 
-			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).AnyTimes()
-
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueSetBasicInfo(ctx, tt.id, tt.queueName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			res, err := h.QueueGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -424,13 +474,7 @@ func TestQueueSetBasicInfo(t *testing.T) {
 	}
 }
 
-func TestQueueSetRoutingMethod(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
-
+func Test_QueueSetRoutingMethod(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -439,17 +483,19 @@ func TestQueueSetRoutingMethod(t *testing.T) {
 		id            uuid.UUID
 		routingMethod queue.RoutingMethod
 
-		expectRes *queue.Queue
+		responseCurTime string
+		expectRes       *queue.Queue
 	}{
 		{
 			"test normal",
 
 			&queue.Queue{
-				ID:       uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
-				TMCreate: "2020-04-18T03:22:17.995000",
+				ID: uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
 			},
 			uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
 			queue.RoutingMethodRandom,
+
+			"2020-04-18 03:22:17.995000",
 			&queue.Queue{
 				ID:                  uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
 				RoutingMethod:       queue.RoutingMethodRandom,
@@ -457,32 +503,46 @@ func TestQueueSetRoutingMethod(t *testing.T) {
 				WaitActions:         []fmaction.Action{},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18T03:22:17.995000",
+				TMCreate:            "2020-04-18 03:22:17.995000",
+				TMUpdate:            "2020-04-18 03:22:17.995000",
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
 			ctx := context.Background()
 
-			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).AnyTimes()
-
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueSetRoutingMethod(ctx, tt.id, tt.routingMethod); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			res, err := h.QueueGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -490,12 +550,7 @@ func TestQueueSetRoutingMethod(t *testing.T) {
 	}
 }
 
-func TestQueueSetTagIDs(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
+func Test_QueueSetTagIDs(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -505,7 +560,8 @@ func TestQueueSetTagIDs(t *testing.T) {
 		id     uuid.UUID
 		tagIDs []uuid.UUID
 
-		expectRes *queue.Queue
+		responseCurTime string
+		expectRes       *queue.Queue
 	}{
 		{
 			"test normal",
@@ -518,6 +574,8 @@ func TestQueueSetTagIDs(t *testing.T) {
 			[]uuid.UUID{
 				uuid.FromStringOrNil("21fcd3d4-5a73-11ec-a185-935d2e1f0846"),
 			},
+
+			"2020-04-18 03:22:17.995000",
 			&queue.Queue{
 				ID: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
 				TagIDs: []uuid.UUID{
@@ -526,32 +584,46 @@ func TestQueueSetTagIDs(t *testing.T) {
 				WaitActions:         []fmaction.Action{},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18T03:22:17.995000",
+				TMCreate:            "2020-04-18 03:22:17.995000",
+				TMUpdate:            "2020-04-18 03:22:17.995000",
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
 			ctx := context.Background()
 
-			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).AnyTimes()
-
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueSetTagIDs(ctx, tt.id, tt.tagIDs); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			res, err := h.QueueGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -559,12 +631,7 @@ func TestQueueSetTagIDs(t *testing.T) {
 	}
 }
 
-func TestQueueSetWaitActions(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := NewHandler(dbTest, mockCache)
+func Test_QueueSetWaitActions(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -576,10 +643,11 @@ func TestQueueSetWaitActions(t *testing.T) {
 		waitTimeout    int
 		serviceTimeout int
 
-		expectRes *queue.Queue
+		responseCurTime string
+		expectRes       *queue.Queue
 	}{
 		{
-			"test normal",
+			"normal",
 
 			&queue.Queue{
 				ID:       uuid.FromStringOrNil("5ef4f122-5a73-11ec-8a63-3f0918c21af8"),
@@ -594,6 +662,7 @@ func TestQueueSetWaitActions(t *testing.T) {
 			60000,
 			600000,
 
+			"2020-04-18 03:22:17.995000",
 			&queue.Queue{
 				ID:     uuid.FromStringOrNil("5ef4f122-5a73-11ec-8a63-3f0918c21af8"),
 				TagIDs: []uuid.UUID{},
@@ -607,32 +676,46 @@ func TestQueueSetWaitActions(t *testing.T) {
 
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18T03:22:17.995000",
+				TMCreate:            "2020-04-18 03:22:17.995000",
+				TMUpdate:            "2020-04-18 03:22:17.995000",
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
 			ctx := context.Background()
 
-			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).AnyTimes()
-
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueSetWaitActionsAndTimeouts(ctx, tt.id, tt.waitActions, tt.waitTimeout, tt.serviceTimeout); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			res, err := h.QueueGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

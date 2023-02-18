@@ -9,7 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 )
 
-// TimeoutWait kicks the cqueuecall if the queuecall's status is wait.
+// TimeoutWait kicks the queuecall if the queuecall's status is wait.
 func (h *queuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid.UUID) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -19,7 +19,7 @@ func (h *queuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid.UUI
 	)
 
 	// get queuecall
-	qc, err := h.db.QueuecallGet(ctx, queuecallID)
+	qc, err := h.Get(ctx, queuecallID)
 	if err != nil {
 		log.Errorf("Could not get queuecall. err: %v", err)
 		return
@@ -36,7 +36,7 @@ func (h *queuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid.UUI
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		return
 	}
-	log.WithField("queuecall", tmp).Debugf("Detail queuecall info.")
+	log.WithField("queuecall", tmp).Debugf("Kicked out the queuecall timeout wait.")
 }
 
 // TimeoutService kicks the cqueuecall if the queuecall's status is service.
@@ -49,7 +49,7 @@ func (h *queuecallHandler) TimeoutService(ctx context.Context, queuecallID uuid.
 	)
 
 	// get queuecall
-	qc, err := h.db.QueuecallGet(ctx, queuecallID)
+	qc, err := h.Get(ctx, queuecallID)
 	if err != nil {
 		log.Errorf("Could not get queuecall. err: %v", err)
 		return
@@ -66,6 +66,5 @@ func (h *queuecallHandler) TimeoutService(ctx context.Context, queuecallID uuid.
 		log.Errorf("Could not kick the queuecall. err: %v", err)
 		return
 	}
-	log.WithField("queuecall", tmp).Debugf("Detail queuecall info.")
-
+	log.WithField("queuecall", tmp).Debugf("Kicked out the queuecall timeout service.")
 }

@@ -40,18 +40,18 @@ func (m *MockQueuecallHandler) EXPECT() *MockQueuecallHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockQueuecallHandler) Create(ctx context.Context, q *queue.Queue, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID uuid.UUID, source address.Address) (*queuecall.Queuecall, error) {
+func (m *MockQueuecallHandler) Create(ctx context.Context, q *queue.Queue, referenceType queuecall.ReferenceType, referenceID, referenceActiveflowID, forwardActionID, exitActionID, conferenceID uuid.UUID, source address.Address) (*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID, source)
+	ret := m.ctrl.Call(m, "Create", ctx, q, referenceType, referenceID, referenceActiveflowID, forwardActionID, exitActionID, conferenceID, source)
 	ret0, _ := ret[0].(*queuecall.Queuecall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID, source interface{}) *gomock.Call {
+func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, referenceType, referenceID, referenceActiveflowID, forwardActionID, exitActionID, conferenceID, source interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, referenceType, referenceID, referenceActiveflowID, flowID, forwardActionID, exitActionID, conferenceID, source)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, referenceType, referenceID, referenceActiveflowID, forwardActionID, exitActionID, conferenceID, source)
 }
 
 // EventCallCallHungup mocks base method.
@@ -232,4 +232,19 @@ func (m *MockQueuecallHandler) TimeoutWait(ctx context.Context, queuecallID uuid
 func (mr *MockQueuecallHandlerMockRecorder) TimeoutWait(ctx, queuecallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeoutWait", reflect.TypeOf((*MockQueuecallHandler)(nil).TimeoutWait), ctx, queuecallID)
+}
+
+// UpdateStatusWaiting mocks base method.
+func (m *MockQueuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatusWaiting", ctx, id)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatusWaiting indicates an expected call of UpdateStatusWaiting.
+func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusWaiting(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusWaiting", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusWaiting), ctx, id)
 }

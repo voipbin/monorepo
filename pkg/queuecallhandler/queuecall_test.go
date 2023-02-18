@@ -4,6 +4,7 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
@@ -15,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
 func Test_GetsByCustomerID(t *testing.T) {
@@ -321,7 +323,6 @@ func Test_Create(t *testing.T) {
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("28063f02-af52-11ec-9025-6775fa083464"),
-				FlowID:                uuid.FromStringOrNil("c9e87138-7699-11ec-aa80-0321af12db91"),
 				ForwardActionID:       uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
 				ExitActionID:          uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:          uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
@@ -382,7 +383,6 @@ func Test_Create(t *testing.T) {
 				tt.referenceType,
 				tt.referenceID,
 				tt.referenceActiveflowID,
-				tt.flowID,
 				tt.forwardActionID,
 				tt.exitActionID,
 				tt.confbridgeID,
@@ -443,6 +443,280 @@ func Test_UpdateStatusConnecting(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.responseQueuecall)
 
 			res, err := h.UpdateStatusConnecting(ctx, tt.queuecallID, tt.agentID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueuecall, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateStatusWaiting(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+
+		responseQueuecall *queuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1713ed3e-d1cb-11ec-b70b-3f756e5181f3"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("1713ed3e-d1cb-11ec-b70b-3f756e5181f3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+				queueHandler:  mockQueue,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallSetStatusWaiting(ctx, tt.queuecallID).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallWaiting, tt.responseQueuecall)
+			mockQueue.EXPECT().AddWaitQueueCallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil).AnyTimes()
+
+			res, err := h.UpdateStatusWaiting(ctx, tt.queuecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(time.Microsecond * 100)
+
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueuecall, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateStatusService(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecall *queuecall.Queuecall
+
+		responseCurTime   string
+		responseQueuecall *queuecall.Queuecall
+
+		expectDuration int
+	}{
+		{
+			"normal",
+
+			&queuecall.Queuecall{
+				ID:       uuid.FromStringOrNil("d0631846-ad53-11ed-a845-47d58282b8a9"),
+				TMCreate: "2023-02-16 03:21:17.994000",
+			},
+
+			"2023-02-16 03:22:17.994000",
+			&queuecall.Queuecall{
+				ID:         uuid.FromStringOrNil("d0631846-ad53-11ed-a845-47d58282b8a9"),
+				CustomerID: uuid.FromStringOrNil("f25e9b40-ad54-11ed-ac0f-ab87dcf30e22"),
+			},
+
+			60000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &queuecallHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+				queueHandler:  mockQueue,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockDB.EXPECT().QueuecallSetStatusService(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallServiced, tt.responseQueuecall)
+			mockQueue.EXPECT().AddServiceQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
+			if tt.responseQueuecall.TimeoutService > 0 {
+				mockReq.EXPECT().QueueV1QueuecallTimeoutService(ctx, tt.responseQueuecall.ID, tt.responseQueuecall.TimeoutService).Return(nil)
+			}
+
+			res, err := h.UpdateStatusService(ctx, tt.queuecall)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueuecall, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateStatusAbandoned(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecall *queuecall.Queuecall
+
+		responseCurTime   string
+		responseQueuecall *queuecall.Queuecall
+
+		expectDuration int
+	}{
+		{
+			"normal",
+
+			&queuecall.Queuecall{
+				ID:       uuid.FromStringOrNil("1e7f1f56-ad55-11ed-8b59-8fd30a025131"),
+				TMCreate: "2023-02-16 03:21:17.994000",
+			},
+
+			"2023-02-16 03:22:17.994000",
+			&queuecall.Queuecall{
+				ID:           uuid.FromStringOrNil("1e7f1f56-ad55-11ed-8b59-8fd30a025131"),
+				CustomerID:   uuid.FromStringOrNil("1eb15a5c-ad55-11ed-b818-3361aefc75f8"),
+				ConfbridgeID: uuid.FromStringOrNil("1eda90f2-ad55-11ed-9544-afebb54a4cfd"),
+			},
+
+			60000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &queuecallHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+				queueHandler:  mockQueue,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
+			mockQueue.EXPECT().AddAbandonedQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
+			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(nil)
+			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, tt.responseQueuecall.ReferenceActiveflowID, gomock.Any()).Return(nil).AnyTimes()
+
+			res, err := h.UpdateStatusAbandoned(ctx, tt.queuecall)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueuecall, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateStatusDone(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecall *queuecall.Queuecall
+
+		responseCurTime   string
+		responseQueuecall *queuecall.Queuecall
+
+		expectDuration int
+	}{
+		{
+			"normal",
+
+			&queuecall.Queuecall{
+				ID:       uuid.FromStringOrNil("b9b87b66-ad55-11ed-a5a1-ff26874e502a"),
+				TMCreate: "2023-02-16 03:21:17.994000",
+			},
+
+			"2023-02-16 03:22:17.994000",
+			&queuecall.Queuecall{
+				ID:           uuid.FromStringOrNil("b9b87b66-ad55-11ed-a5a1-ff26874e502a"),
+				CustomerID:   uuid.FromStringOrNil("b9ebeec4-ad55-11ed-b503-fb98e45681a7"),
+				ConfbridgeID: uuid.FromStringOrNil("ba18f00e-ad55-11ed-b68d-a7bd4e1b5f72"),
+			},
+
+			60000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+			h := &queuecallHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+				queueHandler:  mockQueue,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)
+			mockQueue.EXPECT().RemoveServiceQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
+			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(nil)
+			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, tt.responseQueuecall.ReferenceActiveflowID, gomock.Any()).Return(nil).AnyTimes()
+
+			res, err := h.UpdateStatusDone(ctx, tt.queuecall)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

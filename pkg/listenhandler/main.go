@@ -57,6 +57,7 @@ var (
 	regV1QueuecallsIDTimeoutWait    = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_wait$")
 	regV1QueuecallsIDTimeoutService = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/timeout_service$")
 	regV1QueuecallsIDExecute        = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/execute$")
+	regV1QueuecallsIDStatusWaiting  = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/status_waiting$")
 
 	// services
 	regV1ServicesTypeQueuecall = regexp.MustCompile("/v1/services/type/queuecall$")
@@ -146,7 +147,14 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
+// processRequest handles received request
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "processRequest",
+			"request": m,
+		})
+
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
@@ -157,12 +165,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	if err != nil {
 		uri = "could not unescape uri"
 	}
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"request": m,
-		})
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
 	switch {
@@ -264,6 +266,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1QueuecallsIDExecutePost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/execute"
 
+	// POST /queuecalls/queuecall-id>/status_waiting
+	case regV1QueuecallsIDStatusWaiting.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1QueuecallsIDStatusWaitingPost(ctx, m)
+		requestType = "/v1/queuecalls/<queuecall-id>/status_waiting"
+
 	/////////////////
 	// services
 	////////////////
@@ -285,16 +292,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, uri)
+		log.Errorf("Could not handle the message correctly. method: %s, uri: %s", m.Method, uri)
 		response = simpleResponse(400)
 		err = nil
-	} else {
-		log.WithFields(
-			logrus.Fields{
-				"response": response,
-			},
-		).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 	}
+
+	log.WithField("response", response).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 
 	return response, err
 }

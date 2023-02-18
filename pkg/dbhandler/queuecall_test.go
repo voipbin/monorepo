@@ -35,7 +35,6 @@ func Test_QueuecallCreate(t *testing.T) {
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("cea3d3a1-e5ff-4f9f-9738-94600767f8fd"),
-				FlowID:                uuid.FromStringOrNil("7b007952-7352-4b1d-8e18-0b9e399d18c3"),
 				ForwardActionID:       uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
 				ExitActionID:          uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:          uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
@@ -61,7 +60,6 @@ func Test_QueuecallCreate(t *testing.T) {
 				ReferenceType:         queuecall.ReferenceTypeCall,
 				ReferenceID:           uuid.FromStringOrNil("a875b472-5e5a-11ec-9467-8f2c600000f3"),
 				ReferenceActiveflowID: uuid.FromStringOrNil("cea3d3a1-e5ff-4f9f-9738-94600767f8fd"),
-				FlowID:                uuid.FromStringOrNil("7b007952-7352-4b1d-8e18-0b9e399d18c3"),
 				ForwardActionID:       uuid.FromStringOrNil("a89d0acc-5e5a-11ec-8f3b-274070e9fa26"),
 				ExitActionID:          uuid.FromStringOrNil("a8bd43fa-5e5a-11ec-8e43-236c955d6691"),
 				ConfbridgeID:          uuid.FromStringOrNil("a8dca420-5e5a-11ec-87e3-eff5c9e3d170"),
@@ -473,7 +471,7 @@ func Test_QueuecallGetsByQueueIDAndStatus(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueuecallGetsByQueueIDAndStatus(ctx, tt.queueID, tt.status, tt.size, GetCurTime())
+			res, err := h.QueuecallGetsByQueueIDAndStatus(ctx, tt.queueID, tt.status, tt.size, utilhandler.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
@@ -713,7 +711,7 @@ func Test_QueuecallSetStatusService(t *testing.T) {
 	}
 }
 
-func TestQueuecallSetStatusKicking(t *testing.T) {
+func Test_QueuecallSetStatusKicking(t *testing.T) {
 	tests := []struct {
 		name string
 		data *queuecall.Queuecall
@@ -761,23 +759,25 @@ func TestQueuecallSetStatusKicking(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil)
 			err := h.QueuecallSetStatusKicking(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil)
 			res, err := h.QueuecallGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
 			}
 
-			tt.expectRes.TMUpdate = res.TMUpdate
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

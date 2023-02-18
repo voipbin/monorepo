@@ -18,7 +18,6 @@ func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *rabb
 			"event": m,
 		},
 	)
-	log.Debugf("Received call event. event: %s", m.Type)
 
 	e := cmcall.Call{}
 	if err := json.Unmarshal([]byte(m.Data), &e); err != nil {
@@ -39,7 +38,6 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 			"event": m,
 		},
 	)
-	log.Debugf("Received call event. event: %s", m.Type)
 
 	e := cmconfbridge.EventConfbridgeJoined{}
 	if err := json.Unmarshal([]byte(m.Data), &e); err != nil {
@@ -60,7 +58,6 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 			"event": m,
 		},
 	)
-	log.Debugf("Received call event. event: %s", m.Type)
 
 	e := cmconfbridge.EventConfbridgeLeaved{}
 	if err := json.Unmarshal([]byte(m.Data), &e); err != nil {

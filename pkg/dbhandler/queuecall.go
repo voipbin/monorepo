@@ -23,7 +23,6 @@ const (
 		reference_id,
 		reference_activeflow_id,
 
-		flow_id,
 		forward_action_id,
 		exit_action_id,
 		confbridge_id,
@@ -67,7 +66,6 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 		&res.ReferenceID,
 		&res.ReferenceActiveflowID,
 
-		&res.FlowID,
 		&res.ForwardActionID,
 		&res.ExitActionID,
 		&res.ConfbridgeID,
@@ -119,7 +117,6 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		reference_id,
 		reference_activeflow_id,
 
-		flow_id,
 		forward_action_id,
 		exit_action_id,
 		confbridge_id,
@@ -145,7 +142,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 	) values(
 		?, ?, ?,
 		?, ?, ?,
-		?, ?, ?, ?,
+		?, ?, ?,
 		?, ?, ?,
 		?, ?,
 		?, ?,
@@ -173,7 +170,6 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		a.ReferenceID.Bytes(),
 		a.ReferenceActiveflowID.Bytes(),
 
-		a.FlowID.Bytes(),
 		a.ForwardActionID.Bytes(),
 		a.ExitActionID.Bytes(),
 		a.ConfbridgeID.Bytes(),
@@ -528,9 +524,33 @@ func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) e
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, queuecall.StatusKicking, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queuecall.StatusKicking, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetStatusKicking. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// QueuecallSetStatusWaiting sets the QueueCall's status to the waiting.
+func (h *handler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		queuecalls
+	set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, queuecall.StatusWaiting, h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. QueuecallSetStatusWaiting. err: %v", err)
 	}
 
 	// update the cache

@@ -88,7 +88,6 @@ func (h *queuecallHandler) ServiceStart(
 		referenceType,
 		referenceID,
 		activeflowID,
-		uuid.Nil,
 		forwardActionID,
 		exitActionID,
 		cb.ID,
@@ -97,12 +96,6 @@ func (h *queuecallHandler) ServiceStart(
 	if err != nil {
 		log.Errorf("Could not create the queuecall. err: %v", err)
 		return nil, err
-	}
-
-	// add the queuecall to the queue.
-	_, err = h.queueHandler.AddWaitQueueCallID(ctx, qc.QueueID, qc.ID)
-	if err != nil {
-		log.Errorf("Could not add the queuecall to the queue. err: %v", err)
 	}
 
 	res := &service.Service{

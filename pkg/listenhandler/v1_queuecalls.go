@@ -10,12 +10,18 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/listenhandler/models/request"
 )
 
 // processV1QueuecallsGet handles Get /v1/queuecalls request
 func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsGet",
+		"request": m,
+	})
+
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -30,13 +36,6 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 	queueID := uuid.FromStringOrNil(u.Query().Get("queue_id"))
 	status := queuecall.Status(u.Query().Get("status"))
-
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "processV1QueuecallsGet",
-		"customer_id": customerID,
-		"size":        pageSize,
-		"token":       pageToken,
-	})
 
 	var tmp []*queuecall.Queuecall
 	if queueID != uuid.Nil {
@@ -54,7 +53,6 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -67,18 +65,17 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 
 // processV1QueuecallsIDGet handles Get /v1/queuecalls/<queue-id> request
 func (h *listenHandler) processV1QueuecallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsIDGet",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "processV1QueuecallsIDGet",
-			"queue_id": id,
-		})
-	log.Debug("Executing processV1QueuecallsIDGet.")
 
 	// get queue
 	tmp, err := h.queuecallHandler.Get(ctx, id)
@@ -92,7 +89,6 @@ func (h *listenHandler) processV1QueuecallsIDGet(ctx context.Context, m *rabbitm
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -105,18 +101,17 @@ func (h *listenHandler) processV1QueuecallsIDGet(ctx context.Context, m *rabbitm
 
 // processV1QueuecallsIDDelete handles Delete /v1/queuecalls/<queuecall-id> request
 func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsIDDelete",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "processV1QueuecallsIDDelete",
-			"queuecall_id": id,
-		})
-	log.Debug("Executing processV1QueuecallsIDDelete.")
 
 	tmp, err := h.queuecallHandler.Kick(ctx, id)
 	if err != nil {
@@ -129,7 +124,6 @@ func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *rabb
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
@@ -142,18 +136,18 @@ func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *rabb
 
 // processV1QueuecallsIDTimeoutWaitPost handles Post /v1/queuecalls/<queuecall-id>/timeout_wait request
 func (h *listenHandler) processV1QueuecallsIDTimeoutWaitPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsIDTimeoutWaitPost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
+		log.Errorf("Wrong uri.")
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "processV1QueuecallsIDTimeoutWaitPost",
-			"queuecall_id": id,
-		})
-	log.Debug("Executing processV1QueuecallsIDTimeoutWaitPost.")
 
 	h.queuecallHandler.TimeoutWait(ctx, id)
 	res := &rabbitmqhandler.Response{
@@ -166,18 +160,18 @@ func (h *listenHandler) processV1QueuecallsIDTimeoutWaitPost(ctx context.Context
 
 // processV1QueuecallsIDTimeoutServicePost handles Post /v1/queuecalls/<queuecall-id>/timeout_service request
 func (h *listenHandler) processV1QueuecallsIDTimeoutServicePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsIDTimeoutServicePost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
+		log.Errorf("Wrong uri.")
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "processV1QueuecallsIDTimeoutServicePost",
-			"queuecall_id": id,
-		})
-	log.Debug("Executing processV1QueuecallsIDTimeoutServicePost.")
 
 	h.queuecallHandler.TimeoutService(ctx, id)
 	res := &rabbitmqhandler.Response{
@@ -190,18 +184,17 @@ func (h *listenHandler) processV1QueuecallsIDTimeoutServicePost(ctx context.Cont
 
 // processV1QueuecallsIDExecutePost handles Post /v1/queuecalls/<queuecall-id>/execute request
 func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsIDExecutePost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "processV1QueuecallsIDExecutePost",
-			"queuecall_id": id,
-		})
-	log.Debug("Executing processV1QueuecallsIDExecutePost.")
 
 	var req request.V1DataQueuecallsIDExecutePost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -220,7 +213,6 @@ func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m 
 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,

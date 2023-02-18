@@ -37,7 +37,6 @@ func (h *queuecallHandler) Execute(ctx context.Context, id uuid.UUID, agentID uu
 	}
 
 	// dial to the agent
-	log.WithField("agent_id", agentID).Debugf("Dialing the agent. agent_id: %s", agentID)
 	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, agentID, &qc.Source, f.ID, qc.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not dial to the agent. Send the request again with 1 sec delay. err: %v", err)
@@ -46,7 +45,6 @@ func (h *queuecallHandler) Execute(ctx context.Context, id uuid.UUID, agentID uu
 	log.WithField("agent_dial", agentDial).Debugf("Created agent dial. agent_dial_id: %s", agentDial.ID)
 
 	// update the queuecall status to connecting
-	log.Debugf("Update the queuecall status to connecting. agent_id: %s", agentID)
 	res, err := h.UpdateStatusConnecting(ctx, qc.ID, agentID)
 	if err != nil {
 		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
@@ -54,8 +52,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, id uuid.UUID, agentID uu
 	}
 
 	// forward the action.
-	log.Debugf("Setting the forward action id. forward_action_id: %s", qc.ForwardActionID)
-	if err := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ForwardActionID, true); err != nil {
+	if err := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, res.ReferenceActiveflowID, res.ForwardActionID, true); err != nil {
 		log.Errorf("Could not forward the active flow. err: %v", err)
 		return nil, err
 	}
@@ -67,6 +64,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, id uuid.UUID, agentID uu
 func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, customerID, confbridgeID uuid.UUID) (*fmflow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "generateFlowForAgentCall",
+		"customer_id":   customerID,
 		"confbridge_id": confbridgeID,
 	})
 
@@ -92,7 +90,6 @@ func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, custome
 		log.Errorf("Could not create the flow. err: %v", err)
 		return nil, err
 	}
-	log.WithField("flow", res).Debug("Created a flow.")
 
 	return res, nil
 }

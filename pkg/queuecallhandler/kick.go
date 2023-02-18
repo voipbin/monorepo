@@ -33,13 +33,13 @@ func (h *queuecallHandler) Kick(ctx context.Context, id uuid.UUID) (*queuecall.Q
 	}
 
 	// send the forward request
-	if err := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ExitActionID, true); err != nil {
-		log.Errorf("Could not forward the call. err: %v", err)
-		return nil, err
+	if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ExitActionID, true); errForward != nil {
+		log.Errorf("Could not forward the call. err: %v", errForward)
+		return nil, errForward
 	}
 
 	if qc.Status == queuecall.StatusService {
-		// nothing to do here.
+		// nothing to do more.
 		// the call-manager's confbridge_leaved message event subscribe will handle it.
 		return qc, nil
 	}
@@ -49,10 +49,6 @@ func (h *queuecallHandler) Kick(ctx context.Context, id uuid.UUID) (*queuecall.Q
 	if err != nil {
 		log.Errorf("Could not update the queuecall status to abandoned. err: %v", err)
 		return nil, err
-	}
-
-	if errVariables := h.deleteVariables(ctx, res); errVariables != nil {
-		log.Errorf("Could not delete variables. err: %v", errVariables)
 	}
 
 	return res, nil

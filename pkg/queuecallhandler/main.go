@@ -4,6 +4,7 @@ package queuecallhandler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -28,7 +29,6 @@ type QueuecallHandler interface {
 		referenceType queuecall.ReferenceType,
 		referenceID uuid.UUID,
 		referenceActiveflowID uuid.UUID,
-		flowID uuid.UUID,
 		forwardActionID uuid.UUID,
 		exitActionID uuid.UUID,
 		conferenceID uuid.UUID,
@@ -49,6 +49,7 @@ type QueuecallHandler interface {
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queuecall.Queuecall, error)
 	GetsByQueueIDAndStatus(ctx context.Context, queueID uuid.UUID, status queuecall.Status, size uint64, token string) ([]*queuecall.Queuecall, error)
+	UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 
 	ServiceStart(
 		ctx context.Context,
@@ -90,13 +91,19 @@ func NewQueuecallHandler(
 // parseTime return the time.Time of parsed voipbin's timestamp string.
 func parseTime(timestamp string) (time.Time, error) {
 	layout := "2006-01-02 15:04:05.000000"
-	tm, err := time.Parse(layout, timestamp)
+
+	if len(timestamp) < len(layout) {
+		return time.Time{}, fmt.Errorf("wrong format")
+	}
+	ts := timestamp[:len(layout)]
+
+	res, err := time.Parse(layout, ts)
 	if err != nil {
 		logrus.Errorf("Could not parse the timestamp. err: %v", err)
 		return time.Time{}, err
 	}
 
-	return tm, nil
+	return res, nil
 }
 
 // getDuration return the timeduration from the timestamp string
