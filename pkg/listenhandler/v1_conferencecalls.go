@@ -14,12 +14,10 @@ import (
 
 // processV1ConferencecallsIDGet handles /v1/conferencecalls/<id> GET request
 func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencecallsIDGet",
-			"uri":  m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencecallsIDGet",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -51,12 +49,10 @@ func (h *listenHandler) processV1ConferencecallsIDGet(ctx context.Context, m *ra
 
 // processV1ConferencecallsIDDelete handles /v1/conferencecalls/<id> DELETE request
 func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencecallsIDDelete",
-			"uri":  m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencecallsIDDelete",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -88,12 +84,10 @@ func (h *listenHandler) processV1ConferencecallsIDDelete(ctx context.Context, m 
 
 // processV1ConferencecallsIDHealthCheckPost handles /v1/conferencecalls/<id>/health-check POST request
 func (h *listenHandler) processV1ConferencecallsIDHealthCheckPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencecallsIDHealthCheckPost",
-			"uri":  m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencecallsIDHealthCheckPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {

@@ -11,12 +11,10 @@ import (
 
 // Terminate terminates the conferencecall.
 func (h *conferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "Terminate",
-			"conferencecall_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "Terminate",
+		"conferencecall_id": id,
+	})
 
 	// get conferencecall
 	cc, err := h.Get(ctx, id)
@@ -24,6 +22,7 @@ func (h *conferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*c
 		log.Errorf("Could not get conferencecall info. err: %v", err)
 		return nil, err
 	}
+	log = log.WithField("reference_id", cc.ReferenceID)
 
 	// get conference
 	cf, err := h.conferenceHandler.Get(ctx, cc.ConferenceID)
@@ -31,6 +30,7 @@ func (h *conferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*c
 		log.Errorf("Could not get conference info. conference_id: %s, err: %v", cf.ID, err)
 		return nil, err
 	}
+	log = log.WithField("conference_id", cf.ID)
 
 	if !h.isKickable(ctx, cc) {
 		res, err := h.Terminated(ctx, cc)
@@ -72,12 +72,12 @@ func (h *conferencecallHandler) isKickable(ctx context.Context, cc *conferenceca
 
 // Terminated handles terminated conferencecall
 func (h *conferencecallHandler) Terminated(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "Terminated",
-			"conferencecall_id": cc.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "Terminated",
+		"conferencecall_id": cc.ID,
+		"conference_id":     cc.ConferenceID,
+		"reference_id":      cc.ReferenceID,
+	})
 
 	// update status
 	res, err := h.updateStatusLeaved(ctx, cc.ID)

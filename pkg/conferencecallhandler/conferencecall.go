@@ -18,13 +18,13 @@ func (h *conferencecallHandler) Create(
 	referenceType conferencecall.ReferenceType,
 	referenceID uuid.UUID,
 ) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "Create",
-			"customer_id":   customerID,
-			"conference_id": conferenceID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Create",
+		"customer_id":    customerID,
+		"conference_id":  conferenceID,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+	})
 
 	id := h.utilHandler.CreateUUID()
 	tmp := &conferencecall.Conferencecall{
@@ -100,13 +100,11 @@ func (h *conferencecallHandler) GetByReferenceID(ctx context.Context, referenceI
 // updateStatus is handy function for update the conferencecall's status.
 // it increases corresponded counter
 func (h *conferencecallHandler) updateStatus(ctx context.Context, id uuid.UUID, status conferencecall.Status) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "updateStatus",
-			"conferencecall_id": id,
-			"status":            status,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "updateStatus",
+		"conferencecall_id": id,
+		"status":            status,
+	})
 
 	if errStatus := h.db.ConferencecallUpdateStatus(ctx, id, status); errStatus != nil {
 		log.Errorf("Could not update the conferencecall status. err: %v", errStatus)
@@ -127,12 +125,10 @@ func (h *conferencecallHandler) updateStatus(ctx context.Context, id uuid.UUID, 
 // updateStatusJoined is handy function for update the conferencecall's status to the joined.
 // it increases corresponded counter
 func (h *conferencecallHandler) updateStatusJoined(ctx context.Context, conferencecallID uuid.UUID) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "updateStatusJoined",
-			"conferencecall_id": conferencecallID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "updateStatusJoined",
+		"conferencecall_id": conferencecallID,
+	})
 
 	res, err := h.updateStatus(ctx, conferencecallID, conferencecall.StatusJoined)
 	if err != nil {
@@ -147,12 +143,10 @@ func (h *conferencecallHandler) updateStatusJoined(ctx context.Context, conferen
 // updateStatusLeaving is handy function for update the conferencecall's status to the leaved.
 // it increases corresponded counter
 func (h *conferencecallHandler) updateStatusLeaving(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "updateStatusLeaving",
-			"conferencecall_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "updateStatusLeaving",
+		"conferencecall_id": id,
+	})
 
 	res, err := h.updateStatus(ctx, id, conferencecall.StatusLeaving)
 	if err != nil {
@@ -167,12 +161,10 @@ func (h *conferencecallHandler) updateStatusLeaving(ctx context.Context, id uuid
 // updateStatusLeaved is handy function for update the conferencecall's status to the leaved.
 // it increases corresponded counter
 func (h *conferencecallHandler) updateStatusLeaved(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "updateStatusLeaved",
-			"conferencecall_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "updateStatusLeaved",
+		"conferencecall_id": id,
+	})
 
 	res, err := h.updateStatus(ctx, id, conferencecall.StatusLeaved)
 	if err != nil {

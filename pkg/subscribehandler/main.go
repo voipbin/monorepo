@@ -81,9 +81,10 @@ func NewSubscribeHandler(
 }
 
 func (h *subscribeHandler) Run() error {
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func": "Run",
-	}).Info("Creating rabbitmq queue for listen.")
+	})
+	log.Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue for subscribe
 	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
@@ -96,7 +97,7 @@ func (h *subscribeHandler) Run() error {
 
 		// bind each targets
 		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
-			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
+			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
 			return err
 		}
 	}
@@ -106,7 +107,7 @@ func (h *subscribeHandler) Run() error {
 		for {
 			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "conference-manager", false, false, false, 10, h.processEventRun)
 			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+				log.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
 		}
 	}()
@@ -123,13 +124,10 @@ func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
 
 // processEvent processes the event message
 func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"message": m,
-		},
-	)
-	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processEvent",
+		"message": m,
+	})
 
 	var err error
 	start := time.Now()
@@ -148,7 +146,8 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		log.Debugf("Could not find correct event handler.")
+		// no event handler found
+		return
 	}
 	elapsed := time.Since(start)
 	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
