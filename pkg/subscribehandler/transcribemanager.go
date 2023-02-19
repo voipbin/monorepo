@@ -12,12 +12,10 @@ import (
 
 // processEventTMTranscriptCreated handles the call-manager's call related event
 func (h *subscribeHandler) processEventTMTranscriptCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":  "processEventTMTranscriptCreated",
-			"event": m,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventTMTranscriptCreated",
+		"event": m,
+	})
 
 	var evt tmtranscript.Transcript
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
@@ -30,7 +28,6 @@ func (h *subscribeHandler) processEventTMTranscriptCreated(ctx context.Context, 
 		// no transcribe id found
 		return nil
 	}
-	log.WithField("event", evt).Debugf("Detail event. event: %s", m.Type)
 
 	if errChat = h.chatbotcallHandler.Chat(ctx, cb, evt.Message); errChat != nil {
 		log.Errorf("Could not chat to the chatbotcall. err: %v", errChat)

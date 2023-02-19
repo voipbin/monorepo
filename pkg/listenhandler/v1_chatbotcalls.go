@@ -14,12 +14,10 @@ import (
 
 // processV1ChatbotcallsGet handles GET /v1/chatbotcall request
 func (h *listenHandler) processV1ChatbotcallsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ChatbotcallsGet",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ChatbotcallsGet",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -62,12 +60,10 @@ func (h *listenHandler) processV1ChatbotcallsGet(ctx context.Context, m *rabbitm
 
 // processV1ChatbotcallsIDGet handles GET /v1/chatbotcalls/<chatbotcall-id> request
 func (h *listenHandler) processV1ChatbotcallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ChatbotcallsIDGet",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ChatbotcallsIDGet",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -99,12 +95,10 @@ func (h *listenHandler) processV1ChatbotcallsIDGet(ctx context.Context, m *rabbi
 
 // processV1ChatbotcallsIDDelete handles DELETE /v1/chatbotcalls/<chatbotcall-id> request
 func (h *listenHandler) processV1ChatbotcallsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ChatbotcallsIDDelete",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ChatbotcallsIDDelete",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {

@@ -106,9 +106,10 @@ func NewListenHandler(
 
 // Run runs the listenhandler
 func (h *listenHandler) Run() error {
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func": "Run",
-	}).Info("Run the listenhandler.")
+	})
+	log.Info("Run the listenhandler.")
 
 	// declare the queue
 	if err := h.rabbitSock.QueueDeclare(h.queueListen, true, false, false, false); err != nil {
@@ -117,7 +118,7 @@ func (h *listenHandler) Run() error {
 
 	// Set QoS
 	if err := h.rabbitSock.QueueQoS(h.queueListen, 1, 0); err != nil {
-		logrus.Errorf("Could not set the queue's qos. err: %v", err)
+		log.Errorf("Could not set the queue's qos. err: %v", err)
 		return err
 	}
 
@@ -135,7 +136,7 @@ func (h *listenHandler) Run() error {
 	go func() {
 		for {
 			if errConsume := h.rabbitSock.ConsumeRPCOpt(h.queueListen, "chatbot-manager", false, false, false, 10, h.processRequest); errConsume != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", errConsume)
+				log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}
 	}()
@@ -144,6 +145,11 @@ func (h *listenHandler) Run() error {
 }
 
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processRequest",
+		"request": m,
+	})
+
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
@@ -155,10 +161,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		uri = "could not unescape uri"
 	}
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"request": m,
-		})
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
@@ -232,13 +234,9 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		log.Errorf("Could not handle the request message correctly. method: %s, uri: %s, err: %v", m.Method, uri, err)
 		response = simpleResponse(400)
 		err = nil
-	} else {
-		log.WithFields(
-			logrus.Fields{
-				"response": response,
-			},
-		).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 	}
+
+	log.WithField("response", response).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 
 	return response, err
 }

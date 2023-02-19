@@ -5,18 +5,17 @@ import (
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/listenhandler/models/request"
 )
 
 // processV1ServicesTypeChatbotcallPost handles POST /v1/services/type/chatbotcall request
 func (h *listenHandler) processV1ServicesTypeChatbotcallPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ServicesTypeChatbotcallPost",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ServicesTypeChatbotcallPost",
+		"request": m,
+	})
 
 	var req request.V1DataServicesTypeChatbotcallPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
