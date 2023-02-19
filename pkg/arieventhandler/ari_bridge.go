@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -16,9 +15,8 @@ import (
 func (h *eventHandler) EventHandlerBridgeCreated(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.BridgeCreated)
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "EventHandlerBridgeCreated",
-		"asterisk_id": e.AsteriskID,
-		"bridge_id":   e.Bridge.ID,
+		"func":  "EventHandlerBridgeCreated",
+		"event": e,
 	})
 
 	// get reference_type
@@ -57,13 +55,10 @@ func (h *eventHandler) EventHandlerBridgeCreated(ctx context.Context, evt interf
 func (h *eventHandler) EventHandlerBridgeDestroyed(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.BridgeDestroyed)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":     "EventHandlerBridgeDestroyed",
-			"bridge":   e.Bridge.ID,
-			"asterisk": e.AsteriskID,
-			"stasis":   e.Application,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerBridgeDestroyed",
+		"event": e,
+	})
 
 	br, err := h.bridgeHandler.Get(ctx, e.Bridge.ID)
 	if err != nil {

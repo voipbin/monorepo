@@ -15,28 +15,43 @@ func Test_processV1ChannelsIDHealthPost(t *testing.T) {
 	tests := []struct {
 		name string
 
+		request *rabbitmqhandler.Request
+
 		asteriskID    string
 		channelID     string
 		retryCount    int
 		retryCountMax int
 		delay         int
-
-		request *rabbitmqhandler.Request
 	}{
 		{
-			"normal test",
-
-			"42:01:0a:a4:00:05",
-			"f1f90a0a-9844-11ea-8948-5378837e7179",
-			0,
-			2,
-			10000,
+			"channel id is uuid",
 
 			&rabbitmqhandler.Request{
 				URI:    "/v1/channels/f1f90a0a-9844-11ea-8948-5378837e7179/health-check",
 				Method: rabbitmqhandler.RequestMethodPost,
 				Data:   []byte(`{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`),
 			},
+
+			"42:01:0a:a4:00:05",
+			"f1f90a0a-9844-11ea-8948-5378837e7179",
+			0,
+			2,
+			10000,
+		},
+		{
+			"channel id is not uuid",
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/channels/asterisk-call-58f54b64c7-d7sv7-1676744879.1115/health-check",
+				Method: rabbitmqhandler.RequestMethodPost,
+				Data:   []byte(`{"retry_count": 0, "retry_count_max": 2, "delay": 10000}`),
+			},
+
+			"42:01:0a:a4:00:05",
+			"asterisk-call-58f54b64c7-d7sv7-1676744879.1115",
+			0,
+			2,
+			10000,
 		},
 	}
 

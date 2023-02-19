@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 )
@@ -14,13 +13,10 @@ import (
 func (h *eventHandler) EventHandlerRecordingStarted(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.RecordingStarted)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":           "EventHandlerRecordingStarted",
-			"asterisk_id":    e.AsteriskID,
-			"stasis_name":    e.Application,
-			"recording_name": e.Recording.Name,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerRecordingStarted",
+		"event": e,
+	})
 
 	if !strings.HasSuffix(e.Recording.Name, "_in") {
 		// for reference type call, we are making a 2 recordings channels for 1 recording
@@ -38,11 +34,10 @@ func (h *eventHandler) EventHandlerRecordingStarted(ctx context.Context, evt int
 		return err
 	}
 
-	log = log.WithFields(
-		logrus.Fields{
-			"reference_type": r.ReferenceType,
-			"reference_id":   r.ReferenceID,
-		})
+	log = log.WithFields(logrus.Fields{
+		"reference_type": r.ReferenceType,
+		"reference_id":   r.ReferenceID,
+	})
 	log.WithField("recording", r).Debugf("Executing EventHandlerRecordingStarted event. recording_id: %s", r.ID)
 
 	tmp, err := h.recordingHandler.Started(ctx, r.ID)
@@ -59,13 +54,10 @@ func (h *eventHandler) EventHandlerRecordingStarted(ctx context.Context, evt int
 func (h *eventHandler) EventHandlerRecordingFinished(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.RecordingFinished)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":           "eventHandlerRecordingFinished",
-			"asterisk_name":  e.AsteriskID,
-			"stasis_name":    e.Application,
-			"recording_name": e.Recording.Name,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerRecordingFinished",
+		"event": e,
+	})
 
 	if !strings.HasSuffix(e.Recording.Name, "_in") {
 		// for reference type call, we are making a 2 recordings channels for 1 recording

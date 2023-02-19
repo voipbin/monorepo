@@ -7,9 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
@@ -39,17 +37,13 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		return errors.Wrap(err, "could not remove the channel info from the confbridge")
 	}
 
-	// todo: here we are updating the call's confbridge id.
-	// but we should not do this. instead of doing this, we need to send the request to the callhandler
-	// and let them handle the update work
-	// set nil conference id to the call
-	// note: here we are setting the conference's id to the call.
-	// we don't set the confbridge id to the call.
-	if err := h.db.CallSetConfbridgeID(ctx, callID, uuid.Nil); err != nil {
-		log.Errorf("Could not set the conference id for a call. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
-		return err
-	}
+	// update the call's confbridge info
+	go func() {
+		_, err := h.reqHandler.CallV1CallUpdateConfbridgeID(ctx, callID, uuid.Nil)
+		if err != nil {
+			log.Errorf("Could not update the call's confbridge info. err: %v", err)
+		}
+	}()
 
 	// check the confbridge type
 	if cb.Type == confbridge.TypeConnect && len(cb.ChannelCallIDs) == 1 {
@@ -70,13 +64,6 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		LeavedCallID: callID,
 	}
 	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, evt)
-
-	// get updated c info and notify
-	c, err := h.db.CallGet(ctx, callID)
-	if err != nil {
-		log.Errorf("Could not get updated call info. But we are keep moving. err: %v", err)
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, c.CustomerID, call.EventTypeCallUpdated, c)
 
 	return nil
 }

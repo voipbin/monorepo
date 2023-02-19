@@ -2,10 +2,8 @@ package arieventhandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -14,12 +12,11 @@ import (
 
 // EventHandlerChannelCreated handels ChannelCreated ARI event
 func (h *eventHandler) EventHandlerChannelCreated(ctx context.Context, evt interface{}) error {
-	log := logrus.WithField("func", "EventHandlerChannelCreated")
-
 	e := evt.(*ari.ChannelCreated)
-	log = log.WithFields(logrus.Fields{
-		"channel_id":  e.Channel.ID,
-		"asterisk_id": e.AsteriskID,
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerChannelCreated",
+		"event": e,
 	})
 
 	tech := channel.GetTech(e.Channel.Name)
@@ -52,13 +49,31 @@ func (h *eventHandler) EventHandlerChannelCreated(ctx context.Context, evt inter
 func (h *eventHandler) EventHandlerChannelDestroyed(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDestroyed)
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerChannelDestroyed",
+		"event": e,
+	})
+
 	cn, err := h.channelHandler.Delete(ctx, e.Channel.ID, e.Cause)
 	if err != nil {
+		log.Errorf("Could not delete the channel info. err: %v", err)
 		return err
 	}
 
-	if err := h.callHandler.ARIChannelDestroyed(ctx, cn); err != nil {
-		return err
+	switch cn.Type {
+	case channel.TypeCall:
+		if errDestroy := h.callHandler.ARIChannelDestroyed(ctx, cn); errDestroy != nil {
+			log.Errorf("Could not delete the related call info. err: %v", errDestroy)
+			return errDestroy
+		}
+
+	case channel.TypeConfbridge, channel.TypeJoin, channel.TypeExternal, channel.TypeRecording, channel.TypeApplication:
+		// we don't do anything at here.
+		return nil
+
+	default:
+		log.WithField("channel", cn).Errorf("Unsupported channel type. type: %v", cn.Type)
+		return nil
 	}
 
 	return nil
@@ -68,8 +83,14 @@ func (h *eventHandler) EventHandlerChannelDestroyed(ctx context.Context, evt int
 func (h *eventHandler) EventHandlerChannelDtmfReceived(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelDtmfReceived)
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerChannelDtmfReceived",
+		"event": e,
+	})
+
 	cn, err := h.channelHandler.Get(ctx, e.Channel.ID)
 	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
 		return err
 	}
 
@@ -84,26 +105,16 @@ func (h *eventHandler) EventHandlerChannelDtmfReceived(ctx context.Context, evt 
 func (h *eventHandler) EventHandlerChannelEnteredBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelEnteredBridge)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":        "EventHandlerChannelEnteredBridge",
-			"channel_id":  e.Channel.ID,
-			"bridge_id":   e.Bridge.ID,
-			"asterisk_id": e.AsteriskID,
-			"stasis":      e.Application,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerChannelEnteredBridge",
+		"event": e,
+	})
 
 	cn, err := h.channelHandler.UpdateBridgeID(ctx, e.Channel.ID, e.Bridge.ID)
 	if err != nil {
 		log.Errorf("Could not set the bridge id to the channel. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)
 		return err
-	}
-
-	if !h.bridgeHandler.IsExist(ctx, e.Bridge.ID) {
-		log.Error("The given bridge is not in our database.")
-		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)
-		return fmt.Errorf("no bridge found")
 	}
 
 	br, err := h.bridgeHandler.AddChannelID(ctx, e.Bridge.ID, e.Channel.ID)
@@ -124,26 +135,16 @@ func (h *eventHandler) EventHandlerChannelEnteredBridge(ctx context.Context, evt
 func (h *eventHandler) EventHandlerChannelLeftBridge(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelLeftBridge)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":        "EventHandlerChannelLeftBridge",
-			"channel_id":  e.Channel.ID,
-			"bridge_id":   e.Bridge.ID,
-			"asterisk_id": e.AsteriskID,
-			"stasis":      e.Application,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerChannelLeftBridge",
+		"event": e,
+	})
 
 	cn, err := h.channelHandler.UpdateBridgeID(ctx, e.Channel.ID, "")
 	if err != nil {
 		log.Errorf("Could not reset the channel's bridge id. err: %v", err)
 		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)
 		return err
-	}
-
-	if !h.bridgeHandler.IsExist(ctx, e.Bridge.ID) {
-		log.Error("The given bridge is not in our database.")
-		_ = h.reqHandler.AstChannelHangup(ctx, e.AsteriskID, e.Channel.ID, ari.ChannelCauseInterworking, 0)
-		return fmt.Errorf("no bridge found")
 	}
 
 	br, err := h.bridgeHandler.RemoveChannelID(ctx, e.Bridge.ID, e.Channel.ID)
@@ -170,8 +171,14 @@ func (h *eventHandler) EventHandlerChannelLeftBridge(ctx context.Context, evt in
 func (h *eventHandler) EventHandlerChannelStateChange(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelStateChange)
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerChannelStateChange",
+		"event": e,
+	})
+
 	cn, err := h.channelHandler.UpdateState(ctx, e.Channel.ID, e.Channel.State)
 	if err != nil {
+		log.Errorf("Could not update the channel state. err: %v", err)
 		return err
 	}
 
@@ -186,40 +193,52 @@ func (h *eventHandler) EventHandlerChannelStateChange(ctx context.Context, evt i
 func (h *eventHandler) EventHandlerChannelVarset(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ChannelVarset)
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerChannelVarset",
+		"event": e,
+	})
+
 	switch e.Variable {
 	case "VB-CONTEXT_TYPE":
 		if err := h.channelHandler.SetDataItem(ctx, e.Channel.ID, "context_type", e.Value); err != nil {
+			log.Errorf("Could not set the variable. err: %v", err)
 			return err
 		}
 
 	case "VB-DIRECTION":
 		if err := h.channelHandler.SetDirection(ctx, e.Channel.ID, channel.Direction(e.Value)); err != nil {
+			log.Errorf("Could not set the variable. err: %v", err)
 			return err
 		}
 
 	case "VB-SIP_CALLID":
 		if err := h.channelHandler.SetSIPCallID(ctx, e.Channel.ID, e.Value); err != nil {
+			log.Errorf("Could not set the variable. err: %v", err)
 			return err
 		}
 
 	case "VB-SIP_PAI":
 		if err := h.channelHandler.SetDataItem(ctx, e.Channel.ID, "sip_pai", e.Value); err != nil {
+			log.Errorf("Could not set the variable. err: %v", err)
 			return err
 		}
 
 	case "VB-SIP_PRIVACY":
 		if err := h.channelHandler.SetDataItem(ctx, e.Channel.ID, "sip_privacy", e.Value); err != nil {
+			log.Errorf("Could not set the variable. err: %v", err)
 			return err
 		}
 
 	case "VB-SIP_TRANSPORT":
 		if err := h.channelHandler.SetSIPTransport(ctx, e.Channel.ID, channel.SIPTransport(e.Value)); err != nil {
+			log.Errorf("Could not set the variable. err: %v", err)
 			return err
 		}
 
 	case "VB-TYPE":
 		logrus.Debugf("Setting channel's type. channel: %s, type: %s", e.Channel.ID, e.Value)
 		if err := h.channelHandler.SetType(ctx, e.Channel.ID, channel.Type(e.Value)); err != nil {
+			log.Errorf("Could not set the variable. err: %v", err)
 			return err
 		}
 

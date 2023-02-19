@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 )
@@ -14,14 +14,10 @@ import (
 func (h *eventHandler) EventHandlerStasisStart(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisStart)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":        "EventHandlerStasisStart",
-			"asterisk_id": e.AsteriskID,
-			"channel_id":  e.Channel.ID,
-			"stasis_name": e.Application,
-			"stasis_data": e.Args,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerStasisStart",
+		"event": e,
+	})
 
 	tmp, err := h.channelHandler.Get(ctx, e.Channel.ID)
 	if err != nil {
@@ -68,11 +64,17 @@ func (h *eventHandler) EventHandlerStasisStart(ctx context.Context, evt interfac
 func (h *eventHandler) EventHandlerStasisEnd(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.StasisEnd)
 
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerStasisEnd",
+		"event": e,
+	})
+
 	_, err := h.channelHandler.UpdateStasisName(ctx, e.Channel.ID, "")
 	if err != nil {
 		// could not update the channel's stasis name to empty.
 		// but we don't do anything here because it's not critical.
 		// and nothing we can do here because it's already end of stasis.
+		log.Errorf("Could not update the stasis name. err: %v", err)
 		return err
 	}
 

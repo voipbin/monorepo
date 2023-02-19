@@ -15,9 +15,8 @@ import (
 func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":      "processEventAsteriskProxy",
-			"publisher": m.Publisher,
-			"type":      m.Type,
+			"func":    "processEventAsteriskProxy",
+			"message": m,
 		},
 	)
 

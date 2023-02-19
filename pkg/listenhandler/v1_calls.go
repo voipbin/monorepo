@@ -75,9 +75,9 @@ func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *rabbitmqhand
 
 	c, err := h.callHandler.Get(ctx, id)
 	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
 		return simpleResponse(404), nil
 	}
-	log.Debugf("Get call. call: %v", c)
 
 	data, err := json.Marshal(c)
 	if err != nil {
@@ -111,12 +111,6 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *rabbitmqhandl
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
-	log = log.WithFields(logrus.Fields{
-		"user":         req.CustomerID,
-		"flow":         req.FlowID,
-		"source":       req.Source,
-		"destinations": req.Destinations,
-	})
 
 	calls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.ExecuteNextMasterOnHangup)
 	if err != nil {
@@ -159,12 +153,6 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *rabbitmqhan
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
-	log = log.WithFields(logrus.Fields{
-		"user":        req.CustomerID,
-		"flow":        req.FlowID,
-		"source":      req.Source,
-		"destination": req.Destination,
-	})
 
 	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.Source, req.Destination, req.EarlyExecution, req.ExecuteNextMasterOnHangup)
 	if err != nil {
@@ -302,11 +290,6 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
 		return nil, err
 	}
-	log = log.WithFields(logrus.Fields{
-		"action":     data.ActionID,
-		"type":       data.ActionType,
-		"tm_execute": data.TMExecute,
-	})
 
 	action := &fmaction.Action{
 		ID:        data.ActionID,

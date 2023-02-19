@@ -8,10 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -20,6 +16,11 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func Test_startIncomingDomainTypeSIPDestinationTypeAgent(t *testing.T) {
@@ -293,7 +294,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeTel(t *testing.T) {
 			expectActions: []fmaction.Action{
 				{
 					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"sip","target":"test01","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"unchained":false,"relay_reason":true}`),
+					Option: []byte(`{"source":{"type":"sip","target":"test01","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
 				},
 			},
 		},

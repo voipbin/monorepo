@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -14,14 +14,10 @@ import (
 func (h *eventHandler) EventHandlerPlaybackStarted(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.PlaybackStarted)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":        "eventHandlerPlaybackStarted",
-			"playback_id": e.Playback.ID,
-			"asterisk_id": e.AsteriskID,
-			"stasis_name": e.Application,
-			"target":      e.Playback.TargetURI,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerPlaybackStarted",
+		"event": e,
+	})
 
 	if !strings.HasPrefix(e.Playback.TargetURI, "channel:") {
 		// no channel info
@@ -46,14 +42,10 @@ func (h *eventHandler) EventHandlerPlaybackStarted(ctx context.Context, evt inte
 func (h *eventHandler) EventHandlerPlaybackFinished(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.PlaybackFinished)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":        "eventHandlerPlaybackFinished",
-			"playback_id": e.Playback.ID,
-			"asterisk_id": e.AsteriskID,
-			"stasis_name": e.Application,
-			"target":      e.Playback.TargetURI,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerPlaybackFinished",
+		"event": e,
+	})
 
 	if !strings.HasPrefix(e.Playback.TargetURI, "channel:") {
 		// no channel info

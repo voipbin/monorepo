@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"strings"
 
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-
-	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
-
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
+
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
@@ -233,7 +232,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeTel(
 		Destinations: []commonaddress.Address{
 			*destination,
 		},
-		Unchained:   false,
+		EarlyMedia:  true,
 		RelayReason: true,
 	}
 	optionData, err := json.Marshal(&option)

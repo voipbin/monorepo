@@ -3,7 +3,7 @@ package arieventhandler
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 )
@@ -12,13 +12,10 @@ import (
 func (h *eventHandler) EventHandlerContactStatusChange(ctx context.Context, evt interface{}) error {
 	e := evt.(*ari.ContactStatusChange)
 
-	log := log.WithFields(
-		log.Fields{
-			"func":     "EventHandlerContactStatusChange",
-			"asterisk": e.AsteriskID,
-			"stasis":   e.Application,
-			"aor":      e.ContactInfo.AOR,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EventHandlerContactStatusChange",
+		"event": e,
+	})
 
 	// send update
 	if err := h.reqHandler.RegistrarV1ContactUpdate(ctx, e.Endpoint.Resource); err != nil {
