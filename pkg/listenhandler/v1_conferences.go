@@ -16,9 +16,13 @@ import (
 )
 
 // processV1ConferencesGet handles GET /v1/conferences request
-func (h *listenHandler) processV1ConferencesGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ConferencesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesGet",
+		"request": m,
+	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -31,13 +35,7 @@ func (h *listenHandler) processV1ConferencesGet(ctx context.Context, req *rabbit
 
 	// get customer id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-	log := logrus.WithFields(logrus.Fields{
-		"customer_id": customerID,
-		"size":        pageSize,
-		"token":       pageToken,
-	})
 
-	log.Debug("Getting conference info.")
 	confs, err := h.conferenceHandler.Gets(ctx, customerID, conference.Type(conferenceType), pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
@@ -61,13 +59,10 @@ func (h *listenHandler) processV1ConferencesGet(ctx context.Context, req *rabbit
 
 // processV1ConferencesPost handles /v1/conferences request
 func (h *listenHandler) processV1ConferencesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ConferencesPost",
-			"uri":     m.URI,
-			"data":    m.Data,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesPost",
+		"request": m,
+	})
 
 	var data request.V1DataConferencesPost
 	if err := json.Unmarshal([]byte(m.Data), &data); err != nil {
@@ -99,12 +94,10 @@ func (h *listenHandler) processV1ConferencesPost(ctx context.Context, m *rabbitm
 
 // processV1ConferencesIDDelete handles /v1/conferences/<id> DELETE request
 func (h *listenHandler) processV1ConferencesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ConferencesIDDelete",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDDelete",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -136,12 +129,10 @@ func (h *listenHandler) processV1ConferencesIDDelete(ctx context.Context, m *rab
 
 // processV1ConferencesIDPut handles /v1/conferences/<id> PUT request
 func (h *listenHandler) processV1ConferencesIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ConferencesIDPut",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDPut",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -179,12 +170,10 @@ func (h *listenHandler) processV1ConferencesIDPut(ctx context.Context, m *rabbit
 
 // processV1ConferencesIDGet handles /v1/conferences/<id> GET request
 func (h *listenHandler) processV1ConferencesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ConferencesIDGet",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDGet",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -216,12 +205,10 @@ func (h *listenHandler) processV1ConferencesIDGet(ctx context.Context, m *rabbit
 
 // processV1ConferencesIDRecordingIDPut handles /v1/conferences/<id>/recording_id PUT request
 func (h *listenHandler) processV1ConferencesIDRecordingIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDRecordingIDPut",
-			"uri":  m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDRecordingIDPut",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -259,12 +246,10 @@ func (h *listenHandler) processV1ConferencesIDRecordingIDPut(ctx context.Context
 
 // processV1ConferencesIDRecordingStartPost handles /v1/conferences/<id>/recording_start POST request
 func (h *listenHandler) processV1ConferencesIDRecordingStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDRecordingStartPost",
-			"uri":  m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDRecordingStartPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -296,12 +281,10 @@ func (h *listenHandler) processV1ConferencesIDRecordingStartPost(ctx context.Con
 
 // processV1ConferencesIDRecordingStopPost handles /v1/conferences/<id>/recording_stop POST request
 func (h *listenHandler) processV1ConferencesIDRecordingStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDRecordingStopPost",
-			"uri":  m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDRecordingStopPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -333,12 +316,10 @@ func (h *listenHandler) processV1ConferencesIDRecordingStopPost(ctx context.Cont
 
 // processV1ConferencesIDTranscribeStartPost handles /v1/conferences/<conference-id>/transcribe_start POST request
 func (h *listenHandler) processV1ConferencesIDTranscribeStartPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDTranscribeStartPost",
-			"uri":  m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDTranscribeStartPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
@@ -376,12 +357,10 @@ func (h *listenHandler) processV1ConferencesIDTranscribeStartPost(ctx context.Co
 
 // processV1ConferencesIDTranscribeStopPost handles /v1/conferences/<conference-id>/transcribe_stop POST request
 func (h *listenHandler) processV1ConferencesIDTranscribeStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1ConferencesIDTranscribeStopPost",
-			"uri":  m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDTranscribeStopPost",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {

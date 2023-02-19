@@ -10,12 +10,13 @@ import (
 
 // Joined handles joined conferencecall
 func (h *conferencecallHandler) Joined(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "Joined",
-			"conferencecall_id": cc.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "Joined",
+		"conferencecall_id": cc.ID,
+		"conference_id":     cc.ConferenceID,
+		"reference_type":    cc.ReferenceType,
+		"reference_id":      cc.ReferenceID,
+	})
 
 	// update status
 	res, err := h.updateStatusJoined(ctx, cc.ID)

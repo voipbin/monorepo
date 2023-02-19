@@ -153,6 +153,11 @@ func (h *listenHandler) Run() error {
 
 // processRequest handles all of requests of the listen queue.
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":    "processRequest",
+			"request": m,
+		})
 
 	var requestType string
 	var err error
@@ -165,10 +170,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	}
 	m.URI = uri
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"request": m,
-		})
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
@@ -276,11 +277,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		err = nil
 	}
 
-	log.WithFields(
-		logrus.Fields{
-			"response": response,
-		},
-	).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
+	log.WithField("response", response).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 
 	return response, err
 }

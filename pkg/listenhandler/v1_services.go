@@ -12,12 +12,10 @@ import (
 
 // processV1ServicesTypeConferencecallPost handles POST /v1/services/type/conferencecall request
 func (h *listenHandler) processV1ServicesTypeConferencecallPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ServicesTypeConferencecallPost",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ServicesTypeConferencecallPost",
+		"request": m,
+	})
 
 	var req request.V1DataServicesTypeConferencecallPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
