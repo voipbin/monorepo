@@ -53,8 +53,8 @@ spec:
             - '1'
           resources:
             limits:
-              cpu: "30m"
-              memory: "40M"
+              cpu: "60m"
+              memory: "80M"
           ports:
             - name: metrics
               protocol: "TCP"
