@@ -151,9 +151,11 @@ func Test_EventHandlerChannelCreated(t *testing.T) {
 func Test_EventHandlerChannelDestroyed(t *testing.T) {
 
 	tests := []struct {
-		name  string
+		name string
+
 		event *ari.ChannelDestroyed
 
+		responseChannel *channel.Channel
 		expectChannelID string
 		expectHangup    ari.ChannelCause
 	}{
@@ -185,6 +187,10 @@ func Test_EventHandlerChannelDestroyed(t *testing.T) {
 				Cause:    42,
 			},
 
+			&channel.Channel{
+				ID:   "1587315778.885",
+				Type: channel.TypeCall,
+			},
 			"1587315778.885",
 			ari.ChannelCauseSwitchCongestion,
 		},
@@ -211,9 +217,8 @@ func Test_EventHandlerChannelDestroyed(t *testing.T) {
 
 			ctx := context.Background()
 
-			cn := &channel.Channel{}
-			mockChannel.EXPECT().Delete(ctx, tt.expectChannelID, tt.expectHangup).Return(cn, nil)
-			mockCall.EXPECT().ARIChannelDestroyed(ctx, cn).Return(nil)
+			mockChannel.EXPECT().Delete(ctx, tt.expectChannelID, tt.expectHangup).Return(tt.responseChannel, nil)
+			mockCall.EXPECT().ARIChannelDestroyed(ctx, tt.responseChannel).Return(nil)
 
 			if err := h.EventHandlerChannelDestroyed(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -478,11 +483,9 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 				channelHandler:    mockChannel,
 				bridgeHandler:     mockBridge,
 			}
-
 			ctx := context.Background()
 
 			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, tt.responseBridge.ID).Return(tt.channel, nil)
-			mockBridge.EXPECT().IsExist(ctx, tt.event.Bridge.ID).Return(true)
 			mockBridge.EXPECT().AddChannelID(ctx, tt.responseBridge.ID, tt.channel.ID).Return(tt.responseBridge, nil)
 
 			if tt.channel.Type == channel.TypeConfbridge {
@@ -728,7 +731,6 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 			ctx := context.Background()
 
 			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.event.Channel.ID, "").Return(tt.channel, nil)
-			mockBridge.EXPECT().IsExist(ctx, tt.event.Bridge.ID).Return(true)
 			mockBridge.EXPECT().RemoveChannelID(ctx, tt.event.Bridge.ID, tt.event.Channel.ID).Return(tt.responseBridge, nil)
 
 			switch tt.responseBridge.ReferenceType {

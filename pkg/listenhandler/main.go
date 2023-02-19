@@ -42,6 +42,7 @@ type listenHandler struct {
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+	regAny  = ".*"
 
 	//// v1
 
@@ -66,7 +67,7 @@ var (
 	regV1CallsIDMediaStop         = regexp.MustCompile("/v1/calls/" + regUUID + "/media_stop$")
 
 	// channels
-	regV1ChannelsIDHealth = regexp.MustCompile("/v1/channels/" + regUUID + "/health-check$")
+	regV1ChannelsIDHealth = regexp.MustCompile("/v1/channels/" + regAny + "/health-check$")
 
 	// confbridges
 	regV1Confbridges                 = regexp.MustCompile("/v1/confbridges$")

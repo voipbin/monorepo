@@ -153,13 +153,11 @@ func (h *confbridgeHandler) UpdateBridgeID(ctx context.Context, id uuid.UUID, br
 
 // RemoveChannelCallID removes the channel from the channel call id
 func (h *confbridgeHandler) RemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "RemoveChannelCallID",
-			"confbridge_id": id,
-			"channel_id":    channelID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "RemoveChannelCallID",
+		"confbridge_id": id,
+		"channel_id":    channelID,
+	})
 
 	if errRemove := h.db.ConfbridgeRemoveChannelCallID(ctx, id, channelID); errRemove != nil {
 		log.Errorf("Could not remove the channel from the confbridge's channel/call info. err: %v", errRemove)

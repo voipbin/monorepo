@@ -3,6 +3,7 @@ package confbridgehandler
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -145,16 +146,15 @@ func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
 func Test_ARIChannelLeftBridge(t *testing.T) {
 
 	tests := []struct {
-		name         string
-		confbridgeID uuid.UUID
-		callID       uuid.UUID
-		channel      *channel.Channel
-		bridge       *bridge.Bridge
+		name    string
+		channel *channel.Channel
+		bridge  *bridge.Bridge
+
+		expectConfbridgeID uuid.UUID
+		expectCallID       uuid.UUID
 	}{
 		{
 			"confbridge left",
-			uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
-			uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
 			&channel.Channel{
 				ID:         "e03dc034-9566-11ea-ad83-1f7a1993587b",
 				AsteriskID: "80:fa:5b:5e:da:81",
@@ -170,6 +170,9 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 			},
+
+			uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
+			uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
 		},
 	}
 
@@ -190,21 +193,21 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 				reqHandler:    mockReq,
 				cache:         mockCache,
 			}
-
 			ctx := context.Background()
 
 			// Leaved
-			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.confbridgeID, tt.channel.ID)
-			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.callID, uuid.Nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridgeID).Return(&confbridge.Confbridge{}, nil)
+			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(&confbridge.Confbridge{}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, gomock.Any())
-			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(&call.Call{}, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+
+			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, uuid.Nil).Return(&call.Call{}, nil)
 
 			err := h.ARIChannelLeftBridge(ctx, tt.channel, tt.bridge)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			time.Sleep(time.Millisecond * 100)
 		})
 	}
 }
