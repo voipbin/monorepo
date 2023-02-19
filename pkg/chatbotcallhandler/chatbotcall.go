@@ -88,7 +88,7 @@ func (h *chatbotcallHandler) Get(ctx context.Context, id uuid.UUID) (*chatbotcal
 func (h *chatbotcallHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":       "Delete",
+			"func":           "Delete",
 			"chatbotcall_id": id,
 		},
 	)
@@ -107,19 +107,10 @@ func (h *chatbotcallHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbot
 	return res, nil
 }
 
-
 // GetByReferenceID returns a chatbotcall by the reference_id.
 func (h *chatbotcallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "GetByReferenceID",
-			"reference_id": referenceID,
-		},
-	)
-
 	res, err := h.db.ChatbotcallGetByReferenceID(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get chatbotcall info. err: %v", err)
 		return nil, err
 	}
 
@@ -128,16 +119,8 @@ func (h *chatbotcallHandler) GetByReferenceID(ctx context.Context, referenceID u
 
 // GetByTranscribeID returns a chatbotcall by the transcribe_id.
 func (h *chatbotcallHandler) GetByTranscribeID(ctx context.Context, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "GetByTranscribeID",
-			"reference_id": transcribeID,
-		},
-	)
-
 	res, err := h.db.ChatbotcallGetByTranscribeID(ctx, transcribeID)
 	if err != nil {
-		log.Errorf("Could not get chatbotcall info. err: %v", err)
 		return nil, err
 	}
 
@@ -146,12 +129,10 @@ func (h *chatbotcallHandler) GetByTranscribeID(ctx context.Context, transcribeID
 
 // UpdateStatusStart updates the status to start
 func (h *chatbotcallHandler) UpdateStatusStart(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) (*chatbotcall.Chatbotcall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdateStatusStart",
-			"chatbot_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdateStatusStart",
+		"chatbot_id": id,
+	})
 
 	if errUpdate := h.db.ChatbotcallUpdateStatusProgressing(ctx, id, transcribeID); errUpdate != nil {
 		log.Errorf("Could not get chatbotcall info. err: %v", errUpdate)

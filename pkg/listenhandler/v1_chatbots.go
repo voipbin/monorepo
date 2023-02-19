@@ -17,7 +17,8 @@ import (
 // processV1ChatbotsGet handles GET /v1/chatbots request
 func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "processV1ChatbotsGet",
+		"func":    "processV1ChatbotsGet",
+		"request": m,
 	})
 
 	u, err := url.Parse(m.URI)
@@ -61,12 +62,10 @@ func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *rabbitmqhan
 
 // processV1ChatbotsPost handles POST /v1/chatbots/<chatbot-id> request
 func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ChatbotsPost",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ChatbotsPost",
+		"request": m,
+	})
 
 	var req request.V1DataChatbotsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -97,12 +96,10 @@ func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *rabbitmqha
 
 // processV1ChatbotsIDGet handles GET /v1/chatbots/<chatbot-id> request
 func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ChatbotsIDGet",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ChatbotsIDGet",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
@@ -134,12 +131,10 @@ func (h *listenHandler) processV1ChatbotsIDGet(ctx context.Context, m *rabbitmqh
 
 // processV1ChatbotsIDDelete handles DELETE /v1/chatbots/<chatbot-id> request
 func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"handler": "processV1ChatbotsIDDelete",
-			"uri":     m.URI,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ChatbotsIDDelete",
+		"request": m,
+	})
 
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {

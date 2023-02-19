@@ -4,7 +4,6 @@ package subscribehandler
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -100,7 +99,7 @@ func (h *subscribeHandler) Run() error {
 
 		// bind each targets
 		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
-			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
+			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
 			return err
 		}
 	}
@@ -109,7 +108,7 @@ func (h *subscribeHandler) Run() error {
 	go func() {
 		for {
 			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "chatbot-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
-				logrus.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
+				log.Errorf("Could not consume the subscribed evnet message correctly. err: %v", errConsume)
 			}
 		}
 	}()
@@ -119,23 +118,17 @@ func (h *subscribeHandler) Run() error {
 
 // processEventRun runs the event process handler.
 func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
-	if errProcess := h.processEvent(m); errProcess != nil {
-		logrus.Errorf("Could not consume the subscribed event message correctly. err: %v", errProcess)
-	}
+	go h.processEvent(m)
 
 	return nil
 }
 
 // processEvent processes received event
-func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":      "processEvent",
-			"publisher": m.Publisher,
-			"type":      m.Type,
-		},
-	)
-	log.WithField("event", m).Debugf("received event. type: %s", m.Type)
+func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEvent",
+		"event": m,
+	})
 
 	ctx := context.Background()
 
@@ -157,14 +150,13 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 
 	default:
 		// ignore the event.
+		return
 	}
 
 	elapsed := time.Since(start)
 	promSubscribeProcessTime.WithLabelValues(m.Publisher, m.Type).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		return fmt.Errorf("could not process the ari event correctly. err: %v", err)
+		log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
 	}
-
-	return nil
 }
