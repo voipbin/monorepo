@@ -33,18 +33,20 @@ Type
 ======================= ==================
 type                    Description
 ======================= ==================
-agent_call              Make a call to the agent.
+agent_call              **Deprecated**. Use the *connect* instead. Creates a call to the agent and connect.
 amd                     Answering machine detection.
 answer                  Answer the call.
 beep                    Play the beep sound.
-branch                  Branch the flow
-call                    Make a call in a new context.
-condition_call_digits   Condition check(call's digits)
-condition_call_status   Condition check(call's status)
+branch                  Branch gets the variable then execute the correspond action. For example. gets the dtmf input saved variable and jump to the action.
+call                    Starts a new independent outgoing call with a given flow.
+chatbot_talk            Starts a talk with chatbot.
+condition_call_digits   **Deprecated**. Use the `condition_variable` instead. Condition check(call's digits).
+condition_call_status   **Deprecated**. Use the `condition_variable` instead. Condition check(call's status).
 condition_datetime      Condition check(time)
+condition_variable      Condition check(variable).
 confbridge_join         Join to the confbridge.
 conference_join         Join to the conference.
-connect                 Connect to the other destination.
+connect                 Creates a new call to the destinations and connects to them.
 conversation_send       Send a message to the conversation.
 digits_receive          Receive the digits(dtmfs).
 digits_send             Send the digits(dtmfs).
@@ -55,12 +57,14 @@ fetch                   Fetch the actions from endpoint.
 fetch_flow              Fetch the actions from the exist flow.
 goto                    Goto.
 hangup                  Hangup the call.
+hangup_relay            Hangs up the call with the same reason of the given reference id.
 message_send            Send a message.
-play                    Play the file.
+play                    Play the file of the given urls.
 queue_join              Join to the queue.
-recording_start         Startr the record of the given call.
+recording_start         Start the record of the given call.
 recording_stop          Stop the record of the given call.
 sleep                   Sleep.
+stop                    Stop the flow.
 stream_echo             Echo the steam.
 talk                    Generate audio from the given text(ssml or plain text) and play it.
 transcribe_start        Start transcribe the call
@@ -74,7 +78,8 @@ webhook_send            Send a webhook.
 
 Agent Call
 ----------
-Call to agent.
+Calling the agent.
+The agent may have various types of addresses or phone numbers, such as a desk phone, mobile phone, or softphone application.
 
 Parameters
 ++++++++++
@@ -203,7 +208,7 @@ Parameters
     {
         "type": "branch",
         "option": {
-        "variable": "<string>",
+            "variable": "<string>",
             "default_target_id": "<string>",
             "target_ids": {
                 "<string>": <string>,
@@ -261,7 +266,8 @@ Parameters
                     ...
                 }
             ],
-            "chained": <boolean>
+            "chained": <boolean>,
+            "early_execution": <boolean>
         }
     }
 
@@ -270,6 +276,7 @@ Parameters
 * flow_id: Call's flow id. If this not set, will use the actions array.
 * actions: Array of actions. If the flow_id not set, the call flow will be created with this actions.
 * chained: If it sets to true, created calls will be hungup when the master call is hangup. Default false.
+* early_execution: It it sets to true, the voipbin will execute the flow when then call is ringing.
 
 Example
 +++++++
@@ -304,6 +311,33 @@ Example
         }
     }
 
+.. _flow-struct-action-chatbot_talk:
+
+Chatbot Talk
+----------------
+Start the chatbot talk.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "chatbot_talk",
+        "option": {
+            "chatbot_id": "<string>",
+            "gender": "<string>",
+            "language": "<string>",
+            "duration": <number>
+        }
+    }
+
+* chatbot_id: Chatbot id.
+* gender: Voice gender. male/female/neutral
+* language: Specifies the language. BCP47 format.
+* duration: Duration. Seconds.
+
+
+
 .. _flow-struct-action-confbridge_join:
 
 Confbridge Join
@@ -327,8 +361,10 @@ Parameters
 
 Condition Call Digits
 ---------------------
+Deprecated. Use the condition_variable instead.
 Check the condition of received digits.
-It checks the received digits and if it matched condition move to the next action. If not, move to the false_target_id.
+If the conditions are met, the system proceeds to the next action.
+If the conditions are not met, the voipbin directs the call to a false_target_id for further processing.
 
 Parameters
 ++++++++++
@@ -363,6 +399,7 @@ Example
 
 Condition Call Status
 ---------------------
+Deprecated. Use the condition_variable instead.
 Check the condition of call's status.
 It checks the call's status and if it matched with condition then move to the next action. If not, move to the false_target_id.
 
@@ -448,6 +485,53 @@ Example
         }
     }
 
+.. _flow-struct-action-condition_variable:
+
+Condition Variable
+---------------------
+Check the condition of the given variable.
+It checks the call's status and if it matched with condition then move to the next action. If not, move to the false_target_id.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "condition_variable",
+        "option": {
+            "condition": "<string>",
+            "variable": "<string>",
+            "value_type": "<string>",
+            "value_string": "<string>",
+            "value_number": <number>,
+            "value_length": <number>,
+            "false_target_id": "<string>"
+        }
+    }
+
+* *condition*: Match condition. One of "==", "!=", ">", ">=", "<", "<=".
+* *variable*: Target variable. See detail :ref:`here <variable-variable>`.
+* value_type: Type of value. string/number/length.
+* value_string: Value. Valid only if the value_type is string.
+* value_number: * value_string: Value. Valid only if the value_type is number.
+* value_length: * value_string: Value. Valid only if the value_type is length.
+* false_target_id: action id for false condition.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "condition_variable",
+        "option": {
+            "condition": "==",
+            "variable": "voipbin.call.source.target",
+            "value_type": "string",
+            "value_string": "+821100000001",
+            "false_target_id": "fb2f4e2a-b030-11ed-bddb-976af892f5a3"
+        }
+    }
+
 .. _flow-struct-action-conference_join:
 
 Conference Join
@@ -494,14 +578,16 @@ Parameters
             "source": {...},
             "destinations": [
                 ...
-            ]
-            "unchained": <boolean>
+            ],
+            "early_media": <boolean>,
+            "relay_reason": <boolean>
         }
     }
 
 * *source*: Source address. See detail :ref:`here <common-struct-address-address>`.
 * *destinations*: Array of destination addresses. See detail :ref:`here <common-struct-address-address>`.
-* unchained: If it sets to false, connected destination calls will be hungup when the master call is hangup. Default false.
+* early_media: Support early media.
+* relay_reason: relay the hangup reason to the master call.
 
 Example
 +++++++
@@ -824,6 +910,34 @@ Example
         "type": "hangup"
     }
 
+.. _flow-struct-action-hangup_relay:
+
+Hangup Relay
+-------------
+Hangup the call and relay the hangup cause to the reference id.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "Hangup_relay"
+        "option": {
+            "reference_id": "<string>"
+        }
+    }
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "hangup_relay",
+        "option": {
+            "reference_id": "b8573f30-b031-11ed-ac05-3bc9a62e64c3"
+        }
+    }
+
 .. _flow-struct-action-message_send:
 
 Message send
@@ -1043,13 +1157,26 @@ Parameters
         "option": {
             "text": "<string>",
             "gender": "<string>",
-            "language": "<string>"
+            "language": "<string>",
+            "digits_handle": "<string>"
         }
     }
 
 * text: Text to speech. SSML(https://cloud.google.com/text-to-speech/docs/ssml) supported.
-* gender: male/female.
+* gender: male/female/neutral.
 * language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).
+* digits_handle: See detail :ref:`here <flow-struct-action-talk-digits_handle>`.
+
+.. _flow-struct-action-talk-digits_handle:
+
+Digits handle
+++++++++++++++
+======== ==============
+Type     Description
+======== ==============
+next     If digits received in talk, move the action to the next.
+======== ==============
+
 
 Example
 +++++++
@@ -1060,6 +1187,36 @@ Example
         "option": {
             "text": "Hello. Welcome to voipbin. This is test message. Please enjoy the voipbin service. Thank you. Bye",
             "gender": "female",
+            "language": "en-US"
+        }
+    }
+
+.. _flow-struct-action-transcribe_recording:
+
+Transcribe recording
+--------------------
+Transcribe the call's recordings.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "transcribe_recording"
+        "option": {
+            "language": "<string>"
+        }
+    }
+
+* language: Specifies the language. BCP47 format.
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "transcribe_recording"
+        "option": {
             "language": "en-US"
         }
     }
@@ -1118,7 +1275,7 @@ Example
 
 .. _flow-struct-action-variable_set:
 
-Variable set
+Variable Set
 ---------------
 Stop the transcribe talk in realtime.
 

@@ -11,6 +11,7 @@ Topic
 The user can subscribe specific topic events. The topic subscription allows pattern matching subscription.
 
 The topic looks like this.
+
 .. code::
 
     <resource>:<resource-id>

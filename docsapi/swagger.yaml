@@ -149,10 +149,12 @@ definitions:
     properties:
       action:
         $ref: '#/definitions/action.Action'
+        description: call's current action.
+      action_next_hold:
+        description: call's next action hold. if true, don't allow to go next action
+        type: boolean
       active_flow_id:
         description: active flow id
-        type: string
-      asterisk_id:
         type: string
       bridge_id:
         description: call bridge id
@@ -175,7 +177,18 @@ definitions:
         type: object
       destination:
         $ref: '#/definitions/address.Address'
+      dialroute_id:
+        description: dialroute(valid only tel type outgoing call)
+        type: string
+      dialroutes:
+        description: list of dialroutes for dialing.
+        items:
+          $ref: '#/definitions/route.Route'
+        type: array
       direction:
+        type: string
+      external_media_id:
+        description: external media id(current)
         type: string
       flow_id:
         description: flow id
@@ -206,6 +219,8 @@ definitions:
         type: string
       tm_create:
         description: timestamp
+        type: string
+      tm_delete:
         type: string
       tm_hangup:
         type: string
@@ -262,11 +277,13 @@ definitions:
         description: info
         type: string
       tm_create:
-        description: timestamp
+        type: string
+      tm_delete:
         type: string
       tm_hangup:
         type: string
       tm_progressing:
+        description: timestamp
         type: string
       tm_ringing:
         type: string
@@ -456,6 +473,108 @@ definitions:
       type:
         type: string
     type: object
+  chatbot.Chatbot:
+    properties:
+      customer_id:
+        type: string
+      detail:
+        type: string
+      engine_type:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tm_create:
+        description: timestamp
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
+  chatbot.WebhookMessage:
+    properties:
+      customer_id:
+        type: string
+      detail:
+        type: string
+      engine_type:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tm_create:
+        description: timestamp
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
+  chatbotcall.Chatbotcall:
+    properties:
+      chatbot_id:
+        type: string
+      confbridge_id:
+        type: string
+      customer_id:
+        type: string
+      gender:
+        type: string
+      id:
+        type: string
+      language:
+        type: string
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_end:
+        type: string
+      tm_update:
+        type: string
+      transcribe_id:
+        type: string
+    type: object
+  chatbotcall.WebhookMessage:
+    properties:
+      chatbot_id:
+        type: string
+      confbridge_id:
+        type: string
+      customer_id:
+        type: string
+      gender:
+        type: string
+      id:
+        type: string
+      language:
+        type: string
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_end:
+        type: string
+      tm_update:
+        type: string
+      transcribe_id:
+        type: string
+    type: object
   chatroom.Chatroom:
     properties:
       chat_id:
@@ -534,8 +653,17 @@ definitions:
         type: string
       tm_delete:
         type: string
+      tm_end:
+        description: represent the timestamp for conference ended.
+        type: string
       tm_update:
         type: string
+      transcribe_id:
+        type: string
+      transcribe_ids:
+        items:
+          type: string
+        type: array
       type:
         type: string
     type: object
@@ -1164,6 +1292,38 @@ definitions:
         description: milliseconds
         type: integer
     type: object
+  provider.WebhookMessage:
+    properties:
+      detail:
+        type: string
+      hostname:
+        description: destination
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tech_headers:
+        additionalProperties:
+          type: string
+        description: tech headers. valid only for the sip type.
+        type: object
+      tech_postfix:
+        description: tech postfix. valid only for the sip type.
+        type: string
+      tech_prefix:
+        description: sip type techs
+        type: string
+      tm_create:
+        description: timestamp
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+      type:
+        type: string
+    type: object
   queue.WebhookMessage:
     properties:
       customer_id:
@@ -1228,8 +1388,8 @@ definitions:
     type: object
   queuecall.Queuecall:
     properties:
-      conference_id:
-        description: conference id
+      confbridge_id:
+        description: confbridge id
         type: string
       customer_id:
         type: string
@@ -1242,9 +1402,6 @@ definitions:
       exit_action_id:
         description: action id for queue exit. When the queuecall has ended, the queuemanager
           will send the request forward to this action id.
-        type: string
-      flow_id:
-        description: queuecall's queue flow id.
         type: string
       forward_action_id:
         description: action id for forward. This is for the conference_join's action
@@ -1290,6 +1447,9 @@ definitions:
       tm_delete:
         description: Deleted timestamp.
         type: string
+      tm_end:
+        description: ended timestamp.
+        type: string
       tm_service:
         description: Serviced timestamp.
         type: string
@@ -1301,17 +1461,26 @@ definitions:
     properties:
       asterisk_id:
         type: string
-      channel_id:
-        type: string
+      channel_ids:
+        description: snoop channel ids for recording
+        items:
+          type: string
+        type: array
       customer_id:
         type: string
-      filename:
-        type: string
+      filenames:
+        items:
+          type: string
+        type: array
       format:
         type: string
       id:
         type: string
+      recording_name:
+        type: string
       reference_id:
+        type: string
+      reference_type:
         type: string
       status:
         type: string
@@ -1324,8 +1493,6 @@ definitions:
       tm_start:
         type: string
       tm_update:
-        type: string
-      type:
         type: string
     type: object
   recording.WebhookMessage:
@@ -1336,6 +1503,8 @@ definitions:
         type: string
       reference_id:
         type: string
+      reference_type:
+        type: string
       status:
         type: string
       tm_create:
@@ -1347,8 +1516,6 @@ definitions:
       tm_start:
         type: string
       tm_update:
-        type: string
-      type:
         type: string
     type: object
   request.BodyAgentsIDAddressesPUT:
@@ -1479,6 +1646,15 @@ definitions:
       type:
         type: string
     type: object
+  request.BodyChatbotsPOST:
+    properties:
+      detail:
+        type: string
+      engine_type:
+        type: string
+      name:
+        type: string
+    type: object
   request.BodyChatmessagesPOST:
     properties:
       chat_id:
@@ -1519,15 +1695,6 @@ definitions:
           type: string
         type: array
       type:
-        type: string
-    type: object
-  request.BodyConferencecallsPOST:
-    properties:
-      conference_id:
-        type: string
-      reference_id:
-        type: string
-      reference_type:
         type: string
     type: object
   request.BodyConferencesPOST:
@@ -1736,6 +1903,44 @@ definitions:
       try_interval:
         type: integer
     type: object
+  request.BodyProvidersIDPUT:
+    properties:
+      detail:
+        type: string
+      hostname:
+        type: string
+      name:
+        type: string
+      tech_headers:
+        additionalProperties:
+          type: string
+        type: object
+      tech_postfix:
+        type: string
+      tech_prefix:
+        type: string
+      type:
+        type: string
+    type: object
+  request.BodyProvidersPOST:
+    properties:
+      detail:
+        type: string
+      hostname:
+        type: string
+      name:
+        type: string
+      tech_headers:
+        additionalProperties:
+          type: string
+        type: object
+      tech_postfix:
+        type: string
+      tech_prefix:
+        type: string
+      type:
+        type: string
+    type: object
   request.BodyQueuesIDActionsPUT:
     properties:
       timeout_service:
@@ -1761,6 +1966,17 @@ definitions:
           type: string
         type: array
     type: object
+  request.BodyRoutesPOST:
+    properties:
+      customer_id:
+        type: string
+      priority:
+        type: integer
+      provider_id:
+        type: string
+      target:
+        type: string
+    type: object
   request.BodyTagsIDPUT:
     properties:
       detail:
@@ -1770,9 +1986,13 @@ definitions:
     type: object
   request.BodyTranscribesPOST:
     properties:
+      direction:
+        type: string
       language:
         type: string
-      recording_id:
+      reference_id:
+        type: string
+      transcribe_type:
         type: string
     type: object
   request.ParamConversationsIDMessagesPOST:
@@ -1826,6 +2046,24 @@ definitions:
       result:
         items:
           $ref: '#/definitions/campaigncall.WebhookMessage'
+        type: array
+    type: object
+  response.BodyChatbotcallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/chatbotcall.WebhookMessage'
+        type: array
+    type: object
+  response.BodyChatbotsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/chatbot.WebhookMessage'
         type: array
     type: object
   response.BodyChatmessagesGET:
@@ -1961,6 +2199,57 @@ definitions:
           $ref: '#/definitions/tag.WebhookMessage'
         type: array
     type: object
+  response.BodyTranscribesGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/transcribe.WebhookMessage'
+        type: array
+    type: object
+  route.Route:
+    properties:
+      customer_id:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      provider_id:
+        type: string
+      target:
+        description: country code or all
+        type: string
+      tm_create:
+        description: timestamp
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
+  route.WebhookMessage:
+    properties:
+      customer_id:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      provider_id:
+        type: string
+      target:
+        description: country code or all
+        type: string
+      tm_create:
+        description: timestamp
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
   tag.Tag:
     properties:
       customer_id:
@@ -2037,6 +2326,14 @@ definitions:
       reference_id:
         description: call/conference/recording's id
         type: string
+      reference_type:
+        type: string
+      status:
+        type: string
+      streaming_ids:
+        items:
+          type: string
+        type: array
       tm_create:
         description: timestamp
         type: string
@@ -2044,31 +2341,35 @@ definitions:
         type: string
       tm_update:
         type: string
-      transcripts:
-        description: transcripts
-        items:
-          $ref: '#/definitions/transcript.Transcript'
-        type: array
-      type:
-        description: type
-        type: string
     type: object
-  transcript.Transcript:
+  transcribe.WebhookMessage:
     properties:
       customer_id:
+        description: customer
         type: string
-      direction:
-        description: direction. in/out
+      host_id:
+        description: host id
         type: string
       id:
+        description: Transcribe id
         type: string
-      message:
-        description: message
+      language:
+        description: BCP47 type's language code. en-US
+        type: string
+      reference_id:
+        description: call/conference/recording's id
+        type: string
+      reference_type:
+        description: reference's type
+        type: string
+      status:
         type: string
       tm_create:
         description: timestamp
         type: string
-      transcribe_id:
+      tm_delete:
+        type: string
+      tm_update:
         type: string
     type: object
 host: api.voipbin.net
@@ -2356,6 +2657,38 @@ paths:
           schema:
             $ref: '#/definitions/call.Call'
       summary: Get detail call info.
+  /v1.0/calls/{id}/hangup:
+    post:
+      description: Returns detail call info of the given call id.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/call.Call'
+      summary: Hangup the call.
+  /v1.0/calls/{id}/talk:
+    post:
+      description: Talks to the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Talk to the call.
   /v1.0/campaigncalls/{id}:
     delete:
       description: Delete a existing campaign.
@@ -2612,6 +2945,125 @@ paths:
           schema:
             $ref: '#/definitions/campaign.Campaign'
       summary: Update a campaign and reuturns updated campaign info.
+  /v1.0/chatbotcalls:
+    get:
+      description: Gets a list of chatbotcalls
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyChatbotcallsGET'
+      summary: Gets a list of chatbotcalls.
+  /v1.0/chatbotcalls/{id}:
+    delete:
+      description: Delete a existing chatbotcall.
+      parameters:
+      - description: The chatbotcall's id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delete a existing chatbotcall.
+    get:
+      description: Returns detail chatbotcall info of the given chatbotcall id.
+      parameters:
+      - description: The ID of the chatbotcall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chatbotcall.Chatbotcall'
+      summary: Returns detail chatbotcall info.
+  /v1.0/chatbots:
+    get:
+      description: Gets a list of chatbots
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyChatbotsGET'
+      summary: Gets a list of chatbots.
+    post:
+      description: Create a new chatbot and returns detail created chatbot info.
+      parameters:
+      - description: chatbot info.
+        in: body
+        name: chatbot
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyChatbotsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chatbot.WebhookMessage'
+      summary: Create a new chatbot and returns detail created chatbot info.
+  /v1.0/chatbots/{id}:
+    delete:
+      description: Delete a existing chatbot.
+      parameters:
+      - description: The chatbot's id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delete a existing chatbot.
+    get:
+      description: Returns detail chatbot info of the given chatbot id.
+      parameters:
+      - description: The ID of the chatbot
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chatbot.Chatbot'
+      summary: Returns detail chatbot info.
   /v1.0/chatmessages:
     get:
       description: Gets a list of chatmessages
@@ -2953,24 +3405,6 @@ paths:
         "200":
           description: OK
       summary: Remove participant id.
-  /v1.0/conferencecalls:
-    post:
-      description: Create a new conferencecall with the given information.
-      parameters:
-      - description: The conferencecall detail
-        in: body
-        name: conference
-        required: true
-        schema:
-          $ref: '#/definitions/request.BodyConferencecallsPOST'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/conferencecall.Conferencecall'
-      summary: Create a new conferencecall
   /v1.0/conferencecalls/{id}:
     delete:
       description: Kicks the conferencecall.
@@ -3082,6 +3516,87 @@ paths:
           schema:
             $ref: '#/definitions/conference.Conference'
       summary: Returns detail conference info.
+    put:
+      description: Update conference info of the given conference id.
+      parameters:
+      - description: The ID of the conference
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: JWT token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/conference.Conference'
+      summary: Update conference info.
+  /v1.0/conferences/{id}/recording_start:
+    post:
+      description: Start the conference recording.
+      parameters:
+      - description: The ID of the conference
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Starts the conference recording.
+  /v1.0/conferences/{id}/recording_stop:
+    post:
+      description: Stops the conference recording.
+      parameters:
+      - description: The ID of the conference
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Stops the conference recording.
+  /v1.0/conferences/{id}/transcribe_start:
+    post:
+      description: Start the conference transcribe.
+      parameters:
+      - description: The ID of the conference
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Starts the conference transcribe.
+  /v1.0/conferences/{id}/transcribe_stop:
+    post:
+      description: Stops the conference transcribe.
+      parameters:
+      - description: The ID of the conference
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Stops the conference transcribe.
   /v1.0/conversations:
     get:
       description: Gets a list of conversations
@@ -4010,6 +4525,93 @@ paths:
           schema:
             $ref: '#/definitions/outplan.Outplan'
       summary: Update a outplan and reuturns updated outplan info.
+  /v1.0/provider/{id}:
+    delete:
+      description: Delete the provider of the given id
+      parameters:
+      - description: The ID of the provider
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delete the provider
+  /v1.0/providers:
+    get:
+      description: get providers of the customer
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/provider.WebhookMessage'
+      summary: List providers
+    post:
+      description: create a new provider
+      parameters:
+      - description: The provider detail
+        in: body
+        name: provider
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyProvidersPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/provider.WebhookMessage'
+      summary: Create a new provider.
+  /v1.0/providers/{id}:
+    get:
+      description: Get the provider of the given id
+      parameters:
+      - description: The ID of the provider
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Get the provider
+    put:
+      description: Update an provider and returns detail updated provider info.
+      parameters:
+      - description: The ID of the provider
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Provider's update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyProvidersIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Update an provider and reuturns updated provider info.
   /v1.0/queuecall/{id}:
     get:
       description: Returns detail conferencecall info of the given queuecall id.
@@ -4232,6 +4834,23 @@ paths:
             $ref: '#/definitions/response.BodyRecordingsGET'
       summary: List recordings
   /v1.0/recordings/{id}:
+    delete:
+      description: Deletes a recording and returns a deleted recording information
+        of the given recording id.
+      parameters:
+      - description: The recording's id.
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/recording.Recording'
+      summary: Deletes a recording and returns a deleted recording information.
     get:
       description: Returns a detial recording information of the given recording id.
       parameters:
@@ -4248,6 +4867,92 @@ paths:
           schema:
             $ref: '#/definitions/recording.Recording'
       summary: Returns a detail recording information.
+  /v1.0/routes:
+    get:
+      description: get routes of the customer
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/route.WebhookMessage'
+      summary: List routes
+    post:
+      description: create a new route
+      parameters:
+      - description: The route detail
+        in: body
+        name: route
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyRoutesPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/route.WebhookMessage'
+      summary: Create a new route.
+  /v1.0/routes/{id}:
+    delete:
+      description: Delete the route of the given id
+      parameters:
+      - description: The ID of the route
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delete the route
+    get:
+      description: Get the route of the given id
+      parameters:
+      - description: The ID of the route
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Get the route
+    put:
+      description: Update an route and returns detail updated route info.
+      parameters:
+      - description: The ID of the route
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Queue's update info
+        in: body
+        name: update_info
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyQueuesIDPUT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Update an route and reuturns updated route info.
   /v1.0/tags:
     get:
       description: get tags of the customer
@@ -4329,7 +5034,43 @@ paths:
         "200":
           description: OK
       summary: Update the tag info.
+  /v1.0/transcribe/{id}:
+    get:
+      description: Returns detail transcribe info of the given transcribe id.
+      parameters:
+      - description: The ID of the transcribe
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/transcribe.Transcribe'
+      summary: Get detail transcribe info.
   /v1.0/transcribes:
+    get:
+      description: get transcribes of the customer
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyTranscribesGET'
+      summary: Get list of transcribes
     post:
       description: transcribe a recording
       parameters:
@@ -4347,6 +5088,61 @@ paths:
           schema:
             $ref: '#/definitions/transcribe.Transcribe'
       summary: Create a transcribe
+  /v1.0/transcribes/{id}:
+    delete:
+      description: Delete the transcribe of the given id
+      parameters:
+      - description: The ID of the transcribe
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/transcribe.Transcribe'
+      summary: Delete the transcribe.
+  /v1.0/transcribes/{id}/stop:
+    post:
+      description: transcribe a recording
+      parameters:
+      - description: Creating transcribe info.
+        in: body
+        name: transcribe
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyTranscribesPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/transcribe.Transcribe'
+      summary: Create a transcribe
+  /v1.0/transcripts:
+    get:
+      description: get transcripts of the customer
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyTranscribesGET'
+      summary: Get list of transcripts
   /v1.0/ws:
     get:
       description: create a new queue
