@@ -30,10 +30,12 @@ Welcome to voipbin's documentation!
    webhook
    customer
    chat
+   chatbot
    provider
    route
    variable
    websocket
+   trunk
    common
 
 

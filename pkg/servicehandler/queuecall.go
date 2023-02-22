@@ -117,35 +117,36 @@ func (h *serviceHandler) QueuecallDelete(ctx context.Context, u *cscustomer.Cust
 // QueuecallDeleteByReferenceID sends a request to the queue-manager
 // to kick out the given reference id's queuecall.
 func (h *serviceHandler) QueuecallDeleteByReferenceID(ctx context.Context, u *cscustomer.Customer, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "QueuecallDeleteByReferenceID",
-		"customer_id": u.ID,
-		"username":    u.Username,
-	})
+	return nil, nil
+	// log := logrus.WithFields(logrus.Fields{
+	// 	"func":        "QueuecallDeleteByReferenceID",
+	// 	"customer_id": u.ID,
+	// 	"username":    u.Username,
+	// })
 
-	tmp, err := h.reqHandler.QueueV1QueuecallReferenceGet(ctx, referenceID)
-	if err != nil {
-		log.Errorf("Could not get queuecall reference. err: %v", err)
-		return nil, err
-	}
+	// tmp, err := h.reqHandler.QueueV1QueuecallReferenceGet(ctx, referenceID)
+	// if err != nil {
+	// 	log.Errorf("Could not get queuecall reference. err: %v", err)
+	// 	return nil, err
+	// }
 
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
-	}
+	// if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
+	// 	log.Info("The user has no permission for this agent.")
+	// 	return nil, fmt.Errorf("user has no permission")
+	// }
 
-	if tmp.CurrentQueuecallID == uuid.Nil {
-		log.Errorf("The current queuecall id has not set. current_queuecall_id: %s", tmp.CurrentQueuecallID)
-		return nil, fmt.Errorf("current queuecall id has not set")
-	}
+	// if tmp.CurrentQueuecallID == uuid.Nil {
+	// 	log.Errorf("The current queuecall id has not set. current_queuecall_id: %s", tmp.CurrentQueuecallID)
+	// 	return nil, fmt.Errorf("current queuecall id has not set")
+	// }
 
-	tmpRes, err := h.reqHandler.QueueV1QueuecallDeleteByReferenceID(ctx, tmp.CurrentQueuecallID)
-	if err != nil {
-		log.Errorf("Could not delete the queuecall. err: %v", err)
-		return nil, err
-	}
-	log.WithField("queuecall", tmpRes).Debugf("Deleted queuecall. queuecall_id: %s", tmpRes.ID)
+	// tmpRes, err := h.reqHandler.QueueV1QueuecallDeleteByReferenceID(ctx, tmp.CurrentQueuecallID)
+	// if err != nil {
+	// 	log.Errorf("Could not delete the queuecall. err: %v", err)
+	// 	return nil, err
+	// }
+	// log.WithField("queuecall", tmpRes).Debugf("Deleted queuecall. queuecall_id: %s", tmpRes.ID)
 
-	res := tmpRes.ConvertWebhookMessage()
-	return res, nil
+	// res := tmpRes.ConvertWebhookMessage()
+	// return res, nil
 }

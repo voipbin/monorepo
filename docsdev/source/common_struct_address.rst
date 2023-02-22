@@ -34,7 +34,7 @@ Defines types of address.
 =========== ============
 Type        Description
 =========== ============
-agent       Used for calling to the agent
+agent       Used for calling to the agent(target must be the agent's id)
 endpoint    Used for calling to endpoint(extension@domain)
 sip         SIP type address.
 tel         Telephone type address.
