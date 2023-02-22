@@ -440,6 +440,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1.0/calls/{id}/hangup": {
+            "post": {
+                "description": "Returns detail call info of the given call id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Hangup the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/call.Call"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/calls/{id}/talk": {
+            "post": {
+                "description": "Talks to the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Talk to the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1.0/campaigncalls/{id}": {
             "get": {
                 "description": "Returns detail campaigns info of the given campaigncall id.",
@@ -826,6 +875,188 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/campaign.Campaign"
                         }
+                    }
+                }
+            }
+        },
+        "/v1.0/chatbotcalls": {
+            "get": {
+                "description": "Gets a list of chatbotcalls",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of chatbotcalls.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyChatbotcallsGET"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chatbotcalls/{id}": {
+            "get": {
+                "description": "Returns detail chatbotcall info of the given chatbotcall id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail chatbotcall info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chatbotcall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chatbotcall.Chatbotcall"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing chatbotcall.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing chatbotcall.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The chatbotcall's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/chatbots": {
+            "get": {
+                "description": "Gets a list of chatbots",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of chatbots.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyChatbotsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new chatbot and returns detail created chatbot info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new chatbot and returns detail created chatbot info.",
+                "parameters": [
+                    {
+                        "description": "chatbot info.",
+                        "name": "chatbot",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatbotsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chatbot.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/chatbots/{id}": {
+            "get": {
+                "description": "Returns detail chatbot info of the given chatbot id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail chatbot info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the chatbot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chatbot.Chatbot"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a existing chatbot.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a existing chatbot.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The chatbot's id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -1343,34 +1574,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1.0/conferencecalls": {
-            "post": {
-                "description": "Create a new conferencecall with the given information.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Create a new conferencecall",
-                "parameters": [
-                    {
-                        "description": "The conferencecall detail",
-                        "name": "conference",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.BodyConferencecallsPOST"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/conferencecall.Conferencecall"
-                        }
-                    }
-                }
-            }
-        },
         "/v1.0/conferencecalls/{id}": {
             "get": {
                 "description": "Returns detail conferencecall info of the given conferencecall id.",
@@ -1514,12 +1717,135 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "description": "Update conference info of the given conference id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update conference info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conference",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JWT token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/conference.Conference"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete the conference. All the participants in the conference will be kicked out.",
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Delete the conference.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conference",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/conferences/{id}/recording_start": {
+            "post": {
+                "description": "Start the conference recording.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Starts the conference recording.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conference",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/conferences/{id}/recording_stop": {
+            "post": {
+                "description": "Stops the conference recording.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Stops the conference recording.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conference",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/conferences/{id}/transcribe_start": {
+            "post": {
+                "description": "Start the conference transcribe.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Starts the conference transcribe.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conference",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/conferences/{id}/transcribe_stop": {
+            "post": {
+                "description": "Stops the conference transcribe.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Stops the conference transcribe.",
                 "parameters": [
                     {
                         "type": "string",
@@ -2950,6 +3276,139 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1.0/provider/{id}": {
+            "delete": {
+                "description": "Delete the provider of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the provider",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/providers": {
+            "get": {
+                "description": "get providers of the customer",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List providers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.WebhookMessage"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new provider",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new provider.",
+                "parameters": [
+                    {
+                        "description": "The provider detail",
+                        "name": "provider",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyProvidersPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/providers/{id}": {
+            "get": {
+                "description": "Get the provider of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the provider",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an provider and returns detail updated provider info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an provider and reuturns updated provider info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the provider",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Provider's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyProvidersIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1.0/queuecall/{id}": {
             "get": {
                 "description": "Returns detail conferencecall info of the given queuecall id.",
@@ -3311,6 +3770,161 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Deletes a recording and returns a deleted recording information of the given recording id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Deletes a recording and returns a deleted recording information.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The recording's id.",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/recording.Recording"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/routes": {
+            "get": {
+                "description": "get routes of the customer",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List routes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/route.WebhookMessage"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new route",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new route.",
+                "parameters": [
+                    {
+                        "description": "The route detail",
+                        "name": "route",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyRoutesPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/route.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/routes/{id}": {
+            "get": {
+                "description": "Get the route of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the route",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the route",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an route and returns detail updated route info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update an route and reuturns updated route info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the route",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Queue's update info",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyQueuesIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete the route of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the route",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the route",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
             }
         },
         "/v1.0/tags": {
@@ -3436,7 +4050,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1.0/transcribe/{id}": {
+            "get": {
+                "description": "Returns detail transcribe info of the given transcribe id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get detail transcribe info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the transcribe",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/transcribe.Transcribe"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/transcribes": {
+            "get": {
+                "description": "get transcribes of the customer",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get list of transcribes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyTranscribesGET"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "transcribe a recording",
                 "produces": [
@@ -3459,6 +4128,91 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/transcribe.Transcribe"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/transcribes/{id}": {
+            "delete": {
+                "description": "Delete the transcribe of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the transcribe.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the transcribe",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/transcribe.Transcribe"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/transcribes/{id}/stop": {
+            "post": {
+                "description": "transcribe a recording",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a transcribe",
+                "parameters": [
+                    {
+                        "description": "Creating transcribe info.",
+                        "name": "transcribe",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyTranscribesPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/transcribe.Transcribe"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/transcripts": {
+            "get": {
+                "description": "get transcripts of the customer",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get list of transcripts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyTranscribesGET"
                         }
                     }
                 }
@@ -3690,13 +4444,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "action": {
+                    "description": "call's current action.",
                     "$ref": "#/definitions/action.Action"
+                },
+                "action_next_hold": {
+                    "description": "call's next action hold. if true, don't allow to go next action",
+                    "type": "boolean"
                 },
                 "active_flow_id": {
                     "description": "active flow id",
-                    "type": "string"
-                },
-                "asterisk_id": {
                     "type": "string"
                 },
                 "bridge_id": {
@@ -3729,7 +4485,22 @@ const docTemplate = `{
                 "destination": {
                     "$ref": "#/definitions/address.Address"
                 },
+                "dialroute_id": {
+                    "description": "dialroute(valid only tel type outgoing call)",
+                    "type": "string"
+                },
+                "dialroutes": {
+                    "description": "list of dialroutes for dialing.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/route.Route"
+                    }
+                },
                 "direction": {
+                    "type": "string"
+                },
+                "external_media_id": {
+                    "description": "external media id(current)",
                     "type": "string"
                 },
                 "flow_id": {
@@ -3771,6 +4542,9 @@ const docTemplate = `{
                 },
                 "tm_create": {
                     "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
                     "type": "string"
                 },
                 "tm_hangup": {
@@ -3851,13 +4625,16 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tm_create": {
-                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
                     "type": "string"
                 },
                 "tm_hangup": {
                     "type": "string"
                 },
                 "tm_progressing": {
+                    "description": "timestamp",
                     "type": "string"
                 },
                 "tm_ringing": {
@@ -4138,6 +4915,160 @@ const docTemplate = `{
                 }
             }
         },
+        "chatbot.Chatbot": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "engine_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "chatbot.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "engine_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "chatbotcall.Chatbotcall": {
+            "type": "object",
+            "properties": {
+                "chatbot_id": {
+                    "type": "string"
+                },
+                "confbridge_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_end": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "transcribe_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "chatbotcall.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "chatbot_id": {
+                    "type": "string"
+                },
+                "confbridge_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_end": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "transcribe_id": {
+                    "type": "string"
+                }
+            }
+        },
         "chatroom.Chatroom": {
             "type": "object",
             "properties": {
@@ -4251,8 +5182,21 @@ const docTemplate = `{
                 "tm_delete": {
                     "type": "string"
                 },
+                "tm_end": {
+                    "description": "represent the timestamp for conference ended.",
+                    "type": "string"
+                },
                 "tm_update": {
                     "type": "string"
+                },
+                "transcribe_id": {
+                    "type": "string"
+                },
+                "transcribe_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "type": {
                     "type": "string"
@@ -5184,6 +6128,52 @@ const docTemplate = `{
                 }
             }
         },
+        "provider.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "description": "destination",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tech_headers": {
+                    "description": "tech headers. valid only for the sip type.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "tech_postfix": {
+                    "description": "tech postfix. valid only for the sip type.",
+                    "type": "string"
+                },
+                "tech_prefix": {
+                    "description": "sip type techs",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "queue.WebhookMessage": {
             "type": "object",
             "properties": {
@@ -5272,8 +6262,8 @@ const docTemplate = `{
         "queuecall.Queuecall": {
             "type": "object",
             "properties": {
-                "conference_id": {
-                    "description": "conference id",
+                "confbridge_id": {
+                    "description": "confbridge id",
                     "type": "string"
                 },
                 "customer_id": {
@@ -5289,10 +6279,6 @@ const docTemplate = `{
                 },
                 "exit_action_id": {
                     "description": "action id for queue exit. When the queuecall has ended, the queuemanager will send the request forward to this action id.",
-                    "type": "string"
-                },
-                "flow_id": {
-                    "description": "queuecall's queue flow id.",
                     "type": "string"
                 },
                 "forward_action_id": {
@@ -5354,6 +6340,10 @@ const docTemplate = `{
                     "description": "Deleted timestamp.",
                     "type": "string"
                 },
+                "tm_end": {
+                    "description": "ended timestamp.",
+                    "type": "string"
+                },
                 "tm_service": {
                     "description": "Serviced timestamp.",
                     "type": "string"
@@ -5370,14 +6360,21 @@ const docTemplate = `{
                 "asterisk_id": {
                     "type": "string"
                 },
-                "channel_id": {
-                    "type": "string"
+                "channel_ids": {
+                    "description": "snoop channel ids for recording",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "customer_id": {
                     "type": "string"
                 },
-                "filename": {
-                    "type": "string"
+                "filenames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "format": {
                     "type": "string"
@@ -5385,7 +6382,13 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "recording_name": {
+                    "type": "string"
+                },
                 "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
                     "type": "string"
                 },
                 "status": {
@@ -5404,9 +6407,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tm_update": {
-                    "type": "string"
-                },
-                "type": {
                     "type": "string"
                 }
             }
@@ -5423,6 +6423,9 @@ const docTemplate = `{
                 "reference_id": {
                     "type": "string"
                 },
+                "reference_type": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
                 },
@@ -5439,9 +6442,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tm_update": {
-                    "type": "string"
-                },
-                "type": {
                     "type": "string"
                 }
             }
@@ -5640,6 +6640,20 @@ const docTemplate = `{
                 }
             }
         },
+        "request.BodyChatbotsPOST": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "engine_type": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyChatmessagesPOST": {
             "type": "object",
             "properties": {
@@ -5701,20 +6715,6 @@ const docTemplate = `{
                     }
                 },
                 "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.BodyConferencecallsPOST": {
-            "type": "object",
-            "properties": {
-                "conference_id": {
-                    "type": "string"
-                },
-                "reference_id": {
-                    "type": "string"
-                },
-                "reference_type": {
                     "type": "string"
                 }
             }
@@ -6036,6 +7036,64 @@ const docTemplate = `{
                 }
             }
         },
+        "request.BodyProvidersIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tech_headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "tech_postfix": {
+                    "type": "string"
+                },
+                "tech_prefix": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyProvidersPOST": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tech_headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "tech_postfix": {
+                    "type": "string"
+                },
+                "tech_prefix": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyQueuesIDActionsPUT": {
             "type": "object",
             "properties": {
@@ -6075,6 +7133,23 @@ const docTemplate = `{
                 }
             }
         },
+        "request.BodyRoutesPOST": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "provider_id": {
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyTagsIDPUT": {
             "type": "object",
             "properties": {
@@ -6089,10 +7164,16 @@ const docTemplate = `{
         "request.BodyTranscribesPOST": {
             "type": "object",
             "properties": {
+                "direction": {
+                    "type": "string"
+                },
                 "language": {
                     "type": "string"
                 },
-                "recording_id": {
+                "reference_id": {
+                    "type": "string"
+                },
+                "transcribe_type": {
                     "type": "string"
                 }
             }
@@ -6176,6 +7257,34 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/campaigncall.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyChatbotcallsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/chatbotcall.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyChatbotsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/chatbot.WebhookMessage"
                     }
                 }
             }
@@ -6387,6 +7496,82 @@ const docTemplate = `{
                 }
             }
         },
+        "response.BodyTranscribesGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transcribe.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "route.Route": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "provider_id": {
+                    "type": "string"
+                },
+                "target": {
+                    "description": "country code or all",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "route.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "provider_id": {
+                    "type": "string"
+                },
+                "target": {
+                    "description": "country code or all",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
         "tag.Tag": {
             "type": "object",
             "properties": {
@@ -6493,6 +7678,18 @@ const docTemplate = `{
                     "description": "call/conference/recording's id",
                     "type": "string"
                 },
+                "reference_type": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "streaming_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "tm_create": {
                     "description": "timestamp",
                     "type": "string"
@@ -6502,42 +7699,47 @@ const docTemplate = `{
                 },
                 "tm_update": {
                     "type": "string"
-                },
-                "transcripts": {
-                    "description": "transcripts",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/transcript.Transcript"
-                    }
-                },
-                "type": {
-                    "description": "type",
-                    "type": "string"
                 }
             }
         },
-        "transcript.Transcript": {
+        "transcribe.WebhookMessage": {
             "type": "object",
             "properties": {
                 "customer_id": {
+                    "description": "customer",
                     "type": "string"
                 },
-                "direction": {
-                    "description": "direction. in/out",
+                "host_id": {
+                    "description": "host id",
                     "type": "string"
                 },
                 "id": {
+                    "description": "Transcribe id",
                     "type": "string"
                 },
-                "message": {
-                    "description": "message",
+                "language": {
+                    "description": "BCP47 type's language code. en-US",
+                    "type": "string"
+                },
+                "reference_id": {
+                    "description": "call/conference/recording's id",
+                    "type": "string"
+                },
+                "reference_type": {
+                    "description": "reference's type",
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "tm_create": {
                     "description": "timestamp",
                     "type": "string"
                 },
-                "transcribe_id": {
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
                     "type": "string"
                 }
             }
