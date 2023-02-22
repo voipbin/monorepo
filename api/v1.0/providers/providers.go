@@ -19,7 +19,7 @@ import (
 // @Produce  json
 // @Param page_size query int false "The size of results. Max 100"
 // @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.ParamProvidersGET
+// @Success 200 {object} provider.WebhookMessage
 // @Router /v1.0/providers [get]
 func providersGET(c *gin.Context) {
 	log := logrus.WithFields(
