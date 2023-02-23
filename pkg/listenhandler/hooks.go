@@ -12,17 +12,16 @@ import (
 
 // processV1HooksPost handles POST /v1/hooks request
 func (h *listenHandler) processV1HooksPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1HooksPost",
+		"request": m,
+	})
 
 	var req request.V1DataHooksPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1MessagesPost",
-		},
-	)
 
 	if errHook := h.messageHandler.Hook(ctx, req.ReceviedURI, req.ReceivedData); errHook != nil {
 		log.Errorf("Could not hook the message correctly. err: %v", errHook)

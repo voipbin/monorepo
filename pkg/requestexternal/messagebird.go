@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/messagebird"
@@ -18,8 +19,10 @@ import (
 // MessagebirdSendMessage sends request to the messagebird to send the message.
 func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []string, text string) (*messagebird.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "MessagebirdSendMessage",
-		"sender": sender,
+		"func":         "MessagebirdSendMessage",
+		"sender":       sender,
+		"destinations": destinations,
+		"text":         text,
 	})
 
 	uri := "https://rest.messagebird.com/messages"
@@ -44,7 +47,8 @@ func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []s
 	}
 	r, err := http.NewRequest("POST", uri, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Could not create a request. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create a request.")
 	}
 
 	r.Header.Add("Authorization", messagebirdAuth)
@@ -52,15 +56,15 @@ func (h *requestExternal) MessagebirdSendMessage(sender string, destinations []s
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 	response, err := client.Do(r)
 	if err != nil {
-		log.Errorf("Could not send the request to the messagebird. err: %v", err)
-		return nil, err
+		log.Errorf("Could not send the request. err: %v", err)
+		return nil, errors.Wrap(err, "Could not send the request.")
 	}
 
 	defer response.Body.Close()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Errorf("Could not receive the response correctly. err: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Could not receive the response correctly.")
 	}
 
 	res := messagebird.Message{}
