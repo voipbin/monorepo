@@ -145,10 +145,6 @@ const (
 	// call-manager
 	TypeHangup Type = "hangup"
 
-	// TypeHangupRelay hangs up the call with the same reason of the given reference id.
-	// call-manager
-	TypeHangupRelay Type = "hangup_relay"
-
 	// TypeMessageSend sends the SMS to the given destinations.
 	// message-manager
 	TypeMessageSend Type = "message_send"
@@ -232,7 +228,6 @@ var TypeList []Type = []Type{
 	TypeFetchFlow,
 	TypeGoto,
 	TypeHangup,
-	TypeHangupRelay,
 	TypeMessageSend,
 	TypePlay,
 	TypeQueueJoin,

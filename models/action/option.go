@@ -180,12 +180,8 @@ type OptionGoto struct {
 
 // OptionHangup defines action hangup's option.
 type OptionHangup struct {
-	Reason string `json:"reason"` // hangup reason code. See detail cmcall.HangupReason
-}
-
-// OptionHangupRelay defines action hangup_relay's option.
-type OptionHangupRelay struct {
-	ReferenceID uuid.UUID `json:"reference_id"` // reference call id
+	Reason      string    `json:"reason"`       // hangup reason code. See detail cmcall.HangupReason
+	ReferenceID uuid.UUID `json:"reference_id"` // if it's set will hangup the call with the same reason of this referenced call id. This will overwrite the reason option.
 }
 
 // OptionMessageSend defines action message_send's option.
