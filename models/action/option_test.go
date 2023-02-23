@@ -652,10 +652,11 @@ func Test_marshalOptionHangup(t *testing.T) {
 		{
 			"normal",
 
-			[]byte(`{"reason": "busy"}`),
+			[]byte(`{"reason": "busy", "reference_id": "daf4b1ae-e95c-4a7f-9bb4-f8f52d68fdeb"}`),
 
 			OptionHangup{
-				Reason: "busy",
+				Reason:      "busy",
+				ReferenceID: uuid.FromStringOrNil("daf4b1ae-e95c-4a7f-9bb4-f8f52d68fdeb"),
 			},
 		},
 	}
@@ -664,42 +665,6 @@ func Test_marshalOptionHangup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := OptionHangup{}
-			if err := json.Unmarshal(tt.option, &res); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_OptionHangupRelay_marshal(t *testing.T) {
-	type test struct {
-		name string
-
-		option []byte
-
-		expectRes OptionHangupRelay
-	}
-
-	tests := []test{
-		{
-			"normal",
-
-			[]byte(`{"reference_id": "83ee2288-a251-11ed-8f09-1f645c917b81"}`),
-
-			OptionHangupRelay{
-				ReferenceID: uuid.FromStringOrNil("83ee2288-a251-11ed-8f09-1f645c917b81"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			res := OptionHangupRelay{}
 			if err := json.Unmarshal(tt.option, &res); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

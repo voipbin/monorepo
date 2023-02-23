@@ -556,10 +556,10 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		referenceID := resCalls[0].ID
 		log.Debugf("The connect action has relay reason option enabled. Adding the hangup relay action. reference_id: %s", referenceID)
 
-		optHangupRelay := action.OptionHangupRelay{
+		optHangup := action.OptionHangup{
 			ReferenceID: referenceID,
 		}
-		optStringHangupRelay, err := json.Marshal(optHangupRelay)
+		optStringHangup, err := json.Marshal(optHangup)
 		if err != nil {
 			log.Errorf("Could not marshal the confbridge join option. err: %v", err)
 			return fmt.Errorf("could not marshal the confbridge join option. err: %v", err)
@@ -567,8 +567,8 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 
 		actionHangupRelay := action.Action{
 			ID:     h.utilHandler.CreateUUID(),
-			Type:   action.TypeHangupRelay,
-			Option: optStringHangupRelay,
+			Type:   action.TypeHangup,
+			Option: optStringHangup,
 		}
 		pushActions = append(pushActions, actionHangupRelay)
 	}
