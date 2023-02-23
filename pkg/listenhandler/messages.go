@@ -14,8 +14,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/listenhandler/models/request"
 )
 
-// processV1MessagesPost handles POST /v1/messages request
+// processV1MessagesGet handles GET /v1/messages request
 func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1MessagesGet",
+		"request": m,
+	})
+
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -28,12 +33,6 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *rabbitmqhan
 
 	// get user_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
-	log := logrus.WithFields(logrus.Fields{
-		"user":  customerID,
-		"size":  pageSize,
-		"token": pageToken,
-	})
 
 	messages, err := h.messageHandler.Gets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
@@ -58,17 +57,16 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *rabbitmqhan
 
 // processV1MessagesPost handles POST /v1/messages request
 func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1MessagesPost",
+		"request": m,
+	})
+
 	var req request.V1DataMessagesPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1MessagesPost",
-			"user": req.CustomerID,
-		},
-	)
 
 	// send message
 	ms, err := h.messageHandler.Send(ctx, req.ID, req.CustomerID, req.Source, req.Destinations, req.Text)
@@ -93,18 +91,18 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *rabbitmqha
 }
 
 // processV1MessagesIDGet handles GET /v1/messages/<id> request
-func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	uriItems := strings.Split(req.URI, "/")
+func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1MessagesIDGet",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debugf("Executing processV1MessagesIDGet. message_id: %s", id)
 
 	tmp, err := h.messageHandler.Get(ctx, id)
 	if err != nil {
@@ -128,18 +126,18 @@ func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, req *rabbitm
 }
 
 // processV1MessagesIDDelete handles DELETE /v1/messages/<id> request
-func (h *listenHandler) processV1MessagesIDDelete(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	uriItems := strings.Split(req.URI, "/")
+func (h *listenHandler) processV1MessagesIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1MessagesIDDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"id": id,
-		})
-	log.Debugf("Executing processV1MessagesIDDelete. message_id: %s", id)
 
 	tmp, err := h.messageHandler.Delete(ctx, id)
 	if err != nil {

@@ -100,16 +100,14 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 
 // executeMessageFlow executes the given number's messageflow with message.
 func (h *messageHandler) executeMessageFlow(ctx context.Context, m *message.Message, num *nmnumber.Number) (*fmactiveflow.Activeflow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "executeMessageFlow",
-			"message_id": m.ID,
-			"number_id":  num.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "executeMessageFlow",
+		"message": m,
+		"number":  num,
+	})
 
 	if num.MessageFlowID == uuid.Nil {
-		// has no message flow id
+		// nothing to do. has no message flow id
 		return nil, nil
 	}
 

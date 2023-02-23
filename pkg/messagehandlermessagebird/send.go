@@ -10,21 +10,20 @@ import (
 
 // SendMessage sends the message.
 func (h *messageHandlerMessagebird) SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "SendMessage",
-			"message_id":  messageID,
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "SendMessage",
+		"message_id":   messageID,
+		"customer_id":  customerID,
+		"destinations": destinations,
+	})
 
 	sender := source.Target
 	receivers := []string{}
-	log.Debugf("Sending a message by messagebird. message_id: %s, sender: %s", messageID, sender)
 
 	for _, destination := range destinations {
 		receivers = append(receivers, destination.Target)
 	}
+	log.WithField("receivers", receivers).Debugf("Sending a messages by messagebird. message_id: %s, sender: %s", messageID, sender)
 
 	// send a request to messaging providers
 	m, err := h.requestExternal.MessagebirdSendMessage(sender, receivers, text)

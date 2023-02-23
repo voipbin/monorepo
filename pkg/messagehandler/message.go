@@ -12,13 +12,10 @@ import (
 
 // Gets returns list of messges info of the given customer_id
 func (h *messageHandler) Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Gets",
-			"customer_id": customerID,
-		},
-	)
-	log.Debugf("Gets the messages. customer_id: %s", customerID)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Gets",
+		"customer_id": customerID,
+	})
 
 	if pageToken == "" {
 		pageToken = h.utilHandler.GetCurTime()
@@ -29,7 +26,6 @@ func (h *messageHandler) Gets(ctx context.Context, customerID uuid.UUID, pageSiz
 		log.Errorf("Could not get messages. customer_id: %s, err:%v", customerID, err)
 		return nil, err
 	}
-	log.WithField("messages", res).Debugf("Found messages info. count: %d", len(res))
 
 	return res, nil
 }
@@ -37,7 +33,8 @@ func (h *messageHandler) Gets(ctx context.Context, customerID uuid.UUID, pageSiz
 // Create creates a new message.
 func (h *messageHandler) Create(ctx context.Context, m *message.Message) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "Create",
+		"func":    "Create",
+		"message": m,
 	})
 
 	if errCreate := h.db.MessageCreate(ctx, m); errCreate != nil {

@@ -1,6 +1,6 @@
 package messagehandlermessagebird
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package messagehandlermessagebird -destination ./mock_messagehandlermessagebird.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package messagehandlermessagebird -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"github.com/gofrs/uuid"

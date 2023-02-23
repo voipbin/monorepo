@@ -30,7 +30,7 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	}
 
 	if id == uuid.Nil {
-		id = uuid.Must(uuid.NewV4())
+		id = h.utilHandler.CreateUUID()
 	}
 	m := &message.Message{
 		ID:         id,
@@ -69,8 +69,11 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 // sendMessage sends the message to the destinations
 func (h *messageHandler) sendMessage(ctx context.Context, id, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "sendMessage",
-		"customer_id": customerID,
+		"func":         "sendMessage",
+		"id":           id,
+		"customer_id":  customerID,
+		"source":       source,
+		"destinations": destinations,
 	})
 
 	// send the message
@@ -89,5 +92,4 @@ func (h *messageHandler) sendMessage(ctx context.Context, id, customerID uuid.UU
 	}
 
 	return res, nil
-
 }
