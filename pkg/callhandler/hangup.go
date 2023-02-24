@@ -2,8 +2,10 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
@@ -237,4 +239,43 @@ func (h *callHandler) handleMasterCallExecution(ctx context.Context, c *call.Cal
 	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.MasterCallID, false); errNext != nil {
 		log.Errorf("Could not execute the master call's next action. err: %v", errNext)
 	}
+}
+
+// hangingupWithReference hanging up the call with the same reason of the given reference id.
+func (h *callHandler) hangingupWithReference(ctx context.Context, c *call.Call, referenceID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "hangingupWithReference",
+		"call_id":      c.ID,
+		"reference_id": referenceID,
+	})
+
+	// get call info
+	referenceCall, err := h.Get(ctx, referenceID)
+	if err != nil {
+		log.Errorf("Could not get referenced call info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get reference call info.")
+	}
+	log.WithField("reference_call", referenceCall).Debugf("Found referenced call info. reference_id: %s", referenceCall.ID)
+
+	if referenceCall.Status != call.StatusHangup {
+		log.Infof("The reference call is not hung up yet. Hang up the call with normal reason. reference_id: %s", referenceCall.ID)
+		return nil, fmt.Errorf("the reference call is not hung up")
+	}
+
+	// get channel
+	ch, err := h.channelHandler.Get(ctx, referenceCall.ChannelID)
+	if err != nil {
+		log.Errorf("Could not get channel info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get reference call channel.")
+	}
+
+	// hangup the call
+	res, err := h.hangingUpWithCause(ctx, c.ID, ch.HangupCause)
+	if err != nil {
+		log.Errorf("Could not hangup the call. err: %v", err)
+		return nil, errors.Wrap(err, "Could not hangup the call.")
+	}
+	log.WithField("call", res).Debugf("Hanging up the call. call_id: %s", res.ID)
+
+	return res, nil
 }

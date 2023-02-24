@@ -225,3 +225,78 @@ func Test_HanginUp(t *testing.T) {
 		})
 	}
 }
+
+func Test_hangingupWithReference(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call        *call.Call
+		referenceID uuid.UUID
+
+		responseReferenceCall    *call.Call
+		responseReferenceChannel *channel.Channel
+	}{
+		{
+			"normal",
+
+			&call.Call{
+				ID:     uuid.FromStringOrNil("045e6cd0-41f7-4b24-833d-f17b0236b9a6"),
+				Status: call.StatusProgressing,
+			},
+			uuid.FromStringOrNil("0bd3152c-1a1e-4464-9c60-395bdcafa6bd"),
+
+			&call.Call{
+				ID:        uuid.FromStringOrNil("0bd3152c-1a1e-4464-9c60-395bdcafa6bd"),
+				Status:    call.StatusHangup,
+				ChannelID: "19b1bc03-cf90-47b9-9fbd-5fef6d9393a4",
+			},
+			&channel.Channel{
+				ID:          "19b1bc03-cf90-47b9-9fbd-5fef6d9393a4",
+				HangupCause: ari.ChannelCauseNoAnswer,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotfiy,
+				channelHandler: mockChannel,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallGet(ctx, tt.referenceID).Return(tt.responseReferenceCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseReferenceCall.ChannelID).Return(tt.responseReferenceChannel, nil)
+
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
+
+			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.responseReferenceChannel.HangupCause).Return(tt.responseReferenceChannel, nil)
+
+			res, err := h.hangingupWithReference(ctx, tt.call, tt.referenceID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.call, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.call, res)
+			}
+		})
+	}
+}
