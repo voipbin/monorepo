@@ -289,7 +289,7 @@ func Test_Delete(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockExt.EXPECT().ExtensionDeleteByDomainID(gomock.Any(), tt.domainID).Return([]*extension.Extension{}, nil)
+		mockExt.EXPECT().DeleteByDomainID(gomock.Any(), tt.domainID).Return([]*extension.Extension{}, nil)
 		mockDBBin.EXPECT().DomainDelete(gomock.Any(), tt.domainID).Return(nil)
 		mockDBBin.EXPECT().DomainGet(gomock.Any(), tt.domainID).Return(tt.responseDomain, nil)
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), domain.EventTypeDomainDeleted, tt.responseDomain)

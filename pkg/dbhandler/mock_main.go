@@ -372,6 +372,21 @@ func (mr *MockDBHandlerMockRecorder) ExtensionGet(ctx, id interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockDBHandler)(nil).ExtensionGet), ctx, id)
 }
 
+// ExtensionGetByExtension mocks base method.
+func (m *MockDBHandler) ExtensionGetByExtension(ctx context.Context, exten string) (*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGetByExtension", ctx, exten)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGetByExtension indicates an expected call of ExtensionGetByExtension.
+func (mr *MockDBHandlerMockRecorder) ExtensionGetByExtension(ctx, exten interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetByExtension", reflect.TypeOf((*MockDBHandler)(nil).ExtensionGetByExtension), ctx, exten)
+}
+
 // ExtensionGetsByDomainID mocks base method.
 func (m *MockDBHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()

@@ -60,6 +60,7 @@ type DBHandler interface {
 	ExtensionCreate(ctx context.Context, b *extension.Extension) error
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
+	ExtensionGetByExtension(ctx context.Context, exten string) (*extension.Extension, error)
 	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
 	ExtensionUpdate(ctx context.Context, b *extension.Extension) error
 }

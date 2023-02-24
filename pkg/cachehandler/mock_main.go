@@ -285,20 +285,6 @@ func (mr *MockCacheHandlerMockRecorder) DomainSet(ctx, e interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DomainSet", reflect.TypeOf((*MockCacheHandler)(nil).DomainSet), ctx, e)
 }
 
-// ExtensionDel mocks base method.
-func (m *MockCacheHandler) ExtensionDel(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionDel", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ExtensionDel indicates an expected call of ExtensionDel.
-func (mr *MockCacheHandlerMockRecorder) ExtensionDel(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDel", reflect.TypeOf((*MockCacheHandler)(nil).ExtensionDel), ctx, id)
-}
-
 // ExtensionGet mocks base method.
 func (m *MockCacheHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
@@ -312,6 +298,21 @@ func (m *MockCacheHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*ext
 func (mr *MockCacheHandlerMockRecorder) ExtensionGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockCacheHandler)(nil).ExtensionGet), ctx, id)
+}
+
+// ExtensionGetByExtension mocks base method.
+func (m *MockCacheHandler) ExtensionGetByExtension(ctx context.Context, ext string) (*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionGetByExtension", ctx, ext)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionGetByExtension indicates an expected call of ExtensionGetByExtension.
+func (mr *MockCacheHandlerMockRecorder) ExtensionGetByExtension(ctx, ext interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetByExtension", reflect.TypeOf((*MockCacheHandler)(nil).ExtensionGetByExtension), ctx, ext)
 }
 
 // ExtensionSet mocks base method.

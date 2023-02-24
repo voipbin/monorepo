@@ -50,8 +50,8 @@ type CacheHandler interface {
 	DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error)
 
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
+	ExtensionGetByExtension(ctx context.Context, ext string) (*extension.Extension, error)
 	ExtensionSet(ctx context.Context, e *extension.Extension) error
-	ExtensionDel(ctx context.Context, id uuid.UUID) error
 }
 
 // NewHandler creates DBHandler

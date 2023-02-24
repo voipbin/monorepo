@@ -18,7 +18,8 @@ import (
 // processV1ExtensionsPost handles /v1/extensions POST request
 func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "processV1ExtensionsPost",
+		"func":    "processV1ExtensionsPost",
+		"request": m,
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -62,9 +63,13 @@ func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *rabbitmq
 }
 
 // processV1ExtensionsIDGet handles /v1/extensions/{id} GET request
-func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ExtensionsIDGet",
+		"request": m,
+	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -73,15 +78,15 @@ func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, req *rabbi
 	tmpVals := strings.Split(u.Path, "/")
 	extensionID := uuid.FromStringOrNil(tmpVals[3])
 
-	domain, err := h.extensionHandler.ExtensionGet(ctx, extensionID)
+	domain, err := h.extensionHandler.Get(ctx, extensionID)
 	if err != nil {
-		logrus.Errorf("Could not get domain info. err: %v", err)
+		log.Errorf("Could not get extension info. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(domain)
 	if err != nil {
-		logrus.Errorf("Could not marshal the res. err: %v", err)
+		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err
 	}
 
@@ -95,12 +100,13 @@ func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, req *rabbi
 }
 
 // processV1ExtensionsIDPut handles /v1/extensions/{id} PUT request
-func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "processV1ExtensionsIDPut",
+		"func":    "processV1ExtensionsIDPut",
+		"Request": m,
 	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -109,23 +115,23 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, req *rabbi
 	tmpVals := strings.Split(u.Path, "/")
 	extID := uuid.FromStringOrNil(tmpVals[3])
 
-	var reqData request.V1DataExtensionsIDPut
-	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", req.Data, err)
+	var req request.V1DataExtensionsIDPut
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
 
 	// create a update domain info
 	tmpExt := &extension.Extension{
 		ID:       extID,
-		Name:     reqData.Name,
-		Detail:   reqData.Detail,
-		Password: reqData.Password,
+		Name:     req.Name,
+		Detail:   req.Detail,
+		Password: req.Password,
 	}
 
-	tmp, err := h.extensionHandler.ExtensionUpdate(ctx, tmpExt)
+	tmp, err := h.extensionHandler.Update(ctx, tmpExt)
 	if err != nil {
-		log.Errorf("Could not get domain info. err: %v", err)
+		log.Errorf("Could not update the extension info. err: %v", err)
 		return nil, err
 	}
 
@@ -145,12 +151,13 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, req *rabbi
 }
 
 // processV1ExtensionsIDDelete handles /v1/extensions/{id} DELETE request
-func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "processV1ExtensionsIDDelete",
+		"func":    "processV1ExtensionsIDDelete",
+		"request": m,
 	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -159,9 +166,9 @@ func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, req *ra
 	tmpVals := strings.Split(u.Path, "/")
 	extID := uuid.FromStringOrNil(tmpVals[3])
 
-	tmp, err := h.extensionHandler.ExtensionDelete(ctx, extID)
+	tmp, err := h.extensionHandler.Delete(ctx, extID)
 	if err != nil {
-		log.Errorf("Could not get domain info. err: %v", err)
+		log.Errorf("Could not delete the extension info. err: %v", err)
 		return nil, err
 	}
 
@@ -181,12 +188,13 @@ func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, req *ra
 }
 
 // processV1ExtensionsGet handles /v1/extension GET request
-func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "processV1ExtensionsGet",
+		"func":    "processV1ExtensionsGet",
+		"request": m,
 	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -199,13 +207,50 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, req *rabbitm
 	// get domain_id
 	domainID := uuid.FromStringOrNil(u.Query().Get("domain_id"))
 
-	resExts, err := h.extensionHandler.ExtensionGetsByDomainID(ctx, domainID, pageToken, pageSize)
+	resExts, err := h.extensionHandler.GetsByDomainID(ctx, domainID, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not get extensions. err: %v", err)
 		return nil, err
 	}
 
 	data, err := json.Marshal(resExts)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ExtensionsExtensionExtensionGet handles /v1/extensions/extension/{extension} GET request
+func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ExtensionsExtensionExtensionGet",
+		"request": m,
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/extensions/extension/test_ext"
+	tmpVals := strings.Split(u.Path, "/")
+	ext := tmpVals[4]
+
+	tmp, err := h.extensionHandler.GetByExtension(ctx, ext)
+	if err != nil {
+		log.Errorf("Could not get extension info. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err

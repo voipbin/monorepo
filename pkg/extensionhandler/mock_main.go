@@ -51,77 +51,92 @@ func (mr *MockExtensionHandlerMockRecorder) Create(ctx, customerID, name, detail
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockExtensionHandler)(nil).Create), ctx, customerID, name, detail, domainID, ext, password)
 }
 
-// ExtensionDelete mocks base method.
-func (m *MockExtensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+// Delete mocks base method.
+func (m *MockExtensionHandler) Delete(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionDelete", ctx, id)
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionDelete indicates an expected call of ExtensionDelete.
-func (mr *MockExtensionHandlerMockRecorder) ExtensionDelete(ctx, id interface{}) *gomock.Call {
+// Delete indicates an expected call of Delete.
+func (mr *MockExtensionHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDelete", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionDelete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockExtensionHandler)(nil).Delete), ctx, id)
 }
 
-// ExtensionDeleteByDomainID mocks base method.
-func (m *MockExtensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error) {
+// DeleteByDomainID mocks base method.
+func (m *MockExtensionHandler) DeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionDeleteByDomainID", ctx, domainID)
+	ret := m.ctrl.Call(m, "DeleteByDomainID", ctx, domainID)
 	ret0, _ := ret[0].([]*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionDeleteByDomainID indicates an expected call of ExtensionDeleteByDomainID.
-func (mr *MockExtensionHandlerMockRecorder) ExtensionDeleteByDomainID(ctx, domainID interface{}) *gomock.Call {
+// DeleteByDomainID indicates an expected call of DeleteByDomainID.
+func (mr *MockExtensionHandlerMockRecorder) DeleteByDomainID(ctx, domainID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionDeleteByDomainID", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionDeleteByDomainID), ctx, domainID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByDomainID", reflect.TypeOf((*MockExtensionHandler)(nil).DeleteByDomainID), ctx, domainID)
 }
 
-// ExtensionGet mocks base method.
-func (m *MockExtensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+// Get mocks base method.
+func (m *MockExtensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionGet", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, id)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionGet indicates an expected call of ExtensionGet.
-func (mr *MockExtensionHandlerMockRecorder) ExtensionGet(ctx, id interface{}) *gomock.Call {
+// Get indicates an expected call of Get.
+func (mr *MockExtensionHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockExtensionHandler)(nil).Get), ctx, id)
 }
 
-// ExtensionGetsByDomainID mocks base method.
-func (m *MockExtensionHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
+// GetByExtension mocks base method.
+func (m *MockExtensionHandler) GetByExtension(ctx context.Context, ext string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionGetsByDomainID", ctx, domainID, token, limit)
+	ret := m.ctrl.Call(m, "GetByExtension", ctx, ext)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByExtension indicates an expected call of GetByExtension.
+func (mr *MockExtensionHandlerMockRecorder) GetByExtension(ctx, ext interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByExtension", reflect.TypeOf((*MockExtensionHandler)(nil).GetByExtension), ctx, ext)
+}
+
+// GetsByDomainID mocks base method.
+func (m *MockExtensionHandler) GetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetsByDomainID", ctx, domainID, token, limit)
 	ret0, _ := ret[0].([]*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionGetsByDomainID indicates an expected call of ExtensionGetsByDomainID.
-func (mr *MockExtensionHandlerMockRecorder) ExtensionGetsByDomainID(ctx, domainID, token, limit interface{}) *gomock.Call {
+// GetsByDomainID indicates an expected call of GetsByDomainID.
+func (mr *MockExtensionHandlerMockRecorder) GetsByDomainID(ctx, domainID, token, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetsByDomainID", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionGetsByDomainID), ctx, domainID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByDomainID", reflect.TypeOf((*MockExtensionHandler)(nil).GetsByDomainID), ctx, domainID, token, limit)
 }
 
-// ExtensionUpdate mocks base method.
-func (m *MockExtensionHandler) ExtensionUpdate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
+// Update mocks base method.
+func (m *MockExtensionHandler) Update(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, e)
+	ret := m.ctrl.Call(m, "Update", ctx, e)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionUpdate indicates an expected call of ExtensionUpdate.
-func (mr *MockExtensionHandlerMockRecorder) ExtensionUpdate(ctx, e interface{}) *gomock.Call {
+// Update indicates an expected call of Update.
+func (mr *MockExtensionHandlerMockRecorder) Update(ctx, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockExtensionHandler)(nil).ExtensionUpdate), ctx, e)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockExtensionHandler)(nil).Update), ctx, e)
 }
