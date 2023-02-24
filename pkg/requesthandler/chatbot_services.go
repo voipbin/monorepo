@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	chatchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	chatbotservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
-	chatbotrequest "gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/listenhandler/models/request"
+	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
+	cbrequest "gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/listenhandler/models/request"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -20,14 +20,14 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 	ctx context.Context,
 	customerID uuid.UUID,
 	chatbotID uuid.UUID,
-	referenceType chatchatbotcall.ReferenceType,
+	referenceType cbchatbotcall.ReferenceType,
 	referenceID uuid.UUID,
-	gender chatchatbotcall.Gender,
+	gender cbchatbotcall.Gender,
 	language string,
-) (*chatbotservice.Service, error) {
+) (*cbservice.Service, error) {
 	uri := "/v1/services/type/chatbotcall"
 
-	data := &chatbotrequest.V1DataServicesTypeChatbotcallPost{
+	data := &cbrequest.V1DataServicesTypeChatbotcallPost{
 		CustomerID:    customerID,
 		ChatbotID:     chatbotID,
 		ReferenceType: referenceType,
@@ -52,7 +52,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res chatbotservice.Service
+	var res cbservice.Service
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

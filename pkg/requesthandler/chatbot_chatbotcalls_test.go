@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	chatbotchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -26,7 +26,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectResult  []chatbotchatbotcall.Chatbotcall
+		expectResult  []cbchatbotcall.Chatbotcall
 	}{
 		{
 			"normal",
@@ -46,7 +46,7 @@ func Test_ChatbotV1ChatbotcallGetsByCustomerID(t *testing.T) {
 				URI:    fmt.Sprintf("/v1/chatbotcalls?page_token=%s&page_size=10&customer_id=ccf7720e-4838-4f97-bb61-3021e14c185a", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
-			[]chatbotchatbotcall.Chatbotcall{
+			[]cbchatbotcall.Chatbotcall{
 				{
 					ID: uuid.FromStringOrNil("c3ac26c7-567c-4230-aaf8-d19b6fde4d6c"),
 				},
@@ -93,7 +93,7 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 		expectRequest *rabbitmqhandler.Request
 
 		response  *rabbitmqhandler.Response
-		expectRes *chatbotchatbotcall.Chatbotcall
+		expectRes *cbchatbotcall.Chatbotcall
 	}
 
 	tests := []test{
@@ -112,7 +112,7 @@ func Test_ChatbotV1ChatbotcallGet(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"d3937170-ee3b-40d0-8b81-4261e5bb5ba4"}`),
 			},
-			&chatbotchatbotcall.Chatbotcall{
+			&cbchatbotcall.Chatbotcall{
 				ID: uuid.FromStringOrNil("d3937170-ee3b-40d0-8b81-4261e5bb5ba4"),
 			},
 		},
@@ -154,7 +154,7 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectRes     *chatbotchatbotcall.Chatbotcall
+		expectRes     *cbchatbotcall.Chatbotcall
 	}{
 		{
 			"normal",
@@ -172,7 +172,7 @@ func Test_ChatbotV1ChatbotcallDelete(t *testing.T) {
 				URI:    "/v1/chatbotcalls/6078c492-25e6-4f31-baa0-2fef98379db7",
 				Method: rabbitmqhandler.RequestMethodDelete,
 			},
-			&chatbotchatbotcall.Chatbotcall{
+			&cbchatbotcall.Chatbotcall{
 				ID: uuid.FromStringOrNil("6078c492-25e6-4f31-baa0-2fef98379db7"),
 			},
 		},

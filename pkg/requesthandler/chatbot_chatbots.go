@@ -7,8 +7,8 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	chatbotrequest "gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/listenhandler/models/request"
+	cbchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	cbrequest "gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/listenhandler/models/request"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -16,7 +16,7 @@ import (
 // ChatbotV1ChatbotGetsByCustomerID sends a request to chatbot-manager
 // to getting a list of chatbot info of the given customer id.
 // it returns detail list of chatbot info if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatbotchatbot.Chatbot, error) {
+func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cbchatbot.Chatbot, error) {
 	uri := fmt.Sprintf("/v1/chatbots?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatbotChatbots, 30000, 0, ContentTypeNone, nil)
@@ -30,7 +30,7 @@ func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, c
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res []chatbotchatbot.Chatbot
+	var res []cbchatbot.Chatbot
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (r *requestHandler) ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, c
 }
 
 // ChatbotV1ChatbotGet returns the chatbot.
-func (r *requestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*chatbotchatbot.Chatbot, error) {
+func (r *requestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
 
 	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID.String())
 
@@ -52,7 +52,7 @@ func (r *requestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid
 		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
 	}
 
-	var res chatbotchatbot.Chatbot
+	var res cbchatbot.Chatbot
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -68,11 +68,11 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 	customerID uuid.UUID,
 	name string,
 	detail string,
-	engineType chatbotchatbot.EngineType,
-) (*chatbotchatbot.Chatbot, error) {
+	engineType cbchatbot.EngineType,
+) (*cbchatbot.Chatbot, error) {
 	uri := "/v1/chatbots"
 
-	data := &chatbotrequest.V1DataChatbotsPost{
+	data := &cbrequest.V1DataChatbotsPost{
 		CustomerID: customerID,
 		Name:       name,
 		Detail:     detail,
@@ -95,7 +95,7 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res chatbotchatbot.Chatbot
+	var res cbchatbot.Chatbot
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (r *requestHandler) ChatbotV1ChatbotCreate(
 // ChatbotV1ChatbotDelete sends a request to chatbot-manager
 // to deleting a chatbot.
 // it returns deleted conference if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*chatbotchatbot.Chatbot, error) {
+func (r *requestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error) {
 	uri := fmt.Sprintf("/v1/chatbots/%s", chatbotID)
 
 	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatbotChatbotsID, requestTimeoutDefault, 0, ContentTypeNone, nil)
@@ -120,7 +120,7 @@ func (r *requestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID u
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res chatbotchatbot.Chatbot
+	var res cbchatbot.Chatbot
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

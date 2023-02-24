@@ -26,10 +26,9 @@ import (
 	chatmedia "gitlab.com/voipbin/bin-manager/chat-manager.git/models/media"
 	chatmessagechat "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechat"
 	chatmessagechatroom "gitlab.com/voipbin/bin-manager/chat-manager.git/models/messagechatroom"
-	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
-	chatbotchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	chatchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	chatbotservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
+	cbchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	cfservice "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
@@ -526,32 +525,32 @@ type RequestHandler interface {
 	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 
 	// chatbot-manager chatbot
-	ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*chatbotchatbot.Chatbot, error)
-	ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatbotchatbot.Chatbot, error)
+	ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
+	ChatbotV1ChatbotGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cbchatbot.Chatbot, error)
 	ChatbotV1ChatbotCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
 		name string,
 		detail string,
-		engineType chatbotchatbot.EngineType,
-	) (*chatbotchatbot.Chatbot, error)
-	ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*chatbotchatbot.Chatbot, error)
+		engineType cbchatbot.EngineType,
+	) (*cbchatbot.Chatbot, error)
+	ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
 
 	// chatbot-manager chatbotcall
-	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatbotchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*chatbotchatbotcall.Chatbotcall, error)
-	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*chatbotchatbotcall.Chatbotcall, error)
+	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cbchatbotcall.Chatbotcall, error)
+	ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
+	ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error)
 
 	// chatbot-manager service
 	ChatbotV1ServiceTypeChabotcallStart(
 		ctx context.Context,
 		customerID uuid.UUID,
 		chatbotID uuid.UUID,
-		referenceType chatchatbotcall.ReferenceType,
+		referenceType cbchatbotcall.ReferenceType,
 		referenceID uuid.UUID,
-		gender chatchatbotcall.Gender,
+		gender cbchatbotcall.Gender,
 		language string,
-	) (*chatbotservice.Service, error)
+	) (*cbservice.Service, error)
 
 	// customer-manager customer
 	CustomerV1CustomerCreate(
@@ -745,6 +744,7 @@ type RequestHandler interface {
 	RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
+	RegistrarV1ExtensionGetByExtension(ctx context.Context, exten string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
 

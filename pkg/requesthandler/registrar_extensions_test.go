@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_RMExtensionCreate(t *testing.T) {
+func Test_RegistrarExtensionCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -92,7 +92,7 @@ func Test_RMExtensionCreate(t *testing.T) {
 	}
 }
 
-func Test_RMExtensionUpdate(t *testing.T) {
+func Test_RegistrarExtensionUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -163,7 +163,7 @@ func Test_RMExtensionUpdate(t *testing.T) {
 	}
 }
 
-func Test_RMExtensionGet(t *testing.T) {
+func Test_RegistrarV1ExtensionGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -232,7 +232,67 @@ func Test_RMExtensionGet(t *testing.T) {
 	}
 }
 
-func Test_RMExtensionDelete(t *testing.T) {
+func Test_RegistrarV1ExtensionGetByExtension(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		exten string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *rmextension.Extension
+	}{
+		{
+			"normal",
+
+			"test_exten",
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c9522a85-a7a0-4917-93bd-017368f65dde"}`),
+			},
+
+			"bin-manager.registrar-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/extensions/extension/test_exten",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: ContentTypeJSON,
+			},
+			&rmextension.Extension{
+				ID: uuid.FromStringOrNil("c9522a85-a7a0-4917-93bd-017368f65dde"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.RegistrarV1ExtensionGetByExtension(ctx, tt.exten)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*tt.expectRes, *res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectRes, *res)
+			}
+		})
+	}
+}
+
+func Test_RegistrarExtensionDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -292,7 +352,7 @@ func Test_RMExtensionDelete(t *testing.T) {
 	}
 }
 
-func Test_RMExtensionsGets(t *testing.T) {
+func Test_RegistrarExtensionsGets(t *testing.T) {
 
 	tests := []struct {
 		name string
