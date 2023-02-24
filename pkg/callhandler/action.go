@@ -116,9 +116,6 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call) error {
 	case fmaction.TypeHangup:
 		err = h.actionExecuteHangup(ctx, c)
 
-	case fmaction.TypeHangupRelay:
-		err = h.actionExecuteHangupRelay(ctx, c)
-
 	case fmaction.TypePlay:
 		err = h.actionExecutePlay(ctx, c)
 
@@ -480,6 +477,18 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call) err
 		}
 	}
 
+	if option.ReferenceID != uuid.Nil {
+		log.Debugf("The hangup has reference info. Hanging up the call with reference info. reference_id: %s", option.ReferenceID)
+		_, err := h.hangingupWithReference(ctx, c, option.ReferenceID)
+		if err != nil {
+			log.Errorf("Could not hanging up the call with reference info. Hanging up the call with default reason. err: %v", err)
+			_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
+		}
+		return nil
+	}
+
+	// hangup has no reference id.
+	// get hangup reaon from the option.
 	reason := call.HangupReason(option.Reason)
 	if reason == call.HangupReasonNone {
 		reason = call.HangupReasonNormal
@@ -490,63 +499,7 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call) err
 		log.Errorf("Could not hangup the call. err: %v", err)
 		return nil
 	}
-	log.WithField("call", tmp).Debugf("Hanging up the call. call_id: %s", tmp.ID)
-
-	return nil
-}
-
-// actionExecuteHangupRelay executes the action type hangup_relay
-func (h *callHandler) actionExecuteHangupRelay(ctx context.Context, c *call.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "actionExecuteHangupRelay",
-		"call_id":     c.ID,
-		"action_id":   c.Action.ID,
-		"action_type": c.Action.Type,
-	})
-
-	var option fmaction.OptionHangupRelay
-	if c.Action.Option != nil {
-		if err := json.Unmarshal(c.Action.Option, &option); err != nil {
-			log.Errorf("could not parse the option. err: %v", err)
-			return fmt.Errorf("could not parse the option. action: %v, err: %v", c.Action, err)
-		}
-	}
-
-	// get call info
-	referenceCall, err := h.Get(ctx, option.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not get referenced call info. err: %v", err)
-		return errors.Wrap(err, "could not get referenced call info")
-	}
-	log.WithField("reference_call", referenceCall).Debugf("Found referenced call info. reference_id: %s", referenceCall.ID)
-
-	if referenceCall.Status != call.StatusHangup {
-		log.Infof("The call is not hung up yet. Hang up the call with normal reason. reference_id: %s", referenceCall.ID)
-		_, err := h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
-		if err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
-		return nil
-	}
-
-	// get channel
-	ch, err := h.channelHandler.Get(ctx, referenceCall.ChannelID)
-	if err != nil {
-		log.Errorf("Could not get channel info. err: %v", err)
-		_, err := h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
-		if err != nil {
-			log.Errorf("Could not hangup the call. err: %v", err)
-		}
-		return nil
-	}
-
-	// hangup the call
-	tmp, err := h.hangingUpWithCause(ctx, c.ID, ch.HangupCause)
-	if err != nil {
-		log.Errorf("Could not hangup the call. err: %v", err)
-		return nil
-	}
-	log.WithField("call", tmp).Debugf("Hanging up the call. call_id: %s", tmp.ID)
+	log.WithField("call", tmp).Debugf("Hanging up the call with no reference info. call_id: %s", tmp.ID)
 
 	return nil
 }

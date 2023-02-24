@@ -1116,7 +1116,7 @@ func Test_ActionNext(t *testing.T) {
 	}
 }
 
-func Test_actionExecuteHangup(t *testing.T) {
+func Test_actionExecuteHangup_reason(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -1175,7 +1175,7 @@ func Test_actionExecuteHangup(t *testing.T) {
 	}
 }
 
-func Test_actionExecuteHangupRelay(t *testing.T) {
+func Test_actionExecuteHangup_reference(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -1193,7 +1193,7 @@ func Test_actionExecuteHangupRelay(t *testing.T) {
 				ChannelID: "eeddbb76-4bd8-4aa7-a6fd-c18690474eb6",
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("324ef8af-508d-4622-8f1c-1df75efe70a6"),
-					Type:   fmaction.TypeHangupRelay,
+					Type:   fmaction.TypeHangup,
 					Option: []byte(`{"reference_id":"94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4"}`),
 				},
 			},
@@ -1218,7 +1218,7 @@ func Test_actionExecuteHangupRelay(t *testing.T) {
 				ChannelID: "6997f17a-a3d2-11ed-a9db-ff2c89c38193",
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("69b5bb6a-a3d2-11ed-b24e-33e293af5d6d"),
-					Type:   fmaction.TypeHangupRelay,
+					Type:   fmaction.TypeHangup,
 					Option: []byte(`{"reference_id":"69d1ff28-a3d2-11ed-be5d-f3ea54e96121"}`),
 				},
 			},
