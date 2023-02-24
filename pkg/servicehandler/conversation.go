@@ -54,7 +54,7 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, u *cs
 	log.Debug("Getting a conversations.")
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	// get tmp
@@ -122,7 +122,7 @@ func (h *serviceHandler) ConversationMessageGetsByConversationID(
 	}
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	// get tmp

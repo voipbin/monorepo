@@ -74,7 +74,7 @@ func (h *serviceHandler) ChatroommessageGetsByChatroomID(ctx context.Context, u 
 	log.Debug("Getting a chatroommessages.")
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	// get owner
