@@ -99,7 +99,7 @@ func (h *serviceHandler) CampaignGetsByCustomerID(ctx context.Context, u *cscust
 	log.Debug("Getting a campaigns.")
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	// get campaigns

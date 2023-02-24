@@ -71,7 +71,7 @@ func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, 
 	})
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	if !u.HasPermission(cspermission.PermissionAdmin.ID) {

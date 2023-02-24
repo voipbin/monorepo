@@ -73,7 +73,7 @@ func (h *serviceHandler) ConferenceGets(ctx context.Context, u *cscustomer.Custo
 	})
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	// get conferences

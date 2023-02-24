@@ -72,7 +72,7 @@ func (h *serviceHandler) QueueGets(ctx context.Context, u *cscustomer.Customer, 
 	})
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	tmps, err := h.reqHandler.QueueV1QueueGets(ctx, u.ID, token, size)
