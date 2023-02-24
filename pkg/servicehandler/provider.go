@@ -71,7 +71,7 @@ func (h *serviceHandler) ProviderGets(ctx context.Context, u *cscustomer.Custome
 	})
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	if !u.HasPermission(cspermission.PermissionAdmin.ID) {

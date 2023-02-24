@@ -5,8 +5,8 @@ package servicehandler
 import (
 	"context"
 	"net/http"
-	"strings"
-	"time"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
@@ -438,6 +438,7 @@ type ServiceHandler interface {
 }
 
 type serviceHandler struct {
+	utilHandler    utilhandler.UtilHandler
 	reqHandler     requesthandler.RequestHandler
 	dbHandler      dbhandler.DBHandler
 	websockHandler websockhandler.WebsockHandler
@@ -450,19 +451,12 @@ func NewServiceHandler(
 	websockHandler websockhandler.WebsockHandler,
 ) ServiceHandler {
 	return &serviceHandler{
-		reqHandler: reqHandler,
-		dbHandler:  dbHandler,
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  reqHandler,
+		dbHandler:   dbHandler,
 
 		websockHandler: websockHandler,
 	}
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
 
 // Find takes a slice and looks for an element in it. If found it will

@@ -53,7 +53,7 @@ func (h *serviceHandler) ChatroomGetsByOwnerID(ctx context.Context, u *cscustome
 	log.Debug("Getting a chatrooms.")
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	// get owner
