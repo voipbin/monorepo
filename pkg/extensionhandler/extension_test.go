@@ -124,6 +124,108 @@ func Test_Create(t *testing.T) {
 	}
 }
 
+func Test_Get(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id uuid.UUID
+
+		responseExtension *extension.Extension
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
+
+			&extension.Extension{
+				ID: uuid.FromStringOrNil("b38b9d45-f81d-4505-b9ef-9f44da1860cf"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockUtil := utilhandler.NewMockUtilHandler(mc)
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &extensionHandler{
+			utilHandler:   mockUtil,
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
+		}
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.id).Return(tt.responseExtension, nil)
+
+		res, err := h.Get(ctx, tt.id)
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if !reflect.DeepEqual(res, tt.responseExtension) {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseExtension, res)
+		}
+	}
+}
+
+func Test_GetByExtension(t *testing.T) {
+
+	type test struct {
+		name string
+
+		ext string
+
+		responseExtension *extension.Extension
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			"test_ext",
+
+			&extension.Extension{
+				ID: uuid.FromStringOrNil("256c7fd2-e461-4871-83c0-8f60ab3acb84"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockUtil := utilhandler.NewMockUtilHandler(mc)
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		h := &extensionHandler{
+			utilHandler:   mockUtil,
+			dbAst:         mockDBAst,
+			dbBin:         mockDBBin,
+			notifyHandler: mockNotify,
+		}
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().ExtensionGetByExtension(ctx, tt.ext).Return(tt.responseExtension, nil)
+
+		res, err := h.GetByExtension(ctx, tt.ext)
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if !reflect.DeepEqual(res, tt.responseExtension) {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseExtension, res)
+		}
+	}
+}
+
 func Test_ExtensionUpdate(t *testing.T) {
 
 	type test struct {
@@ -191,7 +293,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 		mockDBBin.EXPECT().ExtensionUpdate(gomock.Any(), tt.updateExt)
 		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.ext.ID).Return(tt.updatedExt, nil)
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), extension.EventTypeExtensionUpdated, tt.updateExt)
-		_, err := h.ExtensionUpdate(ctx, tt.updateExt)
+		_, err := h.Update(ctx, tt.updateExt)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
@@ -259,7 +361,7 @@ func Test_ExtensionDelete(t *testing.T) {
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
 		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, tt.ext)
 
-		res, err := h.ExtensionDelete(ctx, tt.ext.ID)
+		res, err := h.Delete(ctx, tt.ext.ID)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
@@ -308,7 +410,7 @@ func Test_ExtensionGet(t *testing.T) {
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
-		res, err := h.ExtensionGet(ctx, tt.ext.ID)
+		res, err := h.Get(ctx, tt.ext.ID)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}
@@ -366,7 +468,7 @@ func Test_ExtensionGetsByDomainID(t *testing.T) {
 		ctx := context.Background()
 
 		mockDBBin.EXPECT().ExtensionGetsByDomainID(gomock.Any(), tt.domainID, tt.token, uint64(10)).Return(tt.exts, nil)
-		res, err := h.ExtensionGetsByDomainID(ctx, tt.domainID, tt.token, uint64(10))
+		res, err := h.GetsByDomainID(ctx, tt.domainID, tt.token, uint64(10))
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}

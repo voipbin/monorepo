@@ -185,7 +185,7 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().ExtensionGetsByDomainID(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.exts, nil)
+			mockExtension.EXPECT().GetsByDomainID(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.exts, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -256,7 +256,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().ExtensionUpdate(gomock.Any(), tt.reqExt).Return(tt.resExt, nil)
+			mockExtension.EXPECT().Update(gomock.Any(), tt.reqExt).Return(tt.resExt, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -317,7 +317,71 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().ExtensionDelete(gomock.Any(), tt.extensionID).Return(tt.responseExtension, nil)
+			mockExtension.EXPECT().Delete(gomock.Any(), tt.extensionID).Return(tt.responseExtension, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_pprocessV1ExtensionsExtensionExtensionGet(t *testing.T) {
+
+	type test struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseExtension *extension.Extension
+
+		expectExtension string
+		expectRes       *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/extensions/extension/test_ext",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
+			&extension.Extension{
+				ID: uuid.FromStringOrNil("7e0dc99c-e4e3-491a-8f66-9ccb2cea44c6"),
+			},
+
+			"test_ext",
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"7e0dc99c-e4e3-491a-8f66-9ccb2cea44c6","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_id":"00000000-0000-0000-0000-000000000000","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				reqHandler:       mockReq,
+				domainHandler:    mockDomain,
+				extensionHandler: mockExtension,
+			}
+
+			mockExtension.EXPECT().GetByExtension(gomock.Any(), tt.expectExtension).Return(tt.responseExtension, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

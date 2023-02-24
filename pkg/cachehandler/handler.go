@@ -148,7 +148,7 @@ func (h *handler) AstAORDel(ctx context.Context, id string) error {
 
 // DomainGet returns cached Domain info
 func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
-	key := fmt.Sprintf("domain:%s", id)
+	key := fmt.Sprintf("registrar:domain:%s", id)
 
 	var res domain.Domain
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -160,13 +160,12 @@ func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, 
 
 // DomainSet sets the domain info into the cache.
 func (h *handler) DomainSet(ctx context.Context, e *domain.Domain) error {
-	key := fmt.Sprintf("domain:%s", e.ID)
-	keyName := fmt.Sprintf("domain_name:%s", e.DomainName)
-
+	key := fmt.Sprintf("registrar:domain:%s", e.ID)
 	if err := h.setSerialize(ctx, key, e); err != nil {
 		return err
 	}
 
+	keyName := fmt.Sprintf("registrar:domain_name:%s", e.DomainName)
 	if err := h.setSerialize(ctx, keyName, e); err != nil {
 		return err
 	}
@@ -176,7 +175,7 @@ func (h *handler) DomainSet(ctx context.Context, e *domain.Domain) error {
 
 // DomainGetByDomainName returns cached Domain info
 func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) (*domain.Domain, error) {
-	key := fmt.Sprintf("domain_name:%s", domainName)
+	key := fmt.Sprintf("registrar:domain_name:%s", domainName)
 
 	var res domain.Domain
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -188,13 +187,12 @@ func (h *handler) DomainGetByDomainName(ctx context.Context, domainName string) 
 
 // DomainDel deletes the domain info from the cache.
 func (h *handler) DomainDel(ctx context.Context, id uuid.UUID, name string) error {
-	key := fmt.Sprintf("domain:%s", id)
-	keyName := fmt.Sprintf("domain_name:%s", name)
-
+	key := fmt.Sprintf("registrar:domain:%s", id)
 	if errDel := h.delKey(ctx, key); errDel != nil {
 		return errDel
 	}
 
+	keyName := fmt.Sprintf("registrar:domain_name:%s", name)
 	if errDel := h.delKey(ctx, keyName); errDel != nil {
 		return errDel
 	}
@@ -204,7 +202,19 @@ func (h *handler) DomainDel(ctx context.Context, id uuid.UUID, name string) erro
 
 // ExtensionGet returns cached Domain info
 func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
-	key := fmt.Sprintf("extension:%s", id)
+	key := fmt.Sprintf("registrar:extension:%s", id)
+
+	var res extension.Extension
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// ExtensionGetByExtension returns cached extension info of the given extension
+func (h *handler) ExtensionGetByExtension(ctx context.Context, ext string) (*extension.Extension, error) {
+	key := fmt.Sprintf("registrar:extension_extension:%s", ext)
 
 	var res extension.Extension
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -216,20 +226,17 @@ func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Ex
 
 // ExtensionSet sets the extension info into the cache.
 func (h *handler) ExtensionSet(ctx context.Context, e *extension.Extension) error {
-	key := fmt.Sprintf("extension:%s", e.ID)
-
+	key := fmt.Sprintf("registrar:extension:%s", e.ID)
 	if err := h.setSerialize(ctx, key, e); err != nil {
 		return err
 	}
 
+	keyExtension := fmt.Sprintf("registrar:extension_extension:%s", e.Extension)
+	if err := h.setSerialize(ctx, keyExtension, e); err != nil {
+		return err
+	}
+
 	return nil
-}
-
-// ExtensionDel deletes the domain info from the cache.
-func (h *handler) ExtensionDel(ctx context.Context, id uuid.UUID) error {
-	key := fmt.Sprintf("extension:%s", id)
-
-	return h.delKey(ctx, key)
 }
 
 // AstContactsGet returns cached contacts info of the given endpoint

@@ -180,6 +180,18 @@ func (h *handler) extensionGetFromCache(ctx context.Context, id uuid.UUID) (*ext
 	return res, nil
 }
 
+// extensionGetByExtensionFromCache returns Extension from the cache.
+func (h *handler) extensionGetByExtensionFromCache(ctx context.Context, ext string) (*extension.Extension, error) {
+
+	// get from cache
+	res, err := h.cache.ExtensionGetByExtension(ctx, ext)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // ExtensionGet returns extension.
 func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 
@@ -191,6 +203,45 @@ func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Ex
 	res, err = h.extensionGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	// set to the cache
+	_ = h.extensionSetToCache(ctx, res)
+
+	return res, nil
+}
+
+// ExtensionGetByExtension returns extension of the given extension.
+func (h *handler) ExtensionGetByExtension(ctx context.Context, exten string) (*extension.Extension, error) {
+
+	res, err := h.extensionGetByExtensionFromCache(ctx, exten)
+	if err == nil {
+		return res, nil
+	}
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			extension = ?
+		order by
+			tm_create desc
+		limit 1
+	`, extensionSelect)
+
+	row, err := h.db.Query(q, exten)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ExtensionGetByExtension. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err = h.extensionGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan the row. ExtensionGetByExtension. err: %v", err)
 	}
 
 	// set to the cache

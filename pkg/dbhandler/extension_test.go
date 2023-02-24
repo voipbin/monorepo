@@ -76,7 +76,6 @@ func Test_ExtensionCreate(t *testing.T) {
 				db:          dbTest,
 				cache:       mockCache,
 			}
-
 			ctx := context.Background()
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
@@ -92,8 +91,19 @@ func Test_ExtensionCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, res) == false {
+			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+			mockCache.EXPECT().ExtensionGetByExtension(ctx, tt.ext.Extension).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
+			resGetByExtension, err := h.ExtensionGetByExtension(ctx, tt.ext.Extension)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, resGetByExtension) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, resGetByExtension)
 			}
 		})
 	}

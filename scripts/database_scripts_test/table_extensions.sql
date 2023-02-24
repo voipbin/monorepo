@@ -25,3 +25,4 @@ create table extensions (
 
 create index idx_extensions_customerid on extensions(customer_id);
 create index idx_extensions_domain_id on extensions(domain_id);
+create index idx_extensions_extension on extensions(extension);

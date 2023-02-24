@@ -117,13 +117,18 @@ func (h *extensionHandler) Create(
 	return res, nil
 }
 
-// ExtensionGet gets a exists extension
-func (h *extensionHandler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+// Get gets a exists extension
+func (h *extensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	return h.dbBin.ExtensionGet(ctx, id)
 }
 
-// ExtensionUpdate updates a exists extension
-func (h *extensionHandler) ExtensionUpdate(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
+// Get gets a exists extension of the given exntesion
+func (h *extensionHandler) GetByExtension(ctx context.Context, ext string) (*extension.Extension, error) {
+	return h.dbBin.ExtensionGetByExtension(ctx, ext)
+}
+
+// Update updates a exists extension
+func (h *extensionHandler) Update(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"customer_id": e.CustomerID,
@@ -170,43 +175,48 @@ func (h *extensionHandler) ExtensionUpdate(ctx context.Context, e *extension.Ext
 	return res, nil
 }
 
-// ExtensionDelete deletes a exists extension
-func (h *extensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+// Delete deletes a exists extension
+func (h *extensionHandler) Delete(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Delete",
+		"id":   id,
+	})
 
 	// get extension
 	ext, err := h.dbBin.ExtensionGet(ctx, id)
 	if err != nil {
-		logrus.Errorf("Could not get delete extension info. err: %v", err)
+		log.Errorf("Could not get delete extension info. err: %v", err)
 		return nil, err
 	}
 
 	// delete extension
 	if err := h.dbBin.ExtensionDelete(ctx, ext.ID); err != nil {
-		logrus.Errorf("Could not delete extension. err: %v", err)
+		log.Errorf("Could not delete extension. err: %v", err)
 		return nil, err
 	}
 
 	// delete endpopint
 	if err := h.dbAst.AstEndpointDelete(ctx, ext.EndpointID); err != nil {
-		logrus.Errorf("Could not delete endpoint. err: %v", err)
+		log.Errorf("Could not delete endpoint. err: %v", err)
 		return nil, err
 	}
 
 	// delete auth
 	if err := h.dbAst.AstAuthDelete(ctx, ext.AuthID); err != nil {
-		logrus.Errorf("Could not delete auth info. err: %v", err)
+		log.Errorf("Could not delete auth info. err: %v", err)
 		return nil, err
 	}
 
 	// delete aor
 	if err := h.dbAst.AstAORDelete(ctx, ext.AORID); err != nil {
-		logrus.Errorf("Could not delete aor info. err: %v", err)
+		log.Errorf("Could not delete aor info. err: %v", err)
 		return nil, err
 	}
 	logrus.Debugf("Deleted extension. extension: %s", id)
 
 	res, err := h.dbBin.ExtensionGet(ctx, id)
 	if err != nil {
+		log.Errorf("Could not get deleted extension info. err: %v", err)
 		return nil, err
 	}
 	h.notifyHandler.PublishEvent(ctx, extension.EventTypeExtensionDeleted, res)
@@ -215,26 +225,24 @@ func (h *extensionHandler) ExtensionDelete(ctx context.Context, id uuid.UUID) (*
 	return res, nil
 }
 
-// ExtensionDelete deletes a exists extension
-func (h *extensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":      "ExtensionDeleteByDomainID",
-			"domain_id": domainID,
-		},
-	)
+// DeleteByDomainID deletes a exists extension
+func (h *extensionHandler) DeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "DeleteByDomainID",
+		"domain_id": domainID,
+	})
 
 	// get extensions
-	exts, err := h.ExtensionGetsByDomainID(ctx, domainID, h.utilHandler.GetCurTime(), 1000)
+	exts, err := h.GetsByDomainID(ctx, domainID, h.utilHandler.GetCurTime(), 1000)
 	if err != nil {
-		logrus.Errorf("Could not get delete extensions")
+		log.Errorf("Could not get delete extensions. err: %v", err)
 		return nil, err
 	}
 
 	// delete extensions
 	res := []*extension.Extension{}
 	for _, ext := range exts {
-		tmp, err := h.ExtensionDelete(ctx, ext.ID)
+		tmp, err := h.Delete(ctx, ext.ID)
 		if err != nil {
 			log.Errorf("Could not delete the extension. extension_id: %s, err: %v", tmp.ID, err)
 		}
@@ -244,8 +252,8 @@ func (h *extensionHandler) ExtensionDeleteByDomainID(ctx context.Context, domain
 	return res, nil
 }
 
-// ExtensionGetsByDomainID returns list of extensions
-func (h *extensionHandler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
+// GetsByDomainID returns list of extensions
+func (h *extensionHandler) GetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
 
 	exts, err := h.dbBin.ExtensionGetsByDomainID(ctx, domainID, token, limit)
 	if err != nil {

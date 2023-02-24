@@ -52,8 +52,10 @@ var (
 	regV1DomainsDomainName = regexp.MustCompile("/v1/domains/domain_name/" + regAny)
 
 	// extensions
-	regV1Extensions   = regexp.MustCompile("/v1/extensions")
-	regV1ExtensionsID = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
+	regV1Extensions                   = regexp.MustCompile("/v1/extensions$")
+	regV1ExtensionsGet                = regexp.MustCompile(`/v1/extensions\?`)
+	regV1ExtensionsID                 = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
+	regV1ExtensionsExtensionExtension = regexp.MustCompile("/v1/extensions/extension/" + regAny + "$")
 )
 
 var (
@@ -133,7 +135,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "registrar-manager", false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, "registrar-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("could not consume the request message correctly. err: %v", err)
 			}
@@ -215,23 +217,27 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	/////////////
 	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ExtensionsIDGet(ctx, m)
-		requestType = "/v1/extensions"
+		requestType = "/v1/extensions/<extension-id>"
 
 	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1ExtensionsIDPut(ctx, m)
-		requestType = "/v1/extensions"
+		requestType = "/v1/extensions/<extension-id>"
 
 	case regV1ExtensionsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ExtensionsIDDelete(ctx, m)
-		requestType = "/v1/extensions"
+		requestType = "/v1/extensions/<extension-id>"
 
 	case regV1Extensions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ExtensionsPost(ctx, m)
 		requestType = "/v1/extensions"
 
-	case regV1Extensions.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ExtensionsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ExtensionsGet(ctx, m)
 		requestType = "/v1/extensions"
+
+	case regV1ExtensionsExtensionExtension.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ExtensionsExtensionExtensionGet(ctx, m)
+		requestType = "/v1/extensions/extension/<extension>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
