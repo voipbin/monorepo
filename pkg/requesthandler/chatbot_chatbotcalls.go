@@ -7,7 +7,7 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	chatbotchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -15,7 +15,7 @@ import (
 // ChatbotV1ChatbotcallGetsByCustomerID sends a request to chatbot-manager
 // to getting a list of chatbotcall info of the given customer id.
 // it returns detail list of chatbotcall info if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]chatbotchatbotcall.Chatbotcall, error) {
+func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cbchatbotcall.Chatbotcall, error) {
 	uri := fmt.Sprintf("/v1/chatbotcalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceChatbotChatbotcalls, 30000, 0, ContentTypeNone, nil)
@@ -29,7 +29,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Contex
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res []chatbotchatbotcall.Chatbotcall
+	var res []cbchatbotcall.Chatbotcall
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Contex
 }
 
 // ChatbotV1ChatbotcallGet returns the chatbot.
-func (r *requestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*chatbotchatbotcall.Chatbotcall, error) {
+func (r *requestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error) {
 
 	uri := fmt.Sprintf("/v1/chatbotcalls/%s", chatbotcallID)
 
@@ -51,7 +51,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcal
 		return nil, fmt.Errorf("could not get conference. status: %d", tmp.StatusCode)
 	}
 
-	var res chatbotchatbotcall.Chatbotcall
+	var res cbchatbotcall.Chatbotcall
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallGet(ctx context.Context, chatbotcal
 // ChatbotV1ChatbotcallDelete sends a request to chatbot-manager
 // to deleting a chatbotcall.
 // it returns deleted conference if it succeed.
-func (r *requestHandler) ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*chatbotchatbotcall.Chatbotcall, error) {
+func (r *requestHandler) ChatbotV1ChatbotcallDelete(ctx context.Context, chatbotcallID uuid.UUID) (*cbchatbotcall.Chatbotcall, error) {
 	uri := fmt.Sprintf("/v1/chatbotcalls/%s", chatbotcallID)
 
 	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceChatbotChatbotcallsID, requestTimeoutDefault, 0, ContentTypeNone, nil)
@@ -76,7 +76,7 @@ func (r *requestHandler) ChatbotV1ChatbotcallDelete(ctx context.Context, chatbot
 		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res chatbotchatbotcall.Chatbotcall
+	var res cbchatbotcall.Chatbotcall
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}

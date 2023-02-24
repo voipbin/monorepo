@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	chatchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	chatbotservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
+	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -19,23 +19,23 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 
 		customerID    uuid.UUID
 		chatbotID     uuid.UUID
-		referenceType chatchatbotcall.ReferenceType
+		referenceType cbchatbotcall.ReferenceType
 		referenceID   uuid.UUID
-		gender        chatchatbotcall.Gender
+		gender        cbchatbotcall.Gender
 		language      string
 
 		response *rabbitmqhandler.Response
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectRes     *chatbotservice.Service
+		expectRes     *cbservice.Service
 	}{
 		{
 			"normal",
 
 			uuid.FromStringOrNil("7654ef82-949f-4f0f-8711-6d1c370537be"),
 			uuid.FromStringOrNil("9469e101-d269-4895-9679-fe49531f7c12"),
-			chatchatbotcall.ReferenceTypeCall,
+			cbchatbotcall.ReferenceTypeCall,
 			uuid.FromStringOrNil("865089bd-dc1b-45d5-89af-4a09c1d90cea"),
 			"female",
 			"en-US",
@@ -53,7 +53,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"7654ef82-949f-4f0f-8711-6d1c370537be","chatbot_id":"9469e101-d269-4895-9679-fe49531f7c12","reference_type":"call","reference_id":"865089bd-dc1b-45d5-89af-4a09c1d90cea","gender":"female","language":"en-US"}`),
 			},
-			&chatbotservice.Service{
+			&cbservice.Service{
 				ID: uuid.FromStringOrNil("134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"),
 			},
 		},

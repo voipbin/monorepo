@@ -77,6 +77,31 @@ func (r *requestHandler) RegistrarV1ExtensionGet(ctx context.Context, extensionI
 	return &res, nil
 }
 
+// RegistrarV1ExtensionGetByExtension sends a request to registrar-manager
+// to getting a detail extension info.
+// it returns detail extension info if it succeed.
+func (r *requestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context, exten string) (*rmextension.Extension, error) {
+	uri := fmt.Sprintf("/v1/extensions/extension/%s", exten)
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res rmextension.Extension
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 // RegistrarV1ExtensionDelete sends a request to registrar-manager
 // to deleting the domain.
 func (r *requestHandler) RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error) {

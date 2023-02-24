@@ -3535,6 +3535,21 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGet(ctx, extension
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGet", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGet), ctx, extensionID)
 }
 
+// RegistrarV1ExtensionGetByExtension mocks base method.
+func (m *MockRequestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context, exten string) (*extension.Extension, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1ExtensionGetByExtension", ctx, exten)
+	ret0, _ := ret[0].(*extension.Extension)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1ExtensionGetByExtension indicates an expected call of RegistrarV1ExtensionGetByExtension.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGetByExtension(ctx, exten interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGetByExtension", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGetByExtension), ctx, exten)
+}
+
 // RegistrarV1ExtensionGets mocks base method.
 func (m *MockRequestHandler) RegistrarV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]extension.Extension, error) {
 	m.ctrl.T.Helper()
