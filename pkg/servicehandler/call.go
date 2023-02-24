@@ -125,7 +125,7 @@ func (h *serviceHandler) CallGets(ctx context.Context, u *cscustomer.Customer, s
 	})
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	// get calls

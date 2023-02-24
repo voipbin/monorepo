@@ -78,6 +78,7 @@ func flowsGET(c *gin.Context) {
 		logrus.Fields{
 			"func":            "flowsGET",
 			"request_address": c.ClientIP,
+			"request":         c.Request,
 		},
 	)
 

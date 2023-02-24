@@ -108,7 +108,7 @@ func (h *serviceHandler) AgentGets(ctx context.Context, u *cscustomer.Customer, 
 	})
 
 	if token == "" {
-		token = getCurTime()
+		token = h.utilHandler.GetCurTime()
 	}
 
 	// get agents
