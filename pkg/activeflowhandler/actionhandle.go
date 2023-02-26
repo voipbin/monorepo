@@ -540,6 +540,11 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 	log.WithField("calls", resCalls).Debugf("Created outgoing calls for connect. count: %d", len(resCalls))
 
+	if len(resCalls) == 0 {
+		log.WithField("calls", resCalls).Errorf("Could not create any outgoing calls for connect.")
+		return fmt.Errorf("could not create any outgoing calls")
+	}
+
 	// create push actions for activeflow
 	// put original call into the created conference
 	pushActions := []action.Action{
