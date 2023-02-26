@@ -77,11 +77,11 @@ func (r *requestHandler) RegistrarV1ExtensionGet(ctx context.Context, extensionI
 	return &res, nil
 }
 
-// RegistrarV1ExtensionGetByExtension sends a request to registrar-manager
-// to getting a detail extension info.
+// RegistrarV1ExtensionGetByEndpoint sends a request to registrar-manager
+// to getting a detail extension info of the given endpoint.
 // it returns detail extension info if it succeed.
-func (r *requestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context, exten string) (*rmextension.Extension, error) {
-	uri := fmt.Sprintf("/v1/extensions/extension/%s", exten)
+func (r *requestHandler) RegistrarV1ExtensionGetByEndpoint(ctx context.Context, endpoint string) (*rmextension.Extension, error) {
+	uri := fmt.Sprintf("/v1/extensions/endpoint/%s", endpoint)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
