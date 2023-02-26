@@ -8,8 +8,8 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
@@ -60,7 +60,7 @@ type DBHandler interface {
 	ExtensionCreate(ctx context.Context, b *extension.Extension) error
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	ExtensionGetByExtension(ctx context.Context, exten string) (*extension.Extension, error)
+	ExtensionGetByEndpointID(ctx context.Context, endpoint string) (*extension.Extension, error)
 	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
 	ExtensionUpdate(ctx context.Context, b *extension.Extension) error
 }

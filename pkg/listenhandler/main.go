@@ -52,10 +52,10 @@ var (
 	regV1DomainsDomainName = regexp.MustCompile("/v1/domains/domain_name/" + regAny)
 
 	// extensions
-	regV1Extensions                   = regexp.MustCompile("/v1/extensions$")
-	regV1ExtensionsGet                = regexp.MustCompile(`/v1/extensions\?`)
-	regV1ExtensionsID                 = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
-	regV1ExtensionsExtensionExtension = regexp.MustCompile("/v1/extensions/extension/" + regAny + "$")
+	regV1Extensions                  = regexp.MustCompile("/v1/extensions$")
+	regV1ExtensionsGet               = regexp.MustCompile(`/v1/extensions\?`)
+	regV1ExtensionsID                = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
+	regV1ExtensionsExtensionEndpoint = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
 )
 
 var (
@@ -235,9 +235,9 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ExtensionsGet(ctx, m)
 		requestType = "/v1/extensions"
 
-	case regV1ExtensionsExtensionExtension.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ExtensionsExtensionExtensionGet(ctx, m)
-		requestType = "/v1/extensions/extension/<extension>"
+	case regV1ExtensionsExtensionEndpoint.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ExtensionsExtensionEndpointGet(ctx, m)
+		requestType = "/v1/extensions/endpoint/<endpoint>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

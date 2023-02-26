@@ -330,7 +330,7 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 	}
 }
 
-func Test_pprocessV1ExtensionsExtensionExtensionGet(t *testing.T) {
+func Test_processV1ExtensionsExtensionEndpointGet(t *testing.T) {
 
 	type test struct {
 		name    string
@@ -338,8 +338,8 @@ func Test_pprocessV1ExtensionsExtensionExtensionGet(t *testing.T) {
 
 		responseExtension *extension.Extension
 
-		expectExtension string
-		expectRes       *rabbitmqhandler.Response
+		expectEndpoint string
+		expectRes      *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -347,7 +347,7 @@ func Test_pprocessV1ExtensionsExtensionExtensionGet(t *testing.T) {
 			"normal",
 
 			&rabbitmqhandler.Request{
-				URI:    "/v1/extensions/extension/test_ext",
+				URI:    "/v1/extensions/endpoint/test_ext@test_domain",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
@@ -355,7 +355,7 @@ func Test_pprocessV1ExtensionsExtensionExtensionGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("7e0dc99c-e4e3-491a-8f66-9ccb2cea44c6"),
 			},
 
-			"test_ext",
+			"test_ext@test_domain",
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -381,7 +381,7 @@ func Test_pprocessV1ExtensionsExtensionExtensionGet(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().GetByExtension(gomock.Any(), tt.expectExtension).Return(tt.responseExtension, nil)
+			mockExtension.EXPECT().GetByEndpoint(gomock.Any(), tt.expectEndpoint).Return(tt.responseExtension, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

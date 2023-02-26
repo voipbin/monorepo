@@ -180,11 +180,11 @@ func (h *handler) extensionGetFromCache(ctx context.Context, id uuid.UUID) (*ext
 	return res, nil
 }
 
-// extensionGetByExtensionFromCache returns Extension from the cache.
-func (h *handler) extensionGetByExtensionFromCache(ctx context.Context, ext string) (*extension.Extension, error) {
+// extensionGetByEndpointIDFromCache returns Extension from the cache.
+func (h *handler) extensionGetByEndpointIDFromCache(ctx context.Context, endpoint string) (*extension.Extension, error) {
 
 	// get from cache
-	res, err := h.cache.ExtensionGetByExtension(ctx, ext)
+	res, err := h.cache.ExtensionGetByEndpointID(ctx, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -211,10 +211,10 @@ func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Ex
 	return res, nil
 }
 
-// ExtensionGetByExtension returns extension of the given extension.
-func (h *handler) ExtensionGetByExtension(ctx context.Context, exten string) (*extension.Extension, error) {
+// ExtensionGetByEndpointID returns extension of the given extension.
+func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID string) (*extension.Extension, error) {
 
-	res, err := h.extensionGetByExtensionFromCache(ctx, exten)
+	res, err := h.extensionGetByEndpointIDFromCache(ctx, endpointID)
 	if err == nil {
 		return res, nil
 	}
@@ -223,15 +223,15 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, exten string) (*e
 	q := fmt.Sprintf(`
 		%s
 		where
-			extension = ?
+			endpoint_id = ?
 		order by
 			tm_create desc
 		limit 1
 	`, extensionSelect)
 
-	row, err := h.db.Query(q, exten)
+	row, err := h.db.Query(q, endpointID)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ExtensionGetByExtension. err: %v", err)
+		return nil, fmt.Errorf("could not query. ExtensionGetByEndpointID. err: %v", err)
 	}
 	defer row.Close()
 
@@ -241,7 +241,7 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, exten string) (*e
 
 	res, err = h.extensionGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. ExtensionGetByExtension. err: %v", err)
+		return nil, fmt.Errorf("could not scan the row. ExtensionGetByEndpointID. err: %v", err)
 	}
 
 	// set to the cache

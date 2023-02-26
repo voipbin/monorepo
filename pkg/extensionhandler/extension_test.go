@@ -175,13 +175,14 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetByExtension(t *testing.T) {
+func Test_GetByEndpoint(t *testing.T) {
 
 	type test struct {
 		name string
 
-		ext string
+		endpoint string
 
+		expectEndpointID  string
 		responseExtension *extension.Extension
 	}
 
@@ -189,8 +190,9 @@ func Test_GetByExtension(t *testing.T) {
 		{
 			"normal",
 
-			"test_ext",
+			"test_ext@test_domain",
 
+			"test_ext@test_domain.sip.voipbin.net",
 			&extension.Extension{
 				ID: uuid.FromStringOrNil("256c7fd2-e461-4871-83c0-8f60ab3acb84"),
 			},
@@ -213,9 +215,9 @@ func Test_GetByExtension(t *testing.T) {
 		}
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGetByExtension(ctx, tt.ext).Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().ExtensionGetByEndpointID(ctx, tt.expectEndpointID).Return(tt.responseExtension, nil)
 
-		res, err := h.GetByExtension(ctx, tt.ext)
+		res, err := h.GetByEndpoint(ctx, tt.endpoint)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}

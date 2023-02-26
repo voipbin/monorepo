@@ -96,19 +96,19 @@ func (mr *MockExtensionHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockExtensionHandler)(nil).Get), ctx, id)
 }
 
-// GetByExtension mocks base method.
-func (m *MockExtensionHandler) GetByExtension(ctx context.Context, ext string) (*extension.Extension, error) {
+// GetByEndpoint mocks base method.
+func (m *MockExtensionHandler) GetByEndpoint(ctx context.Context, endpoint string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByExtension", ctx, ext)
+	ret := m.ctrl.Call(m, "GetByEndpoint", ctx, endpoint)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetByExtension indicates an expected call of GetByExtension.
-func (mr *MockExtensionHandlerMockRecorder) GetByExtension(ctx, ext interface{}) *gomock.Call {
+// GetByEndpoint indicates an expected call of GetByEndpoint.
+func (mr *MockExtensionHandlerMockRecorder) GetByEndpoint(ctx, endpoint interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByExtension", reflect.TypeOf((*MockExtensionHandler)(nil).GetByExtension), ctx, ext)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEndpoint", reflect.TypeOf((*MockExtensionHandler)(nil).GetByEndpoint), ctx, endpoint)
 }
 
 // GetsByDomainID mocks base method.

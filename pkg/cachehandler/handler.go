@@ -212,9 +212,9 @@ func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Ex
 	return &res, nil
 }
 
-// ExtensionGetByExtension returns cached extension info of the given extension
-func (h *handler) ExtensionGetByExtension(ctx context.Context, ext string) (*extension.Extension, error) {
-	key := fmt.Sprintf("registrar:extension_extension:%s", ext)
+// ExtensionGetByEndpointID returns cached extension info of the given extension
+func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID string) (*extension.Extension, error) {
+	key := fmt.Sprintf("registrar:extension_endpoint_id:%s", endpointID)
 
 	var res extension.Extension
 	if err := h.getSerialize(ctx, key, &res); err != nil {
@@ -231,8 +231,8 @@ func (h *handler) ExtensionSet(ctx context.Context, e *extension.Extension) erro
 		return err
 	}
 
-	keyExtension := fmt.Sprintf("registrar:extension_extension:%s", e.Extension)
-	if err := h.setSerialize(ctx, keyExtension, e); err != nil {
+	keyEndpointID := fmt.Sprintf("registrar:extension_endpoint_id:%s", e.EndpointID)
+	if err := h.setSerialize(ctx, keyEndpointID, e); err != nil {
 		return err
 	}
 
