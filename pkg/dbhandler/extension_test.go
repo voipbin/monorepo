@@ -9,8 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
@@ -95,9 +95,9 @@ func Test_ExtensionCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
-			mockCache.EXPECT().ExtensionGetByExtension(ctx, tt.ext.Extension).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionGetByEndpointID(ctx, tt.ext.EndpointID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
-			resGetByExtension, err := h.ExtensionGetByExtension(ctx, tt.ext.Extension)
+			resGetByExtension, err := h.ExtensionGetByEndpointID(ctx, tt.ext.EndpointID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astaor"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astauth"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 )
 
@@ -42,7 +43,7 @@ func (h *extensionHandler) Create(
 	}
 
 	// create aor id
-	aorID := fmt.Sprintf("%s@%s.%s", ext, d.DomainName, constBaseDomainName)
+	aorID := fmt.Sprintf("%s@%s.%s", ext, d.DomainName, common.BaseDomainName)
 
 	// create aor
 	maxContacts := 1
@@ -59,7 +60,7 @@ func (h *extensionHandler) Create(
 
 	// create auth
 	authType := "userpass"
-	realm := fmt.Sprintf("%s.%s", d.DomainName, constBaseDomainName)
+	realm := fmt.Sprintf("%s.%s", d.DomainName, common.BaseDomainName)
 	auth := &astauth.AstAuth{
 		ID:       &aorID,
 		AuthType: &authType,
@@ -122,9 +123,11 @@ func (h *extensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Ex
 	return h.dbBin.ExtensionGet(ctx, id)
 }
 
-// Get gets a exists extension of the given exntesion
-func (h *extensionHandler) GetByExtension(ctx context.Context, ext string) (*extension.Extension, error) {
-	return h.dbBin.ExtensionGetByExtension(ctx, ext)
+// GetByEndpoint gets a exists extension of the given endpoint
+func (h *extensionHandler) GetByEndpoint(ctx context.Context, endpoint string) (*extension.Extension, error) {
+	endpointID := fmt.Sprintf("%s.%s", endpoint, common.BaseDomainName)
+
+	return h.dbBin.ExtensionGetByEndpointID(ctx, endpointID)
 }
 
 // Update updates a exists extension

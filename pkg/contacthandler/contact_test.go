@@ -11,27 +11,20 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 )
 
-func TestContactGetsByDomainID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	h := &contactHandler{
-		dbAst: mockDBAst,
-		dbBin: mockDBBin,
-	}
+func Test_ContactGetsByDomainID(t *testing.T) {
 
 	type test struct {
 		name     string
 		endpoint string
-		contacts []*astcontact.AstContact
+
+		responseContacts []*astcontact.AstContact
+		expectEndpoint   string
 	}
 
 	tests := []test{
 		{
-			"test normal",
-			"test@test.sip.voipbin.net",
+			"normal",
+			"testexten@testdomain",
 			[]*astcontact.AstContact{
 				{
 					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
@@ -47,59 +40,71 @@ func TestContactGetsByDomainID(t *testing.T) {
 					ViaAddr:             "192.168.0.20",
 					ViaPort:             35551,
 					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
-					Endpoint:            "test@test.sip.voipbin.net",
+					Endpoint:            "testexten@testdomain.sip.voipbin.net",
 					PruneOnBoot:         "no",
 				},
 			},
+			"testexten@testdomain.sip.voipbin.net",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDBAst := dbhandler.NewMockDBHandler(mc)
+			mockDBBin := dbhandler.NewMockDBHandler(mc)
+			h := &contactHandler{
+				dbAst: mockDBAst,
+				dbBin: mockDBBin,
+			}
 			ctx := context.Background()
 
-			mockDBAst.EXPECT().AstContactGetsByEndpoint(gomock.Any(), tt.endpoint).Return(tt.contacts, nil)
+			mockDBAst.EXPECT().AstContactGetsByEndpoint(ctx, tt.expectEndpoint).Return(tt.responseContacts, nil)
 			res, err := h.ContactGetsByEndpoint(ctx, tt.endpoint)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.contacts, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.contacts, res)
+			if reflect.DeepEqual(tt.responseContacts, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseContacts, res)
 			}
 		})
 
 	}
 }
 
-func TestContactRefreshByEndpoint(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDBAst := dbhandler.NewMockDBHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	h := &contactHandler{
-		dbAst: mockDBAst,
-		dbBin: mockDBBin,
-	}
+func Test_ContactRefreshByEndpoint(t *testing.T) {
 
 	type test struct {
-		name     string
-		endpoint string
+		name           string
+		endpoint       string
+		expectEndpoint string
 	}
 
 	tests := []test{
 		{
 			"test normal",
+			"test@test",
 			"test@test.sip.voipbin.net",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDBAst := dbhandler.NewMockDBHandler(mc)
+			mockDBBin := dbhandler.NewMockDBHandler(mc)
+			h := &contactHandler{
+				dbAst: mockDBAst,
+				dbBin: mockDBBin,
+			}
 			ctx := context.Background()
 
-			mockDBAst.EXPECT().AstContactDeleteFromCache(gomock.Any(), tt.endpoint).Return(nil)
+			mockDBAst.EXPECT().AstContactDeleteFromCache(ctx, tt.expectEndpoint).Return(nil)
 			if err := h.ContactRefreshByEndpoint(ctx, tt.endpoint); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

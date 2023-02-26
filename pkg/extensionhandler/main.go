@@ -29,7 +29,7 @@ type ExtensionHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	DeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error)
 	Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	GetByExtension(ctx context.Context, ext string) (*extension.Extension, error)
+	GetByEndpoint(ctx context.Context, endpoint string) (*extension.Extension, error)
 	GetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
 	Update(ctx context.Context, e *extension.Extension) (*extension.Extension, error)
 }
@@ -42,10 +42,6 @@ type extensionHandler struct {
 	dbBin         dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 }
-
-const (
-	constBaseDomainName = "sip.voipbin.net" // base domain name
-)
 
 var (
 	metricsNamespace = "registrar_manager"

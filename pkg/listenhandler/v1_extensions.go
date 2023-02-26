@@ -228,10 +228,10 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *rabbitmqh
 	return res, nil
 }
 
-// processV1ExtensionsExtensionExtensionGet handles /v1/extensions/extension/{extension} GET request
-func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1ExtensionsExtensionEndpointGet handles /v1/extensions/endpoint/{endpoint} GET request
+func (h *listenHandler) processV1ExtensionsExtensionEndpointGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1ExtensionsExtensionExtensionGet",
+		"func":    "processV1ExtensionsExtensionEndpointGet",
 		"request": m,
 	})
 
@@ -240,11 +240,11 @@ func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Con
 		return nil, err
 	}
 
-	// "/v1/extensions/extension/test_ext"
+	// "/v1/extensions/endpoint/test_ext@test_domain"
 	tmpVals := strings.Split(u.Path, "/")
-	ext := tmpVals[4]
+	endpoint := tmpVals[4]
 
-	tmp, err := h.extensionHandler.GetByExtension(ctx, ext)
+	tmp, err := h.extensionHandler.GetByEndpoint(ctx, endpoint)
 	if err != nil {
 		log.Errorf("Could not get extension info. err: %v", err)
 		return nil, err
