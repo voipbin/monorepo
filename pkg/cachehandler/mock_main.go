@@ -16,6 +16,7 @@ import (
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	groupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
@@ -258,6 +259,35 @@ func (m *MockCacheHandler) ExternalMediaSet(ctx context.Context, data *externalm
 func (mr *MockCacheHandlerMockRecorder) ExternalMediaSet(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaSet", reflect.TypeOf((*MockCacheHandler)(nil).ExternalMediaSet), ctx, data)
+}
+
+// GroupDialGet mocks base method.
+func (m *MockCacheHandler) GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.GroupDial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupDialGet", ctx, id)
+	ret0, _ := ret[0].(*groupdial.GroupDial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupDialGet indicates an expected call of GroupDialGet.
+func (mr *MockCacheHandlerMockRecorder) GroupDialGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupDialGet", reflect.TypeOf((*MockCacheHandler)(nil).GroupDialGet), ctx, id)
+}
+
+// GroupDialSet mocks base method.
+func (m *MockCacheHandler) GroupDialSet(ctx context.Context, call *groupdial.GroupDial) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupDialSet", ctx, call)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupDialSet indicates an expected call of GroupDialSet.
+func (mr *MockCacheHandlerMockRecorder) GroupDialSet(ctx, call interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupDialSet", reflect.TypeOf((*MockCacheHandler)(nil).GroupDialSet), ctx, call)
 }
 
 // NumberGetByNumber mocks base method.

@@ -18,6 +18,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
 )
@@ -94,6 +95,14 @@ type DBHandler interface {
 	ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error
 	ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
 	ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error
+
+	// // groupcall
+	// GroupCalllGet(ctx context.Context, id uuid.UUID) (*groupcall.GroupCall, error)
+	// GroupCalllCreate(ctx context.Context, data *groupcall.GroupCall) error
+
+	// groupdial
+	GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.GroupDial, error)
+	GroupDialCreate(ctx context.Context, data *groupdial.GroupDial) error
 
 	// recordings
 	RecordingCreate(ctx context.Context, c *recording.Recording) error

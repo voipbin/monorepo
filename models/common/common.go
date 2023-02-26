@@ -11,3 +11,10 @@ const (
 	ContextExternalSoop  = "call-externalsnoop" // context for the external snoop channel
 	ContextApplication   = "call-application"   // context for dialplan application execution
 )
+
+// list of domain defines
+const (
+	DomainConference = "conference.voipbin.net"
+	DomainPSTN       = "pstn.voipbin.net"
+	DomainSIPSuffix  = ".sip.voipbin.net"
+)

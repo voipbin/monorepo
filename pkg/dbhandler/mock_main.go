@@ -18,6 +18,7 @@ import (
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	groupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -906,6 +907,35 @@ func (m *MockDBHandler) ExternalMediaSet(ctx context.Context, data *externalmedi
 func (mr *MockDBHandlerMockRecorder) ExternalMediaSet(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaSet", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaSet), ctx, data)
+}
+
+// GroupDialCreate mocks base method.
+func (m *MockDBHandler) GroupDialCreate(ctx context.Context, data *groupdial.GroupDial) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupDialCreate", ctx, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupDialCreate indicates an expected call of GroupDialCreate.
+func (mr *MockDBHandlerMockRecorder) GroupDialCreate(ctx, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupDialCreate", reflect.TypeOf((*MockDBHandler)(nil).GroupDialCreate), ctx, data)
+}
+
+// GroupDialGet mocks base method.
+func (m *MockDBHandler) GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.GroupDial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupDialGet", ctx, id)
+	ret0, _ := ret[0].(*groupdial.GroupDial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupDialGet indicates an expected call of GroupDialGet.
+func (mr *MockDBHandlerMockRecorder) GroupDialGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupDialGet", reflect.TypeOf((*MockDBHandler)(nil).GroupDialGet), ctx, id)
 }
 
 // RecordingCreate mocks base method.

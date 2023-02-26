@@ -14,6 +14,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 )
 
 // startIncomingDomainTypeSIP handles sip incoming doamin type.
@@ -29,7 +30,7 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 	log.Debugf("Starting the flow incoming call handler. source_target: %s, destinaiton_target: %s", source.Target, destination.Target)
 
 	// get domain info
-	domainName := strings.TrimSuffix(cn.StasisData["domain"], doaminSIPSuffix)
+	domainName := strings.TrimSuffix(cn.StasisData["domain"], common.DomainSIPSuffix)
 	d, err := h.reqHandler.RegistrarV1DomainGetByDomainName(ctx, domainName)
 	if err != nil {
 		log.Errorf("Could not get domain info. err: %v", err)
@@ -46,7 +47,7 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 		return h.startIncomingDomainTypeSIPDestinationTypeConference(ctx, cn, d, source, destination)
 
 	case commonaddress.TypeEndpoint:
-		log.Debugf("The destination type is %s. Will execute the TypeSIPDestinationTypeEndpoint", destination.Type)
+		return h.startIncomingDomainTypeSIPDestinationTypeEndpoint(ctx, cn, d, source, destination)
 
 	case commonaddress.TypeLine:
 		log.Debugf("The destination type is %s. Will execute the TypeSIPDestinationTypeLine", destination.Type)
@@ -220,6 +221,67 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeTel(
 ) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "startIncomingDomainTypeSIPDestinationTypeTel",
+		"channel_id":  cn.ID,
+		"domain_id":   d.ID,
+		"source":      source,
+		"destination": destination,
+	})
+
+	// create tmp flow for connect
+	option := fmaction.OptionConnect{
+		Source: *source,
+		Destinations: []commonaddress.Address{
+			*destination,
+		},
+		EarlyMedia:  true,
+		RelayReason: true,
+	}
+	optionData, err := json.Marshal(&option)
+	if err != nil {
+		log.Errorf("Could not marshal the action option. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return nil
+	}
+	actions := []fmaction.Action{
+		{
+			Type:   fmaction.TypeConnect,
+			Option: optionData,
+		},
+	}
+
+	// create tmp flow
+	f, err := h.reqHandler.FlowV1FlowCreate(
+		ctx,
+		d.CustomerID,
+		fmflow.TypeFlow,
+		"tmp",
+		"tmp flow for outgoing call dialing",
+		actions,
+		false,
+	)
+	if err != nil {
+		log.Errorf("Could not create flow. err: %v", err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return nil
+	}
+
+	// start the call type flow
+	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination, ari.ChannelCauseNormalClearing)
+
+	return nil
+}
+
+// startIncomingDomainTypeSIPDestinationTypeEndpoint handles incoming call.
+// SIP doamin type and destination type is endpoint.
+func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeEndpoint(
+	ctx context.Context,
+	cn *channel.Channel,
+	d *rmdomain.Domain,
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
+) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "startIncomingDomainTypeSIPDestinationTypeEndpoint",
 		"channel_id":  cn.ID,
 		"domain_id":   d.ID,
 		"source":      source,

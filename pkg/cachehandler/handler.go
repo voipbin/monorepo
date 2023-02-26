@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
@@ -251,3 +252,49 @@ func (h *handler) ExternalMediaDelete(ctx context.Context, externalMediaID uuid.
 
 	return nil
 }
+
+// GroupDialGet returns cached grpupdial info
+func (h *handler) GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.GroupDial, error) {
+	key := fmt.Sprintf("call:groupdial:%s", id)
+
+	var res groupdial.GroupDial
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// GroupDialSet sets the grpupdial info into the cache.
+func (h *handler) GroupDialSet(ctx context.Context, call *groupdial.GroupDial) error {
+	key := fmt.Sprintf("call:groupdial:%s", call.ID)
+
+	if err := h.setSerialize(ctx, key, call); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// // GroupCallGet returns cached groupcall info
+// func (h *handler) GroupCallGet(ctx context.Context, id uuid.UUID) (*groupcall.GroupCall, error) {
+// 	key := fmt.Sprintf("call:groupcall:%s", id)
+
+// 	var res groupcall.GroupCall
+// 	if err := h.getSerialize(ctx, key, &res); err != nil {
+// 		return nil, err
+// 	}
+
+// 	return &res, nil
+// }
+
+// // GroupCallSet sets the groupcall info into the cache.
+// func (h *handler) GroupCallSet(ctx context.Context, call *groupcall.GroupCall) error {
+// 	key := fmt.Sprintf("call:groupcall:%s", call.ID)
+
+// 	if err := h.setSerialize(ctx, key, call); err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }

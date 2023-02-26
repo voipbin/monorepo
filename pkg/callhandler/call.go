@@ -50,8 +50,13 @@ func (h *callHandler) Create(
 		},
 	)
 
+	callID := id
+	if callID == uuid.Nil {
+		callID = h.utilHandler.CreateUUID()
+	}
+
 	c := &call.Call{
-		ID:         id,
+		ID:         callID,
 		CustomerID: customerID,
 
 		ChannelID:    channelID,
