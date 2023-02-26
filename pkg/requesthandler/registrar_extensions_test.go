@@ -232,12 +232,12 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 	}
 }
 
-func Test_RegistrarV1ExtensionGetByExtension(t *testing.T) {
+func Test_RegistrarV1ExtensionGetByEndpoint(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		exten string
+		endpoint string
 
 		response *rabbitmqhandler.Response
 
@@ -248,7 +248,7 @@ func Test_RegistrarV1ExtensionGetByExtension(t *testing.T) {
 		{
 			"normal",
 
-			"test_exten",
+			"test_exten@test_domain",
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -257,7 +257,7 @@ func Test_RegistrarV1ExtensionGetByExtension(t *testing.T) {
 
 			"bin-manager.registrar-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/extensions/extension/test_exten",
+				URI:      "/v1/extensions/endpoint/test_exten@test_domain",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},
@@ -280,7 +280,7 @@ func Test_RegistrarV1ExtensionGetByExtension(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1ExtensionGetByExtension(ctx, tt.exten)
+			res, err := reqHandler.RegistrarV1ExtensionGetByEndpoint(ctx, tt.endpoint)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

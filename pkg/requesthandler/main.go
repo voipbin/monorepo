@@ -744,7 +744,7 @@ type RequestHandler interface {
 	RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
-	RegistrarV1ExtensionGetByExtension(ctx context.Context, exten string) (*rmextension.Extension, error)
+	RegistrarV1ExtensionGetByEndpoint(ctx context.Context, endpoint string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
 
