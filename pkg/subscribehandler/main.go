@@ -19,6 +19,7 @@ import (
 // list of publishers
 const (
 	publisherAsteriskProxy = "asterisk-proxy"
+	// publisherFlowManager   = "flow-manager"
 )
 
 // SubscribeHandler intreface for subscribed event listen handler

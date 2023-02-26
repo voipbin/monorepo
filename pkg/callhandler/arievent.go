@@ -80,12 +80,10 @@ func (h *callHandler) ARIPlaybackFinished(ctx context.Context, cn *channel.Chann
 }
 
 func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Channel) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "ARIChannelStateChange",
-			"channel_id":    cn.ID,
-			"channel_state": cn.State,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "ARIChannelStateChange",
+		"channel": cn,
+	})
 	status := call.GetStatusByChannelState(cn.State)
 	if status != call.StatusRinging && status != call.StatusProgressing {
 		// the call cares only riniging/progressing at here.
@@ -96,8 +94,7 @@ func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Cha
 	// get call
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err == dbhandler.ErrNotFound {
-		// this is ok. we just ignore this.
-		log.Debug("Could not find a call by the channel id.")
+		// this is ok. just not a call channel. we just ignore this.
 		return nil
 	} else if err != nil {
 		log.Errorf("Could not get call. err: %v", err)

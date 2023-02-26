@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
@@ -78,7 +79,7 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 			},
 			&commonaddress.Address{
 				Type:   commonaddress.TypeEndpoint,
-				Target: "2000@test.sip.voipbin.net",
+				Target: "2000@test",
 			},
 		},
 	}

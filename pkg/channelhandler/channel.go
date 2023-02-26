@@ -88,16 +88,8 @@ func (h *channelHandler) Create(
 
 // get returns call.
 func (h *channelHandler) get(ctx context.Context, id string) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "get",
-			"channel_id": id,
-		},
-	)
-
 	res, err := h.db.ChannelGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get channel. err: %v", err)
 		return nil, err
 	}
 

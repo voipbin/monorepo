@@ -27,9 +27,9 @@ const (
 
 // domains
 const (
-	domainConference = "conference.voipbin.net"
-	domainPSTN       = "pstn.voipbin.net"
-	doaminSIPSuffix  = ".sip.voipbin.net" // suffix domain name for SIP
+// domainConference = "conference.voipbin.net"
+// domainPSTN       = "pstn.voipbin.net"
+// doaminSIPSuffix  = ".sip.voipbin.net" // suffix domain name for SIP
 )
 
 // list of domain types
@@ -400,14 +400,14 @@ func getDomainTypeIncomingCall(domain string) string {
 	// all of the incoming calls are hitting the same context.
 	// so we have to distinguish them using the requested domain name.
 	switch domain {
-	case domainConference:
+	case common.DomainConference:
 		return domainTypeConference
 
-	case domainPSTN:
+	case common.DomainPSTN:
 		return domainTypePSTN
 	}
 
-	if strings.HasSuffix(domain, doaminSIPSuffix) {
+	if strings.HasSuffix(domain, common.DomainSIPSuffix) {
 		return domainTypeSIP
 	}
 

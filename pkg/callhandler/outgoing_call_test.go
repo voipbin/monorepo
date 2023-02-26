@@ -14,7 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
@@ -500,211 +499,57 @@ func Test_getDialURI_SIP(t *testing.T) {
 	}
 }
 
-func Test_getDialURI_Endpoint(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		call             *call.Call
-		responseContacts []*astcontact.AstContact
-		expectRes        string
-	}{
-		{
-			"normal",
-
-			&call.Call{
-				ID:         uuid.FromStringOrNil("7e0a846a-5d96-11ed-9005-07794a4f93cb"),
-				CustomerID: uuid.FromStringOrNil("6f3fd136-534d-11ed-90a2-ff71219800e5"),
-				Destination: commonaddress.Address{
-					Type:   commonaddress.TypeEndpoint,
-					Target: "test@test.sip.voipbin.net",
-				},
-			},
-			[]*astcontact.AstContact{
-				{
-					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
-					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
-					ExpirationTime:      1613498199,
-					QualifyFrequency:    0,
-					OutboundProxy:       "",
-					Path:                "",
-					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
-					QualifyTimeout:      3,
-					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
-					AuthenticateQualify: "no",
-					ViaAddr:             "192.168.0.20",
-					ViaPort:             35551,
-					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
-					Endpoint:            "test@test.sip.voipbin.net",
-					PruneOnBoot:         "no",
-				},
-			},
-			"pjsip/call-out/sip:test11@211.178.226.108:35551;transport=UDP;rinstance=8a1f981a77f30a22",
-		},
-		{
-			"2 contacts",
-
-			&call.Call{
-				ID:         uuid.FromStringOrNil("2078cd98-5daf-11ed-a2f9-c7b6dae6e3ff"),
-				CustomerID: uuid.FromStringOrNil("791a3da4-534d-11ed-9f3a-c3d05994dec2"),
-				Destination: commonaddress.Address{
-					Type:   commonaddress.TypeEndpoint,
-					Target: "test@test.sip.voipbin.net",
-				},
-			},
-			[]*astcontact.AstContact{
-				{
-					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
-					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
-					ExpirationTime:      1613498199,
-					QualifyFrequency:    0,
-					OutboundProxy:       "",
-					Path:                "",
-					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
-					QualifyTimeout:      3,
-					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
-					AuthenticateQualify: "no",
-					ViaAddr:             "192.168.0.20",
-					ViaPort:             35551,
-					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
-					Endpoint:            "test@test.sip.voipbin.net",
-					PruneOnBoot:         "no",
-				},
-				{
-					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b1",
-					URI:                 "sip:test11@211.178.226.120:35551^3Btransport=UDP^3Brinstance=8a1f981a77f30a22",
-					ExpirationTime:      1613498199,
-					QualifyFrequency:    0,
-					OutboundProxy:       "",
-					Path:                "",
-					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
-					QualifyTimeout:      3,
-					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
-					AuthenticateQualify: "no",
-					ViaAddr:             "192.168.0.20",
-					ViaPort:             35551,
-					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
-					Endpoint:            "test@test.sip.voipbin.net",
-					PruneOnBoot:         "no",
-				},
-			},
-			"pjsip/call-out/sip:test11@211.178.226.108:35551;transport=UDP;rinstance=8a1f981a77f30a22",
-		},
-		{
-			"transport ws",
-
-			&call.Call{
-				ID:         uuid.FromStringOrNil("20ac0910-5daf-11ed-994f-27b46cd2e1b8"),
-				CustomerID: uuid.FromStringOrNil("81ea0ff4-534d-11ed-af9b-8bfc8edf8627"),
-				Destination: commonaddress.Address{
-					Type:   commonaddress.TypeEndpoint,
-					Target: "test@test.sip.voipbin.net",
-				},
-			},
-			[]*astcontact.AstContact{
-				{
-					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
-					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=ws^3Brinstance=8a1f981a77f30a22",
-					ExpirationTime:      1613498199,
-					QualifyFrequency:    0,
-					OutboundProxy:       "",
-					Path:                "",
-					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
-					QualifyTimeout:      3,
-					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
-					AuthenticateQualify: "no",
-					ViaAddr:             "192.168.0.20",
-					ViaPort:             35551,
-					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
-					Endpoint:            "test@test.sip.voipbin.net",
-					PruneOnBoot:         "no",
-				},
-			},
-			"pjsip/call-out/sip:test11@211.178.226.108:35551;transport=ws;rinstance=8a1f981a77f30a22",
-		},
-		{
-			"transport wss",
-
-			&call.Call{
-				ID:         uuid.FromStringOrNil("e8f15bd6-5db0-11ed-b4e7-5b1307ce9ce9"),
-				CustomerID: uuid.FromStringOrNil("89b5324a-534d-11ed-a9da-c3461944cf00"),
-				Destination: commonaddress.Address{
-					Type:   commonaddress.TypeEndpoint,
-					Target: "test@test.sip.voipbin.net",
-				},
-			},
-			[]*astcontact.AstContact{
-				{
-					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
-					URI:                 "sip:test11@211.178.226.108:35551^3Btransport=wss^3Brinstance=8a1f981a77f30a22",
-					ExpirationTime:      1613498199,
-					QualifyFrequency:    0,
-					OutboundProxy:       "",
-					Path:                "",
-					UserAgent:           "Z 5.4.9 rv2.10.11.7-mod",
-					QualifyTimeout:      3,
-					RegServer:           "asterisk-registrar-b46bf4b67-j5rxz",
-					AuthenticateQualify: "no",
-					ViaAddr:             "192.168.0.20",
-					ViaPort:             35551,
-					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
-					Endpoint:            "test@test.sip.voipbin.net",
-					PruneOnBoot:         "no",
-				},
-			},
-			"pjsip/call-out/sip:test11@211.178.226.108:35551;transport=wss;rinstance=8a1f981a77f30a22",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &callHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
-			}
-
-			ctx := context.Background()
-
-			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.call.Destination.Target).Return(tt.responseContacts, nil)
-
-			res, err := h.getDialURI(ctx, tt.call)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if res != tt.expectRes {
-				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_getDialURIError(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		call             *call.Call
-		responseContacts []*astcontact.AstContact
+		call *call.Call
 	}{
 		{
-			"no contact",
+			"supported address type endpoint",
 
 			&call.Call{
-				ID:         uuid.FromStringOrNil("10d6da04-5db1-11ed-ada1-53cfbee7570c"),
-				CustomerID: uuid.FromStringOrNil("9c1d4850-534d-11ed-87aa-bb08e4fa1db5"),
 				Destination: commonaddress.Address{
-					Type:   commonaddress.TypeEndpoint,
-					Target: "test@test.sip.voipbin.net",
+					Type: commonaddress.TypeEndpoint,
 				},
 			},
-			[]*astcontact.AstContact{},
+		},
+		{
+			"supported address type agent",
+
+			&call.Call{
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeAgent,
+				},
+			},
+		},
+		{
+			"supported address type conference",
+
+			&call.Call{
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeConference,
+				},
+			},
+		},
+		{
+			"supported address type extension",
+
+			&call.Call{
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeExtension,
+				},
+			},
+		},
+		{
+			"supported address type line",
+
+			&call.Call{
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeLine,
+				},
+			},
 		},
 	}
 
@@ -722,8 +567,6 @@ func Test_getDialURIError(t *testing.T) {
 			}
 
 			ctx := context.Background()
-
-			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.call.Destination.Target).Return(tt.responseContacts, nil)
 
 			_, err := h.getDialURI(ctx, tt.call)
 			if err == nil {
