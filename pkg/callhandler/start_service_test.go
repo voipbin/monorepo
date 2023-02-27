@@ -86,7 +86,6 @@ func Test_startServiceFromAMD(t *testing.T) {
 				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
 			}
-
 			ctx := context.Background()
 
 			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
@@ -96,7 +95,11 @@ func Test_startServiceFromAMD(t *testing.T) {
 			if tt.responseAMD.MachineHandle == callapplication.AMDMachineHandleHangup && tt.data["amd_status"] == amdStatusMachine {
 				mockDB.EXPECT().CallGet(ctx, tt.responseAMD.CallID).Return(&call.Call{}, nil)
 				mockDB.EXPECT().CallSetStatus(ctx, gomock.Any(), call.StatusTerminating).Return(nil)
-				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{}, nil)
+
+				tmpCall := &call.Call{
+					Status: call.StatusProgressing,
+				}
+				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tmpCall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 				mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			} else {

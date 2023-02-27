@@ -6,7 +6,10 @@ const (
 	EventTypeCallUpdated string = "call_updated" // the call's info has updated
 	EventTypeCallDeleted string = "call_deleted" // the call's info has deleted
 
-	EventTypeCallRinging  string = "call_ringing"  // the call is ringing
-	EventTypeCallAnswered string = "call_answered" // the call has answred
-	EventTypeCallHungup   string = "call_hungup"   // the call hungup
+	EventTypeCallDialing     string = "call_dialing"
+	EventTypeCallRinging     string = "call_ringing"
+	EventTypeCallProgressing string = "call_progressing"
+	EventTypeCallTerminating string = "call_terminating"
+	EventTypeCallCanceling   string = "call_canceling"
+	EventTypeCallHangup      string = "call_hangup"
 )

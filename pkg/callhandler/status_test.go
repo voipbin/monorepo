@@ -20,9 +20,10 @@ import (
 func Test_UpdateStatusRinging(t *testing.T) {
 
 	tests := []struct {
-		name    string
-		channel *channel.Channel
-		call    *call.Call
+		name         string
+		channel      *channel.Channel
+		call         *call.Call
+		responseCall *call.Call
 	}{
 		{
 			"call status dialing",
@@ -32,6 +33,10 @@ func Test_UpdateStatusRinging(t *testing.T) {
 			&call.Call{
 				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
 				Status: call.StatusDialing,
+			},
+			&call.Call{
+				ID:     uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Status: call.StatusRinging,
 			},
 		},
 	}
@@ -53,9 +58,8 @@ func Test_UpdateStatusRinging(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetStatusRinging(ctx, tt.call.ID).Return(nil)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallRinging, tt.call)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallRinging, tt.responseCall)
 
 			if err := h.updateStatusRinging(ctx, tt.channel, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -153,6 +157,8 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		name    string
 		channel *channel.Channel
 		call    *call.Call
+
+		responseCall *call.Call
 	}{
 		{
 			"call status dialing for incoming",
@@ -162,6 +168,11 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			&call.Call{
 				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
 				Status:    call.StatusDialing,
+				Direction: call.DirectionIncoming,
+			},
+			&call.Call{
+				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Status:    call.StatusProgressing,
 				Direction: call.DirectionIncoming,
 			},
 		},
@@ -175,6 +186,11 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
 			},
+			&call.Call{
+				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Status:    call.StatusProgressing,
+				Direction: call.DirectionIncoming,
+			},
 		},
 		{
 			"call status dialing for outgoing",
@@ -186,6 +202,11 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				Status:    call.StatusDialing,
 				Direction: call.DirectionOutgoing,
 			},
+			&call.Call{
+				ID:        uuid.FromStringOrNil("0c864f8e-c8a6-11ec-af3c-372ebc5b6d6d"),
+				Status:    call.StatusProgressing,
+				Direction: call.DirectionOutgoing,
+			},
 		},
 		{
 			"call status ringing for outgoing",
@@ -195,6 +216,11 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			&call.Call{
 				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
 				Status:    call.StatusRinging,
+				Direction: call.DirectionOutgoing,
+			},
+			&call.Call{
+				ID:        uuid.FromStringOrNil("3ae0b538-edd6-11ea-bd23-d7e2d2e43f43"),
+				Status:    call.StatusProgressing,
 				Direction: call.DirectionOutgoing,
 			},
 		},
@@ -222,18 +248,17 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetStatusProgressing(ctx, tt.call.ID).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallAnswered, tt.call)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
 			if tt.call.Direction != call.DirectionIncoming {
 				// handleSIPCallID
 				mockChannel.EXPECT().VariableGet(ctx, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
 				mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
 
-				mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.call.ID, gomock.Any())
-				mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
+				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
+				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
+				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 				mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			}

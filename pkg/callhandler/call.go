@@ -269,7 +269,23 @@ func (h *callHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status cal
 		log.Errorf("Could not get updated call. err: %v", err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallUpdated, res)
+
+	mapEvt := map[call.Status]string{
+		call.StatusDialing:     call.EventTypeCallDialing,
+		call.StatusRinging:     call.EventTypeCallRinging,
+		call.StatusProgressing: call.EventTypeCallProgressing,
+		call.StatusTerminating: call.EventTypeCallTerminating,
+		call.StatusCanceling:   call.EventTypeCallCanceling,
+		// call.StatusHangup:      call.EventTypeCallHangup, // this must be done with Hangup()
+	}
+
+	// send notification
+	evt, ok := mapEvt[res.Status]
+	if !ok {
+		log.Errorf("Could not find notification event type. status: %s", res.Status)
+		return res, nil
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, evt, res)
 
 	return res, nil
 }
@@ -405,7 +421,7 @@ func (h *callHandler) UpdateHangupInfo(ctx context.Context, id uuid.UUID, reason
 		log.Errorf("Could not get hungup call data. call: %s, err: %v", id, err)
 		return nil, err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallHungup, res)
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallHangup, res)
 	promCallHangupTotal.WithLabelValues(string(res.Direction), string(res.Type), string(reason)).Inc()
 
 	return res, nil
