@@ -10,8 +10,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// processEventCMCallHungup handles the call-manager's call_hangup event.
-func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *rabbitmqhandler.Event) error {
+// processEventCMCallHangup handles the call-manager's call_hangup event.
+func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":  "processEventCMCallHungup",
@@ -25,7 +25,7 @@ func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *rabb
 		return err
 	}
 
-	h.queuecallHandler.EventCallCallHungup(ctx, e.ID)
+	h.queuecallHandler.EventCallCallHangup(ctx, e.ID)
 
 	return nil
 }

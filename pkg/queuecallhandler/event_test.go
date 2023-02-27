@@ -17,7 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/queuehandler"
 )
 
-func Test_EventCallCallHungup(t *testing.T) {
+func Test_EventCallCallHangup(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -89,7 +89,7 @@ func Test_EventCallCallHungup(t *testing.T) {
 			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(nil)
 			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-			h.EventCallCallHungup(ctx, tt.referenceID)
+			h.EventCallCallHangup(ctx, tt.referenceID)
 		})
 	}
 }
