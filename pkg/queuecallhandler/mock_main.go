@@ -54,16 +54,16 @@ func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, referenceType, refere
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, referenceType, referenceID, referenceActiveflowID, forwardActionID, exitActionID, conferenceID, source)
 }
 
-// EventCallCallHungup mocks base method.
-func (m *MockQueuecallHandler) EventCallCallHungup(ctx context.Context, referenceID uuid.UUID) {
+// EventCallCallHangup mocks base method.
+func (m *MockQueuecallHandler) EventCallCallHangup(ctx context.Context, referenceID uuid.UUID) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "EventCallCallHungup", ctx, referenceID)
+	m.ctrl.Call(m, "EventCallCallHangup", ctx, referenceID)
 }
 
-// EventCallCallHungup indicates an expected call of EventCallCallHungup.
-func (mr *MockQueuecallHandlerMockRecorder) EventCallCallHungup(ctx, referenceID interface{}) *gomock.Call {
+// EventCallCallHangup indicates an expected call of EventCallCallHangup.
+func (mr *MockQueuecallHandlerMockRecorder) EventCallCallHangup(ctx, referenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallCallHungup", reflect.TypeOf((*MockQueuecallHandler)(nil).EventCallCallHungup), ctx, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallCallHangup", reflect.TypeOf((*MockQueuecallHandler)(nil).EventCallCallHangup), ctx, referenceID)
 }
 
 // EventCallConfbridgeJoined mocks base method.

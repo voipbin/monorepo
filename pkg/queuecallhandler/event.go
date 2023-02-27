@@ -10,11 +10,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/queue-manager.git/pkg/dbhandler"
 )
 
-// EventCallCallHungup handles call-manager call_hungup
-func (h *queuecallHandler) EventCallCallHungup(ctx context.Context, referenceID uuid.UUID) {
+// EventCallCallHangup handles call-manager call_hungup
+func (h *queuecallHandler) EventCallCallHangup(ctx context.Context, referenceID uuid.UUID) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":         "EventCallCallHungup",
+			"func":         "EventCallCallHangup",
 			"reference_id": referenceID,
 		},
 	)

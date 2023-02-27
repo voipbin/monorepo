@@ -138,8 +138,8 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	//// call-manager
 	// call
-	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHungup)):
-		err = h.processEventCMCallHungup(ctx, m)
+	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHangup)):
+		err = h.processEventCMCallHangup(ctx, m)
 
 	// confbridge
 	case m.Publisher == publisherCallManager && (m.Type == string(cmconfbridge.EventTypeConfbridgeJoined)):

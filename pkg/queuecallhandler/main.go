@@ -38,7 +38,7 @@ type QueuecallHandler interface {
 	Kick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error)
 	KickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 
-	EventCallCallHungup(ctx context.Context, referenceID uuid.UUID)
+	EventCallCallHangup(ctx context.Context, referenceID uuid.UUID)
 	EventCallConfbridgeJoined(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
 	EventCallConfbridgeLeaved(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
 
