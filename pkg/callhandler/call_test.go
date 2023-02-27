@@ -634,7 +634,7 @@ func Test_UpdateHangup(t *testing.T) {
 			&call.Call{
 				ID:        uuid.FromStringOrNil("7076de7c-1772-11ec-86f2-835e7382daf2"),
 				ChannelID: "70271162-1772-11ec-a941-fb10a2f9c2e7",
-				Status:    call.StatusProgressing,
+				Status:    call.StatusHangup,
 				Action: fmaction.Action{
 					Type: fmaction.TypeEcho,
 				},
@@ -662,11 +662,11 @@ func Test_UpdateHangup(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, tt.reason, tt.hangupBy).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHungup, tt.responseCall)
+			mockDB.EXPECT().CallSetHangup(ctx, tt.id, tt.reason, tt.hangupBy).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, tt.responseCall)
 
-			_, err := h.UpdateHangupInfo(ctx, tt.responseCall.ID, tt.reason, tt.hangupBy)
+			_, err := h.UpdateHangupInfo(ctx, tt.id, tt.reason, tt.hangupBy)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

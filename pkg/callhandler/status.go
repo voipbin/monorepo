@@ -26,16 +26,15 @@ func (h *callHandler) updateStatusRinging(ctx context.Context, cn *channel.Chann
 		return fmt.Errorf("status change is not possible. call: %s, old_status: %s, new_status: %s", c.ID, c.Status, call.StatusRinging)
 	}
 
-	res, err := h.UpdateStatus(ctx, c.ID, call.StatusRinging)
+	cc, err := h.UpdateStatus(ctx, c.ID, call.StatusRinging)
 	if err != nil {
 		log.Errorf("Could not update the call status. err: %v", err)
 		return err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallRinging, res)
 
-	if c.Data[call.DataTypeEarlyExecution] == "true" {
-		log.Debugf("The call has early execution. Executing the flow. early_execution: %s", c.Data[call.DataTypeEarlyExecution])
-		return h.ActionNext(ctx, c)
+	if cc.Data[call.DataTypeEarlyExecution] == "true" {
+		log.Debugf("The call has early execution. Executing the flow. early_execution: %s", cc.Data[call.DataTypeEarlyExecution])
+		return h.ActionNext(ctx, cc)
 	}
 
 	return nil
@@ -61,7 +60,6 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		log.Errorf("Could not update the call status. err: %v", err)
 		return err
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallAnswered, res)
 
 	if res.Direction == call.DirectionIncoming {
 		// nothing to do with incoming call at here.

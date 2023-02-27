@@ -1122,13 +1122,15 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 		name string
 		call *call.Call
 
-		expectCause ari.ChannelCause
+		responseCall *call.Call
+		expectCause  ari.ChannelCause
 	}{
 		{
-			"normal",
-			&call.Call{
+			name: "normal",
+			call: &call.Call{
 				ID:        uuid.FromStringOrNil("a2da5b15-403f-492d-96e0-53f883028d88"),
 				ChannelID: "105567ee-61de-4eed-98d4-d6b0d2667f3a",
+				Status:    call.StatusDialing,
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("c2f794a4-0fa5-43b7-a47a-599edcde6b55"),
 					Type:   fmaction.TypeHangup,
@@ -1136,7 +1138,17 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 				},
 			},
 
-			ari.ChannelCauseUserBusy,
+			responseCall: &call.Call{
+				ID:        uuid.FromStringOrNil("a2da5b15-403f-492d-96e0-53f883028d88"),
+				ChannelID: "105567ee-61de-4eed-98d4-d6b0d2667f3a",
+				Status:    call.StatusTerminating,
+				Action: fmaction.Action{
+					ID:     uuid.FromStringOrNil("c2f794a4-0fa5-43b7-a47a-599edcde6b55"),
+					Type:   fmaction.TypeHangup,
+					Option: []byte(`{"reason":"busy"}`),
+				},
+			},
+			expectCause: ari.ChannelCauseUserBusy,
 		},
 	}
 
@@ -1163,8 +1175,8 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
 			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.expectCause).Return(&channel.Channel{}, nil)
 
@@ -1183,14 +1195,16 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 
 		responseReferenceCall    *call.Call
 		responseReferenceChannel *channel.Channel
+		responseCall             *call.Call
 
 		expectCause ari.ChannelCause
 	}{
 		{
-			"call hungup by user busy",
-			&call.Call{
+			name: "call hungup by user busy",
+			call: &call.Call{
 				ID:        uuid.FromStringOrNil("12ea8d3e-52b3-4c8e-a46c-a9d66a40c94c"),
 				ChannelID: "eeddbb76-4bd8-4aa7-a6fd-c18690474eb6",
+				Status:    call.StatusDialing,
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("324ef8af-508d-4622-8f1c-1df75efe70a6"),
 					Type:   fmaction.TypeHangup,
@@ -1198,24 +1212,35 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				},
 			},
 
-			&call.Call{
+			responseReferenceCall: &call.Call{
 				ID:           uuid.FromStringOrNil("94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4"),
 				ChannelID:    "f4cf0996-a3d1-11ed-8aca-97c846819d72",
 				Status:       call.StatusHangup,
 				HangupReason: call.HangupReasonBusy,
 			},
-			&channel.Channel{
+			responseCall: &call.Call{
+				ID:        uuid.FromStringOrNil("12ea8d3e-52b3-4c8e-a46c-a9d66a40c94c"),
+				ChannelID: "eeddbb76-4bd8-4aa7-a6fd-c18690474eb6",
+				Status:    call.StatusTerminating,
+				Action: fmaction.Action{
+					ID:     uuid.FromStringOrNil("324ef8af-508d-4622-8f1c-1df75efe70a6"),
+					Type:   fmaction.TypeHangup,
+					Option: []byte(`{"reference_id":"94d73f3f-0158-4172-8ffa-5d7a7f2bd8a4"}`),
+				},
+			},
+			responseReferenceChannel: &channel.Channel{
 				ID:          "f4cf0996-a3d1-11ed-8aca-97c846819d72",
 				HangupCause: ari.ChannelCauseUserBusy,
 			},
 
-			ari.ChannelCauseUserBusy,
+			expectCause: ari.ChannelCauseUserBusy,
 		},
 		{
-			"reason failed with no route destination",
-			&call.Call{
+			name: "reason failed with no route destination",
+			call: &call.Call{
 				ID:        uuid.FromStringOrNil("69788128-a3d2-11ed-8721-235dc7d17c81"),
 				ChannelID: "6997f17a-a3d2-11ed-a9db-ff2c89c38193",
+				Status:    call.StatusDialing,
 				Action: fmaction.Action{
 					ID:     uuid.FromStringOrNil("69b5bb6a-a3d2-11ed-b24e-33e293af5d6d"),
 					Type:   fmaction.TypeHangup,
@@ -1223,18 +1248,28 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				},
 			},
 
-			&call.Call{
+			responseReferenceCall: &call.Call{
 				ID:           uuid.FromStringOrNil("69d1ff28-a3d2-11ed-be5d-f3ea54e96121"),
 				ChannelID:    "7888691c-a3d2-11ed-9e53-5ba62e8286cb",
 				Status:       call.StatusHangup,
 				HangupReason: call.HangupReasonFailed,
 			},
-			&channel.Channel{
+			responseCall: &call.Call{
+				ID:        uuid.FromStringOrNil("69788128-a3d2-11ed-8721-235dc7d17c81"),
+				ChannelID: "6997f17a-a3d2-11ed-a9db-ff2c89c38193",
+				Status:    call.StatusTerminating,
+				Action: fmaction.Action{
+					ID:     uuid.FromStringOrNil("69b5bb6a-a3d2-11ed-b24e-33e293af5d6d"),
+					Type:   fmaction.TypeHangup,
+					Option: []byte(`{"reference_id":"69d1ff28-a3d2-11ed-be5d-f3ea54e96121"}`),
+				},
+			},
+			responseReferenceChannel: &channel.Channel{
 				ID:          "7888691c-a3d2-11ed-9e53-5ba62e8286cb",
 				HangupCause: ari.ChannelCauseNoRouteDestination,
 			},
 
-			ari.ChannelCauseNoRouteDestination,
+			expectCause: ari.ChannelCauseNoRouteDestination,
 		},
 	}
 
@@ -1264,8 +1299,8 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 			mockChannel.EXPECT().Get(ctx, tt.responseReferenceCall.ChannelID).Return(tt.responseReferenceChannel, nil)
 
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
 			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.expectCause).Return(&channel.Channel{}, nil)
 
