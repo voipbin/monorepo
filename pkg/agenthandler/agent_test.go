@@ -17,7 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 )
 
-func Test_AgentGets(t *testing.T) {
+func Test_Gets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -54,7 +54,7 @@ func Test_AgentGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, tt.size, tt.token).Return(tt.result, nil)
-			_, err := h.AgentGets(ctx, tt.customerID, tt.size, tt.token)
+			_, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -63,7 +63,7 @@ func Test_AgentGets(t *testing.T) {
 	}
 }
 
-func Test_AgentGetsByTags(t *testing.T) {
+func Test_GetsByTags(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -215,7 +215,7 @@ func Test_AgentGetsByTags(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
-			res, err := h.AgentGetsByTagIDs(ctx, tt.customerID, tt.tags)
+			res, err := h.GetsByTagIDs(ctx, tt.customerID, tt.tags)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -227,7 +227,7 @@ func Test_AgentGetsByTags(t *testing.T) {
 	}
 }
 
-func Test_AgentGetsByTagIDsAndStatus(t *testing.T) {
+func Test_GetsByTagIDsAndStatus(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -424,7 +424,7 @@ func Test_AgentGetsByTagIDsAndStatus(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
-			res, err := h.AgentGetsByTagIDsAndStatus(ctx, tt.customerID, tt.tags, tt.status)
+			res, err := h.GetsByTagIDsAndStatus(ctx, tt.customerID, tt.tags, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -501,7 +501,7 @@ func Test_AgentCreate(t *testing.T) {
 			mockDB.EXPECT().AgentGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectRes.CustomerID, agent.EventTypeAgentCreated, tt.expectRes)
 
-			res, err := h.AgentCreate(ctx, tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
+			res, err := h.Create(ctx, tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
@@ -519,7 +519,7 @@ func Test_AgentCreate(t *testing.T) {
 	}
 }
 
-func Test_AgentDelete(t *testing.T) {
+func Test_Delete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -566,7 +566,7 @@ func Test_AgentDelete(t *testing.T) {
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentDeleted, tt.responseAgent)
 
-			_, err := h.AgentDelete(ctx, tt.id)
+			_, err := h.Delete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
@@ -574,7 +574,7 @@ func Test_AgentDelete(t *testing.T) {
 	}
 }
 
-func Test_AgentUpdateStatus(t *testing.T) {
+func Test_UpdateStatus(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -624,7 +624,7 @@ func Test_AgentUpdateStatus(t *testing.T) {
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
 
-			_, err := h.AgentUpdateStatus(ctx, tt.id, tt.status)
+			_, err := h.UpdateStatus(ctx, tt.id, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}

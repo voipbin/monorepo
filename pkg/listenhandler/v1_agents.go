@@ -53,11 +53,11 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *rabbitmqhan
 	var tmpErr error
 
 	if hasTagIDs && hasStatus {
-		tmpRes, tmpErr = h.agentHandler.AgentGetsByTagIDsAndStatus(ctx, customerID, tagIDs, agent.Status(tmpStatus))
+		tmpRes, tmpErr = h.agentHandler.GetsByTagIDsAndStatus(ctx, customerID, tagIDs, agent.Status(tmpStatus))
 	} else if hasTagIDs {
-		tmpRes, tmpErr = h.agentHandler.AgentGetsByTagIDs(ctx, customerID, tagIDs)
+		tmpRes, tmpErr = h.agentHandler.GetsByTagIDs(ctx, customerID, tagIDs)
 	} else {
-		tmpRes, tmpErr = h.agentHandler.AgentGets(ctx, customerID, pageSize, pageToken)
+		tmpRes, tmpErr = h.agentHandler.Gets(ctx, customerID, pageSize, pageToken)
 	}
 	if tmpErr != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
@@ -94,7 +94,7 @@ func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *rabbitmqhan
 		})
 	log.Debug("Executing processV1AgentsIDGet.")
 
-	tmp, err := h.agentHandler.AgentGet(ctx, id)
+	tmp, err := h.agentHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get an agent info. err: %v", err)
 		return simpleResponse(500), nil
@@ -136,7 +136,7 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *rabbitmqhand
 	log.Debug("Creating an agent.")
 
 	// create an agent
-	tmp, err := h.agentHandler.AgentCreate(
+	tmp, err := h.agentHandler.Create(
 		ctx,
 		reqData.CustomerID,
 		reqData.Username,
@@ -183,7 +183,7 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *rabbitmq
 		})
 	log.Debug("Executing processV1AgentsIDDelete.")
 
-	tmp, err := h.agentHandler.AgentDelete(ctx, id)
+	tmp, err := h.agentHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the agent info. err: %v", err)
 		return simpleResponse(400), nil
@@ -225,7 +225,7 @@ func (h *listenHandler) processV1AgentsUsernameLogin(ctx context.Context, m *rab
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.AgentLogin(ctx, reqData.CustomerID, username, reqData.Password)
+	tmp, err := h.agentHandler.Login(ctx, reqData.CustomerID, username, reqData.Password)
 	if err != nil {
 		log.Errorf("Could not login the agent info. err: %v", err)
 		return simpleResponse(400), nil
@@ -267,7 +267,7 @@ func (h *listenHandler) processV1AgentsIDAddressesPut(ctx context.Context, m *ra
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.AgentUpdateAddresses(ctx, id, reqData.Addresses)
+	tmp, err := h.agentHandler.UpdateAddresses(ctx, id, reqData.Addresses)
 	if err != nil {
 		log.Errorf("Could not update the agent's addresses info. err: %v", err)
 		return simpleResponse(400), nil
@@ -309,7 +309,7 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *rabbitmqhan
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.AgentUpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, agent.RingMethod(reqData.RingMethod))
+	tmp, err := h.agentHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, agent.RingMethod(reqData.RingMethod))
 	if err != nil {
 		log.Errorf("Could not update the agent's basic info. err: %v", err)
 		return simpleResponse(400), nil
@@ -351,7 +351,7 @@ func (h *listenHandler) processV1AgentsIDStatusPut(ctx context.Context, m *rabbi
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.AgentUpdateStatus(ctx, id, agent.Status(reqData.Status))
+	tmp, err := h.agentHandler.UpdateStatus(ctx, id, agent.Status(reqData.Status))
 	if err != nil {
 		log.Errorf("Could not update the agent's status info. err: %v", err)
 		return simpleResponse(400), nil
@@ -393,7 +393,7 @@ func (h *listenHandler) processV1AgentsIDPasswordPut(ctx context.Context, m *rab
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.AgentUpdatePassword(ctx, id, req.Password)
+	tmp, err := h.agentHandler.UpdatePassword(ctx, id, req.Password)
 	if err != nil {
 		log.Errorf("Could not update the agent's status info. err: %v", err)
 		return simpleResponse(400), nil
@@ -435,7 +435,7 @@ func (h *listenHandler) processV1AgentsIDTagIDsPut(ctx context.Context, m *rabbi
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.AgentUpdateTagIDs(ctx, id, reqData.TagIDs)
+	tmp, err := h.agentHandler.UpdateTagIDs(ctx, id, reqData.TagIDs)
 	if err != nil {
 		log.Errorf("Could not update the agent's tag_ids info. err: %v", err)
 		return simpleResponse(400), nil

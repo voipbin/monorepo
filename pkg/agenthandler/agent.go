@@ -13,9 +13,9 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 )
 
-// AgentGets returns agents
-func (h *agentHandler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
-	log := logrus.WithField("func", "AgentGets")
+// Gets returns agents
+func (h *agentHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error) {
+	log := logrus.WithField("func", "Gets")
 
 	res, err := h.db.AgentGets(ctx, customerID, size, token)
 	if err != nil {
@@ -26,9 +26,9 @@ func (h *agentHandler) AgentGets(ctx context.Context, customerID uuid.UUID, size
 	return res, nil
 }
 
-// AgentGetsByTagIDs returns agents
-func (h *agentHandler) AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error) {
-	log := logrus.WithField("func", "AgentGetsByTags")
+// GetsByTagIDs returns agents
+func (h *agentHandler) GetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error) {
+	log := logrus.WithField("func", "GetsByTags")
 
 	agents, err := h.db.AgentGets(ctx, customerID, maxAgentCount, getCurTime())
 	if err != nil {
@@ -49,9 +49,9 @@ func (h *agentHandler) AgentGetsByTagIDs(ctx context.Context, customerID uuid.UU
 	return res, nil
 }
 
-// AgentGetsByTagIDsAndStatus returns agent with given condition.
-func (h *agentHandler) AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
-	log := logrus.WithField("func", "AgentGetsByTagIDsAndStatus")
+// GetsByTagIDsAndStatus returns agent with given condition.
+func (h *agentHandler) GetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error) {
+	log := logrus.WithField("func", "GetsByTagIDsAndStatus")
 
 	agents, err := h.db.AgentGets(ctx, customerID, maxAgentCount, getCurTime())
 	if err != nil {
@@ -76,9 +76,9 @@ func (h *agentHandler) AgentGetsByTagIDsAndStatus(ctx context.Context, customerI
 	return res, nil
 }
 
-// AgentGet returns agent info.
-func (h *agentHandler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
-	log := logrus.WithField("func", "AgentGet")
+// Get returns agent info.
+func (h *agentHandler) Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+	log := logrus.WithField("func", "Get")
 
 	res, err := h.db.AgentGet(ctx, id)
 	if err != nil {
@@ -89,10 +89,10 @@ func (h *agentHandler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent
 	return res, nil
 }
 
-// AgentCreate creates a new agent.
-func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
+// Create creates a new agent.
+func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tags []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "AgentCreate",
+		"func":        "Create",
 		"customer_id": customerID,
 		"username":    username,
 		"permission":  permission,
@@ -153,10 +153,10 @@ func (h *agentHandler) AgentCreate(ctx context.Context, customerID uuid.UUID, us
 	return res, nil
 }
 
-// AgentDelete updates the agent's basic info.
-func (h *agentHandler) AgentDelete(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+// Delete updates the agent's basic info.
+func (h *agentHandler) Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentDelete",
+		"func":     "Delete",
 		"agent_id": id,
 	})
 	log.Debug("Deleting the agent info.")
@@ -176,10 +176,10 @@ func (h *agentHandler) AgentDelete(ctx context.Context, id uuid.UUID) (*agent.Ag
 	return res, nil
 }
 
-// AgentLogin validate the username and password.
-func (h *agentHandler) AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error) {
+// Login validate the username and password.
+func (h *agentHandler) Login(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "AgentLogin",
+		"func":           "Login",
 		"customer_id":    customerID,
 		"agent_username": username,
 	})
@@ -198,10 +198,10 @@ func (h *agentHandler) AgentLogin(ctx context.Context, customerID uuid.UUID, use
 	return res, nil
 }
 
-// AgentUpdateBasicInfo updates the agent's basic info.
-func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error) {
+// UpdateBasicInfo updates the agent's basic info.
+func (h *agentHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "AgentUpdateBasicInfo",
+		"func":         "UpdateBasicInfo",
 		"agent_id":     id,
 		"agent_name":   name,
 		"agent_detail": detail,
@@ -223,10 +223,10 @@ func (h *agentHandler) AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, n
 	return res, nil
 }
 
-// AgentUpdatePassword updates the agent's password.
-func (h *agentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error) {
+// UpdatePassword updates the agent's password.
+func (h *agentHandler) UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdatePassword",
+		"func":     "UpdatePassword",
 		"agent_id": id,
 	})
 	log.Debug("Updating the agent's password.")
@@ -252,10 +252,10 @@ func (h *agentHandler) AgentUpdatePassword(ctx context.Context, id uuid.UUID, pa
 	return res, nil
 }
 
-// AgentUpdatePermission updates the agent's permission.
-func (h *agentHandler) AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error) {
+// UpdatePermission updates the agent's permission.
+func (h *agentHandler) UpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdatePermission",
+		"func":     "UpdatePermission",
 		"agent_id": id,
 	})
 	log.Debug("Updating the agent's permission'.")
@@ -275,10 +275,10 @@ func (h *agentHandler) AgentUpdatePermission(ctx context.Context, id uuid.UUID, 
 	return res, nil
 }
 
-// AgentUpdateTagIDs updates the agent's tags.
-func (h *agentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error) {
+// UpdateTagIDs updates the agent's tags.
+func (h *agentHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdateTagIDs",
+		"func":     "UpdateTagIDs",
 		"agent_id": id,
 	})
 	log.Debug("Updating the agent tag.")
@@ -298,10 +298,10 @@ func (h *agentHandler) AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags
 	return res, nil
 }
 
-// AgentUpdateAddresses updates the agent's addresses.
-func (h *agentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
+// UpdateAddresses updates the agent's addresses.
+func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdateAddresses",
+		"func":     "UpdateAddresses",
 		"agent_id": id,
 	})
 	log.Debug("Updating the agent's addresses.")
@@ -321,10 +321,10 @@ func (h *agentHandler) AgentUpdateAddresses(ctx context.Context, id uuid.UUID, a
 	return res, nil
 }
 
-// AgentUpdateStatus updates the agent's status.
-func (h *agentHandler) AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error) {
+// UpdateStatus updates the agent's status.
+func (h *agentHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "AgentUpdateStatus",
+		"func":     "UpdateStatus",
 		"agent_id": id,
 	})
 	log.Debug("Updating the agent's status.")

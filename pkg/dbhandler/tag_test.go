@@ -11,7 +11,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/util"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
 func TestTagCreate(t *testing.T) {
@@ -56,7 +56,7 @@ func TestTagCreate(t *testing.T) {
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
 			res, err := h.TagGet(ctx, tt.tg.ID)
 			if err != nil {
-				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(tt.expectAgent, res) == false {
@@ -130,7 +130,7 @@ func TestTagGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TagGets(ctx, tt.customerID, tt.size, util.GetCurTime())
+			res, err := h.TagGets(ctx, tt.customerID, tt.size, utilhandler.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

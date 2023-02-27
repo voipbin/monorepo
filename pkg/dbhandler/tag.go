@@ -204,7 +204,7 @@ func (h *handler) TagSetBasicInfo(ctx context.Context, id uuid.UUID, name, detai
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. TagSetBasicInfo. err: %v", err)
 	}
@@ -228,7 +228,7 @@ func (h *handler) TagDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.util.GetCurTime()
+	ts := h.utilHandler.GetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. TagDelete. err: %v", err)

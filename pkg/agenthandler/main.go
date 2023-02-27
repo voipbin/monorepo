@@ -1,6 +1,6 @@
 package agenthandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package agenthandler -destination ./mock_agenthandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package agenthandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -25,20 +25,20 @@ const (
 
 // AgentHandler interface
 type AgentHandler interface {
-	AgentCreate(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
-	AgentDelete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
+	Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
+	Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentDial(ctx context.Context, id uuid.UUID, source *commonaddress.Address, confbridgeID, masterCallID uuid.UUID) (*agentdial.AgentDial, error)
-	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
-	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
-	AgentGetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error)
-	AgentGetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error)
-	AgentLogin(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error)
-	AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
-	AgentUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error)
-	AgentUpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error)
-	AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error)
-	AgentUpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error)
-	AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
+	Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
+	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
+	GetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error)
+	GetsByTagIDsAndStatus(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID, status agent.Status) ([]*agent.Agent, error)
+	Login(ctx context.Context, customerID uuid.UUID, username, password string) (*agent.Agent, error)
+	UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
+	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error)
+	UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error)
+	UpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error)
+	UpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error)
+	UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
 
 	AgentCallAnswered(ctx context.Context, c *cmcall.Call) error
 	AgentCallHungup(ctx context.Context, c *cmcall.Call) error

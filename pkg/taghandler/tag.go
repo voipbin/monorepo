@@ -111,7 +111,7 @@ func (h *tagHandler) Delete(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
 	}
 
 	// get all agents
-	ags, err := h.agentHandler.AgentGetsByTagIDs(ctx, t.CustomerID, []uuid.UUID{t.ID})
+	ags, err := h.agentHandler.GetsByTagIDs(ctx, t.CustomerID, []uuid.UUID{t.ID})
 	if err != nil {
 		log.Errorf("Could not get agents. err: %v", err)
 		return nil, err
@@ -127,7 +127,7 @@ func (h *tagHandler) Delete(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
 			}
 		}
 
-		_, err := h.agentHandler.AgentUpdateTagIDs(ctx, ag.ID, newTagIDs)
+		_, err := h.agentHandler.UpdateTagIDs(ctx, ag.ID, newTagIDs)
 		if err != nil {
 			log.WithField("agent", ag).Errorf("Could not delete the tag from the agent. err: %v", err)
 		}
