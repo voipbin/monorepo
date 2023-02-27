@@ -12,7 +12,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/util"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
 func Test_AgentCreate(t *testing.T) {
@@ -150,7 +150,7 @@ func Test_AgentCreate(t *testing.T) {
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
 			res, err := h.AgentGet(ctx, tt.ag.ID)
 			if err != nil {
-				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			tt.expectRes.TMCreate = res.TMCreate
@@ -210,7 +210,7 @@ func Test_AgentDelete(t *testing.T) {
 
 			res, err := h.AgentGet(ctx, tt.ag.ID)
 			if err != nil {
-				t.Errorf("Wrong match. AgentGet expect: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			tt.expectRes.TMCreate = res.TMCreate
@@ -281,25 +281,25 @@ func Test_AgentGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
 
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			for _, u := range tt.data {
-				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+				mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
 				if err := h.AgentCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			res, err := h.AgentGets(ctx, tt.customerID, tt.size, util.GetCurTime())
+			res, err := h.AgentGets(ctx, tt.customerID, tt.size, utilhandler.GetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

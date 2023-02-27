@@ -17,7 +17,7 @@ func (h *handler) AgentDialSetToCache(ctx context.Context, u *agentdial.AgentDia
 	return nil
 }
 
-// AgentGetFromCache returns agent from the cache.
+// AgentDialGetFromCache returns agent from the cache.
 func (h *handler) AgentDialGetFromCache(ctx context.Context, id uuid.UUID) (*agentdial.AgentDial, error) {
 
 	// get from cache

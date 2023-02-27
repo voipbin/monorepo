@@ -141,7 +141,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 		tagIDs,
 		addresses,
 
-		h.util.GetCurTime(),
+		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -199,7 +199,7 @@ func (h *handler) AgentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 
 	row, err := h.db.Query(q, id.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AgentGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not query. GetFromCache. err: %v", err)
 	}
 	defer row.Close()
 
@@ -209,7 +209,7 @@ func (h *handler) AgentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 
 	res, err := h.agentGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. AgentGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("dbhandler: Could not scan the row. GetFromCache. err: %v", err)
 	}
 
 	return res, nil
@@ -257,7 +257,7 @@ func (h *handler) AgentGets(ctx context.Context, customerID uuid.UUID, size uint
 	return res, nil
 }
 
-// AgentGetByUsername returns agent.
+// AgentGetByUsername returns agent of the given username.
 func (h *handler) AgentGetByUsername(ctx context.Context, customerID uuid.UUID, username string) (*agent.Agent, error) {
 	// prepare
 	q := fmt.Sprintf("%s where customer_id = ? and username = ?", agentSelect)
@@ -293,7 +293,7 @@ func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.util.GetCurTime()
+	ts := h.utilHandler.GetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentDelete. err: %v", err)
@@ -319,7 +319,7 @@ func (h *handler) AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, det
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, ringMethod, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, ringMethod, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetBasicInfo. err: %v", err)
 	}
@@ -342,7 +342,7 @@ func (h *handler) AgentSetPasswordHash(ctx context.Context, id uuid.UUID, passwo
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, passwordHash, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, passwordHash, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPasswordHash. err: %v", err)
 	}
@@ -365,7 +365,7 @@ func (h *handler) AgentSetStatus(ctx context.Context, id uuid.UUID, status agent
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, status, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetStatus. err: %v", err)
 	}
@@ -388,7 +388,7 @@ func (h *handler) AgentSetPermission(ctx context.Context, id uuid.UUID, permissi
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, permission, h.util.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, permission, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPermission. err: %v", err)
 	}
@@ -417,7 +417,7 @@ func (h *handler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, t, h.util.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, t, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPermission. err: %v", err)
 	}
@@ -446,7 +446,7 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 		return fmt.Errorf("could not marshal the addresses. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, t, h.util.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, t, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetAddresses. err: %v", err)
 	}

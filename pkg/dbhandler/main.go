@@ -1,11 +1,13 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 	"database/sql"
 	"errors"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -15,7 +17,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/util"
 )
 
 // DBHandler interface
@@ -23,7 +24,6 @@ type DBHandler interface {
 	AgentCreate(ctx context.Context, a *agent.Agent) error
 	AgentDelete(ctx context.Context, id uuid.UUID) error
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
-	AgentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentGetByUsername(ctx context.Context, customerID uuid.UUID, username string) (*agent.Agent, error)
 	AgentGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
 	AgentSetToCache(ctx context.Context, u *agent.Agent) error
@@ -56,9 +56,9 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
-	util  util.Util
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
 }
 
 // handler errors
@@ -74,9 +74,9 @@ const (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		util:  util.NewUtil(),
-		db:    db,
-		cache: cache,
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       cache,
 	}
 	return h
 }
