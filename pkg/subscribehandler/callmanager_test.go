@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
@@ -12,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaignhandler"
 )
 
-func Test_processEventCMCallHungup(t *testing.T) {
+func Test_processEventCMCallHangup(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -26,7 +27,7 @@ func Test_processEventCMCallHungup(t *testing.T) {
 			"normal",
 			&rabbitmqhandler.Event{
 				Publisher: "call-manager",
-				Type:      "call_hungup",
+				Type:      cmcall.EventTypeCallHangup,
 				DataType:  "application/json",
 				Data:      []byte(`{"id":"62a54c96-c46c-11ec-aff0-ebddfa5d9bc4"}`),
 			},

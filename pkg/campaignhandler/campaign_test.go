@@ -86,7 +86,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FMV1FlowCreate(ctx, tt.customerID, fmflow.TypeCampaign, "", "", gomock.Any(), true).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeCampaign, "", "", gomock.Any(), true).Return(&fmflow.Flow{}, nil)
 			mockDB.EXPECT().CampaignCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CampaignGet(ctx, gomock.Any()).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignCreated, tt.responseCampaign)
@@ -156,7 +156,7 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().CampaignDelete(ctx, tt.id).Return(nil)
 			mockDB.EXPECT().CampaignGet(ctx, gomock.Any()).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignDeleted, tt.responseCampaign)
-			mockReq.EXPECT().FMV1FlowDelete(ctx, tt.responseCampaign.FlowID).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.responseCampaign.FlowID).Return(&fmflow.Flow{}, nil)
 
 			_, err := h.Delete(ctx, tt.id)
 			if err != nil {
@@ -325,7 +325,7 @@ func Test_UpdateResourceInfo(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-			mockReq.EXPECT().FMV1FlowUpdateActions(ctx, tt.response.FlowID, tmpActions).Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.response.FlowID, tmpActions).Return(&fmflow.Flow{}, nil)
 
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
@@ -385,7 +385,7 @@ func Test_UpdateNextCampaignID(t *testing.T) {
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 			if tt.response.Execute == campaign.ExecuteRun {
-				mockReq.EXPECT().CAV1CampaignExecute(ctx, tt.id, 1000).Return(nil)
+				mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 1000).Return(nil)
 			}
 
 			res, err := h.UpdateNextCampaignID(ctx, tt.id, tt.nextCampaignID)
@@ -541,7 +541,7 @@ func Test_UpdateActions(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().FMV1FlowUpdateActions(ctx, tt.response.FlowID, tt.expectActions).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.response.FlowID, tt.expectActions).Return(tt.responseFlow, nil)
 			mockDB.EXPECT().CampaignUpdateActions(ctx, tt.id, tt.actions)
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)

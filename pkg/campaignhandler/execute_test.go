@@ -108,7 +108,7 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 			mockOutplan.EXPECT().Get(ctx, tt.response.OutplanID).Return(tt.responseOutplan, nil)
 
 			// get destination
-			mockReq.EXPECT().OMV1OutdialtargetGetsAvailable(
+			mockReq.EXPECT().OutdialV1OutdialtargetGetsAvailable(
 				ctx,
 				tt.response.OutdialID,
 				tt.responseOutplan.MaxTryCount0,
@@ -141,10 +141,10 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				tt.expectTryCount,
 			).Return(tt.responseCampaigncall, nil)
 			mockCampaigncall.EXPECT().Progressing(ctx, tt.responseCampaigncall.ID).Return(tt.responseCampaigncall, nil)
-			mockReq.EXPECT().FMV1ActiveflowCreate(ctx, tt.responseCampaigncall.ActiveflowID, tt.responseCampaigncall.FlowID, activeflow.ReferenceTypeNone, uuid.Nil).Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().FMV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.responseCampaigncall.ActiveflowID, tt.responseCampaigncall.FlowID, activeflow.ReferenceTypeNone, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
 
-			mockReq.EXPECT().CAV1CampaignExecute(ctx, tt.id, 500).Return(nil)
+			mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 500).Return(nil)
 
 			h.Execute(ctx, tt.id)
 		})
@@ -243,7 +243,7 @@ func Test_getTarget(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().OMV1OutdialtargetGetsAvailable(
+			mockReq.EXPECT().OutdialV1OutdialtargetGetsAvailable(
 				ctx,
 				tt.c.OutdialID,
 				tt.p.MaxTryCount0,
@@ -551,7 +551,7 @@ func Test_isDialable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().QMV1QueueGetAgents(ctx, tt.queueID, amagent.StatusAvailable).Return(tt.responseAgents, nil)
+			mockReq.EXPECT().QueueV1QueueGetAgents(ctx, tt.queueID, amagent.StatusAvailable).Return(tt.responseAgents, nil)
 			mockCampaigncall.EXPECT().GetsByCampaignIDAndStatus(ctx, tt.campaignID, campaigncall.StatusDialing, gomock.Any(), uint64(100)).Return(tt.responseCampaingcalls, nil)
 
 			res := h.isDialable(ctx, tt.campaignID, tt.queueID, tt.serviceLevel)

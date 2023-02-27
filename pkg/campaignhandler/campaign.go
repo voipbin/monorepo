@@ -46,7 +46,7 @@ func (h *campaignHandler) Create(
 	}
 
 	// create a flow
-	f, err := h.reqHandler.FMV1FlowCreate(ctx, customerID, fmflow.TypeCampaign, "", "", flowActions, true)
+	f, err := h.reqHandler.FlowV1FlowCreate(ctx, customerID, fmflow.TypeCampaign, "", "", flowActions, true)
 	if err != nil {
 		log.Errorf("Could not create a flow. err: %v", err)
 		return nil, err
@@ -127,7 +127,7 @@ func (h *campaignHandler) Delete(ctx context.Context, id uuid.UUID) (*campaign.C
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignDeleted, res)
 
 	// delete flow
-	f, err := h.reqHandler.FMV1FlowDelete(ctx, res.FlowID)
+	f, err := h.reqHandler.FlowV1FlowDelete(ctx, res.FlowID)
 	if err != nil {
 		// we got an error here, but we've deleted the campaign already.
 		// just write the log only.
@@ -232,7 +232,7 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 	}
 
 	// update flow
-	f, err := h.reqHandler.FMV1FlowUpdateActions(ctx, c.FlowID, actions)
+	f, err := h.reqHandler.FlowV1FlowUpdateActions(ctx, c.FlowID, actions)
 	if err != nil {
 		log.Errorf("Could not update the flow. err: %v", err)
 		return nil, err
@@ -326,7 +326,7 @@ func (h *campaignHandler) UpdateActions(ctx context.Context, id uuid.UUID, actio
 	}
 
 	// update flow
-	f, err := h.reqHandler.FMV1FlowUpdateActions(ctx, c.FlowID, tmpActions)
+	f, err := h.reqHandler.FlowV1FlowUpdateActions(ctx, c.FlowID, tmpActions)
 	if err != nil {
 		log.Errorf("Could not update the actions. err: %v", err)
 		return nil, err

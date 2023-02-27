@@ -79,7 +79,7 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 
 		// the endhandle is not stop. continue the campaign execution with 5 seconds of delay.
 		// send a campaign execute request with 5 seconds of delay
-		_ = h.reqHandler.CAV1CampaignExecute(ctx, id, 5000)
+		_ = h.reqHandler.CampaignV1CampaignExecute(ctx, id, 5000)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 		log.Debugf("Campaign is not dialable now.")
 
 		// send an execute request with 5 seconds of delay
-		if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 5000); errExecute != nil {
+		if errExecute := h.reqHandler.CampaignV1CampaignExecute(ctx, id, 5000); errExecute != nil {
 			log.Errorf("Could not execute the campaign. Stopping the campaign execution.")
 
 			if errUpdate := h.updateExecuteStop(ctx, id); errUpdate != nil {
@@ -103,7 +103,7 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 		// the campaign has dialble outdial targets.
 		// but need to wait until the tryinterval.
 		// send a campaign execute request with 5 seconds of delay
-		_ = h.reqHandler.CAV1CampaignExecute(ctx, id, 5000)
+		_ = h.reqHandler.CampaignV1CampaignExecute(ctx, id, 5000)
 		return
 	}
 
@@ -138,7 +138,7 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 	log.WithField("camapaigncall", cc).Debugf("Created a new campaigncall. campaigncall_id: %s", cc.ID)
 
 	// send a campaignexecute request with 500ms delay
-	if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 500); errExecute != nil {
+	if errExecute := h.reqHandler.CampaignV1CampaignExecute(ctx, id, 500); errExecute != nil {
 		log.Infof("Could not send the campaign execution correctly. Stopping campaign execution. err: %v", err)
 		if errStop := h.updateExecuteStop(ctx, id); errStop != nil {
 			log.Errorf("Could not stop the campaign execute. err: %v", errStop)
@@ -157,7 +157,7 @@ func (h *campaignHandler) getTarget(ctx context.Context, c *campaign.Campaign, p
 	)
 
 	// get available outdial target
-	targets, err := h.reqHandler.OMV1OutdialtargetGetsAvailable(
+	targets, err := h.reqHandler.OutdialV1OutdialtargetGetsAvailable(
 		ctx,
 		c.OutdialID,
 		p.MaxTryCount0,
@@ -244,7 +244,7 @@ func (h *campaignHandler) executeCall(
 	log.WithField("campaigncall", cc).Debugf("Created a new campaign call. campaigncall_id: %s", cc.ID)
 
 	// create a call
-	newCall, err := h.reqHandler.CMV1CallCreateWithID(ctx, callID, c.CustomerID, c.FlowID, activeflowID, uuid.Nil, p.Source, destination)
+	newCall, err := h.reqHandler.CallV1CallCreateWithID(ctx, callID, c.CustomerID, c.FlowID, activeflowID, uuid.Nil, p.Source, destination, false, false)
 	if err != nil {
 		// update camapaign call to fail
 		_, _ = h.campaigncallHandler.Done(ctx, cc.ID, campaigncall.ResultFail)
@@ -313,7 +313,7 @@ func (h *campaignHandler) executeFlow(
 	}
 
 	// create a activeflow
-	activeflow, err := h.reqHandler.FMV1ActiveflowCreate(ctx, cc.ActiveflowID, cc.FlowID, activeflow.ReferenceTypeNone, uuid.Nil)
+	activeflow, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, cc.ActiveflowID, cc.FlowID, activeflow.ReferenceTypeNone, uuid.Nil)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)
 		_, _ = h.campaigncallHandler.Done(ctx, cc.ID, campaigncall.ResultFail)
@@ -322,7 +322,7 @@ func (h *campaignHandler) executeFlow(
 	log.WithField("activeflow", activeflow).Debugf("Created a new activeflow. activeflow_id: %s", activeflow.ID)
 
 	// execute the activeflow
-	if errActiveflow := h.reqHandler.FMV1ActiveflowExecute(ctx, activeflow.ID); errActiveflow != nil {
+	if errActiveflow := h.reqHandler.FlowV1ActiveflowExecute(ctx, activeflow.ID); errActiveflow != nil {
 		log.Errorf("Could not execute the created activeflow. err: %s", errActiveflow)
 		_, _ = h.campaigncallHandler.Done(ctx, cc.ID, campaigncall.ResultFail)
 		return nil, errActiveflow
@@ -346,7 +346,7 @@ func (h *campaignHandler) isDialable(ctx context.Context, campaignID, queueID uu
 	}
 
 	// get available agents
-	agents, err := h.reqHandler.QMV1QueueGetAgents(ctx, queueID, amagent.StatusAvailable)
+	agents, err := h.reqHandler.QueueV1QueueGetAgents(ctx, queueID, amagent.StatusAvailable)
 	if err != nil {
 		log.Errorf("Could not get available agents. err: %v", err)
 		return false

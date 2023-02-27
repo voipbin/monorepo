@@ -79,7 +79,7 @@ func Test_Done(t *testing.T) {
 			mockDB.EXPECT().CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaigncall.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.responseCampaigncall)
 
-			mockReq.EXPECT().OMV1OutdialtargetUpdateStatus(ctx, tt.responseCampaigncall.OutdialTargetID, tt.expectStatus).Return(&omoutdialtarget.OutdialTarget{}, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.responseCampaigncall.OutdialTargetID, tt.expectStatus).Return(&omoutdialtarget.OutdialTarget{}, nil)
 
 			res, err := h.Done(ctx, tt.id, tt.result)
 			if err != nil {

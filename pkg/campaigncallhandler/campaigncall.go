@@ -75,7 +75,7 @@ func (h *campaigncallHandler) Create(
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaigncall.EventTypeCampaigncallCreated, res)
 
 	// set the outdial target status to progressing
-	tmpTarget, err := h.reqHandler.OMV1OutdialtargetUpdateStatusProgressing(ctx, t.OutdialTargetID, destinationIndex)
+	tmpTarget, err := h.reqHandler.OutdialV1OutdialtargetUpdateStatusProgressing(ctx, t.OutdialTargetID, destinationIndex)
 	if err != nil {
 		log.Errorf("Could not update the outdialtarget status to progressing. err: %v", err)
 		_, _ = h.Done(ctx, t.ID, campaigncall.ResultFail)

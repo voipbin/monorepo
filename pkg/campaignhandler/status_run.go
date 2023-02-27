@@ -55,7 +55,7 @@ func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campa
 	// execute campaign handle with 1 second delay
 	if c.Execute != campaign.ExecuteRun {
 		log.Debugf("Starting campaign execute.")
-		if errExecute := h.reqHandler.CAV1CampaignExecute(ctx, id, 1000); errExecute != nil {
+		if errExecute := h.reqHandler.CampaignV1CampaignExecute(ctx, id, 1000); errExecute != nil {
 			log.Errorf("Could not execute the campaign correctly. Stopping the campaign. campaign_id: %s", id)
 			_, _ = h.campaignStopNow(ctx, id)
 			return nil, errExecute
