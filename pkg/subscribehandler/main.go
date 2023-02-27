@@ -12,14 +12,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/arieventhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 )
 
 // list of publishers
 const (
 	publisherAsteriskProxy = "asterisk-proxy"
-	// publisherFlowManager   = "flow-manager"
+	publisherFlowManager   = "flow-manager"
 )
 
 // SubscribeHandler intreface for subscribed event listen handler
@@ -35,6 +37,7 @@ type subscribeHandler struct {
 	subscribesTargets string
 
 	ariEventHandler arieventhandler.ARIEventHandler
+	callHandler     callhandler.CallHandler
 }
 
 var (
@@ -90,6 +93,7 @@ func NewSubscribeHandler(
 	subscribeQueue string,
 	subscribeTargets string,
 	ariEventHandler arieventhandler.ARIEventHandler,
+	callHandler callhandler.CallHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		serviceName:       serviceName,
@@ -97,6 +101,7 @@ func NewSubscribeHandler(
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
 		ariEventHandler:   ariEventHandler,
+		callHandler:       callHandler,
 	}
 
 	return h
@@ -168,6 +173,9 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 	// asterisk-proxy
 	case m.Publisher == publisherAsteriskProxy:
 		err = h.processEventAsteriskProxy(ctx, m)
+
+	case m.Publisher == publisherFlowManager && m.Type == fmactiveflow.EventTypeActiveflowDeleted:
+		err = h.processEventActiveflowDeleted(ctx, m)
 
 	default:
 		// ignore the event.
