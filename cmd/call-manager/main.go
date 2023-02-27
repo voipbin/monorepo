@@ -160,7 +160,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
 
 	// run ari event listener
-	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, ariEventHandler); err != nil {
+	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, ariEventHandler, callHandler); err != nil {
 		return err
 	}
 
@@ -173,8 +173,15 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runSubscribe runs the ARI event listen service
-func runSubscribe(serviceName string, rabbitSock rabbitmqhandler.Rabbit, subscribeQueue string, subscribeTargets string, ariEventHandler arieventhandler.ARIEventHandler) error {
-	ariEventListenHandler := subscribehandler.NewSubscribeHandler(serviceName, rabbitSock, subscribeQueue, subscribeTargets, ariEventHandler)
+func runSubscribe(
+	serviceName string,
+	rabbitSock rabbitmqhandler.Rabbit,
+	subscribeQueue string,
+	subscribeTargets string,
+	ariEventHandler arieventhandler.ARIEventHandler,
+	callHandler callhandler.CallHandler,
+) error {
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(serviceName, rabbitSock, subscribeQueue, subscribeTargets, ariEventHandler, callHandler)
 
 	// run
 	if err := ariEventListenHandler.Run(); err != nil {
