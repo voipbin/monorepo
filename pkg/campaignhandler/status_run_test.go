@@ -57,7 +57,7 @@ func Test_UpdateStatusRun(t *testing.T) {
 			mockDB.EXPECT().CampaignUpdateStatusAndExecute(ctx, tt.id, campaign.StatusRun, campaign.ExecuteRun).Return(nil)
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusRun, tt.response)
-			mockReq.EXPECT().CAV1CampaignExecute(ctx, tt.id, 1000).Return(nil)
+			mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 1000).Return(nil)
 
 			res, err := h.campaignRun(ctx, tt.id)
 			if err != nil {

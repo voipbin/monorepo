@@ -37,7 +37,7 @@ func (h *campaigncallHandler) Done(ctx context.Context, id uuid.UUID, result cam
 	log.Debugf("Calculated dialtarget status. status: %s", otStatus)
 
 	// send request to update outdial target
-	ot, err := h.reqHandler.OMV1OutdialtargetUpdateStatus(ctx, cc.OutdialTargetID, otStatus)
+	ot, err := h.reqHandler.OutdialV1OutdialtargetUpdateStatus(ctx, cc.OutdialTargetID, otStatus)
 	if err != nil {
 		log.Errorf("Could not update the outdialtarget status correctly. status: %s, err: %v", otStatus, err)
 		return nil, err

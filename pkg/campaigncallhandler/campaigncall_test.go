@@ -85,7 +85,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().CampaigncallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CampaigncallGet(gomock.Any(), gomock.Any()).Return(&campaigncall.Campaigncall{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), campaigncall.EventTypeCampaigncallCreated, gomock.Any())
-			mockReq.EXPECT().OMV1OutdialtargetUpdateStatusProgressing(ctx, tt.outdialTargetID, tt.destinationIndex).Return(&omoutdialtarget.OutdialTarget{}, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatusProgressing(ctx, tt.outdialTargetID, tt.destinationIndex).Return(&omoutdialtarget.OutdialTarget{}, nil)
 
 			_, err := h.Create(
 				ctx,

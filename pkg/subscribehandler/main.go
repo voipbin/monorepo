@@ -106,7 +106,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "queue-manager", false, false, false, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "queue-manager", false, false, false, 10, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -140,7 +140,7 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	//// call-manager
 	// call
-	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHungup)):
+	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHangup)):
 		err = h.processEventCMCallHungup(ctx, m)
 
 	//// flow-manager
