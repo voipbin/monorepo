@@ -3372,10 +3372,10 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1ServiceTypeQueuecallStart(ctx, 
 }
 
 // RegistrarV1ContactGets mocks base method.
-func (m *MockRequestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
+func (m *MockRequestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegistrarV1ContactGets", ctx, endpoint)
-	ret0, _ := ret[0].([]*astcontact.AstContact)
+	ret0, _ := ret[0].([]astcontact.AstContact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
