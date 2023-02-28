@@ -12,11 +12,11 @@ import (
 )
 
 // RegistrarV1ContactGets sends the /v1/contacts GET request to registrar-manager
-func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
+func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]astcontact.AstContact, error) {
 
 	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -25,14 +25,9 @@ func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint st
 		return nil, fmt.Errorf("could not get contact. status: %d", tmp.StatusCode)
 	}
 
-	var tmpContacts []astcontact.AstContact
-	if err := json.Unmarshal([]byte(tmp.Data), &tmpContacts); err != nil {
+	var res []astcontact.AstContact
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
-	}
-
-	var res []*astcontact.AstContact
-	for _, c := range tmpContacts {
-		res = append(res, &c)
 	}
 
 	return res, nil
