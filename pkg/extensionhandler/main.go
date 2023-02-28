@@ -91,3 +91,10 @@ func getStringPointer(v string) *string {
 func getIntegerPointer(v int) *int {
 	return &v
 }
+
+// list of default variables
+const (
+	defaultMaxContacts    = 3          // default max registable contacts.
+	defaultRemoveExisting = "yes"      // default remove existing.
+	defaultAuthType       = "userpass" // default authentication method
+)

@@ -46,8 +46,8 @@ func (h *extensionHandler) Create(
 	aorID := fmt.Sprintf("%s@%s.%s", ext, d.DomainName, common.BaseDomainName)
 
 	// create aor
-	maxContacts := 1
-	removeExisting := "yes"
+	maxContacts := defaultMaxContacts
+	removeExisting := defaultRemoveExisting
 	aor := &astaor.AstAOR{
 		ID:             &aorID,
 		MaxContacts:    &maxContacts,
@@ -59,7 +59,7 @@ func (h *extensionHandler) Create(
 	}
 
 	// create auth
-	authType := "userpass"
+	authType := defaultAuthType
 	realm := fmt.Sprintf("%s.%s", d.DomainName, common.BaseDomainName)
 	auth := &astauth.AstAuth{
 		ID:       &aorID,

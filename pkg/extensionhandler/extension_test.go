@@ -62,7 +62,7 @@ func Test_Create(t *testing.T) {
 
 			&astaor.AstAOR{
 				ID:             getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@test.sip.voipbin.net"),
-				MaxContacts:    getIntegerPointer(1),
+				MaxContacts:    getIntegerPointer(defaultMaxContacts),
 				RemoveExisting: getStringPointer("yes"),
 			},
 			&astauth.AstAuth{
