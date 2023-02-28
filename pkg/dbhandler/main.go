@@ -96,13 +96,10 @@ type DBHandler interface {
 	ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
 	ExternalMediaSet(ctx context.Context, data *externalmedia.ExternalMedia) error
 
-	// // groupcall
-	// GroupCalllGet(ctx context.Context, id uuid.UUID) (*groupcall.GroupCall, error)
-	// GroupCalllCreate(ctx context.Context, data *groupcall.GroupCall) error
-
 	// groupdial
-	GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.GroupDial, error)
-	GroupDialCreate(ctx context.Context, data *groupdial.GroupDial) error
+	GroupdialGet(ctx context.Context, id uuid.UUID) (*groupdial.Groupdial, error)
+	GroupdialCreate(ctx context.Context, data *groupdial.Groupdial) error
+	GroupdialUpdate(ctx context.Context, data *groupdial.Groupdial) error
 
 	// recordings
 	RecordingCreate(ctx context.Context, c *recording.Recording) error

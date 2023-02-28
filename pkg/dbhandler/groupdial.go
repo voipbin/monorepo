@@ -8,10 +8,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 )
 
-// GroupDialGet returns groupdial.
-func (h *handler) GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.GroupDial, error) {
+// GroupdialGet returns groupdial.
+func (h *handler) GroupdialGet(ctx context.Context, id uuid.UUID) (*groupdial.Groupdial, error) {
 
-	res, err := h.cache.GroupDialGet(ctx, id)
+	res, err := h.cache.GroupdialGet(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -19,8 +19,14 @@ func (h *handler) GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.Gr
 	return res, nil
 }
 
-// GroupDialCreate sets groupdial.
-func (h *handler) GroupDialCreate(ctx context.Context, data *groupdial.GroupDial) error {
+// GroupdialCreate sets groupdial.
+func (h *handler) GroupdialCreate(ctx context.Context, data *groupdial.Groupdial) error {
 
-	return h.cache.GroupDialSet(ctx, data)
+	return h.cache.GroupdialSet(ctx, data)
+}
+
+// GroupdialUpdate updates the groupdial.
+func (h *handler) GroupdialUpdate(ctx context.Context, data *groupdial.Groupdial) error {
+
+	return h.cache.GroupdialSet(ctx, data)
 }

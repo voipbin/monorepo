@@ -52,11 +52,8 @@ type CacheHandler interface {
 	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge) error
 
-	GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.GroupDial, error)
-	GroupDialSet(ctx context.Context, call *groupdial.GroupDial) error
-
-	// GroupCallGet(ctx context.Context, id uuid.UUID) (*groupcall.GroupCall, error)
-	// GroupCallSet(ctx context.Context, call *groupcall.GroupCall) error
+	GroupdialGet(ctx context.Context, id uuid.UUID) (*groupdial.Groupdial, error)
+	GroupdialSet(ctx context.Context, data *groupdial.Groupdial) error
 
 	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
 	NumberSetByNumber(ctx context.Context, numb *number.Number) error
