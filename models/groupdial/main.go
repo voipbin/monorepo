@@ -5,13 +5,14 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
-// GroupDial define
-type GroupDial struct {
+// Groupdial define
+type Groupdial struct {
 	ID           uuid.UUID              `json:"id"`
 	CustomerID   uuid.UUID              `json:"customer_id"`
 	Destination  *commonaddress.Address `json:"destination"`
 	RingMethod   RingMethod             `json:"ring_method"`
 	AnswerMethod AnswerMethod           `json:"answer_method"`
+	AnswerCallID uuid.UUID              `json:"answer_call_id"` // valid only when the answered_method  is hangup others
 	CallIDs      []uuid.UUID            `json:"call_ids"`
 }
 

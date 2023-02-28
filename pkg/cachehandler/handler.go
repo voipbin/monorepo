@@ -253,11 +253,11 @@ func (h *handler) ExternalMediaDelete(ctx context.Context, externalMediaID uuid.
 	return nil
 }
 
-// GroupDialGet returns cached grpupdial info
-func (h *handler) GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.GroupDial, error) {
+// GroupdialGet returns cached grpupdial info
+func (h *handler) GroupdialGet(ctx context.Context, id uuid.UUID) (*groupdial.Groupdial, error) {
 	key := fmt.Sprintf("call:groupdial:%s", id)
 
-	var res groupdial.GroupDial
+	var res groupdial.Groupdial
 	if err := h.getSerialize(ctx, key, &res); err != nil {
 		return nil, err
 	}
@@ -265,11 +265,11 @@ func (h *handler) GroupDialGet(ctx context.Context, id uuid.UUID) (*groupdial.Gr
 	return &res, nil
 }
 
-// GroupDialSet sets the grpupdial info into the cache.
-func (h *handler) GroupDialSet(ctx context.Context, call *groupdial.GroupDial) error {
-	key := fmt.Sprintf("call:groupdial:%s", call.ID)
+// GroupdialSet sets the grpupdial info into the cache.
+func (h *handler) GroupdialSet(ctx context.Context, data *groupdial.Groupdial) error {
+	key := fmt.Sprintf("call:groupdial:%s", data.ID)
 
-	if err := h.setSerialize(ctx, key, call); err != nil {
+	if err := h.setSerialize(ctx, key, data); err != nil {
 		return err
 	}
 

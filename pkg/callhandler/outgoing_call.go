@@ -59,7 +59,7 @@ func (h *callHandler) CreateCallsOutgoing(
 			res = append(res, c)
 
 		case commonaddress.TypeEndpoint:
-			cs, err := h.createGroupDial(ctx, customerID, flowID, masterCallID, &source, &destination, earlyExecution, connect)
+			cs, err := h.createGroupdial(ctx, customerID, flowID, masterCallID, &source, &destination, earlyExecution, connect)
 			if err != nil {
 				log.Errorf("Could not create a groupdial. err: %v", err)
 				continue

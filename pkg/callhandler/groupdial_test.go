@@ -2,18 +2,20 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	rmastcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -36,12 +38,12 @@ func Test_createGroupDial(t *testing.T) {
 		earlyExecution            bool
 		executeNextMasterOnHangup bool
 
-		responseExntension *extension.Extension
+		responseExntension *rmextension.Extension
 		responseContacts   []*rmastcontact.AstContact
 		responseUUID       uuid.UUID
 		responseCalls      []*call.Call
 
-		expectGroupDial *groupdial.GroupDial
+		expectGroupDial *groupdial.Groupdial
 	}{
 		{
 			name: "normal",
@@ -90,7 +92,7 @@ func Test_createGroupDial(t *testing.T) {
 				},
 			},
 
-			expectGroupDial: &groupdial.GroupDial{
+			expectGroupDial: &groupdial.Groupdial{
 				ID:         uuid.FromStringOrNil("08701bca-b5e8-11ed-9257-4bee6cbc72bf"),
 				CustomerID: uuid.FromStringOrNil("e9a6c252-b5c4-11ed-8431-0f528880d39a"),
 				Destination: &commonaddress.Address{
@@ -145,9 +147,11 @@ func Test_createGroupDial(t *testing.T) {
 				mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, tt.responseCalls[i].ChannelID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			}
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
-			mockDB.EXPECT().GroupDialCreate(ctx, tt.expectGroupDial).Return(nil)
+			mockDB.EXPECT().GroupdialCreate(ctx, tt.expectGroupDial).Return(nil)
+			mockDB.EXPECT().GroupdialGet(ctx, tt.expectGroupDial.ID).Return(tt.expectGroupDial, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, groupdial.EventTypeGroupdialCreated, tt.expectGroupDial)
 
-			res, err := h.createGroupDial(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution, tt.executeNextMasterOnHangup)
+			res, err := h.createGroupdial(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution, tt.executeNextMasterOnHangup)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -258,6 +262,151 @@ func Test_getDestinationsAddressTypeEndpoint(t *testing.T) {
 			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.destination.Target).Return(tt.responseContacts, nil)
 
 			res, err := h.getDestinationsAddressTypeEndpoint(ctx, tt.customerID, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_answerGroupdial(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		groupdialID  uuid.UUID
+		answercallID uuid.UUID
+
+		responseGroupDial *groupdial.Groupdial
+	}{
+		{
+			name: "normal",
+
+			groupdialID:  uuid.FromStringOrNil("d3391861-292d-4ed8-b03a-7b455e57b17b"),
+			answercallID: uuid.FromStringOrNil("1f142f05-c169-4caa-a6b2-42d224ec6ca5"),
+
+			responseGroupDial: &groupdial.Groupdial{
+				ID:           uuid.FromStringOrNil("d3391861-292d-4ed8-b03a-7b455e57b17b"),
+				AnswerMethod: groupdial.AnswerMethodHangupOthers,
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("f3a4b38b-4781-4db7-b74a-5958b2851225"),
+					uuid.FromStringOrNil("0de4689f-96d5-448d-be00-11c196163756"),
+					uuid.FromStringOrNil("1f142f05-c169-4caa-a6b2-42d224ec6ca5"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().GroupdialGet(ctx, tt.groupdialID).Return(tt.responseGroupDial, nil)
+			mockDB.EXPECT().GroupdialGet(ctx, tt.groupdialID).Return(tt.responseGroupDial, nil)
+			updateGroupDial := *tt.responseGroupDial
+			updateGroupDial.AnswerCallID = tt.answercallID
+			mockDB.EXPECT().GroupdialUpdate(ctx, &updateGroupDial).Return(nil)
+			mockDB.EXPECT().GroupdialGet(ctx, tt.groupdialID).Return(&updateGroupDial, nil)
+
+			for _, callID := range tt.responseGroupDial.CallIDs {
+
+				if callID == tt.answercallID {
+					continue
+				}
+
+				// HangingUp. just return the error cause it's too long write the test code here.
+				mockDB.EXPECT().CallGet(ctx, callID).Return(nil, fmt.Errorf(""))
+			}
+
+			if errAnswer := h.answerGroupdial(ctx, tt.groupdialID, tt.answercallID); errAnswer != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errAnswer)
+			}
+
+			time.Sleep(time.Millisecond * 100)
+		})
+	}
+}
+
+func Test_getDestinationsAddressTypeAgent(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID  uuid.UUID
+		destination *commonaddress.Address
+
+		responseAgent *amagent.Agent
+
+		expectAgentID uuid.UUID
+		expectRes     []*commonaddress.Address
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("38007676-b5ef-11ed-a920-dfb6f25329d5"),
+			destination: &commonaddress.Address{
+				Type:       commonaddress.TypeEndpoint,
+				Target:     "081fd090-e4ba-401a-97a0-d36dd1f12f75",
+				TargetName: "test agent",
+			},
+
+			responseAgent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("081fd090-e4ba-401a-97a0-d36dd1f12f75"),
+				CustomerID: uuid.FromStringOrNil("239ec41e-7649-4a17-99a4-6729b56f64ac"),
+				Addresses: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000001",
+					},
+				},
+			},
+
+			expectAgentID: uuid.FromStringOrNil("081fd090-e4ba-401a-97a0-d36dd1f12f75"),
+			expectRes: []*commonaddress.Address{
+				{
+					Type:       commonaddress.TypeTel,
+					TargetName: "test agent",
+					Target:     "+821100000001",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
+
+			res, err := h.getDestinationsAddressTypeAgent(ctx, tt.customerID, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

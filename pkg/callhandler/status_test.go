@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -262,6 +264,103 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 				mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			}
+
+			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(time.Millisecond * 100)
+		})
+	}
+}
+
+func Test_UpdateStatusProgressing_answerGroupDial(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		channel *channel.Channel
+		call    *call.Call
+
+		responseCall      *call.Call
+		responseGroupDial *groupdial.Groupdial
+	}{
+		{
+			"normal",
+			&channel.Channel{
+				TMAnswer: "2020-09-20T03:23:20.995000",
+			},
+			&call.Call{
+				ID:          uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
+				Status:      call.StatusDialing,
+				Direction:   call.DirectionOutgoing,
+				GroupdialID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
+			},
+			&call.Call{
+				ID:          uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
+				Status:      call.StatusProgressing,
+				Direction:   call.DirectionOutgoing,
+				GroupdialID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
+			},
+			&groupdial.Groupdial{
+				ID:           uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
+				AnswerMethod: groupdial.AnswerMethodHangupOthers,
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
+					uuid.FromStringOrNil("c6cc7416-19c5-48bf-ab93-d063681c9994"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetStatusProgressing(ctx, tt.call.ID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
+
+			mockDB.EXPECT().GroupdialGet(ctx, tt.responseCall.GroupdialID).Return(tt.responseGroupDial, nil)
+			mockDB.EXPECT().GroupdialGet(ctx, tt.responseCall.GroupdialID).Return(tt.responseGroupDial, nil)
+			tmpGroupDial := *tt.responseGroupDial
+			tmpGroupDial.AnswerCallID = tt.call.ID
+			mockDB.EXPECT().GroupdialUpdate(ctx, &tmpGroupDial).Return(nil)
+			mockDB.EXPECT().GroupdialGet(ctx, tt.responseCall.GroupdialID).Return(&tmpGroupDial, nil)
+
+			for _, callID := range tmpGroupDial.CallIDs {
+				if callID == tt.call.ID {
+					continue
+				}
+				// HangingUp. just return the error here becuase it's too long func test code.
+				mockDB.EXPECT().CallGet(ctx, callID).Return(nil, fmt.Errorf(""))
+			}
+
+			// handleSIPCallID
+			mockChannel.EXPECT().VariableGet(ctx, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
+			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
+
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+			mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
 			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
