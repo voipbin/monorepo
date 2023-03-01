@@ -65,6 +65,7 @@ type CallHandler interface {
 		flowID uuid.UUID,
 		activeflowID uuid.UUID,
 		masterCallID uuid.UUID,
+		groupdialID uuid.UUID,
 		source commonaddress.Address,
 		destination commonaddress.Address,
 		earlyExecution bool,

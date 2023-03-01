@@ -58,8 +58,8 @@ func Test_startIncomingDomainTypeSIPDestinationTypeAgent(t *testing.T) {
 			},
 
 			responseSource: &commonaddress.Address{
-				Type:   commonaddress.TypeSIP,
-				Target: "test01",
+				Type:   commonaddress.TypeEndpoint,
+				Target: "test01@test",
 			},
 			responseDestination: &commonaddress.Address{
 				Type:   commonaddress.TypeAgent,
@@ -81,8 +81,8 @@ func Test_startIncomingDomainTypeSIPDestinationTypeAgent(t *testing.T) {
 			expectAgentID:    uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
 			expectActions: []fmaction.Action{
 				{
-					Type:   fmaction.TypeAgentCall,
-					Option: []byte(`{"agent_id":"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"}`),
+					Type:   fmaction.TypeConnect,
+					Option: []byte(`{"source":{"type":"endpoint","target":"test01@test","target_name":"","name":"","detail":""},"destinations":[{"type":"agent","target":"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
 				},
 			},
 		},
@@ -111,7 +111,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeAgent(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeSIP).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeEndpoint).Return(tt.responseSource)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 			mockReq.EXPECT().RegistrarV1DomainGetByDomainName(ctx, tt.expectDomainName).Return(tt.responseDomain, nil)
 
@@ -166,8 +166,8 @@ func Test_startIncomingDomainTypeSIPDestinationTypeConference(t *testing.T) {
 			},
 
 			responseSource: &commonaddress.Address{
-				Type:   commonaddress.TypeSIP,
-				Target: "test01",
+				Type:   commonaddress.TypeEndpoint,
+				Target: "test01@test",
 			},
 			responseDestination: &commonaddress.Address{
 				Type:   commonaddress.TypeConference,
@@ -220,7 +220,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeConference(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeSIP).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeEndpoint).Return(tt.responseSource)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 			mockReq.EXPECT().RegistrarV1DomainGetByDomainName(ctx, tt.expectDomainName).Return(tt.responseDomain, nil)
 
@@ -274,8 +274,8 @@ func Test_startIncomingDomainTypeSIPDestinationTypeTel(t *testing.T) {
 			},
 
 			responseSource: &commonaddress.Address{
-				Type:   commonaddress.TypeSIP,
-				Target: "test01",
+				Type:   commonaddress.TypeEndpoint,
+				Target: "test01@test",
 			},
 			responseDestination: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -294,7 +294,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeTel(t *testing.T) {
 			expectActions: []fmaction.Action{
 				{
 					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"sip","target":"test01","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
+					Option: []byte(`{"source":{"type":"endpoint","target":"test01@test","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
 				},
 			},
 		},
@@ -323,7 +323,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeTel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeSIP).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeEndpoint).Return(tt.responseSource)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 			mockReq.EXPECT().RegistrarV1DomainGetByDomainName(ctx, tt.expectDomainName).Return(tt.responseDomain, nil)
 

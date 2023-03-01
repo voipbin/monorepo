@@ -33,6 +33,7 @@ const (
 		recording_id,
 		recording_ids,
 		external_media_id,
+		groupdial_id,
 
 		source,
 		destination,
@@ -90,6 +91,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&res.RecordingID,
 		&recordingIDs,
 		&res.ExternalMediaID,
+		&res.GroupdialID,
 
 		&source,
 		&destination,
@@ -213,6 +215,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		recording_id,
 		recording_ids,
 		external_media_id,
+		groupdial_id,
 
 		source,
 		source_target,
@@ -242,7 +245,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		?, ?,
 		?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?,
 		?, ?,
@@ -309,6 +312,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.RecordingID.Bytes(),
 		tmpRecordingIDs,
 		c.ExternalMediaID.Bytes(),
+		c.GroupdialID.Bytes(),
 
 		tmpSource,
 		c.Source.Target,

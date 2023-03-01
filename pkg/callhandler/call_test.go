@@ -34,6 +34,8 @@ func Test_Create(t *testing.T) {
 		confbridgeID uuid.UUID
 		callType     call.Type
 
+		groupdialID uuid.UUID
+
 		source      *commonaddress.Address
 		destination *commonaddress.Address
 
@@ -66,6 +68,8 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("dd115b5e-5d15-11ed-a748-3f6e22ac12a4"),
 			uuid.FromStringOrNil("dd43df70-5d15-11ed-9eb2-7f19e0311fa0"),
 			call.TypeFlow,
+
+			uuid.FromStringOrNil("4029e38a-b781-11ed-adc4-6b40017ae4c5"),
 
 			&commonaddress.Address{
 				Type:       commonaddress.TypeTel,
@@ -116,6 +120,7 @@ func Test_Create(t *testing.T) {
 				ChainedCallIDs: []uuid.UUID{},
 				RecordingID:    uuid.Nil,
 				RecordingIDs:   []uuid.UUID{},
+				GroupdialID:    uuid.FromStringOrNil("4029e38a-b781-11ed-adc4-6b40017ae4c5"),
 
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeTel,
@@ -208,6 +213,8 @@ func Test_Create(t *testing.T) {
 				tt.confbridgeID,
 
 				tt.callType,
+
+				tt.groupdialID,
 
 				tt.source,
 				tt.destination,

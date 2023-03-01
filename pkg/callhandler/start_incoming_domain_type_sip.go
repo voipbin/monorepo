@@ -19,11 +19,15 @@ import (
 
 // startIncomingDomainTypeSIP handles sip incoming doamin type.
 func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channel.Channel) error {
-	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeSIP)
-	destination := h.channelHandler.AddressGetDestinationWithoutSpecificType(cn)
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "startIncomingDomainTypeSIP",
-		"channel_id":  cn.ID,
+		"func":       "startIncomingDomainTypeSIP",
+		"channel_id": cn.ID,
+	})
+
+	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeEndpoint)
+	destination := h.channelHandler.AddressGetDestinationWithoutSpecificType(cn)
+
+	log = log.WithFields(logrus.Fields{
 		"source":      source,
 		"destination": destination,
 	})
@@ -98,9 +102,14 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 		return nil
 	}
 
-	// create tmp flow for agent call
-	option := fmaction.OptionAgentCall{
-		AgentID: a.ID,
+	// create tmp flow for connect
+	option := fmaction.OptionConnect{
+		Source: *source,
+		Destinations: []commonaddress.Address{
+			*destination,
+		},
+		EarlyMedia:  true,
+		RelayReason: true,
 	}
 	optionData, err := json.Marshal(&option)
 	if err != nil {
@@ -110,7 +119,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 	}
 	actions := []fmaction.Action{
 		{
-			Type:   fmaction.TypeAgentCall,
+			Type:   fmaction.TypeConnect,
 			Option: optionData,
 		},
 	}
