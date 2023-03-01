@@ -17,6 +17,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 )
 
 const (
@@ -39,51 +40,38 @@ func (h *callHandler) CreateCallsOutgoing(
 	connect bool,
 ) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "CreateCallsOutgoing",
-		"customer_id": customerID,
-		"flow_id":     flowID,
-		"source":      source,
+		"func":         "CreateCallsOutgoing",
+		"customer_id":  customerID,
+		"flow_id":      flowID,
+		"source":       source,
+		"destinations": destinations,
 	})
 
 	res := []*call.Call{}
 	for _, destination := range destinations {
 		switch destination.Type {
 		case commonaddress.TypeSIP, commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, source, destination, earlyExecution, connect)
+			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect)
 			if err != nil {
-				log.Errorf("Could not create an outgoing call. err: %v", err)
+				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
 				continue
 			}
 			log.WithField("call", c).Debugf("Created outgoing call. call_id: %s, destination_type: %s, destination_target: %s", c.ID, destination.Type, destination.Target)
 
 			res = append(res, c)
 
-		case commonaddress.TypeEndpoint:
-			cs, err := h.createGroupdial(ctx, customerID, flowID, masterCallID, &source, &destination, earlyExecution, connect)
+		case commonaddress.TypeEndpoint, commonaddress.TypeAgent:
+			calls, err := h.createCallsOutgoingGroupdial(ctx, customerID, flowID, masterCallID, source, destination, connect)
 			if err != nil {
-				log.Errorf("Could not create a groupdial. err: %v", err)
+				log.WithField("destination", destination).Errorf("Could not create outgoing calls. destination_type: %s, err: %v", destination.Type, err)
 				continue
 			}
-			log.WithField("calls", cs).Debugf("Created outgoing groupdial to the destination. destination_type: %s, destination_target: %s", destination.Type, destination.Target)
-
-			for _, tmpID := range cs.CallIDs {
-				tmp, err := h.Get(ctx, tmpID)
-				if err != nil {
-					log.Errorf("Could not get created endpoint call info. err: %v", err)
-					continue
-				}
-				res = append(res, tmp)
-			}
-
-		case commonaddress.TypeAgent:
-			calls, err := h.createCallOutgoingAgent(ctx, customerID, flowID, masterCallID, source, destination)
-			if err != nil {
-				log.Errorf("Could not create an outgoing call to the agent. err: %v", err)
-				continue
-			}
-			log.WithField("calls", calls).Debugf("Created outgoing call to the agent. destination_type: %s, destination_target: %s", destination.Type, destination.Target)
+			log.WithField("calls", calls).Debugf("Created outgoing calls. destination_type: %s, destination_target: %s", destination.Type, destination.Target)
 
 			res = append(res, calls...)
+
+		default:
+			log.WithField("destination", destination).Errorf("Unsupported destination type. destination_type: %s", destination.Type)
 		}
 	}
 
@@ -98,6 +86,7 @@ func (h *callHandler) CreateCallOutgoing(
 	flowID uuid.UUID,
 	activeflowID uuid.UUID,
 	masterCallID uuid.UUID,
+	groupdialID uuid.UUID,
 	source commonaddress.Address,
 	destination commonaddress.Address,
 	earlyExecution bool,
@@ -110,6 +99,7 @@ func (h *callHandler) CreateCallOutgoing(
 		"flow":                          flowID,
 		"activeflow_id":                 activeflowID,
 		"master_call_id":                masterCallID,
+		"groupdial_id":                  groupdialID,
 		"source":                        source,
 		"destination":                   destination,
 		"early_execution":               earlyExecution,
@@ -163,7 +153,7 @@ func (h *callHandler) CreateCallOutgoing(
 	}
 
 	// create a call
-	c, err := h.Create(
+	res, err := h.Create(
 		ctx,
 
 		id,
@@ -176,6 +166,7 @@ func (h *callHandler) CreateCallOutgoing(
 		af.ID,
 		uuid.Nil,
 		call.TypeFlow,
+		groupdialID,
 
 		s,
 		&destination,
@@ -194,28 +185,28 @@ func (h *callHandler) CreateCallOutgoing(
 	}
 
 	// set variables
-	if errVariables := h.setVariablesCall(ctx, c); errVariables != nil {
+	if errVariables := h.setVariablesCall(ctx, res); errVariables != nil {
 		log.Errorf("Could not set variables. err: %v", errVariables)
 		return nil, errVariables
 	}
 
 	if masterCallID != uuid.Nil {
-		tmp, errChained := h.ChainedCallIDAdd(ctx, masterCallID, c.ID)
+		tmp, errChained := h.ChainedCallIDAdd(ctx, masterCallID, res.ID)
 		if errChained != nil {
 			// could not add the chained call id. but this is minor issue compare to the creating a call.
 			// so just keep moving.
-			log.Errorf("Could not add the chained call id. But keep moving on. master_call_id: %s, call_id: %s err: %v", masterCallID, c.ID, errChained)
+			log.Errorf("Could not add the chained call id. But keep moving on. master_call_id: %s, call_id: %s err: %v", masterCallID, res.ID, errChained)
 		}
-		log.WithField("call", tmp).Debugf("Added chained call id. master_call_id: %s, call_id: %s", masterCallID, c.ID)
+		log.WithField("call", tmp).Debugf("Added chained call id. master_call_id: %s, call_id: %s", masterCallID, res.ID)
 	}
 
 	// create a channel for the call
-	if err := h.createChannel(ctx, c); err != nil {
+	if err := h.createChannel(ctx, res); err != nil {
 		log.Errorf("Could not create channel. err: %v", err)
 		return nil, err
 	}
 
-	return c, nil
+	return res, nil
 }
 
 // getDialURITel returns dial uri of the given tel type destination.
@@ -278,102 +269,82 @@ func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, err
 	}
 }
 
-// CreateCallOutgoingAgent creates an outgoing call to the agent
-func (h *callHandler) createCallOutgoingAgent(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) ([]*call.Call, error) {
-
+// createCallsOutgoingGroupdial creates an outgoing call to the endpoint type destination
+func (h *callHandler) createCallsOutgoingGroupdial(
+	ctx context.Context,
+	customerID uuid.UUID,
+	flowID uuid.UUID,
+	masterCallID uuid.UUID,
+	source commonaddress.Address,
+	destination commonaddress.Address,
+	connect bool,
+) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "CreateCallOutgoingAgent",
-		"customer_id": customerID,
+		"func":           "createCallsOutgoingGroupdial",
+		"customer_id":    customerID,
+		"flow_id":        flowID,
+		"master_call_id": masterCallID,
+		"source":         source,
+		"destination":    destination,
+		"connect":        connect,
 	})
 
-	// get agent id
-	agentID := uuid.FromStringOrNil(destination.Target)
-	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, agentID, &source, flowID, masterCallID)
+	// get dial destinations
+	dialDestinations, err := h.getDialDestinations(ctx, customerID, &destination)
 	if err != nil {
-		log.Errorf("Could not create an outgoing call to agent. err: %v", err)
-		return nil, err
+		log.Errorf("Could not dial destination. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get dial destinations.")
 	}
-	log.WithField("agent_dial", agentDial).Debugf("Created an agent dial. agent_dial_id: %s", agentDial.ID)
 
+	if len(dialDestinations) == 0 {
+		log.Debugf("No dial destination found. len: %d", len(dialDestinations))
+		return nil, fmt.Errorf("no dial destination found")
+	}
+	log.WithField("dial_destinations", dialDestinations).Debugf("Found dial destinations for group dial. destination_type: %s", destination.Type)
+
+	// generate call ids
+	callIDs := []uuid.UUID{}
+	for range dialDestinations {
+		callID := h.utilHandler.CreateUUID()
+		callIDs = append(callIDs, callID)
+	}
+
+	// create groupdial
+	gd, err := h.createGroupdial(ctx, customerID, &destination, callIDs, groupdial.RingMethodRingAll, groupdial.AnswerMethodHangupOthers)
+	if err != nil {
+		log.Errorf("Could not create groupdial. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create groupdial.")
+	}
+	log.WithField("groupdial", gd).Debugf("Created groupdial. groupdial_id: %s", gd.ID)
+
+	// create outgoing
 	res := []*call.Call{}
-	for _, callID := range agentDial.AgentCallIDs {
-		c, err := h.Get(ctx, callID)
-		if err != nil {
-			log.Errorf("Could not get call info. err: %v", err)
-			continue
+	switch gd.RingMethod {
+	case groupdial.RingMethodRingAll:
+		for i, dialDestination := range dialDestinations {
+			log.WithField("dial_destination", dialDestination).Debugf("Creating a new outgoing call. call_id: %s, target: %s", gd.CallIDs[i], dialDestination.Target)
+
+			// we don't allow to earlyExecution(earlymedia) for groupdial.
+			// this is very obvious. because if we allow the early media for groupdial, it will mess the media handle.
+			tmp, err := h.CreateCallOutgoing(ctx, gd.CallIDs[i], customerID, flowID, uuid.Nil, masterCallID, gd.ID, source, *dialDestination, false, connect)
+			if err != nil {
+				log.WithField("dial_destination", dialDestination).Errorf("Could not create an outgoing call. destination_target: %s, err: %v", dialDestination.Target, err)
+				continue
+			}
+			res = append(res, tmp)
 		}
 
-		res = append(res, c)
+	case groupdial.RingMethodLinear:
+		log.Errorf("Not imeplemented yet.")
+		return nil, fmt.Errorf("not implemented yet")
+
+	default:
+		log.Errorf("Unsupported ring method type. ring_method: %s", gd.RingMethod)
+		return nil, fmt.Errorf("unsupported ring method type")
 	}
 
 	return res, nil
 }
-
-// // CreateCallOutgoingAgent creates an outgoing call to the endpoint type destination
-// func (h *callHandler) createCallOutgoingEndpoint(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source commonaddress.Address, destination commonaddress.Address) ([]*call.Call, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":        "createCallOutgoingEndpoint",
-// 		"customer_id": customerID,
-// 	})
-
-// 	// parse the extension and domain
-// 	tmp := strings.Split(destination.Target, "@")
-// 	if len(tmp) < 2 {
-// 		log.Errorf("The destination target is not valid.")
-// 		return nil, fmt.Errorf("invalid destination target")
-// 	}
-
-// 	// get extension info
-// 	e, err := h.reqHandler.RegistrarV1ExtensionGetByExtension(ctx, tmp[0])
-// 	if err != nil {
-// 		log.Errorf("Could not get extension info. err: %v", err)
-// 		return nil, errors.Wrap(err, "Could not get extension info.")
-// 	}
-
-// 	// get domain info
-// 	d, err := h.reqHandler.RegistrarV1DomainGetByDomainName(ctx, tmp[1])
-// 	if err != nil {
-// 		log.Errorf("Could not get domain info. err: %v", err)
-// 		return nil, errors.Wrap(err, "Could not get domain info.")
-// 	}
-
-// 	// check the
-// 	if customerID != e.CustomerID || customerID != d.CustomerID {
-// 		log.Debugf("The customer id is different. customer_id: %s, target_customer_id: %s", customerID, d.CustomerID)
-// 		return nil, fmt.Errorf("the customer id is different")
-// 	}
-
-// 	// // get contacts
-// 	// contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, destination.Target)
-// 	// if err != nil {
-// 	// 	log.Errorf("Could not get contacts info. err: %v", err)
-// 	// 	return nil, errors.Wrap(err, "Could not get contacts info.")
-// 	// }
-
-// 	// contacts[0].
-
-// 	// get agent id
-// 	agentID := uuid.FromStringOrNil(destination.Target)
-// 	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, agentID, &source, flowID, masterCallID)
-// 	if err != nil {
-// 		log.Errorf("Could not create an outgoing call to agent. err: %v", err)
-// 		return nil, err
-// 	}
-// 	log.WithField("agent_dial", agentDial).Debugf("Created an agent dial. agent_dial_id: %s", agentDial.ID)
-
-// 	res := []*call.Call{}
-// 	for _, callID := range agentDial.AgentCallIDs {
-// 		c, err := h.Get(ctx, callID)
-// 		if err != nil {
-// 			log.Errorf("Could not get call info. err: %v", err)
-// 			continue
-// 		}
-
-// 		res = append(res, c)
-// 	}
-
-// 	return res, nil
-// }
 
 // getDialroutes generates dialroutes for outgoing call
 func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]rmroute.Route, error) {
@@ -506,7 +477,7 @@ func setChannelVariableTransport(variables map[string]string, endpointDestinatio
 func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
 
 	if c.Destination.Type == commonaddress.TypeTel && c.Source.Target == "anonymous" {
-		// we can't verify the caller's id. setting the anonymous caller id
+		// we can't verify the caller's id. setting the default anonymous caller id
 		variables["CALLERID(pres)"] = "prohib"
 		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>"
 		variables["PJSIP_HEADER(add,Privacy)"] = "id"
@@ -537,4 +508,126 @@ func getSourceForOutgoingCall(source *commonaddress.Address, destination *common
 		TargetName: "Anonymous",
 		Target:     "anonymous",
 	}
+}
+
+// getDialDestinations returns given destination's dial destinations.
+func (h *callHandler) getDialDestinations(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]*commonaddress.Address, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getDialDestinations",
+		"customer_id": customerID,
+		"destination": destination,
+	})
+
+	// get dial destinations
+	mapDialDestination := map[commonaddress.Type]func(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]*commonaddress.Address, error){
+		commonaddress.TypeEndpoint: h.getDialDestinationsAddressTypeEndpoint,
+		commonaddress.TypeAgent:    h.getDialDestinationsAddressTypeAgent,
+	}
+
+	f, ok := mapDialDestination[destination.Type]
+	if !ok {
+		return nil, fmt.Errorf("unsupported destination type")
+	}
+
+	res, err := f(ctx, customerID, destination)
+	if err != nil {
+		log.Errorf("Could not get dial uris. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get dial uris.")
+	}
+
+	return res, nil
+}
+
+// getDialDestinationsAddressTypeEndpoint returns destinations for address type endpoint.
+func (h *callHandler) getDialDestinationsAddressTypeEndpoint(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]*commonaddress.Address, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getDialDestinationsAddressTypeEndpoint",
+		"customer_id": customerID,
+		"destination": destination,
+	})
+
+	e, err := h.reqHandler.RegistrarV1ExtensionGetByEndpoint(ctx, destination.Target)
+	if err != nil {
+		log.Errorf("Could not get extension info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get extension info.")
+	}
+
+	// check the customer id
+	if customerID != e.CustomerID {
+		log.Debugf("The customer id is different. customer_id: %s, extension_customer_id: %s", customerID, e.CustomerID)
+		return nil, fmt.Errorf("the customer id is different")
+	}
+
+	// get contacts
+	contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, destination.Target)
+	if err != nil {
+		log.Errorf("Could not get contacts info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get contacts info.")
+	}
+	log.WithField("contacts", contacts).Debugf("Found contacts. len: %d", len(contacts))
+
+	res := []*commonaddress.Address{}
+	for _, contact := range contacts {
+		uri := strings.ReplaceAll(contact.URI, "^3B", ";")
+		tmp := &commonaddress.Address{
+			Type:       commonaddress.TypeSIP,
+			TargetName: destination.TargetName, // update the target name to the destination's target name
+			Target:     uri,
+		}
+
+		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
+// getDialDestinationsAddressTypeAgent returns destinations for address type agent.
+func (h *callHandler) getDialDestinationsAddressTypeAgent(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]*commonaddress.Address, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getDialDestinationsAddressTypeAgent",
+		"destination": destination,
+	})
+
+	// get agnet info
+	agID := uuid.FromStringOrNil(destination.Target)
+	if agID == uuid.Nil {
+		log.Errorf("Could not parse the agent id. agent_id: %s", destination.Target)
+		return nil, fmt.Errorf("could not parse the agent id")
+	}
+
+	ag, err := h.reqHandler.AgentV1AgentGet(ctx, agID)
+	if err != nil {
+		log.Errorf("Could not get agent info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get agnet info.")
+	}
+
+	// check the customer id
+	if customerID != ag.CustomerID {
+		log.Debugf("The customer id is different. customer_id: %s, agent_customer_id: %s", customerID, ag.CustomerID)
+		return nil, fmt.Errorf("the customer id is different")
+	}
+
+	res := []*commonaddress.Address{}
+	for _, address := range ag.Addresses {
+		// update address target name
+		address.TargetName = destination.TargetName
+
+		switch address.Type {
+		case commonaddress.TypeTel, commonaddress.TypeSIP:
+			res = append(res, &address)
+
+		case commonaddress.TypeEndpoint:
+			tmp, err := h.getDialDestinationsAddressTypeEndpoint(ctx, ag.CustomerID, &address)
+			if err != nil {
+				log.Errorf("Could not get destination address. err: %v", err)
+				continue
+			}
+			res = append(res, tmp...)
+
+		default:
+			log.WithField("address", address).Errorf("Unsupported address type for agent outgoing. address_type: %s", address.Type)
+		}
+	}
+
+	return res, nil
 }

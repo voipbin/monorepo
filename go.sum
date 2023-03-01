@@ -590,6 +590,8 @@ github.com/prometheus/client_model v0.3.0 h1:UBgGFHqYdG/TPFD1B1ogZywDqEkwp3fBMvq
 github.com/prometheus/client_model v0.3.0/go.mod h1:LDGWKZIo7rky3hgvBe+caln+Dr3dPggB5dvjtD7w9+w=
 github.com/prometheus/common v0.40.0 h1:Afz7EVRqGg2Mqqf4JuF9vdvp1pi220m55Pi9T2JnO4Q=
 github.com/prometheus/common v0.40.0/go.mod h1:L65ZJPSmfn/UBWLQIHV7dBrKFidB/wPlF1y5TlSt9OE=
+github.com/prometheus/common v0.41.0 h1:npo01n6vUlRViIj5fgwiK8vlNIh8bnoxqh3gypKsyAw=
+github.com/prometheus/common v0.41.0/go.mod h1:xBwqVerjNdUDjgODMpudtOMwlOwf2SaTr1yjz4b7Zbc=
 github.com/prometheus/procfs v0.9.0 h1:wzCHvIvM5SxWqYvwgVL7yJY8Lz3PKn49KQtpgMYJfhI=
 github.com/prometheus/procfs v0.9.0/go.mod h1:+pB4zwohETzFnmlpe6yd2lSc+0/46IYZRB/chUwxUZY=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
@@ -640,6 +642,8 @@ gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d444
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d4449242c/go.mod h1:5iaYVv3U9iqJ76Y1lhKqCLtICVgiY5q0M8ht0znn47c=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230226143956-26926e2c4409 h1:nUHShr3d9UFzgW1xTofQUHFehl0d+cKksviq3NF4bwo=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230226143956-26926e2c4409/go.mod h1:Cqg6yUFKnUPZcFd1blW7epse9Jsl4Yhtg3w8BzJLTbQ=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230228120646-835f363689fa h1:hyRlTvMRoPyzbvF5FKU+eNchVAp/ZS+XNlqE2u+G5eY=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230228120646-835f363689fa/go.mod h1:HcTLReMHCg/NGH59rIpGZSDhHclBIIIYieOlP4EH2zI=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230219063008-4d0cd07e8b45 h1:Q9MpvmiE6pWa+WTivtMGMUUDze7rPPIhuQ1vV1V9Ya8=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230219063008-4d0cd07e8b45/go.mod h1:++NZh2dZ3Av5DjaeDML1I1XPF0xisRtPPxL1/nr1FRU=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a h1:6tQaB5eQ8du+G2tXWGrm1E9oI2fPZQT+slbcYFcVqPE=
@@ -662,6 +666,8 @@ gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230227073242-9d6a10fa9
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230227073242-9d6a10fa93d6/go.mod h1:fwTEIB03OOO7aGlKuJZKY5UrTjkLH7Q9xs/kYtb8WwQ=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230226163957-b893b3c58a0e h1:UyKp7L5vc8DZP1tfNOK7MMHKxEjvJLuwFZLf0ZIG7rU=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230226163957-b893b3c58a0e/go.mod h1:ccX8bZMEUHC2wrlabqK0J705gh9/AM2rXrSQcYs6QNQ=
+gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230228061921-b06437fcd222 h1:sL4sPpGw4+VoaaRnLSj8k3yTIHPwTnwW7j855o7C/sA=
+gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230228061921-b06437fcd222/go.mod h1:Ms4fbn5zUTh5GTtqyXaes6sfwQxmcIUJOOG98G0kEy4=
 gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097 h1:5Bvn+WLVuAP7gfL25wlrhmeEcA4s9BM38IBf9Vcyvt4=
 gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097/go.mod h1:hGuam1F4uWvvbHpwzOLVztS/mNEtd35VNkyJX1WpIzY=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9 h1:s0jTC7u5ONsjynyVV24vzgLncWZ1cHD3vITbSG2z3EQ=
@@ -1165,6 +1171,8 @@ google.golang.org/genproto v0.0.0-20230223222841-637eb2293923 h1:znp6mq/drrY+6kh
 google.golang.org/genproto v0.0.0-20230223222841-637eb2293923/go.mod h1:3Dl5ZL0q0isWJt+FVcfpQyirqemEuLAK/iFvg1UP1Hw=
 google.golang.org/genproto v0.0.0-20230227214838-9b19f0bdc514 h1:rtNKfB++wz5mtDY2t5C8TXlU5y52ojSu7tZo0z7u8eQ=
 google.golang.org/genproto v0.0.0-20230227214838-9b19f0bdc514/go.mod h1:TvhZT5f700eVlTNwND1xoEZQeWTB2RY/65kplwl/bFA=
+google.golang.org/genproto v0.0.0-20230301171018-9ab4bdc49ad5 h1:/cadn7taPtPlCgiWNetEPsle7jgnlad2R7gR5MXB6dM=
+google.golang.org/genproto v0.0.0-20230301171018-9ab4bdc49ad5/go.mod h1:TvhZT5f700eVlTNwND1xoEZQeWTB2RY/65kplwl/bFA=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=

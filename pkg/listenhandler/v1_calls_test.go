@@ -388,7 +388,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.earlyExecution, tt.executeNextMasterOnHangup).Return(tt.call, nil)
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.executeNextMasterOnHangup).Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

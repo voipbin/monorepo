@@ -516,6 +516,8 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 		uuid.Nil,
 		call.TypeFlow,
 
+		uuid.Nil,
+
 		source,
 		destination,
 

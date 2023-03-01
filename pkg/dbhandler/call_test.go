@@ -50,6 +50,7 @@ func Test_CallCreate(t *testing.T) {
 				RecordingIDs: []uuid.UUID{
 					uuid.FromStringOrNil("b73f769d-7b59-49a3-b8f2-23aad17ba476"),
 				},
+				GroupdialID: uuid.FromStringOrNil("41736b26-b790-11ed-8bdd-bb87802b1ae8"),
 
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeTel,
@@ -102,6 +103,7 @@ func Test_CallCreate(t *testing.T) {
 				RecordingIDs: []uuid.UUID{
 					uuid.FromStringOrNil("b73f769d-7b59-49a3-b8f2-23aad17ba476"),
 				},
+				GroupdialID: uuid.FromStringOrNil("41736b26-b790-11ed-8bdd-bb87802b1ae8"),
 
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeTel,

@@ -21,6 +21,8 @@ create table calls(
   -- external media info
   external_media_id binary(16), -- external media id
 
+  groupdial_id binary(16),
+
   -- source/destination
   source        json, -- source's type, target, number, name, ...
   source_target varchar(1024),
@@ -61,3 +63,4 @@ create index idx_calls_source_target on calls(source_target);
 create index idx_calls_destination_target on calls(destination_target);
 create index idx_calls_customer_id on calls(customer_id);
 create index idx_calls_external_media_id on calls(external_media_id);
+create index idx_calls_groupdial_id on calls(groupdial_id);
