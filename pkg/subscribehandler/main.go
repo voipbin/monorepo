@@ -3,6 +3,7 @@ package subscribehandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package subscribehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
@@ -64,8 +66,7 @@ func NewSubscribeHandler(
 	agentHandler agenthandler.AgentHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		rabbitSock: rabbitSock,
-
+		rabbitSock:        rabbitSock,
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
 		agentHandler:      agentHandler,
@@ -75,9 +76,10 @@ func NewSubscribeHandler(
 }
 
 func (h *subscribeHandler) Run() error {
-	logrus.WithFields(logrus.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func": "run",
-	}).Info("Creating rabbitmq queue for listen.")
+	})
+	log.Info("Creating rabbitmq queue for listen.")
 
 	// declare the queue for subscribe
 	if err := h.rabbitSock.QueueDeclare(h.subscribeQueue, true, true, false, false); err != nil {
@@ -89,18 +91,17 @@ func (h *subscribeHandler) Run() error {
 	for _, target := range targets {
 
 		// bind each targets
-		if err := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); err != nil {
-			logrus.Errorf("Could not subscribe the target. target: %s, err: %v", target, err)
-			return err
+		if errBind := h.rabbitSock.QueueBind(h.subscribeQueue, "", target, false, nil); errBind != nil {
+			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errBind)
+			return errBind
 		}
 	}
 
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "agent-manager", false, false, false, 10, h.processEventRun)
-			if err != nil {
-				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
+			if errConsume := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "agent-manager", false, false, false, 10, h.processEventRun); errConsume != nil {
+				log.Errorf("Could not consume the request message correctly. err: %v", errConsume)
 			}
 		}
 	}()
@@ -117,13 +118,11 @@ func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
 
 // processEvent processes the event message
 func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"message": m,
-		},
-	)
-	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processEvent",
+		"message": m,
+	})
+	ctx := context.Background()
 
 	var err error
 	start := time.Now()
@@ -132,16 +131,24 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	//// call-manager
 	// call
 	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallProgressing)):
-		err = h.processEventCMCallAnswered(m)
+		err = h.processEventCMCallProgressing(ctx, m)
 
 	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHangup)):
-		err = h.processEventCMCallHungup(m)
+		err = h.processEventCMCallHangup(ctx, m)
+
+	// groupdial
+	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupdial.EventTypeGroupdialCreated)):
+		err = h.processEventCMGroupdialCreated(ctx, m)
+
+	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupdial.EventTypeGroupdialAnswered)):
+		err = h.processEventCMGroupdialAnswered(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
 		// ignore the event.
+		return
 	}
 	elapsed := time.Since(start)
 	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))

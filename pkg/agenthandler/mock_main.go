@@ -13,6 +13,7 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	agentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	groupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
@@ -110,6 +111,34 @@ func (m *MockAgentHandler) Delete(ctx context.Context, id uuid.UUID) (*agent.Age
 func (mr *MockAgentHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAgentHandler)(nil).Delete), ctx, id)
+}
+
+// EventGroupdialAnswered mocks base method.
+func (m *MockAgentHandler) EventGroupdialAnswered(ctx context.Context, groupdial *groupdial.Groupdial) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventGroupdialAnswered", ctx, groupdial)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventGroupdialAnswered indicates an expected call of EventGroupdialAnswered.
+func (mr *MockAgentHandlerMockRecorder) EventGroupdialAnswered(ctx, groupdial interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupdialAnswered", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupdialAnswered), ctx, groupdial)
+}
+
+// EventGroupdialCreated mocks base method.
+func (m *MockAgentHandler) EventGroupdialCreated(ctx context.Context, groupdial *groupdial.Groupdial) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventGroupdialCreated", ctx, groupdial)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventGroupdialCreated indicates an expected call of EventGroupdialCreated.
+func (mr *MockAgentHandlerMockRecorder) EventGroupdialCreated(ctx, groupdial interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupdialCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupdialCreated), ctx, groupdial)
 }
 
 // Get mocks base method.

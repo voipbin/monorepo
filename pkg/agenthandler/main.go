@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -42,6 +43,9 @@ type AgentHandler interface {
 
 	AgentCallAnswered(ctx context.Context, c *cmcall.Call) error
 	AgentCallHungup(ctx context.Context, c *cmcall.Call) error
+
+	EventGroupdialCreated(ctx context.Context, groupdial *cmgroupdial.Groupdial) error
+	EventGroupdialAnswered(ctx context.Context, groupdial *cmgroupdial.Groupdial) error
 }
 
 type agentHandler struct {
