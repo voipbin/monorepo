@@ -5,7 +5,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"fmt"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
@@ -63,7 +63,7 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = errors.New("Record not found")
+	ErrNotFound = fmt.Errorf("Record not found")
 )
 
 // List of default values
