@@ -153,14 +153,14 @@ func Test_answerGroupdial(t *testing.T) {
 			updateGroupDial.AnswerCallID = tt.answercallID
 			mockDB.EXPECT().GroupdialUpdate(ctx, &updateGroupDial).Return(nil)
 			mockDB.EXPECT().GroupdialGet(ctx, tt.groupdialID).Return(&updateGroupDial, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, groupdial.EventTypeGroupdialAnswered, &updateGroupDial)
 
 			for _, callID := range tt.responseGroupDial.CallIDs {
-
 				if callID == tt.answercallID {
 					continue
 				}
 
-				// HangingUp. just return the error cause it's too long write the test code here.
+				// HangingUp()
 				mockDB.EXPECT().CallGet(ctx, callID).Return(nil, fmt.Errorf(""))
 			}
 
@@ -169,6 +169,69 @@ func Test_answerGroupdial(t *testing.T) {
 			}
 
 			time.Sleep(time.Millisecond * 100)
+		})
+	}
+}
+
+func Test_updateGroupdialAnswerCallID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id     uuid.UUID
+		callID uuid.UUID
+
+		responseGroupDial *groupdial.Groupdial
+	}{
+		{
+			name: "normal",
+
+			id:     uuid.FromStringOrNil("87f62caa-a188-457a-be85-41147833a012"),
+			callID: uuid.FromStringOrNil("f864a3df-166e-4cfa-8db1-64ad035d7d89"),
+
+			responseGroupDial: &groupdial.Groupdial{
+				ID:           uuid.FromStringOrNil("87f62caa-a188-457a-be85-41147833a012"),
+				AnswerMethod: groupdial.AnswerMethodHangupOthers,
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("2fb56182-75a4-4868-9e3c-09ffab0ed7dc"),
+					uuid.FromStringOrNil("29cf22c0-51cb-4eb1-a684-7dcb083b3a81"),
+					uuid.FromStringOrNil("f864a3df-166e-4cfa-8db1-64ad035d7d89"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().GroupdialGet(ctx, tt.id).Return(tt.responseGroupDial, nil)
+			updateGroupDial := *tt.responseGroupDial
+			updateGroupDial.AnswerCallID = tt.callID
+			mockDB.EXPECT().GroupdialUpdate(ctx, &updateGroupDial).Return(nil)
+			mockDB.EXPECT().GroupdialGet(ctx, tt.id).Return(&updateGroupDial, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, groupdial.EventTypeGroupdialAnswered, &updateGroupDial)
+
+			res, err := h.updateGroupdialAnswerCallID(ctx, tt.id, tt.callID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, &updateGroupDial) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", updateGroupDial, res)
+			}
 		})
 	}
 }

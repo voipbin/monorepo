@@ -21,7 +21,7 @@ type RingMethod string
 
 // list of ring methods
 const (
-	RingMethodRingAll RingMethod = "ring all" // dial all
+	RingMethodRingAll RingMethod = "ring_all" // dial all
 	RingMethodLinear  RingMethod = "linear"
 )
 
@@ -31,5 +31,5 @@ type AnswerMethod string
 // list of answer methods
 const (
 	AnswerMethodNone         AnswerMethod = ""              // do nothing
-	AnswerMethodHangupOthers AnswerMethod = "hangup others" // hangup others
+	AnswerMethodHangupOthers AnswerMethod = "hangup_others" // hangup others
 )

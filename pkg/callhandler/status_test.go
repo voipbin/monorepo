@@ -343,12 +343,13 @@ func Test_UpdateStatusProgressing_answerGroupDial(t *testing.T) {
 			tmpGroupDial.AnswerCallID = tt.call.ID
 			mockDB.EXPECT().GroupdialUpdate(ctx, &tmpGroupDial).Return(nil)
 			mockDB.EXPECT().GroupdialGet(ctx, tt.responseCall.GroupdialID).Return(&tmpGroupDial, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
 
 			for _, callID := range tmpGroupDial.CallIDs {
 				if callID == tt.call.ID {
 					continue
 				}
-				// HangingUp. just return the error here becuase it's too long func test code.
+				// HangingUp(). just return the error here becuase it's too long func test code.
 				mockDB.EXPECT().CallGet(ctx, callID).Return(nil, fmt.Errorf(""))
 			}
 
