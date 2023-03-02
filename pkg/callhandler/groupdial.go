@@ -91,6 +91,7 @@ func (h *callHandler) updateGroupdialAnswerCallID(ctx context.Context, id uuid.U
 		log.Errorf("Could not get updated group dial info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get updated group dial info.")
 	}
+	h.notifyHandler.PublishEvent(ctx, groupdial.EventTypeGroupdialAnswered, res)
 
 	return res, nil
 }
