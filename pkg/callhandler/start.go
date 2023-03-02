@@ -416,15 +416,17 @@ func getDomainTypeIncomingCall(domain string) string {
 
 // startIncomingDomainTypeConference handles conference domain type incoming call.
 func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn *channel.Channel) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startIncomingDomainTypeConference",
+		"channel_id": cn.ID,
+	})
+
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeSIP)
 	destination := h.channelHandler.AddressGetDestination(cn, commonaddress.TypeConference)
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "startIncomingDomainTypeConference",
-			"channel_id":  cn.ID,
-			"source":      source,
-			"destination": destination,
-		})
+	log = log.WithFields(logrus.Fields{
+		"source":      source,
+		"destination": destination,
+	})
 	log.Debugf("Starting startIncomingDomainTypeConference. source_target: %s, destination_target: %s", source.Target, destination.Target)
 
 	conferenceID := uuid.FromStringOrNil(destination.Target)
@@ -448,11 +450,14 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 
 // startIncomingDomainTypePSTN handles flow calltype start.
 func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *channel.Channel) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startIncomingDomainTypePSTN",
+		"channel_id": cn.ID,
+	})
+
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeTel)
 	destination := h.channelHandler.AddressGetDestination(cn, commonaddress.TypeTel)
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "startIncomingDomainTypePSTN",
-		"channel_id":  cn.ID,
+	log = log.WithFields(logrus.Fields{
 		"source":      source,
 		"destination": destination,
 	})

@@ -13,12 +13,10 @@ import (
 
 // processEventActiveflowDeleted handles the activeflow deleted event.
 func (h *subscribeHandler) processEventActiveflowDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "processEventActiveflowDeleted",
-			"message": m,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processEventActiveflowDeleted",
+		"message": m,
+	})
 
 	a := &fmactiveflow.Activeflow{}
 	if err := json.Unmarshal([]byte(m.Data), &a); err != nil {

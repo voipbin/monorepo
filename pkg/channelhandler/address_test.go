@@ -39,7 +39,8 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 			"type conference",
 
 			&channel.Channel{
-				DestinationNumber: "conference-34613ee5-5456-40fe-bb3b-395254270a9d",
+				// conference:34613ee5-5456-40fe-bb3b-395254270a9d
+				DestinationNumber: "conference%3A34613ee5-5456-40fe-bb3b-395254270a9d",
 			},
 			&commonaddress.Address{
 				Type:   commonaddress.TypeConference,
@@ -50,7 +51,8 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 			"type agent",
 
 			&channel.Channel{
-				DestinationNumber: "agent-a04a1f51-2495-48a5-9012-8081aa90b902",
+				// agent:a04a1f51-2495-48a5-9012-8081aa90b902
+				DestinationNumber: "agent%3Aa04a1f51-2495-48a5-9012-8081aa90b902",
 			},
 			&commonaddress.Address{
 				Type:   commonaddress.TypeAgent,
@@ -61,7 +63,8 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 			"type line",
 
 			&channel.Channel{
-				DestinationNumber: "line-07d16b0a-302f-4db8-ae4a-a2c9a65f88b7",
+				// line:07d16b0a-302f-4db8-ae4a-a2c9a65f88b7
+				DestinationNumber: "line%3A07d16b0a-302f-4db8-ae4a-a2c9a65f88b7",
 			},
 			&commonaddress.Address{
 				Type:   commonaddress.TypeLine,
@@ -80,6 +83,21 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 			&commonaddress.Address{
 				Type:   commonaddress.TypeEndpoint,
 				Target: "2000@test",
+			},
+		},
+		{
+			"type endpoint in abolute reference",
+
+			&channel.Channel{
+				// 3000@test_domain
+				DestinationNumber: "3000%40test_domain",
+				StasisData: map[string]string{
+					"domain": "test.sip.voipbin.net",
+				},
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeEndpoint,
+				Target: "3000@test_domain",
 			},
 		},
 	}

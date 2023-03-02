@@ -371,12 +371,11 @@ func Test_createCallsOutgoingGroupdial_endpoint(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID                uuid.UUID
-		flowID                    uuid.UUID
-		masterCallID              uuid.UUID
-		source                    commonaddress.Address
-		destination               commonaddress.Address
-		executeNextMasterOnHangup bool
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		masterCallID uuid.UUID
+		source       commonaddress.Address
+		destination  commonaddress.Address
 
 		responseExntension *rmextension.Extension
 		responseContacts   []rmastcontact.AstContact
@@ -400,7 +399,6 @@ func Test_createCallsOutgoingGroupdial_endpoint(t *testing.T) {
 				Type:   commonaddress.TypeEndpoint,
 				Target: "test-exten@test-domain",
 			},
-			executeNextMasterOnHangup: false,
 
 			responseExntension: &rmextension.Extension{
 				ID:         uuid.FromStringOrNil("ea46f164-b5c4-11ed-823e-47dfafd09c7b"),
@@ -500,7 +498,7 @@ func Test_createCallsOutgoingGroupdial_endpoint(t *testing.T) {
 				mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, tt.responseCalls[i].ChannelID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			}
 
-			resCalls, err := h.createCallsOutgoingGroupdial(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, tt.executeNextMasterOnHangup)
+			resCalls, err := h.createCallsOutgoingGroupdial(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

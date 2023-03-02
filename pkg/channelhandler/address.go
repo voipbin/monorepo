@@ -2,6 +2,7 @@ package channelhandler
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -47,21 +48,44 @@ func (h *channelHandler) AddressGetDestinationWithoutSpecificType(cn *channel.Ch
 
 	var addressType commonaddress.Type
 	var target string
+	var tmpTarget string
+
+	// parse tmp target
 	if strings.HasPrefix(cn.DestinationNumber, "+") {
-		addressType = commonaddress.TypeTel
-		target = cn.DestinationNumber
-	} else if strings.HasPrefix(cn.DestinationNumber, string(commonaddress.TypeAgent)+"-") {
-		addressType = commonaddress.TypeAgent
-		target = strings.TrimPrefix(cn.DestinationNumber, string(commonaddress.TypeAgent)+"-")
-	} else if strings.HasPrefix(cn.DestinationNumber, string(commonaddress.TypeConference)+"-") {
-		addressType = commonaddress.TypeConference
-		target = strings.TrimPrefix(cn.DestinationNumber, string(commonaddress.TypeConference)+"-")
-	} else if strings.HasPrefix(cn.DestinationNumber, string(commonaddress.TypeLine)+"-") {
-		addressType = commonaddress.TypeLine
-		target = strings.TrimPrefix(cn.DestinationNumber, string(commonaddress.TypeLine)+"-")
+		tmpTarget = cn.DestinationNumber
 	} else {
+		tmp, err := url.QueryUnescape(cn.DestinationNumber)
+		if err != nil {
+			tmp = cn.DestinationNumber
+		}
+		tmpTarget = tmp
+	}
+
+	// get address type and target
+	switch {
+	case strings.HasPrefix(tmpTarget, "+"):
+		addressType = commonaddress.TypeTel
+		target = tmpTarget
+
+	case strings.HasPrefix(tmpTarget, string(commonaddress.TypeAgent)+":"):
+		addressType = commonaddress.TypeAgent
+		target = strings.TrimPrefix(tmpTarget, string(commonaddress.TypeAgent)+":")
+
+	case strings.HasPrefix(tmpTarget, string(commonaddress.TypeConference)+":"):
+		addressType = commonaddress.TypeConference
+		target = strings.TrimPrefix(tmpTarget, string(commonaddress.TypeConference)+":")
+
+	case strings.HasPrefix(tmpTarget, string(commonaddress.TypeLine)+":"):
+		addressType = commonaddress.TypeLine
+		target = strings.TrimPrefix(tmpTarget, string(commonaddress.TypeLine)+":")
+
+	default:
 		addressType = commonaddress.TypeEndpoint
-		target = cn.DestinationNumber + "@" + strings.TrimSuffix(cn.StasisData["domain"], common.DomainSIPSuffix)
+		if strings.Contains(tmpTarget, "@") {
+			target = tmpTarget
+		} else {
+			target = tmpTarget + "@" + strings.TrimSuffix(cn.StasisData["domain"], common.DomainSIPSuffix)
+		}
 	}
 
 	res := &commonaddress.Address{

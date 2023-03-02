@@ -61,7 +61,7 @@ func (h *callHandler) CreateCallsOutgoing(
 			res = append(res, c)
 
 		case commonaddress.TypeEndpoint, commonaddress.TypeAgent:
-			calls, err := h.createCallsOutgoingGroupdial(ctx, customerID, flowID, masterCallID, source, destination, connect)
+			calls, err := h.createCallsOutgoingGroupdial(ctx, customerID, flowID, masterCallID, source, destination)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create outgoing calls. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -277,7 +277,6 @@ func (h *callHandler) createCallsOutgoingGroupdial(
 	masterCallID uuid.UUID,
 	source commonaddress.Address,
 	destination commonaddress.Address,
-	connect bool,
 ) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "createCallsOutgoingGroupdial",
@@ -286,7 +285,6 @@ func (h *callHandler) createCallsOutgoingGroupdial(
 		"master_call_id": masterCallID,
 		"source":         source,
 		"destination":    destination,
-		"connect":        connect,
 	})
 
 	// get dial destinations
@@ -326,7 +324,8 @@ func (h *callHandler) createCallsOutgoingGroupdial(
 
 			// we don't allow to earlyExecution(earlymedia) for groupdial.
 			// this is very obvious. because if we allow the early media for groupdial, it will mess the media handle.
-			tmp, err := h.CreateCallOutgoing(ctx, gd.CallIDs[i], customerID, flowID, uuid.Nil, masterCallID, gd.ID, source, *dialDestination, false, connect)
+			// and we can not set the execute next master on hangup flag in the same reason.
+			tmp, err := h.CreateCallOutgoing(ctx, gd.CallIDs[i], customerID, flowID, uuid.Nil, masterCallID, gd.ID, source, *dialDestination, false, false)
 			if err != nil {
 				log.WithField("dial_destination", dialDestination).Errorf("Could not create an outgoing call. destination_target: %s, err: %v", dialDestination.Target, err)
 				continue
