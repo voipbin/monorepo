@@ -13,12 +13,10 @@ import (
 
 // processEventAsteriskProxy handles the events from the asterisk-proxy.
 func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "processEventAsteriskProxy",
-			"message": m,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processEventAsteriskProxy",
+		"message": m,
+	})
 
 	// parse
 	event, evt, err := ari.Parse([]byte(m.Data))

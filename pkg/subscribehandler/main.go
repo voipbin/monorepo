@@ -83,7 +83,6 @@ func init() {
 		promARIEventTotal,
 		promARIProcessTime,
 	)
-
 }
 
 // NewSubscribeHandler create EventHandler
@@ -146,8 +145,13 @@ func (h *subscribeHandler) Run() error {
 
 // processEventRun runs the event process handler.
 func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventRun",
+		"event": m,
+	})
+
 	if errProcess := h.processEvent(m); errProcess != nil {
-		logrus.Errorf("Could not consume the ARI event message correctly. err: %v", errProcess)
+		log.Errorf("Could not consume the ARI event message correctly. err: %v", errProcess)
 	}
 
 	return nil
@@ -155,13 +159,10 @@ func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
 
 // processEvent processes received ARI event
 func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":      "processEvent",
-			"publisher": m.Publisher,
-			"type":      m.Type,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEvent",
+		"event": m,
+	})
 
 	ctx := context.Background()
 
@@ -169,7 +170,6 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 	start := time.Now()
 
 	switch {
-
 	// asterisk-proxy
 	case m.Publisher == publisherAsteriskProxy:
 		err = h.processEventAsteriskProxy(ctx, m)

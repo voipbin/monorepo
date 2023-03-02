@@ -46,7 +46,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeAgent(t *testing.T) {
 				ID: "asterisk-call-58f54b64c7-2kwmb-1675216038.171",
 
 				DestinationName:   "",
-				DestinationNumber: "agent-eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+				DestinationNumber: "agent%3Aeb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
 				SourceName:        "",
 				SourceNumber:      "test01",
 
@@ -82,7 +82,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeAgent(t *testing.T) {
 			expectActions: []fmaction.Action{
 				{
 					Type:   fmaction.TypeConnect,
-					Option: []byte(`{"source":{"type":"endpoint","target":"test01@test","target_name":"","name":"","detail":""},"destinations":[{"type":"agent","target":"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b","target_name":"","name":"","detail":""}],"early_media":true,"relay_reason":true}`),
+					Option: []byte(`{"source":{"type":"endpoint","target":"test01@test","target_name":"","name":"","detail":""},"destinations":[{"type":"agent","target":"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b","target_name":"","name":"","detail":""}],"early_media":false,"relay_reason":false}`),
 				},
 			},
 		},

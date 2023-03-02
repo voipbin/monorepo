@@ -108,8 +108,8 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 		Destinations: []commonaddress.Address{
 			*destination,
 		},
-		EarlyMedia:  true,
-		RelayReason: true,
+		EarlyMedia:  false,
+		RelayReason: false,
 	}
 	optionData, err := json.Marshal(&option)
 	if err != nil {
@@ -303,8 +303,8 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeEndpoint(
 		Destinations: []commonaddress.Address{
 			*destination,
 		},
-		EarlyMedia:  true,
-		RelayReason: true,
+		EarlyMedia:  false,
+		RelayReason: false,
 	}
 	optionData, err := json.Marshal(&option)
 	if err != nil {
