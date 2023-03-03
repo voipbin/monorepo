@@ -11,7 +11,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	agentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
@@ -116,21 +115,6 @@ func (m *MockRequestHandler) AgentV1AgentDelete(ctx context.Context, id uuid.UUI
 func (mr *MockRequestHandlerMockRecorder) AgentV1AgentDelete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentDelete", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentDelete), ctx, id)
-}
-
-// AgentV1AgentDial mocks base method.
-func (m *MockRequestHandler) AgentV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1AgentDial", ctx, id, source, flowID, masterCallID)
-	ret0, _ := ret[0].(*agentdial.AgentDial)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentV1AgentDial indicates an expected call of AgentV1AgentDial.
-func (mr *MockRequestHandlerMockRecorder) AgentV1AgentDial(ctx, id, source, flowID, masterCallID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentDial", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentDial), ctx, id, source, flowID, masterCallID)
 }
 
 // AgentV1AgentGet mocks base method.

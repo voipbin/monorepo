@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	amagentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	amrequest "gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/listenhandler/models/request"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -418,42 +417,6 @@ func (r *requestHandler) AgentV1AgentUpdateStatus(ctx context.Context, id uuid.U
 	}
 
 	var res amagent.Agent
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// AgentV1AgentDial sends a request to agent-manager
-// to dial to the agent.
-// it returns error if something went wrong.
-func (r *requestHandler) AgentV1AgentDial(ctx context.Context, id uuid.UUID, source *address.Address, flowID, masterCallID uuid.UUID) (*amagentdial.AgentDial, error) {
-	uri := fmt.Sprintf("/v1/agents/%s/dial", id)
-
-	data := &amrequest.V1DataAgentsIDDialPost{
-		Source:       *source,
-		FlowID:       flowID,
-		MasterCallID: masterCallID,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestAgent(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceAgentAgents, requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	var res amagentdial.AgentDial
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
