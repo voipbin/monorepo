@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
@@ -36,13 +37,19 @@ func (h *queuecallHandler) Execute(ctx context.Context, id uuid.UUID, agentID uu
 		return nil, err
 	}
 
-	// dial to the agent
-	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, agentID, &qc.Source, f.ID, qc.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not dial to the agent. Send the request again with 1 sec delay. err: %v", err)
-		return nil, err
+	destinations := []commonaddress.Address{
+		{
+			Type:   commonaddress.TypeAgent,
+			Target: agentID.String(),
+		},
 	}
-	log.WithField("agent_dial", agentDial).Debugf("Created agent dial. agent_dial_id: %s", agentDial.ID)
+
+	calls, err := h.reqHandler.CallV1CallsCreate(ctx, qc.CustomerID, f.ID, qc.ReferenceID, &qc.Source, destinations, false, false)
+	if err != nil {
+		log.Errorf("Could not create a call to the agent. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create a call to the agent.")
+	}
+	log.WithField("calls", calls).Debugf("Created call to the agent. agent_id: %s", agentID)
 
 	// update the queuecall status to connecting
 	res, err := h.UpdateStatusConnecting(ctx, qc.ID, agentID)
