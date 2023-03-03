@@ -37,14 +37,17 @@ func (h *agentHandler) EventGroupdialCreated(ctx context.Context, groupdial *cmg
 		return errors.Wrap(err, "Could not get agent.")
 	}
 
-	if ag.Status == agent.StatusAvailable {
-		ag, err = h.UpdateStatus(ctx, ag.ID, agent.StatusRinging)
-		if err != nil {
-			log.Errorf("Could not update agent status. err: %v", err)
-			return errors.Wrap(err, "Could not update agent status.")
-		}
-		log.WithField("agent", ag).Debugf("Updated agent status to the ringing. agent_id: %s", ag.ID)
+	if ag.Status != agent.StatusAvailable {
+		// nothing to do.
+		return nil
 	}
+
+	ag, err = h.UpdateStatus(ctx, ag.ID, agent.StatusRinging)
+	if err != nil {
+		log.Errorf("Could not update agent status. err: %v", err)
+		return errors.Wrap(err, "Could not update agent status.")
+	}
+	log.WithField("agent", ag).Debugf("Updated agent status to the ringing. agent_id: %s", ag.ID)
 
 	return nil
 }

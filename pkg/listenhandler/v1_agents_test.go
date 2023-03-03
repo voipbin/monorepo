@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
 )
 
@@ -1072,76 +1071,6 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 			}
 
 			mockAgent.EXPECT().UpdateTagIDs(gomock.Any(), tt.id, tt.tagIDs).Return(tt.responseAgent, nil)
-			res, err := h.processRequest(tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
-			}
-
-		})
-	}
-}
-
-func TestProcessV1AgentsIDDialPost(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		request *rabbitmqhandler.Request
-
-		id           uuid.UUID
-		source       *commonaddress.Address
-		flowID       uuid.UUID
-		masterCallID uuid.UUID
-
-		responseAgentDial *agentdial.AgentDial
-		expectRes         *rabbitmqhandler.Response
-	}{
-		{
-			"normal",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/dial",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"source":{"type":"tel","target":"+821021656521"},"flow_id":"4a089d94-4da9-11ec-bac9-07c16f06b600","master_call_id":"a01fa558-8c22-11ec-8014-f773fd0e57a6"}`),
-			},
-
-			uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-			&commonaddress.Address{
-				Type:   commonaddress.TypeTel,
-				Target: "+821021656521",
-			},
-			uuid.FromStringOrNil("4a089d94-4da9-11ec-bac9-07c16f06b600"),
-			uuid.FromStringOrNil("a01fa558-8c22-11ec-8014-f773fd0e57a6"),
-
-			&agentdial.AgentDial{
-				ID: uuid.FromStringOrNil("295b8aba-8d2e-11ec-8635-3301b2f1dc0f"),
-			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"295b8aba-8d2e-11ec-8635-3301b2f1dc0f","customer_id":"00000000-0000-0000-0000-000000000000","agent_id":"00000000-0000-0000-0000-000000000000","agent_call_ids":null}`),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-			h := &listenHandler{
-				rabbitSock:   mockSock,
-				agentHandler: mockAgent,
-			}
-
-			mockAgent.EXPECT().AgentDial(gomock.Any(), tt.id, tt.source, tt.flowID, tt.masterCallID).Return(tt.responseAgentDial, nil)
-
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

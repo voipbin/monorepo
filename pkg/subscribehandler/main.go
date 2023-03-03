@@ -10,7 +10,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
@@ -129,12 +128,6 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	switch {
 
 	//// call-manager
-	// call
-	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallProgressing)):
-		err = h.processEventCMCallProgressing(ctx, m)
-
-	case m.Publisher == publisherCallManager && (m.Type == string(cmcall.EventTypeCallHangup)):
-		err = h.processEventCMCallHangup(ctx, m)
 
 	// groupdial
 	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupdial.EventTypeGroupdialCreated)):
