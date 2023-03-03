@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
@@ -16,7 +15,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
 )
 
@@ -28,7 +26,6 @@ const (
 type AgentHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
-	AgentDial(ctx context.Context, id uuid.UUID, source *commonaddress.Address, confbridgeID, masterCallID uuid.UUID) (*agentdial.AgentDial, error)
 	Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*agent.Agent, error)
 	GetsByTagIDs(ctx context.Context, customerID uuid.UUID, tags []uuid.UUID) ([]*agent.Agent, error)
@@ -40,9 +37,6 @@ type AgentHandler interface {
 	UpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
-
-	AgentCallAnswered(ctx context.Context, c *cmcall.Call) error
-	AgentCallHungup(ctx context.Context, c *cmcall.Call) error
 
 	EventGroupdialCreated(ctx context.Context, groupdial *cmgroupdial.Groupdial) error
 	EventGroupdialAnswered(ctx context.Context, groupdial *cmgroupdial.Groupdial) error

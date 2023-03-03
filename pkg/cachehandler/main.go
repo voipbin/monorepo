@@ -9,8 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 )
 
@@ -28,12 +26,6 @@ type CacheHandler interface {
 
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentSet(ctx context.Context, u *agent.Agent) error
-
-	AgentCallGet(ctx context.Context, id uuid.UUID) (*agentcall.AgentCall, error)
-	AgentCallSet(ctx context.Context, u *agentcall.AgentCall) error
-
-	AgentDialGet(ctx context.Context, id uuid.UUID) (*agentdial.AgentDial, error)
-	AgentDialSet(ctx context.Context, u *agentdial.AgentDial) error
 
 	TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
 	TagSet(ctx context.Context, u *tag.Tag) error

@@ -51,7 +51,6 @@ var (
 	regV1AgentsIDTagIDs      = regexp.MustCompile("/v1/agents/" + regUUID + "/tag_ids$")
 	regV1AgentsIDStatus      = regexp.MustCompile("/v1/agents/" + regUUID + "/status$")
 	regV1AgentsIDPassword    = regexp.MustCompile("/v1/agents/" + regUUID + "/password$")
-	regV1AgentsIDDial        = regexp.MustCompile("/v1/agents/" + regUUID + "/dial$")
 
 	// tags
 	regV1Tags    = regexp.MustCompile("/v1/tags$")
@@ -183,47 +182,42 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// GET /agents/<agent-id>
 	case regV1AgentsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1AgentsIDGet(ctx, m)
-		requestType = "/v1/agents"
+		requestType = "/v1/agents/<agent-id>"
 
 	// DELETE /agents/<agent-id>
 	case regV1AgentsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1AgentsIDDelete(ctx, m)
-		requestType = "/v1/agents"
+		requestType = "/v1/agents/<agent-id>"
 
 	// PUT /agents/<agent-id>
 	case regV1AgentsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1AgentsIDPut(ctx, m)
-		requestType = "/v1/agents"
+		requestType = "/v1/agents/<agent-id>"
 
 	// POST /agents/<username>/login
 	case regV1AgentsUsernameLogin.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1AgentsUsernameLogin(ctx, m)
-		requestType = "/v1/agents"
+		requestType = "/v1/agents/<agent-id>/login"
 
 	// PUT /agents/<agent-id>/addresses
 	case regV1AgentsIDAddresses.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1AgentsIDAddressesPut(ctx, m)
-		requestType = "/v1/agents"
+		requestType = "/v1/agents/<agent-id>/addresses"
 
 	// PUT /agents/<agent-id>/password
 	case regV1AgentsIDPassword.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1AgentsIDPasswordPut(ctx, m)
-		requestType = "/v1/agents"
+		requestType = "/v1/agents/<agent-id>/password"
 
 	// PUT /agents/<agent-id>/tag_ids
 	case regV1AgentsIDTagIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1AgentsIDTagIDsPut(ctx, m)
-		requestType = "/v1/agents"
+		requestType = "/v1/agents/<agent-id>/tag_ids"
 
-	// PUT /agents/<agent-id>/tag_ids
+	// PUT /agents/<agent-id>/status
 	case regV1AgentsIDStatus.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1AgentsIDStatusPut(ctx, m)
-		requestType = "/v1/agents"
-
-	// POST /agents/<agent-id>/dial
-	case regV1AgentsIDDial.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1AgentsIDDialPost(ctx, m)
-		requestType = "/v1/agents"
+		requestType = "/v1/agents/<agent-id>/status"
 
 	////////////
 	// tags

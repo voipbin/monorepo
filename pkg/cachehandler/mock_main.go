@@ -11,8 +11,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	agentcall "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
-	agentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 )
 
@@ -37,64 +35,6 @@ func NewMockCacheHandler(ctrl *gomock.Controller) *MockCacheHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCacheHandler) EXPECT() *MockCacheHandlerMockRecorder {
 	return m.recorder
-}
-
-// AgentCallGet mocks base method.
-func (m *MockCacheHandler) AgentCallGet(ctx context.Context, id uuid.UUID) (*agentcall.AgentCall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCallGet", ctx, id)
-	ret0, _ := ret[0].(*agentcall.AgentCall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentCallGet indicates an expected call of AgentCallGet.
-func (mr *MockCacheHandlerMockRecorder) AgentCallGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCallGet", reflect.TypeOf((*MockCacheHandler)(nil).AgentCallGet), ctx, id)
-}
-
-// AgentCallSet mocks base method.
-func (m *MockCacheHandler) AgentCallSet(ctx context.Context, u *agentcall.AgentCall) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCallSet", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AgentCallSet indicates an expected call of AgentCallSet.
-func (mr *MockCacheHandlerMockRecorder) AgentCallSet(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCallSet", reflect.TypeOf((*MockCacheHandler)(nil).AgentCallSet), ctx, u)
-}
-
-// AgentDialGet mocks base method.
-func (m *MockCacheHandler) AgentDialGet(ctx context.Context, id uuid.UUID) (*agentdial.AgentDial, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentDialGet", ctx, id)
-	ret0, _ := ret[0].(*agentdial.AgentDial)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentDialGet indicates an expected call of AgentDialGet.
-func (mr *MockCacheHandlerMockRecorder) AgentDialGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDialGet", reflect.TypeOf((*MockCacheHandler)(nil).AgentDialGet), ctx, id)
-}
-
-// AgentDialSet mocks base method.
-func (m *MockCacheHandler) AgentDialSet(ctx context.Context, u *agentdial.AgentDial) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentDialSet", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AgentDialSet indicates an expected call of AgentDialSet.
-func (mr *MockCacheHandlerMockRecorder) AgentDialSet(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDialSet", reflect.TypeOf((*MockCacheHandler)(nil).AgentDialSet), ctx, u)
 }
 
 // AgentGet mocks base method.

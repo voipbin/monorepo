@@ -9,8 +9,6 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 )
 
 // Gets returns agents
@@ -342,85 +340,4 @@ func (h *agentHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status ag
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, agent.EventTypeAgentStatusUpdated, res)
 
 	return res, nil
-}
-
-// AgentDial dials to the agent.
-func (h *agentHandler) AgentDial(ctx context.Context, id uuid.UUID, source *commonaddress.Address, flowID, masterCallID uuid.UUID) (*agentdial.AgentDial, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "AgentDial",
-		"agent_id":       id,
-		"flow_id":        flowID,
-		"master_call_id": masterCallID,
-	})
-	log.Debug("Dialing to the agent.")
-
-	// get agent
-	ag, err := h.db.AgentGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get agent info. err: %v", err)
-		return nil, err
-	}
-	log.WithField("agent", ag).Debug("Found agent.")
-
-	// check agent's status and addresses
-	if ag.Status != agent.StatusAvailable {
-		log.Debugf("Agent is not available. status: %s", ag.Status)
-		return nil, fmt.Errorf("agant is not available")
-	} else if len(ag.Addresses) == 0 {
-		log.Debugf("Agent has no address.")
-		return nil, fmt.Errorf("agent has no address")
-	}
-
-	// set agent status to ringing
-	if err := h.db.AgentSetStatus(ctx, ag.ID, agent.StatusRinging); err != nil {
-		log.Errorf("Could not update the agent's status. err: %v", err)
-		return nil, err
-	}
-
-	// generate the call ids and agentcall info
-	agentDialID := uuid.Must(uuid.NewV4())
-	callIDs := []uuid.UUID{}
-	for i := 0; i < len(ag.Addresses); i++ {
-		agentCallID := uuid.Must(uuid.NewV4())
-		callIDs = append(callIDs, agentCallID)
-
-		ac := &agentcall.AgentCall{
-			ID:          agentCallID,
-			CustomerID:  ag.CustomerID,
-			AgentID:     ag.ID,
-			AgentDialID: agentDialID,
-		}
-		if err := h.db.AgentCallCreate(ctx, ac); err != nil {
-			log.Errorf("Could not create a agent call. err: %v", err)
-		}
-	}
-	log.Debugf("call id info. call_ids: %v", callIDs)
-
-	// create agentdial
-	ad := &agentdial.AgentDial{
-		ID:           agentDialID,
-		CustomerID:   ag.CustomerID,
-		AgentID:      ag.ID,
-		AgentCallIDs: callIDs,
-	}
-	if err := h.db.AgentDialCreate(ctx, ad); err != nil {
-		log.Errorf("Could not create an agent dial. err: %v", err)
-	}
-
-	if ag.RingMethod == agent.RingMethodLinear {
-		log.Errorf("Currently, support the ringall only.")
-		return nil, fmt.Errorf("unsupport ringmethod")
-	}
-
-	// dial
-	for i, address := range ag.Addresses {
-		c, err := h.reqHandler.CallV1CallCreateWithID(ctx, callIDs[i], ag.CustomerID, flowID, uuid.Nil, masterCallID, source, &address, false, false)
-		if err != nil {
-			log.Errorf("Could not create a call. err: %v", err)
-			continue
-		}
-		log.WithField("call", c).Debug("Created a call")
-	}
-
-	return ad, nil
 }

@@ -11,8 +11,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	agentcall "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
-	agentdial "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
@@ -38,64 +36,6 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
-}
-
-// AgentCallCreate mocks base method.
-func (m *MockDBHandler) AgentCallCreate(ctx context.Context, a *agentcall.AgentCall) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCallCreate", ctx, a)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AgentCallCreate indicates an expected call of AgentCallCreate.
-func (mr *MockDBHandlerMockRecorder) AgentCallCreate(ctx, a interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCallCreate", reflect.TypeOf((*MockDBHandler)(nil).AgentCallCreate), ctx, a)
-}
-
-// AgentCallGet mocks base method.
-func (m *MockDBHandler) AgentCallGet(ctx context.Context, id uuid.UUID) (*agentcall.AgentCall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCallGet", ctx, id)
-	ret0, _ := ret[0].(*agentcall.AgentCall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentCallGet indicates an expected call of AgentCallGet.
-func (mr *MockDBHandlerMockRecorder) AgentCallGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCallGet", reflect.TypeOf((*MockDBHandler)(nil).AgentCallGet), ctx, id)
-}
-
-// AgentCallGetFromCache mocks base method.
-func (m *MockDBHandler) AgentCallGetFromCache(ctx context.Context, id uuid.UUID) (*agentcall.AgentCall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCallGetFromCache", ctx, id)
-	ret0, _ := ret[0].(*agentcall.AgentCall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentCallGetFromCache indicates an expected call of AgentCallGetFromCache.
-func (mr *MockDBHandlerMockRecorder) AgentCallGetFromCache(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCallGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).AgentCallGetFromCache), ctx, id)
-}
-
-// AgentCallSetToCache mocks base method.
-func (m *MockDBHandler) AgentCallSetToCache(ctx context.Context, u *agentcall.AgentCall) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentCallSetToCache", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AgentCallSetToCache indicates an expected call of AgentCallSetToCache.
-func (mr *MockDBHandlerMockRecorder) AgentCallSetToCache(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentCallSetToCache", reflect.TypeOf((*MockDBHandler)(nil).AgentCallSetToCache), ctx, u)
 }
 
 // AgentCreate mocks base method.
@@ -124,35 +64,6 @@ func (m *MockDBHandler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 func (mr *MockDBHandlerMockRecorder) AgentDelete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDelete", reflect.TypeOf((*MockDBHandler)(nil).AgentDelete), ctx, id)
-}
-
-// AgentDialCreate mocks base method.
-func (m *MockDBHandler) AgentDialCreate(ctx context.Context, a *agentdial.AgentDial) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentDialCreate", ctx, a)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AgentDialCreate indicates an expected call of AgentDialCreate.
-func (mr *MockDBHandlerMockRecorder) AgentDialCreate(ctx, a interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDialCreate", reflect.TypeOf((*MockDBHandler)(nil).AgentDialCreate), ctx, a)
-}
-
-// AgentDialGet mocks base method.
-func (m *MockDBHandler) AgentDialGet(ctx context.Context, id uuid.UUID) (*agentdial.AgentDial, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentDialGet", ctx, id)
-	ret0, _ := ret[0].(*agentdial.AgentDial)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AgentDialGet indicates an expected call of AgentDialGet.
-func (mr *MockDBHandlerMockRecorder) AgentDialGet(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentDialGet", reflect.TypeOf((*MockDBHandler)(nil).AgentDialGet), ctx, id)
 }
 
 // AgentGet mocks base method.

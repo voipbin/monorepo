@@ -13,8 +13,6 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/cachehandler"
 )
@@ -34,14 +32,6 @@ type DBHandler interface {
 	AgentSetStatus(ctx context.Context, id uuid.UUID, status agent.Status) error
 	AgentSetTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error
 	AgentUpdateToCache(ctx context.Context, id uuid.UUID) error
-
-	AgentCallSetToCache(ctx context.Context, u *agentcall.AgentCall) error
-	AgentCallGetFromCache(ctx context.Context, id uuid.UUID) (*agentcall.AgentCall, error)
-	AgentCallGet(ctx context.Context, id uuid.UUID) (*agentcall.AgentCall, error)
-	AgentCallCreate(ctx context.Context, a *agentcall.AgentCall) error
-
-	AgentDialGet(ctx context.Context, id uuid.UUID) (*agentdial.AgentDial, error)
-	AgentDialCreate(ctx context.Context, a *agentdial.AgentDial) error
 
 	TagCreate(ctx context.Context, a *tag.Tag) error
 	TagDelete(ctx context.Context, id uuid.UUID) error

@@ -9,8 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentcall"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agentdial"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 )
 
@@ -55,52 +53,6 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 // AgentrSet sets the agent info into the cache.
 func (h *handler) AgentSet(ctx context.Context, u *agent.Agent) error {
 	key := fmt.Sprintf("agent:%d", u.ID)
-
-	if err := h.setSerialize(ctx, key, u); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AgentDialGet returns cached agentdial info
-func (h *handler) AgentDialGet(ctx context.Context, id uuid.UUID) (*agentdial.AgentDial, error) {
-	key := fmt.Sprintf("agentdial:%s", id)
-
-	var res agentdial.AgentDial
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// AgentDialSet sets the agentdial info into the cache.
-func (h *handler) AgentDialSet(ctx context.Context, u *agentdial.AgentDial) error {
-	key := fmt.Sprintf("agentdial:%s", u.ID)
-
-	if err := h.setSerialize(ctx, key, u); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AgentCallGet returns cached agentcall info
-func (h *handler) AgentCallGet(ctx context.Context, id uuid.UUID) (*agentcall.AgentCall, error) {
-	key := fmt.Sprintf("agentcall:%s", id)
-
-	var res agentcall.AgentCall
-	if err := h.getSerialize(ctx, key, &res); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-// AgentCallSet sets the agentcall info into the cache.
-func (h *handler) AgentCallSet(ctx context.Context, u *agentcall.AgentCall) error {
-	key := fmt.Sprintf("agentcall:%s", u.ID)
 
 	if err := h.setSerialize(ctx, key, u); err != nil {
 		return err
