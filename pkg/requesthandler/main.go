@@ -221,8 +221,13 @@ const (
 	resourceOutdialOutdials       resource = "outdial/outdials"
 	resourceOutdialOutdialTargets resource = "outdial/outdial_targets"
 
-	resourceQueueQueues     resource = "queue/queues"
-	resourceQueueQueuecalls resource = "queue/queuecalls"
+	resourceQueueQueues                      resource = "queue/queues"
+	resourceQueueQueuecalls                  resource = "queue/queuecalls"
+	resourceQueueQueuecallsID                resource = "queue/queuecalls/<queuecall-id>"
+	resourceQueueQueuecallsIDKick            resource = "queue/queuecalls/<queuecall-id>/kick"
+	resourceQueueQueuecallsIDTimeoutWait     resource = "queue/queuecalls/<queuecall-id>/timeout_wait"
+	resourceQueueQueuecallsIDTiemoutService  resource = "queue/queuecalls/<queuecall-id>/timeout_service"
+	resourceQueueQueuecallsReferenceIDIDKick resource = "queue/queuecalls/reference_id/<reference-id>/kick"
 
 	resourceQueueServiceTypeQueuecall resource = "queue/services/type/queuecall"
 

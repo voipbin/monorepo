@@ -35,9 +35,8 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=b24479ee-7ff1-11ec-a54e-6bf84d5eae5b",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=b24479ee-7ff1-11ec-a54e-6bf84d5eae5b",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -59,9 +58,8 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=b24479ee-7ff1-11ec-a54e-6bf84d5eae5b",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=b24479ee-7ff1-11ec-a54e-6bf84d5eae5b",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -129,9 +127,8 @@ func Test_QueueV1QueuecallGetsByQueueIDAndStatus(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&queue_id=6f8a8f87-13fa-4731-b005-e23bcdbb4854&status=waiting",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&queue_id=6f8a8f87-13fa-4731-b005-e23bcdbb4854&status=waiting",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -154,9 +151,8 @@ func Test_QueueV1QueuecallGetsByQueueIDAndStatus(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&queue_id=0edb7686-df53-4fdb-82c0-72915cccedbc&status=waiting",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&queue_id=0edb7686-df53-4fdb-82c0-72915cccedbc&status=waiting",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -218,9 +214,8 @@ func Test_QueueV1QueuecallGet(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls/a2764422-6159-11ec-8d87-975236f7d7b7",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/queuecalls/a2764422-6159-11ec-8d87-975236f7d7b7",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -278,9 +273,8 @@ func Test_QMQueuecallDelete(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls/f4b44b28-4e79-11ec-be3c-73450ec23a51",
-				Method:   rabbitmqhandler.RequestMethodDelete,
-				DataType: "application/json",
+				URI:    "/v1/queuecalls/f4b44b28-4e79-11ec-be3c-73450ec23a51",
+				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 
 			&rabbitmqhandler.Response{
@@ -319,6 +313,126 @@ func Test_QMQueuecallDelete(t *testing.T) {
 	}
 }
 
+func Test_QMQueuecallKick(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("e96bfff6-bac8-11ed-a20f-9be3817d2737"),
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls/e96bfff6-bac8-11ed-a20f-9be3817d2737/kick",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e96bfff6-bac8-11ed-a20f-9be3817d2737"}`),
+			},
+			&qmqueuecall.Queuecall{
+				ID: uuid.FromStringOrNil("e96bfff6-bac8-11ed-a20f-9be3817d2737"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.QueueV1QueuecallKick(ctx, tt.queuecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_QMQueuecallKickByReferenceID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+
+		response  *rabbitmqhandler.Response
+		expectRes *qmqueuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("e9d1f928-bac8-11ed-a65d-7fb580a1eb02"),
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls/reference_id/e9d1f928-bac8-11ed-a65d-7fb580a1eb02/kick",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e9d1f928-bac8-11ed-a65d-7fb580a1eb02"}`),
+			},
+			&qmqueuecall.Queuecall{
+				ID: uuid.FromStringOrNil("e9d1f928-bac8-11ed-a65d-7fb580a1eb02"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.QueueV1QueuecallKickByReferenceID(ctx, tt.queuecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_QueueV1QueuecallTimeoutWait(t *testing.T) {
 
 	type test struct {
@@ -340,9 +454,8 @@ func Test_QueueV1QueuecallTimeoutWait(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls/ff5c5fba-60b3-11ec-97c3-ff9e56e19a78/timeout_wait",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: ContentTypeJSON,
+				URI:    "/v1/queuecalls/ff5c5fba-60b3-11ec-97c3-ff9e56e19a78/timeout_wait",
+				Method: rabbitmqhandler.RequestMethodPost,
 			},
 		},
 	}
@@ -389,9 +502,8 @@ func Test_QueueV1QueuecallTimeoutService(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls/ddf27cfa-60b4-11ec-b221-13486052ae97/timeout_service",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: ContentTypeJSON,
+				URI:    "/v1/queuecalls/ddf27cfa-60b4-11ec-b221-13486052ae97/timeout_service",
+				Method: rabbitmqhandler.RequestMethodPost,
 			},
 		},
 	}
@@ -436,9 +548,8 @@ func Test_QueueV1QueuecallUpdateStatusWaiting(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/queuecalls/092c9606-d1c8-11ec-8a0e-3383eeba05b5/status_waiting",
-				Method:   rabbitmqhandler.RequestMethodPost,
-				DataType: "application/json",
+				URI:    "/v1/queuecalls/092c9606-d1c8-11ec-8a0e-3383eeba05b5/status_waiting",
+				Method: rabbitmqhandler.RequestMethodPost,
 			},
 
 			&rabbitmqhandler.Response{
