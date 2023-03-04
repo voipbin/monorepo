@@ -113,7 +113,7 @@ func (h *listenHandler) processV1QueuecallsIDDelete(ctx context.Context, m *rabb
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.queuecallHandler.Kick(ctx, id)
+	tmp, err := h.queuecallHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
 		return simpleResponse(500), nil
@@ -203,6 +203,76 @@ func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m 
 	}
 
 	tmp, err := h.queuecallHandler.Execute(ctx, id, req.AgentID)
+	if err != nil {
+		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1QueuecallsIDKickPost handles Post /v1/queuecalls/<queuecall-id>/kick request
+func (h *listenHandler) processV1QueuecallsIDKickPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsIDIDKickPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.queuecallHandler.Kick(ctx, id)
+	if err != nil {
+		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1QueuecallsIDKickPost handles Post /v1/queuecalls/reference_id/<reference-id>/kick request
+func (h *listenHandler) processV1QueuecallsReferenceIDIDKickPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsReferenceIDKickPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	referenceID := uuid.FromStringOrNil(uriItems[4])
+
+	tmp, err := h.queuecallHandler.KickByReferenceID(ctx, referenceID)
 	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
 		return simpleResponse(500), nil

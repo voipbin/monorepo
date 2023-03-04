@@ -207,7 +207,125 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
+			mockQueuecall.EXPECT().Delete(gomock.Any(), tt.queuecallID).Return(tt.responseQueuecall, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1QueuecallsIDKickPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		queuecallID uuid.UUID
+
+		responseQueuecall *queuecall.Queuecall
+		expectRes         *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls/319fec77-0843-4207-8c6a-65bf067e4bac/kick",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("319fec77-0843-4207-8c6a-65bf067e4bac"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"319fec77-0843-4207-8c6a-65bf067e4bac","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				queuecallHandler: mockQueuecall,
+			}
+
 			mockQueuecall.EXPECT().Kick(gomock.Any(), tt.queuecallID).Return(tt.responseQueuecall, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		referenceID uuid.UUID
+
+		responseQueuecall *queuecall.Queuecall
+		expectRes         *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls/reference_id/c8794c51-4e4d-46ef-bfa1-5220f66aea87/kick",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			uuid.FromStringOrNil("c8794c51-4e4d-46ef-bfa1-5220f66aea87"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("b1d4d172-52e3-4927-bf10-77eafebd19d8"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"b1d4d172-52e3-4927-bf10-77eafebd19d8","customer_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","exit_action_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"routing_method":"","tag_ids":null,"status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","timeout_wait":0,"timeout_service":0,"duration_waiting":0,"duration_service":0,"tm_create":"","tm_service":"","tm_update":"","tm_end":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				queuecallHandler: mockQueuecall,
+			}
+
+			mockQueuecall.EXPECT().KickByReferenceID(gomock.Any(), tt.referenceID).Return(tt.responseQueuecall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

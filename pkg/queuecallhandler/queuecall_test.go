@@ -727,3 +727,55 @@ func Test_UpdateStatusDone(t *testing.T) {
 		})
 	}
 }
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queuecallID uuid.UUID
+
+		responseQueuecall *queuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("7c6bc375-b6b8-4e2a-9244-142654e64516"),
+
+			&queuecall.Queuecall{
+				ID: uuid.FromStringOrNil("7c6bc375-b6b8-4e2a-9244-142654e64516"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallDelete(ctx, tt.queuecallID).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDeleted, tt.responseQueuecall)
+
+			res, err := h.Delete(ctx, tt.queuecallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueuecall, res)
+			}
+		})
+	}
+}

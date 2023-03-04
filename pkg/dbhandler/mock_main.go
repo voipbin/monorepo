@@ -237,17 +237,17 @@ func (mr *MockDBHandlerMockRecorder) QueuecallCreate(ctx, a interface{}) *gomock
 }
 
 // QueuecallDelete mocks base method.
-func (m *MockDBHandler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error {
+func (m *MockDBHandler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallDelete", ctx, id, status)
+	ret := m.ctrl.Call(m, "QueuecallDelete", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // QueuecallDelete indicates an expected call of QueuecallDelete.
-func (mr *MockDBHandlerMockRecorder) QueuecallDelete(ctx, id, status interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) QueuecallDelete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallDelete", reflect.TypeOf((*MockDBHandler)(nil).QueuecallDelete), ctx, id, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallDelete", reflect.TypeOf((*MockDBHandler)(nil).QueuecallDelete), ctx, id)
 }
 
 // QueuecallGet mocks base method.
