@@ -507,7 +507,6 @@ func Test_QueuecallDelete(t *testing.T) {
 				ID:        uuid.FromStringOrNil("240779f6-5ab7-11ec-8993-a74ac488bded"),
 				Source:    commonaddress.Address{},
 				TagIDs:    []uuid.UUID{},
-				Status:    queuecall.StatusDone,
 				TMCreate:  "2023-02-14 03:22:17.994000",
 				TMService: DefaultTimeStamp,
 				TMUpdate:  "2023-02-14 03:22:17.994000",
@@ -539,7 +538,7 @@ func Test_QueuecallDelete(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
-			err := h.QueuecallDelete(ctx, tt.queuecallID, queuecall.StatusDone)
+			err := h.QueuecallDelete(ctx, tt.queuecallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -54,6 +54,21 @@ func (mr *MockQueuecallHandlerMockRecorder) Create(ctx, q, referenceType, refere
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockQueuecallHandler)(nil).Create), ctx, q, referenceType, referenceID, referenceActiveflowID, forwardActionID, exitActionID, conferenceID, source)
 }
 
+// Delete mocks base method.
+func (m *MockQueuecallHandler) Delete(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockQueuecallHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockQueuecallHandler)(nil).Delete), ctx, id)
+}
+
 // EventCallCallHangup mocks base method.
 func (m *MockQueuecallHandler) EventCallCallHangup(ctx context.Context, referenceID uuid.UUID) {
 	m.ctrl.T.Helper()

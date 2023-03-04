@@ -146,6 +146,28 @@ func (h *queuecallHandler) Create(
 	return res, nil
 }
 
+// Delete deletes queuecall.
+func (h *queuecallHandler) Delete(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "Delete",
+		"queuecall_id": id,
+	})
+
+	if errDelete := h.db.QueuecallDelete(ctx, id); errDelete != nil {
+		log.Errorf("Could not delete the queuecall. err: %v", errDelete)
+		return nil, errors.Wrap(errDelete, "Could not get queuecall info.")
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted queuecall. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get deleted queuecall.")
+	}
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallDeleted, res)
+
+	return res, nil
+}
+
 // UpdateStatusConnecting updates the queuecall's status to the connecting.
 func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{

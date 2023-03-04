@@ -384,13 +384,12 @@ func (h *handler) QueuecallGetsByQueueIDAndStatus(ctx context.Context, queueID u
 }
 
 // QueuecallDelete deletes the queuecall.
-func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queuecall.Status) error {
+func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
 	// prepare
 	q := `
 	update
 		queuecalls
 	set
-		status = ?,
 		tm_update = ?,
 		tm_delete = ?
 	where
@@ -398,7 +397,7 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID, status queu
 	`
 
 	ts := h.utilHandler.GetCurTime()
-	_, err := h.db.Exec(q, status, ts, ts, id.Bytes())
+	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallDelete. err: %v", err)
 	}

@@ -8,4 +8,5 @@ const (
 	EventTypeQueuecallServiced   string = "queuecall_serviced"   //
 	EventTypeQueuecallDone       string = "queuecall_done"
 	EventTypeQueuecallAbandoned  string = "queuecall_abandoned"
+	EventTypeQueuecallDeleted    string = "queuecall_deleted"
 )
