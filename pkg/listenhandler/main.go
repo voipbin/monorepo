@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/groupcallhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
@@ -38,6 +39,7 @@ type listenHandler struct {
 	channelHandler       channelhandler.ChannelHandler
 	recordingHandler     recordinghandler.RecordingHandler
 	externalMediaHandler externalmediahandler.ExternalMediaHandler
+	groupcallHandler     groupcallhandler.GroupcallHandler
 }
 
 var (
@@ -82,7 +84,7 @@ var (
 	regV1ExternalMediasID = regexp.MustCompile("/v1/external-medias/" + regUUID + "$")
 
 	// groupcalls
-	// regV1Groupcalls         = regexp.MustCompile("/v1/groupcalls$")
+	regV1Groupcalls = regexp.MustCompile("/v1/groupcalls$")
 	// regV1GroupcallsIDHangup = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup$")
 
 	// recordings
@@ -129,6 +131,7 @@ func NewListenHandler(
 	channelHandler channelhandler.ChannelHandler,
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
+	groupcallHandler groupcallhandler.GroupcallHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		rabbitSock:           rabbitSock,
@@ -137,6 +140,7 @@ func NewListenHandler(
 		channelHandler:       channelHandler,
 		recordingHandler:     recordingHandler,
 		externalMediaHandler: externalMediaHandler,
+		groupcallHandler:     groupcallHandler,
 	}
 
 	return h
@@ -390,6 +394,14 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ExternalMediasID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		response, err = h.processV1ExternalMediasIDDelete(ctx, m)
 		requestType = "/v1/external-medias/<external-media-id>"
+
+	//////////////
+	// groupcalls
+	//////////////
+	// GET /groupcalls
+	case regV1Groupcalls.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1GroupcallsPost(ctx, m)
+		requestType = "/v1/groupcalls"
 
 	//////////////
 	// recordings

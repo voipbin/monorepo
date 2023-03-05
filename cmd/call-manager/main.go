@@ -25,6 +25,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/groupcallhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/subscribehandler"
@@ -158,6 +159,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 	ariEventHandler := arieventhandler.NewEventHandler(rabbitSock, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler)
+	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db, callHandler)
 
 	// run ari event listener
 	if err := runSubscribe(serviceName, rabbitSock, *rabbitQueueSubscribe, *rabbitListenSubscribes, ariEventHandler, callHandler); err != nil {
@@ -165,7 +167,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}
 
 	// run request listener
-	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler); err != nil {
+	if err := runRequestListen(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler); err != nil {
 		return err
 	}
 
@@ -199,9 +201,10 @@ func runRequestListen(
 	channelHandler channelhandler.ChannelHandler,
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
+	groupcallHandler groupcallhandler.GroupcallHandler,
 ) error {
 
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, callHandler, confbridgeHandler, channelHandler, recordingHandler, externalMediaHandler, groupcallHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

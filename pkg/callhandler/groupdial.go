@@ -39,7 +39,7 @@ func (h *callHandler) createGroupcall(
 		ID:         id,
 		CustomerID: customerID,
 
-		Destination:  destination,
+		Destinations: []commonaddress.Address{*destination},
 		CallIDs:      callIDs,
 		RingMethod:   ringMethod,
 		AnswerMethod: answerMethod,
