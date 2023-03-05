@@ -16,7 +16,7 @@ import (
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	groupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
@@ -261,33 +261,33 @@ func (mr *MockCacheHandlerMockRecorder) ExternalMediaSet(ctx, data interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaSet", reflect.TypeOf((*MockCacheHandler)(nil).ExternalMediaSet), ctx, data)
 }
 
-// GroupdialGet mocks base method.
-func (m *MockCacheHandler) GroupdialGet(ctx context.Context, id uuid.UUID) (*groupdial.Groupdial, error) {
+// GroupcallGet mocks base method.
+func (m *MockCacheHandler) GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupdialGet", ctx, id)
-	ret0, _ := ret[0].(*groupdial.Groupdial)
+	ret := m.ctrl.Call(m, "GroupcallGet", ctx, id)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GroupdialGet indicates an expected call of GroupdialGet.
-func (mr *MockCacheHandlerMockRecorder) GroupdialGet(ctx, id interface{}) *gomock.Call {
+// GroupcallGet indicates an expected call of GroupcallGet.
+func (mr *MockCacheHandlerMockRecorder) GroupcallGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupdialGet", reflect.TypeOf((*MockCacheHandler)(nil).GroupdialGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGet", reflect.TypeOf((*MockCacheHandler)(nil).GroupcallGet), ctx, id)
 }
 
-// GroupdialSet mocks base method.
-func (m *MockCacheHandler) GroupdialSet(ctx context.Context, data *groupdial.Groupdial) error {
+// GroupcallSet mocks base method.
+func (m *MockCacheHandler) GroupcallSet(ctx context.Context, data *groupcall.Groupcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupdialSet", ctx, data)
+	ret := m.ctrl.Call(m, "GroupcallSet", ctx, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GroupdialSet indicates an expected call of GroupdialSet.
-func (mr *MockCacheHandlerMockRecorder) GroupdialSet(ctx, data interface{}) *gomock.Call {
+// GroupcallSet indicates an expected call of GroupcallSet.
+func (mr *MockCacheHandlerMockRecorder) GroupcallSet(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupdialSet", reflect.TypeOf((*MockCacheHandler)(nil).GroupdialSet), ctx, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSet", reflect.TypeOf((*MockCacheHandler)(nil).GroupcallSet), ctx, data)
 }
 
 // NumberGetByNumber mocks base method.

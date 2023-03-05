@@ -17,7 +17,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 )
 
 const (
@@ -61,7 +61,7 @@ func (h *callHandler) CreateCallsOutgoing(
 			res = append(res, c)
 
 		case commonaddress.TypeEndpoint, commonaddress.TypeAgent:
-			calls, err := h.createCallsOutgoingGroupdial(ctx, customerID, flowID, masterCallID, source, destination)
+			calls, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, source, destination)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create outgoing calls. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -86,7 +86,7 @@ func (h *callHandler) CreateCallOutgoing(
 	flowID uuid.UUID,
 	activeflowID uuid.UUID,
 	masterCallID uuid.UUID,
-	groupdialID uuid.UUID,
+	groupcallID uuid.UUID,
 	source commonaddress.Address,
 	destination commonaddress.Address,
 	earlyExecution bool,
@@ -99,7 +99,7 @@ func (h *callHandler) CreateCallOutgoing(
 		"flow":                          flowID,
 		"activeflow_id":                 activeflowID,
 		"master_call_id":                masterCallID,
-		"groupdial_id":                  groupdialID,
+		"groupcall_id":                  groupcallID,
 		"source":                        source,
 		"destination":                   destination,
 		"early_execution":               earlyExecution,
@@ -166,7 +166,7 @@ func (h *callHandler) CreateCallOutgoing(
 		af.ID,
 		uuid.Nil,
 		call.TypeFlow,
-		groupdialID,
+		groupcallID,
 
 		s,
 		&destination,
@@ -269,8 +269,8 @@ func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, err
 	}
 }
 
-// createCallsOutgoingGroupdial creates an outgoing call to the endpoint type destination
-func (h *callHandler) createCallsOutgoingGroupdial(
+// createCallsOutgoingGroupcall creates an outgoing call to the endpoint type destination
+func (h *callHandler) createCallsOutgoingGroupcall(
 	ctx context.Context,
 	customerID uuid.UUID,
 	flowID uuid.UUID,
@@ -279,7 +279,7 @@ func (h *callHandler) createCallsOutgoingGroupdial(
 	destination commonaddress.Address,
 ) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "createCallsOutgoingGroupdial",
+		"func":           "createCallsOutgoingGroupcall",
 		"customer_id":    customerID,
 		"flow_id":        flowID,
 		"master_call_id": masterCallID,
@@ -307,23 +307,23 @@ func (h *callHandler) createCallsOutgoingGroupdial(
 		callIDs = append(callIDs, callID)
 	}
 
-	// create groupdial
-	gd, err := h.createGroupdial(ctx, customerID, &destination, callIDs, groupdial.RingMethodRingAll, groupdial.AnswerMethodHangupOthers)
+	// create groupcall
+	gd, err := h.createGroupcall(ctx, customerID, &destination, callIDs, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers)
 	if err != nil {
-		log.Errorf("Could not create groupdial. err: %v", err)
-		return nil, errors.Wrap(err, "Could not create groupdial.")
+		log.Errorf("Could not create groupcall. err: %v", err)
+		return nil, errors.Wrap(err, "Could not create groupcall.")
 	}
-	log.WithField("groupdial", gd).Debugf("Created groupdial. groupdial_id: %s", gd.ID)
+	log.WithField("groupcall", gd).Debugf("Created groupcall. groupcall_id: %s", gd.ID)
 
 	// create outgoing
 	res := []*call.Call{}
 	switch gd.RingMethod {
-	case groupdial.RingMethodRingAll:
+	case groupcall.RingMethodRingAll:
 		for i, dialDestination := range dialDestinations {
 			log.WithField("dial_destination", dialDestination).Debugf("Creating a new outgoing call. call_id: %s, target: %s", gd.CallIDs[i], dialDestination.Target)
 
-			// we don't allow to earlyExecution(earlymedia) for groupdial.
-			// this is very obvious. because if we allow the early media for groupdial, it will mess the media handle.
+			// we don't allow to earlyExecution(earlymedia) for groupcall.
+			// this is very obvious. because if we allow the early media for groupcall, it will mess the media handle.
 			// and we can not set the execute next master on hangup flag in the same reason.
 			tmp, err := h.CreateCallOutgoing(ctx, gd.CallIDs[i], customerID, flowID, uuid.Nil, masterCallID, gd.ID, source, *dialDestination, false, false)
 			if err != nil {
@@ -333,7 +333,7 @@ func (h *callHandler) createCallsOutgoingGroupdial(
 			res = append(res, tmp)
 		}
 
-	case groupdial.RingMethodLinear:
+	case groupcall.RingMethodLinear:
 		log.Errorf("Not imeplemented yet.")
 		return nil, fmt.Errorf("not implemented yet")
 

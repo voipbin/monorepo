@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
@@ -52,8 +52,8 @@ type CacheHandler interface {
 	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	ConfbridgeSet(ctx context.Context, data *confbridge.Confbridge) error
 
-	GroupdialGet(ctx context.Context, id uuid.UUID) (*groupdial.Groupdial, error)
-	GroupdialSet(ctx context.Context, data *groupdial.Groupdial) error
+	GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+	GroupcallSet(ctx context.Context, data *groupcall.Groupcall) error
 
 	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
 	NumberSetByNumber(ctx context.Context, numb *number.Number) error

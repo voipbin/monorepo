@@ -30,7 +30,7 @@ func (h *callHandler) Create(
 
 	callType call.Type,
 
-	groupdialID uuid.UUID,
+	groupcallID uuid.UUID,
 
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
@@ -72,7 +72,7 @@ func (h *callHandler) Create(
 		ChainedCallIDs: []uuid.UUID{},
 		RecordingID:    uuid.Nil,
 		RecordingIDs:   []uuid.UUID{},
-		GroupdialID:    groupdialID,
+		GroupcallID:    groupcallID,
 
 		ExternalMediaID: uuid.Nil,
 

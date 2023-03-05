@@ -1,31 +1,31 @@
-package callhandler
+package groupcallhandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 )
 
-// createGroupcall creates a new group dial.
-func (h *callHandler) createGroupcall(
+// Create creates a new groupcall.
+func (h *groupcallHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
-	destination *commonaddress.Address,
+	source *commonaddress.Address,
+	destinations []commonaddress.Address,
 	callIDs []uuid.UUID,
 	ringMethod groupcall.RingMethod,
 	answerMethod groupcall.AnswerMethod,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "createGroupcall",
+		"func":          "Create",
 		"customer_id":   customerID,
-		"destination":   destination,
+		"source":        source,
+		"destinations":  destinations,
 		"call_ids":      callIDs,
 		"ring_method":   ringMethod,
 		"answer_method": answerMethod,
@@ -34,12 +34,13 @@ func (h *callHandler) createGroupcall(
 	id := h.utilHandler.CreateUUID()
 	log = log.WithField("groupcall_id", id)
 
-	// create group dial
+	// create groupcall
 	tmp := &groupcall.Groupcall{
 		ID:         id,
 		CustomerID: customerID,
 
-		Destination:  destination,
+		Source:       source,
+		Destinations: destinations,
 		CallIDs:      callIDs,
 		RingMethod:   ringMethod,
 		AnswerMethod: answerMethod,
@@ -61,22 +62,22 @@ func (h *callHandler) createGroupcall(
 	return res, nil
 }
 
-// getGroupcall returns a groupcall of the given id.
-func (h *callHandler) getGroupcall(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
+// Get returns a groupcall of the given id.
+func (h *groupcallHandler) Get(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	return h.db.GroupcallGet(ctx, id)
 }
 
-// updateGroupcallAnswerCallID updates the answer call id.
-func (h *callHandler) updateGroupcallAnswerCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) (*groupcall.Groupcall, error) {
+// UpdateAnswerCallID updates the answer call id.
+func (h *groupcallHandler) UpdateAnswerCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "updateGroupcallAnswerCallID",
+		"func":         "UpdateAnswerCallID",
 		"groupcall_id": id,
 		"call_id":      callID,
 	})
 
-	gd, err := h.getGroupcall(ctx, id)
+	gd, err := h.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get group dial info. err: %v", err)
+		log.Errorf("Could not get groupcall info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get group dial info.")
 	}
 
@@ -94,45 +95,4 @@ func (h *callHandler) updateGroupcallAnswerCallID(ctx context.Context, id uuid.U
 	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, res)
 
 	return res, nil
-}
-
-// answerGroupcall handles the answered group dial.
-func (h *callHandler) answerGroupcall(ctx context.Context, groupcallID uuid.UUID, answercallID uuid.UUID) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "answerGroupcall",
-		"groupcall_id":   groupcallID,
-		"answer_call_id": answercallID,
-	})
-
-	// get groupcall
-	gd, err := h.getGroupcall(ctx, groupcallID)
-	if err != nil {
-		log.Errorf("Could not get group dial info. err: %v", err)
-		return errors.Wrap(err, "Could not get group dial info.")
-	}
-
-	if gd.AnswerMethod != groupcall.AnswerMethodHangupOthers {
-		log.Debugf("Unsupported answer method. answer_method: %s", gd.AnswerMethod)
-		return fmt.Errorf("unsupported answer method")
-	}
-
-	// update answer call id
-	tmp, err := h.updateGroupcallAnswerCallID(ctx, gd.ID, answercallID)
-	if err != nil {
-		log.Errorf("Could not update the answer call id. err: %v", err)
-		return errors.Wrap(err, "Could not update the answer call id.")
-	}
-
-	for _, callID := range tmp.CallIDs {
-		if callID == answercallID {
-			continue
-		}
-
-		log.Debugf("Hanging up the groupcall calls. call_id: %s", callID)
-		go func(id uuid.UUID) {
-			_, _ = h.HangingUp(ctx, id, call.HangupReasonNormal)
-		}(callID)
-	}
-
-	return nil
 }
