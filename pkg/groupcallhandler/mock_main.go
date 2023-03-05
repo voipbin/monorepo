@@ -5,7 +5,13 @@
 package groupcallhandler
 
 import (
+	context "context"
+	reflect "reflect"
+
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
 // MockGroupcallHandler is a mock of GroupcallHandler interface.
@@ -29,4 +35,19 @@ func NewMockGroupcallHandler(ctrl *gomock.Controller) *MockGroupcallHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockGroupcallHandler) EXPECT() *MockGroupcallHandlerMockRecorder {
 	return m.recorder
+}
+
+// Start mocks base method.
+func (m *MockGroupcallHandler) Start(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, flowID, masterCallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod, connect bool) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start", ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Start indicates an expected call of Start.
+func (mr *MockGroupcallHandlerMockRecorder) Start(ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockGroupcallHandler)(nil).Start), ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect)
 }

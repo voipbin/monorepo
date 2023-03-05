@@ -10,7 +10,6 @@ type Groupcall struct {
 	ID           uuid.UUID               `json:"id"`
 	CustomerID   uuid.UUID               `json:"customer_id"`
 	Source       *commonaddress.Address  `json:"source"`
-	Destination  *commonaddress.Address  `json:"destination"`
 	Destinations []commonaddress.Address `json:"destinations"`
 	RingMethod   RingMethod              `json:"ring_method"`
 	AnswerMethod AnswerMethod            `json:"answer_method"`

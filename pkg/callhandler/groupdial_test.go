@@ -52,9 +52,11 @@ func Test_createGroupcall(t *testing.T) {
 			expectGroupcall: &groupcall.Groupcall{
 				ID:         uuid.FromStringOrNil("f57b4d16-b856-11ed-9136-27f0e7fd3764"),
 				CustomerID: uuid.FromStringOrNil("f509a864-b856-11ed-bb8e-af34cf391b5c"),
-				Destination: &commonaddress.Address{
-					Type:   commonaddress.TypeEndpoint,
-					Target: "test-exten@test-domain",
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeEndpoint,
+						Target: "test-exten@test-domain",
+					},
 				},
 				RingMethod:   groupcall.RingMethodRingAll,
 				AnswerMethod: groupcall.AnswerMethodHangupOthers,
