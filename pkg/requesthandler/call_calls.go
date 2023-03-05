@@ -109,18 +109,18 @@ func (r *requestHandler) CallV1CallsCreate(
 	source *commonaddress.Address,
 	destinations []commonaddress.Address,
 	ealryExecution bool,
-	executeNextMasterOnHangup bool,
+	connect bool,
 ) ([]cmcall.Call, error) {
 	uri := "/v1/calls"
 
 	data := &cmrequest.V1DataCallsPost{
-		CustomerID:                customerID,
-		FlowID:                    flowID,
-		MasterCallID:              masterCallID,
-		Source:                    *source,
-		Destinations:              destinations,
-		EarlyExecution:            ealryExecution,
-		ExecuteNextMasterOnHangup: executeNextMasterOnHangup,
+		CustomerID:     customerID,
+		FlowID:         flowID,
+		MasterCallID:   masterCallID,
+		Source:         *source,
+		Destinations:   destinations,
+		EarlyExecution: ealryExecution,
+		Connect:        connect,
 	}
 
 	m, err := json.Marshal(data)
@@ -160,19 +160,19 @@ func (r *requestHandler) CallV1CallCreateWithID(
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 	earlyExecution bool,
-	executeNextMasterOnHangup bool,
+	connect bool,
 ) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
 	data := &cmrequest.V1DataCallsIDPost{
-		CustomerID:                customerID,
-		FlowID:                    flowID,
-		ActiveflosID:              activeflowID,
-		MasterCallID:              masterCallID,
-		Source:                    *source,
-		Destination:               *destination,
-		EarlyExecution:            earlyExecution,
-		ExecuteNextMasterOnHangup: executeNextMasterOnHangup,
+		CustomerID:     customerID,
+		FlowID:         flowID,
+		ActiveflosID:   activeflowID,
+		MasterCallID:   masterCallID,
+		Source:         *source,
+		Destination:    *destination,
+		EarlyExecution: earlyExecution,
+		Connect:        connect,
 	}
 
 	m, err := json.Marshal(data)
