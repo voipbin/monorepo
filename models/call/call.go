@@ -33,7 +33,7 @@ type Call struct {
 	RecordingID     uuid.UUID   `json:"recording_id"`      // recording id(current)
 	RecordingIDs    []uuid.UUID `json:"recording_ids"`     // recording ids
 	ExternalMediaID uuid.UUID   `json:"external_media_id"` // external media id(current)
-	GroupdialID     uuid.UUID   `json:"groupdial_id"`      // groupdial id
+	GroupcallID     uuid.UUID   `json:"groupcall_id"`      // groupcall id
 
 	// source/destination
 	Source      commonaddress.Address `json:"source"`

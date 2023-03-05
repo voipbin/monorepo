@@ -23,7 +23,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -92,7 +92,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 				Status:      call.StatusDialing,
 				Direction:   call.DirectionOutgoing,
-				GroupdialID: uuid.Nil,
+				GroupcallID: uuid.Nil,
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeSIP,
 					Target:     "testsrc@test.com",
@@ -266,7 +266,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 					call.DataTypeExecuteNextMasterOnHangup: "true",
 				},
 				Direction:   call.DirectionOutgoing,
-				GroupdialID: uuid.Nil,
+				GroupcallID: uuid.Nil,
 				Source: commonaddress.Address{
 					Type:       commonaddress.TypeTel,
 					Target:     "+99999888",
@@ -366,7 +366,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 	}
 }
 
-func Test_createCallsOutgoingGroupdial_endpoint(t *testing.T) {
+func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -383,7 +383,7 @@ func Test_createCallsOutgoingGroupdial_endpoint(t *testing.T) {
 		responseUUIDs      []uuid.UUID
 		responseCalls      []*call.Call
 
-		expectGroupDial *groupdial.Groupdial
+		expectGroupcall *groupcall.Groupcall
 	}{
 		{
 			name: "normal",
@@ -434,15 +434,15 @@ func Test_createCallsOutgoingGroupdial_endpoint(t *testing.T) {
 				},
 			},
 
-			expectGroupDial: &groupdial.Groupdial{
+			expectGroupcall: &groupcall.Groupcall{
 				ID:         uuid.FromStringOrNil("08701bca-b5e8-11ed-9257-4bee6cbc72bf"),
 				CustomerID: uuid.FromStringOrNil("e9a6c252-b5c4-11ed-8431-0f528880d39a"),
 				Destination: &commonaddress.Address{
 					Type:   commonaddress.TypeEndpoint,
 					Target: "test-exten@test-domain",
 				},
-				RingMethod:   groupdial.RingMethodRingAll,
-				AnswerMethod: groupdial.AnswerMethodHangupOthers,
+				RingMethod:   groupcall.RingMethodRingAll,
+				AnswerMethod: groupcall.AnswerMethodHangupOthers,
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("a62ac2ae-b5eb-11ed-9607-fff199830675"),
 					uuid.FromStringOrNil("a65415be-b5eb-11ed-86f5-83763d30dbf1"),
@@ -479,11 +479,11 @@ func Test_createCallsOutgoingGroupdial_endpoint(t *testing.T) {
 				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDs[i])
 			}
 
-			// createGroupdial()
+			// createGroupcall()
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDID)
-			mockDB.EXPECT().GroupdialCreate(ctx, tt.expectGroupDial).Return(nil)
-			mockDB.EXPECT().GroupdialGet(ctx, tt.expectGroupDial.ID).Return(tt.expectGroupDial, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupdial.EventTypeGroupdialCreated, tt.expectGroupDial)
+			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.expectGroupcall.ID).Return(tt.expectGroupcall, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallCreated, tt.expectGroupcall)
 
 			for i := range tt.responseContacts {
 				// CreateCallOutgoing()
@@ -498,7 +498,7 @@ func Test_createCallsOutgoingGroupdial_endpoint(t *testing.T) {
 				mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, tt.responseCalls[i].ChannelID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 			}
 
-			resCalls, err := h.createCallsOutgoingGroupdial(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
+			resCalls, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

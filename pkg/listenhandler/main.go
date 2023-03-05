@@ -81,6 +81,10 @@ var (
 	regV1ExternalMedias   = regexp.MustCompile("/v1/external-medias$")
 	regV1ExternalMediasID = regexp.MustCompile("/v1/external-medias/" + regUUID + "$")
 
+	// groupcalls
+	// regV1Groupcalls         = regexp.MustCompile("/v1/groupcalls$")
+	// regV1GroupcallsIDHangup = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup$")
+
 	// recordings
 	regV1RecordingsGet    = regexp.MustCompile(`/v1/recordings\?`)
 	regV1Recordings       = regexp.MustCompile(`/v1/recordings$`)

@@ -18,7 +18,7 @@ import (
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
-	groupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -909,47 +909,47 @@ func (mr *MockDBHandlerMockRecorder) ExternalMediaSet(ctx, data interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaSet", reflect.TypeOf((*MockDBHandler)(nil).ExternalMediaSet), ctx, data)
 }
 
-// GroupdialCreate mocks base method.
-func (m *MockDBHandler) GroupdialCreate(ctx context.Context, data *groupdial.Groupdial) error {
+// GroupcallCreate mocks base method.
+func (m *MockDBHandler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupdialCreate", ctx, data)
+	ret := m.ctrl.Call(m, "GroupcallCreate", ctx, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GroupdialCreate indicates an expected call of GroupdialCreate.
-func (mr *MockDBHandlerMockRecorder) GroupdialCreate(ctx, data interface{}) *gomock.Call {
+// GroupcallCreate indicates an expected call of GroupcallCreate.
+func (mr *MockDBHandlerMockRecorder) GroupcallCreate(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupdialCreate", reflect.TypeOf((*MockDBHandler)(nil).GroupdialCreate), ctx, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallCreate", reflect.TypeOf((*MockDBHandler)(nil).GroupcallCreate), ctx, data)
 }
 
-// GroupdialGet mocks base method.
-func (m *MockDBHandler) GroupdialGet(ctx context.Context, id uuid.UUID) (*groupdial.Groupdial, error) {
+// GroupcallGet mocks base method.
+func (m *MockDBHandler) GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupdialGet", ctx, id)
-	ret0, _ := ret[0].(*groupdial.Groupdial)
+	ret := m.ctrl.Call(m, "GroupcallGet", ctx, id)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GroupdialGet indicates an expected call of GroupdialGet.
-func (mr *MockDBHandlerMockRecorder) GroupdialGet(ctx, id interface{}) *gomock.Call {
+// GroupcallGet indicates an expected call of GroupcallGet.
+func (mr *MockDBHandlerMockRecorder) GroupcallGet(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupdialGet", reflect.TypeOf((*MockDBHandler)(nil).GroupdialGet), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGet", reflect.TypeOf((*MockDBHandler)(nil).GroupcallGet), ctx, id)
 }
 
-// GroupdialUpdate mocks base method.
-func (m *MockDBHandler) GroupdialUpdate(ctx context.Context, data *groupdial.Groupdial) error {
+// GroupcallUpdate mocks base method.
+func (m *MockDBHandler) GroupcallUpdate(ctx context.Context, data *groupcall.Groupcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupdialUpdate", ctx, data)
+	ret := m.ctrl.Call(m, "GroupcallUpdate", ctx, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GroupdialUpdate indicates an expected call of GroupdialUpdate.
-func (mr *MockDBHandlerMockRecorder) GroupdialUpdate(ctx, data interface{}) *gomock.Call {
+// GroupcallUpdate indicates an expected call of GroupcallUpdate.
+func (mr *MockDBHandlerMockRecorder) GroupcallUpdate(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupdialUpdate", reflect.TypeOf((*MockDBHandler)(nil).GroupdialUpdate), ctx, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallUpdate", reflect.TypeOf((*MockDBHandler)(nil).GroupcallUpdate), ctx, data)
 }
 
 // RecordingCreate mocks base method.

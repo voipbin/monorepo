@@ -14,7 +14,7 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
@@ -274,7 +274,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 	}
 }
 
-func Test_UpdateStatusProgressing_answerGroupDial(t *testing.T) {
+func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -282,7 +282,7 @@ func Test_UpdateStatusProgressing_answerGroupDial(t *testing.T) {
 		call    *call.Call
 
 		responseCall      *call.Call
-		responseGroupDial *groupdial.Groupdial
+		responseGroupcall *groupcall.Groupcall
 	}{
 		{
 			"normal",
@@ -293,17 +293,17 @@ func Test_UpdateStatusProgressing_answerGroupDial(t *testing.T) {
 				ID:          uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
 				Status:      call.StatusDialing,
 				Direction:   call.DirectionOutgoing,
-				GroupdialID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
+				GroupcallID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
 			},
 			&call.Call{
 				ID:          uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
 				Status:      call.StatusProgressing,
 				Direction:   call.DirectionOutgoing,
-				GroupdialID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
+				GroupcallID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
 			},
-			&groupdial.Groupdial{
+			&groupcall.Groupcall{
 				ID:           uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
-				AnswerMethod: groupdial.AnswerMethodHangupOthers,
+				AnswerMethod: groupcall.AnswerMethodHangupOthers,
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
 					uuid.FromStringOrNil("c6cc7416-19c5-48bf-ab93-d063681c9994"),
@@ -337,15 +337,15 @@ func Test_UpdateStatusProgressing_answerGroupDial(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
-			mockDB.EXPECT().GroupdialGet(ctx, tt.responseCall.GroupdialID).Return(tt.responseGroupDial, nil)
-			mockDB.EXPECT().GroupdialGet(ctx, tt.responseCall.GroupdialID).Return(tt.responseGroupDial, nil)
-			tmpGroupDial := *tt.responseGroupDial
-			tmpGroupDial.AnswerCallID = tt.call.ID
-			mockDB.EXPECT().GroupdialUpdate(ctx, &tmpGroupDial).Return(nil)
-			mockDB.EXPECT().GroupdialGet(ctx, tt.responseCall.GroupdialID).Return(&tmpGroupDial, nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.responseCall.GroupcallID).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.responseCall.GroupcallID).Return(tt.responseGroupcall, nil)
+			tmpGroupcall := *tt.responseGroupcall
+			tmpGroupcall.AnswerCallID = tt.call.ID
+			mockDB.EXPECT().GroupcallUpdate(ctx, &tmpGroupcall).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.responseCall.GroupcallID).Return(&tmpGroupcall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
 
-			for _, callID := range tmpGroupDial.CallIDs {
+			for _, callID := range tmpGroupcall.CallIDs {
 				if callID == tt.call.ID {
 					continue
 				}
