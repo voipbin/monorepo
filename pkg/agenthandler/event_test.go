@@ -8,29 +8,31 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
-	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 )
 
-func Test_EventGroupdialCreated(t *testing.T) {
+func Test_EventGroupcallCreated(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		groupdial *cmgroupdial.Groupdial
+		groupcall *cmgroupcall.Groupcall
 
 		responseAgent *agent.Agent
 	}{
 		{
 			name: "normal",
 
-			groupdial: &cmgroupdial.Groupdial{
+			groupcall: &cmgroupcall.Groupcall{
 				ID: uuid.FromStringOrNil("8a7bb5d0-f84f-4568-917c-14961a8a7141"),
-				Destination: &commonaddress.Address{
-					Type:   commonaddress.TypeAgent,
-					Target: "0de675c4-d1e4-498c-81f7-01bd8ee9e656",
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeAgent,
+						Target: "0de675c4-d1e4-498c-81f7-01bd8ee9e656",
+					},
 				},
 			},
 
@@ -57,34 +59,39 @@ func Test_EventGroupdialCreated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
-			mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusRinging).Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
+			for _, destination := range tt.groupcall.Destinations {
+				agentID := uuid.FromStringOrNil(destination.Target)
+				mockDB.EXPECT().AgentGet(ctx, agentID).Return(tt.responseAgent, nil)
+				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusRinging).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
+			}
 
-			if err := h.EventGroupdialCreated(ctx, tt.groupdial); err != nil {
+			if err := h.EventGroupcallCreated(ctx, tt.groupcall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_EventGroupdialAnswered(t *testing.T) {
+func Test_EventGroupcallAnswered(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		groupdial     *cmgroupdial.Groupdial
+		groupcall     *cmgroupcall.Groupcall
 		responseAgent *agent.Agent
 	}{
 		{
 			name: "normal",
 
-			groupdial: &cmgroupdial.Groupdial{
+			groupcall: &cmgroupcall.Groupcall{
 				ID: uuid.FromStringOrNil("59e5b918-ac3e-4381-9894-f611cadeab93"),
-				Destination: &commonaddress.Address{
-					Type:   commonaddress.TypeAgent,
-					Target: "e3eae3d0-8e4f-46a1-b6bd-5d36feae4749",
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeAgent,
+						Target: "e3eae3d0-8e4f-46a1-b6bd-5d36feae4749",
+					},
 				},
 			},
 			responseAgent: &agent.Agent{
@@ -110,12 +117,15 @@ func Test_EventGroupdialAnswered(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
-			mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusBusy).Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
+			for _, destination := range tt.groupcall.Destinations {
+				agentID := uuid.FromStringOrNil(destination.Target)
+				mockDB.EXPECT().AgentGet(ctx, agentID).Return(tt.responseAgent, nil)
+				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusBusy).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
+			}
 
-			if err := h.EventGroupdialAnswered(ctx, tt.groupdial); err != nil {
+			if err := h.EventGroupcallAnswered(ctx, tt.groupcall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

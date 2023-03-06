@@ -11,7 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	groupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
@@ -68,32 +68,32 @@ func (mr *MockAgentHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAgentHandler)(nil).Delete), ctx, id)
 }
 
-// EventGroupdialAnswered mocks base method.
-func (m *MockAgentHandler) EventGroupdialAnswered(ctx context.Context, groupdial *groupdial.Groupdial) error {
+// EventGroupcallAnswered mocks base method.
+func (m *MockAgentHandler) EventGroupcallAnswered(ctx context.Context, groupcall *groupcall.Groupcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventGroupdialAnswered", ctx, groupdial)
+	ret := m.ctrl.Call(m, "EventGroupcallAnswered", ctx, groupcall)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// EventGroupdialAnswered indicates an expected call of EventGroupdialAnswered.
-func (mr *MockAgentHandlerMockRecorder) EventGroupdialAnswered(ctx, groupdial interface{}) *gomock.Call {
+// EventGroupcallAnswered indicates an expected call of EventGroupcallAnswered.
+func (mr *MockAgentHandlerMockRecorder) EventGroupcallAnswered(ctx, groupcall interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupdialAnswered", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupdialAnswered), ctx, groupdial)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallAnswered", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallAnswered), ctx, groupcall)
 }
 
-// EventGroupdialCreated mocks base method.
-func (m *MockAgentHandler) EventGroupdialCreated(ctx context.Context, groupdial *groupdial.Groupdial) error {
+// EventGroupcallCreated mocks base method.
+func (m *MockAgentHandler) EventGroupcallCreated(ctx context.Context, groupcall *groupcall.Groupcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventGroupdialCreated", ctx, groupdial)
+	ret := m.ctrl.Call(m, "EventGroupcallCreated", ctx, groupcall)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// EventGroupdialCreated indicates an expected call of EventGroupdialCreated.
-func (mr *MockAgentHandlerMockRecorder) EventGroupdialCreated(ctx, groupdial interface{}) *gomock.Call {
+// EventGroupcallCreated indicates an expected call of EventGroupcallCreated.
+func (mr *MockAgentHandlerMockRecorder) EventGroupcallCreated(ctx, groupcall interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupdialCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupdialCreated), ctx, groupdial)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallCreated), ctx, groupcall)
 }
 
 // Get mocks base method.

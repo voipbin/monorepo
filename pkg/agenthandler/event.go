@@ -3,9 +3,7 @@ package agenthandler
 import (
 	"context"
 
-	"github.com/pkg/errors"
-
-	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"github.com/gofrs/uuid"
@@ -13,75 +11,79 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 )
 
-// EventGroupdialCreated handles the call-manager's groupdial_created event
-func (h *agentHandler) EventGroupdialCreated(ctx context.Context, groupdial *cmgroupdial.Groupdial) error {
+// EventGroupcallCreated handles the call-manager's groupcall_created event
+func (h *agentHandler) EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "EventGroupdialCreated",
-		"groupdial": groupdial,
+		"func":      "EventGroupcallCreated",
+		"groupcall": groupcall,
 	})
 
-	if groupdial.Destination.Type != commonaddress.TypeAgent {
-		// nothing to do
-		return nil
-	}
+	for _, destination := range groupcall.Destinations {
+		if destination.Type != commonaddress.TypeAgent {
+			// nothing to do
+			continue
+		}
 
-	id := uuid.FromStringOrNil(groupdial.Destination.Target)
-	if id == uuid.Nil {
-		log.Errorf("Could not parse the agent id. target: %s", groupdial.Destination.Target)
-		return nil
-	}
+		id := uuid.FromStringOrNil(destination.Target)
+		if id == uuid.Nil {
+			log.Errorf("Could not parse the agent id. target: %s", destination.Target)
+			continue
+		}
 
-	ag, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get agent. err: %v", err)
-		return errors.Wrap(err, "Could not get agent.")
-	}
+		ag, err := h.Get(ctx, id)
+		if err != nil {
+			log.Errorf("Could not get agent. err: %v", err)
+			continue
+		}
 
-	if ag.Status != agent.StatusAvailable {
-		// nothing to do.
-		return nil
-	}
+		if ag.Status != agent.StatusAvailable {
+			// nothing to do.
+			continue
+		}
 
-	ag, err = h.UpdateStatus(ctx, ag.ID, agent.StatusRinging)
-	if err != nil {
-		log.Errorf("Could not update agent status. err: %v", err)
-		return errors.Wrap(err, "Could not update agent status.")
+		ag, err = h.UpdateStatus(ctx, ag.ID, agent.StatusRinging)
+		if err != nil {
+			log.Errorf("Could not update agent status. err: %v", err)
+			continue
+		}
+		log.WithField("agent", ag).Debugf("Updated agent status to the ringing. agent_id: %s", ag.ID)
 	}
-	log.WithField("agent", ag).Debugf("Updated agent status to the ringing. agent_id: %s", ag.ID)
 
 	return nil
 }
 
-// EventGroupdialAnswered handles the call-manager's groupdial_answered event
-func (h *agentHandler) EventGroupdialAnswered(ctx context.Context, groupdial *cmgroupdial.Groupdial) error {
+// EventGroupcallAnswered handles the call-manager's groupcall_answered event
+func (h *agentHandler) EventGroupcallAnswered(ctx context.Context, groupcall *cmgroupcall.Groupcall) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "EventGroupdialAnswered",
-		"groupdial": groupdial,
+		"groupcall": groupcall,
 	})
 
-	if groupdial.Destination.Type != commonaddress.TypeAgent {
-		// nothing to do
-		return nil
-	}
+	for _, destination := range groupcall.Destinations {
+		if destination.Type != commonaddress.TypeAgent {
+			// nothing to do
+			continue
+		}
 
-	id := uuid.FromStringOrNil(groupdial.Destination.Target)
-	if id == uuid.Nil {
-		log.Errorf("Could not parse the agent id. target: %s", groupdial.Destination.Target)
-		return nil
-	}
+		id := uuid.FromStringOrNil(destination.Target)
+		if id == uuid.Nil {
+			log.Errorf("Could not parse the agent id. target: %s", destination.Target)
+			continue
+		}
 
-	ag, err := h.Get(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get agent. err: %v", err)
-		return errors.Wrap(err, "Could not get agent.")
-	}
+		ag, err := h.Get(ctx, id)
+		if err != nil {
+			log.Errorf("Could not get agent. err: %v", err)
+			continue
+		}
 
-	ag, err = h.UpdateStatus(ctx, ag.ID, agent.StatusBusy)
-	if err != nil {
-		log.Errorf("Could not update agent status. err: %v", err)
-		return errors.Wrap(err, "Could not update agent status.")
+		ag, err = h.UpdateStatus(ctx, ag.ID, agent.StatusBusy)
+		if err != nil {
+			log.Errorf("Could not update agent status. err: %v", err)
+			continue
+		}
+		log.WithField("agent", ag).Debugf("Updated agent status to the busy. agent_id: %s", ag.ID)
 	}
-	log.WithField("agent", ag).Debugf("Updated agent status to the busy. agent_id: %s", ag.ID)
 
 	return nil
 }

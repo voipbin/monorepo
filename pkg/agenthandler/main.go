@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -38,8 +38,8 @@ type AgentHandler interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
 
-	EventGroupdialCreated(ctx context.Context, groupdial *cmgroupdial.Groupdial) error
-	EventGroupdialAnswered(ctx context.Context, groupdial *cmgroupdial.Groupdial) error
+	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
+	EventGroupcallAnswered(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 }
 
 type agentHandler struct {

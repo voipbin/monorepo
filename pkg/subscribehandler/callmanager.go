@@ -6,47 +6,47 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-// processEventCMGroupdialCreated handles the call-manager's groupdial_created event.
-func (h *subscribeHandler) processEventCMGroupdialCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
+// processEventCMGroupcallCreated handles the call-manager's groupcall_created event.
+func (h *subscribeHandler) processEventCMGroupcallCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMGroupdialCreated",
+		"func":  "processEventCMGroupcallCreated",
 		"event": m,
 	})
 
-	groupdial := &cmgroupdial.Groupdial{}
-	if err := json.Unmarshal([]byte(m.Data), &groupdial); err != nil {
+	groupcall := &cmgroupcall.Groupcall{}
+	if err := json.Unmarshal([]byte(m.Data), &groupcall); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
 	}
 
-	if errEvent := h.agentHandler.EventGroupdialCreated(ctx, groupdial); errEvent != nil {
-		log.Errorf("Could not handle the groupdial created event. err: %v", errEvent)
-		return errors.Wrap(errEvent, "Could not handle the groupdial created event.")
+	if errEvent := h.agentHandler.EventGroupcallCreated(ctx, groupcall); errEvent != nil {
+		log.Errorf("Could not handle the groupcall created event. err: %v", errEvent)
+		return errors.Wrap(errEvent, "Could not handle the groupcall created event.")
 	}
 
 	return nil
 }
 
-// processEventCMGroupdialAnswered handles the call-manager's groupdial_answered event.
-func (h *subscribeHandler) processEventCMGroupdialAnswered(ctx context.Context, m *rabbitmqhandler.Event) error {
+// processEventCMGroupcallAnswered handles the call-manager's groupcall_answered event.
+func (h *subscribeHandler) processEventCMGroupcallAnswered(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMGroupdialAnswered",
+		"func":  "processEventCMGroupcallAnswered",
 		"event": m,
 	})
 
-	groupdial := &cmgroupdial.Groupdial{}
-	if err := json.Unmarshal([]byte(m.Data), &groupdial); err != nil {
+	groupcall := &cmgroupcall.Groupcall{}
+	if err := json.Unmarshal([]byte(m.Data), &groupcall); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
 	}
 
-	if errEvent := h.agentHandler.EventGroupdialAnswered(ctx, groupdial); errEvent != nil {
-		log.Errorf("Could not handle the groupdial answered event. err: %v", errEvent)
-		return errors.Wrap(errEvent, "Could not handle the groupdial answered event.")
+	if errEvent := h.agentHandler.EventGroupcallAnswered(ctx, groupcall); errEvent != nil {
+		log.Errorf("Could not handle the groupcall answered event. err: %v", errEvent)
+		return errors.Wrap(errEvent, "Could not handle the groupcall answered event.")
 	}
 
 	return nil
