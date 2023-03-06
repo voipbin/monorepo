@@ -10,7 +10,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
@@ -129,12 +129,12 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	//// call-manager
 
-	// groupdial
-	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupdial.EventTypeGroupdialCreated)):
-		err = h.processEventCMGroupdialCreated(ctx, m)
+	// groupcall
+	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallCreated)):
+		err = h.processEventCMGroupcallCreated(ctx, m)
 
-	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupdial.EventTypeGroupdialAnswered)):
-		err = h.processEventCMGroupdialAnswered(ctx, m)
+	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallAnswered)):
+		err = h.processEventCMGroupcallAnswered(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

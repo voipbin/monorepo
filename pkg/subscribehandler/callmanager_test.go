@@ -6,29 +6,29 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
-	cmgroupdial "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupdial"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_processEvent_processEventCMGroupdialCreated(t *testing.T) {
+func Test_processEvent_processEventCMGroupcallCreated(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		event *rabbitmqhandler.Event
 
-		expectGroupdial *cmgroupdial.Groupdial
+		expectGroupcall *cmgroupcall.Groupcall
 	}{
 		{
 			name: "normal",
 
 			event: &rabbitmqhandler.Event{
 				Publisher: "call-manager",
-				Type:      cmgroupdial.EventTypeGroupdialCreated,
+				Type:      cmgroupcall.EventTypeGroupcallCreated,
 				DataType:  "application/json",
 				Data:      []byte(`{"id":"1a7889cc-8493-4bad-90ee-b80f944349cb"}`),
 			},
 
-			expectGroupdial: &cmgroupdial.Groupdial{
+			expectGroupcall: &cmgroupcall.Groupcall{
 				ID: uuid.FromStringOrNil("1a7889cc-8493-4bad-90ee-b80f944349cb"),
 			},
 		},
@@ -47,32 +47,32 @@ func Test_processEvent_processEventCMGroupdialCreated(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().EventGroupdialCreated(gomock.Any(), tt.expectGroupdial).Return(nil)
+			mockAgent.EXPECT().EventGroupcallCreated(gomock.Any(), tt.expectGroupcall).Return(nil)
 
 			h.processEvent(tt.event)
 		})
 	}
 }
 
-func Test_processEvent_processEventCMGroupdialAnswered(t *testing.T) {
+func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		event *rabbitmqhandler.Event
 
-		expectGroupdial *cmgroupdial.Groupdial
+		expectGroupcall *cmgroupcall.Groupcall
 	}{
 		{
 			name: "normal",
 
 			event: &rabbitmqhandler.Event{
 				Publisher: "call-manager",
-				Type:      cmgroupdial.EventTypeGroupdialAnswered,
+				Type:      cmgroupcall.EventTypeGroupcallAnswered,
 				DataType:  "application/json",
 				Data:      []byte(`{"id":"1a0d744a-c0c2-4a05-8a72-a508a62ce410"}`),
 			},
 
-			expectGroupdial: &cmgroupdial.Groupdial{
+			expectGroupcall: &cmgroupcall.Groupcall{
 				ID: uuid.FromStringOrNil("1a0d744a-c0c2-4a05-8a72-a508a62ce410"),
 			},
 		},
@@ -91,7 +91,7 @@ func Test_processEvent_processEventCMGroupdialAnswered(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().EventGroupdialAnswered(gomock.Any(), tt.expectGroupdial).Return(nil)
+			mockAgent.EXPECT().EventGroupcallAnswered(gomock.Any(), tt.expectGroupcall).Return(nil)
 
 			h.processEvent(tt.event)
 		})
