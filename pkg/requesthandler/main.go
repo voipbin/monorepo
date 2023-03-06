@@ -373,6 +373,7 @@ type RequestHandler interface {
 		masterCallID uuid.UUID,
 		source *commonaddress.Address,
 		destination *commonaddress.Address,
+		groupcallID uuid.UUID,
 		ealryExecution bool,
 		executeNextMasterOnHangup bool,
 	) (*cmcall.Call, error)

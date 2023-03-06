@@ -770,18 +770,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallAddChainedCall(ctx, callID, 
 }
 
 // CallV1CallCreateWithID mocks base method.
-func (m *MockRequestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, ealryExecution, executeNextMasterOnHangup bool) (*call.Call, error) {
+func (m *MockRequestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, groupcallID uuid.UUID, ealryExecution, executeNextMasterOnHangup bool) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution, executeNextMasterOnHangup)
+	ret := m.ctrl.Call(m, "CallV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, executeNextMasterOnHangup)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1CallCreateWithID indicates an expected call of CallV1CallCreateWithID.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallCreateWithID(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution, executeNextMasterOnHangup interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallCreateWithID(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, executeNextMasterOnHangup interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallCreateWithID), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, ealryExecution, executeNextMasterOnHangup)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallCreateWithID), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, executeNextMasterOnHangup)
 }
 
 // CallV1CallDelete mocks base method.

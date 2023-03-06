@@ -12,7 +12,7 @@ require (
 require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/prometheus/client_golang v1.14.0
-	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230303065234-dce86cd74cd1
+	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230305232652-e04af01bc7b6
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230227073237-63773bf91cae
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093

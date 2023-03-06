@@ -159,6 +159,7 @@ func (r *requestHandler) CallV1CallCreateWithID(
 	masterCallID uuid.UUID,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
+	groupcallID uuid.UUID,
 	earlyExecution bool,
 	connect bool,
 ) (*cmcall.Call, error) {
@@ -171,6 +172,7 @@ func (r *requestHandler) CallV1CallCreateWithID(
 		MasterCallID:   masterCallID,
 		Source:         *source,
 		Destination:    *destination,
+		GroupcallID:    groupcallID,
 		EarlyExecution: earlyExecution,
 		Connect:        connect,
 	}
