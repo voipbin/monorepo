@@ -13,7 +13,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -28,8 +27,8 @@ type GroupcallHandler interface {
 		masterCallID uuid.UUID,
 		ringMethod groupcall.RingMethod,
 		answerMethod groupcall.AnswerMethod,
-		connect bool,
 	) (*groupcall.Groupcall, error)
+	Answer(ctx context.Context, groupcallID uuid.UUID, answerCallID uuid.UUID) error
 }
 
 // groupcallHandler structure for service handle
@@ -38,7 +37,6 @@ type groupcallHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
-	callHandler   callhandler.CallHandler
 }
 
 var (
@@ -64,7 +62,6 @@ func NewGroupcallHandler(
 	requestHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
-	callHandler callhandler.CallHandler,
 ) GroupcallHandler {
 
 	h := &groupcallHandler{
@@ -72,7 +69,6 @@ func NewGroupcallHandler(
 		reqHandler:    requestHandler,
 		notifyHandler: notifyHandler,
 		db:            db,
-		callHandler:   callHandler,
 	}
 
 	return h

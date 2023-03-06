@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
@@ -25,12 +24,11 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 
 		expectCustomerID   uuid.UUID
 		expectSource       *commonaddress.Address
-		expectDestinations []address.Address
+		expectDestinations []commonaddress.Address
 		expectFlowID       uuid.UUID
 		expectMasterCallID uuid.UUID
 		expectRingMethod   groupcall.RingMethod
 		expectAnswerMethod groupcall.AnswerMethod
-		expectConnect      bool
 
 		expectRes *rabbitmqhandler.Response
 	}
@@ -42,7 +40,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 				URI:      "/v1/groupcalls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"dabd81b0-bb3f-11ed-8542-3bb36342932e","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],"flow_id":"db049be0-bb3f-11ed-901a-eff2e3b25b21","master_call_id":"db3ccfc4-bb3f-11ed-bb95-238737bb066d","ring_method":"ring_all","answer_method":"hangup_others","connect":true}`),
+				Data:     []byte(`{"customer_id":"dabd81b0-bb3f-11ed-8542-3bb36342932e","source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],"flow_id":"db049be0-bb3f-11ed-901a-eff2e3b25b21","master_call_id":"db3ccfc4-bb3f-11ed-bb95-238737bb066d","ring_method":"ring_all","answer_method":"hangup_others"}`),
 			},
 
 			responseGroupcall: &groupcall.Groupcall{
@@ -68,7 +66,6 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 			expectMasterCallID: uuid.FromStringOrNil("db3ccfc4-bb3f-11ed-bb95-238737bb066d"),
 			expectRingMethod:   groupcall.RingMethodRingAll,
 			expectAnswerMethod: groupcall.AnswerMethodHangupOthers,
-			expectConnect:      true,
 
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -102,7 +99,6 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 				tt.expectMasterCallID,
 				tt.expectRingMethod,
 				tt.expectAnswerMethod,
-				tt.expectConnect,
 			).Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)

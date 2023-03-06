@@ -30,7 +30,7 @@ func (h *listenHandler) processV1GroupcallsPost(ctx context.Context, m *rabbitmq
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.groupcallHandler.Start(ctx, req.CustomerID, &req.Source, req.Destinations, req.FlowID, req.MasterCallID, req.RingMethod, req.AnswerMethod, req.Connect)
+	tmp, err := h.groupcallHandler.Start(ctx, req.CustomerID, &req.Source, req.Destinations, req.FlowID, req.MasterCallID, req.RingMethod, req.AnswerMethod)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil

@@ -68,8 +68,8 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 
 	if res.GroupcallID != uuid.Nil {
 		log.Debugf("The call has groupcall id. Updating groupcall answer call info. groupcall_id: %s", res.GroupcallID)
-		if errGroupcall := h.answerGroupcall(ctx, res.GroupcallID, res.ID); errGroupcall != nil {
-			log.Errorf("Could not update the group dial answer call id. err: %v", errGroupcall)
+		if errAnswer := h.groupcallHandler.Answer(ctx, res.GroupcallID, res.ID); errAnswer != nil {
+			log.Errorf("Could not update the group dial answer call id. err: %v", errAnswer)
 		}
 	}
 
