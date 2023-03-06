@@ -11,10 +11,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 )
 
-// AnswerGroupcall handles the answered group dial.
-func (h *groupcallHandler) AnswerGroupcall(ctx context.Context, groupcallID uuid.UUID, answerCallID uuid.UUID) error {
+// Answer handles the answered group dial.
+func (h *groupcallHandler) Answer(ctx context.Context, groupcallID uuid.UUID, answerCallID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "AnswerGroupcall",
+		"func":           "Answer",
 		"groupcall_id":   groupcallID,
 		"answer_call_id": answerCallID,
 	})

@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 )
 
@@ -25,7 +24,7 @@ func (h *groupcallHandler) HangupOthers(ctx context.Context, gd *groupcall.Group
 
 		log.Debugf("Hanging up the groupcall calls. call_id: %s", callID)
 		go func(id uuid.UUID) {
-			_, _ = h.callHandler.HangingUp(ctx, id, call.HangupReasonNormal)
+			_, _ = h.reqHandler.CallV1CallHangup(ctx, id)
 		}(callID)
 	}
 
@@ -48,7 +47,7 @@ func (h *groupcallHandler) Hangup(ctx context.Context, id uuid.UUID) error {
 	for _, callID := range gd.CallIDs {
 		log.Debugf("Hanging up the groupcall calls. call_id: %s", callID)
 		go func(id uuid.UUID) {
-			_, _ = h.callHandler.HangingUp(ctx, id, call.HangupReasonNormal)
+			_, _ = h.reqHandler.CallV1CallHangup(ctx, id)
 		}(callID)
 	}
 

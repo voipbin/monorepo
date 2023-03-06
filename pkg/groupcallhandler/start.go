@@ -23,7 +23,6 @@ func (h *groupcallHandler) Start(
 	masterCallID uuid.UUID,
 	ringMethod groupcall.RingMethod,
 	answerMethod groupcall.AnswerMethod,
-	connect bool,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Start",
@@ -34,7 +33,6 @@ func (h *groupcallHandler) Start(
 		"master_call_id": masterCallID,
 		"ring_method":    ringMethod,
 		"answer_method":  answerMethod,
-		"connect":        connect,
 	})
 	log.Debugf("Starting the groupcall service.")
 
@@ -64,7 +62,8 @@ func (h *groupcallHandler) Start(
 
 	// create calls
 	for i, dialDestination := range dialDestinations {
-		_, err := h.reqHandler.CallV1CallCreateWithID(ctx, callIDs[i], customerID, flowID, uuid.Nil, masterCallID, source, dialDestination, false, connect)
+		// about the connect option. and because the groupcall is making the multiple outgoing calls, it is not possible to add the connect option.
+		_, err := h.reqHandler.CallV1CallCreateWithID(ctx, callIDs[i], customerID, flowID, uuid.Nil, masterCallID, source, dialDestination, res.ID, false, false)
 		if err != nil {
 			// could not create a call, but we don't stop the call creating.
 			log.WithField("dial_destination", dialDestination).Errorf("Could not create a call. err: %v", err)

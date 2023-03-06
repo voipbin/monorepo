@@ -2,7 +2,6 @@ package callhandler
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/groupcallhandler"
 )
 
 func Test_UpdateStatusRinging(t *testing.T) {
@@ -285,23 +285,24 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 		responseGroupcall *groupcall.Groupcall
 	}{
 		{
-			"normal",
-			&channel.Channel{
+			name: "normal",
+			channel: &channel.Channel{
 				TMAnswer: "2020-09-20T03:23:20.995000",
 			},
-			&call.Call{
+			call: &call.Call{
 				ID:          uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
 				Status:      call.StatusDialing,
 				Direction:   call.DirectionOutgoing,
 				GroupcallID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
 			},
-			&call.Call{
+
+			responseCall: &call.Call{
 				ID:          uuid.FromStringOrNil("1f29b106-30fb-4b30-b83b-62b7a7a76ef9"),
 				Status:      call.StatusProgressing,
 				Direction:   call.DirectionOutgoing,
 				GroupcallID: uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
 			},
-			&groupcall.Groupcall{
+			responseGroupcall: &groupcall.Groupcall{
 				ID:           uuid.FromStringOrNil("e68fcdcd-401e-427e-a2e3-579a6c9c7dcd"),
 				AnswerMethod: groupcall.AnswerMethodHangupOthers,
 				CallIDs: []uuid.UUID{
@@ -322,36 +323,24 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &callHandler{
-				utilHandler:    mockUtil,
-				reqHandler:     mockReq,
-				notifyHandler:  mockNotify,
-				db:             mockDB,
-				channelHandler: mockChannel,
+				utilHandler:      mockUtil,
+				reqHandler:       mockReq,
+				notifyHandler:    mockNotify,
+				db:               mockDB,
+				channelHandler:   mockChannel,
+				groupcallHandler: mockGroupcall,
 			}
 
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallSetStatusProgressing(ctx, tt.call.ID).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
-			mockDB.EXPECT().GroupcallGet(ctx, tt.responseCall.GroupcallID).Return(tt.responseGroupcall, nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.responseCall.GroupcallID).Return(tt.responseGroupcall, nil)
-			tmpGroupcall := *tt.responseGroupcall
-			tmpGroupcall.AnswerCallID = tt.call.ID
-			mockDB.EXPECT().GroupcallUpdate(ctx, &tmpGroupcall).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.responseCall.GroupcallID).Return(&tmpGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
-
-			for _, callID := range tmpGroupcall.CallIDs {
-				if callID == tt.call.ID {
-					continue
-				}
-				// HangingUp(). just return the error here becuase it's too long func test code.
-				mockDB.EXPECT().CallGet(ctx, callID).Return(nil, fmt.Errorf(""))
-			}
+			mockGroupcall.EXPECT().Answer(ctx, tt.responseCall.GroupcallID, tt.responseCall.ID).Return(nil)
 
 			// handleSIPCallID
 			mockChannel.EXPECT().VariableGet(ctx, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()

@@ -14,7 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
-func Test_AnswerGroupcall(t *testing.T) {
+func Test_Answer(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -70,7 +70,7 @@ func Test_AnswerGroupcall(t *testing.T) {
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.expectGroupcall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, tt.expectGroupcall)
 
-			if errAnswer := h.AnswerGroupcall(ctx, tt.groupcallID, tt.answerCallID); errAnswer != nil {
+			if errAnswer := h.Answer(ctx, tt.groupcallID, tt.answerCallID); errAnswer != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errAnswer)
 			}
 		})

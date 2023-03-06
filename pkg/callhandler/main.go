@@ -23,6 +23,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/groupcallhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
@@ -110,6 +111,7 @@ type callHandler struct {
 	bridgeHandler        bridgehandler.BridgeHandler
 	recordingHandler     recordinghandler.RecordingHandler
 	externalMediaHandler externalmediahandler.ExternalMediaHandler
+	groupcallHandler     groupcallhandler.GroupcallHandler
 }
 
 // contextType
@@ -223,6 +225,7 @@ func NewCallHandler(
 	bridgeHandler bridgehandler.BridgeHandler,
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
+	groupcallHandler groupcallhandler.GroupcallHandler,
 ) CallHandler {
 
 	h := &callHandler{
@@ -235,6 +238,7 @@ func NewCallHandler(
 		bridgeHandler:        bridgeHandler,
 		recordingHandler:     recordingHandler,
 		externalMediaHandler: externalMediaHandler,
+		groupcallHandler:     groupcallHandler,
 	}
 
 	return h

@@ -12,30 +12,28 @@ import (
 // v1 data type request struct for
 // /v1/calls POST
 type V1DataCallsPost struct {
-	FlowID                    uuid.UUID               `json:"flow_id"`
-	CustomerID                uuid.UUID               `json:"customer_id"`
-	MasterCallID              uuid.UUID               `json:"master_call_id"`
-	Source                    commonaddress.Address   `json:"source"`
-	Destinations              []commonaddress.Address `json:"destinations"`
-	EarlyExecution            bool                    `json:"early_execution"`               // if it sets to true, the call's flow exection will not wait for call answer.
-	Connect                   bool                    `json:"connect"`                       // if the call is created for connect, sets this to true,
-	ExecuteNextMasterOnHangup bool                    `json:"execute_next_master_on_hangup"` // deprecated. if it sets to true, the master call will execute the next action when the outgoing call hangup with not normal.
+	FlowID         uuid.UUID               `json:"flow_id"`
+	CustomerID     uuid.UUID               `json:"customer_id"`
+	MasterCallID   uuid.UUID               `json:"master_call_id"`
+	Source         commonaddress.Address   `json:"source"`
+	Destinations   []commonaddress.Address `json:"destinations"`
+	EarlyExecution bool                    `json:"early_execution"` // if it sets to true, the call's flow exection will not wait for call answer.
+	Connect        bool                    `json:"connect"`         // if the call is created for connect, sets this to true,
 }
 
 // V1DataCallsIDPost is
 // v1 data type request struct for
 // /v1/calls/<call-id> POST
 type V1DataCallsIDPost struct {
-	FlowID                    uuid.UUID             `json:"flow_id"`
-	ActiveflosID              uuid.UUID             `json:"activeflow_id"`
-	CustomerID                uuid.UUID             `json:"customer_id"`
-	MasterCallID              uuid.UUID             `json:"master_call_id"`
-	Source                    commonaddress.Address `json:"source"`
-	Destination               commonaddress.Address `json:"destination"`
-	GroupcallID               uuid.UUID             `json:"groupcall_id"`
-	EarlyExecution            bool                  `json:"early_execution"`               // if it sets to true, the call's flow exection will not wait for call answer.
-	Connect                   bool                  `json:"connect"`                       // if the call is created for connect, sets this to true,
-	ExecuteNextMasterOnHangup bool                  `json:"execute_next_master_on_hangup"` // deprecated. if it sets to true, the master call will execute the next action when the outgoing call hangup with not normal.
+	FlowID         uuid.UUID             `json:"flow_id"`
+	ActiveflosID   uuid.UUID             `json:"activeflow_id"`
+	CustomerID     uuid.UUID             `json:"customer_id"`
+	MasterCallID   uuid.UUID             `json:"master_call_id"`
+	Source         commonaddress.Address `json:"source"`
+	Destination    commonaddress.Address `json:"destination"`
+	GroupcallID    uuid.UUID             `json:"groupcall_id"`
+	EarlyExecution bool                  `json:"early_execution"` // if it sets to true, the call's flow exection will not wait for call answer.
+	Connect        bool                  `json:"connect"`         // if the call is created for connect, sets this to true,
 }
 
 // V1DataCallsIDHealthPost is

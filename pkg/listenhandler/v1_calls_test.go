@@ -417,54 +417,54 @@ func Test_processV1CallsPost(t *testing.T) {
 
 	tests := []test{
 		{
-			"have all",
+			name: "have all",
 
-			uuid.FromStringOrNil("351014ec-7f51-11ec-9e7c-2b6427f906b7"),
-			uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
-			uuid.Nil,
-			commonaddress.Address{
+			customerID:   uuid.FromStringOrNil("351014ec-7f51-11ec-9e7c-2b6427f906b7"),
+			flowID:       uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
 				Type:   commonaddress.TypeSIP,
 				Target: "test_source@127.0.0.1:5061",
 				Name:   "test_source",
 			},
-			[]commonaddress.Address{
+			destinations: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeTel,
 					Target: "+821100000001",
 				},
 			},
-			true,
-			true,
+			earlyExeuction: true,
+			connect:        true,
 
-			[]*call.Call{
+			responseCall: []*call.Call{
 				{
 					ID: uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
 				},
 			},
-			&rabbitmqhandler.Request{
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destinations": [{"type":"tel", "target": "+821100000001"}], "early_execution": true, "execute_next_master_on_hangup": true}`),
+				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type": "sip", "target": "test_source@127.0.0.1:5061", "name": "test_source"}, "destinations": [{"type":"tel", "target": "+821100000001"}], "early_execution": true, "connect": true}`),
 			},
-			&rabbitmqhandler.Response{
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"cd561ba6-f3a8-11ea-b7ac-57b19fa28e09","customer_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
-			"empty",
+			name: "empty",
 
-			uuid.FromStringOrNil("34e72f78-7f51-11ec-a83b-cfc69cd4a641"),
-			uuid.FromStringOrNil("78fd1276-f3a8-11ea-9734-6735e73fd720"),
-			uuid.FromStringOrNil("a1c63272-8c91-11ec-8ee7-8b50458d3214"),
-			commonaddress.Address{},
-			[]commonaddress.Address{},
-			false,
-			false,
+			customerID:     uuid.FromStringOrNil("34e72f78-7f51-11ec-a83b-cfc69cd4a641"),
+			flowID:         uuid.FromStringOrNil("78fd1276-f3a8-11ea-9734-6735e73fd720"),
+			masterCallID:   uuid.FromStringOrNil("a1c63272-8c91-11ec-8ee7-8b50458d3214"),
+			source:         commonaddress.Address{},
+			destinations:   []commonaddress.Address{},
+			earlyExeuction: false,
+			connect:        false,
 
-			[]*call.Call{
+			responseCall: []*call.Call{
 				{
 					ID:          uuid.FromStringOrNil("72d56d08-f3a8-11ea-9c0c-ef8258d54f42"),
 					CustomerID:  uuid.FromStringOrNil("34e72f78-7f51-11ec-a83b-cfc69cd4a641"),
@@ -473,13 +473,13 @@ func Test_processV1CallsPost(t *testing.T) {
 					Destination: commonaddress.Address{},
 				},
 			},
-			&rabbitmqhandler.Request{
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "34e72f78-7f51-11ec-a83b-cfc69cd4a641", "flow_id": "78fd1276-f3a8-11ea-9734-6735e73fd720", "master_call_id": "a1c63272-8c91-11ec-8ee7-8b50458d3214", "source": {}, "destinations": []}`),
 			},
-			&rabbitmqhandler.Response{
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"72d56d08-f3a8-11ea-9c0c-ef8258d54f42","customer_id":"34e72f78-7f51-11ec-a83b-cfc69cd4a641","channel_id":"","bridge_id":"","flow_id":"78fd1276-f3a8-11ea-9734-6735e73fd720","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}]`),
