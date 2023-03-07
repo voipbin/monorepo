@@ -44,7 +44,7 @@ func Test_EventHandlerContactStatusChange(t *testing.T) {
 					ContactStatus: ari.ContactStatusTypeNonQualified,
 				},
 			},
-			"test11@test.sip.voipbin.net",
+			"test11@test",
 		},
 	}
 
