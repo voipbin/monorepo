@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
@@ -25,8 +26,19 @@ func (h *contactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint str
 
 // ContactRefreshByEndpoint refresh the list of contacts
 func (h *contactHandler) ContactRefreshByEndpoint(ctx context.Context, endpoint string) error {
-	logrus.Debugf("Refreshing the contacts of the endpoint. endpoint: %s", endpoint)
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "ContactRefreshByEndpoint",
+		"endpoint": endpoint,
+	})
 
-	target := fmt.Sprintf("%s.%s", endpoint, common.BaseDomainName)
-	return h.dbAst.AstContactDeleteFromCache(ctx, target)
+	contact := fmt.Sprintf("%s.%s", endpoint, common.BaseDomainName)
+
+	log.Debugf("Refreshing the contacts of the endpoint. endpoint: %s, contact: %s", endpoint, contact)
+
+	if err := h.dbAst.AstContactDeleteFromCache(ctx, contact); err != nil {
+		log.Errorf("Could not delete the cache. err: %v", err)
+		return errors.Wrap(err, "Could not delete the cache.")
+	}
+
+	return nil
 }
