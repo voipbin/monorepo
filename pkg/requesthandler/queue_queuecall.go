@@ -86,6 +86,31 @@ func (r *requestHandler) QueueV1QueuecallGet(ctx context.Context, queuecallID uu
 	return &res, nil
 }
 
+// QueueV1QueuecallGetByReferenceID sends a request to queue-manager
+// to get the queuecall of the given reference id.
+// it returns an queuecall if it succeed.
+func (r *requestHandler) QueueV1QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+	uri := fmt.Sprintf("/v1/queuecalls/reference_id/%s", referenceID)
+
+	tmp, err := r.sendRequestQueue(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceQueueQueuecallsID, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res qmqueuecall.Queuecall
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 // QueueV1QueuecallDelete sends a request to queue-manager
 // to delete the queuecall.
 func (r *requestHandler) QueueV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error) {
