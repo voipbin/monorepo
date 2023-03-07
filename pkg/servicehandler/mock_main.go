@@ -2094,21 +2094,6 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallDelete(ctx, u, queuecallID in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallDelete", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallDelete), ctx, u, queuecallID)
 }
 
-// QueuecallDeleteByReferenceID mocks base method.
-func (m *MockServiceHandler) QueuecallDeleteByReferenceID(ctx context.Context, u *customer.Customer, referenceID uuid.UUID) (*queuecall.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallDeleteByReferenceID", ctx, u, referenceID)
-	ret0, _ := ret[0].(*queuecall.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueuecallDeleteByReferenceID indicates an expected call of QueuecallDeleteByReferenceID.
-func (mr *MockServiceHandlerMockRecorder) QueuecallDeleteByReferenceID(ctx, u, referenceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallDeleteByReferenceID", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallDeleteByReferenceID), ctx, u, referenceID)
-}
-
 // QueuecallGet mocks base method.
 func (m *MockServiceHandler) QueuecallGet(ctx context.Context, u *customer.Customer, queueID uuid.UUID) (*queuecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -2137,6 +2122,36 @@ func (m *MockServiceHandler) QueuecallGets(ctx context.Context, u *customer.Cust
 func (mr *MockServiceHandlerMockRecorder) QueuecallGets(ctx, u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGets", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallGets), ctx, u, size, token)
+}
+
+// QueuecallKick mocks base method.
+func (m *MockServiceHandler) QueuecallKick(ctx context.Context, u *customer.Customer, queuecallID uuid.UUID) (*queuecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallKick", ctx, u, queuecallID)
+	ret0, _ := ret[0].(*queuecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallKick indicates an expected call of QueuecallKick.
+func (mr *MockServiceHandlerMockRecorder) QueuecallKick(ctx, u, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallKick", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallKick), ctx, u, queuecallID)
+}
+
+// QueuecallKickByReferenceID mocks base method.
+func (m *MockServiceHandler) QueuecallKickByReferenceID(ctx context.Context, u *customer.Customer, referenceID uuid.UUID) (*queuecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallKickByReferenceID", ctx, u, referenceID)
+	ret0, _ := ret[0].(*queuecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallKickByReferenceID indicates an expected call of QueuecallKickByReferenceID.
+func (mr *MockServiceHandlerMockRecorder) QueuecallKickByReferenceID(ctx, u, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallKickByReferenceID", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallKickByReferenceID), ctx, u, referenceID)
 }
 
 // RecordingDelete mocks base method.
