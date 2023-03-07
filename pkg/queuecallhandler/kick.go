@@ -33,7 +33,7 @@ func (h *queuecallHandler) Kick(ctx context.Context, id uuid.UUID) (*queuecall.Q
 	}
 
 	// send the forward request
-	if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceID, qc.ExitActionID, true); errForward != nil {
+	if errForward := h.reqHandler.FlowV1ActiveflowUpdateForwardActionID(ctx, qc.ReferenceActiveflowID, qc.ExitActionID, true); errForward != nil {
 		log.Errorf("Could not forward the call. err: %v", errForward)
 		return nil, errForward
 	}
