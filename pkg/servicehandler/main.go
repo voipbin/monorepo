@@ -6,8 +6,6 @@ import (
 	"context"
 	"net/http"
 
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
-
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
@@ -25,6 +23,7 @@ import (
 	chatbotchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -394,7 +393,8 @@ type ServiceHandler interface {
 	QueuecallGet(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
 	QueuecallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error)
 	QueuecallDelete(ctx context.Context, u *cscustomer.Customer, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
-	QueuecallDeleteByReferenceID(ctx context.Context, u *cscustomer.Customer, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
+	QueuecallKick(ctx context.Context, u *cscustomer.Customer, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
+	QueuecallKickByReferenceID(ctx context.Context, u *cscustomer.Customer, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error)
 
 	// recording handlers
 	RecordingGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cmrecording.WebhookMessage, error)

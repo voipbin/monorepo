@@ -124,3 +124,103 @@ func Test_queuecallsIDDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_queuecallsIDKickPOST(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		requQuery         string
+		expectQueuecallID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+
+			"/v1.0/queuecalls/72c9dfb0-bcbe-11ed-853f-7f662faaee5b/kick",
+			uuid.FromStringOrNil("72c9dfb0-bcbe-11ed-853f-7f662faaee5b"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("POST", tt.requQuery, nil)
+
+			mockSvc.EXPECT().QueuecallKick(req.Context(), &tt.customer, tt.expectQueuecallID).Return(&qmqueuecall.WebhookMessage{}, nil)
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		requQuery         string
+		expectReferenceID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+
+			"/v1.0/queuecalls/reference_id/e01d78ce-bcbe-11ed-8164-f3c4a472391e/kick",
+			uuid.FromStringOrNil("e01d78ce-bcbe-11ed-8164-f3c4a472391e"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("POST", tt.requQuery, nil)
+
+			mockSvc.EXPECT().QueuecallKickByReferenceID(req.Context(), &tt.customer, tt.expectReferenceID).Return(&qmqueuecall.WebhookMessage{}, nil)
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
