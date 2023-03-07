@@ -3297,6 +3297,36 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGetsByQueueIDAndStatus
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGetsByQueueIDAndStatus", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGetsByQueueIDAndStatus), ctx, queueID, status, pageToken, pageSize)
 }
 
+// QueueV1QueuecallKick mocks base method.
+func (m *MockRequestHandler) QueueV1QueuecallKick(ctx context.Context, queuecallID uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1QueuecallKick", ctx, queuecallID)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueV1QueuecallKick indicates an expected call of QueueV1QueuecallKick.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallKick(ctx, queuecallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallKick", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallKick), ctx, queuecallID)
+}
+
+// QueueV1QueuecallKickByReferenceID mocks base method.
+func (m *MockRequestHandler) QueueV1QueuecallKickByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1QueuecallKickByReferenceID", ctx, referenceID)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueV1QueuecallKickByReferenceID indicates an expected call of QueueV1QueuecallKickByReferenceID.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallKickByReferenceID(ctx, referenceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallKickByReferenceID", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallKickByReferenceID), ctx, referenceID)
+}
+
 // QueueV1QueuecallTimeoutService mocks base method.
 func (m *MockRequestHandler) QueueV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error {
 	m.ctrl.T.Helper()
