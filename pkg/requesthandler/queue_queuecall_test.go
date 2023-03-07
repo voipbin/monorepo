@@ -253,6 +253,64 @@ func Test_QueueV1QueuecallGet(t *testing.T) {
 	}
 }
 
+func Test_QueueV1QueuecallGetByReferenceID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		referenceID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     *qmqueuecall.Queuecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("f0d7b6e2-bcba-11ed-9715-db75795f979e"),
+
+			"bin-manager.queue-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/queuecalls/reference_id/f0d7b6e2-bcba-11ed-9715-db75795f979e",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"f102c5b2-bcba-11ed-8a78-07c8c15cd024"}`),
+			},
+			&qmqueuecall.Queuecall{
+				ID: uuid.FromStringOrNil("f102c5b2-bcba-11ed-8a78-07c8c15cd024"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.QueueV1QueuecallGetByReferenceID(ctx, tt.referenceID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_QMQueuecallDelete(t *testing.T) {
 
 	tests := []struct {

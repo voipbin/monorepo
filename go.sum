@@ -119,6 +119,8 @@ gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230303051013-05eff4fba
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230303051013-05eff4fba674/go.mod h1:MDLTNFO6RfQqZZOtZCF5ImjRGU12kRRBBfeZFlWKTIQ=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230304085656-85866bb71e57 h1:2RWo76rVi4/PceOJor1eb6qw1ruRA02EBYgK6ZSQwns=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230304085656-85866bb71e57/go.mod h1:fiYJ7HAWkpByg1M8Rv2+IDPXsaJ9/ZpoPNmTVDmzBas=
+gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230307073131-dc98adfce0fb h1:scf0EwrhtPpW461jU4u7VM9LY8bsqoFojiAZ/YnKOyU=
+gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230307073131-dc98adfce0fb/go.mod h1:PIr8m2MwAUbKoXf5t7RdxeRvxvFxfS/YZP8oY41JK9M=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230127044148-d2db8f41581c h1:7VMrsjeu8NJL2hNJMgNxnfcogU6QT+2yyPkTKff27mQ=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230127044148-d2db8f41581c/go.mod h1:YTQgiwd+aNSoZVj2J+HOQQ5PzXXWPJZ0bWHEjZvsAVs=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230224053508-d89a7fe38851 h1:mDwQn8Wkel9v1AUWmXsy8wOUT9w3vXTEi+m+/uAQVOo=
