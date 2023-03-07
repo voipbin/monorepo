@@ -280,3 +280,65 @@ func Test_AddChannelCallID(t *testing.T) {
 		})
 	}
 }
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseConfbridge *confbridge.Confbridge
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("1d170c9a-bce2-11ed-9315-370c4af8e8c4"),
+
+			responseConfbridge: &confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("1d170c9a-bce2-11ed-9315-370c4af8e8c4"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &confbridgeHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				cache:          mockCache,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConfbridgeDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, tt.responseConfbridge)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConfbridge) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConfbridge, res)
+			}
+		})
+	}
+}
