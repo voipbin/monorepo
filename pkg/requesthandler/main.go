@@ -626,10 +626,10 @@ type RequestHandler interface {
 	FlowV1ActionGet(ctx context.Context, flowID, actionID uuid.UUID) (*fmaction.Action, error)
 
 	// flow-manager activeflow
-	FlowV1ActiveflowCreate(ctx context.Context, id, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error)
+	FlowV1ActiveflowCreate(ctx context.Context, activeflowID, flowID uuid.UUID, referenceType fmactiveflow.ReferenceType, referenceID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
-	FlowV1ActiveflowGetNextAction(ctx context.Context, callID, actionID uuid.UUID) (*fmaction.Action, error)
-	FlowV1ActiveflowUpdateForwardActionID(ctx context.Context, callID, forwardActionID uuid.UUID, forwardNow bool) error
+	FlowV1ActiveflowGetNextAction(ctx context.Context, activeflowID, actionID uuid.UUID) (*fmaction.Action, error)
+	FlowV1ActiveflowUpdateForwardActionID(ctx context.Context, activeflowID, forwardActionID uuid.UUID, forwardNow bool) error
 	FlowV1ActiveflowExecute(ctx context.Context, activeflowID uuid.UUID) error
 
 	// flow-manager flow
