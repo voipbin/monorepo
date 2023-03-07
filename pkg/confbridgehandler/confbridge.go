@@ -205,3 +205,28 @@ func (h *confbridgeHandler) AddChannelCallID(ctx context.Context, id uuid.UUID, 
 
 	return res, nil
 }
+
+// Delete deletes the confbridge
+func (h *confbridgeHandler) Delete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Delete",
+		"confbridge_id": id,
+	})
+
+	// update conference status to terminated
+	if errDelete := h.db.ConfbridgeDelete(ctx, id); errDelete != nil {
+		log.Errorf("Could not terminate the confbridge. err: %v", errDelete)
+		return nil, errDelete
+	}
+	promConfbridgeCloseTotal.Inc()
+
+	// notify conference deleted event
+	res, err := h.db.ConfbridgeGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted confbridge info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get deleted confbridge.")
+	}
+	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, res)
+
+	return res, nil
+}
