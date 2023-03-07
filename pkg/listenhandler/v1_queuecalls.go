@@ -63,6 +63,42 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *rabbitmqh
 	return res, nil
 }
 
+// processV1QueuecallsIDGet handles Get /v1/queuecalls/reference_id/<reference-id> request
+func (h *listenHandler) processV1QueuecallsReferenceIDIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1QueuecallsReferenceIDIDGet",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	referenceID := uuid.FromStringOrNil(uriItems[4])
+
+	// get queue
+	tmp, err := h.queuecallHandler.GetByReferenceID(ctx, referenceID)
+	if err != nil {
+		log.Errorf("Could not get queuecall info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1QueuecallsIDGet handles Get /v1/queuecalls/<queue-id> request
 func (h *listenHandler) processV1QueuecallsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -80,7 +116,7 @@ func (h *listenHandler) processV1QueuecallsIDGet(ctx context.Context, m *rabbitm
 	// get queue
 	tmp, err := h.queuecallHandler.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get queue info. err: %v", err)
+		log.Errorf("Could not get queuecall info. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

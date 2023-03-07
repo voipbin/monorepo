@@ -59,6 +59,7 @@ var (
 	regV1QueuecallsIDExecute         = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/execute$")
 	regV1QueuecallsIDStatusWaiting   = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/status_waiting$")
 	regV1QueuecallsIDKick            = regexp.MustCompile("/v1/queuecalls/" + regUUID + "/kick$")
+	regV1QueuecallsReferenceIDID     = regexp.MustCompile("/v1/queuecalls/reference_id/" + regUUID + "$")
 	regV1QueuecallsReferenceIDIDKick = regexp.MustCompile("/v1/queuecalls/reference_id/" + regUUID + "/kick$")
 
 	// services
@@ -277,6 +278,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1QueuecallsIDKick.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1QueuecallsIDKickPost(ctx, m)
 		requestType = "/v1/queuecalls/<queuecall-id>/kick"
+
+	// GET /queuecalls/reference_id/<reference-id>
+	case regV1QueuecallsReferenceIDID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1QueuecallsReferenceIDIDGet(ctx, m)
+		requestType = "/v1/queuecalls/reference_id/<reference-id>"
 
 	// POST /queuecalls/reference_id/<reference-id>/kick
 	case regV1QueuecallsReferenceIDIDKick.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
