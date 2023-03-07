@@ -8,4 +8,6 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	queuecalls.GET("/:id", queuecallsIDGET)
 	queuecalls.DELETE("/:id", queuecallsIDDELETE)
+	queuecalls.POST("/:id/kick", queuecallsIDKickPOST)
+	queuecalls.POST("/reference_id/:id/kick", queuecallsReferenceIDIDKickPOST)
 }
