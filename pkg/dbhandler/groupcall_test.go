@@ -2,11 +2,13 @@ package dbhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
@@ -19,12 +21,69 @@ func Test_GroupcallCreate(t *testing.T) {
 		name string
 
 		data *groupcall.Groupcall
+
+		responseCurTime string
+		expectRes       *groupcall.Groupcall
 	}{
 		{
-			name: "normal",
+			name: "have all",
 
 			data: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
+				ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
+				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000002",
+					},
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000003",
+					},
+				},
+				RingMethod:   groupcall.RingMethodRingAll,
+				AnswerMethod: groupcall.AnswerMethodHangupOthers,
+				AnswerCallID: uuid.Nil,
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("a9127fec-bd76-11ed-9c0d-f79292b7b2a6"),
+					uuid.FromStringOrNil("a939559a-bd76-11ed-ac28-4f58c3ed30f3"),
+				},
+			},
+
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &groupcall.Groupcall{
+				ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
+				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000002",
+					},
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000003",
+					},
+				},
+				RingMethod:   groupcall.RingMethodRingAll,
+				AnswerMethod: groupcall.AnswerMethodHangupOthers,
+				AnswerCallID: uuid.Nil,
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("a9127fec-bd76-11ed-9c0d-f79292b7b2a6"),
+					uuid.FromStringOrNil("a939559a-bd76-11ed-ac28-4f58c3ed30f3"),
+				},
+				TMCreate: "2023-01-18 03:22:18.995000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -44,75 +103,100 @@ func Test_GroupcallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
-			mockCache.EXPECT().GroupcallSet(ctx, tt.data).Return(nil)
-
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
 			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
-		})
-	}
-}
 
-func Test_GroupcallGet(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id uuid.UUID
-
-		responseGroupcall *groupcall.Groupcall
-	}{
-		{
-			name: "normal",
-			id:   uuid.FromStringOrNil("3ca215ce-5fee-4854-9edb-2b75bbeef022"),
-			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("3ca215ce-5fee-4854-9edb-2b75bbeef022"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			mockCache.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
-
-			res, err := h.GroupcallGet(ctx, tt.id)
+			mockCache.EXPECT().GroupcallGet(ctx, tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
+			res, err := h.GroupcallGet(ctx, tt.data.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.responseGroupcall, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseGroupcall, res)
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func Test_GroupcallUpdate(t *testing.T) {
+func Test_GroupcallSetAnswerCallID(t *testing.T) {
 
 	tests := []struct {
 		name string
-
 		data *groupcall.Groupcall
+
+		id           uuid.UUID
+		answerCallID uuid.UUID
+
+		responseCurTime string
+		expectRes       *groupcall.Groupcall
 	}{
 		{
 			name: "normal",
-
 			data: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("6355ea6b-e87e-4895-944c-c986744dc1d5"),
+				ID:         uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
+				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000002",
+					},
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000003",
+					},
+				},
+				RingMethod:   groupcall.RingMethodRingAll,
+				AnswerMethod: groupcall.AnswerMethodHangupOthers,
+				AnswerCallID: uuid.Nil,
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("49081344-bd78-11ed-aa51-0349af7b9f8b"),
+					uuid.FromStringOrNil("4936e9f8-bd78-11ed-b921-37bb6ae97f98"),
+				},
+			},
+
+			id:           uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
+			answerCallID: uuid.FromStringOrNil("49081344-bd78-11ed-aa51-0349af7b9f8b"),
+
+			responseCurTime: "2023-01-18 03:22:18.995000",
+			expectRes: &groupcall.Groupcall{
+				ID:         uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
+				CustomerID: uuid.FromStringOrNil("a8eaeb80-bd76-11ed-94db-7fe899d03ca7"),
+
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Destinations: []commonaddress.Address{
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000002",
+					},
+					{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000003",
+					},
+				},
+				RingMethod:   groupcall.RingMethodRingAll,
+				AnswerMethod: groupcall.AnswerMethodHangupOthers,
+				AnswerCallID: uuid.FromStringOrNil("49081344-bd78-11ed-aa51-0349af7b9f8b"),
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("49081344-bd78-11ed-aa51-0349af7b9f8b"),
+					uuid.FromStringOrNil("4936e9f8-bd78-11ed-b921-37bb6ae97f98"),
+				},
+
+				TMCreate: "2023-01-18 03:22:18.995000",
+				TMUpdate: "2023-01-18 03:22:18.995000",
+				TMDelete: DefaultTimeStamp,
 			},
 		},
 	}
@@ -132,11 +216,27 @@ func Test_GroupcallUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
-			mockCache.EXPECT().GroupcallSet(ctx, tt.data).Return(nil)
-
-			if errCreate := h.GroupcallUpdate(ctx, tt.data); errCreate != nil {
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
+			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
+			if errSet := h.GroupcallSetAnswerCallID(ctx, tt.id, tt.answerCallID); errSet != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
+			}
+
+			mockCache.EXPECT().GroupcallGet(ctx, tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
+			res, err := h.GroupcallGet(ctx, tt.data.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

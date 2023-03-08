@@ -18,6 +18,20 @@ import (
 
 // GroupcallHandler is interface for service handle
 type GroupcallHandler interface {
+	Create(
+		ctx context.Context,
+		customerID uuid.UUID,
+		source *commonaddress.Address,
+		destinations []commonaddress.Address,
+		callIDs []uuid.UUID,
+		ringMethod groupcall.RingMethod,
+		answerMethod groupcall.AnswerMethod,
+	) (*groupcall.Groupcall, error)
+	Get(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*groupcall.Groupcall, error)
+	UpdateAnswerCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) (*groupcall.Groupcall, error)
+	Delete(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+
 	Start(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -29,6 +43,7 @@ type GroupcallHandler interface {
 		answerMethod groupcall.AnswerMethod,
 	) (*groupcall.Groupcall, error)
 	Answer(ctx context.Context, groupcallID uuid.UUID, answerCallID uuid.UUID) error
+	Hangup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
 }
 
 // groupcallHandler structure for service handle

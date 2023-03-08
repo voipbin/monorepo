@@ -23,11 +23,7 @@ func Test_Answer(t *testing.T) {
 		answerCallID uuid.UUID
 
 		responseGroupcall *groupcall.Groupcall
-		responseGets      []*call.Call
-
-		expectGroupcall *groupcall.Groupcall
-
-		expectRes []*call.Call
+		expectRes         []*call.Call
 	}{
 		{
 			name: "normal",
@@ -36,11 +32,6 @@ func Test_Answer(t *testing.T) {
 			answerCallID: uuid.FromStringOrNil("769f39e4-bb26-11ed-928d-1309c50d6617"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID:           uuid.FromStringOrNil("7669f00e-bb26-11ed-a4c3-bf62864985db"),
-				AnswerMethod: groupcall.AnswerMethodHangupOthers,
-			},
-
-			expectGroupcall: &groupcall.Groupcall{
 				ID:           uuid.FromStringOrNil("7669f00e-bb26-11ed-a4c3-bf62864985db"),
 				AnswerMethod: groupcall.AnswerMethodHangupOthers,
 				AnswerCallID: uuid.FromStringOrNil("769f39e4-bb26-11ed-928d-1309c50d6617"),
@@ -65,10 +56,9 @@ func Test_Answer(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.groupcallID, tt.answerCallID).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
-			mockDB.EXPECT().GroupcallUpdate(ctx, tt.expectGroupcall).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.expectGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, tt.expectGroupcall)
+			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, tt.responseGroupcall)
 
 			if errAnswer := h.Answer(ctx, tt.groupcallID, tt.answerCallID); errAnswer != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errAnswer)

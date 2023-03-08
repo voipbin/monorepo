@@ -32,24 +32,24 @@ func (h *groupcallHandler) HangupOthers(ctx context.Context, gd *groupcall.Group
 }
 
 // Hangup hangs up the groupcalls.
-func (h *groupcallHandler) Hangup(ctx context.Context, id uuid.UUID) error {
+func (h *groupcallHandler) Hangup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "Hangup",
 		"groupcall_id": id,
 	})
 
-	gd, err := h.Get(ctx, id)
+	res, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get groupcall. err: %v", err)
-		return errors.Wrap(err, "Could not get groupcall.")
+		return nil, errors.Wrap(err, "Could not get groupcall.")
 	}
 
-	for _, callID := range gd.CallIDs {
+	for _, callID := range res.CallIDs {
 		log.Debugf("Hanging up the groupcall calls. call_id: %s", callID)
 		go func(id uuid.UUID) {
 			_, _ = h.reqHandler.CallV1CallHangup(ctx, id)
 		}(callID)
 	}
 
-	return nil
+	return res, nil
 }
