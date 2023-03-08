@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -109,12 +110,10 @@ func (h *callHandler) Create(
 
 // Gets returns list of calls.
 func (h *callHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Gets",
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Gets",
+		"customer_id": customerID,
+	})
 
 	res, err := h.db.CallGets(ctx, customerID, size, token)
 	if err != nil {
@@ -127,17 +126,9 @@ func (h *callHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint6
 
 // Get returns call.
 func (h *callHandler) Get(ctx context.Context, id uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "Get",
-			"call_id": id,
-		},
-	)
-
 	res, err := h.db.CallGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get call. err: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Could not get call.")
 	}
 
 	return res, nil

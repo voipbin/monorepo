@@ -120,6 +120,67 @@ func Test_Create(t *testing.T) {
 	}
 }
 
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		size       uint64
+		token      string
+
+		responseGroupcalls []*groupcall.Groupcall
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("b3944c9c-bd7c-11ed-874c-6b6fb342a46d"),
+			size:       10,
+			token:      "2023-01-18 03:22:18.995000",
+
+			responseGroupcalls: []*groupcall.Groupcall{
+				{
+					ID: uuid.FromStringOrNil("b3cc0d12-bd7c-11ed-9b14-0bbea6e65d74"),
+				},
+				{
+					ID: uuid.FromStringOrNil("b3f8f2c8-bd7c-11ed-b479-dbff552bfa7e"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &groupcallHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().GroupcallGets(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseGroupcalls, nil)
+
+			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseGroupcalls) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseGroupcalls, res)
+			}
+		})
+	}
+}
+
 func Test_Get(t *testing.T) {
 
 	tests := []struct {
@@ -180,7 +241,6 @@ func Test_UpdateAnswerCallID(t *testing.T) {
 		callID uuid.UUID
 
 		responseGroupcall *groupcall.Groupcall
-		expectGroupcall   *groupcall.Groupcall
 	}{
 		{
 			name: "normal",
@@ -189,9 +249,6 @@ func Test_UpdateAnswerCallID(t *testing.T) {
 			callID: uuid.FromStringOrNil("ac9c3c42-bb29-11ed-aa47-47441a47de62"),
 
 			responseGroupcall: &groupcall.Groupcall{
-				ID: uuid.FromStringOrNil("ac6ae0fc-bb29-11ed-9f2a-6b95feacf142"),
-			},
-			expectGroupcall: &groupcall.Groupcall{
 				ID:           uuid.FromStringOrNil("ac6ae0fc-bb29-11ed-9f2a-6b95feacf142"),
 				AnswerCallID: uuid.FromStringOrNil("ac9c3c42-bb29-11ed-aa47-47441a47de62"),
 			},
@@ -216,11 +273,9 @@ func Test_UpdateAnswerCallID(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.id, tt.callID).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
-
-			mockDB.EXPECT().GroupcallUpdate(ctx, tt.expectGroupcall).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.expectGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, tt.expectGroupcall)
+			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, tt.responseGroupcall)
 
 			res, err := h.UpdateAnswerCallID(ctx, tt.id, tt.callID)
 			if err != nil {
@@ -228,6 +283,59 @@ func Test_UpdateAnswerCallID(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.responseGroupcall) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseGroupcall, res)
+			}
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		responseGroupcall *groupcall.Groupcall
+	}{
+		{
+			name: "normal",
+
+			id: uuid.FromStringOrNil("6d83f5fe-bd7c-11ed-83eb-af7a569ac7ad"),
+			responseGroupcall: &groupcall.Groupcall{
+				ID: uuid.FromStringOrNil("6d83f5fe-bd7c-11ed-83eb-af7a569ac7ad"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &groupcallHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().GroupcallDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, tt.responseGroupcall)
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.responseGroupcall {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseGroupcall, res)
 			}
 		})

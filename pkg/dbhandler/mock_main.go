@@ -923,6 +923,20 @@ func (mr *MockDBHandlerMockRecorder) GroupcallCreate(ctx, data interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallCreate", reflect.TypeOf((*MockDBHandler)(nil).GroupcallCreate), ctx, data)
 }
 
+// GroupcallDelete mocks base method.
+func (m *MockDBHandler) GroupcallDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupcallDelete indicates an expected call of GroupcallDelete.
+func (mr *MockDBHandlerMockRecorder) GroupcallDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallDelete", reflect.TypeOf((*MockDBHandler)(nil).GroupcallDelete), ctx, id)
+}
+
 // GroupcallGet mocks base method.
 func (m *MockDBHandler) GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
@@ -938,18 +952,33 @@ func (mr *MockDBHandlerMockRecorder) GroupcallGet(ctx, id interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGet", reflect.TypeOf((*MockDBHandler)(nil).GroupcallGet), ctx, id)
 }
 
-// GroupcallUpdate mocks base method.
-func (m *MockDBHandler) GroupcallUpdate(ctx context.Context, data *groupcall.Groupcall) error {
+// GroupcallGets mocks base method.
+func (m *MockDBHandler) GroupcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupcallUpdate", ctx, data)
+	ret := m.ctrl.Call(m, "GroupcallGets", ctx, customerID, size, token)
+	ret0, _ := ret[0].([]*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupcallGets indicates an expected call of GroupcallGets.
+func (mr *MockDBHandlerMockRecorder) GroupcallGets(ctx, customerID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGets", reflect.TypeOf((*MockDBHandler)(nil).GroupcallGets), ctx, customerID, size, token)
+}
+
+// GroupcallSetAnswerCallID mocks base method.
+func (m *MockDBHandler) GroupcallSetAnswerCallID(ctx context.Context, id, answerCallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallSetAnswerCallID", ctx, id, answerCallID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GroupcallUpdate indicates an expected call of GroupcallUpdate.
-func (mr *MockDBHandlerMockRecorder) GroupcallUpdate(ctx, data interface{}) *gomock.Call {
+// GroupcallSetAnswerCallID indicates an expected call of GroupcallSetAnswerCallID.
+func (mr *MockDBHandlerMockRecorder) GroupcallSetAnswerCallID(ctx, id, answerCallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallUpdate", reflect.TypeOf((*MockDBHandler)(nil).GroupcallUpdate), ctx, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSetAnswerCallID", reflect.TypeOf((*MockDBHandler)(nil).GroupcallSetAnswerCallID), ctx, id, answerCallID)
 }
 
 // RecordingCreate mocks base method.

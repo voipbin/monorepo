@@ -98,8 +98,10 @@ type DBHandler interface {
 
 	// groupcall
 	GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+	GroupcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*groupcall.Groupcall, error)
 	GroupcallCreate(ctx context.Context, data *groupcall.Groupcall) error
-	GroupcallUpdate(ctx context.Context, data *groupcall.Groupcall) error
+	GroupcallSetAnswerCallID(ctx context.Context, id uuid.UUID, answerCallID uuid.UUID) error
+	GroupcallDelete(ctx context.Context, id uuid.UUID) error
 
 	// recordings
 	RecordingCreate(ctx context.Context, c *recording.Recording) error
