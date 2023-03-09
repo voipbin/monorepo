@@ -387,9 +387,8 @@ func Test_CallV1CallGet(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/calls/7ab80df4-4c72-11ec-b095-17146a0e7e4c",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/calls/7ab80df4-4c72-11ec-b095-17146a0e7e4c",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -450,9 +449,8 @@ func Test_CallV1CallGets(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=820f1436-7f52-11ec-a626-df15ba0fc033",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=820f1436-7f52-11ec-a626-df15ba0fc033",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -474,9 +472,8 @@ func Test_CallV1CallGets(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=8e553ff4-7f52-11ec-ab5a-7b43917ef4fb",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: "application/json",
+				URI:    "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=8e553ff4-7f52-11ec-ab5a-7b43917ef4fb",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -612,9 +609,8 @@ func Test_CMCallRemoveChainedCall(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/calls/1ced9274-8ee0-11ec-8c36-13795e573d73/chained-call-ids/1d38dcd4-8ee0-11ec-ace4-178f58435f40",
-				Method:   rabbitmqhandler.RequestMethodDelete,
-				DataType: ContentTypeJSON,
+				URI:    "/v1/calls/1ced9274-8ee0-11ec-8c36-13795e573d73/chained-call-ids/1d38dcd4-8ee0-11ec-ace4-178f58435f40",
+				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&cmcall.Call{
 				ID: uuid.FromStringOrNil("1ced9274-8ee0-11ec-8c36-13795e573d73"),
@@ -674,9 +670,8 @@ func Test_CallV1CallDelete(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/calls/045c4e0d-7838-46bf-b28d-3aeaa943a53e",
-				Method:   rabbitmqhandler.RequestMethodDelete,
-				DataType: "application/json",
+				URI:    "/v1/calls/045c4e0d-7838-46bf-b28d-3aeaa943a53e",
+				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&cmcall.Call{
 				ID: uuid.FromStringOrNil("045c4e0d-7838-46bf-b28d-3aeaa943a53e"),
