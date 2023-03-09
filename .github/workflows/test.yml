@@ -1,0 +1,99 @@
+name: "Test - action"
+
+on: 
+  push:
+    paths-ignore:
+      - 'docs/**'
+    branches:
+      - master
+      - next
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Use Node.js LTS
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16.x'
+    - uses: bahmutov/npm-install@v1
+      with:
+        install-command: yarn --immutable
+    - name: Lint
+      run: make lint        
+    - name: Build
+      run: make build
+
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Use Node.js LTS
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16.x'
+    - uses: bahmutov/npm-install@v1
+      with:
+        install-command: yarn --immutable
+    - name: Unit Tests
+      run: make test-unit
+      env:
+        CI: true
+
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Use Node.js LTS
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16.x'
+    - uses: bahmutov/npm-install@v1
+      with:
+        install-command: yarn --immutable
+    - name: e2e Tests
+      run: make test-e2e
+      env:
+        CI: true
+
+  e-commerce:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Use Node.js LTS
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16.x'
+    - uses: bahmutov/npm-install@v1
+      with:
+        install-command: yarn --immutable
+    - name: Build
+      run: make build
+    - name: Build e-commerce
+      run: make build-demo
+
+  crm:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Use Node.js LTS
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16.x'
+    - uses: bahmutov/npm-install@v1
+      with:
+        install-command: yarn --immutable
+    - name: Build
+      run: make build
+    - name: Build crm
+      run: make build-crm
+
