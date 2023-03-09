@@ -16,6 +16,7 @@ import (
 	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmexternalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
@@ -176,6 +177,9 @@ const (
 	resourceCallConfbridgesIDExternalMedia resource = "call/confbridges/<confbridge-id>/external-media"
 	resourceCallConfbridgesRecordingStart  resource = "call/confbridges/<confbridge-id>/recording-start"
 	resourceCallConfbridgesRecordingStop   resource = "call/confbridges/<confbridge-id>/recording-stop"
+	resourceCallGroupcalls                 resource = "call/groupcalls"
+	resourceCallGroupcallsID               resource = "call/groupcalls/<groupcall-id>"
+	resourceCallGroupcallsIDHangup         resource = "call/groupcalls/<groupcall-id>/hangup"
 	resourceCallRecordings                 resource = "call/recordings"
 	resourceCallExternalMedia              resource = "call/external-medias"
 
@@ -406,6 +410,23 @@ type RequestHandler interface {
 	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
 	CallV1ExternalMediaStart(ctx context.Context, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*cmexternalmedia.ExternalMedia, error)
 	CallV1ExternalMediaStop(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
+
+	// call-manager groupcall
+	CallV1GroupcallCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		source commonaddress.Address,
+		destinations []commonaddress.Address,
+		flowID uuid.UUID,
+		masterCallID uuid.UUID,
+		ringMethod cmgroupcall.RingMethod,
+		answerMethod cmgroupcall.AnswerMethod,
+		connect bool,
+	) (*cmgroupcall.Groupcall, error)
+	CallV1GroupcallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmgroupcall.Groupcall, error)
+	CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
+	CallV1GroupcallDelete(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
+	CallV1GroupcallHangup(ctx context.Context, callID uuid.UUID) (*cmgroupcall.Groupcall, error)
 
 	// call-manager recordings
 	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)

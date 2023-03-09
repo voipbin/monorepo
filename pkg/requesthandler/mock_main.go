@@ -18,6 +18,7 @@ import (
 	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	confbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	externalmedia "gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
+	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
@@ -1193,6 +1194,81 @@ func (m *MockRequestHandler) CallV1ExternalMediaStop(ctx context.Context, extern
 func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaStop(ctx, externalMediaID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ExternalMediaStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ExternalMediaStop), ctx, externalMediaID)
+}
+
+// CallV1GroupcallCreate mocks base method.
+func (m *MockRequestHandler) CallV1GroupcallCreate(ctx context.Context, customerID uuid.UUID, source address.Address, destinations []address.Address, flowID, masterCallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod, connect bool) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1GroupcallCreate", ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1GroupcallCreate indicates an expected call of CallV1GroupcallCreate.
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallCreate(ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallCreate), ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect)
+}
+
+// CallV1GroupcallDelete mocks base method.
+func (m *MockRequestHandler) CallV1GroupcallDelete(ctx context.Context, groupcallID uuid.UUID) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1GroupcallDelete", ctx, groupcallID)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1GroupcallDelete indicates an expected call of CallV1GroupcallDelete.
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallDelete(ctx, groupcallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallDelete", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallDelete), ctx, groupcallID)
+}
+
+// CallV1GroupcallGet mocks base method.
+func (m *MockRequestHandler) CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1GroupcallGet", ctx, groupcallID)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1GroupcallGet indicates an expected call of CallV1GroupcallGet.
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallGet(ctx, groupcallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallGet", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallGet), ctx, groupcallID)
+}
+
+// CallV1GroupcallGets mocks base method.
+func (m *MockRequestHandler) CallV1GroupcallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1GroupcallGets", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1GroupcallGets indicates an expected call of CallV1GroupcallGets.
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallGets), ctx, customerID, pageToken, pageSize)
+}
+
+// CallV1GroupcallHangup mocks base method.
+func (m *MockRequestHandler) CallV1GroupcallHangup(ctx context.Context, callID uuid.UUID) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1GroupcallHangup", ctx, callID)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1GroupcallHangup indicates an expected call of CallV1GroupcallHangup.
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallHangup(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallHangup", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallHangup), ctx, callID)
 }
 
 // CallV1RecordingDelete mocks base method.
