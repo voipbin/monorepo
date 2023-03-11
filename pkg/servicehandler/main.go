@@ -10,6 +10,7 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cacampaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	cacampaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
@@ -267,6 +268,13 @@ type ServiceHandler interface {
 	FlowGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*fmflow.WebhookMessage, error)
 	FlowGets(ctx context.Context, u *cscustomer.Customer, pageSize uint64, pageToken string) ([]*fmflow.WebhookMessage, error)
 	FlowUpdate(ctx context.Context, u *cscustomer.Customer, f *fmflow.Flow) (*fmflow.WebhookMessage, error)
+
+	// grpupcall handlers
+	GroupcallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmgroupcall.WebhookMessage, error)
+	GroupcallGet(ctx context.Context, u *cscustomer.Customer, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error)
+	GroupcallCreate(ctx context.Context, u *cscustomer.Customer, source commonaddress.Address, destinations []commonaddress.Address, flowID uuid.UUID, actions []fmaction.Action, ringMethod cmgroupcall.RingMethod, answerMethod cmgroupcall.AnswerMethod) (*cmgroupcall.WebhookMessage, error)
+	GroupcallHangup(ctx context.Context, u *cscustomer.Customer, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error)
+	GroupcallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmgroupcall.WebhookMessage, error)
 
 	// message handlers
 	MessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*mmmessage.WebhookMessage, error)
