@@ -3,7 +3,6 @@ package flows
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -27,13 +26,15 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func TestFlowsPOST(t *testing.T) {
+func Test_flowsPOST(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		requestBody request.BodyFlowsPOST
-		resFlow     *fmflow.WebhookMessage
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+		reqBody  request.BodyFlowsPOST
+		resFlow  *fmflow.WebhookMessage
 	}{
 		{
 			"normal",
@@ -43,6 +44,8 @@ func TestFlowsPOST(t *testing.T) {
 					cspermission.PermissionAdmin.ID,
 				},
 			},
+
+			"/v1.0/flows",
 			request.BodyFlowsPOST{
 				Name:   "test name",
 				Detail: "test detail",
@@ -84,14 +87,14 @@ func TestFlowsPOST(t *testing.T) {
 			setupServer(r)
 
 			// create body
-			body, err := json.Marshal(tt.requestBody)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			req, _ := http.NewRequest("POST", "/v1.0/flows", bytes.NewBuffer(body))
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.customer, tt.requestBody.Name, tt.requestBody.Detail, tt.requestBody.Actions, true).Return(tt.resFlow, nil)
+			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.customer, tt.reqBody.Name, tt.reqBody.Detail, tt.reqBody.Actions, true).Return(tt.resFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -101,32 +104,25 @@ func TestFlowsPOST(t *testing.T) {
 	}
 }
 
-func TestFlowsIDGET(t *testing.T) {
+func Test_flowsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name     string
 		customer cscustomer.Customer
-		flow     *fmflow.Flow
 
-		expectFlow *fmflow.WebhookMessage
+		reqQuery string
+
+		responseFlow *fmflow.WebhookMessage
+		expectRes    string
 	}{
 		{
 			"normal",
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
-			&fmflow.Flow{
-				ID:         uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-				Name:       "test name",
-				Detail:     "test detail",
-				CustomerID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
-				Actions: []fmaction.Action{
-					{
-						ID:   uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
-						Type: "answer",
-					},
-				},
-			},
+
+			"/v1.0/flows/2375219e-0b87-11eb-90f9-036ec16f126b",
+
 			&fmflow.WebhookMessage{
 				ID:     uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b"),
 				Name:   "test name",
@@ -137,6 +133,7 @@ func TestFlowsIDGET(t *testing.T) {
 					},
 				},
 			},
+			`{"id":"2375219e-0b87-11eb-90f9-036ec16f126b","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"test name","detail":"test detail","actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}],"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -157,25 +154,35 @@ func TestFlowsIDGET(t *testing.T) {
 			})
 			setupServer(r)
 
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/v1.0/flows/%s", tt.flow.ID), nil)
-			mockSvc.EXPECT().FlowGet(req.Context(), &tt.customer, tt.flow.ID).Return(tt.expectFlow, nil)
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			mockSvc.EXPECT().FlowGet(req.Context(), &tt.customer, tt.responseFlow.ID).Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
 		})
 	}
 }
 
-func TestFlowsIDPUT(t *testing.T) {
+func Test_flowsIDPUT(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		customer    cscustomer.Customer
-		flowID      uuid.UUID
-		requestBody request.BodyFlowsIDPUT
-		requestFlow *fmflow.Flow
+		name         string
+		customer     cscustomer.Customer
+		expectFlowID uuid.UUID
+
+		reqQuery string
+		reqBody  request.BodyFlowsIDPUT
+
+		responseFlow *fmflow.WebhookMessage
+
+		expectFlow *fmflow.Flow
+		expectRes  string
 	}{
 		{
 			"normal",
@@ -185,7 +192,10 @@ func TestFlowsIDPUT(t *testing.T) {
 					cspermission.PermissionAdmin.ID,
 				},
 			},
+
 			uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+
+			"/v1.0/flows/d213a09e-6790-11eb-8cea-bb3b333200ed",
 			request.BodyFlowsIDPUT{
 				Name:   "test name",
 				Detail: "test detail",
@@ -194,6 +204,10 @@ func TestFlowsIDPUT(t *testing.T) {
 						Type: "answer",
 					},
 				},
+			},
+
+			&fmflow.WebhookMessage{
+				ID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
 			},
 			&fmflow.Flow{
 				ID:     uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
@@ -205,6 +219,7 @@ func TestFlowsIDPUT(t *testing.T) {
 					},
 				},
 			},
+			`{"id":"d213a09e-6790-11eb-8cea-bb3b333200ed","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","actions":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -226,36 +241,52 @@ func TestFlowsIDPUT(t *testing.T) {
 			setupServer(r)
 
 			// create body
-			body, err := json.Marshal(tt.requestBody)
+			body, err := json.Marshal(tt.reqBody)
 			if err != nil {
 				t.Errorf("Could not marshal the request. err: %v", err)
 			}
 
-			req, _ := http.NewRequest("PUT", "/v1.0/flows/"+tt.flowID.String(), bytes.NewBuffer(body))
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().FlowUpdate(req.Context(), &tt.customer, tt.requestFlow).Return(&fmflow.WebhookMessage{}, nil)
+			mockSvc.EXPECT().FlowUpdate(req.Context(), &tt.customer, tt.expectFlow).Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
 		})
 	}
 }
 
-func TestFlowsIDDELETE(t *testing.T) {
+func Test_flowsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name     string
 		customer cscustomer.Customer
-		flowID   uuid.UUID
+
+		reqQuery     string
+		responseFlow *fmflow.WebhookMessage
+
+		expectFlowID uuid.UUID
+		expectRes    string
 	}{
 		{
 			"normal",
 			cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
+
+			"/v1.0/flows/d466f900-67cb-11eb-b2ff-1f9adc48f842",
+			&fmflow.WebhookMessage{
+				ID: uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),
+			},
+
 			uuid.FromStringOrNil("d466f900-67cb-11eb-b2ff-1f9adc48f842"),
+			`{"id":"d466f900-67cb-11eb-b2ff-1f9adc48f842","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","actions":null,"tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -276,12 +307,16 @@ func TestFlowsIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/v1.0/flows/%s", tt.flowID), nil)
-			mockSvc.EXPECT().FlowDelete(req.Context(), &tt.customer, tt.flowID).Return(&fmflow.WebhookMessage{}, nil)
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
+			mockSvc.EXPECT().FlowDelete(req.Context(), &tt.customer, tt.expectFlowID).Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
 	}
