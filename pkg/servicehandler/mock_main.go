@@ -14,6 +14,7 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	campaign "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	campaigncall "gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
@@ -1477,6 +1478,81 @@ func (m *MockServiceHandler) FlowUpdate(ctx context.Context, u *customer.Custome
 func (mr *MockServiceHandlerMockRecorder) FlowUpdate(ctx, u, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowUpdate", reflect.TypeOf((*MockServiceHandler)(nil).FlowUpdate), ctx, u, f)
+}
+
+// GroupcallCreate mocks base method.
+func (m *MockServiceHandler) GroupcallCreate(ctx context.Context, u *customer.Customer, source address.Address, destinations []address.Address, flowID uuid.UUID, actions []action.Action, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallCreate", ctx, u, source, destinations, flowID, actions, ringMethod, answerMethod)
+	ret0, _ := ret[0].(*groupcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupcallCreate indicates an expected call of GroupcallCreate.
+func (mr *MockServiceHandlerMockRecorder) GroupcallCreate(ctx, u, source, destinations, flowID, actions, ringMethod, answerMethod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallCreate", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallCreate), ctx, u, source, destinations, flowID, actions, ringMethod, answerMethod)
+}
+
+// GroupcallDelete mocks base method.
+func (m *MockServiceHandler) GroupcallDelete(ctx context.Context, u *customer.Customer, callID uuid.UUID) (*groupcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallDelete", ctx, u, callID)
+	ret0, _ := ret[0].(*groupcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupcallDelete indicates an expected call of GroupcallDelete.
+func (mr *MockServiceHandlerMockRecorder) GroupcallDelete(ctx, u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallDelete", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallDelete), ctx, u, callID)
+}
+
+// GroupcallGet mocks base method.
+func (m *MockServiceHandler) GroupcallGet(ctx context.Context, u *customer.Customer, groupcallID uuid.UUID) (*groupcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallGet", ctx, u, groupcallID)
+	ret0, _ := ret[0].(*groupcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupcallGet indicates an expected call of GroupcallGet.
+func (mr *MockServiceHandlerMockRecorder) GroupcallGet(ctx, u, groupcallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGet", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallGet), ctx, u, groupcallID)
+}
+
+// GroupcallGets mocks base method.
+func (m *MockServiceHandler) GroupcallGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*groupcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallGets", ctx, u, size, token)
+	ret0, _ := ret[0].([]*groupcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupcallGets indicates an expected call of GroupcallGets.
+func (mr *MockServiceHandlerMockRecorder) GroupcallGets(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGets", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallGets), ctx, u, size, token)
+}
+
+// GroupcallHangup mocks base method.
+func (m *MockServiceHandler) GroupcallHangup(ctx context.Context, u *customer.Customer, groupcallID uuid.UUID) (*groupcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallHangup", ctx, u, groupcallID)
+	ret0, _ := ret[0].(*groupcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupcallHangup indicates an expected call of GroupcallHangup.
+func (mr *MockServiceHandlerMockRecorder) GroupcallHangup(ctx, u, groupcallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallHangup", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallHangup), ctx, u, groupcallID)
 }
 
 // MessageDelete mocks base method.
