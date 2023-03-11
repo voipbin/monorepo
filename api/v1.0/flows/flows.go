@@ -22,12 +22,10 @@ import (
 // @Success 200 {object} flow.Flow
 // @Router /v1.0/flows [post]
 func flowsPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "flowsPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "flowsPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -74,13 +72,11 @@ func flowsPOST(c *gin.Context) {
 // @Success 200 {object} response.BodyFlowsGET
 // @Router /v1.0/flows [get]
 func flowsGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "flowsGET",
-			"request_address": c.ClientIP,
-			"request":         c.Request,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "flowsGET",
+		"request_address": c.ClientIP,
+		"request":         c.Request,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -107,7 +103,7 @@ func flowsGET(c *gin.Context) {
 	// set max page size
 	pageSize := req.PageSize
 	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 10
+		pageSize = 100
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
 	log.Debugf("flowsGET. Received request detail. page_size: %d, page_token: %s", pageSize, req.PageToken)
@@ -146,12 +142,10 @@ func flowsGET(c *gin.Context) {
 // @Success 200 {object} flow.Flow
 // @Router /v1.0/flows/{id} [get]
 func flowsIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "flowsIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "flowsIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -195,12 +189,10 @@ func flowsIDGET(c *gin.Context) {
 // @Success 200 {object} flow.Flow
 // @Router /v1.0/flows/{id} [put]
 func flowsIDPUT(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "flowsIDPUT",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "flowsIDPUT",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -257,12 +249,10 @@ func flowsIDPUT(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/flows/{id} [delete]
 func flowsIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "flowsIDDELETE",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "flowsIDDELETE",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
