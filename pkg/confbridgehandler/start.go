@@ -13,12 +13,10 @@ import (
 
 // StartContextIncoming handles the call which has CONTEXT=conf-in in the StasisStart argument.
 func (h *confbridgeHandler) StartContextIncoming(ctx context.Context, cn *channel.Channel) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "StartContextIncoming",
-			"channel_id": cn.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "StartContextIncoming",
+		"channel_id": cn.ID,
+	})
 
 	channelID := cn.ID
 	data := cn.StasisData
