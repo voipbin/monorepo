@@ -16,13 +16,11 @@ import (
 
 // Joined handles joined call
 func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Joined",
-			"channel_id": cn.ID,
-			"bridge_id":  br.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Joined",
+		"channel_id": cn.ID,
+		"bridge_id":  br.ID,
+	})
 
 	confbridgeID := uuid.FromStringOrNil(cn.StasisData["confbridge_id"])
 	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])
@@ -58,14 +56,12 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 
 // joinedTypeConnect handles confbridge connect type joining channel
 func (h *confbridgeHandler) joinedTypeConnect(ctx context.Context, channelID string, c *call.Call, cb *confbridge.Confbridge) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "joinedTypeConnect",
-			"channel_id":    channelID,
-			"call_id":       c.ID,
-			"confbridge_id": cb.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "joinedTypeConnect",
+		"channel_id":    channelID,
+		"call_id":       c.ID,
+		"confbridge_id": cb.ID,
+	})
 
 	if len(cb.ChannelCallIDs) == 1 {
 		// if it's the first channel, send a ring
@@ -78,13 +74,28 @@ func (h *confbridgeHandler) joinedTypeConnect(ctx context.Context, channelID str
 		return nil
 	}
 
-	switch c.Status {
-	case call.StatusRinging:
+	// get flagring
+	flagRing := false
+	for _, callID := range cb.ChannelCallIDs {
+		// get call info
+		c, err := h.reqHandler.CallV1CallGet(ctx, callID)
+		if err != nil {
+			log.Errorf("Could not get call info. call_id: %s, err: %v", callID, err)
+			return errors.Wrap(err, "Could not get call info.")
+		}
+
+		if c.Direction == call.DirectionOutgoing && (c.Status == call.StatusRinging || c.Status == call.StatusDialing) {
+			// the outgoing call is ringing.
+			flagRing = true
+			break
+		}
+	}
+
+	if flagRing {
 		if errRing := h.Ring(ctx, cb.ID); errRing != nil {
 			log.Errorf("Could not ring the confbridge. err: %v", errRing)
 		}
-
-	case call.StatusProgressing:
+	} else {
 		if errAnswer := h.Answer(ctx, cb.ID); errAnswer != nil {
 			log.Errorf("Could not answer the confbridge. err: %v", errAnswer)
 		}
@@ -95,14 +106,12 @@ func (h *confbridgeHandler) joinedTypeConnect(ctx context.Context, channelID str
 
 // joinedTypeConference handles confbridge connect type joined channel
 func (h *confbridgeHandler) joinedTypeConference(ctx context.Context, channelID string, c *call.Call, cb *confbridge.Confbridge) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "joinedTypeConference",
-			"channel_id":    channelID,
-			"call_id":       c.ID,
-			"confbridge_id": cb.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "joinedTypeConference",
+		"channel_id":    channelID,
+		"call_id":       c.ID,
+		"confbridge_id": cb.ID,
+	})
 
 	log.Debugf("Answering the conference type confbridge joining channel. call_id: %s", c.ID)
 	if errAnswer := h.channelHandler.Answer(ctx, channelID); errAnswer != nil {

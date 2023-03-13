@@ -14,12 +14,10 @@ import (
 // Create is handy function for creating a confbridge.
 // it increases corresponded counter
 func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Create",
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Create",
+		"customer_id": customerID,
+	})
 
 	id := h.utilHandler.CreateUUID()
 
@@ -50,11 +48,9 @@ func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, co
 
 // Get returns confbridge
 func (h *confbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "Get",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Get",
+	})
 
 	// create confbridge
 	res, err := h.db.ConfbridgeGet(ctx, id)
@@ -69,13 +65,11 @@ func (h *confbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.
 // UpdateRecordingID updates the confbridge's recording id.
 // if the recording id is not uuid.Nil, it also adds to the recording_ids
 func (h *confbridgeHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "UpdateRecordingID",
-			"confbridge_id": id,
-			"recording_id":  recordingID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateRecordingID",
+		"confbridge_id": id,
+		"recording_id":  recordingID,
+	})
 
 	if errSet := h.db.ConfbridgeSetRecordingID(ctx, id, recordingID); errSet != nil {
 		log.Errorf("Could not set the recording id. err: %v", errSet)
@@ -103,13 +97,11 @@ func (h *confbridgeHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 
 // UpdateExternalMediaID updates the confbridge's external media id.
 func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "UpdateExternalMediaID",
-			"confbridge_id":     id,
-			"external_media_id": externalMediaID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "UpdateExternalMediaID",
+		"confbridge_id":     id,
+		"external_media_id": externalMediaID,
+	})
 
 	if errSet := h.db.ConfbridgeSetExternalMediaID(ctx, id, externalMediaID); errSet != nil {
 		log.Errorf("Could not set the external media id. err: %v", errSet)
@@ -128,13 +120,11 @@ func (h *confbridgeHandler) UpdateExternalMediaID(ctx context.Context, id uuid.U
 
 // UpdateBridgeID updates the confbridge's bridge id.
 func (h *confbridgeHandler) UpdateBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "UpdateBridgeID",
-			"confbridge_id": id,
-			"bridge_id":     bridgeID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateBridgeID",
+		"confbridge_id": id,
+		"bridge_id":     bridgeID,
+	})
 
 	if errSet := h.db.ConfbridgeSetBridgeID(ctx, id, bridgeID); errSet != nil {
 		log.Errorf("Could not set the bridge id. err: %v", errSet)
@@ -176,13 +166,11 @@ func (h *confbridgeHandler) RemoveChannelCallID(ctx context.Context, id uuid.UUI
 
 // AddChannelCallID adds the channel from the channel call id
 func (h *confbridgeHandler) AddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "AddChannelCallID",
-			"confbridge_id": id,
-			"channel_id":    channelID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "AddChannelCallID",
+		"confbridge_id": id,
+		"channel_id":    channelID,
+	})
 
 	if errAdd := h.db.ConfbridgeAddChannelCallID(ctx, id, channelID, callID); errAdd != nil {
 		log.Errorf("Could not add the channel/call to the confbridge's channel/call info. err: %v", errAdd)

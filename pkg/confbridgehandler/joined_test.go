@@ -208,6 +208,10 @@ func Test_joinedTypeConnect(t *testing.T) {
 		channelID  string
 		call       *call.Call
 		confbridge *confbridge.Confbridge
+
+		responseCalls []*call.Call
+
+		expectFlagRing bool
 	}{
 		{
 			name: "first channel",
@@ -222,9 +226,15 @@ func Test_joinedTypeConnect(t *testing.T) {
 					"9a6c08b2-ae91-11ed-b460-a377b7040b7c": uuid.FromStringOrNil("9a99bbae-ae91-11ed-971f-9b7ae6d5063d"),
 				},
 			},
+
+			responseCalls: []*call.Call{
+				{
+					ID: uuid.FromStringOrNil("afd0acf0-a3bd-11ed-921e-8bf69d65d2c1"),
+				},
+			},
 		},
 		{
-			name: "not a first channel and call is ringing",
+			name: "not a first channel and outoing call is ringing",
 
 			channelID: "070da3b0-a3be-11ed-aec8-27faeea66ece",
 			call: &call.Call{
@@ -239,14 +249,28 @@ func Test_joinedTypeConnect(t *testing.T) {
 					"070da3b0-a3be-11ed-aec8-27faeea66ece": uuid.FromStringOrNil("07360832-a3be-11ed-80e9-6f824b36d382"),
 				},
 			},
+
+			responseCalls: []*call.Call{
+				{
+					ID:     uuid.FromStringOrNil("07360832-a3be-11ed-80e9-6f824b36d382"),
+					Status: call.StatusRinging,
+				},
+				{
+					ID:        uuid.FromStringOrNil("07cd17cc-a3be-11ed-b200-a75abbfb90ca"),
+					Status:    call.StatusRinging,
+					Direction: call.DirectionOutgoing,
+				},
+			},
+
+			expectFlagRing: true,
 		},
 		{
-			name: "not a first channel and call is progressing",
+			name: "not a first channel and outgoing call is progressing",
 
 			channelID: "166454ca-a3bf-11ed-bb15-77d1ba7adeda",
 			call: &call.Call{
 				ID:     uuid.FromStringOrNil("168b8482-a3bf-11ed-8739-db2e4a76beb9"),
-				Status: call.StatusProgressing,
+				Status: call.StatusRinging,
 			},
 			confbridge: &confbridge.Confbridge{
 				ID:   uuid.FromStringOrNil("07666a04-a3be-11ed-8367-bf3360333c86"),
@@ -254,6 +278,18 @@ func Test_joinedTypeConnect(t *testing.T) {
 				ChannelCallIDs: map[string]uuid.UUID{
 					"16b1f518-a3bf-11ed-a015-ebe29a318ec0": uuid.FromStringOrNil("16dc7a40-a3bf-11ed-b0f3-1b2254e87579"),
 					"166454ca-a3bf-11ed-bb15-77d1ba7adeda": uuid.FromStringOrNil("168b8482-a3bf-11ed-8739-db2e4a76beb9"),
+				},
+			},
+
+			responseCalls: []*call.Call{
+				{
+					ID:        uuid.FromStringOrNil("16dc7a40-a3bf-11ed-b0f3-1b2254e87579"),
+					Status:    call.StatusProgressing,
+					Direction: call.DirectionOutgoing,
+				},
+				{
+					ID:     uuid.FromStringOrNil("168b8482-a3bf-11ed-8739-db2e4a76beb9"),
+					Status: call.StatusRinging,
 				},
 			},
 		},
@@ -282,12 +318,19 @@ func Test_joinedTypeConnect(t *testing.T) {
 			if len(tt.confbridge.ChannelCallIDs) == 1 {
 				mockChannel.EXPECT().Ring(ctx, tt.channelID).Return(nil)
 			} else {
-				if tt.call.Status == call.StatusRinging {
+
+				i := 0
+				for _, callID := range tt.confbridge.ChannelCallIDs {
+					mockReq.EXPECT().CallV1CallGet(ctx, callID).Return(tt.responseCalls[i], nil)
+					i++
+				}
+
+				if tt.expectFlagRing {
 					mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
 					for channelID := range tt.confbridge.ChannelCallIDs {
 						mockChannel.EXPECT().Ring(ctx, channelID).Return(nil)
 					}
-				} else if tt.call.Status == call.StatusProgressing {
+				} else {
 					mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
 					for channelID := range tt.confbridge.ChannelCallIDs {
 						mockChannel.EXPECT().Answer(ctx, channelID).Return(nil)
