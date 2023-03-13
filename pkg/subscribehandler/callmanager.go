@@ -26,12 +26,12 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, evt.JoinedCallID)
 	if err != nil {
 		// conferencecall not found. Not a conferencecall.
-		return err
+		return nil
 	}
 
 	_, err = h.conferencecallHandler.Joined(ctx, cc)
 	if err != nil {
-		log.Errorf("Could not join the conferencecall. conferencecall_id: %s", err)
+		log.Errorf("Could not join the conferencecall. conferencecall_id: %s, err: %v", cc.ID, err)
 		return err
 	}
 
@@ -40,12 +40,10 @@ func (h *subscribeHandler) processEventCMConfbridgeJoined(ctx context.Context, m
 
 // processEventCMConfbridgeLeaved handles the call-manager's call related event
 func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":  "processEventCMConfbridgeLeaved",
-			"event": m,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventCMConfbridgeLeaved",
+		"event": m,
+	})
 
 	evt := cmconfbridge.EventConfbridgeLeaved{}
 	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
@@ -57,7 +55,7 @@ func (h *subscribeHandler) processEventCMConfbridgeLeaved(ctx context.Context, m
 	cc, err := h.conferencecallHandler.GetByReferenceID(ctx, evt.LeavedCallID)
 	if err != nil {
 		// conferencecall not found. Not a conferencecall.
-		return err
+		return nil
 	}
 
 	_, err = h.conferencecallHandler.Terminated(ctx, cc)
