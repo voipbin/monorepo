@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -28,13 +29,11 @@ func (h *conferenceHandler) Create(
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*conference.Conference, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "Create",
-			"customer_id":     customerID,
-			"conference_type": conferenceType,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "Create",
+		"customer_id":     customerID,
+		"conference_type": conferenceType,
+	})
 
 	id := uuid.Must(uuid.NewV4())
 	log = log.WithField("conference_id", id.String())
@@ -112,7 +111,12 @@ func (h *conferenceHandler) Create(
 
 // createConferenceFlowActions creates the actions for conference join.
 func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) ([]fmaction.Action, error) {
-	log := logrus.WithField("func", "createConferenceFlow")
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "createConferenceFlowActions",
+		"confbridge_id": confbridgeID,
+		"pre_actions":   preActions,
+		"post_actions":  postActions,
+	})
 	actions := []fmaction.Action{}
 
 	// append the pre actions
@@ -142,7 +146,14 @@ func (h *conferenceHandler) createConferenceFlowActions(confbridgeID uuid.UUID, 
 
 // createConferenceFlow creates a conference flow and returns created flow.
 func (h *conferenceHandler) createConferenceFlow(ctx context.Context, customerID uuid.UUID, conferenceID uuid.UUID, confbridgeID uuid.UUID, preActions []fmaction.Action, postActions []fmaction.Action) (*fmflow.Flow, error) {
-	log := logrus.WithField("func", "createConferenceFlow")
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "createConferenceFlow",
+		"customer_id":   customerID,
+		"conference_id": conferenceID,
+		"confbridge_id": confbridgeID,
+		"pre_actions":   preActions,
+		"post_actions":  postActions,
+	})
 
 	// create flow actions
 	actions, err := h.createConferenceFlowActions(confbridgeID, preActions, postActions)
@@ -168,8 +179,6 @@ func (h *conferenceHandler) createConferenceFlow(ctx context.Context, customerID
 
 // Gets returns list of conferences.
 func (h *conferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, confType conference.Type, size uint64, token string) ([]*conference.Conference, error) {
-	log := logrus.WithField("func", "Gets")
-
 	var res []*conference.Conference
 	var err error
 	switch confType {
@@ -181,7 +190,6 @@ func (h *conferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, conf
 	}
 
 	if err != nil {
-		log.Errorf("Could not get conferences. err: %v", err)
 		return nil, err
 	}
 
@@ -190,12 +198,9 @@ func (h *conferenceHandler) Gets(ctx context.Context, customerID uuid.UUID, conf
 
 // Get returns conference.
 func (h *conferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
-	log := logrus.WithField("func", "Get")
-
 	res, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get conferences. err: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Could not get conference.")
 	}
 
 	return res, nil
@@ -230,12 +235,9 @@ func (h *conferenceHandler) Delete(ctx context.Context, id uuid.UUID) (*conferen
 
 // GetByConfbridgeID returns conference of the given confbridge id.
 func (h *conferenceHandler) GetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error) {
-	log := logrus.WithField("func", "GetByConfbridgeID")
-
 	res, err := h.db.ConferenceGetByConfbridgeID(ctx, confbridgeID)
 	if err != nil {
-		log.Errorf("Could not get conferences. err: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Could not get conference.")
 	}
 
 	return res, nil
@@ -252,12 +254,10 @@ func (h *conferenceHandler) Update(
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*conference.Conference, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "Update",
-			"conference_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Update",
+		"conference_id": id,
+	})
 	log.Debugf("Updating the conference. name: %s, detail: %s, timeout: %d, pre_actions: %v, post_actions: %v",
 		name, detail, timeout, preActions, postActions)
 
@@ -323,13 +323,11 @@ func (h *conferenceHandler) Update(
 // UpdateRecordingID updates the conference's recording id.
 // if the recording id is not uuid.Nil, it also adds to the recording_ids
 func (h *conferenceHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*conference.Conference, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "UpdateRecordingID",
-			"conference_id": id,
-			"recording_id":  recordingID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateRecordingID",
+		"conference_id": id,
+		"recording_id":  recordingID,
+	})
 
 	if errSet := h.db.ConferenceSetRecordingID(ctx, id, recordingID); errSet != nil {
 		log.Errorf("Could not set the recording id. err: %v", errSet)
@@ -358,13 +356,11 @@ func (h *conferenceHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 // UpdateTranscribeID updates the conference's transcribe id.
 // if the transcribe id is not uuid.Nil, it also adds to the transcribe_ids
 func (h *conferenceHandler) UpdateTranscribeID(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) (*conference.Conference, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "UpdateTranscribeID",
-			"conference_id": id,
-			"transcribe_id": transcribeID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateTranscribeID",
+		"conference_id": id,
+		"transcribe_id": transcribeID,
+	})
 
 	if errSet := h.db.ConferenceSetTranscribeID(ctx, id, transcribeID); errSet != nil {
 		log.Errorf("Could not set the transcribe id. err: %v", errSet)
@@ -392,13 +388,11 @@ func (h *conferenceHandler) UpdateTranscribeID(ctx context.Context, id uuid.UUID
 
 // AddConferencecallID adds the conference's conferencecall id.
 func (h *conferenceHandler) AddConferencecallID(ctx context.Context, id uuid.UUID, conferencecallID uuid.UUID) (*conference.Conference, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "AddConferencecallID",
-			"conference_id":     id,
-			"conferencecall_id": conferencecallID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "AddConferencecallID",
+		"conference_id":     id,
+		"conferencecall_id": conferencecallID,
+	})
 
 	// add the call to the conference.
 	if errAdd := h.db.ConferenceAddConferencecallID(ctx, id, conferencecallID); errAdd != nil {

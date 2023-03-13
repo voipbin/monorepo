@@ -11,11 +11,10 @@ import (
 
 // Terminate is terminating the conference
 func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"conference_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Terminate",
+		"conference_id": id,
+	})
 
 	// get conference
 	cf, err := h.Get(ctx, id)
@@ -56,12 +55,10 @@ func (h *conferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
 // Destroy is terminate the conference without any condition check.
 // So, this function must be called in the last step except terminate the conference in forcedly.
 func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conference) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"conference_id": cf.ID,
-			"func":          "Destroy",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Destroy",
+		"conference_id": cf.ID,
+	})
 	log.WithField("conference", cf).Debug("Destroying the conference.")
 
 	// delete confbridge

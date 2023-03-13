@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
@@ -63,12 +64,10 @@ func (h *conferencecallHandler) Create(
 
 // Get is handy function for getting a conferencecall.
 func (h *conferencecallHandler) Get(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "Get",
-			"conferencecall_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "Get",
+		"conferencecall_id": id,
+	})
 
 	res, err := h.db.ConferencecallGet(ctx, id)
 	if err != nil {
@@ -81,17 +80,9 @@ func (h *conferencecallHandler) Get(ctx context.Context, id uuid.UUID) (*confere
 
 // GetByReferenceID is handy function for getting a conferencecall by the reference_id.
 func (h *conferencecallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "GetByReferenceID",
-			"reference_id": referenceID,
-		},
-	)
-
 	res, err := h.db.ConferencecallGetByReferenceID(ctx, referenceID)
 	if err != nil {
-		log.Errorf("Could not get conferencecall info. err: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "Could not get conferencecall info.")
 	}
 
 	return res, nil

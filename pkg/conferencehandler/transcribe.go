@@ -13,13 +13,11 @@ import (
 
 // TranscribeStart starts the conference transcribe.
 func (h *conferenceHandler) TranscribeStart(ctx context.Context, id uuid.UUID, lang string) (*conference.Conference, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "TranscribeStart",
-			"conference_id": id,
-			"language":      lang,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "TranscribeStart",
+		"conference_id": id,
+		"language":      lang,
+	})
 
 	tmp, err := h.Get(ctx, id)
 	if err != nil {
@@ -51,12 +49,10 @@ func (h *conferenceHandler) TranscribeStart(ctx context.Context, id uuid.UUID, l
 
 // TranscribeStop stops the conference transcribe.
 func (h *conferenceHandler) TranscribeStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "TranscribeStop",
-			"conference_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "TranscribeStop",
+		"conference_id": id,
+	})
 
 	tmp, err := h.Get(ctx, id)
 	if err != nil {
