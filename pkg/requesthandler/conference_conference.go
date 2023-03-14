@@ -19,7 +19,7 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID.String())
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, conferenceType string) ([]cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d&customer_id=%s&type=%s", url.QueryEscape(pageToken), pageSize, customerID, conferenceType)
 
-	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceConferenceConferences, 30000, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -64,8 +64,26 @@ func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, custome
 // ConferenceV1ConferenceDelete sends a request to conference-manager
 // to deleting a conference.
 // it returns deleted conference if it succeed.
-func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) error {
-	return r.ConferenceV1ConferenceDeleteDelay(ctx, conferenceID, DelayNow)
+func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
+
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferencesID, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // ConferenceV1ConferenceDeleteDelay sends a request to conference-manager
@@ -74,7 +92,7 @@ func (r *requestHandler) ConferenceV1ConferenceDelete(ctx context.Context, confe
 func (r *requestHandler) ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error {
 	uri := fmt.Sprintf("/v1/conferences/%s", conferenceID)
 
-	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferences, requestTimeoutDefault, delay, ContentTypeJSON, []byte(""))
+	res, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceConferenceConferences, requestTimeoutDefault, delay, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -86,6 +104,31 @@ func (r *requestHandler) ConferenceV1ConferenceDeleteDelay(ctx context.Context, 
 	}
 
 	return nil
+}
+
+// ConferenceV1ConferenceStop sends a request to conference-manager
+// to stop the conference.
+// it returns deleted conference if it succeed.
+// delay: milliseconds
+func (r *requestHandler) ConferenceV1ConferenceStop(ctx context.Context, conferenceID uuid.UUID, delay int) (*cfconference.Conference, error) {
+	uri := fmt.Sprintf("/v1/conferences/%s/stop", conferenceID)
+
+	tmp, err := r.sendRequestConference(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceConferenceConferencesID, requestTimeoutDefault, delay, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, nil
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cfconference.Conference
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 // ConferenceV1ConferenceCreate sends a request to conference-manager

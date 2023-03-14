@@ -197,6 +197,7 @@ const (
 	resourceChatbotServiceTypeChatbotcall resource = "chatbot/services/type/chatbotcall"
 
 	resourceConferenceConferences                  resource = "conference/conferences"
+	resourceConferenceConferencesID                resource = "conference/conferences/<conference-id>"
 	resourceConferenceConferencesIDRecordingStart  resource = "conference/conferences/<conference-id>/recording_start"
 	resourceConferenceConferencesIDRecordingStop   resource = "conference/conferences/<conference-id>/recording_stop"
 	resourceConferenceConferencesIDTranscribeStart resource = "conference/conferences/<conference-id>/transdribe_start"
@@ -616,12 +617,13 @@ type RequestHandler interface {
 		preActions []fmaction.Action,
 		postActions []fmaction.Action,
 	) (*cfconference.Conference, error)
-	ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) error
+	ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceDeleteDelay(ctx context.Context, conferenceID uuid.UUID, delay int) error
 	ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name string, detail string, timeout int, preActions, postActions []fmaction.Action) (*cfconference.Conference, error)
 	ConferenceV1ConferenceUpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceRecordingStart(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceRecordingStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
+	ConferenceV1ConferenceStop(ctx context.Context, conferenceID uuid.UUID, delay int) (*cfconference.Conference, error)
 	ConferenceV1ConferenceTranscribeStart(ctx context.Context, conferenceID uuid.UUID, language string) (*cfconference.Conference, error)
 	ConferenceV1ConferenceTranscribeStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 
