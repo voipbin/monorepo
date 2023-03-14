@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
@@ -124,6 +125,7 @@ func Test_removeConferencecallIDTypeConference(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.conference.Status == conference.StatusTerminating && len(tt.conference.ConferencecallIDs) == 0 {
+				mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
 				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(nil)
 				mockDB.EXPECT().ConferenceEnd(ctx, tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)

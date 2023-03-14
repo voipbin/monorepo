@@ -138,11 +138,6 @@ func Test_Terminate_unkickable(t *testing.T) {
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
 			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
 
-			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.id, conferencecall.StatusLeaved).Return(nil)
-			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
-			mockConference.EXPECT().RemoveConferencecallID(ctx, tt.responseConferencecall.ConferenceID, tt.responseConferencecall.ID).Return(tt.responseConference, nil)
-
 			res, err := h.Terminate(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -33,14 +33,9 @@ func (h *conferencecallHandler) Terminate(ctx context.Context, id uuid.UUID) (*c
 	log = log.WithField("conference_id", cf.ID)
 
 	if !h.isKickable(ctx, cc) {
-		res, err := h.Terminated(ctx, cc)
-		if err != nil {
-			log.Errorf("Could not remove the conferencecall id from the conference. err: %v", err)
-			return nil, err
-		}
-		log.WithField("conference", res).Debugf("Removed conferencecall from the conference. conference_id: %s, conferencecall_id: %S", cf.ID, cc.ID)
-
-		return res, nil
+		// it's not kickable. nothing to do.
+		log.WithField("conferncecall", cc).Debugf("The conferencecall is not kickable. Nothing to do. conferencecall_id: %s", cc.ID)
+		return cc, nil
 	}
 
 	// update the conferencecall
@@ -73,10 +68,8 @@ func (h *conferencecallHandler) isKickable(ctx context.Context, cc *conferenceca
 // Terminated handles terminated conferencecall
 func (h *conferencecallHandler) Terminated(ctx context.Context, cc *conferencecall.Conferencecall) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "Terminated",
-		"conferencecall_id": cc.ID,
-		"conference_id":     cc.ConferenceID,
-		"reference_id":      cc.ReferenceID,
+		"func":           "Terminated",
+		"conferencecall": cc,
 	})
 
 	// update status

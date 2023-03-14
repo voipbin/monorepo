@@ -389,3 +389,38 @@ func (h *listenHandler) processV1ConferencesIDTranscribeStopPost(ctx context.Con
 
 	return res, nil
 }
+
+// processV1ConferencesIDStopPost handles /v1/conferences/<id>/stop POST request
+func (h *listenHandler) processV1ConferencesIDStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConferencesIDStopPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	cfID := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.conferenceHandler.Terminating(ctx, cfID)
+	if err != nil {
+		log.Errorf("Could not start the conference recording id. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

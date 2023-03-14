@@ -44,7 +44,7 @@ type ConferenceHandler interface {
 	AddConferencecallID(ctx context.Context, id uuid.UUID, conferencecallID uuid.UUID) (*conference.Conference, error)
 	RemoveConferencecallID(ctx context.Context, cfID uuid.UUID, ccID uuid.UUID) (*conference.Conference, error)
 
-	Terminate(ctx context.Context, id uuid.UUID) error
+	Terminating(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 
 	RecordingStart(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	RecordingStop(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
