@@ -32,9 +32,8 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/conferences/c337c4de-4132-11ec-b076-ab42296b65d5",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				URI:    "/v1/conferences/c337c4de-4132-11ec-b076-ab42296b65d5",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
 			&rabbitmqhandler.Response{
@@ -99,9 +98,8 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd&type=conference",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				URI:    "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd&type=conference",
+				Method: rabbitmqhandler.RequestMethodGet,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -150,23 +148,31 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		conferenceID  uuid.UUID
-		response      *rabbitmqhandler.Response
+		conferenceID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
+		expectRes     *cfconference.Conference
 	}{
 		{
 			"normal",
 			uuid.FromStringOrNil("2d9227a4-3d17-11ec-ab43-cfdad30eccdf"),
+
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2d9227a4-3d17-11ec-ab43-cfdad30eccdf"}`),
 			},
+
 			"bin-manager.conference-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      "/v1/conferences/2d9227a4-3d17-11ec-ab43-cfdad30eccdf",
-				Method:   rabbitmqhandler.RequestMethodDelete,
-				DataType: "application/json",
-				Data:     []byte(``),
+				URI:    "/v1/conferences/2d9227a4-3d17-11ec-ab43-cfdad30eccdf",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&cfconference.Conference{
+				ID: uuid.FromStringOrNil("2d9227a4-3d17-11ec-ab43-cfdad30eccdf"),
 			},
 		},
 	}
@@ -184,9 +190,104 @@ func Test_ConferenceV1ConferenceDelete(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.ConferenceV1ConferenceDelete(ctx, tt.conferenceID); err != nil {
+			res, err := reqHandler.ConferenceV1ConferenceDelete(ctx, tt.conferenceID)
+			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_ConferenceV1ConferenceStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conferenceID uuid.UUID
+		delay        int
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cfconference.Conference
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
+			0,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"9df75377-cffe-448a-825e-7afc7f86f9e6"}`),
+			},
+
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferences/9df75377-cffe-448a-825e-7afc7f86f9e6/stop",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&cfconference.Conference{
+				ID: uuid.FromStringOrNil("9df75377-cffe-448a-825e-7afc7f86f9e6"),
+			},
+		},
+		{
+			"delay stop",
+			uuid.FromStringOrNil("7b85487d-d251-44e6-b7c6-8cee606c9d00"),
+			100000,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"7b85487d-d251-44e6-b7c6-8cee606c9d00"}`),
+			},
+
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferences/7b85487d-d251-44e6-b7c6-8cee606c9d00/stop",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			if tt.delay == 0 {
+				mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+			} else {
+				mockSock.EXPECT().PublishExchangeDelayedRequest(
+					gomock.Any(),
+					tt.expectTarget,
+					tt.expectRequest,
+					tt.delay,
+				).Return(nil)
+			}
+
+			res, err := reqHandler.ConferenceV1ConferenceStop(ctx, tt.conferenceID, tt.delay)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
 		})
 	}
 }

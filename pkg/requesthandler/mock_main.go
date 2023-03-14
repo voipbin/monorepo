@@ -2051,11 +2051,12 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceCreate(ctx, cust
 }
 
 // ConferenceV1ConferenceDelete mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) error {
+func (m *MockRequestHandler) ConferenceV1ConferenceDelete(ctx context.Context, conferenceID uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceV1ConferenceDelete", ctx, conferenceID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ConferenceV1ConferenceDelete indicates an expected call of ConferenceV1ConferenceDelete.
@@ -2136,6 +2137,21 @@ func (m *MockRequestHandler) ConferenceV1ConferenceRecordingStop(ctx context.Con
 func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceRecordingStop(ctx, conferenceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceRecordingStop", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceRecordingStop), ctx, conferenceID)
+}
+
+// ConferenceV1ConferenceStop mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferenceStop(ctx context.Context, conferenceID uuid.UUID, delay int) (*conference.Conference, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferenceStop", ctx, conferenceID, delay)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ConferenceStop indicates an expected call of ConferenceV1ConferenceStop.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceStop(ctx, conferenceID, delay interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceStop", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceStop), ctx, conferenceID, delay)
 }
 
 // ConferenceV1ConferenceTranscribeStart mocks base method.
