@@ -2,26 +2,31 @@ package conferencehandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
+	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/dbhandler"
 )
 
-func Test_TerminateConference(t *testing.T) {
+func Test_Terminating(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		conference *conference.Conference
+		name string
+		id   uuid.UUID
+
+		responseConference *conference.Conference
 	}{
 		{
 			"normal",
+			uuid.FromStringOrNil("9f5001a6-9482-11eb-956e-f7ead445bb7a"),
+
 			&conference.Conference{
 				ID:                uuid.FromStringOrNil("9f5001a6-9482-11eb-956e-f7ead445bb7a"),
 				Type:              conference.TypeConference,
@@ -32,6 +37,8 @@ func Test_TerminateConference(t *testing.T) {
 		},
 		{
 			"have 1 call",
+			uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
+
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("af79b3bc-9233-11ea-9b6f-2351dfdaf227"),
 				Type:         conference.TypeConference,
@@ -44,6 +51,8 @@ func Test_TerminateConference(t *testing.T) {
 		},
 		{
 			"2 calls in the conference",
+			uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
+
 			&conference.Conference{
 				ID:           uuid.FromStringOrNil("fbf41954-0ab4-11eb-a22f-671a43bddb11"),
 				Type:         conference.TypeConference,
@@ -70,19 +79,24 @@ func Test_TerminateConference(t *testing.T) {
 				notifyHandler: mockNotify,
 				db:            mockDB,
 			}
-
 			ctx := context.Background()
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-			mockDB.EXPECT().ConferenceSetStatus(gomock.Any(), tt.conference.ID, conference.StatusTerminating).Return(nil)
-			mockReq.EXPECT().FlowV1FlowDelete(gomock.Any(), tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
 
-			mockReq.EXPECT().CallV1ConfbridgeDelete(gomock.Any(), tt.conference.ConfbridgeID).Return(nil)
-			mockDB.EXPECT().ConferenceEnd(gomock.Any(), tt.conference.ID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(gomock.Any(), tt.conference.ID).Return(tt.conference, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceSetStatus(ctx, tt.id, conference.StatusTerminating).Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
 
-			if err := h.Terminate(ctx, tt.conference.ID); err != nil {
+			for _, ccID := range tt.responseConference.ConferencecallIDs {
+				mockReq.EXPECT().ConferenceV1ConferencecallKick(ctx, ccID).Return(&conferencecall.Conferencecall{}, nil)
+			}
+
+			res, err := h.Terminating(ctx, tt.id)
+			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseConference, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConference, res)
 			}
 		})
 

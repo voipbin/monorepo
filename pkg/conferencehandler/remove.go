@@ -34,10 +34,6 @@ func (h *conferenceHandler) RemoveConferencecallID(ctx context.Context, cfID uui
 
 	go func() {
 		switch res.Type {
-		// case conference.TypeConnect:
-		// 	if errLeaved := h.removeConferencecallIDTypeConnect(ctx, res); errLeaved != nil {
-		// 		log.Errorf("Could not complete the process for conference type connect. err: %v", errLeaved)
-		// 	}
 
 		default:
 			log.Debugf("Executing default conference leave handle. conference_type: %s", res.Type)
@@ -50,33 +46,11 @@ func (h *conferenceHandler) RemoveConferencecallID(ctx context.Context, cfID uui
 	return res, nil
 }
 
-// // removeConferencecallIDTypeConnect
-// func (h *conferenceHandler) removeConferencecallIDTypeConnect(ctx context.Context, cf *conference.Conference) error {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":          "removeConferencecallIDTypeConnect",
-// 		"conference_id": cf.ID,
-// 	})
-
-// 	if len(cf.ConferencecallIDs) <= 0 {
-// 		if err := h.Destroy(ctx, cf); err != nil {
-// 			log.Errorf("Could not destroy the conference. err: %v", err)
-// 			return err
-// 		}
-// 	} else {
-// 		if err := h.Terminate(ctx, cf.ID); err != nil {
-// 			log.Errorf("Could not terminate the conference. err: %v", err)
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
 // removeConferencecallIDTypeConference
 func (h *conferenceHandler) removeConferencecallIDTypeConference(ctx context.Context, cf *conference.Conference) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "removeConferencecallIDTypeConference",
-		"conference_id": cf.ID,
+		"func":       "removeConferencecallIDTypeConference",
+		"conference": cf,
 	})
 
 	if cf.Status != conference.StatusTerminating {
@@ -89,7 +63,8 @@ func (h *conferenceHandler) removeConferencecallIDTypeConference(ctx context.Con
 		return nil
 	}
 
-	if err := h.Destroy(ctx, cf); err != nil {
+	_, err := h.Destroy(ctx, cf)
+	if err != nil {
 		log.Errorf("Could not destory the conference. err: %v", err)
 		return err
 	}

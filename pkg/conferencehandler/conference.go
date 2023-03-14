@@ -213,7 +213,8 @@ func (h *conferenceHandler) Delete(ctx context.Context, id uuid.UUID) (*conferen
 		"conference_id": id,
 	})
 
-	if errTerm := h.Terminate(ctx, id); errTerm != nil {
+	_, errTerm := h.Terminating(ctx, id)
+	if errTerm != nil {
 		log.Errorf("Could not terminate the conference. err: %v", errTerm)
 		return nil, errTerm
 	}
@@ -398,6 +399,29 @@ func (h *conferenceHandler) AddConferencecallID(ctx context.Context, id uuid.UUI
 	if errAdd := h.db.ConferenceAddConferencecallID(ctx, id, conferencecallID); errAdd != nil {
 		log.Errorf("Could not add the conferencecall to the conference. err: %v", errAdd)
 		return nil, errAdd
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated conference info. err: %v", err)
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conference.EventTypeConferenceUpdated, res)
+
+	return res, nil
+}
+
+// UpdateStatus updates the status and return the updated conference info
+func (h *conferenceHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status conference.Status) (*conference.Conference, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateStatus",
+		"conference_id": id,
+		"status":        status,
+	})
+
+	// add the call to the conference.
+	if errUpdate := h.db.ConferenceSetStatus(ctx, id, status); errUpdate != nil {
+		log.Errorf("Could not update the conference status. err: %v", errUpdate)
+		return nil, errors.Wrap(errUpdate, "Could not update the conference status.")
 	}
 
 	res, err := h.Get(ctx, id)

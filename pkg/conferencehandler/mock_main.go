@@ -172,18 +172,19 @@ func (mr *MockConferenceHandlerMockRecorder) RemoveConferencecallID(ctx, cfID, c
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveConferencecallID", reflect.TypeOf((*MockConferenceHandler)(nil).RemoveConferencecallID), ctx, cfID, ccID)
 }
 
-// Terminate mocks base method.
-func (m *MockConferenceHandler) Terminate(ctx context.Context, id uuid.UUID) error {
+// Terminating mocks base method.
+func (m *MockConferenceHandler) Terminating(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Terminate", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Terminating", ctx, id)
+	ret0, _ := ret[0].(*conference.Conference)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// Terminate indicates an expected call of Terminate.
-func (mr *MockConferenceHandlerMockRecorder) Terminate(ctx, id interface{}) *gomock.Call {
+// Terminating indicates an expected call of Terminating.
+func (mr *MockConferenceHandlerMockRecorder) Terminating(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConferenceHandler)(nil).Terminate), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminating", reflect.TypeOf((*MockConferenceHandler)(nil).Terminating), ctx, id)
 }
 
 // TranscribeStart mocks base method.
