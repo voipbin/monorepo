@@ -27,9 +27,9 @@ func (h *confbridgeHandler) StartContextIncoming(ctx context.Context, cn *channe
 	log.Debugf("Executing StartContextIncoming. data: %v", data)
 
 	// set channel type
-	if errSet := h.channelHandler.VariableSet(ctx, channelID, "VB-TYPE", string(channel.TypeConfbridge)); errSet != nil {
-		log.Errorf("Could not set channel var. err: %v", errSet)
-		return errors.Wrap(errSet, "could not set channel variable")
+	if errSet := h.channelHandler.SetType(ctx, channelID, channel.TypeConfbridge); errSet != nil {
+		log.Errorf("Could not set channel type confbridge. err: %v", errSet)
+		return errors.Wrap(errSet, "Could not set channel type confbridge.")
 	}
 
 	// get conf info

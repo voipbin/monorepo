@@ -200,7 +200,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeCall).Return(nil)
 			mockChannel.EXPECT().HangingUpWithDelay(ctx, gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeSIP).Return(tt.responseSource)
@@ -373,7 +373,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeCall).Return(nil)
 			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
@@ -484,7 +484,7 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeCall)).Return(nil)
+			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeCall).Return(nil)
 			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridge)
@@ -549,7 +549,7 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
+			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeExternal).Return(nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -601,10 +601,9 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 				channelHandler: mockChannel,
 				bridgeHandler:  mockBridge,
 			}
-
 			ctx := context.Background()
 
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeExternal)).Return(nil)
+			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeExternal).Return(nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -659,7 +658,7 @@ func Test_Start_ContextJoinCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeJoin)).Return(nil)
+			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeJoin).Return(nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, "", defaultDialTimeout).Return(nil)
 

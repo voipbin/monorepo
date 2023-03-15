@@ -45,13 +45,11 @@ func (h *callHandler) Create(
 	dialrouteID uuid.UUID,
 	dialroutes []rmroute.Route,
 ) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Create",
-			"id":          id,
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Create",
+		"id":          id,
+		"customer_id": customerID,
+	})
 
 	callID := id
 	if callID == uuid.Nil {
@@ -136,12 +134,12 @@ func (h *callHandler) Get(ctx context.Context, id uuid.UUID) (*call.Call, error)
 
 // updateForRouteFailover updates the call for route failover
 func (h *callHandler) updateForRouteFailover(ctx context.Context, id uuid.UUID, channelID string, dialrouteID uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "updateForRouteFailover",
-			"call_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "updateForRouteFailover",
+		"call_id":      id,
+		"channel_id":   channelID,
+		"dialroute_id": dialrouteID,
+	})
 
 	if errSet := h.db.CallSetForRouteFailover(ctx, id, channelID, dialrouteID); errSet != nil {
 		log.Errorf("Could not update the call. err: %v", errSet)
@@ -160,12 +158,12 @@ func (h *callHandler) updateForRouteFailover(ctx context.Context, id uuid.UUID, 
 
 // CallHealthCheck checks the given call is still vaild
 func (h *callHandler) CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount int, delay int) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "CallHealthCheck",
-			"call_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CallHealthCheck",
+		"call_id":     id,
+		"retry_count": retryCount,
+		"delay":       delay,
+	})
 
 	c, err := h.db.CallGet(ctx, id)
 	if err != nil {
@@ -206,12 +204,11 @@ func (h *callHandler) updateActionNextHold(ctx context.Context, id uuid.UUID, ho
 
 // updateActionAndActionNextHold sets the action to the call
 func (h *callHandler) updateActionAndActionNextHold(ctx context.Context, id uuid.UUID, a *fmaction.Action) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "setAction",
-			"call_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "setAction",
+		"call_id": id,
+		"action":  a,
+	})
 
 	// set action
 	if err := h.db.CallSetActionAndActionNextHold(ctx, id, a, false); err != nil {
@@ -233,13 +230,11 @@ func (h *callHandler) updateActionAndActionNextHold(ctx context.Context, id uuid
 
 // UpdateStatus sets the action to the call
 func (h *callHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status call.Status) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "updateStatus",
-			"call_id": id,
-			"status":  status,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "UpdateStatus",
+		"call_id": id,
+		"status":  status,
+	})
 
 	var err error
 	switch status {
@@ -286,12 +281,10 @@ func (h *callHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status cal
 
 // Delete deletes the call
 func (h *callHandler) Delete(ctx context.Context, id uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "Delete",
-			"call_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Delete",
+		"call_id": id,
+	})
 
 	if errDel := h.db.CallDelete(ctx, id); errDel != nil {
 		log.Errorf("Could not delete the call. err: %v", errDel)
@@ -312,13 +305,11 @@ func (h *callHandler) Delete(ctx context.Context, id uuid.UUID) (*call.Call, err
 // UpdateRecordingID updates the call's recording id.
 // if the recording id is not uuid.Nil, it also adds to the recording_ids
 func (h *callHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "UpdateRecordingID",
-			"call_id":      id,
-			"recording_id": recordingID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateRecordingID",
+		"call_id":      id,
+		"recording_id": recordingID,
+	})
 
 	if errSet := h.db.CallSetRecordingID(ctx, id, recordingID); errSet != nil {
 		log.Errorf("Could not set the recording id. err: %v", errSet)
@@ -346,13 +337,11 @@ func (h *callHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID, recor
 
 // UpdateExternalMediaID updates the call's external media id.
 func (h *callHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "UpdateExternalMediaID",
-			"call_id":           id,
-			"external_media_id": externalMediaID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "UpdateExternalMediaID",
+		"call_id":           id,
+		"external_media_id": externalMediaID,
+	})
 
 	if errSet := h.db.CallSetExternalMediaID(ctx, id, externalMediaID); errSet != nil {
 		log.Errorf("Could not set the external media id. err: %v", errSet)
@@ -371,13 +360,11 @@ func (h *callHandler) UpdateExternalMediaID(ctx context.Context, id uuid.UUID, e
 
 // UpdateConfbridgeID updates the call's confbridge id.
 func (h *callHandler) UpdateConfbridgeID(ctx context.Context, id uuid.UUID, confbridgeID uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "UpdateConfbridgeID",
-			"call_id":       id,
-			"confbridge_id": confbridgeID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateConfbridgeID",
+		"call_id":       id,
+		"confbridge_id": confbridgeID,
+	})
 
 	if errSet := h.db.CallSetConfbridgeID(ctx, id, confbridgeID); errSet != nil {
 		log.Errorf("Could not set the external media id. err: %v", errSet)

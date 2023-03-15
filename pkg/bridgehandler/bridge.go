@@ -98,12 +98,10 @@ func (h *bridgeHandler) get(ctx context.Context, id string) (*bridge.Bridge, err
 
 // Delete deletes the channel.
 func (h *bridgeHandler) Delete(ctx context.Context, id string) (*bridge.Bridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":      "Delete",
-			"bridge_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "Delete",
+		"bridge_id": id,
+	})
 
 	if errEnd := h.db.BridgeEnd(ctx, id); errEnd != nil {
 		log.Errorf("Could not end the bridge. bridge_id: %s, err: %v", id, errEnd)
@@ -122,13 +120,11 @@ func (h *bridgeHandler) Delete(ctx context.Context, id string) (*bridge.Bridge, 
 
 // AddChannelID adds the given channel id to the bridge.
 func (h *bridgeHandler) AddChannelID(ctx context.Context, id, channelID string) (*bridge.Bridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "AddChannelID",
-			"bridge_id":  id,
-			"channel_id": channelID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "AddChannelID",
+		"bridge_id":  id,
+		"channel_id": channelID,
+	})
 
 	// add bridge's channel id
 	if errAdd := h.db.BridgeAddChannelID(ctx, id, channelID); errAdd != nil {
@@ -147,13 +143,11 @@ func (h *bridgeHandler) AddChannelID(ctx context.Context, id, channelID string) 
 
 // RemoveChannelID removes the given channel id from the bridge.
 func (h *bridgeHandler) RemoveChannelID(ctx context.Context, id, channelID string) (*bridge.Bridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "RemoveChannelID",
-			"bridge_id":  id,
-			"channel_id": channelID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "RemoveChannelID",
+		"bridge_id":  id,
+		"channel_id": channelID,
+	})
 
 	// add bridge's channel id
 	if errAdd := h.db.BridgeRemoveChannelID(ctx, id, channelID); errAdd != nil {

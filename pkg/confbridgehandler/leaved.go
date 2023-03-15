@@ -15,13 +15,11 @@ import (
 // Leaved handles event the channel has left from the bridge
 // when the channel has left from the conference bridge, this func will be fired.
 func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Leaved",
-			"channel_id": cn.ID,
-			"bridge_id":  br.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Leaved",
+		"channel": cn,
+		"bridge":  br,
+	})
 
 	confbridgeID := uuid.FromStringOrNil(cn.StasisData["confbridge_id"])
 	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])

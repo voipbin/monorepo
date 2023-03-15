@@ -11,14 +11,12 @@ import (
 )
 
 // ChainedCallIDAdd adds the chained call id to the call and set the added chained call's master call id.
-func (h *callHandler) ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "ChainedCallIDAdd",
-			"call":            id,
-			"chained_call_id": chainedCallID,
-		},
-	)
+func (h *callHandler) ChainedCallIDAdd(ctx context.Context, id uuid.UUID, chainedCallID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "ChainedCallIDAdd",
+		"call":            id,
+		"chained_call_id": chainedCallID,
+	})
 	log.Debug("Adding the chained call id.")
 
 	// transaction start
@@ -71,14 +69,12 @@ func (h *callHandler) ChainedCallIDAdd(ctx context.Context, id, chainedCallID uu
 }
 
 // ChainedCallIDRemove removes the chained call id and set the master call id to nil
-func (h *callHandler) ChainedCallIDRemove(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "ChainedCallIDRemove",
-			"call":            id,
-			"chained_call_id": chainedCallID,
-		},
-	)
+func (h *callHandler) ChainedCallIDRemove(ctx context.Context, id uuid.UUID, chainedCallID uuid.UUID) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "ChainedCallIDRemove",
+		"call":            id,
+		"chained_call_id": chainedCallID,
+	})
 	log.Debug("Removing the chained call id.")
 
 	// transaction start

@@ -235,13 +235,6 @@ func (h *eventHandler) EventHandlerChannelVarset(ctx context.Context, evt interf
 			return err
 		}
 
-	case "VB-TYPE":
-		logrus.Debugf("Setting channel's type. channel: %s, type: %s", e.Channel.ID, e.Value)
-		if err := h.channelHandler.SetType(ctx, e.Channel.ID, channel.Type(e.Value)); err != nil {
-			log.Errorf("Could not set the variable. err: %v", err)
-			return err
-		}
-
 	default:
 		return nil
 	}

@@ -19,12 +19,11 @@ const (
 
 // ExternalMediaStart starts the external media processing
 func (h *callHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "ExternalMediaStart",
-			"call_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ExternalMediaStart",
+		"call_id":       id,
+		"external_host": externalHost,
+	})
 	log.Debug("Starting the external media.")
 
 	c, err := h.Get(ctx, id)
@@ -56,12 +55,10 @@ func (h *callHandler) ExternalMediaStart(ctx context.Context, id uuid.UUID, exte
 
 // ExternalMediaStop stops the external media processing
 func (h *callHandler) ExternalMediaStop(ctx context.Context, id uuid.UUID) (*call.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "ExternalMediaStop",
-			"call_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "ExternalMediaStop",
+		"call_id": id,
+	})
 	log.Debug("Stopping the external media.")
 
 	// get call

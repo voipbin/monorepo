@@ -660,8 +660,12 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230306054421-a779ca4e
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230306054421-a779ca4e58fa/go.mod h1:Ddvmt+m5deu2Q4qq6jg3eqYkCSruoITMKNPR9RrCq7I=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230309050120-4eec15be2160 h1:ISqjWfSi9DSZ/c+aVbBKewrpvHuJXGqZ0qJJcsYvkjU=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230309050120-4eec15be2160/go.mod h1:REXybsGii42nXgTsdrrBI7dFCEEw6WW8mygvQrUHTgw=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230314080212-bd1aecda7a7f h1:xNbU6fFP5Zo8UdSp4cLXiVhfnOs3XEi515zX3PHkGBM=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230314080212-bd1aecda7a7f/go.mod h1:IYZ8SnhsKQckd3zhv8aoLssjN3PlVn55iTdcKOvqXTw=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230219063008-4d0cd07e8b45 h1:Q9MpvmiE6pWa+WTivtMGMUUDze7rPPIhuQ1vV1V9Ya8=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230219063008-4d0cd07e8b45/go.mod h1:++NZh2dZ3Av5DjaeDML1I1XPF0xisRtPPxL1/nr1FRU=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa h1:PP+lN42xD4htGHyiwpzki5O9qhYqJQoO2vvbsjslr9g=
+gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa/go.mod h1:ZmH0dxGw24CBuZhNZO4JYFTFfY3Ti+aeQkMHG97Swas=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a h1:6tQaB5eQ8du+G2tXWGrm1E9oI2fPZQT+slbcYFcVqPE=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a/go.mod h1:DtQoH7ZODkzXBZR0i6J4PH0NyS2/v+BkhLZhxbf585Q=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5 h1:l2PNnUrTq8qZNqqi9eu2b6EaQKNz/oar9P9/H0d+6hU=
@@ -1260,6 +1264,8 @@ google.golang.org/protobuf v1.28.1 h1:d0NfwRgPtno5B1Wa6L2DAG+KivqkdutMf1UhdNx175
 google.golang.org/protobuf v1.28.1/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 google.golang.org/protobuf v1.29.0 h1:44S3JjaKmLEE4YIkjzexaP+NzZsudE3Zin5Njn/pYX0=
 google.golang.org/protobuf v1.29.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+google.golang.org/protobuf v1.29.1 h1:7QBf+IK2gx70Ap/hDsOmam3GE0v9HicjfEdAxE62UoM=
+google.golang.org/protobuf v1.29.1/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=

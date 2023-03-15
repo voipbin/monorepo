@@ -25,13 +25,11 @@ func (h *externalMediaHandler) Create(
 	format string,
 	direction string,
 ) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "Create",
-			"reference_type": referenceType,
-			"reference_id":   referenceID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Create",
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+	})
 
 	id := h.utilHandler.CreateUUID()
 	extMedia := &externalmedia.ExternalMedia{
@@ -63,12 +61,10 @@ func (h *externalMediaHandler) Create(
 
 // Get returns external media info
 func (h *externalMediaHandler) Get(ctx context.Context, id uuid.UUID) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "Get",
-			"external_media_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "Get",
+		"external_media_id": id,
+	})
 
 	res, err := h.db.ExternalMediaGet(ctx, id)
 	if err != nil {
