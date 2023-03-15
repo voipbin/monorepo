@@ -31,12 +31,10 @@ func (h *channelHandler) Create(
 
 	state ari.ChannelState,
 ) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Create",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Create",
+		"channel_id": id,
+	})
 
 	c := &channel.Channel{
 		ID:         id,
@@ -98,12 +96,10 @@ func (h *channelHandler) get(ctx context.Context, id string) (*channel.Channel, 
 
 // Get returns call.
 func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Get",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Get",
+		"channel_id": id,
+	})
 
 	// we are giving some delay timeoute to getting a channel info.
 	// because we are creating a channel info after receiving a ChannelCreate ari event.
@@ -120,12 +116,10 @@ func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, 
 
 // Delete deletes the channel.
 func (h *channelHandler) Delete(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Delete",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Delete",
+		"channel_id": id,
+	})
 
 	if errEnd := h.db.ChannelEndAndDelete(ctx, id, cause); errEnd != nil {
 		log.Errorf("Could not end the channel. channel_id: %s, err: %v", id, errEnd)
@@ -144,12 +138,10 @@ func (h *channelHandler) Delete(ctx context.Context, id string, cause ari.Channe
 
 // SetDataItem sets the channel's data key/value.
 func (h *channelHandler) SetDataItem(ctx context.Context, id string, key string, value interface{}) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "SetDataItem",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SetDataItem",
+		"channel_id": id,
+	})
 	log.Debugf("Setting channel's data item. key: %s, value: %s", key, value)
 
 	if err := h.db.ChannelSetDataItem(ctx, id, key, value); err != nil {
@@ -162,12 +154,10 @@ func (h *channelHandler) SetDataItem(ctx context.Context, id string, key string,
 
 // SetSIPTransport sets the channel's sip transport.
 func (h *channelHandler) SetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "SetSIPTransport",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SetSIPTransport",
+		"channel_id": id,
+	})
 	log.Debugf("Setting channel's transport. channel_id: %s, transport: %s", id, transport)
 
 	if err := h.db.ChannelSetSIPTransport(ctx, id, transport); err != nil {
@@ -192,12 +182,10 @@ func (h *channelHandler) SetSIPTransport(ctx context.Context, id string, transpo
 
 // SetDirection sets the channel's direction.
 func (h *channelHandler) SetDirection(ctx context.Context, id string, direction channel.Direction) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "SetDirection",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SetDirection",
+		"channel_id": id,
+	})
 	log.Debugf("Setting channel's transport. channel_id: %s, direction: %s", id, direction)
 
 	if err := h.db.ChannelSetDirection(ctx, id, direction); err != nil {
@@ -222,12 +210,10 @@ func (h *channelHandler) SetDirection(ctx context.Context, id string, direction 
 
 // SetSIPCallID sets the channel's sip call id.
 func (h *channelHandler) SetSIPCallID(ctx context.Context, id string, sipCallID string) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "SetSIPCallID",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SetSIPCallID",
+		"channel_id": id,
+	})
 	log.Debugf("Setting channel's transport. channel_id: %s, sip_call_id: %s", id, sipCallID)
 
 	if err := h.db.ChannelSetSIPCallID(ctx, id, sipCallID); err != nil {
@@ -240,12 +226,10 @@ func (h *channelHandler) SetSIPCallID(ctx context.Context, id string, sipCallID 
 
 // SetType sets the channel's type.
 func (h *channelHandler) SetType(ctx context.Context, id string, channelType channel.Type) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "SetType",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SetType",
+		"channel_id": id,
+	})
 	log.Debugf("Setting channel's type. channel_id: %s, channel_type: %s", id, channelType)
 
 	if err := h.db.ChannelSetType(ctx, id, channelType); err != nil {
@@ -258,12 +242,10 @@ func (h *channelHandler) SetType(ctx context.Context, id string, channelType cha
 
 // UpdateState updates the channel's state.
 func (h *channelHandler) UpdateState(ctx context.Context, id string, state ari.ChannelState) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdateState",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdateState",
+		"channel_id": id,
+	})
 	log.Debugf("Updating channel's state. channel_id: %s, state: %s", id, state)
 
 	var err error
@@ -293,12 +275,10 @@ func (h *channelHandler) UpdateState(ctx context.Context, id string, state ari.C
 
 // UpdateStasisNameAndStasisData updates the channel's stasis_name and stasis_data.
 func (h *channelHandler) UpdateStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdateStasisNameAndStasisData",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdateStasisNameAndStasisData",
+		"channel_id": id,
+	})
 
 	if errSet := h.db.ChannelSetStasisNameAndStasisData(ctx, id, stasisName, stasisData); errSet != nil {
 		log.Errorf("Could not update the channel stasis_name and stasis_data. err: %v", errSet)
@@ -316,12 +296,10 @@ func (h *channelHandler) UpdateStasisNameAndStasisData(ctx context.Context, id s
 
 // UpdateStasisName updates the channel's stasis_name.
 func (h *channelHandler) UpdateStasisName(ctx context.Context, id string, stasisName string) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdateStasisName",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdateStasisName",
+		"channel_id": id,
+	})
 
 	if errSet := h.db.ChannelSetStasis(ctx, id, stasisName); errSet != nil {
 		log.Errorf("Could not set channel's stasis name. err: %v", errSet)
@@ -339,12 +317,10 @@ func (h *channelHandler) UpdateStasisName(ctx context.Context, id string, stasis
 
 // UpdateBridgeID updates the channel's bridge id.
 func (h *channelHandler) UpdateBridgeID(ctx context.Context, id string, bridgeID string) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdateBridgeID",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdateBridgeID",
+		"channel_id": id,
+	})
 	log.Debugf("Updating channel's bridge. channel_id: %s, bridge_id: %s", id, bridgeID)
 
 	if errSet := h.db.ChannelSetBridgeID(ctx, id, bridgeID); errSet != nil {
@@ -363,12 +339,10 @@ func (h *channelHandler) UpdateBridgeID(ctx context.Context, id string, bridgeID
 
 // UpdatePlaybackID updates the channel's playback id.
 func (h *channelHandler) UpdatePlaybackID(ctx context.Context, id string, playbackID string) (*channel.Channel, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdatePlaybackID",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdatePlaybackID",
+		"channel_id": id,
+	})
 	log.Debugf("Updating channel's playback id. channel_id: %s, playback_id: %s", id, playbackID)
 
 	if errSet := h.db.ChannelSetPlaybackID(ctx, id, playbackID); errSet != nil {

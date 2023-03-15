@@ -122,10 +122,10 @@ func (h *callHandler) startContextRecording(ctx context.Context, cn *channel.Cha
 	})
 	log.Infof("Executing startHandlerContextRecording. channel_id: %s", cn.ID)
 
-	// set channel's type call.
-	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-TYPE", string(channel.TypeRecording)); errSet != nil {
-		log.Errorf("Could not set a call type for channel. channel_id: %s, err: %v", cn.ID, errSet)
-		return errors.Wrap(errSet, "could not set a call type for channel")
+	// set channel's type.
+	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeRecording); errSet != nil {
+		log.Errorf("Could not set channel type recording. err: %v", errSet)
+		return errors.Wrap(errSet, "Could not set channel type recording.")
 	}
 
 	referenceType := cn.StasisData["reference_type"]
@@ -151,18 +151,16 @@ func (h *callHandler) startContextRecording(ctx context.Context, cn *channel.Cha
 
 // startContextExternalSoop handles contextExternalSnoop context type of StasisStart event.
 func (h *callHandler) startContextExternalSoop(ctx context.Context, cn *channel.Channel) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "startHandlerContextExternalSnoop",
-			"channel_id": cn.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startHandlerContextExternalSnoop",
+		"channel_id": cn.ID,
+	})
 	log.Infof("Executing startHandlerContextExternalSnoop. channel_id: %s", cn.ID)
 
-	// set channel's type call.
-	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-TYPE", string(channel.TypeExternal)); errSet != nil {
-		log.Errorf("Could not set a call type for channel. channel_id: %s, err: %v", cn.ID, errSet)
-		return errors.Wrap(errSet, "could not set a call type for channel")
+	// set channel's type external.
+	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeExternal); errSet != nil {
+		log.Errorf("Could not set channel type external. err: %v", errSet)
+		return errors.Wrap(errSet, "Could not set channel type external.")
 	}
 
 	callID := cn.StasisData["call_id"]
@@ -184,18 +182,16 @@ func (h *callHandler) startContextExternalSoop(ctx context.Context, cn *channel.
 
 // startContextExternalMedia handles contextExternalMedia context type of StasisStart event.
 func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel.Channel) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "startHandlerContextExternalMedia",
-			"channel_id": cn.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startHandlerContextExternalMedia",
+		"channel_id": cn.ID,
+	})
 	log.Infof("Executing startHandlerContextExternalMedia. channel_id: %s", cn.ID)
 
-	// set channel's type call.
-	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-TYPE", string(channel.TypeExternal)); errSet != nil {
-		log.Errorf("Could not set a call type for channel. channel_id: %s, err: %v", cn.ID, errSet)
-		return errors.Wrap(errSet, "could not set a call type for channel")
+	// set channel's type external.
+	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeExternal); errSet != nil {
+		log.Errorf("Could not set channel type external. err: %v", errSet)
+		return errors.Wrap(errSet, "Could not set channel type external.")
 	}
 
 	callID := cn.StasisData["call_id"]
@@ -214,18 +210,16 @@ func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel
 
 // startContextJoinCall handles contextJoinCall context type of StasisStart event.
 func (h *callHandler) startContextJoinCall(ctx context.Context, cn *channel.Channel) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "startContextJoinCall",
-			"channel_id": cn.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "startContextJoinCall",
+		"channel_id": cn.ID,
+	})
 	log.Infof("Executing startHandlerContextJoin. channel_id: %s", cn.ID)
 
-	// set channel's type call.
-	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-TYPE", string(channel.TypeJoin)); errSet != nil {
-		log.Errorf("Could not set a call type for channel. channel_id: %s, err: %v", cn.ID, errSet)
-		return errors.Wrapf(errSet, "could not set a call type for channel. channel_id: %s", cn.ID)
+	// set channel's type join.
+	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeJoin); errSet != nil {
+		log.Errorf("Could not set channel type join. err: %v", errSet)
+		return errors.Wrap(errSet, "Could not set channel type join.")
 	}
 
 	confbridgeID := cn.StasisData["confbridge_id"]
@@ -258,8 +252,8 @@ func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.
 	log.Infof("Executing startHandlerContextIncomingCall. data: %v", cn.StasisData)
 
 	// set channel's type call.
-	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-TYPE", string(channel.TypeCall)); errSet != nil {
-		log.Errorf("Could not set the call type for the channel. err: %v", errSet)
+	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeCall); errSet != nil {
+		log.Errorf("Could not set channel type call. err: %v", errSet)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // response 500
 		return nil
 	}
@@ -309,8 +303,8 @@ func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.
 	log = log.WithField("call_id", callID.String())
 
 	// set channel's type call.
-	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-TYPE", string(channel.TypeCall)); errSet != nil {
-		log.Errorf("Could not set channel's type. err: %v", errSet)
+	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeCall); errSet != nil {
+		log.Errorf("Could not set channel type call. err: %v", errSet)
 		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		return errors.Wrap(errSet, "could not set channel's type")
 	}

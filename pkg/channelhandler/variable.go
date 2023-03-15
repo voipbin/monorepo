@@ -11,12 +11,10 @@ import (
 
 // VariableSet sets the variable
 func (h *channelHandler) VariableSet(ctx context.Context, id string, key string, value string) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "VariableSet",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "VariableSet",
+		"channel_id": id,
+	})
 
 	res, err := h.Get(ctx, id)
 	if err != nil {
@@ -38,12 +36,10 @@ func (h *channelHandler) VariableSet(ctx context.Context, id string, key string,
 
 // VariableGet gets the variable
 func (h *channelHandler) VariableGet(ctx context.Context, id string, key string) (string, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "VariableGet",
-			"channel_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "VariableGet",
+		"channel_id": id,
+	})
 
 	tmp, err := h.Get(ctx, id)
 	if err != nil {

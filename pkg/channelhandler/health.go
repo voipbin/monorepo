@@ -10,12 +10,10 @@ import (
 
 // HealthCheck checks the given channel is still vaild
 func (h *channelHandler) HealthCheck(ctx context.Context, channelID string, retryCount int) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "HealthCheck",
-			"channel_id": channelID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "HealthCheck",
+		"channel_id": channelID,
+	})
 
 	// get channel
 	cn, err := h.Get(ctx, channelID)

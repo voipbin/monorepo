@@ -18,12 +18,11 @@ import (
 // 1. Creates a bridge(confbridge joining type) and put the call's channel into the bridge
 // 2. Creates a new channel for joining to the confbridge.
 func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.UUID) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "Join",
-			"confbridge_id": id,
-			"call_id":       callID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Join",
+		"confbridge_id": id,
+		"call_id":       callID,
+	})
 	log.Info("Starting to join the call to the confbridge.")
 
 	// get confbridge
@@ -92,12 +91,10 @@ func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.
 
 // createConfbridgeBridge creates the bridge for confbridge
 func (h *confbridgeHandler) createConfbridgeBridge(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "createConfbridgeBridge",
-			"confbridge_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "createConfbridgeBridge",
+		"confbridge_id": id,
+	})
 
 	cb, err := h.Get(ctx, id)
 	if err != nil {
@@ -143,12 +140,10 @@ func (h *confbridgeHandler) createConfbridgeBridge(ctx context.Context, id uuid.
 // createEndpointTarget creates target endpoint(destination) address for conference join.
 // This will create a SIP destination address towards conference Asterisk to joining the conference.
 func (h *confbridgeHandler) createEndpointTarget(ctx context.Context, cb *confbridge.Confbridge) (string, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "createEndpointTarget",
-			"confbridge_id": cb.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "createEndpointTarget",
+		"confbridge_id": cb.ID,
+	})
 
 	// get bridge
 	bridge, err := h.bridgeHandler.Get(ctx, cb.BridgeID)

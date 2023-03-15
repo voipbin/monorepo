@@ -13,12 +13,10 @@ import (
 
 // Stop stops the external media processing
 func (h *externalMediaHandler) Stop(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "Stop",
-			"external_media_id": externalMediaID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "Stop",
+		"external_media_id": externalMediaID,
+	})
 	log.Debug("Stopping the external media.")
 
 	// get external media

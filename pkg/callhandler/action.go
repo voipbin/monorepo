@@ -29,13 +29,11 @@ const (
 // cleanCurrentAction cleans the given call's current blocking action.
 // return true if it needs to get next action.
 func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) (bool, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "cleanCurrentAction",
-			"call_id":           c.ID,
-			"current_action_id": c.Action.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "cleanCurrentAction",
+		"call_id":           c.ID,
+		"current_action_id": c.Action.ID,
+	})
 
 	// get channel
 	cn, err := h.channelHandler.Get(ctx, c.ChannelID)
@@ -152,19 +150,11 @@ func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call) error {
 
 // ActionNext Execute next action
 func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "ActionNext",
-			"call_id":           c.ID,
-			"activeflow_id":     c.ActiveFlowID,
-			"flow_id":           c.FlowID,
-			"current_action_id": c.Action.ID,
-		})
-	log.WithFields(
-		logrus.Fields{
-			"action": c.Action,
-		},
-	).Debug("Getting a next action for the call.")
+	log := logrus.WithFields(logrus.Fields{
+		"func": "ActionNext",
+		"call": c,
+	})
+	log.Debug("Getting a next action for the call.")
 
 	if c.Status == call.StatusHangup {
 		log.WithField("call", c).Debug("The call has hungup already.")
@@ -213,13 +203,11 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 
 // ActionNextForce Execute next action forcedly
 func (h *callHandler) ActionNextForce(ctx context.Context, c *call.Call) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "ActionNextForce",
-			"call_id": c.ID,
-			"flow_id": c.FlowID,
-		})
-	log.WithField("action", c.Action).Debug("Getting a next action for the call.")
+	log := logrus.WithFields(logrus.Fields{
+		"func": "ActionNextForce",
+		"call": c,
+	})
+	log.Debug("Getting a next action for the call.")
 
 	// cleanup the call's current action
 	needNext, err := h.cleanCurrentAction(ctx, c)

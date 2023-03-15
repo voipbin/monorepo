@@ -186,7 +186,13 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
+// processRequest processes the request.
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processRequest",
+		"request": m,
+	})
+
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
@@ -197,11 +203,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	if err != nil {
 		uri = "could not unescape uri"
 	}
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"request": m,
-		})
 
 	start := time.Now()
 	switch {

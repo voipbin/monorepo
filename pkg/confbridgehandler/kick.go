@@ -11,12 +11,11 @@ import (
 )
 
 // Kick kicks out the call from the conference
-func (h *confbridgeHandler) Kick(ctx context.Context, id, callID uuid.UUID) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"confbridge_id": id.String(),
-			"call_id":       callID.String(),
-		})
+func (h *confbridgeHandler) Kick(ctx context.Context, id uuid.UUID, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"confbridge_id": id.String(),
+		"call_id":       callID.String(),
+	})
 	log.Debugf("Kicking out the call from the confbridge.")
 
 	// get confbridge info

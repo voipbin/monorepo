@@ -23,9 +23,9 @@ func (h *callHandler) applicationHandleAMD(ctx context.Context, channelID string
 	})
 	log.Debug("Executing the applciationHandleAMD.")
 
-	if err := h.channelHandler.VariableSet(ctx, channelID, "VB-TYPE", string(channel.TypeApplication)); err != nil {
-		log.Errorf("Could not set channel variable. err: %v", err)
-		return errors.Wrap(err, "could not set channel variable")
+	if errSet := h.channelHandler.SetType(ctx, channelID, channel.TypeApplication); errSet != nil {
+		log.Errorf("Could not set channel type application. err: %v", errSet)
+		return errors.Wrap(errSet, "could not set channel type application.")
 	}
 
 	// put the cahnnel to the amd

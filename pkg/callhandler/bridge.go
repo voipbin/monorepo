@@ -15,10 +15,9 @@ import (
 // bridgeLeftJoin handles the case which join channel left from the call bridge
 func (h *callHandler) bridgeLeftJoin(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "bridgeLeftJoin",
-		"channel_id": cn.ID,
-		"bridge_id":  br.ID,
-		"call_id":    br.ReferenceID,
+		"func":    "bridgeLeftJoin",
+		"channel": cn,
+		"bridge":  br,
 	})
 
 	log.Debug("Hangup join channel.")
@@ -84,23 +83,17 @@ func (h *callHandler) bridgeLeftExternal(ctx context.Context, cn *channel.Channe
 
 // removeAllChannelsInBridge remove the all channels in the bridge
 func (h *callHandler) removeAllChannelsInBridge(ctx context.Context, bridge *bridge.Bridge) {
-	logrus.WithFields(
-		logrus.Fields{
-			"func":        "removeAllChannelsInBridge",
-			"asterisk_id": bridge.AsteriskID,
-			"bridge_id":   bridge.ID,
-			"channel_ids": bridge.ChannelIDs,
-		}).Debug("Hanging up all channels in the bridge.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "removeAllChannelsInBridge",
+		"bridge": bridge,
+	})
+	log.Debug("Hanging up all channels in the bridge.")
 
 	// destroy all the channels in the bridge
 	for _, channelID := range bridge.ChannelIDs {
+		log.Debugf("Kicking out the channel from the bridge. channel_id: %s", channelID)
 		if errKick := h.bridgeHandler.ChannelKick(ctx, bridge.ID, channelID); errKick != nil {
-			logrus.WithFields(
-				logrus.Fields{
-					"asterisk": bridge.AsteriskID,
-					"bridge":   bridge.ID,
-					"channel":  channelID,
-				}).Debugf("Could not hangup the channel. err: %v", errKick)
+			log.Debugf("Could not hangup the channel. channel_id: %s, err: %v", channelID, errKick)
 		}
 	}
 }

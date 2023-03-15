@@ -16,14 +16,12 @@ import (
 
 // digitsReceived handles DTMF Recevied event
 func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, digit string, duration int) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":     "digitsReceived",
-			"channel":  cn,
-			"digits":   digit,
-			"duration": duration,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "digitsReceived",
+		"channel":  cn,
+		"digits":   digit,
+		"duration": duration,
+	})
 
 	c, err := h.db.CallGetByChannelID(ctx, cn.ID)
 	if err != nil {
@@ -123,12 +121,10 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 
 // DigitsGet returns received dtmfs
 func (h *callHandler) DigitsGet(ctx context.Context, id uuid.UUID) (string, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "DigitsGet",
-			"call_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "DigitsGet",
+		"call_id": id,
+	})
 
 	// get call
 	c, err := h.Get(ctx, id)
@@ -151,12 +147,10 @@ func (h *callHandler) DigitsGet(ctx context.Context, id uuid.UUID) (string, erro
 
 // DigitsSet sets the dtmfs
 func (h *callHandler) DigitsSet(ctx context.Context, id uuid.UUID, digits string) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "DigitsSet",
-			"call_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "DigitsSet",
+		"call_id": id,
+	})
 
 	// get call
 	c, err := h.Get(ctx, id)
@@ -178,12 +172,11 @@ func (h *callHandler) DigitsSet(ctx context.Context, id uuid.UUID, digits string
 
 // checkDigitsCondition checks the received digits with option
 func (h *callHandler) checkDigitsCondition(ctx context.Context, variableID uuid.UUID, option *fmaction.OptionDigitsReceive) (bool, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "checkDigitsCondition",
-			"variable_id": variableID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "checkDigitsCondition",
+		"variable_id": variableID,
+		"option":      option,
+	})
 
 	vars, err := h.reqHandler.FlowV1VariableGet(ctx, variableID)
 	if err != nil {

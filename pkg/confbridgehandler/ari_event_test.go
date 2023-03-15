@@ -74,7 +74,7 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-TYPE", string(channel.TypeConfbridge)).Return(nil)
+			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeConfbridge).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.confbridge.BridgeID, tt.channel.ID, "", false, false).Return(nil)
 

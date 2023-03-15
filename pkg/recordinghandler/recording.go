@@ -260,12 +260,10 @@ func (h *recordingHandler) Started(ctx context.Context, id uuid.UUID) (*recordin
 
 // GetsByCustomerID returns list of recordings of the given customerID
 func (h *recordingHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*recording.Recording, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsByCustomerID",
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"customer_id": customerID,
+	})
 
 	res, err := h.db.RecordingGets(ctx, customerID, size, token)
 	if err != nil {
@@ -411,12 +409,10 @@ func (h *recordingHandler) Stopped(ctx context.Context, id uuid.UUID) (*recordin
 
 // Delete deletes recording
 func (h *recordingHandler) Delete(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "Delete",
-			"recording_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "Delete",
+		"recording_id": id,
+	})
 
 	if errDelete := h.db.RecordingDelete(ctx, id); errDelete != nil {
 		log.Errorf("Could not get reocording. err: %v", errDelete)

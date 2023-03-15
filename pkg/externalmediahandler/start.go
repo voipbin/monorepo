@@ -16,13 +16,11 @@ import (
 
 // Start starts the external media processing
 func (h *externalMediaHandler) Start(ctx context.Context, referenceType externalmedia.ReferenceType, referenceID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "Start",
-			"reference_type": referenceType,
-			"reference_id":   referenceID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Start",
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+	})
 	log.Debug("Creating the external media.")
 
 	switch referenceType {
@@ -39,12 +37,10 @@ func (h *externalMediaHandler) Start(ctx context.Context, referenceType external
 
 // startReferenceTypeCall starts the external media processing
 func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "startReferenceTypeCall",
-			"call_id": callID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "startReferenceTypeCall",
+		"call_id": callID,
+	})
 	log.Debug("Creating the external media for call type.")
 
 	c, err := h.reqHandler.CallV1CallGet(ctx, callID)
@@ -96,13 +92,11 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callI
 
 // startReferenceTypeConfbridge starts the external media processing reference type
 func (h *externalMediaHandler) startReferenceTypeConfbridge(ctx context.Context, confbridgeID uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*externalmedia.ExternalMedia, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "startReferenceTypeConfbridge",
-			"confbridge_id": confbridgeID,
-			"external_host": externalHost,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startReferenceTypeConfbridge",
+		"confbridge_id": confbridgeID,
+		"external_host": externalHost,
+	})
 	log.Debug("Creating the external media for confbridge type.")
 
 	// get confbridge
