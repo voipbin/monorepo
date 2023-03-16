@@ -167,18 +167,6 @@ func (mr *MockCallHandlerMockRecorder) ActionTimeout(ctx, callID, a interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActionTimeout", reflect.TypeOf((*MockCallHandler)(nil).ActionTimeout), ctx, callID, a)
 }
 
-// CallHealthCheck mocks base method.
-func (m *MockCallHandler) CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount, delay int) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CallHealthCheck", ctx, id, retryCount, delay)
-}
-
-// CallHealthCheck indicates an expected call of CallHealthCheck.
-func (mr *MockCallHandlerMockRecorder) CallHealthCheck(ctx, id, retryCount, delay interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHealthCheck", reflect.TypeOf((*MockCallHandler)(nil).CallHealthCheck), ctx, id, retryCount, delay)
-}
-
 // ChainedCallIDAdd mocks base method.
 func (m *MockCallHandler) ChainedCallIDAdd(ctx context.Context, id, chainedCallID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -370,6 +358,18 @@ func (m *MockCallHandler) Hangup(ctx context.Context, cn *channel.Channel) error
 func (mr *MockCallHandlerMockRecorder) Hangup(ctx, cn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockCallHandler)(nil).Hangup), ctx, cn)
+}
+
+// HealthCheck mocks base method.
+func (m *MockCallHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount int) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "HealthCheck", ctx, id, retryCount)
+}
+
+// HealthCheck indicates an expected call of HealthCheck.
+func (mr *MockCallHandlerMockRecorder) HealthCheck(ctx, id, retryCount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockCallHandler)(nil).HealthCheck), ctx, id, retryCount)
 }
 
 // MediaStop mocks base method.

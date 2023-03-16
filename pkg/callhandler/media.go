@@ -73,6 +73,7 @@ func (h *callHandler) Play(ctx context.Context, callID uuid.UUID, runNext bool, 
 		"func":     "Play",
 		"call_id":  callID,
 		"run_next": runNext,
+		"urls":     urls,
 	})
 
 	c, err := h.Get(ctx, callID)
@@ -82,7 +83,7 @@ func (h *callHandler) Play(ctx context.Context, callID uuid.UUID, runNext bool, 
 	}
 
 	// create a media string array
-	var medias []string
+	medias := []string{}
 	for _, url := range urls {
 		media := fmt.Sprintf("sound:%s", url)
 		medias = append(medias, media)

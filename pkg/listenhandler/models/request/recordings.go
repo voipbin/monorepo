@@ -8,7 +8,7 @@ import (
 
 // V1DataRecordingsGET is rquest param define for GET /recordings
 type V1DataRecordingsGET struct {
-	UserID uint64 `json:"user_id"`
+	UserID uint64 `json:"user_id,omitempty"`
 	Pagination
 }
 
@@ -16,10 +16,10 @@ type V1DataRecordingsGET struct {
 // v1 data type request struct for
 // /v1/recordings POST
 type V1DataRecordingsPost struct {
-	ReferenceType recording.ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID               `json:"reference_id"`
-	Format        recording.Format        `json:"format"`         // default wav
-	EndOfSilence  int                     `json:"end_of_silence"` // milliseconds
-	EndOfKey      string                  `json:"end_of_key"`
-	Duration      int                     `json:"duration"` // milliseconds
+	ReferenceType recording.ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID   uuid.UUID               `json:"reference_id,omitempty"`
+	Format        recording.Format        `json:"format,omitempty"`         // default wav
+	EndOfSilence  int                     `json:"end_of_silence,omitempty"` // milliseconds
+	EndOfKey      string                  `json:"end_of_key,omitempty"`
+	Duration      int                     `json:"duration,omitempty"` // milliseconds
 }

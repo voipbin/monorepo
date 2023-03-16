@@ -12,7 +12,6 @@ import (
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 // Create creates a call record.
@@ -154,41 +153,6 @@ func (h *callHandler) updateForRouteFailover(ctx context.Context, id uuid.UUID, 
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallUpdated, res)
 
 	return res, nil
-}
-
-// CallHealthCheck checks the given call is still vaild
-func (h *callHandler) CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount int, delay int) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "CallHealthCheck",
-		"call_id":     id,
-		"retry_count": retryCount,
-		"delay":       delay,
-	})
-
-	c, err := h.db.CallGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not call info. err: %v", err)
-		return
-	}
-
-	ch, err := h.channelHandler.Get(ctx, c.ChannelID)
-	if err != nil {
-		log.Errorf("Could not get channel info. err: %v", err)
-		return
-	}
-
-	// check the channel is valid or not
-	if ch.TMDelete < dbhandler.DefaultTimeStamp {
-		retryCount++
-	} else {
-		retryCount = 0
-	}
-
-	// send another health check.
-	if err := h.reqHandler.CallV1CallHealth(ctx, id, delay, retryCount); err != nil {
-		log.Errorf("Could not send the call health check request. err: %v", err)
-		return
-	}
 }
 
 // updateActionNextHold sets the action next hold

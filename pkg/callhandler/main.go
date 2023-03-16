@@ -36,7 +36,7 @@ type CallHandler interface {
 	ARIPlaybackFinished(ctx context.Context, cn *channel.Channel, playbackID string) error
 	ARIStasisStart(ctx context.Context, cn *channel.Channel) error
 
-	CallHealthCheck(ctx context.Context, id uuid.UUID, retryCount int, delay int)
+	HealthCheck(ctx context.Context, id uuid.UUID, retryCount int)
 
 	DigitsGet(ctx context.Context, id uuid.UUID) (string, error)
 	DigitsSet(ctx context.Context, id uuid.UUID, digits string) error
@@ -123,15 +123,18 @@ const (
 	contextTypeCall       contextType = "call"
 )
 
-// asterisk rel
+// asterisk related variables
 const (
 	constTempBucketMount = "temp" // asterisk's tmp bucket mount path.
 )
 
-// List of default values
+// List of default variables
 const (
 	defaultDialTimeout         = 60      // default outgoing dial timeout
 	defaultTimeoutCallDuration = 3600000 // default call duration timeout. 1h
+
+	defaultHealthMaxRetryCount = 2
+	defaultHealthDelay         = 10000 // 10 seconds
 )
 
 // list of variables
