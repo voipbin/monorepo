@@ -156,48 +156,46 @@ func Test_processV1CallsGet(t *testing.T) {
 	}
 }
 
-func TestProcessV1CallsIDHealthPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockCall := callhandler.NewMockCallHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:  mockSock,
-		callHandler: mockCall,
-	}
+func Test_processV1CallsIDHealthPost(t *testing.T) {
 
 	type test struct {
 		name string
 
 		id         uuid.UUID
 		retryCount int
-		delay      int
 
 		request *rabbitmqhandler.Request
 	}
 
 	tests := []test{
 		{
-			"normal test",
+			"normal",
 
 			uuid.FromStringOrNil("1a94c1e6-982e-11ea-9298-43412daaf0da"),
 			0,
-			10,
 
 			&rabbitmqhandler.Request{
 				URI:    "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/health-check",
 				Method: rabbitmqhandler.RequestMethodPost,
-				Data:   []byte(`{"retry_count": 0, "delay": 10}`),
+				Data:   []byte(`{"retry_count": 0}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockCall.EXPECT().CallHealthCheck(gomock.Any(), tt.id, tt.retryCount, tt.delay)
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:  mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().HealthCheck(gomock.Any(), tt.id, tt.retryCount)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -206,6 +204,7 @@ func TestProcessV1CallsIDHealthPost(t *testing.T) {
 				t.Errorf("Wrong match. expect: nil, got: %v", res)
 			}
 
+			time.Sleep(time.Millisecond * 100)
 		})
 	}
 }
@@ -1446,6 +1445,21 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 				"https://test.com/3d55ea46-5a91-442a-b1bc-d6100be0e11d.wav",
 				"https://test.com/6a094e77-a837-4511-8c4f-e2fec3aac44b.wav",
 			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+		{
+			"empty media urls",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/calls/c7d981fc-3119-4733-966c-88bfc61587fb/play",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+
+			uuid.FromStringOrNil("c7d981fc-3119-4733-966c-88bfc61587fb"),
+			nil,
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 			},

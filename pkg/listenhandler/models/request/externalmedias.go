@@ -10,12 +10,12 @@ import (
 // v1 data type request struct for
 // /v1/external-medias POST
 type V1DataExternalMediasPost struct {
-	ReferenceType  externalmedia.ReferenceType `json:"reference_type"`
-	ReferenceID    uuid.UUID                   `json:"reference_id"`
-	ExternalHost   string                      `json:"external_host"`
-	Encapsulation  string                      `json:"encapsulation"`
-	Transport      string                      `json:"transport"`
-	ConnectionType string                      `json:"connection_type"`
-	Format         string                      `json:"format"`
-	Direction      string                      `json:"direction"` // in, out
+	ReferenceType  externalmedia.ReferenceType `json:"reference_type,omitempty"`
+	ReferenceID    uuid.UUID                   `json:"reference_id,omitempty"`
+	ExternalHost   string                      `json:"external_host,omitempty"`
+	Encapsulation  string                      `json:"encapsulation,omitempty"`
+	Transport      string                      `json:"transport,omitempty"`
+	ConnectionType string                      `json:"connection_type,omitempty"`
+	Format         string                      `json:"format,omitempty"`
+	Direction      string                      `json:"direction,omitempty"` // in, out
 }

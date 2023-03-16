@@ -249,7 +249,7 @@ func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *rabbi
 	return res, nil
 }
 
-// processV1CallsIDGet handles /v1/calls/<call-id>/health-check request
+// processV1CallsIDHealthPost handles /v1/calls/<call-id>/health-check request
 func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1CallsIDHealthPost",
@@ -268,7 +268,7 @@ func (h *listenHandler) processV1CallsIDHealthPost(ctx context.Context, m *rabbi
 		return nil, err
 	}
 
-	h.callHandler.CallHealthCheck(ctx, id, req.RetryCount, req.Delay)
+	go h.callHandler.HealthCheck(ctx, id, req.RetryCount)
 	return nil, nil
 }
 
