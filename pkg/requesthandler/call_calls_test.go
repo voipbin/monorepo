@@ -33,14 +33,14 @@ func Test_CallV1CallHealth(t *testing.T) {
 
 			uuid.FromStringOrNil("5bfcdcd6-4c6e-11ec-bed9-8fe4c0fdf5ba"),
 			0,
-			0,
+			3,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:      "/v1/calls/5bfcdcd6-4c6e-11ec-bed9-8fe4c0fdf5ba/health-check",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"retry_count":0,"delay":0}`),
+				Data:     []byte(`{"retry_count":3}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -152,7 +152,7 @@ func Test_CallV1CallActionNext(t *testing.T) {
 				URI:      "/v1/calls/bee79b78-4c6f-11ec-a254-cb0b4d8d4c9c/action-next",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"force":false}`),
+				Data:     []byte(`{}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
