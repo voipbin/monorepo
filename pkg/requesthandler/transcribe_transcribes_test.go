@@ -295,3 +295,58 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 		})
 	}
 }
+
+func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		transcribeID uuid.UUID
+		delay        int
+		retryCount   int
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("273d1fa4-e9ac-46cc-920e-34e163eb0e73"),
+			0,
+			3,
+
+			"bin-manager.transcribe-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/transcribes/273d1fa4-e9ac-46cc-920e-34e163eb0e73/health-check",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"retry_count":3}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			err := reqHandler.TranscribeV1TranscribeHealthCheck(ctx, tt.transcribeID, tt.delay, tt.retryCount)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

@@ -3955,6 +3955,20 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGets(ctx, custom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeGets), ctx, customerID, pageToken, pageSize)
 }
 
+// TranscribeV1TranscribeHealthCheck mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeHealthCheck", ctx, id, delay, retryCount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TranscribeV1TranscribeHealthCheck indicates an expected call of TranscribeV1TranscribeHealthCheck.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeHealthCheck(ctx, id, delay, retryCount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeHealthCheck", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeHealthCheck), ctx, id, delay, retryCount)
+}
+
 // TranscribeV1TranscribeStart mocks base method.
 func (m *MockRequestHandler) TranscribeV1TranscribeStart(ctx context.Context, customerID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
