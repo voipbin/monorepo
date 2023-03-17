@@ -19,7 +19,7 @@ import (
 func (r *requestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes/%s", transcribeID)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceTranscribeTranscribesID, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -138,7 +138,7 @@ func (r *requestHandler) TranscribeV1TranscribeStop(ctx context.Context, transcr
 func (r *requestHandler) TranscribeV1TranscribeDelete(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes/%s", transcribeID)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceTranscribeTranscribes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceTranscribeTranscribesID, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
@@ -155,4 +155,33 @@ func (r *requestHandler) TranscribeV1TranscribeDelete(ctx context.Context, trans
 	}
 
 	return &res, nil
+}
+
+// TranscribeV1TranscribeHealthCheck sends the request to the transcribe-manager for transcribe health-check
+//
+// delay: milliseconds
+func (r *requestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay int, retryCount int) error {
+	uri := fmt.Sprintf("/v1/transcribes/%s/health-check", id)
+
+	type Data struct {
+		RetryCount int `json:"retry_count,omitempty"`
+	}
+
+	m, err := json.Marshal(Data{
+		RetryCount: retryCount,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestTranscribe(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceTranscribeTranscribesIDHealthCheck, requestTimeoutDefault, delay, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return err
+	case res == nil:
+		return nil
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
 }

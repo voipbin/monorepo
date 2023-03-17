@@ -244,8 +244,10 @@ const (
 
 	resourceStorageRecording resource = "storage/recording"
 
-	resourceTranscribeTranscribes = "transcribe/transcribes"
-	resourceTranscribeTranscripts = "transcribe/transcripts"
+	resourceTranscribeTranscribes              resource = "transcribe/transcribes"
+	resourceTranscribeTranscribesID            resource = "transcribe/transcribes/<transcribe-id>"
+	resourceTranscribeTranscribesIDHealthCheck resource = "transcribe/transcribes/<transcribe-id>/health-check"
+	resourceTranscribeTranscripts              resource = "transcribe/transcripts"
 
 	resourceTTSSpeeches resource = "tts/speeches"
 
@@ -815,6 +817,7 @@ type RequestHandler interface {
 	// // transcribe-manager
 	TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tmtranscribe.Transcribe, error)
+	TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay int, retryCount int) error
 	TranscribeV1TranscribeStart(
 		ctx context.Context,
 		customerID uuid.UUID,
