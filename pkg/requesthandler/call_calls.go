@@ -18,17 +18,13 @@ import (
 )
 
 // CallV1CallHealth sends the request for call health-check
+//
+// delay: milliseconds
 func (r *requestHandler) CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
 	uri := fmt.Sprintf("/v1/calls/%s/health-check", id)
 
-	type Data struct {
-		RetryCount int `json:"retry_count"`
-		Delay      int `json:"delay"`
-	}
-
-	m, err := json.Marshal(Data{
-		retryCount,
-		delay,
+	m, err := json.Marshal(cmrequest.V1DataCallsIDHealthPost{
+		RetryCount: retryCount,
 	})
 	if err != nil {
 		return err
@@ -113,7 +109,7 @@ func (r *requestHandler) CallV1CallsCreate(
 ) ([]cmcall.Call, error) {
 	uri := "/v1/calls"
 
-	data := &cmrequest.V1DataCallsPost{
+	m, err := json.Marshal(cmrequest.V1DataCallsPost{
 		CustomerID:     customerID,
 		FlowID:         flowID,
 		MasterCallID:   masterCallID,
@@ -121,9 +117,7 @@ func (r *requestHandler) CallV1CallsCreate(
 		Destinations:   destinations,
 		EarlyExecution: ealryExecution,
 		Connect:        connect,
-	}
-
-	m, err := json.Marshal(data)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +159,7 @@ func (r *requestHandler) CallV1CallCreateWithID(
 ) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
-	data := &cmrequest.V1DataCallsIDPost{
+	m, err := json.Marshal(cmrequest.V1DataCallsIDPost{
 		CustomerID:     customerID,
 		FlowID:         flowID,
 		ActiveflosID:   activeflowID,
@@ -175,9 +169,7 @@ func (r *requestHandler) CallV1CallCreateWithID(
 		GroupcallID:    groupcallID,
 		EarlyExecution: earlyExecution,
 		Connect:        connect,
-	}
-
-	m, err := json.Marshal(data)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -307,11 +299,9 @@ func (r *requestHandler) CallV1CallHangup(ctx context.Context, callID uuid.UUID)
 func (r *requestHandler) CallV1CallAddChainedCall(ctx context.Context, callID uuid.UUID, chainedCallID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/chained-call-ids", callID)
 
-	data := &cmrequest.V1DataCallsIDChainedCallIDsPost{
+	m, err := json.Marshal(cmrequest.V1DataCallsIDChainedCallIDsPost{
 		ChainedCallID: chainedCallID,
-	}
-
-	m, err := json.Marshal(data)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -375,16 +365,14 @@ func (r *requestHandler) CallV1CallExternalMediaStart(
 ) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/external-media", callID)
 
-	reqData := &cmrequest.V1DataCallsIDExternalMediaPost{
+	m, err := json.Marshal(cmrequest.V1DataCallsIDExternalMediaPost{
 		ExternalHost:   externalHost,
 		Encapsulation:  encapsulation,
 		Transport:      transport,
 		ConnectionType: connectionType,
 		Format:         format,
 		Direction:      direction,
-	}
-
-	m, err := json.Marshal(reqData)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -464,11 +452,9 @@ func (r *requestHandler) CallV1CallGetDigits(ctx context.Context, callID uuid.UU
 func (r *requestHandler) CallV1CallSendDigits(ctx context.Context, callID uuid.UUID, digits string) error {
 	uri := fmt.Sprintf("/v1/calls/%s/digits", callID)
 
-	reqData := &cmrequest.V1DataCallsIDDigitsPost{
+	m, err := json.Marshal(cmrequest.V1DataCallsIDDigitsPost{
 		Digits: digits,
-	}
-
-	m, err := json.Marshal(reqData)
+	})
 	if err != nil {
 		return err
 	}
@@ -493,14 +479,12 @@ func (r *requestHandler) CallV1CallSendDigits(ctx context.Context, callID uuid.U
 func (r *requestHandler) CallV1CallRecordingStart(ctx context.Context, callID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/recording_start", callID)
 
-	reqData := &cmrequest.V1DataCallsIDRecordingStartPost{
+	m, err := json.Marshal(cmrequest.V1DataCallsIDRecordingStartPost{
 		Format:       format,
 		EndOfSilence: endOfSilence,
 		EndOfKey:     endOfKey,
 		Duration:     duration,
-	}
-
-	m, err := json.Marshal(reqData)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -555,11 +539,9 @@ func (r *requestHandler) CallV1CallRecordingStop(ctx context.Context, callID uui
 func (r *requestHandler) CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s/confbridge_id", callID)
 
-	data := &cmrequest.V1DataCallsIDConfbridgeIDPut{
+	m, err := json.Marshal(cmrequest.V1DataCallsIDConfbridgeIDPut{
 		ConfbridgeID: confbirdgeID,
-	}
-
-	m, err := json.Marshal(data)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -590,13 +572,11 @@ func (r *requestHandler) CallV1CallUpdateConfbridgeID(ctx context.Context, callI
 func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string, rqeuestTimeout int) error {
 	uri := fmt.Sprintf("/v1/calls/%s/talk", callID)
 
-	data := &cmrequest.V1DataCallsIDTalkPost{
+	m, err := json.Marshal(cmrequest.V1DataCallsIDTalkPost{
 		Text:     text,
 		Gender:   gender,
 		Language: language,
-	}
-
-	m, err := json.Marshal(data)
+	})
 	if err != nil {
 		return err
 	}
@@ -621,11 +601,9 @@ func (r *requestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, t
 func (r *requestHandler) CallV1CallPlay(ctx context.Context, callID uuid.UUID, mediaURLs []string) error {
 	uri := fmt.Sprintf("/v1/calls/%s/play", callID)
 
-	data := &cmrequest.V1DataCallsIDPlayPost{
+	m, err := json.Marshal(cmrequest.V1DataCallsIDPlayPost{
 		MediaURLs: mediaURLs,
-	}
-
-	m, err := json.Marshal(data)
+	})
 	if err != nil {
 		return err
 	}
