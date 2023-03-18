@@ -22,13 +22,14 @@ func (h *transcribeHandler) Start(
 	language string,
 	direction transcribe.Direction,
 ) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "Start",
-			"reference_type": referenceType,
-			"reference_id":   referenceID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Start",
+		"customer_id":    customerID,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+		"language":       language,
+		"direction":      direction,
+	})
 
 	// check the reference is valid
 	if valid := h.isValidReference(ctx, referenceType, referenceID); !valid {
@@ -119,15 +120,14 @@ func (h *transcribeHandler) startLive(
 	language string,
 	direction transcribe.Direction,
 ) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "startStreaming",
-			"reference_type": referenceType,
-			"reference_id":   referenceID,
-			"language":       language,
-			"direction":      direction,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "startLive",
+		"customer_id":    customerID,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+		"language":       language,
+		"direction":      direction,
+	})
 
 	// create transcribe id
 	id := h.utilHandler.CreateUUID()

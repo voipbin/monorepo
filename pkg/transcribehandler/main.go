@@ -20,18 +20,12 @@ import (
 
 // TranscribeHandler is interface for service handle
 type TranscribeHandler interface {
-	// Create(
-	// 	ctx context.Context,
-	// 	customerID uuid.UUID,
-	// 	referenceType transcribe.ReferenceType,
-	// 	referenceID uuid.UUID,
-	// 	language string,
-	// 	direction transcribe.Direction,
-	// ) (*transcribe.Transcribe, error)
 	Delete(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	GetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error)
+
+	HealthCheck(ctx context.Context, id uuid.UUID, retryCount int)
 
 	Start(
 		ctx context.Context,
@@ -68,6 +62,12 @@ var (
 		},
 		[]string{"type"},
 	)
+)
+
+// List of default variables
+const (
+	defaultHealthMaxRetryCount = 2
+	defaultHealthDelay         = 10000 // 10 seconds
 )
 
 func init() {

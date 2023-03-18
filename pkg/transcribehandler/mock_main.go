@@ -96,6 +96,18 @@ func (mr *MockTranscribeHandlerMockRecorder) Gets(ctx, customerID, size, token i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTranscribeHandler)(nil).Gets), ctx, customerID, size, token)
 }
 
+// HealthCheck mocks base method.
+func (m *MockTranscribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount int) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "HealthCheck", ctx, id, retryCount)
+}
+
+// HealthCheck indicates an expected call of HealthCheck.
+func (mr *MockTranscribeHandlerMockRecorder) HealthCheck(ctx, id, retryCount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockTranscribeHandler)(nil).HealthCheck), ctx, id, retryCount)
+}
+
 // Start mocks base method.
 func (m *MockTranscribeHandler) Start(ctx context.Context, customerID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcribe.Direction) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
