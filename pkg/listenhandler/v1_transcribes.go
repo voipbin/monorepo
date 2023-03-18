@@ -200,3 +200,26 @@ func (h *listenHandler) processV1TranscribesIDStopPost(ctx context.Context, m *r
 
 	return res, nil
 }
+
+// processV1TranscribesIDHealthCheckPost handles /v1/transcribes/<transcribe-id>/health-check request
+func (h *listenHandler) processV1TranscribesIDHealthCheckPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1TranscribesIDHealthCheckPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataTranscribesIDHealthCheckPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not marshal the request message. message: %v, err: %v", req, err)
+		return nil, err
+	}
+
+	h.transcribeHandler.HealthCheck(ctx, id, req.RetryCount)
+	return nil, nil
+}

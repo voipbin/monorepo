@@ -11,12 +11,10 @@ import (
 
 // Get returns transcribe
 func (h *transcribeHandler) Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "Get",
-			"transcribe_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Get",
+		"transcribe_id": id,
+	})
 
 	res, err := h.db.TranscribeGet(ctx, id)
 	if err != nil {
@@ -29,13 +27,11 @@ func (h *transcribeHandler) Get(ctx context.Context, id uuid.UUID) (*transcribe.
 
 // GetByReferenceIDAndLanguage returns transcribe of the given referenceID and language
 func (h *transcribeHandler) GetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "GetByReferenceIDAndLanguage",
-			"reference_id": referenceID,
-			"language":     language,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "GetByReferenceIDAndLanguage",
+		"reference_id": referenceID,
+		"language":     language,
+	})
 
 	res, err := h.db.TranscribeGetByReferenceIDAndLanguage(ctx, referenceID, language)
 	if err != nil {
@@ -48,12 +44,10 @@ func (h *transcribeHandler) GetByReferenceIDAndLanguage(ctx context.Context, ref
 
 // Gets returns list of transcribes.
 func (h *transcribeHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Gets",
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Gets",
+		"customer_id": customerID,
+	})
 
 	res, err := h.db.TranscribeGetsByCustomerID(ctx, customerID, size, token)
 	if err != nil {
@@ -75,13 +69,15 @@ func (h *transcribeHandler) Create(
 	direction transcribe.Direction,
 	streamingIDs []uuid.UUID,
 ) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "Create",
-			"reference_type": referenceType,
-			"reference_id":   referenceID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Create",
+		"id":             id,
+		"customer_id":    customerID,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+		"language":       language,
+		"direction":      direction,
+	})
 
 	tmp := &transcribe.Transcribe{
 		ID:            id,
@@ -115,11 +111,9 @@ func (h *transcribeHandler) Create(
 
 // TranscribeGet returns transcribe
 func (h *transcribeHandler) Delete(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "Delete",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Delete",
+	})
 
 	if errDelete := h.db.TranscribeDelete(ctx, id); errDelete != nil {
 		log.Errorf("Could not delete the transcribe info. err: %v", errDelete)
@@ -140,13 +134,11 @@ func (h *transcribeHandler) Delete(ctx context.Context, id uuid.UUID) (*transcri
 
 // UpdateStatus updates the transcribe's status
 func (h *transcribeHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status transcribe.Status) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "UpdateStatus",
-			"transcribe_id": id,
-			"status":        status,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateStatus",
+		"transcribe_id": id,
+		"status":        status,
+	})
 
 	// // get transcribe and evaluate
 	// tmp, err := h.Get(ctx, id)

@@ -12,12 +12,10 @@ import (
 
 // Stop stops the progressing transcribe process.
 func (h *transcribeHandler) Stop(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "Stop",
-			"transcribe_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Stop",
+		"transcribe_id": id,
+	})
 
 	// get transcribe and evaluate
 	tr, err := h.Get(ctx, id)
@@ -43,12 +41,10 @@ func (h *transcribeHandler) Stop(ctx context.Context, id uuid.UUID) (*transcribe
 
 // stopLive stops live transcribing.
 func (h *transcribeHandler) stopLive(ctx context.Context, tr *transcribe.Transcribe) (*transcribe.Transcribe, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "stopLive",
-			"transcribe_id": tr.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "stopLive",
+		"transcribe_id": tr.ID,
+	})
 
 	for _, streamingID := range tr.StreamingIDs {
 		st, err := h.streamingHandler.Stop(ctx, streamingID)

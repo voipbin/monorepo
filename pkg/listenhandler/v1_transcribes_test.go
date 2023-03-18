@@ -353,3 +353,54 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1TranscribesIDHealthCheckPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id         uuid.UUID
+		retryCount int
+
+		request *rabbitmqhandler.Request
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("e04a0326-5c94-446e-bafb-1d53aa310420"),
+			0,
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/transcribes/e04a0326-5c94-446e-bafb-1d53aa310420/health-check",
+				Method: rabbitmqhandler.RequestMethodPost,
+				Data:   []byte(`{"retry_count": 0}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				transcribeHandler: mockTranscribe,
+			}
+
+			mockTranscribe.EXPECT().HealthCheck(gomock.Any(), tt.id, tt.retryCount)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			} else if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
+			}
+		})
+	}
+}

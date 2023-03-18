@@ -46,10 +46,11 @@ var (
 
 	// v1
 	// transcribes
-	regV1Transcribes       = regexp.MustCompile(`/v1/transcribes$`)
-	regV1TranscribesGet    = regexp.MustCompile(`/v1/transcribes\?`)
-	regV1TranscribesID     = regexp.MustCompile("/v1/transcribes/" + regUUID + "$")
-	regV1TranscribesIDStop = regexp.MustCompile("/v1/transcribes/" + regUUID + "/stop$")
+	regV1Transcribes              = regexp.MustCompile(`/v1/transcribes$`)
+	regV1TranscribesGet           = regexp.MustCompile(`/v1/transcribes\?`)
+	regV1TranscribesID            = regexp.MustCompile("/v1/transcribes/" + regUUID + "$")
+	regV1TranscribesIDHealthCheck = regexp.MustCompile("/v1/transcribes/" + regUUID + "/health-check$")
+	regV1TranscribesIDStop        = regexp.MustCompile("/v1/transcribes/" + regUUID + "/stop$")
 
 	// transcripts
 	regV1TranscriptsGet = regexp.MustCompile(`/v1/transcripts\?`)
@@ -263,6 +264,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1TranscribesIDStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1TranscribesIDStopPost(ctx, m)
 		requestType = "/v1/transcribes/<transcribe-id>/stop"
+
+	// POST /transcribes/<transcribe-id>/health-check
+	case regV1TranscribesIDHealthCheck.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1TranscribesIDHealthCheckPost(ctx, m)
+		requestType = "/v1/transcribes/<transcribe-id>/health-check"
 
 	////////////////////
 	// transcripts
