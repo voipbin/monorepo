@@ -11,11 +11,10 @@ import (
 
 // EventHandleActiveflowDeleted handles activeflow's deleted event.
 func (h *campaigncallHandler) EventHandleActiveflowDeleted(ctx context.Context, cc *campaigncall.Campaigncall) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "EventHandleActiveflowDeleted",
-			"campaigncall_id": cc.ID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "EventHandleActiveflowDeleted",
+		"campaigncall_id": cc.ID,
+	})
 
 	// update campaigncall to done.
 	res, err := h.Done(ctx, cc.ID, campaigncall.ResultSuccess)
@@ -29,11 +28,10 @@ func (h *campaigncallHandler) EventHandleActiveflowDeleted(ctx context.Context, 
 
 // EventhandleReferenceCallHungup handles reference call's hangup.
 func (h *campaigncallHandler) EventHandleReferenceCallHungup(ctx context.Context, c *cmcall.Call, cc *campaigncall.Campaigncall) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "EventhandleReferenceCallHungup",
-			"campaigncall_id": cc.ID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "EventhandleReferenceCallHungup",
+		"campaigncall_id": cc.ID,
+	})
 
 	// get result
 	result, err := calcCampaigncallResultByCallHangupReason(c.HangupReason)

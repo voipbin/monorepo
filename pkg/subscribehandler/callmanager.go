@@ -11,14 +11,10 @@ import (
 
 // processEventCMCallHungup handles the call-manager's confbridge_leaved event.
 func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *rabbitmqhandler.Event) error {
-	// ctx := context.Background()
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":  "processEventCMCallHungup",
-			"event": m,
-		},
-	)
-	log.WithField("event", m).Debug("Executing processEventCMCallHungup.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventCMCallHungup",
+		"event": m,
+	})
 
 	c := cmcall.Call{}
 	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {

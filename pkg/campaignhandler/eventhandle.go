@@ -9,13 +9,10 @@ import (
 
 // EventHandleActiveflowDeleted handles activeflow's deleted event.
 func (h *campaignHandler) EventHandleActiveflowDeleted(ctx context.Context, campaignID uuid.UUID) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "EventHandleActiveflowDeleted",
-			"campaign_id": campaignID,
-		})
-
-
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "EventHandleActiveflowDeleted",
+		"campaign_id": campaignID,
+	})
 
 	// check is the campaign stopable
 	if !h.isStoppable(ctx, campaignID) {
@@ -35,11 +32,10 @@ func (h *campaignHandler) EventHandleActiveflowDeleted(ctx context.Context, camp
 
 // EventhandleReferenceCallHungup handles reference call's hangup.
 func (h *campaignHandler) EventHandleReferenceCallHungup(ctx context.Context, campaignID uuid.UUID) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "EventHandleReferenceCallHungup",
-			"campaign_id": campaignID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "EventHandleReferenceCallHungup",
+		"campaign_id": campaignID,
+	})
 
 	// check is the campaign stopable
 	if !h.isStoppable(ctx, campaignID) {

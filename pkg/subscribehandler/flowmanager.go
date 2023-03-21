@@ -13,13 +13,10 @@ import (
 
 // processEventFMActiveflowDeleted handles the flow-manager's activeflow_deleted event.
 func (h *subscribeHandler) processEventFMActiveflowDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":  "processEventFMActiveflowDeleted",
-			"event": m,
-		},
-	)
-	log.WithField("event", m).Debug("Executing processEventFMActiveflowDeleted.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventFMActiveflowDeleted",
+		"event": m,
+	})
 
 	c := fmactiveflow.Activeflow{}
 	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {

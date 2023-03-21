@@ -27,11 +27,10 @@ func (h *campaignHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status
 // UpdateStatusStopping updates the campaign's status to the stopping.
 // it checks the condition for status update and returns updated campaign and error
 func (h *campaignHandler) campaignStop(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "campaignStop",
-			"id":   id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func": "campaignStop",
+		"id":   id,
+	})
 	log.Debug("Updating the campaign status to stopping.")
 
 	var res *campaign.Campaign
@@ -53,11 +52,10 @@ func (h *campaignHandler) campaignStop(ctx context.Context, id uuid.UUID) (*camp
 // campaignStopping updates the campaign's status to the stopping.
 // it checks the condition for status update and returns updated campaign and error
 func (h *campaignHandler) campaignStopping(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "campaignStopping",
-			"id":   id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func": "campaignStopping",
+		"id":   id,
+	})
 	log.Debug("Updating the campaign status to stopping.")
 
 	// get campaign
@@ -91,11 +89,10 @@ func (h *campaignHandler) campaignStopping(ctx context.Context, id uuid.UUID) (*
 
 // campaignStopNow updates the campaign's status to stop.
 func (h *campaignHandler) campaignStopNow(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "campaignStopNow",
-			"id":   id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func": "campaignStopNow",
+		"id":   id,
+	})
 	log.Debug("Updating the campaign status to stop now.")
 
 	// get campaign
@@ -129,11 +126,10 @@ func (h *campaignHandler) campaignStopNow(ctx context.Context, id uuid.UUID) (*c
 
 // isStoppable returns true if the campaign is stoppable
 func (h *campaignHandler) isStoppable(ctx context.Context, id uuid.UUID) bool {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "isStopable",
-			"campaign_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "isStopable",
+		"campaign_id": id,
+	})
 
 	// get campaign
 	c, err := h.Get(ctx, id)

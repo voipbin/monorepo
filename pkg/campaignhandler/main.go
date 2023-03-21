@@ -6,20 +6,19 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
-
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/util"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
 // campaignHandler defines
 type campaignHandler struct {
-	util          util.Util
+	util          utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -72,7 +71,7 @@ func NewCampaignHandler(
 	outplanHandler outplanhandler.OutplanHandler,
 ) CampaignHandler {
 	h := &campaignHandler{
-		util:                util.NewUtil(),
+		util:                utilhandler.NewUtilHandler(),
 		db:                  db,
 		reqHandler:          reqHandler,
 		notifyHandler:       notifyHandler,

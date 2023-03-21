@@ -13,12 +13,11 @@ import (
 
 // Done updates the campaigncall status to done and update the outdialtarget's status depends on the result.
 func (h *campaigncallHandler) Done(ctx context.Context, id uuid.UUID, result campaigncall.Result) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "Done",
-			"campaigncall_id": id,
-			"result":          result,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "Done",
+		"campaigncall_id": id,
+		"result":          result,
+	})
 	log.Debugf("Updating campaigncall status done. campagincall_id: %s, result: %s", id, result)
 
 	// update campaigncall to done
@@ -49,11 +48,10 @@ func (h *campaigncallHandler) Done(ctx context.Context, id uuid.UUID, result cam
 
 // Progressing updates the campaigncall status to progressing and update the outdialtarget's status depends on the result.
 func (h *campaigncallHandler) Progressing(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "Progress",
-			"campaigncall_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "Progress",
+		"campaigncall_id": id,
+	})
 	log.Debug("Updating campaigncall status progress.")
 
 	// update campaigncall to done

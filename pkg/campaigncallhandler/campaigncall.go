@@ -31,12 +31,10 @@ func (h *campaigncallHandler) Create(
 	destinationIndex int,
 	tryCount int,
 ) (*campaigncall.Campaigncall, error) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Create",
-			"customer_id": customerID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Create",
+		"customer_id": customerID,
+	})
 
 	id := uuid.Must(uuid.NewV4())
 	t := &campaigncall.Campaigncall{
@@ -88,11 +86,10 @@ func (h *campaigncallHandler) Create(
 
 // Get returns list of campaigncall
 func (h *campaigncallHandler) Get(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "Get",
-			"id":   id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Get",
+		"id":   id,
+	})
 	log.Debug("Getting campaigncall.")
 
 	res, err := h.db.CampaigncallGet(ctx, id)
@@ -128,13 +125,12 @@ func (h *campaigncallHandler) GetByActiveflowID(ctx context.Context, activeflowI
 
 // GetsByCampaignID returns list of campaigncall
 func (h *campaigncallHandler) GetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsByCampaignID",
-			"campaign_id": campaignID,
-			"token":       token,
-			"limit":       limit,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCampaignID",
+		"campaign_id": campaignID,
+		"token":       token,
+		"limit":       limit,
+	})
 	log.Debug("Getting campaigncalls.")
 
 	res, err := h.db.CampaigncallGetsByCampaignID(ctx, campaignID, token, limit)
@@ -168,13 +164,12 @@ func (h *campaigncallHandler) GetsByCampaignIDAndStatus(ctx context.Context, cam
 
 // GetsOngoingByCampaignID returns list of ongoing campaigncalls
 func (h *campaigncallHandler) GetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsOngoingByCampaignID",
-			"campaign_id": campaignID,
-			"token":       token,
-			"limit":       limit,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsOngoingByCampaignID",
+		"campaign_id": campaignID,
+		"token":       token,
+		"limit":       limit,
+	})
 	log.Debug("Getting campaigncalls.")
 
 	res, err := h.db.CampaigncallGetsOngoingByCampaignID(ctx, campaignID, token, limit)
@@ -188,11 +183,10 @@ func (h *campaigncallHandler) GetsOngoingByCampaignID(ctx context.Context, campa
 
 // updateStatus updates the status
 func (h *campaigncallHandler) updateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "updateStatus",
-			"id":   id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func": "updateStatus",
+		"id":   id,
+	})
 	log.Debug("Getting campaigncalls.")
 
 	if err := h.db.CampaigncallUpdateStatus(ctx, id, status); err != nil {
