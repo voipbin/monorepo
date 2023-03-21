@@ -14,12 +14,10 @@ import (
 
 // Event returns list of messages of the given conversation
 func (h *conversationHandler) Event(ctx context.Context, referenceType conversation.ReferenceType, data []byte) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "Event",
-			"reference_typd": referenceType,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Event",
+		"reference_typd": referenceType,
+	})
 
 	switch referenceType {
 	case conversation.ReferenceTypeMessage:
@@ -38,11 +36,9 @@ func (h *conversationHandler) Event(ctx context.Context, referenceType conversat
 
 // eventSMS handle the sms type of hook message
 func (h *conversationHandler) eventSMS(ctx context.Context, data []byte) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "eventSMS",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "eventSMS",
+	})
 
 	tmps, localAddr, err := h.smsHandler.Event(ctx, data)
 	if err != nil {
