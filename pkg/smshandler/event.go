@@ -15,11 +15,10 @@ import (
 
 // Event handles received sms/mms message
 func (h *smsHandler) Event(ctx context.Context, data []byte) ([]*message.Message, *commonaddress.Address, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "Event",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Event",
+		"data": data,
+	})
 
 	// parse the message
 	var m mmmessage.Message

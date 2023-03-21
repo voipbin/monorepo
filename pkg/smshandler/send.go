@@ -12,12 +12,12 @@ import (
 
 // Send sends the message to the destination
 func (h *smsHandler) Send(ctx context.Context, cv *conversation.Conversation, transactionID string, text string) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "Send",
-			"conversation_id": cv.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Send",
+		"conversation":   cv,
+		"transaction_id": transactionID,
+		"text":           text,
+	})
 	log.Debug("Sending an sms.")
 
 	destinations := []commonaddress.Address{
@@ -29,7 +29,7 @@ func (h *smsHandler) Send(ctx context.Context, cv *conversation.Conversation, tr
 	id := uuid.FromStringOrNil(transactionID)
 
 	// send
-	tmp, err := h.reqHandler.MMV1MessageSend(ctx, id, cv.CustomerID, cv.Source, destinations, text)
+	tmp, err := h.reqHandler.MessageV1MessageSend(ctx, id, cv.CustomerID, cv.Source, destinations, text)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
 		return err
