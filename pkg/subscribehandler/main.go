@@ -107,7 +107,7 @@ func (h *subscribeHandler) Run() error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "conversation-manager", false, false, false, 10, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(h.subscribeQueue, "conversation-manager", false, false, false, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -141,14 +141,14 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 
 	// customer-manager
 	case m.Publisher == publisherCustomerManager && (m.Type == string(cscustomer.EventTypeCustomerCreated)):
-		err = h.processEventCustomerCustomerCreatedORUpdated(ctx, m)
+		err = h.processEventCSCustomerCreatedUpdated(ctx, m)
 
 	case m.Publisher == publisherCustomerManager && (m.Type == string(cscustomer.EventTypeCustomerUpdated)):
-		err = h.processEventCustomerCustomerCreatedORUpdated(ctx, m)
+		err = h.processEventCSCustomerCreatedUpdated(ctx, m)
 
 	// message-manager
 	case m.Publisher == publisherMessageManager && (m.Type == string(mmmessage.EventTypeMessageCreated)):
-		err = h.processEventMessageMessageCreated(ctx, m)
+		err = h.processEventMMMessageCreated(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

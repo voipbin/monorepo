@@ -10,10 +10,11 @@ import (
 
 // Setup sets up the given customer's line webhook
 func (h *lineHandler) Setup(ctx context.Context, customerID uuid.UUID) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "Setup",
-		"customer_id": customerID,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Setup",
+		},
+	)
 
 	c, err := h.getClient(ctx, customerID)
 	if err != nil {

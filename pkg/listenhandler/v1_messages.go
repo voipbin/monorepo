@@ -14,10 +14,12 @@ import (
 // processV1MessagesGet handles
 // /v1/messages GET
 func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1MessagesGet",
-		"request": m,
-	})
+
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1ConversationsIDMessagesGet",
+		},
+	)
 	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)

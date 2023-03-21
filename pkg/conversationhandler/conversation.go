@@ -8,6 +8,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 )
 
 // Get returns conversation
@@ -22,10 +23,12 @@ func (h *conversationHandler) GetByReferenceInfo(ctx context.Context, customerID
 
 // GetsByCustomerID returns list of conversations
 func (h *conversationHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*conversation.Conversation, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "GetsByCustomerID",
-		"customer_id": customerID,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "GetsByCustomerID",
+			"customer_id": customerID,
+		},
+	)
 	log.Debugf("Getting a list of conversations. customer_id: %s", customerID)
 
 	res, err := h.db.ConversationGetsByCustomerID(ctx, customerID, pageToken, pageSize)
@@ -48,9 +51,11 @@ func (h *conversationHandler) Create(
 	source *commonaddress.Address,
 	participants []commonaddress.Address,
 ) (*conversation.Conversation, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "Create",
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Create",
+		},
+	)
 
 	id := uuid.Must(uuid.NewV4())
 	tmp := &conversation.Conversation{
@@ -62,6 +67,9 @@ func (h *conversationHandler) Create(
 		ReferenceID:   referenceID,
 		Source:        source,
 		Participants:  participants,
+		TMCreate:      dbhandler.GetCurTime(),
+		TMUpdate:      dbhandler.GetCurTime(),
+		TMDelete:      dbhandler.DefaultTimeStamp,
 	}
 
 	if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {

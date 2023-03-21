@@ -12,12 +12,11 @@ import (
 
 // MessageSend sends the message
 func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "MessageSend",
-		"conversation_id": conversationID,
-		"text":            text,
-		"medias":          medias,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "MessageSend",
+		},
+	)
 	log.Debugf("MessageSend detail. conversation_id: %s", conversationID)
 
 	// get conversation
@@ -27,7 +26,6 @@ func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uu
 		return nil, err
 	}
 
-	// send to conversation
 	m, err := h.messageHandler.SendToConversation(ctx, cv, text, medias)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)

@@ -11,12 +11,15 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 )
 
-// processEventMessageMessageCreated handles the message-manager's message_created event.
-func (h *subscribeHandler) processEventMessageMessageCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventMessageMessageCreated",
-		"event": m,
-	})
+// processEventMMMessageCreated handles the message-manager's message_created event.
+func (h *subscribeHandler) processEventMMMessageCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":  "processEventMMMessageCreated",
+			"event": m,
+		},
+	)
+	log.Debugf("Received message event. event: %s", m.Type)
 
 	e := &mmmessage.Message{}
 	if err := json.Unmarshal([]byte(m.Data), &e); err != nil {

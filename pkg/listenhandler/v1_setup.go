@@ -10,13 +10,13 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/listenhandler/models/request"
 )
 
-// processV1SetupPost handles
-// POST /v1/setup request
+// processV1SetupPost handles POST /v1/setup request
 func (h *listenHandler) processV1SetupPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1SetupPost",
-		"request": m,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "processV1SetupPost",
+		},
+	)
 	log.WithField("request", m).Debug("Received request.")
 
 	var req request.V1DataSetupPost

@@ -12,17 +12,18 @@ import (
 
 // Get returns an account info
 func (h *accountHandler) Get(ctx context.Context, customerID uuid.UUID) (*account.Account, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "Get",
-		"customer_id": customerID,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Get",
+		},
+	)
 
 	res, err := h.db.AccountGet(ctx, customerID)
 	if err == nil {
 		return res, nil
 	}
 
-	tmp, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
+	tmp, err := h.reqHandler.CSV1CustomerGet(ctx, customerID)
 	if err != nil {
 		log.Errorf("Could not get customer info. err: %v", err)
 		return nil, err
@@ -40,10 +41,11 @@ func (h *accountHandler) Get(ctx context.Context, customerID uuid.UUID) (*accoun
 
 // Set sets the account info
 func (h *accountHandler) Set(ctx context.Context, a *account.Account) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "Set",
-		"account": a,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Set",
+		},
+	)
 
 	if err := h.db.AccountSet(ctx, a); err != nil {
 		log.Errorf("Could not set account. err: %v", err)
@@ -55,10 +57,11 @@ func (h *accountHandler) Set(ctx context.Context, a *account.Account) error {
 
 // UpdateByCustomer updates the account info by customer and return the updated account
 func (h *accountHandler) UpdateByCustomer(ctx context.Context, m *cscustomer.Customer) (*account.Account, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "UpdateByCustomer",
-		"customer_id": m.ID,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":        "UpdateByCustomer",
+			"customer_id": m.ID,
+		})
 
 	res := account.CreateAccountFromCustomer(m)
 	if errSet := h.Set(ctx, res); errSet != nil {

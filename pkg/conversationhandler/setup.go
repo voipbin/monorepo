@@ -12,11 +12,11 @@ import (
 
 // Setup sets up the conversation webhook.
 func (h *conversationHandler) Setup(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":           "Setup",
-		"customer_id":    customerID,
-		"reference_type": referenceType,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Setup",
+		},
+	)
 
 	switch referenceType {
 	case conversation.ReferenceTypeLine:

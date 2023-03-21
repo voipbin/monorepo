@@ -16,9 +16,11 @@ import (
 
 // Hook handles hooked event
 func (h *conversationHandler) Hook(ctx context.Context, uri string, data []byte) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "Hook",
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Hook",
+		},
+	)
 	log.Debugf("Hook detail. uri: %s", uri)
 
 	// "https://hook.voipbin.net/v1.0/conversation/customers/<customer_id>/line",
@@ -56,9 +58,11 @@ func (h *conversationHandler) Hook(ctx context.Context, uri string, data []byte)
 
 // hookLine handle the line type of hook message
 func (h *conversationHandler) hookLine(ctx context.Context, customerID uuid.UUID, data []byte) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "hookLine",
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "hookLine",
+		},
+	)
 
 	// parse a messages
 	conversations, messages, err := h.lineHandler.Hook(ctx, customerID, data)

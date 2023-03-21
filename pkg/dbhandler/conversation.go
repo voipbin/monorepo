@@ -136,9 +136,9 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		source,
 		participants,
 
-		h.utilHandler.GetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
+		cv.TMCreate,
+		cv.TMUpdate,
+		cv.TMDelete,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. ConversationCreate. err: %v", err)
