@@ -17,12 +17,11 @@ import (
 
 // Hook handles received line message
 func (h *lineHandler) Hook(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Hook",
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Hook",
+		"customer_id": customerID,
+		"data":        data,
+	})
 
 	tmp := &struct {
 		Events []*linebot.Event `json:"events"`
@@ -56,11 +55,11 @@ func (h *lineHandler) Hook(ctx context.Context, customerID uuid.UUID, data []byt
 
 // handleHook handles the received message.
 func (h *lineHandler) handleHook(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*conversation.Conversation, *message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "handleEvent",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "handleEvent",
+		"customer_id": customerID,
+		"event":       e,
+	})
 
 	switch e.Type {
 	case linebot.EventTypeFollow:
@@ -87,11 +86,11 @@ func (h *lineHandler) handleHook(ctx context.Context, customerID uuid.UUID, e *l
 
 // hookHandleFollow handles line's follow event.
 func (h *lineHandler) hookHandleFollow(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*conversation.Conversation, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "eventHandleFollow",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "eventHandleFollow",
+		"customer_id": customerID,
+		"event":       e,
+	})
 	log.Debugf("Handleing the Line follow.")
 
 	// get reference id
@@ -135,11 +134,11 @@ func (h *lineHandler) hookHandleFollow(ctx context.Context, customerID uuid.UUID
 
 // hookHandleMessage handles line's message type event.
 func (h *lineHandler) hookHandleMessage(ctx context.Context, customerID uuid.UUID, e *linebot.Event) (*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "eventHandleMessage",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "eventHandleMessage",
+		"customer_id": customerID,
+		"event":       e,
+	})
 	log.WithField("event", e).Debugf("Handleing the Line message.")
 
 	// get reference id
@@ -204,11 +203,11 @@ func (h *lineHandler) getReferenceID(e *linebot.Event) string {
 
 // GetParticipant returns a participant
 func (h *lineHandler) GetParticipant(ctx context.Context, customerID uuid.UUID, id string) (*commonaddress.Address, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "getParticipant",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getParticipant",
+		"customer_id": customerID,
+		"id":          id,
+	})
 	log.Debug("Getting the participant info.")
 
 	c, err := h.getClient(ctx, customerID)

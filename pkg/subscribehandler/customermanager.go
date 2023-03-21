@@ -9,15 +9,12 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
-// processEventCSCustomerCreatedUpdated handles the customer-manager's customer_created and customer_updated event.
-func (h *subscribeHandler) processEventCSCustomerCreatedUpdated(ctx context.Context, m *rabbitmqhandler.Event) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":  "processEventCSCustomerCreatedUpdated",
-			"event": m,
-		},
-	)
-	log.Debugf("Received customer event. event: %s", m.Type)
+// processEventCustomerCustomerCreatedORUpdated handles the customer-manager's customer_created and customer_updated event.
+func (h *subscribeHandler) processEventCustomerCustomerCreatedORUpdated(ctx context.Context, m *rabbitmqhandler.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventCustomerCustomerCreatedORUpdated",
+		"event": m,
+	})
 
 	e := &cscustomer.Customer{}
 	if err := json.Unmarshal([]byte(m.Data), &e); err != nil {

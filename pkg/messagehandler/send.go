@@ -14,11 +14,12 @@ import (
 
 // SendToConversation sends the message to the given conversation
 func (h *messageHandler) SendToConversation(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "SendToConversation",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "SendToConversation",
+		"conversation": cv,
+		"text":         text,
+		"medias":       medias,
+	})
 	log.Debugf("Sending a message to the conversation. conversation_id: %s, reference_type: %s", cv.ID, cv.ReferenceType)
 
 	switch cv.ReferenceType {
@@ -36,11 +37,12 @@ func (h *messageHandler) SendToConversation(ctx context.Context, cv *conversatio
 
 // sendToConversationSMS sends the message to the sms type of conversation.
 func (h *messageHandler) sendToConversationSMS(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "sendToConversationSMS",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "sendToConversationSMS",
+		"conversation": cv,
+		"text":         text,
+		"medias":       medias,
+	})
 
 	// create a sent message
 	transactionID := uuid.Must(uuid.NewV4()).String()
@@ -67,11 +69,9 @@ func (h *messageHandler) sendToConversationSMS(ctx context.Context, cv *conversa
 
 // sendToConversationLine sends the message to the line type of conversation.
 func (h *messageHandler) sendToConversationLine(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "sendToConversationLine",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "sendToConversationLine",
+	})
 
 	// create a sent message
 	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusSending, cv.ReferenceType, cv.ReferenceID, "", cv.Source, text, medias)
