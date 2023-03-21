@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -45,9 +44,8 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
-	utilHandler utilhandler.UtilHandler
-	db          *sql.DB
-	cache       cachehandler.CacheHandler
+	db    *sql.DB
+	cache cachehandler.CacheHandler
 }
 
 // handler errors
@@ -63,9 +61,8 @@ const (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		db:          db,
-		cache:       cache,
+		db:    db,
+		cache: cache,
 	}
 	return h
 }

@@ -81,7 +81,7 @@ func Test_Get(t *testing.T) {
 				mockDB.EXPECT().AccountGet(ctx, tt.customerID).Return(tt.responseGet, nil)
 			} else {
 				mockDB.EXPECT().AccountGet(ctx, tt.customerID).Return(nil, fmt.Errorf(""))
-				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+				mockReq.EXPECT().CSV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
 				mockDB.EXPECT().AccountSet(ctx, gomock.Any()).Return(nil)
 			}
 

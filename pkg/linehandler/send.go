@@ -15,12 +15,11 @@ import (
 
 // Send sends the message to the destination
 func (h *lineHandler) Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":         "Send",
-		"conversation": cv,
-		"text":         text,
-		"medias":       medias,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "Send",
+		},
+	)
 	log.Debug("Sending a message.")
 
 	// get clinet
@@ -55,10 +54,11 @@ func (h *lineHandler) Send(ctx context.Context, cv *conversation.Conversation, t
 
 // getClient returns given customer's line client.
 func (h *lineHandler) getClient(ctx context.Context, customerID uuid.UUID) (*linebot.Client, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "getClient",
-		"customer_id": customerID,
-	})
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func": "getClient",
+		},
+	)
 
 	// get secret/token
 	a, err := h.accountHandler.Get(ctx, customerID)
