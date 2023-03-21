@@ -16,11 +16,10 @@ import (
 
 // v1CampaignsPost handles /v1/campaigns POST request
 func (h *listenHandler) v1CampaignsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1CampaignsPost",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaignsPost",
+		"request": m,
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	var req request.V1DataCampaignsPost
@@ -67,6 +66,10 @@ func (h *listenHandler) v1CampaignsPost(ctx context.Context, m *rabbitmqhandler.
 
 // v1CampaignsGet handles /v1/campaigns GET request
 func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaignsGet",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -81,12 +84,6 @@ func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *rabbitmqhandler.R
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1CampaignsGet",
-			"customer_id": customerID,
-		},
-	)
 	log.WithField("request", m).Debug("Received request.")
 
 	tmp, err := h.campaignHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
@@ -112,6 +109,10 @@ func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *rabbitmqhandler.R
 
 // v1CampaignsIDGet handles /v1/campaigns/{id} GET request
 func (h *listenHandler) v1CampaignsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaignsIDGet",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -120,12 +121,6 @@ func (h *listenHandler) v1CampaignsIDGet(ctx context.Context, m *rabbitmqhandler
 
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1CampaignsIDGet",
-			"campaign_id": id,
-		},
-	)
 	log.WithField("request", m).Debug("Received request.")
 
 	tmp, err := h.campaignHandler.Get(ctx, id)
@@ -151,6 +146,10 @@ func (h *listenHandler) v1CampaignsIDGet(ctx context.Context, m *rabbitmqhandler
 
 // v1CampaignsIDDelete handles /v1/campaigns/{id} DELETE request
 func (h *listenHandler) v1CampaignsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaignsIDDelete",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -160,12 +159,6 @@ func (h *listenHandler) v1CampaignsIDDelete(ctx context.Context, m *rabbitmqhand
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1CampaignsIDDelete",
-			"campaign_id": id,
-		},
-	)
 	log.WithField("request", m).Debug("Received request.")
 
 	tmp, err := h.campaignHandler.Delete(ctx, id)
@@ -191,6 +184,11 @@ func (h *listenHandler) v1CampaignsIDDelete(ctx context.Context, m *rabbitmqhand
 
 // v1CampaignsIDPut handles /v1/campaigns/{id}/service_level PUT request
 func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaignsIDPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -198,11 +196,6 @@ func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *rabbitmqhandler
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1CampaignsIDPut",
-			"campaign_id": id,
-		})
 	log.Debug("Executing v1CampaignsIDPut.")
 
 	var req request.V1DataCampaignsIDPut
@@ -235,6 +228,11 @@ func (h *listenHandler) v1CampaignsIDPut(ctx context.Context, m *rabbitmqhandler
 
 // processV1CampaignsIDExecutePost handles /v1/campaigns/{id}/execute POST request
 func (h *listenHandler) v1CampaignsIDExecutePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CampaignsIDExecutePost",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -242,11 +240,6 @@ func (h *listenHandler) v1CampaignsIDExecutePost(ctx context.Context, m *rabbitm
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "processV1CampaignsIDExecutePost",
-			"campaign_id": id,
-		})
 	log.Debug("Executing v1CampaignsIDExecutePost.")
 
 	// execute
@@ -262,6 +255,11 @@ func (h *listenHandler) v1CampaignsIDExecutePost(ctx context.Context, m *rabbitm
 
 // processV1CampaignsIDStatusPut handles /v1/campaigns/{id}/status PUT request
 func (h *listenHandler) v1CampaignsIDStatusPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CampaignsIDStatusPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -269,11 +267,6 @@ func (h *listenHandler) v1CampaignsIDStatusPut(ctx context.Context, m *rabbitmqh
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "processV1CampaignsIDStatusPut",
-			"campaign_id": id,
-		})
 	log.Debug("Executing processV1CampaignsIDRunPost.")
 
 	var req request.V1DataCampaignsIDStatusPut
@@ -306,6 +299,11 @@ func (h *listenHandler) v1CampaignsIDStatusPut(ctx context.Context, m *rabbitmqh
 
 // processV1CampaignsIDServiceLevelPut handles /v1/campaigns/{id}/service_level PUT request
 func (h *listenHandler) v1CampaignsIDServiceLevelPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CampaignsIDServiceLevelPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -313,11 +311,6 @@ func (h *listenHandler) v1CampaignsIDServiceLevelPut(ctx context.Context, m *rab
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "processV1CampaignsIDServiceLevelPut",
-			"campaign_id": id,
-		})
 	log.Debug("Executing processV1CampaignsIDServiceLevelPut.")
 
 	var req request.V1DataCampaignsIDServiceLevelPut
@@ -350,6 +343,11 @@ func (h *listenHandler) v1CampaignsIDServiceLevelPut(ctx context.Context, m *rab
 
 // v1CampaignsIDActionsPut handles /v1/campaigns/{id}/actions PUT request
 func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaignsIDActionsPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -357,11 +355,6 @@ func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *rabbitmq
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1CampaignsIDActionsPut",
-			"campaign_id": id,
-		})
 	log.Debug("Executing v1CampaignsIDActionsPut.")
 
 	var req request.V1DataCampaignsIDActionsPut
@@ -394,6 +387,11 @@ func (h *listenHandler) v1CampaignsIDActionsPut(ctx context.Context, m *rabbitmq
 
 // v1CampaignsIDResourceInfoPut handles /v1/campaigns/{id}/resource_info PUT request
 func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaignsIDResourceInfoPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -401,11 +399,6 @@ func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *rab
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1CampaignsIDResourceInfoPut",
-			"campaign_id": id,
-		})
 	log.Debug("Executing v1CampaignsIDResourceInfoPut.")
 
 	var req request.V1DataCampaignsIDResourceInfoPut
@@ -438,6 +431,11 @@ func (h *listenHandler) v1CampaignsIDResourceInfoPut(ctx context.Context, m *rab
 
 // v1CampaignsIDNextCampaignIDPut handles /v1/campaigns/{id}/next_campaign_id PUT request
 func (h *listenHandler) v1CampaignsIDNextCampaignIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1CampaignsIDNextCampaignIDPut",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
@@ -445,11 +443,6 @@ func (h *listenHandler) v1CampaignsIDNextCampaignIDPut(ctx context.Context, m *r
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1CampaignsIDNextCampaignIDPut",
-			"campaign_id": id,
-		})
 	log.Debug("Executing v1CampaignsIDNextCampaignIDPut.")
 
 	var req request.V1DataCampaignsIDNextCampaignIDPut

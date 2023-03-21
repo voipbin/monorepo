@@ -9,10 +9,10 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/util"
 )
 
 func Test_OutplanCreate(t *testing.T) {
@@ -79,7 +79,7 @@ func Test_OutplanCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -177,7 +177,7 @@ func Test_OutplanDelete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -391,7 +391,7 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -491,7 +491,7 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,
@@ -605,7 +605,7 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
 				util:  mockUtil,

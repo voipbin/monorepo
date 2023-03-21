@@ -30,13 +30,10 @@ func (h *campaignHandler) Create(
 	queueID uuid.UUID,
 	nextCampaignID uuid.UUID,
 ) (*campaign.Campaign, error) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Create",
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Create",
+		"customer_id": customerID,
+	})
 
 	// create a flow actions
 	flowActions, err := h.createFlowActions(ctx, actions, queueID)
@@ -94,11 +91,10 @@ func (h *campaignHandler) Create(
 
 // Delete deletes the campaign
 func (h *campaignHandler) Delete(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Delete",
-			"campaign_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Delete",
+		"campaign_id": id,
+	})
 	log.Debugf("Deleting a campaign. campaign_id: %s", id)
 
 	c, err := h.db.CampaignGet(ctx, id)
@@ -141,11 +137,10 @@ func (h *campaignHandler) Delete(ctx context.Context, id uuid.UUID) (*campaign.C
 
 // Get returns campaign
 func (h *campaignHandler) Get(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Get",
-			"campaign_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Get",
+		"campaign_id": id,
+	})
 	res, err := h.db.CampaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign. err: %v", err)
@@ -177,13 +172,12 @@ func (h *campaignHandler) GetsByCustomerID(ctx context.Context, customerID uuid.
 
 // UpdateBasicInfo updates campaign's basic info
 func (h *campaignHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":   "UpdateBasicInfo",
-			"id":     id,
-			"name":   name,
-			"detail": detail,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "UpdateBasicInfo",
+		"id":     id,
+		"name":   name,
+		"detail": detail,
+	})
 	log.Debug("Updating campaign basic info.")
 
 	if err := h.db.CampaignUpdateBasicInfo(ctx, id, name, detail); err != nil {
@@ -204,14 +198,13 @@ func (h *campaignHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, nam
 
 // UpdateResourceInfo updates campaign's resource info
 func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "UpdateResourceInfo",
-			"campaign_id": id,
-			"outplan_id":  outplanID,
-			"outdial_id":  outdialID,
-			"queue_id":    queueID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "UpdateResourceInfo",
+		"campaign_id": id,
+		"outplan_id":  outplanID,
+		"outdial_id":  outdialID,
+		"queue_id":    queueID,
+	})
 	log.Debug("Updating campaign basic info.")
 
 	if err := h.db.CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID); err != nil {
@@ -252,12 +245,11 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 
 // UpdateNextCampaignID updates campaign's next_campaign_id info
 func (h *campaignHandler) UpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":             "UpdateResourceInfo",
-			"id":               id,
-			"next_campaign_id": nextCampaignID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":             "UpdateResourceInfo",
+		"id":               id,
+		"next_campaign_id": nextCampaignID,
+	})
 	log.Debug("Updating campaign next_campaign_id info.")
 
 	if err := h.db.CampaignUpdateNextCampaignID(ctx, id, nextCampaignID); err != nil {
@@ -278,12 +270,11 @@ func (h *campaignHandler) UpdateNextCampaignID(ctx context.Context, id, nextCamp
 
 // UpdateServiceLevel updates campaign's service_level
 func (h *campaignHandler) UpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "UpdateServiceLevel",
-			"id":            id,
-			"service_level": serviceLevel,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateServiceLevel",
+		"id":            id,
+		"service_level": serviceLevel,
+	})
 	log.Debug("Updating campaign service_level.")
 
 	if err := h.db.CampaignUpdateServiceLevel(ctx, id, serviceLevel); err != nil {
@@ -304,12 +295,11 @@ func (h *campaignHandler) UpdateServiceLevel(ctx context.Context, id uuid.UUID, 
 
 // UpdateActions updates campaign's actions
 func (h *campaignHandler) UpdateActions(ctx context.Context, id uuid.UUID, actions []fmaction.Action) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":    "UpdateActions",
-			"id":      id,
-			"actions": actions,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "UpdateActions",
+		"id":      id,
+		"actions": actions,
+	})
 	log.Debug("Updating campaign actions.")
 
 	c, err := h.Get(ctx, id)
@@ -381,11 +371,10 @@ func (h *campaignHandler) createFlowActions(ctx context.Context, actions []fmact
 // and it checks the campaign's stop-able then stops the campaign if it stop-able.
 // otherwise, stopping the campaign.
 func (h *campaignHandler) updateExecuteStop(ctx context.Context, id uuid.UUID) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "updateExecuteStop",
-			"campaign_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "updateExecuteStop",
+		"campaign_id": id,
+	})
 	log.Debug("Updating campaign execute.")
 
 	if err := h.db.CampaignUpdateExecute(ctx, id, campaign.ExecuteStop); err != nil {

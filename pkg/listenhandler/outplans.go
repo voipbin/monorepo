@@ -16,11 +16,10 @@ import (
 
 // v1OutplansPost handles /v1/outplans POST request
 func (h *listenHandler) v1OutplansPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1OutplansPost",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1OutplansPost",
+		"request": m,
+	})
 	log.WithField("request", m).Debug("Received request.")
 
 	var req request.V1DataOutplansPost
@@ -66,6 +65,10 @@ func (h *listenHandler) v1OutplansPost(ctx context.Context, m *rabbitmqhandler.R
 
 // v1OutplansGet handles /v1/outplans GET request
 func (h *listenHandler) v1OutplansGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1OutplansGet",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -80,12 +83,6 @@ func (h *listenHandler) v1OutplansGet(ctx context.Context, m *rabbitmqhandler.Re
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1OutplansGet",
-			"customer_id": customerID,
-		},
-	)
 	log.WithField("request", m).Debug("Received request.")
 
 	tmp, err := h.outplanHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
@@ -111,6 +108,10 @@ func (h *listenHandler) v1OutplansGet(ctx context.Context, m *rabbitmqhandler.Re
 
 // v1OutplansIDGet handles /v1/outplans/{id} GET request
 func (h *listenHandler) v1OutplansIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1OutplansIDGet",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -119,12 +120,6 @@ func (h *listenHandler) v1OutplansIDGet(ctx context.Context, m *rabbitmqhandler.
 
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1OutplansIDGet",
-			"campaign_id": id,
-		},
-	)
 	log.WithField("request", m).Debug("Received request.")
 
 	tmp, err := h.outplanHandler.Get(ctx, id)
@@ -150,6 +145,10 @@ func (h *listenHandler) v1OutplansIDGet(ctx context.Context, m *rabbitmqhandler.
 
 // v1OutplansIDDelete handles /v1/outplans/{id} Delete request
 func (h *listenHandler) v1OutplansIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1OutplansIDDelete",
+		"request": m,
+	})
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
@@ -158,12 +157,6 @@ func (h *listenHandler) v1OutplansIDDelete(ctx context.Context, m *rabbitmqhandl
 
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1OutplansIDDelete",
-			"campaign_id": id,
-		},
-	)
 	log.WithField("request", m).Debug("Received request.")
 
 	tmp, err := h.outplanHandler.Delete(ctx, id)
@@ -189,6 +182,11 @@ func (h *listenHandler) v1OutplansIDDelete(ctx context.Context, m *rabbitmqhandl
 
 // v1OutplansIDPut handles /v1/outplans/<outplan_id> PUT request
 func (h *listenHandler) v1OutplansIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1OutplansIDPut",
+		"request": m,
+	})
+
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -196,12 +194,6 @@ func (h *listenHandler) v1OutplansIDPut(ctx context.Context, m *rabbitmqhandler.
 
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1OutplansIDPut",
-			"campaign_id": id,
-		},
-	)
 	log.WithField("request", m).Debug("Received request.")
 
 	var req request.V1DataOutplansIDPut
@@ -234,6 +226,11 @@ func (h *listenHandler) v1OutplansIDPut(ctx context.Context, m *rabbitmqhandler.
 
 // v1OutplansIDPut handles /v1/outplans/<outplan_id>/dials PUT request
 func (h *listenHandler) v1OutplansIDDialsPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1OutplansIDPut",
+		"request": m,
+	})
+
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -241,12 +238,6 @@ func (h *listenHandler) v1OutplansIDDialsPut(ctx context.Context, m *rabbitmqhan
 
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "v1OutplansIDPut",
-			"campaign_id": id,
-		},
-	)
 	log.WithField("request", m).Debug("Received request.")
 
 	var req request.V1DataOutplansIDDialsPut

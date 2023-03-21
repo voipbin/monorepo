@@ -19,12 +19,10 @@ import (
 
 // Execute executes the campaign.
 func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Execute",
-			"campaign_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Execute",
+		"campaign_id": id,
+	})
 
 	// get campaign
 	c, err := h.Get(ctx, id)
@@ -33,7 +31,6 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 		if err := h.updateExecuteStop(ctx, id); err != nil {
 			log.Errorf("Could not stop the campaign execute. err: %v", err)
 		}
-
 		return
 	}
 
@@ -149,12 +146,11 @@ func (h *campaignHandler) Execute(ctx context.Context, id uuid.UUID) {
 
 // getTarget returns target for dialing
 func (h *campaignHandler) getTarget(ctx context.Context, c *campaign.Campaign, p *outplan.Outplan) (*omoutdialtarget.OutdialTarget, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "getTarget",
-			"campaign_id": c.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "getTarget",
+		"campaign": c,
+		"outplan":  p,
+	})
 
 	// get available outdial target
 	targets, err := h.reqHandler.OutdialV1OutdialtargetGetsAvailable(
@@ -205,11 +201,15 @@ func (h *campaignHandler) executeCall(
 	destinationIndex int,
 	tryCount int,
 ) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "executeCall",
-			"campaign_id": c.ID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "executeCall",
+		"campaign":          c,
+		"outplan":           p,
+		"target":            target,
+		"destination":       destination,
+		"destination_index": destinationIndex,
+		"tryCount":          tryCount,
+	})
 	log.Debug("Execute executeCall.")
 
 	// create call_id
@@ -244,7 +244,19 @@ func (h *campaignHandler) executeCall(
 	log.WithField("campaigncall", cc).Debugf("Created a new campaign call. campaigncall_id: %s", cc.ID)
 
 	// create a call
-	newCall, err := h.reqHandler.CallV1CallCreateWithID(ctx, callID, c.CustomerID, c.FlowID, activeflowID, uuid.Nil, p.Source, destination, false, false)
+	newCall, err := h.reqHandler.CallV1CallCreateWithID(
+		ctx,
+		callID,
+		c.CustomerID,
+		c.FlowID,
+		activeflowID,
+		uuid.Nil,
+		p.Source,
+		destination,
+		uuid.Nil,
+		false,
+		false,
+	)
 	if err != nil {
 		// update camapaign call to fail
 		_, _ = h.campaigncallHandler.Done(ctx, cc.ID, campaigncall.ResultFail)
@@ -266,11 +278,15 @@ func (h *campaignHandler) executeFlow(
 	destinationIndex int,
 	tryCount int,
 ) (*campaigncall.Campaigncall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "executeFlow",
-			"campaign_id": c.ID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "executeFlow",
+		"campaign":          c,
+		"outplan":           p,
+		"target":            target,
+		"destination":       destination,
+		"destination_index": destinationIndex,
+		"tryCount":          tryCount,
+	})
 	log.Debug("Execute executeFlow.")
 
 	// create activeflow_id
@@ -332,12 +348,13 @@ func (h *campaignHandler) executeFlow(
 }
 
 // isDialable returns true if a given campaign is dial-able
-func (h *campaignHandler) isDialable(ctx context.Context, campaignID, queueID uuid.UUID, serviceLevel int) bool {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "isDialable",
-			"id":   campaignID,
-		})
+func (h *campaignHandler) isDialable(ctx context.Context, campaignID uuid.UUID, queueID uuid.UUID, serviceLevel int) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "isDialable",
+		"campaign_id":   campaignID,
+		"queue_id":      queueID,
+		"service_level": serviceLevel,
+	})
 	log.Debug("Checking the campaign is dial-able.")
 
 	if queueID == uuid.Nil {
@@ -375,11 +392,11 @@ func (h *campaignHandler) isDialable(ctx context.Context, campaignID, queueID uu
 
 // getTargetDestination returns target destination
 func (h *campaignHandler) getTargetDestination(ctx context.Context, target *omoutdialtarget.OutdialTarget, plan *outplan.Outplan) (*commonaddress.Address, int, int) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "getTargetDestination",
-			"outdial_target": target,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "getTargetDestination",
+		"outdial_target": target,
+		"outplan":        plan,
+	})
 	log.Debug("Getting destination address.")
 
 	maxTryCounts := []int{

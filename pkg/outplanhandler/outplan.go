@@ -27,12 +27,10 @@ func (h *outplanHandler) Create(
 	maxTryCount3 int,
 	maxTryCount4 int,
 ) (*outplan.Outplan, error) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Create",
-			"customer_id": customerID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Create",
+		"customer_id": customerID,
+	})
 
 	id := uuid.Must(uuid.NewV4())
 	t := &outplan.Outplan{
@@ -71,11 +69,11 @@ func (h *outplanHandler) Create(
 
 // Get returns outplan
 func (h *outplanHandler) Get(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Get",
-			"outplan_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Get",
+		"outplan_id": id,
+	})
+	
 	res, err := h.db.OutplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan. err: %v", err)
@@ -87,11 +85,10 @@ func (h *outplanHandler) Get(ctx context.Context, id uuid.UUID) (*outplan.Outpla
 
 // Delete delets the outplan
 func (h *outplanHandler) Delete(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Delete",
-			"outplan_id": id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Delete",
+		"outplan_id": id,
+	})
 
 	if errDelete := h.db.OutplanDelete(ctx, id); errDelete != nil {
 		log.Errorf("Could not delete outplan. err: %v", errDelete)
@@ -109,13 +106,12 @@ func (h *outplanHandler) Delete(ctx context.Context, id uuid.UUID) (*outplan.Out
 
 // GetsByCustomerID returns list of outplans
 func (h *outplanHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsByCustomerID",
-			"customer_id": customerID,
-			"token":       token,
-			"limit":       limit,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"customer_id": customerID,
+		"token":       token,
+		"limit":       limit,
+	})
 	log.Debug("Getting outplans.")
 
 	res, err := h.db.OutplanGetsByCustomerID(ctx, customerID, token, limit)
@@ -129,13 +125,12 @@ func (h *outplanHandler) GetsByCustomerID(ctx context.Context, customerID uuid.U
 
 // UpdateBasicInfo updates outplan's basic info
 func (h *outplanHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*outplan.Outplan, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":   "UpdateBasicInfo",
-			"id":     id,
-			"name":   name,
-			"detail": detail,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "UpdateBasicInfo",
+		"id":     id,
+		"name":   name,
+		"detail": detail,
+	})
 	log.Debug("Updating outplan basic info.")
 
 	if err := h.db.OutplanUpdateBasicInfo(ctx, id, name, detail); err != nil {
@@ -166,19 +161,18 @@ func (h *outplanHandler) UpdateDialInfo(
 	maxTryCount3 int,
 	maxTryCount4 int,
 ) (*outplan.Outplan, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "UpdateDialInfo",
-			"id":              id,
-			"source":          source,
-			"dial_timeout":    dialTimeout,
-			"try_interval":    tryInterval,
-			"mac_try_count_0": maxTryCount0,
-			"mac_try_count_1": maxTryCount1,
-			"mac_try_count_2": maxTryCount2,
-			"mac_try_count_3": maxTryCount3,
-			"mac_try_count_4": maxTryCount4,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "UpdateDialInfo",
+		"id":              id,
+		"source":          source,
+		"dial_timeout":    dialTimeout,
+		"try_interval":    tryInterval,
+		"mac_try_count_0": maxTryCount0,
+		"mac_try_count_1": maxTryCount1,
+		"mac_try_count_2": maxTryCount2,
+		"mac_try_count_3": maxTryCount3,
+		"mac_try_count_4": maxTryCount4,
+	})
 	log.Debug("Updating outplan dial info.")
 
 	if err := h.db.OutplanUpdateDialInfo(

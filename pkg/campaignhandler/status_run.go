@@ -13,11 +13,10 @@ import (
 // campaignRun verifies the given campaign for run.
 // if every condition is ok, it sets the status to run and starts the campaign execution.
 func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "UpdateStatusRun",
-			"id":   id,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func": "UpdateStatusRun",
+		"id":   id,
+	})
 	log.Debug("Updating the campaign status to run.")
 
 	// get campaign
@@ -67,11 +66,10 @@ func (h *campaignHandler) campaignRun(ctx context.Context, id uuid.UUID) (*campa
 
 // isRunable returns true if a given campaign is run-able
 func (h *campaignHandler) isRunable(ctx context.Context, c *campaign.Campaign) bool {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "isDialable",
-			"campaign_id": c.ID,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "isDialable",
+		"campaign_id": c.ID,
+	})
 	log.Debug("Checking the campaign is run-able.")
 
 	if c.OutdialID == uuid.Nil {
