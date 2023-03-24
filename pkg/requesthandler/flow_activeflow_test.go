@@ -466,3 +466,151 @@ func Test_FlowV1ActiveflowStop(t *testing.T) {
 		})
 	}
 }
+
+func Test_FlowV1ActiveflowGet(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     *fmactiveflow.Activeflow
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("f7b11e28-ca6f-11ed-9ee2-2f18a39aac42"),
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/activeflows/f7b11e28-ca6f-11ed-9ee2-2f18a39aac42",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"f7b11e28-ca6f-11ed-9ee2-2f18a39aac42"}`),
+			},
+			&fmactiveflow.Activeflow{
+				ID: uuid.FromStringOrNil("f7b11e28-ca6f-11ed-9ee2-2f18a39aac42"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FlowV1ActiveflowGet(ctx, tt.activeflowID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_FlowV1ActiveflowGets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     []fmactiveflow.Activeflow
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("55699982-ca70-11ed-95a2-7b8828ed327b"),
+			"2020-09-20T03:23:20.995000",
+			10,
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=55699982-ca70-11ed-95a2-7b8828ed327b",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"559ede26-ca70-11ed-abba-e395946aa2e9"}]`),
+			},
+			[]fmactiveflow.Activeflow{
+				{
+					ID: uuid.FromStringOrNil("559ede26-ca70-11ed-abba-e395946aa2e9"),
+				},
+			},
+		},
+		{
+			"2 calls",
+
+			uuid.FromStringOrNil("55cf52d6-ca70-11ed-a9fd-63015ac80bab"),
+			"2020-09-20T03:23:20.995000",
+			10,
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=55cf52d6-ca70-11ed-a9fd-63015ac80bab",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"56005566-ca70-11ed-81cf-6f43d9813fe9"},{"id":"5634bf5e-ca70-11ed-8158-03aa1817578a"}]`),
+			},
+			[]fmactiveflow.Activeflow{
+				{
+					ID: uuid.FromStringOrNil("56005566-ca70-11ed-81cf-6f43d9813fe9"),
+				},
+				{
+					ID: uuid.FromStringOrNil("5634bf5e-ca70-11ed-8158-03aa1817578a"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FlowV1ActiveflowGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
