@@ -405,3 +405,64 @@ func Test_FlowV1ActiveflowDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_FlowV1ActiveflowStop(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+
+		response  *rabbitmqhandler.Response
+		expectRes *fmactiveflow.Activeflow
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("297ddcce-ca6c-11ed-8fe2-0740927aae87"),
+
+			"bin-manager.flow-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/activeflows/297ddcce-ca6c-11ed-8fe2-0740927aae87/stop",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"297ddcce-ca6c-11ed-8fe2-0740927aae87"}`),
+			},
+			&fmactiveflow.Activeflow{
+				ID: uuid.FromStringOrNil("297ddcce-ca6c-11ed-8fe2-0740927aae87"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FlowV1ActiveflowStop(ctx, tt.activeflowID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}

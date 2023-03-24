@@ -138,3 +138,25 @@ func (r *requestHandler) FlowV1ActiveflowExecute(ctx context.Context, activeflow
 
 	return nil
 }
+
+// FlowV1ActiveflowStop stops activeflow.
+func (r *requestHandler) FlowV1ActiveflowStop(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error) {
+
+	uri := fmt.Sprintf("/v1/activeflows/%s/stop", activeflowID)
+
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if tmp.StatusCode >= 299 {
+		return nil, fmt.Errorf("could not stop the activeflow")
+	}
+
+	var res fmactiveflow.Activeflow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
