@@ -29,12 +29,10 @@ func (h *stackHandler) findAction(actions []action.Action, actionID uuid.UUID) *
 // SearchAction returns a pointer of the given action id's action.
 // it checks all stacks from the given stackMap if the stackID is empty.
 func (h *stackHandler) SearchAction(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, stackID uuid.UUID, actionID uuid.UUID) (uuid.UUID, *action.Action, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":      "SearchAction",
-			"action_id": actionID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "SearchAction",
+		"action_id": actionID,
+	})
 	log.Debugf("Getting the action. action_id: %s", actionID)
 
 	if stackID != stack.IDEmpty {
@@ -70,13 +68,11 @@ func (h *stackHandler) SearchAction(ctx context.Context, stackMap map[uuid.UUID]
 // GetAction returns given action id's action
 // it follows stack's return addresses and release the memory when it gets out from the stack.
 func (h *stackHandler) GetAction(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, targetActionID uuid.UUID, releaseStack bool) (uuid.UUID, *action.Action, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":             "GetAction",
-			"current_stack_id": currentStackID,
-			"target_action_id": targetActionID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":             "GetAction",
+		"current_stack_id": currentStackID,
+		"target_action_id": targetActionID,
+	})
 	log.Debugf("Getting the action. action_id: %s", targetActionID)
 
 	resStackID := currentStackID
@@ -123,13 +119,11 @@ func (h *stackHandler) GetAction(ctx context.Context, stackMap map[uuid.UUID]*st
 // it checks all of related stacks.
 // if it couldn't find next action, returns finish action.
 func (h *stackHandler) GetNextAction(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, currentStackID uuid.UUID, currentAction *action.Action, relaseStack bool) (uuid.UUID, *action.Action) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "GetNextAction",
-			"current_stack_id":  currentStackID,
-			"current_action_id": currentAction.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "GetNextAction",
+		"current_stack_id":  currentStackID,
+		"current_action_id": currentAction.ID,
+	})
 	log.WithField("action", currentAction).Debugf("Getting next action.")
 
 	// check the currrent stack_id is the main stack

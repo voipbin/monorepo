@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
@@ -171,6 +172,39 @@ func (h *listenHandler) v1ActiveflowsIDExecutePost(ctx context.Context, m *rabbi
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
+	}
+
+	return res, nil
+}
+
+// v1ActiveflowsIDStopPost handles
+// /v1/activeflows/<activeflow-id>/stop Post
+func (h *listenHandler) v1ActiveflowsIDStopPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1ActiveflowsIDStopPost",
+		"request": m,
+	})
+
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/stop"
+	tmpVals := strings.Split(m.URI, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	tmp, err := h.activeflowHandler.Stop(ctx, id)
+	if err != nil {
+		log.Errorf("Could not stop the activeflow correctly. err: %v", err)
+		return nil, errors.Wrap(err, "Could not stop the activeflow.")
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the result. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
 	}
 
 	return res, nil

@@ -16,8 +16,9 @@ const (
 	activeflowSelect = `
 	select
 		id,
-
 		customer_id,
+
+		status,
 		flow_id,
 
 		reference_type,
@@ -51,8 +52,9 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 	res := &activeflow.Activeflow{}
 	if err := row.Scan(
 		&res.ID,
-
 		&res.CustomerID,
+
+		&res.Status,
 		&res.FlowID,
 
 		&res.ReferenceType,
@@ -94,8 +96,9 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 
 	q := `insert into activeflows(
 		id,
-
 		customer_id,
+
+		status,
 		flow_id,
 
 		reference_type,
@@ -116,7 +119,7 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 		tm_update,
 		tm_delete
 	) values(
-		?,
+		?, ?,
 		?, ?,
 		?, ?,
 		?,
@@ -149,8 +152,9 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 	// ts := h.util.GetCurTime()
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
-
 		f.CustomerID.Bytes(),
+
+		f.Status,
 		f.FlowID.Bytes(),
 
 		f.ReferenceType,
@@ -383,6 +387,28 @@ func (h *handler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
 	ts := h.util.GetCurTime()
 	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ActiveflowDelete. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.activeflowUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ActiveflowSetStatus sets the status.
+func (h *handler) ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error {
+
+	q := `
+	update activeflows set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.util.GetCurTime()
+	if _, err := h.db.Exec(q, status, ts, id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. ActiveflowSetStatus. err: %v", err)
 	}
 
 	// set to the cache

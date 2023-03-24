@@ -16,6 +16,7 @@ type Activeflow struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 
 	FlowID uuid.UUID `json:"flow_id"`
+	Status Status    `json:"status"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
@@ -39,6 +40,16 @@ type Activeflow struct {
 	TMUpdate string `json:"tm_update"`
 	TMDelete string `json:"tm_delete"`
 }
+
+// Status define
+type Status string
+
+// list of Status
+const (
+	StatusNone    Status = ""
+	StatusRunning Status = "running"
+	StatusEnded   Status = "ended"
+)
 
 // ReferenceType define
 type ReferenceType string

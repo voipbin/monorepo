@@ -126,6 +126,20 @@ func (mr *MockDBHandlerMockRecorder) ActiveflowReleaseLock(ctx, id interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowReleaseLock", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowReleaseLock), ctx, id)
 }
 
+// ActiveflowSetStatus mocks base method.
+func (m *MockDBHandler) ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowSetStatus", ctx, id, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActiveflowSetStatus indicates an expected call of ActiveflowSetStatus.
+func (mr *MockDBHandlerMockRecorder) ActiveflowSetStatus(ctx, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowSetStatus), ctx, id, status)
+}
+
 // ActiveflowUpdate mocks base method.
 func (m *MockDBHandler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflow) error {
 	m.ctrl.T.Helper()

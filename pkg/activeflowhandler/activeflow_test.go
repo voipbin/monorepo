@@ -23,21 +23,30 @@ import (
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/variablehandler"
 )
 
-func Test_Create_with_activeflowid(t *testing.T) {
+func Test_Create(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		responseFlow *flow.Flow
-
 		id           uuid.UUID
 		refereceType activeflow.ReferenceType
 		referenceID  uuid.UUID
+		flowID       uuid.UUID
+
+		responseFlow       *flow.Flow
+		responseUUID       uuid.UUID
+		responseActiveflow *activeflow.Activeflow
 
 		expectActiveflow *activeflow.Activeflow
 	}{
 		{
 			name: "normal",
+
+			id:           uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
+			refereceType: activeflow.ReferenceTypeCall,
+			referenceID:  uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
+			flowID:       uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+
 			responseFlow: &flow.Flow{
 				ID:         uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
 				CustomerID: uuid.FromStringOrNil("86e9108a-d699-11ec-8b3f-bf3d574b538b"),
@@ -48,15 +57,15 @@ func Test_Create_with_activeflowid(t *testing.T) {
 					},
 				},
 			},
-
-			id:           uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
-			refereceType: activeflow.ReferenceTypeCall,
-			referenceID:  uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
+			responseActiveflow: &activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
+			},
 
 			expectActiveflow: &activeflow.Activeflow{
 				ID:            uuid.FromStringOrNil("a58dc1e8-dc67-447b-9392-2d58531f1fb1"),
 				CustomerID:    uuid.FromStringOrNil("86e9108a-d699-11ec-8b3f-bf3d574b538b"),
 				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				Status:        activeflow.StatusRunning,
 				ReferenceType: activeflow.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("03e8a480-822f-11eb-b71f-8bbc09fa1e7a"),
 
@@ -75,6 +84,60 @@ func Test_Create_with_activeflowid(t *testing.T) {
 							},
 						},
 					},
+				},
+
+				ForwardStackID:  stack.IDEmpty,
+				ForwardActionID: action.IDEmpty,
+
+				ExecuteCount:    0,
+				ExecutedActions: []action.Action{},
+			},
+		},
+		{
+			name: "id is empty",
+
+			id:           uuid.Nil,
+			refereceType: activeflow.ReferenceTypeCall,
+			referenceID:  uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
+			flowID:       uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+
+			responseFlow: &flow.Flow{
+				ID:      uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				Actions: []action.Action{},
+			},
+			responseUUID: uuid.FromStringOrNil("5f0d58fe-c8cf-11ed-b23d-9b5ebf2aca94"),
+			responseActiveflow: &activeflow.Activeflow{
+				ID:            uuid.FromStringOrNil("78184d65-899f-438f-aeca-8cce4f445756"),
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
+				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				ExecuteCount:    0,
+				ForwardActionID: action.IDEmpty,
+				ExecutedActions: []action.Action{},
+			},
+
+			expectActiveflow: &activeflow.Activeflow{
+				ID:            uuid.FromStringOrNil("5f0d58fe-c8cf-11ed-b23d-9b5ebf2aca94"),
+				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
+				Status:        activeflow.StatusRunning,
+				ReferenceType: activeflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID:             stack.IDMain,
+						Actions:        []action.Action{},
+						ReturnStackID:  stack.IDEmpty,
+						ReturnActionID: action.IDEmpty,
+					},
+				},
+
+				CurrentStackID: stack.IDMain,
+				CurrentAction: action.Action{
+					ID: action.IDStart,
 				},
 
 				ForwardStackID:  stack.IDEmpty,
@@ -105,88 +168,14 @@ func Test_Create_with_activeflowid(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowGet(ctx, tt.responseFlow.ID).Return(tt.responseFlow, nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+			if tt.id == uuid.Nil {
+				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			}
 
 			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectActiveflow).Return(nil)
-			mockVariableHandler.EXPECT().Create(ctx, gomock.Any(), map[string]string{}).Return(&variable.Variable{}, nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any()).Return(tt.expectActiveflow, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectActiveflow.CustomerID, activeflow.EventTypeActiveflowCreated, tt.expectActiveflow)
-
-			res, err := h.Create(ctx, tt.id, tt.refereceType, tt.referenceID, tt.responseFlow.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectActiveflow) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectActiveflow, res)
-			}
-		})
-	}
-}
-
-func Test_Create_without_activeflowid(t *testing.T) {
-
-	tests := []struct {
-		name string
-		flow *flow.Flow
-
-		id                 uuid.UUID
-		refereceType       activeflow.ReferenceType
-		referenceID        uuid.UUID
-		responseActiveflow *activeflow.Activeflow
-		flowID             uuid.UUID
-	}{
-
-		{
-			"nil id",
-			&flow.Flow{
-				ID:      uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
-				Actions: []action.Action{},
-			},
-
-			uuid.Nil,
-			activeflow.ReferenceTypeCall,
-			uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
-			&activeflow.Activeflow{
-				ID:            uuid.FromStringOrNil("78184d65-899f-438f-aeca-8cce4f445756"),
-				ReferenceType: activeflow.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("d6543076-aba3-46c2-ac82-46101f294bf5"),
-				FlowID:        uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
-				CurrentAction: action.Action{
-					ID: action.IDStart,
-				},
-				ExecuteCount:    0,
-				ForwardActionID: action.IDEmpty,
-				ExecutedActions: []action.Action{},
-			},
-			uuid.FromStringOrNil("dc8e048e-822e-11eb-8cb6-235002e45cf2"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockVariableHandler := variablehandler.NewMockVariableHandler(mc)
-
-			h := &activeflowHandler{
-				utilHandler:     mockUtil,
-				db:              mockDB,
-				notifyHandler:   mockNotify,
-				variableHandler: mockVariableHandler,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().FlowGet(ctx, tt.flow.ID).Return(tt.flow, nil)
-
-			mockDB.EXPECT().ActiveflowCreate(ctx, gomock.Any()).Return(nil)
-			mockVariableHandler.EXPECT().Create(ctx, gomock.Any(), map[string]string{}).Return(&variable.Variable{}, nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockVariableHandler.EXPECT().Create(ctx, tt.expectActiveflow.ID, map[string]string{}).Return(&variable.Variable{}, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.expectActiveflow.ID).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowCreated, tt.responseActiveflow)
 
 			res, err := h.Create(ctx, tt.id, tt.refereceType, tt.referenceID, tt.flowID)

@@ -14,6 +14,7 @@ type WebhookMessage struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 
 	FlowID uuid.UUID `json:"flow_id"`
+	Status Status    `json:"status"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`

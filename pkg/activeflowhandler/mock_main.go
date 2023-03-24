@@ -109,3 +109,18 @@ func (mr *MockActiveflowHandlerMockRecorder) SetForwardActionID(ctx, callID, act
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetForwardActionID", reflect.TypeOf((*MockActiveflowHandler)(nil).SetForwardActionID), ctx, callID, actionID, forwardNow)
 }
+
+// Stop mocks base method.
+func (m *MockActiveflowHandler) Stop(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Stop", ctx, id)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Stop indicates an expected call of Stop.
+func (mr *MockActiveflowHandlerMockRecorder) Stop(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockActiveflowHandler)(nil).Stop), ctx, id)
+}

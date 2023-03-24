@@ -329,13 +329,14 @@ func Test_ExecuteNextActionError(t *testing.T) {
 				actionHandler: mockAction,
 				stackHandler:  mockStack,
 			}
-
 			ctx := context.Background()
+
 			mockDB.EXPECT().ActiveflowGetWithLock(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
 
-			mockDB.EXPECT().ActiveflowDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(gomock.Any(), tt.id).Return(tt.responseActiveflow, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), activeflow.EventTypeActiveflowDeleted, gomock.Any())
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowSetStatus(ctx, tt.id, activeflow.StatusEnded).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), activeflow.EventTypeActiveflowUpdated, gomock.Any())
 
 			_, err := h.ExecuteNextAction(ctx, tt.id, tt.actionID)
 			if err == nil {
