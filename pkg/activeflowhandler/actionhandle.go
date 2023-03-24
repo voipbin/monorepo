@@ -17,7 +17,7 @@ import (
 	conversationmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
+	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -27,15 +27,12 @@ import (
 // actionHandleGotoLoop handles goto action's loop condition.
 // it updates the loop_count.
 func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *activeflow.Activeflow, act *action.Action, opt *action.OptionGoto) error {
-	log := logrus.New().WithFields(
-		logrus.Fields{
-			"func":              "actionHandleGotoLoop",
-			"activeflow_id":     af.ID,
-			"reference_type":    af.ReferenceType,
-			"reference_id":      af.ReferenceID,
-			"current_action_id": af.CurrentAction.ID,
-		},
-	)
+	log := logrus.New().WithFields(logrus.Fields{
+		"func":       "actionHandleGotoLoop",
+		"activeflow": af,
+		"action":     act,
+		"option":     opt,
+	})
 
 	// find action
 	_, orgAction, err := h.stackHandler.GetAction(ctx, af.StackMap, af.CurrentStackID, act.ID, false)
@@ -73,11 +70,8 @@ func (h *activeflowHandler) actionHandleGotoLoop(ctx context.Context, af *active
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleFetch",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleFetch",
+		"activeflow": af,
 	})
 
 	act := &af.CurrentAction
@@ -102,11 +96,8 @@ func (h *activeflowHandler) actionHandleFetch(ctx context.Context, af *activeflo
 // it downloads the actions from the given action(patch) and append it to the active flow.
 func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleFetchFlow",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleFetchFlow",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -136,11 +127,8 @@ func (h *activeflowHandler) actionHandleFetchFlow(ctx context.Context, af *activ
 // it checks the received digits and sets the forward action id.
 func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleConditionCallDigits",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleConditionCallDigits",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -190,11 +178,8 @@ func (h *activeflowHandler) actionHandleConditionCallDigits(ctx context.Context,
 // it checks the call's status and sets the forward action id.
 func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleConditionCallStatus",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleConditionCallStatus",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -241,11 +226,8 @@ func (h *activeflowHandler) actionHandleConditionCallStatus(ctx context.Context,
 // it checks the current datetime and sets the forward action id.
 func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleConditionDatetime",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleConditionDatetime",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -365,11 +347,8 @@ func (h *activeflowHandler) actionHandleConditionDatetime(ctx context.Context, a
 // it checks the given variable and sets the forward action id.
 func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleConditionVariable",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleConditionVariable",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -425,11 +404,8 @@ func (h *activeflowHandler) actionHandleConditionVariable(ctx context.Context, a
 // it gets the given conference's flow and replace it.
 func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleConferenceJoin",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleConferenceJoin",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -465,11 +441,8 @@ func (h *activeflowHandler) actionHandleConferenceJoin(ctx context.Context, af *
 // actionHandleConnect handles action connect with active flow.
 func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleConnect",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleConnect",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -590,11 +563,8 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 // actionHandleGoto handles action goto with active flow.
 func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleGoto",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleGoto",
+		"activeflow": af,
 	})
 	log.WithField("action", af.CurrentAction).Debug("Handle action goto.")
 
@@ -621,11 +591,8 @@ func (h *activeflowHandler) actionHandleGoto(ctx context.Context, af *activeflow
 // actionHandleTranscribeRecording handles transcribe_recording
 func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "actionHandleTranscribeRecording",
-		"activeflow_id":  af.ID,
-		"reference_type": af.ReferenceType,
-		"reference_id":   af.ReferenceID,
-		"action_id":      af.CurrentAction.ID,
+		"func":       "actionHandleTranscribeRecording",
+		"activeflow": af,
 	})
 
 	act := &af.CurrentAction
@@ -664,11 +631,8 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 // actionHandleTranscribeStart handles transcribe_start
 func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "actionHandleTranscribeStart",
-		"activeflow_id":  af.ID,
-		"reference_type": af.ReferenceType,
-		"reference_id":   af.ReferenceID,
-		"action_id":      af.CurrentAction.ID,
+		"func":       "actionHandleTranscribeStart",
+		"activeflow": af,
 	})
 
 	act := &af.CurrentAction
@@ -695,93 +659,11 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 	return nil
 }
 
-// actionHandleAgentCall handles action agent_call with active flow.
-func (h *activeflowHandler) actionHandleAgentCall(ctx context.Context, af *activeflow.Activeflow) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleAgentCall",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
-	})
-	act := &af.CurrentAction
-
-	var opt action.OptionAgentCall
-	if err := json.Unmarshal(act.Option, &opt); err != nil {
-		log.Errorf("Could not unmarshal the transcribe_start option. err: %v", err)
-		return err
-	}
-	log = log.WithField("agent_id", opt.AgentID)
-
-	// create confbridge
-	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, af.CustomerID, cmconfbridge.TypeConnect)
-	if err != nil {
-		log.Errorf("Could not create confbridge for agent dial. err: %v", err)
-		return errors.Wrap(err, "could not create confbridge for agent dial")
-	}
-	log = log.WithFields(logrus.Fields{
-		"confbridge_id": cb.ID,
-	})
-	log.Debug("Created confbridge for agent_call.")
-
-	c, err := h.reqHandler.CallV1CallGet(ctx, af.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
-		return errors.Wrap(err, "could not get call info")
-	}
-
-	// generate the flow for the agent call
-	f, err := h.generateFlowForAgentCall(ctx, af.CustomerID, cb.ID)
-	if err != nil {
-		log.Errorf("Could not create the flow. err: %v", err)
-		return errors.Wrap(err, "could not create the flow")
-	}
-	log.WithField("flow", f).Debug("Created a flow.")
-
-	log.Debugf("Dialing to the agent. call_id: %s, flow_id: %s", af.ReferenceID, f.ID)
-	agentDial, err := h.reqHandler.AgentV1AgentDial(ctx, opt.AgentID, &c.Source, f.ID, af.ReferenceID)
-	if err != nil {
-		log.Errorf("Could not dial to the agent. err: %v", err)
-		return err
-	}
-	log.WithField("agent_dial", agentDial).Debugf("Created agent_dial. agent_dial_id: %s", agentDial.ID)
-
-	// create action connect for conference join
-	optJoin := action.OptionConfbridgeJoin{
-		ConfbridgeID: cb.ID,
-	}
-	optString, err := json.Marshal(optJoin)
-	if err != nil {
-		log.Errorf("Could not marshal the conference join option. err: %v", err)
-		return fmt.Errorf("could not marshal the conference join option. err: %v", err)
-	}
-
-	// push the actions
-	tmpActions := []action.Action{
-		{
-			ID:     uuid.Must(uuid.NewV4()),
-			Type:   action.TypeConfbridgeJoin,
-			Option: optString,
-		},
-	}
-
-	// push the actions
-	if errPush := h.PushStack(ctx, af, tmpActions); errPush != nil {
-		log.Errorf("Could not push the actions. err: %v", errPush)
-		return errPush
-	}
-
-	return nil
-}
-
 // actionHandleQueueJoin handles queue_join action type.
 func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleQueueJoin",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleQueueJoin",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -825,11 +707,8 @@ func (h *activeflowHandler) actionHandleQueueJoin(ctx context.Context, af *activ
 // actionHandleBranch handles branch action type.
 func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleBranch",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleBranch",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -888,11 +767,8 @@ func (h *activeflowHandler) actionHandleBranch(ctx context.Context, af *activefl
 // actionHandleMessageSend handles message_send action type.
 func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleMessageSend",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleMessageSend",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -916,11 +792,8 @@ func (h *activeflowHandler) actionHandleMessageSend(ctx context.Context, af *act
 // actionHandleCall handles action call with active flow.
 func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleCall",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleCall",
+		"activeflow": af,
 	})
 	log.Debugf("Executing the action call. reference_id: %s", af.ReferenceID)
 
@@ -963,11 +836,8 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 // actionHandleVariableSet handles action variable_set with active flow.
 func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleVariableSet",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleVariableSet",
+		"activeflow": af,
 	})
 	log.Debugf("Executing the action variable_set. reference_id: %s", af.ReferenceID)
 
@@ -992,11 +862,8 @@ func (h *activeflowHandler) actionHandleVariableSet(ctx context.Context, af *act
 // actionHandleWebhookSend handles action webhook_send with active flow.
 func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleWebhookSend",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleWebhookSend",
+		"activeflow": af,
 	})
 	log.Debugf("Executing the action webhook_send. reference_id: %s", af.ReferenceID)
 
@@ -1010,12 +877,12 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 	log.Debugf("Sending webhook message. message: %s", opt.Data)
 
 	if opt.Sync {
-		if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
+		if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, wmwebhook.MethodType(opt.Method), wmwebhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
 			log.Errorf("Could not send the webhook correctly on sync mode. err: %v", errSend)
 		}
 	} else {
 		go func() {
-			if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, webhook.MethodType(opt.Method), webhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
+			if errSend := h.reqHandler.WebhookV1WebhookSendToDestination(ctx, af.CustomerID, opt.URI, wmwebhook.MethodType(opt.Method), wmwebhook.DataType(opt.DataType), []byte(opt.Data)); errSend != nil {
 				log.Errorf("Could not send the webhook correctlyon async mode. err: %v", errSend)
 			}
 		}()
@@ -1027,11 +894,8 @@ func (h *activeflowHandler) actionHandleWebhookSend(ctx context.Context, af *act
 // actionHandleConversationSend handles conversation_send action type.
 func (h *activeflowHandler) actionHandleConversationSend(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleConversationSend",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleConversationSend",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -1067,11 +931,8 @@ func (h *activeflowHandler) actionHandleConversationSend(ctx context.Context, af
 // it starts chatbot talk service.
 func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleChatbotTalk",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleChatbotTalk",
+		"activeflow": af,
 	})
 	act := &af.CurrentAction
 
@@ -1108,11 +969,8 @@ func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *act
 // actionHandleStop handles action stop with activeflow.
 func (h *activeflowHandler) actionHandleStop(ctx context.Context, af *activeflow.Activeflow) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "actionHandleStop",
-		"activeflow_id":     af.ID,
-		"reference_type":    af.ReferenceType,
-		"reference_id":      af.ReferenceID,
-		"current_action_id": af.CurrentAction.ID,
+		"func":       "actionHandleStop",
+		"activeflow": af,
 	})
 	log.WithField("action", af.CurrentAction).Debug("Handle action stop.")
 

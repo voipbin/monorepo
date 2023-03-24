@@ -49,8 +49,8 @@ func (h *activeflowHandler) ExecuteNextAction(ctx context.Context, activeflowID 
 	// get next action from the active
 	af, err := h.updateNextAction(ctx, activeflowID, caID)
 	if err != nil {
-		log.Errorf("Could not get next action. Deleting activeflow. err: %v", err)
-		_, _ = h.Delete(ctx, activeflowID)
+		log.Errorf("Could not get next action. Stopping activeflow. err: %v", err)
+		_, _ = h.Stop(ctx, activeflowID)
 		return nil, err
 	}
 	log.WithField("next_action", af.CurrentAction).Debugf("Found next action. action_type: %s", af.CurrentAction.Type)
@@ -94,13 +94,6 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 	}()
 
 	switch actionType {
-	case action.TypeAgentCall:
-		if errHandle := h.actionHandleAgentCall(ctx, af); errHandle != nil {
-			log.Errorf("Could not handle the agent_call action correctly. err: %v", errHandle)
-			return nil, errHandle
-		}
-		return h.ExecuteNextAction(ctx, af.ID, af.CurrentAction.ID)
-
 	case action.TypeBranch:
 		if errHandle := h.actionHandleBranch(ctx, af); errHandle != nil {
 			log.Errorf("Could not handle the branch action correctly. err: %v", errHandle)

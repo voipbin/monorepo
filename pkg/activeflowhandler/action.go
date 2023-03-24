@@ -14,11 +14,11 @@ import (
 
 // getActionsFromFlow gets the actions from the flow.
 func (h *activeflowHandler) getActionsFromFlow(ctx context.Context, flowID uuid.UUID, customerID uuid.UUID) ([]action.Action, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "getActionsFromFlow",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getActionsFromFlow",
+		"flow_id":     flowID,
+		"customer_id": customerID,
+	})
 
 	// get flow
 	f, err := h.reqHandler.FlowV1FlowGet(ctx, flowID)
@@ -59,6 +59,11 @@ func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID u
 	if af.ExecuteCount > maxActiveFlowExecuteCount {
 		log.Errorf("Exceeded maximum action execution count. execute_count: %d", af.ExecuteCount)
 		return nil, fmt.Errorf("exceed maximum action execution count")
+	}
+
+	if af.Status == activeflow.StatusEnded {
+		log.Debugf("The activeflow ended.")
+		return nil, fmt.Errorf("the activeflow ended")
 	}
 
 	if af.CurrentAction.ID != action.IDEmpty && af.CurrentAction.ID != caID {

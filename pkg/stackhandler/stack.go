@@ -45,13 +45,11 @@ func (h *stackHandler) Get(ctx context.Context, stackMap map[uuid.UUID]*stack.St
 // Push creates a new stack and push it to the stackMap.
 // it returns stack_id and action for next execution.
 func (h *stackHandler) Push(ctx context.Context, stackMap map[uuid.UUID]*stack.Stack, actions []action.Action, currentStackID uuid.UUID, currentActionID uuid.UUID) (uuid.UUID, *action.Action, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":              "Push",
-			"current_stack_id":  currentStackID,
-			"current_action_id": currentActionID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":              "Push",
+		"current_stack_id":  currentStackID,
+		"current_action_id": currentActionID,
+	})
 	log.WithField("action", actions).Debugf("Pushing a new stack.")
 
 	// generate stackID

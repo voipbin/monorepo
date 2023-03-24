@@ -49,10 +49,6 @@ type Type string
 
 // List of Action types
 const (
-	// TypeAgentCall creates a call to the agent and connect.
-	// agent-manager
-	TypeAgentCall Type = "agent_call" // agent-manager. make a call to the agent.
-
 	// TypeAMD detects the answering machine.
 	// call-manager
 	TypeAMD Type = "amd"
@@ -204,7 +200,7 @@ const (
 
 // TypeList list of type array
 var TypeList []Type = []Type{
-	TypeAgentCall,
+	// TypeAgentCall,
 	TypeAMD,
 	TypeAnswer,
 	TypeBeep,

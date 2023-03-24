@@ -28,6 +28,7 @@ type DBHandler interface {
 	ActiveflowGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error)
 	ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
+	ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status activeflow.Status) error
 
 	// flow
 	FlowCreate(ctx context.Context, f *flow.Flow) error

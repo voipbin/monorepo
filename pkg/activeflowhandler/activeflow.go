@@ -13,7 +13,7 @@ import (
 )
 
 // Create creates a new activeflow
-func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
+func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID, flowID uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
 		"id":             activeflowID,
@@ -31,17 +31,18 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 
 	// check id is valid
 	if activeflowID == uuid.Nil {
-		activeflowID = uuid.Must(uuid.NewV4())
-		log.Infof("The id is not valid. Created a new id. id: %s", activeflowID)
+		activeflowID = h.utilHandler.CreateUUID()
+		log.Infof("The id is not given. Created a new id. id: %s", activeflowID)
 		log = log.WithField("id", activeflowID)
 	}
 
 	// create activeflow
-	tmpAF := &activeflow.Activeflow{
-		ID: activeflowID,
-
+	tmp := &activeflow.Activeflow{
+		ID:         activeflowID,
 		CustomerID: f.CustomerID,
-		FlowID:     flowID,
+
+		Status: activeflow.StatusRunning,
+		FlowID: flowID,
 
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
@@ -66,12 +67,12 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 		ExecuteCount:    0,
 		ExecutedActions: []action.Action{},
 	}
-	if err := h.db.ActiveflowCreate(ctx, tmpAF); err != nil {
+	if err := h.db.ActiveflowCreate(ctx, tmp); err != nil {
 		log.Errorf("Could not create the active flow. err: %v", err)
 		return nil, err
 	}
 
-	// create a new v
+	// create a new activeflow
 	v, err := h.variableHandler.Create(ctx, activeflowID, map[string]string{})
 	if err != nil {
 		log.Errorf("Could not create variable. err: %v", err)
@@ -79,7 +80,7 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 	}
 	log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
 
-	// get created active flow
+	// get created activeflow
 	res, err := h.db.ActiveflowGet(ctx, activeflowID)
 	if err != nil {
 		log.Errorf("Could not get created active flow. err: %v", err)
@@ -146,14 +147,12 @@ func (h *activeflowHandler) SetForwardActionID(ctx context.Context, id uuid.UUID
 // updateCurrentAction updates the current action in active-flow.
 // returns updated active flow
 func (h *activeflowHandler) updateCurrentAction(ctx context.Context, id uuid.UUID, stackID uuid.UUID, act *action.Action) (*activeflow.Activeflow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":      "updateCurrentAction",
-			"id":        id,
-			"stack_id":  stackID,
-			"action_id": act,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "updateCurrentAction",
+		"id":        id,
+		"stack_id":  stackID,
+		"action_id": act,
+	})
 
 	// get af
 	af, err := h.Get(ctx, id)
@@ -248,13 +247,12 @@ func (h *activeflowHandler) ReleaseLock(ctx context.Context, id uuid.UUID) error
 
 // FlowGets returns list of activeflows
 func (h *activeflowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "GetsByCustomerID",
-			"customer_id": customerID,
-			"token":       token,
-			"limit":       limit,
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"customer_id": customerID,
+		"token":       token,
+		"limit":       limit,
+	})
 	log.Debug("Getting activeflows.")
 
 	res, err := h.db.ActiveflowGetsByCustomerID(ctx, customerID, token, limit)
