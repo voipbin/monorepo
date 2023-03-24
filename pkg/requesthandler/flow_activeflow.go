@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/gofrs/uuid"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -43,6 +44,56 @@ func (r *requestHandler) FlowV1ActiveflowCreate(ctx context.Context, activeflowI
 	}
 
 	return &res, nil
+}
+
+// FlowV1ActiveflowGet sends a request to flow-manager
+// to getting a detail activeflow info.
+// it returns detail activeflow info if it succeed.
+func (r *requestHandler) FlowV1ActiveflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error) {
+	uri := fmt.Sprintf("/v1/activeflows/%s", activeflowID)
+
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowActiveFlows, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res fmactiveflow.Activeflow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// FlowV1ActiveflowGets sends a request to flow-manager
+// to getting a list of activeflow info.
+// it returns detail list of activeflow info if it succeed.
+func (r *requestHandler) FlowV1ActiveflowGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]fmactiveflow.Activeflow, error) {
+	uri := fmt.Sprintf("/v1/activeflows?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCallCalls, 30000, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res []fmactiveflow.Activeflow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // FlowV1ActiveflowDelete delets activeflow.
