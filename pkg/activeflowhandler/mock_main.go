@@ -96,6 +96,36 @@ func (mr *MockActiveflowHandlerMockRecorder) ExecuteNextAction(ctx, callID, caID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteNextAction", reflect.TypeOf((*MockActiveflowHandler)(nil).ExecuteNextAction), ctx, callID, caID)
 }
 
+// Get mocks base method.
+func (m *MockActiveflowHandler) Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockActiveflowHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockActiveflowHandler)(nil).Get), ctx, id)
+}
+
+// GetsByCustomerID mocks base method.
+func (m *MockActiveflowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
+	ret0, _ := ret[0].([]*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetsByCustomerID indicates an expected call of GetsByCustomerID.
+func (mr *MockActiveflowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockActiveflowHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
+}
+
 // SetForwardActionID mocks base method.
 func (m *MockActiveflowHandler) SetForwardActionID(ctx context.Context, callID, actionID uuid.UUID, forwardNow bool) error {
 	m.ctrl.T.Helper()

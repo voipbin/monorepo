@@ -129,6 +129,118 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 	}
 }
 
+func Test_v1ActiveflowsGet(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+
+		responseActiveflows []*activeflow.Activeflow
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"1 item",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
+			uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+			"2020-10-10 03:30:17.000000",
+			10,
+
+			[]*activeflow.Activeflow{
+				{
+					ID:         uuid.FromStringOrNil("ae07a96a-cbda-11ed-bbc9-5324a1a8b94b"),
+					CustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"ae07a96a-cbda-11ed-bbc9-5324a1a8b94b","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			"2 items",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
+			uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
+			"2020-10-10 03:30:17.000000",
+			10,
+
+			[]*activeflow.Activeflow{
+				{
+					ID: uuid.FromStringOrNil("ae3724b0-cbda-11ed-a44c-1be0474024bd"),
+				},
+				{
+					ID: uuid.FromStringOrNil("ae66a7bc-cbda-11ed-81b3-17eb5a6f42b2"),
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"ae3724b0-cbda-11ed-a44c-1be0474024bd","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"ae66a7bc-cbda-11ed-81b3-17eb5a6f42b2","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			"empty",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
+			"2020-10-10 03:30:17.000000",
+			10,
+
+			[]*activeflow.Activeflow{},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActiveflowHandler := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActiveflowHandler,
+			}
+
+			mockActiveflowHandler.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseActiveflows, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -310,6 +422,65 @@ func Test_v1ActiveflowsIDExecutePost(t *testing.T) {
 			}
 
 			time.Sleep(100 * time.Millisecond)
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_v1ActiveflowsIDGet(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		activeflowID   uuid.UUID
+		responseDelete *activeflow.Activeflow
+
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/activeflows/343b6e40-cbdb-11ed-b13d-9f730017f25a",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
+			uuid.FromStringOrNil("343b6e40-cbdb-11ed-b13d-9f730017f25a"),
+			&activeflow.Activeflow{
+				ID: uuid.FromStringOrNil("343b6e40-cbdb-11ed-b13d-9f730017f25a"),
+			},
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"343b6e40-cbdb-11ed-b13d-9f730017f25a","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","status":"","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","stack_map":null,"current_stack_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"forward_stack_id":"00000000-0000-0000-0000-000000000000","forward_action_id":"00000000-0000-0000-0000-000000000000","execute_count":0,"executed_actions":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockFlowHandler := flowhandler.NewMockFlowHandler(mc)
+			mockActive := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				flowHandler:       mockFlowHandler,
+				activeflowHandler: mockActive,
+			}
+
+			mockActive.EXPECT().Get(gomock.Any(), tt.activeflowID).Return(tt.responseDelete, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
