@@ -39,6 +39,8 @@ type activeflowHandler struct {
 type ActiveflowHandler interface {
 	Create(ctx context.Context, id uuid.UUID, referenceType activeflow.ReferenceType, referenceID uuid.UUID, flowID uuid.UUID) (*activeflow.Activeflow, error)
 	Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
+	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error)
 
 	SetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
 	Stop(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)

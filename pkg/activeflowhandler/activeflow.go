@@ -245,7 +245,7 @@ func (h *activeflowHandler) ReleaseLock(ctx context.Context, id uuid.UUID) error
 	return h.db.ActiveflowReleaseLock(ctx, id)
 }
 
-// FlowGets returns list of activeflows
+// GetsByCustomerID returns list of activeflows
 func (h *activeflowHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsByCustomerID",

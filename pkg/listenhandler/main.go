@@ -41,6 +41,7 @@ var (
 	regAny  = ".*"
 
 	// activeflows
+	regV1ActiveflowsGet               = regexp.MustCompile(`/v1/activeflows\?`)
 	regV1Activeflows                  = regexp.MustCompile("/v1/activeflows$")
 	regV1ActiveflowsID                = regexp.MustCompile("/v1/activeflows/" + regUUID + "$")
 	regV1ActiveflowsIDExecute         = regexp.MustCompile("/v1/activeflows/" + regUUID + "/execute$")
@@ -172,6 +173,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// v1
 	// activeflows
+	case regV1ActiveflowsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/activeflows"
+		response, err = h.v1ActiveflowsGet(ctx, m)
+
+	// activeflows
 	case regV1Activeflows.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		requestType = "/activeflows"
 		response, err = h.v1ActiveflowsPost(ctx, m)
@@ -180,6 +186,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ActiveflowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
 		requestType = "/activeflows/<activeflow-id>"
 		response, err = h.v1ActiveflowsIDDelete(ctx, m)
+
+	// activeflows/<activeflow-id>
+	case regV1ActiveflowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		requestType = "/activeflows/<activeflow-id>"
+		response, err = h.v1ActiveflowsIDGet(ctx, m)
 
 	// activeflows/<activeflow-id>/next
 	case regV1ActiveflowsIDNext.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:

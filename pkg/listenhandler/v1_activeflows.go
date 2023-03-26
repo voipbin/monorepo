@@ -3,6 +3,8 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -12,6 +14,47 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/pkg/listenhandler/models/request"
 )
+
+// v1ActiveflowsGet handles /v1/activeflows GET request
+func (h *listenHandler) v1ActiveflowsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1ActiveflowsGet",
+		"request": m,
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
+
+	// get customer_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+
+	tmp, err := h.activeflowHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	if err != nil {
+		log.Errorf("Could not get activeflows. err: %v", err)
+		return nil, errors.Wrap(err, "could not get activeflows")
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
 
 // v1ActiveflowsPost handles /v1/activeflows POST request
 // creates a new activeflow with given data.
@@ -35,6 +78,39 @@ func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, m *rabbitmqhandle
 	}
 
 	data, err := json.Marshal(resActiveFlow)
+	if err != nil {
+		log.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1ActiveflowsIDGet handles
+// /v1/activeflows/<activeflow-id> GET
+func (h *listenHandler) v1ActiveflowsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1ActiveflowsIDGet",
+		"request": m,
+	})
+
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb"
+	tmpVals := strings.Split(m.URI, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	tmp, err := h.activeflowHandler.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get activeflow. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Errorf("Could not marshal the res. err: %v", err)
 		return nil, err

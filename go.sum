@@ -403,6 +403,7 @@ github.com/bsm/gomega v1.20.0/go.mod h1:JifAceMQ4crZIWYUKrlGcmbN3bqHogVTADMD2ATs
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.3.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.4.1/go.mod h1:4T9NM4+4Vw91VeyqjLS6ao50K5bOcLKN6Q42XnYaRYw=
+github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.1.2/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
@@ -649,6 +650,8 @@ gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca/go.mod h1:xy0GgcAS3kt4TAOrucdTHMxDDmh4BEJ4E8KNl2bQVUI=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230316155701-0ba76de3ea95 h1:flC4hzOFH5vnFZVitYk/OEMdHXBOumToaCimmQ7inPE=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230316155701-0ba76de3ea95/go.mod h1:5cz5fEff6WjnMQsV8yI498ulwBu5PkVQPpf8PJBVtF0=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230326151216-19b455ee9d46 h1:14SK8MQv6kspNfx2Ko47ajm/Kxc3Ih3qky1SZrHC2TM=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230326151216-19b455ee9d46/go.mod h1:sco5PvwiyGrtBIS2l5L7MwzLLUNPFJFvpzdG7YWzKw0=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206 h1:beC7nSy95iuweMe7quxqnfA87YkqSCmqYWUQECBC1eU=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206/go.mod h1:nxwlzRUC86fPO8t9kTkPIxLjRYVVMssIFlr46pIZWnE=
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 h1:KpWVqqS+jFjQ8wOtZSOAorO/SpOEPbuPKWD72smHrQM=
@@ -657,6 +660,8 @@ gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d444
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d4449242c/go.mod h1:5iaYVv3U9iqJ76Y1lhKqCLtICVgiY5q0M8ht0znn47c=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230317023855-804feb67a10c h1:DmqESL8U8mjLyr2O+RPsDh2aK0H+Hn1Hho6WCwL1aQM=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230317023855-804feb67a10c/go.mod h1:TZwYssvPIFVd6r2yA5DzT5pSSSeosEdxM4b1ZWZtKUE=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230324182844-419c528dfa3c h1:GnP96itxNdmCO9HxpR1wJV+IQSIfu7VS00soJlrw2hk=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230324182844-419c528dfa3c/go.mod h1:mFQVk1Z71HlOjFSNlcWS18vabz6wCY+SIzOlF4CT9tA=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa h1:PP+lN42xD4htGHyiwpzki5O9qhYqJQoO2vvbsjslr9g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa/go.mod h1:ZmH0dxGw24CBuZhNZO4JYFTFfY3Ti+aeQkMHG97Swas=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230321074025-d4c5a292e9e1 h1:4Tq/9nkalAnUyT9DYuZucxTpZ0c0+1am/hrZrvim4Hs=
@@ -1186,6 +1191,8 @@ google.golang.org/genproto v0.0.0-20230209215440-0dfe4f8abfcc/go.mod h1:RGgjbofJ
 google.golang.org/genproto v0.0.0-20230216225411-c8e22ba71e44/go.mod h1:8B0gmkoRebU8ukX6HP+4wrVQUY1+6PkQ44BSyIlflHA=
 google.golang.org/genproto v0.0.0-20230320184635-7606e756e683 h1:khxVcsk/FhnzxMKOyD+TDGwjbEOpcPuIpmafPGFmhMA=
 google.golang.org/genproto v0.0.0-20230320184635-7606e756e683/go.mod h1:NWraEVixdDnqcqQ30jipen1STv2r/n24Wb7twVTGR4s=
+google.golang.org/genproto v0.0.0-20230323212658-478b75c54725 h1:VmCWItVXcKboEMCwZaWge+1JLiTCQSngZeINF+wzO+g=
+google.golang.org/genproto v0.0.0-20230323212658-478b75c54725/go.mod h1:UUQDJDOlWu4KYeJZffbWgBkS1YFobzKbLVfK69pe0Ak=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=
