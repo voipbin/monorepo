@@ -97,7 +97,7 @@ func Test_Hangup(t *testing.T) {
 			tt.responseCall.Status = call.StatusHangup
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, gomock.Any())
-			mockReq.EXPECT().FlowV1ActiveflowDelete(ctx, tt.responseCall.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
 
 			for _, chainedCallID := range tt.responseCall.ChainedCallIDs {
 				tmpCall := &call.Call{

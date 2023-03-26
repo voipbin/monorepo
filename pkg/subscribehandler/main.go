@@ -174,8 +174,8 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 	case m.Publisher == publisherAsteriskProxy:
 		err = h.processEventAsteriskProxy(ctx, m)
 
-	case m.Publisher == publisherFlowManager && m.Type == fmactiveflow.EventTypeActiveflowDeleted:
-		err = h.processEventActiveflowDeleted(ctx, m)
+	case m.Publisher == publisherFlowManager && m.Type == fmactiveflow.EventTypeActiveflowUpdated:
+		err = h.processEventActiveflowUpdated(ctx, m)
 
 	default:
 		// ignore the event.
