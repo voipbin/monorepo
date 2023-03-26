@@ -12,7 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 )
 
-func Test_processEvent_processEventActiveflowDeleted(t *testing.T) {
+func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -25,9 +25,9 @@ func Test_processEvent_processEventActiveflowDeleted(t *testing.T) {
 
 			event: &rabbitmqhandler.Event{
 				Publisher: "flow-manager",
-				Type:      "activeflow_deleted",
+				Type:      "activeflow_updated",
 				DataType:  "application/json",
-				Data:      []byte(`{"reference_type":"call","reference_id":"376c0f2e-b5f7-11ed-ad49-13b40b99b414"}`),
+				Data:      []byte(`{"status":"ended","reference_type":"call","reference_id":"376c0f2e-b5f7-11ed-ad49-13b40b99b414"}`),
 			},
 
 			expectCallID: uuid.FromStringOrNil("376c0f2e-b5f7-11ed-ad49-13b40b99b414"),
