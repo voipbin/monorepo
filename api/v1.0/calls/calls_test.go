@@ -203,7 +203,7 @@ func Test_CallsGET(t *testing.T) {
 	}
 }
 
-func TestCallsIDGET(t *testing.T) {
+func Test_CallsIDGET(t *testing.T) {
 
 	type test struct {
 		name     string

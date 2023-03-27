@@ -14,13 +14,11 @@ import (
 
 // conferenceGet vaildates the customer's ownership and returns the conference info.
 func (h *serviceHandler) conferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "conferenceGet",
-			"customer_id":   u.ID,
-			"conference_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "conferenceGet",
+		"customer_id":   u.ID,
+		"conference_id": id,
+	})
 
 	// send request
 	tmp, err := h.reqHandler.ConferenceV1ConferenceGet(ctx, id)
@@ -128,31 +126,30 @@ func (h *serviceHandler) ConferenceCreate(
 }
 
 // ConferenceDelete is a service handler for conference creating.
-func (h *serviceHandler) ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "ConferenceDelete",
-			"customer_id": u.ID,
-			"username":    u.Username,
-			"conference":  confID,
-		},
-	)
+func (h *serviceHandler) ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "ConferenceDelete",
+		"customer":      u,
+		"conference_id": confID,
+	})
 
 	// get conference for ownership check
 	_, err := h.conferenceGet(ctx, u, confID)
 	if err != nil {
 		log.Errorf("Could not get conference info. err: %v", err)
-		return err
+		return nil, err
 	}
 
 	// destroy
 	log.Debug("Destroying conference.")
-	if err := h.reqHandler.ConferenceV1ConferenceDelete(ctx, confID); err != nil {
+	tmp, err := h.reqHandler.ConferenceV1ConferenceDelete(ctx, confID)
+	if err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
 }
 
 // ConferenceUpdate is a service handler for conference updating.

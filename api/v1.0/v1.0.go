@@ -3,6 +3,7 @@ package apiv1
 import (
 	"github.com/gin-gonic/gin"
 
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/activeflows"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/agents"
 	availablenumbers "gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/available_numbers"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/v1.0/calls"
@@ -44,6 +45,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	v1 := r.Group("/v1.0", middleware.Authorized)
 
 	// v1.0
+	activeflows.ApplyRoutes(v1)
 	agents.ApplyRoutes(v1)
 	availablenumbers.ApplyRoutes(v1)
 	calls.ApplyRoutes(v1)
