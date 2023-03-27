@@ -15,13 +15,10 @@ import (
 
 // callGet validates the call's ownership and returns the call info.
 func (h *serviceHandler) callGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.Call, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "callGet",
-			"customer_id":   u.ID,
-			"transcribe_id": callID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{"func": "callGet",
+		"customer_id":   u.ID,
+		"call_id": callID,
+	})
 
 	// send request
 	res, err := h.reqHandler.CallV1CallGet(ctx, callID)
@@ -94,7 +91,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer,
 // it returns call if it succeed.
 func (h *serviceHandler) CallGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "CallGet",
+		"func":        "CallGet",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"call_id":     callID,
