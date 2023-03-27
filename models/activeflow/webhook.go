@@ -35,6 +35,7 @@ func (h *Activeflow) ConvertWebhookMessage() *WebhookMessage {
 		CustomerID: h.CustomerID,
 
 		FlowID: h.FlowID,
+		Status: h.Status,
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
