@@ -32,6 +32,7 @@ import (
 	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	nmavailablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
@@ -57,6 +58,12 @@ const (
 
 // ServiceHandler is interface for service handle
 type ServiceHandler interface {
+
+	// activeflows
+	ActiveflowDelete(ctx context.Context, u *cscustomer.Customer, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
+	ActiveflowGet(ctx context.Context, u *cscustomer.Customer, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
+	ActiveflowGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error)
+	ActiveflowStop(ctx context.Context, u *cscustomer.Customer, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
 
 	// agent handlers
 	AgentCreate(
@@ -185,7 +192,7 @@ type ServiceHandler interface {
 
 	// conference handlers
 	ConferenceCreate(ctx context.Context, u *cscustomer.Customer, confType cfconference.Type, name, detail string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
-	ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) error
+	ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
 	ConferenceRecordingStart(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error)

@@ -190,20 +190,27 @@ func Test_conferencesIDDELETE(t *testing.T) {
 	tests := []struct {
 		name     string
 		customer cscustomer.Customer
+
+		reqQuery string
 		id       uuid.UUID
 
-		requestURI string
+		responseConference *cfconference.WebhookMessage
 	}{
 		{
-			"simple test",
-			cscustomer.Customer{
+			name: "normal",
+			customer: cscustomer.Customer{
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				PermissionIDs: []uuid.UUID{
 					cspermission.PermissionAdmin.ID,
 				},
 			},
-			uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
-			"/v1.0/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
+
+			reqQuery: "/v1.0/conferences/f49f8cc6-ac7f-11ea-91a3-e7103a41fa51",
+			id:       uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
+
+			responseConference: &cfconference.WebhookMessage{
+				ID: uuid.FromStringOrNil("f49f8cc6-ac7f-11ea-91a3-e7103a41fa51"),
+			},
 		},
 	}
 
@@ -224,9 +231,8 @@ func Test_conferencesIDDELETE(t *testing.T) {
 			})
 			setupServer(r)
 
-			req, _ := http.NewRequest("DELETE", tt.requestURI, nil)
-
-			mockSvc.EXPECT().ConferenceDelete(req.Context(), &tt.customer, tt.id).Return(nil)
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
+			mockSvc.EXPECT().ConferenceDelete(req.Context(), &tt.customer, tt.id).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

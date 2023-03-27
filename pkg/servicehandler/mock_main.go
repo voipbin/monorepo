@@ -34,6 +34,7 @@ import (
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	action "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	activeflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	flow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 	message0 "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
@@ -71,6 +72,66 @@ func NewMockServiceHandler(ctrl *gomock.Controller) *MockServiceHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 	return m.recorder
+}
+
+// ActiveflowDelete mocks base method.
+func (m *MockServiceHandler) ActiveflowDelete(ctx context.Context, u *customer.Customer, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowDelete", ctx, u, activeflowID)
+	ret0, _ := ret[0].(*activeflow.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveflowDelete indicates an expected call of ActiveflowDelete.
+func (mr *MockServiceHandlerMockRecorder) ActiveflowDelete(ctx, u, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowDelete", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowDelete), ctx, u, activeflowID)
+}
+
+// ActiveflowGet mocks base method.
+func (m *MockServiceHandler) ActiveflowGet(ctx context.Context, u *customer.Customer, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowGet", ctx, u, activeflowID)
+	ret0, _ := ret[0].(*activeflow.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveflowGet indicates an expected call of ActiveflowGet.
+func (mr *MockServiceHandlerMockRecorder) ActiveflowGet(ctx, u, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGet", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowGet), ctx, u, activeflowID)
+}
+
+// ActiveflowGets mocks base method.
+func (m *MockServiceHandler) ActiveflowGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*activeflow.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowGets", ctx, u, size, token)
+	ret0, _ := ret[0].([]*activeflow.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveflowGets indicates an expected call of ActiveflowGets.
+func (mr *MockServiceHandlerMockRecorder) ActiveflowGets(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGets", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowGets), ctx, u, size, token)
+}
+
+// ActiveflowStop mocks base method.
+func (m *MockServiceHandler) ActiveflowStop(ctx context.Context, u *customer.Customer, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowStop", ctx, u, activeflowID)
+	ret0, _ := ret[0].(*activeflow.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActiveflowStop indicates an expected call of ActiveflowStop.
+func (mr *MockServiceHandlerMockRecorder) ActiveflowStop(ctx, u, activeflowID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowStop", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowStop), ctx, u, activeflowID)
 }
 
 // AgentCreate mocks base method.
@@ -913,11 +974,12 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceCreate(ctx, u, confType, nam
 }
 
 // ConferenceDelete mocks base method.
-func (m *MockServiceHandler) ConferenceDelete(ctx context.Context, u *customer.Customer, confID uuid.UUID) error {
+func (m *MockServiceHandler) ConferenceDelete(ctx context.Context, u *customer.Customer, confID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceDelete", ctx, u, confID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*conference.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ConferenceDelete indicates an expected call of ConferenceDelete.

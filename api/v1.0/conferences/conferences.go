@@ -275,14 +275,14 @@ func conferencesIDDELETE(c *gin.Context) {
 	log.Debug("Executing conferencesIDDELETE.")
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	err := servicehandler.ConferenceDelete(c.Request.Context(), &u, id)
+	res, err := servicehandler.ConferenceDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete the conference. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.JSON(200, res)
 }
 
 // conferencesIDRecordingStartPOST handles DELETE /conferences/{id}/recording_start request.

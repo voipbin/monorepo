@@ -175,31 +175,30 @@ func TestConferenceCreate(t *testing.T) {
 	}
 }
 
-func TestConferenceDelete(t *testing.T) {
+func Test_ConferenceDelete(t *testing.T) {
 
 	tests := []struct {
-		name         string
-		customer     *cscustomer.Customer
-		confID       uuid.UUID
-		cfConference *cfconference.Conference
+		name               string
+		customer           *cscustomer.Customer
+		conferenceID       uuid.UUID
+		responseConference *cfconference.Conference
+
+		expectRes *cfconference.WebhookMessage
 	}{
 		{
-			"normal",
-			&cscustomer.Customer{
+			name: "normal",
+			customer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
-			uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
-			&cfconference.Conference{
+			conferenceID: uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
+
+			responseConference: &cfconference.Conference{
 				ID:         uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				Type:       cfconference.TypeConference,
-
-				Status: cfconference.StatusProgressing,
-				Name:   "test name",
-				Detail: "test detail",
-				Data:   map[string]interface{}{},
-
-				ConferencecallIDs: []uuid.UUID{},
+			},
+			expectRes: &cfconference.WebhookMessage{
+				ID:         uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
+				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 		},
 	}
@@ -218,12 +217,16 @@ func TestConferenceDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.confID).Return(tt.cfConference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceDelete(ctx, tt.confID).Return(nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseConference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceDelete(ctx, tt.conferenceID).Return(tt.responseConference, nil)
 
-			err := h.ConferenceDelete(ctx, tt.customer, tt.confID)
+			res, err := h.ConferenceDelete(ctx, tt.customer, tt.conferenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
