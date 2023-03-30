@@ -1094,3 +1094,97 @@ func Test_AstChannelRing(t *testing.T) {
 		})
 	}
 }
+
+func Test_AstChannelHold(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"ef557106-ced0-11ed-83d5-8f5e5a3bd8a7",
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:    "/ari/channels/ef557106-ced0-11ed-83d5-8f5e5a3bd8a7/hold",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				tt.expectRequest,
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelHold(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AstChannelUnhold(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"3c1a71f8-ced1-11ed-a2b9-0fca69fc6f49",
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:    "/ari/channels/3c1a71f8-ced1-11ed-a2b9-0fca69fc6f49/hold",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				tt.expectRequest,
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelUnhold(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}

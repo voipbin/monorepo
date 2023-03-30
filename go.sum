@@ -121,6 +121,8 @@ gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230324171151-1be987ef0b
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230324171151-1be987ef0b41/go.mod h1:I3XO03IZQAR1clPXC7nvbokw5TQI6h/uoz/RfsrAlP0=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230326153215-f27166a80eba h1:jsVdJpxXPimrhxvJcgLTKJopdjxmJi3yGRVD2J0njIE=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230326153215-f27166a80eba/go.mod h1:kDbcWMg0fP9fXcIOSbsxl76ivceybtlInvynlX7rJoU=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230327125134-36a7bcdf59a5 h1:G7rTRLLt2yQuN1Gnc6SZdv5H6tu8QcsZ3/3aADBXXTo=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230327125134-36a7bcdf59a5/go.mod h1:JC3DcjeK9W9E2Cue5nYedfuukHTpQp196pPW379aBH8=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600 h1:BCrfSskH3gjLBXZhC1PkYTyw1HLbAzPTZ1WGMJewPIg=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20221211030023-7909940f4600/go.mod h1:XnEvGVrxHrwNie+5H0Us8OTwbonbk5terGYZOip0ZmU=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20230306090132-4738c2e4e0eb h1:78AXbvjvR51gTgReYvvyP5Av+G8YlaujltnzSf1ZDlQ=

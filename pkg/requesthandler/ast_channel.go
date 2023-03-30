@@ -436,3 +436,31 @@ func (r *requestHandler) AstChannelRing(ctx context.Context, asteriskID string, 
 	}
 	return nil
 }
+
+// AstChannelHold holds the given the channel
+func (r *requestHandler) AstChannelHold(ctx context.Context, asteriskID string, channelID string) error {
+	url := fmt.Sprintf("/ari/channels/%s/hold", channelID)
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstChannelUnhold unholds the given the channel
+func (r *requestHandler) AstChannelUnhold(ctx context.Context, asteriskID string, channelID string) error {
+	url := fmt.Sprintf("/ari/channels/%s/hold", channelID)
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
