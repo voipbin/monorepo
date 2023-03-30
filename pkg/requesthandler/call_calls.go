@@ -641,3 +641,83 @@ func (r *requestHandler) CallV1CallMediaStop(ctx context.Context, callID uuid.UU
 
 	return nil
 }
+
+// CallV1CallHold sends a request to call-manager
+// to hold the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallHold(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/hold", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDHold, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallUnhold sends a request to call-manager
+// to unhold the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallUnhold(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/unhold", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDUnhold, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallMute sends a request to call-manager
+// to mute the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallMute(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/mute", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDMute, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallUnmute sends a request to call-manager
+// to unmute the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallUnmute(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/unmute", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDUnmute, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
