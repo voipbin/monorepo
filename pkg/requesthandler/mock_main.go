@@ -572,6 +572,20 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelHangup(ctx, asteriskID, chan
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHangup", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHangup), ctx, asteriskID, channelID, code, delay)
 }
 
+// AstChannelHold mocks base method.
+func (m *MockRequestHandler) AstChannelHold(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelHold", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelHold indicates an expected call of AstChannelHold.
+func (mr *MockRequestHandlerMockRecorder) AstChannelHold(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHold", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHold), ctx, asteriskID, channelID)
+}
+
 // AstChannelPlay mocks base method.
 func (m *MockRequestHandler) AstChannelPlay(ctx context.Context, asteriskID, channelID string, actionID uuid.UUID, medias []string, lang string) error {
 	m.ctrl.T.Helper()
@@ -612,6 +626,20 @@ func (m *MockRequestHandler) AstChannelRing(ctx context.Context, asteriskID, cha
 func (mr *MockRequestHandlerMockRecorder) AstChannelRing(ctx, asteriskID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelRing", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelRing), ctx, asteriskID, channelID)
+}
+
+// AstChannelUnhold mocks base method.
+func (m *MockRequestHandler) AstChannelUnhold(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelUnhold", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelUnhold indicates an expected call of AstChannelUnhold.
+func (mr *MockRequestHandlerMockRecorder) AstChannelUnhold(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelUnhold", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelUnhold), ctx, asteriskID, channelID)
 }
 
 // AstChannelVariableGet mocks base method.

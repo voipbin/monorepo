@@ -142,9 +142,11 @@ const (
 	resourceAstChannelsDial          resource = "ast/channels/dial"
 	resourceAstChannelsExternalMedia resource = "ast/channels/externalmedia"
 	resourceAstChannelsHangup        resource = "ast/channels/hangup"
+	resourceAstChannelsHold          resource = "ast/channels/hold"
 	resourceAstChannelsPlay          resource = "ast/channels/play"
 	resourceAstChannelsRecord        resource = "ast/channels/record"
 	resourceAstChannelsSnoop         resource = "ast/channels/snoop"
+	resourceAstChannelsUnhold        resource = "ast/channels/unhold"
 	resourceAstChannelsVar           resource = "ast/channels/var"
 
 	resourceAstPlaybacks resource = "ast/playbacks"
@@ -299,9 +301,11 @@ type RequestHandler interface {
 	AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error)
 	AstChannelGet(ctx context.Context, asteriskID, channelID string) (*cmchannel.Channel, error)
 	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause, delay int) error
+	AstChannelHold(ctx context.Context, asteriskID string, channelID string) error
 	AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
 	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelRing(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelUnhold(ctx context.Context, asteriskID string, channelID string) error
 	AstChannelVariableGet(ctx context.Context, asteriskID, channelID, variable string) (string, error)
 	AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error
 
