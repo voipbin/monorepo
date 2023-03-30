@@ -932,6 +932,20 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallHealth(ctx, id, delay, retry
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHealth), ctx, id, delay, retryCount)
 }
 
+// CallV1CallHold mocks base method.
+func (m *MockRequestHandler) CallV1CallHold(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallHold", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallHold indicates an expected call of CallV1CallHold.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallHold(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHold", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHold), ctx, callID)
+}
+
 // CallV1CallMediaStop mocks base method.
 func (m *MockRequestHandler) CallV1CallMediaStop(ctx context.Context, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -944,6 +958,20 @@ func (m *MockRequestHandler) CallV1CallMediaStop(ctx context.Context, callID uui
 func (mr *MockRequestHandlerMockRecorder) CallV1CallMediaStop(ctx, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMediaStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMediaStop), ctx, callID)
+}
+
+// CallV1CallMute mocks base method.
+func (m *MockRequestHandler) CallV1CallMute(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallMute", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallMute indicates an expected call of CallV1CallMute.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallMute(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMute", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMute), ctx, callID)
 }
 
 // CallV1CallPlay mocks base method.
@@ -1031,6 +1059,34 @@ func (m *MockRequestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUI
 func (mr *MockRequestHandlerMockRecorder) CallV1CallTalk(ctx, callID, text, gender, language, rqeuestTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallTalk", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallTalk), ctx, callID, text, gender, language, rqeuestTimeout)
+}
+
+// CallV1CallUnhold mocks base method.
+func (m *MockRequestHandler) CallV1CallUnhold(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallUnhold", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallUnhold indicates an expected call of CallV1CallUnhold.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallUnhold(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallUnhold", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallUnhold), ctx, callID)
+}
+
+// CallV1CallUnmute mocks base method.
+func (m *MockRequestHandler) CallV1CallUnmute(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallUnmute", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallUnmute indicates an expected call of CallV1CallUnmute.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallUnmute(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallUnmute", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallUnmute), ctx, callID)
 }
 
 // CallV1CallUpdateConfbridgeID mocks base method.

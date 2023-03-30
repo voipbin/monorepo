@@ -174,6 +174,10 @@ const (
 	resourceCallCallsCallIDExternalMedia   resource = "call/calls/<call-id>/external-media"
 	resourceCallCallsCallIDTalk            resource = "call/calls/<call-id>/talk"
 	resourceCallCallsCallIDPlay            resource = "call/calls/<call-id>/play"
+	resourceCallCallsCallIDHold            resource = "call/calls/<call-id>/hold"
+	resourceCallCallsCallIDUnhold          resource = "call/calls/<call-id>/unhold"
+	resourceCallCallsCallIDMute            resource = "call/calls/<call-id>/mute"
+	resourceCallCallsCallIDUnmute          resource = "call/calls/<call-id>/unmute"
 	resourceCallChannelsHealth             resource = "call/channels/health"
 	resourceCallConfbridges                resource = "call/confbridges"
 	resourceCallConfbridgesIDExternalMedia resource = "call/confbridges/<confbridge-id>/external-media"
@@ -400,6 +404,10 @@ type RequestHandler interface {
 	CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string, rqeuestTimeout int) error
 	CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
+	CallV1CallHold(ctx context.Context, callID uuid.UUID) error
+	CallV1CallUnhold(ctx context.Context, callID uuid.UUID) error
+	CallV1CallMute(ctx context.Context, callID uuid.UUID) error
+	CallV1CallUnmute(ctx context.Context, callID uuid.UUID) error
 
 	// call-manager channel
 	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error
