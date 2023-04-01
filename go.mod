@@ -16,7 +16,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230326151216-19b455ee9d46
 	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d4449242c
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230327120616-27bc1ebb6297
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230330123502-5982a4a2175c
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230321074025-d4c5a292e9e1
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf6b027
@@ -50,6 +50,6 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230204142400-175f62ac7400 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
-	google.golang.org/genproto v0.0.0-20230323212658-478b75c54725 // indirect
+	google.golang.org/genproto v0.0.0-20230331144136-dcfb400f0633 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 )
