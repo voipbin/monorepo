@@ -1095,7 +1095,7 @@ func Test_AstChannelRing(t *testing.T) {
 	}
 }
 
-func Test_AstChannelHold(t *testing.T) {
+func Test_AstChannelHoldOn(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -1134,7 +1134,7 @@ func Test_AstChannelHold(t *testing.T) {
 				tt.expectRequest,
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelHold(context.Background(), tt.asteriskID, tt.channelID)
+			err := reqHandler.AstChannelHoldOn(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -1142,7 +1142,7 @@ func Test_AstChannelHold(t *testing.T) {
 	}
 }
 
-func Test_AstChannelUnhold(t *testing.T) {
+func Test_AstChannelHoldOff(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -1181,7 +1181,289 @@ func Test_AstChannelUnhold(t *testing.T) {
 				tt.expectRequest,
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelUnhold(context.Background(), tt.asteriskID, tt.channelID)
+			err := reqHandler.AstChannelHoldOff(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AstChannelMusicOnHoldOn(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"d7602848-d0b5-11ed-8240-afb9293d0c44",
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:    "/ari/channels/d7602848-d0b5-11ed-8240-afb9293d0c44/moh",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				tt.expectRequest,
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelMusicOnHoldOn(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AstChannelMusicOnHoldOff(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"d795433e-d0b5-11ed-9884-9f7d67594400",
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:    "/ari/channels/d795433e-d0b5-11ed-9884-9f7d67594400/moh",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				tt.expectRequest,
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelMusicOnHoldOff(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AstChannelSilenceOn(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"d7c3b2c8-d0b5-11ed-b0ca-835a116c1710",
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:    "/ari/channels/d7c3b2c8-d0b5-11ed-b0ca-835a116c1710/silence",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				tt.expectRequest,
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelSilenceOn(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AstChannelSilenceOff(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"d7f2b208-d0b5-11ed-bddd-b796b66c6d5f",
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:    "/ari/channels/d7f2b208-d0b5-11ed-bddd-b796b66c6d5f/silence",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				tt.expectRequest,
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelSilenceOff(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AstChannelMuteOn(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"d8393e4e-d0b5-11ed-9a0a-6fd4e76c9f86",
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:    "/ari/channels/d8393e4e-d0b5-11ed-9a0a-6fd4e76c9f86/mute",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				tt.expectRequest,
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelMuteOn(context.Background(), tt.asteriskID, tt.channelID)
+			if err != nil {
+				t.Errorf("Wrong match. expact: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_AstChannelMuteOff(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		asteriskID string
+		channelID  string
+
+		expectQueue   string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			"normal",
+			"00:11:22:33:44:55",
+			"4544a38e-d0b6-11ed-beab-13e97aee6eb0",
+
+			"asterisk.00:11:22:33:44:55.request",
+			&rabbitmqhandler.Request{
+				URI:    "/ari/channels/4544a38e-d0b6-11ed-beab-13e97aee6eb0/mute",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			mockSock.EXPECT().PublishRPC(
+				gomock.Any(),
+				tt.expectQueue,
+				tt.expectRequest,
+			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
+
+			err := reqHandler.AstChannelMuteOff(context.Background(), tt.asteriskID, tt.channelID)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

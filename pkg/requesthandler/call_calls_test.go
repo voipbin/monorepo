@@ -1358,7 +1358,7 @@ func Test_CallV1CallMediaStop(t *testing.T) {
 	}
 }
 
-func Test_CallV1CallHold(t *testing.T) {
+func Test_CallV1CallHoldOn(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -1398,14 +1398,14 @@ func Test_CallV1CallHold(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallHold(ctx, tt.callID); err != nil {
+			if err := reqHandler.CallV1CallHoldOn(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_CallV1CallUnhold(t *testing.T) {
+func Test_CallV1CallHoldOff(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -1423,8 +1423,8 @@ func Test_CallV1CallUnhold(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/calls/b39a2b6e-cef5-11ed-8aee-9b00ffa23b49/unhold",
-				Method: rabbitmqhandler.RequestMethodPost,
+				URI:    "/v1/calls/b39a2b6e-cef5-11ed-8aee-9b00ffa23b49/hold",
+				Method: rabbitmqhandler.RequestMethodDelete,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -1445,14 +1445,14 @@ func Test_CallV1CallUnhold(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallUnhold(ctx, tt.callID); err != nil {
+			if err := reqHandler.CallV1CallHoldOff(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_CallV1CallMute(t *testing.T) {
+func Test_CallV1CallMuteOn(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -1492,14 +1492,14 @@ func Test_CallV1CallMute(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallMute(ctx, tt.callID); err != nil {
+			if err := reqHandler.CallV1CallMuteOn(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
 }
 
-func Test_CallV1CallUnmute(t *testing.T) {
+func Test_CallV1CallMuteOff(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -1517,7 +1517,54 @@ func Test_CallV1CallUnmute(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/calls/b3ebe8dc-cef5-11ed-a05a-8730dc1ef961/unmute",
+				URI:    "/v1/calls/b3ebe8dc-cef5-11ed-a05a-8730dc1ef961/mute",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallMuteOff(ctx, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallMusicOnHoldOn(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("52ce3c32-d0ba-11ed-a847-9b2877b2f2f3"),
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/52ce3c32-d0ba-11ed-a847-9b2877b2f2f3/moh",
 				Method: rabbitmqhandler.RequestMethodPost,
 			},
 			&rabbitmqhandler.Response{
@@ -1539,7 +1586,148 @@ func Test_CallV1CallUnmute(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallUnmute(ctx, tt.callID); err != nil {
+			if err := reqHandler.CallV1CallMusicOnHoldOn(ctx, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallMusicOnHoldOff(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("5307dca8-d0ba-11ed-a3ae-eb92cdba1a1e"),
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/5307dca8-d0ba-11ed-a3ae-eb92cdba1a1e/moh",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallMusicOnHoldOff(ctx, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallSilenceOn(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("75f7278c-d0ba-11ed-9015-b7646ccfa33e"),
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/75f7278c-d0ba-11ed-9015-b7646ccfa33e/silence",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallSilenceOn(ctx, tt.callID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1CallSilenceOff(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		callID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("76367266-d0ba-11ed-a4fd-43b05781859b"),
+
+			"bin-manager.call-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/calls/76367266-d0ba-11ed-a4fd-43b05781859b/silence",
+				Method: rabbitmqhandler.RequestMethodDelete,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1CallSilenceOff(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

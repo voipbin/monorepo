@@ -642,13 +642,13 @@ func (r *requestHandler) CallV1CallMediaStop(ctx context.Context, callID uuid.UU
 	return nil
 }
 
-// CallV1CallHold sends a request to call-manager
+// CallV1CallHoldOn sends a request to call-manager
 // to hold the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallHold(ctx context.Context, callID uuid.UUID) error {
+func (r *requestHandler) CallV1CallHoldOn(ctx context.Context, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/calls/%s/hold", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDHold, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/calls/<call-id>/hold", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -662,13 +662,13 @@ func (r *requestHandler) CallV1CallHold(ctx context.Context, callID uuid.UUID) e
 	return nil
 }
 
-// CallV1CallUnhold sends a request to call-manager
+// CallV1CallHoldOff sends a request to call-manager
 // to unhold the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallUnhold(ctx context.Context, callID uuid.UUID) error {
-	uri := fmt.Sprintf("/v1/calls/%s/unhold", callID)
+func (r *requestHandler) CallV1CallHoldOff(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/hold", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDUnhold, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/calls/<call-id>/hold", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -682,13 +682,13 @@ func (r *requestHandler) CallV1CallUnhold(ctx context.Context, callID uuid.UUID)
 	return nil
 }
 
-// CallV1CallMute sends a request to call-manager
+// CallV1CallMuteOn sends a request to call-manager
 // to mute the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallMute(ctx context.Context, callID uuid.UUID) error {
+func (r *requestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID) error {
 	uri := fmt.Sprintf("/v1/calls/%s/mute", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDMute, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/calls/<call-id>/mute", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -702,13 +702,93 @@ func (r *requestHandler) CallV1CallMute(ctx context.Context, callID uuid.UUID) e
 	return nil
 }
 
-// CallV1CallUnmute sends a request to call-manager
+// CallV1CallMuteOff sends a request to call-manager
 // to unmute the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallUnmute(ctx context.Context, callID uuid.UUID) error {
-	uri := fmt.Sprintf("/v1/calls/%s/unmute", callID)
+func (r *requestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/mute", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCallsCallIDUnmute, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/calls/<call-id>/mute", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallMusicOnHoldOn sends a request to call-manager
+// to music on hold the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallMusicOnHoldOn(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/moh", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/calls/<call-id>/moh", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallMusicOnHoldOff sends a request to call-manager
+// to music on hold off the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallMusicOnHoldOff(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/moh", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/calls/<call-id>/moh", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallSilenceOn sends a request to call-manager
+// to music on hold the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallSilenceOn(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/silence", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/calls/<call-id>/silence", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1CallSilenceOff sends a request to call-manager
+// to music on hold off the call.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1CallSilenceOff(ctx context.Context, callID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/calls/%s/silence", callID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/calls/<call-id>/silence", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err

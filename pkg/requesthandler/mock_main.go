@@ -572,18 +572,88 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelHangup(ctx, asteriskID, chan
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHangup", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHangup), ctx, asteriskID, channelID, code, delay)
 }
 
-// AstChannelHold mocks base method.
-func (m *MockRequestHandler) AstChannelHold(ctx context.Context, asteriskID, channelID string) error {
+// AstChannelHoldOff mocks base method.
+func (m *MockRequestHandler) AstChannelHoldOff(ctx context.Context, asteriskID, channelID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelHold", ctx, asteriskID, channelID)
+	ret := m.ctrl.Call(m, "AstChannelHoldOff", ctx, asteriskID, channelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AstChannelHold indicates an expected call of AstChannelHold.
-func (mr *MockRequestHandlerMockRecorder) AstChannelHold(ctx, asteriskID, channelID interface{}) *gomock.Call {
+// AstChannelHoldOff indicates an expected call of AstChannelHoldOff.
+func (mr *MockRequestHandlerMockRecorder) AstChannelHoldOff(ctx, asteriskID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHold", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHold), ctx, asteriskID, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHoldOff", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHoldOff), ctx, asteriskID, channelID)
+}
+
+// AstChannelHoldOn mocks base method.
+func (m *MockRequestHandler) AstChannelHoldOn(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelHoldOn", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelHoldOn indicates an expected call of AstChannelHoldOn.
+func (mr *MockRequestHandlerMockRecorder) AstChannelHoldOn(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelHoldOn", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelHoldOn), ctx, asteriskID, channelID)
+}
+
+// AstChannelMusicOnHoldOff mocks base method.
+func (m *MockRequestHandler) AstChannelMusicOnHoldOff(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelMusicOnHoldOff", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelMusicOnHoldOff indicates an expected call of AstChannelMusicOnHoldOff.
+func (mr *MockRequestHandlerMockRecorder) AstChannelMusicOnHoldOff(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelMusicOnHoldOff", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelMusicOnHoldOff), ctx, asteriskID, channelID)
+}
+
+// AstChannelMusicOnHoldOn mocks base method.
+func (m *MockRequestHandler) AstChannelMusicOnHoldOn(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelMusicOnHoldOn", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelMusicOnHoldOn indicates an expected call of AstChannelMusicOnHoldOn.
+func (mr *MockRequestHandlerMockRecorder) AstChannelMusicOnHoldOn(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelMusicOnHoldOn", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelMusicOnHoldOn), ctx, asteriskID, channelID)
+}
+
+// AstChannelMuteOff mocks base method.
+func (m *MockRequestHandler) AstChannelMuteOff(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelMuteOff", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelMuteOff indicates an expected call of AstChannelMuteOff.
+func (mr *MockRequestHandlerMockRecorder) AstChannelMuteOff(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelMuteOff", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelMuteOff), ctx, asteriskID, channelID)
+}
+
+// AstChannelMuteOn mocks base method.
+func (m *MockRequestHandler) AstChannelMuteOn(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelMuteOn", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelMuteOn indicates an expected call of AstChannelMuteOn.
+func (mr *MockRequestHandlerMockRecorder) AstChannelMuteOn(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelMuteOn", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelMuteOn), ctx, asteriskID, channelID)
 }
 
 // AstChannelPlay mocks base method.
@@ -628,18 +698,32 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelRing(ctx, asteriskID, channe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelRing", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelRing), ctx, asteriskID, channelID)
 }
 
-// AstChannelUnhold mocks base method.
-func (m *MockRequestHandler) AstChannelUnhold(ctx context.Context, asteriskID, channelID string) error {
+// AstChannelSilenceOff mocks base method.
+func (m *MockRequestHandler) AstChannelSilenceOff(ctx context.Context, asteriskID, channelID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelUnhold", ctx, asteriskID, channelID)
+	ret := m.ctrl.Call(m, "AstChannelSilenceOff", ctx, asteriskID, channelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AstChannelUnhold indicates an expected call of AstChannelUnhold.
-func (mr *MockRequestHandlerMockRecorder) AstChannelUnhold(ctx, asteriskID, channelID interface{}) *gomock.Call {
+// AstChannelSilenceOff indicates an expected call of AstChannelSilenceOff.
+func (mr *MockRequestHandlerMockRecorder) AstChannelSilenceOff(ctx, asteriskID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelUnhold", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelUnhold), ctx, asteriskID, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelSilenceOff", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelSilenceOff), ctx, asteriskID, channelID)
+}
+
+// AstChannelSilenceOn mocks base method.
+func (m *MockRequestHandler) AstChannelSilenceOn(ctx context.Context, asteriskID, channelID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstChannelSilenceOn", ctx, asteriskID, channelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstChannelSilenceOn indicates an expected call of AstChannelSilenceOn.
+func (mr *MockRequestHandlerMockRecorder) AstChannelSilenceOn(ctx, asteriskID, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelSilenceOn", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelSilenceOn), ctx, asteriskID, channelID)
 }
 
 // AstChannelVariableGet mocks base method.
@@ -932,18 +1016,32 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallHealth(ctx, id, delay, retry
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHealth", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHealth), ctx, id, delay, retryCount)
 }
 
-// CallV1CallHold mocks base method.
-func (m *MockRequestHandler) CallV1CallHold(ctx context.Context, callID uuid.UUID) error {
+// CallV1CallHoldOff mocks base method.
+func (m *MockRequestHandler) CallV1CallHoldOff(ctx context.Context, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallHold", ctx, callID)
+	ret := m.ctrl.Call(m, "CallV1CallHoldOff", ctx, callID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CallV1CallHold indicates an expected call of CallV1CallHold.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallHold(ctx, callID interface{}) *gomock.Call {
+// CallV1CallHoldOff indicates an expected call of CallV1CallHoldOff.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallHoldOff(ctx, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHold", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHold), ctx, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHoldOff", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHoldOff), ctx, callID)
+}
+
+// CallV1CallHoldOn mocks base method.
+func (m *MockRequestHandler) CallV1CallHoldOn(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallHoldOn", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallHoldOn indicates an expected call of CallV1CallHoldOn.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallHoldOn(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHoldOn", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHoldOn), ctx, callID)
 }
 
 // CallV1CallMediaStop mocks base method.
@@ -960,18 +1058,60 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallMediaStop(ctx, callID interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMediaStop", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMediaStop), ctx, callID)
 }
 
-// CallV1CallMute mocks base method.
-func (m *MockRequestHandler) CallV1CallMute(ctx context.Context, callID uuid.UUID) error {
+// CallV1CallMusicOnHoldOff mocks base method.
+func (m *MockRequestHandler) CallV1CallMusicOnHoldOff(ctx context.Context, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallMute", ctx, callID)
+	ret := m.ctrl.Call(m, "CallV1CallMusicOnHoldOff", ctx, callID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CallV1CallMute indicates an expected call of CallV1CallMute.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallMute(ctx, callID interface{}) *gomock.Call {
+// CallV1CallMusicOnHoldOff indicates an expected call of CallV1CallMusicOnHoldOff.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallMusicOnHoldOff(ctx, callID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMute", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMute), ctx, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMusicOnHoldOff", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMusicOnHoldOff), ctx, callID)
+}
+
+// CallV1CallMusicOnHoldOn mocks base method.
+func (m *MockRequestHandler) CallV1CallMusicOnHoldOn(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallMusicOnHoldOn", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallMusicOnHoldOn indicates an expected call of CallV1CallMusicOnHoldOn.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallMusicOnHoldOn(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMusicOnHoldOn", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMusicOnHoldOn), ctx, callID)
+}
+
+// CallV1CallMuteOff mocks base method.
+func (m *MockRequestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallMuteOff", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallMuteOff indicates an expected call of CallV1CallMuteOff.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallMuteOff(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMuteOff", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMuteOff), ctx, callID)
+}
+
+// CallV1CallMuteOn mocks base method.
+func (m *MockRequestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallMuteOn", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallMuteOn indicates an expected call of CallV1CallMuteOn.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallMuteOn(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMuteOn", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMuteOn), ctx, callID)
 }
 
 // CallV1CallPlay mocks base method.
@@ -1047,6 +1187,34 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallSendDigits(ctx, callID, digi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSendDigits", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSendDigits), ctx, callID, digits)
 }
 
+// CallV1CallSilenceOff mocks base method.
+func (m *MockRequestHandler) CallV1CallSilenceOff(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallSilenceOff", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallSilenceOff indicates an expected call of CallV1CallSilenceOff.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallSilenceOff(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSilenceOff", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSilenceOff), ctx, callID)
+}
+
+// CallV1CallSilenceOn mocks base method.
+func (m *MockRequestHandler) CallV1CallSilenceOn(ctx context.Context, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallSilenceOn", ctx, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1CallSilenceOn indicates an expected call of CallV1CallSilenceOn.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallSilenceOn(ctx, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallSilenceOn", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallSilenceOn), ctx, callID)
+}
+
 // CallV1CallTalk mocks base method.
 func (m *MockRequestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUID, text, gender, language string, rqeuestTimeout int) error {
 	m.ctrl.T.Helper()
@@ -1059,34 +1227,6 @@ func (m *MockRequestHandler) CallV1CallTalk(ctx context.Context, callID uuid.UUI
 func (mr *MockRequestHandlerMockRecorder) CallV1CallTalk(ctx, callID, text, gender, language, rqeuestTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallTalk", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallTalk), ctx, callID, text, gender, language, rqeuestTimeout)
-}
-
-// CallV1CallUnhold mocks base method.
-func (m *MockRequestHandler) CallV1CallUnhold(ctx context.Context, callID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallUnhold", ctx, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CallV1CallUnhold indicates an expected call of CallV1CallUnhold.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallUnhold(ctx, callID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallUnhold", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallUnhold), ctx, callID)
-}
-
-// CallV1CallUnmute mocks base method.
-func (m *MockRequestHandler) CallV1CallUnmute(ctx context.Context, callID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallUnmute", ctx, callID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CallV1CallUnmute indicates an expected call of CallV1CallUnmute.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallUnmute(ctx, callID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallUnmute", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallUnmute), ctx, callID)
 }
 
 // CallV1CallUpdateConfbridgeID mocks base method.
