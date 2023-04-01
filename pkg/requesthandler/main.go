@@ -305,11 +305,17 @@ type RequestHandler interface {
 	AstChannelExternalMedia(ctx context.Context, asteriskID string, channelID string, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string, data string, variables map[string]string) (*cmchannel.Channel, error)
 	AstChannelGet(ctx context.Context, asteriskID, channelID string) (*cmchannel.Channel, error)
 	AstChannelHangup(ctx context.Context, asteriskID, channelID string, code cmari.ChannelCause, delay int) error
-	AstChannelHold(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelHoldOn(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelHoldOff(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelMusicOnHoldOn(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelMusicOnHoldOff(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelMuteOn(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelMuteOff(ctx context.Context, asteriskID string, channelID string) error
 	AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
 	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelRing(ctx context.Context, asteriskID string, channelID string) error
-	AstChannelUnhold(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelSilenceOn(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelSilenceOff(ctx context.Context, asteriskID string, channelID string) error
 	AstChannelVariableGet(ctx context.Context, asteriskID, channelID, variable string) (string, error)
 	AstChannelVariableSet(ctx context.Context, asteriskID, channelID, variable, value string) error
 
@@ -404,10 +410,14 @@ type RequestHandler interface {
 	CallV1CallTalk(ctx context.Context, callID uuid.UUID, text string, gender string, language string, rqeuestTimeout int) error
 	CallV1CallUpdateConfbridgeID(ctx context.Context, callID uuid.UUID, confbirdgeID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallHold(ctx context.Context, callID uuid.UUID) error
-	CallV1CallUnhold(ctx context.Context, callID uuid.UUID) error
-	CallV1CallMute(ctx context.Context, callID uuid.UUID) error
-	CallV1CallUnmute(ctx context.Context, callID uuid.UUID) error
+	CallV1CallHoldOn(ctx context.Context, callID uuid.UUID) error
+	CallV1CallHoldOff(ctx context.Context, callID uuid.UUID) error
+	CallV1CallMuteOn(ctx context.Context, callID uuid.UUID) error
+	CallV1CallMuteOff(ctx context.Context, callID uuid.UUID) error
+	CallV1CallMusicOnHoldOn(ctx context.Context, callID uuid.UUID) error
+	CallV1CallMusicOnHoldOff(ctx context.Context, callID uuid.UUID) error
+	CallV1CallSilenceOn(ctx context.Context, callID uuid.UUID) error
+	CallV1CallSilenceOff(ctx context.Context, callID uuid.UUID) error
 
 	// call-manager channel
 	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount, retryCountMax int) error

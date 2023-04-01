@@ -438,7 +438,7 @@ func (r *requestHandler) AstChannelRing(ctx context.Context, asteriskID string, 
 }
 
 // AstChannelHold holds the given the channel
-func (r *requestHandler) AstChannelHold(ctx context.Context, asteriskID string, channelID string) error {
+func (r *requestHandler) AstChannelHoldOn(ctx context.Context, asteriskID string, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/hold", channelID)
 
 	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
@@ -452,8 +452,92 @@ func (r *requestHandler) AstChannelHold(ctx context.Context, asteriskID string, 
 }
 
 // AstChannelUnhold unholds the given the channel
-func (r *requestHandler) AstChannelUnhold(ctx context.Context, asteriskID string, channelID string) error {
+func (r *requestHandler) AstChannelHoldOff(ctx context.Context, asteriskID string, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/hold", channelID)
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstChannelMusicOnHoldOn puts the given the channel to the music on hold
+func (r *requestHandler) AstChannelMusicOnHoldOn(ctx context.Context, asteriskID string, channelID string) error {
+	url := fmt.Sprintf("/ari/channels/%s/moh", channelID)
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstChannelMusicOnHoldOff puts out the given the channel from the music on hold
+func (r *requestHandler) AstChannelMusicOnHoldOff(ctx context.Context, asteriskID string, channelID string) error {
+	url := fmt.Sprintf("/ari/channels/%s/moh", channelID)
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstChannelSilenceOn puts the given the channel on the silence
+func (r *requestHandler) AstChannelSilenceOn(ctx context.Context, asteriskID string, channelID string) error {
+	url := fmt.Sprintf("/ari/channels/%s/silence", channelID)
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstChannelSilenceOff puts out the given the channel from silence
+func (r *requestHandler) AstChannelSilenceOff(ctx context.Context, asteriskID string, channelID string) error {
+	url := fmt.Sprintf("/ari/channels/%s/silence", channelID)
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstChannelMuteOn puts the given the channel on the mute
+func (r *requestHandler) AstChannelMuteOn(ctx context.Context, asteriskID string, channelID string) error {
+	url := fmt.Sprintf("/ari/channels/%s/mute", channelID)
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case res.StatusCode > 299:
+		return fmt.Errorf("response code: %d", res.StatusCode)
+	}
+	return nil
+}
+
+// AstChannelMuteOff puts out the given the channel from mute
+func (r *requestHandler) AstChannelMuteOff(ctx context.Context, asteriskID string, channelID string) error {
+	url := fmt.Sprintf("/ari/channels/%s/mute", channelID)
 
 	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
