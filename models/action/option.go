@@ -186,7 +186,8 @@ type OptionHangup struct {
 
 // OptionHold defines action hold's option.
 type OptionHold struct {
-	Duration int `json:"duration"` // hold duration. ms
+	Duration int  `json:"duration"` // hold duration. ms
+	Sync     bool `json:"sync"`
 }
 
 // OptionMessageSend defines action message_send's option.
@@ -198,7 +199,8 @@ type OptionMessageSend struct {
 
 // OptionMute defines action mute's option.
 type OptionMute struct {
-	Duration int `json:"duration"` // mute duration. ms
+	Duration int  `json:"duration"` // mute duration. ms
+	Sync     bool `json:"sync"`
 }
 
 // OptionPlay defines action play's option.
