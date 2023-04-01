@@ -184,11 +184,21 @@ type OptionHangup struct {
 	ReferenceID uuid.UUID `json:"reference_id"` // if it's set will hangup the call with the same reason of this referenced call id. This will overwrite the reason option.
 }
 
+// OptionHold defines action hold's option.
+type OptionHold struct {
+	Duration int `json:"duration"` // hold duration. ms
+}
+
 // OptionMessageSend defines action message_send's option.
 type OptionMessageSend struct {
 	Source       *commonaddress.Address  `json:"source"`
 	Destinations []commonaddress.Address `json:"destinations"`
 	Text         string                  `json:"text"`
+}
+
+// OptionMute defines action mute's option.
+type OptionMute struct {
+	Duration int `json:"duration"` // mute duration. ms
 }
 
 // OptionPlay defines action play's option.
