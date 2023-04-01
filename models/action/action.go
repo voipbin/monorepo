@@ -141,10 +141,6 @@ const (
 	// call-manager
 	TypeHangup Type = "hangup"
 
-	// TypeHold holds the call
-	// call-manager
-	TypeHold Type = "hold"
-
 	// TypeMessageSend sends the SMS to the given destinations.
 	// message-manager
 	TypeMessageSend Type = "message_send"
@@ -232,7 +228,6 @@ var TypeList []Type = []Type{
 	TypeFetchFlow,
 	TypeGoto,
 	TypeHangup,
-	TypeHold,
 	TypeMessageSend,
 	TypeMute,
 	TypePlay,
