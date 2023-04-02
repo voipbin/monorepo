@@ -1383,6 +1383,7 @@ func Test_AstChannelMuteOn(t *testing.T) {
 		name       string
 		asteriskID string
 		channelID  string
+		direction  string
 
 		expectQueue   string
 		expectRequest *rabbitmqhandler.Request
@@ -1391,11 +1392,14 @@ func Test_AstChannelMuteOn(t *testing.T) {
 			"normal",
 			"00:11:22:33:44:55",
 			"d8393e4e-d0b5-11ed-9a0a-6fd4e76c9f86",
+			"both",
 
 			"asterisk.00:11:22:33:44:55.request",
 			&rabbitmqhandler.Request{
-				URI:    "/ari/channels/d8393e4e-d0b5-11ed-9a0a-6fd4e76c9f86/mute",
-				Method: rabbitmqhandler.RequestMethodPost,
+				URI:      "/ari/channels/d8393e4e-d0b5-11ed-9a0a-6fd4e76c9f86/mute",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"direction":"both"}`),
 			},
 		},
 	}
@@ -1416,7 +1420,7 @@ func Test_AstChannelMuteOn(t *testing.T) {
 				tt.expectRequest,
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelMuteOn(context.Background(), tt.asteriskID, tt.channelID)
+			err := reqHandler.AstChannelMuteOn(context.Background(), tt.asteriskID, tt.channelID, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}
@@ -1430,6 +1434,7 @@ func Test_AstChannelMuteOff(t *testing.T) {
 		name       string
 		asteriskID string
 		channelID  string
+		direction  string
 
 		expectQueue   string
 		expectRequest *rabbitmqhandler.Request
@@ -1438,11 +1443,14 @@ func Test_AstChannelMuteOff(t *testing.T) {
 			"normal",
 			"00:11:22:33:44:55",
 			"4544a38e-d0b6-11ed-beab-13e97aee6eb0",
+			"both",
 
 			"asterisk.00:11:22:33:44:55.request",
 			&rabbitmqhandler.Request{
-				URI:    "/ari/channels/4544a38e-d0b6-11ed-beab-13e97aee6eb0/mute",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				URI:      "/ari/channels/4544a38e-d0b6-11ed-beab-13e97aee6eb0/mute",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"direction":"both"}`),
 			},
 		},
 	}
@@ -1463,7 +1471,7 @@ func Test_AstChannelMuteOff(t *testing.T) {
 				tt.expectRequest,
 			).Return(&rabbitmqhandler.Response{StatusCode: 200, Data: nil}, nil)
 
-			err := reqHandler.AstChannelMuteOff(context.Background(), tt.asteriskID, tt.channelID)
+			err := reqHandler.AstChannelMuteOff(context.Background(), tt.asteriskID, tt.channelID, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expact: ok, got: %v", err)
 			}

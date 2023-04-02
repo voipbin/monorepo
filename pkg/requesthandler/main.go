@@ -309,8 +309,8 @@ type RequestHandler interface {
 	AstChannelHoldOff(ctx context.Context, asteriskID string, channelID string) error
 	AstChannelMusicOnHoldOn(ctx context.Context, asteriskID string, channelID string) error
 	AstChannelMusicOnHoldOff(ctx context.Context, asteriskID string, channelID string) error
-	AstChannelMuteOn(ctx context.Context, asteriskID string, channelID string) error
-	AstChannelMuteOff(ctx context.Context, asteriskID string, channelID string) error
+	AstChannelMuteOn(ctx context.Context, asteriskID string, channelID string, direction string) error
+	AstChannelMuteOff(ctx context.Context, asteriskID string, channelID string, direction string) error
 	AstChannelPlay(ctx context.Context, asteriskID string, channelID string, actionID uuid.UUID, medias []string, lang string) error
 	AstChannelRecord(ctx context.Context, asteriskID string, channelID string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	AstChannelRing(ctx context.Context, asteriskID string, channelID string) error

@@ -522,10 +522,22 @@ func (r *requestHandler) AstChannelSilenceOff(ctx context.Context, asteriskID st
 }
 
 // AstChannelMuteOn puts the given the channel on the mute
-func (r *requestHandler) AstChannelMuteOn(ctx context.Context, asteriskID string, channelID string) error {
+// direction: Direction in which to mute audio(both, in, out)
+func (r *requestHandler) AstChannelMuteOn(ctx context.Context, asteriskID string, channelID string, direction string) error {
 	url := fmt.Sprintf("/ari/channels/%s/mute", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	type Data struct {
+		Direction string `json:"direction"`
+	}
+
+	m, err := json.Marshal(Data{
+		Direction: direction,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -536,10 +548,22 @@ func (r *requestHandler) AstChannelMuteOn(ctx context.Context, asteriskID string
 }
 
 // AstChannelMuteOff puts out the given the channel from mute
-func (r *requestHandler) AstChannelMuteOff(ctx context.Context, asteriskID string, channelID string) error {
+// direction: Direction in which to unmute audio
+func (r *requestHandler) AstChannelMuteOff(ctx context.Context, asteriskID string, channelID string, direction string) error {
 	url := fmt.Sprintf("/ari/channels/%s/mute", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	type Data struct {
+		Direction string `json:"direction"`
+	}
+
+	m, err := json.Marshal(Data{
+		Direction: direction,
+	})
+	if err != nil {
+		return err
+	}
+
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
