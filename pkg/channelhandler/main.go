@@ -70,6 +70,18 @@ type ChannelHandler interface {
 
 	HealthCheck(ctx context.Context, channelID string, retryCount int)
 
+	HoldOn(ctx context.Context, id string) error
+	HoldOff(ctx context.Context, id string) error
+
+	MOHOn(ctx context.Context, id string) error
+	MOHOff(ctx context.Context, id string) error
+
+	MuteOn(ctx context.Context, id string, direction channel.MuteDirection) error
+	MuteOff(ctx context.Context, id string, direction channel.MuteDirection) error
+
+	SilenceOn(ctx context.Context, id string) error
+	SilenceOff(ctx context.Context, id string) error
+
 	Continue(ctx context.Context, id string, context string, exten string, priority int, label string) error
 
 	Play(ctx context.Context, id string, actionID uuid.UUID, medias []string, language string) error
