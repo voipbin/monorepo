@@ -1087,31 +1087,31 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallMusicOnHoldOn(ctx, callID in
 }
 
 // CallV1CallMuteOff mocks base method.
-func (m *MockRequestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID) error {
+func (m *MockRequestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID, direction call.MuteDirection) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallMuteOff", ctx, callID)
+	ret := m.ctrl.Call(m, "CallV1CallMuteOff", ctx, callID, direction)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallV1CallMuteOff indicates an expected call of CallV1CallMuteOff.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallMuteOff(ctx, callID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallMuteOff(ctx, callID, direction interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMuteOff", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMuteOff), ctx, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMuteOff", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMuteOff), ctx, callID, direction)
 }
 
 // CallV1CallMuteOn mocks base method.
-func (m *MockRequestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID) error {
+func (m *MockRequestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID, direction call.MuteDirection) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallMuteOn", ctx, callID)
+	ret := m.ctrl.Call(m, "CallV1CallMuteOn", ctx, callID, direction)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallV1CallMuteOn indicates an expected call of CallV1CallMuteOn.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallMuteOn(ctx, callID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallMuteOn(ctx, callID, direction interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMuteOn", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMuteOn), ctx, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallMuteOn", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallMuteOn), ctx, callID, direction)
 }
 
 // CallV1CallPlay mocks base method.
