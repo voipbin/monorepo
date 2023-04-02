@@ -106,6 +106,17 @@ const (
 	SnoopDirectionIn   SnoopDirection = "in"   // snoop the channel incoming
 )
 
+// MuteDirection represents possible values for channel mute
+type MuteDirection string
+
+// List of mute direction types
+const (
+	MuteDirectionNone MuteDirection = ""     // none
+	MuteDirectionBoth MuteDirection = "both" // mute the channel in/out both.
+	MuteDirectionOut  MuteDirection = "out"  //
+	MuteDirectionIn   MuteDirection = "in"   // mute the channel incoming
+)
+
 // ContextType represent channel's context type.
 type ContextType string
 

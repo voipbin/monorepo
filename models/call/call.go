@@ -86,6 +86,17 @@ const (
 	StatusHangup      Status = "hangup"      // The call has been completed.
 )
 
+// MuteDirection represents possible values for channel mute
+type MuteDirection string
+
+// List of mute direction types
+const (
+	MuteDirectionNone MuteDirection = ""     // none
+	MuteDirectionBoth MuteDirection = "both" // mute the channel in/out both.
+	MuteDirectionOut  MuteDirection = "out"  //
+	MuteDirectionIn   MuteDirection = "in"   // mute the channel incoming
+)
+
 // DataType define
 type DataType string
 

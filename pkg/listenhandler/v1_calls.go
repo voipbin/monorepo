@@ -810,3 +810,221 @@ func (h *listenHandler) processV1CallsIDMediaStopPost(ctx context.Context, m *ra
 
 	return res, nil
 }
+
+// processV1CallsIDHoldPost handles /v1/calls/<call-id>/hold POST request
+func (h *listenHandler) processV1CallsIDHoldPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDHoldPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errHold := h.callHandler.HoldOn(ctx, id); errHold != nil {
+		log.Errorf("Could not hold the call. err: %v", errHold)
+		return nil, errors.Wrap(errHold, "could not hold the call")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDHoldDelete handles /v1/calls/<call-id>/hold DELETE request
+func (h *listenHandler) processV1CallsIDHoldDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDHoldDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errHold := h.callHandler.HoldOff(ctx, id); errHold != nil {
+		log.Errorf("Could not unhold the call. err: %v", errHold)
+		return nil, errors.Wrap(errHold, "could not unhold the call")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDMutePost handles /v1/calls/<call-id>/mute POST request
+func (h *listenHandler) processV1CallsIDMutePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDMutePost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataCallsIDMutePost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	if errMute := h.callHandler.MuteOn(ctx, id, req.Direction); errMute != nil {
+		log.Errorf("Could not hold the call. err: %v", errMute)
+		return nil, errors.Wrap(errMute, "could not hold the call")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDMuteDelete handles /v1/calls/<call-id>/mute DELETE request
+func (h *listenHandler) processV1CallsIDMuteDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDMuteDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataCallsIDMuteDelete
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	if errMute := h.callHandler.MuteOff(ctx, id, req.Direction); errMute != nil {
+		log.Errorf("Could not unmute the call. err: %v", errMute)
+		return nil, errors.Wrap(errMute, "could not unmute the call")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDMOHPost handles /v1/calls/<call-id>/moh POST request
+func (h *listenHandler) processV1CallsIDMOHPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDMOHPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errMOH := h.callHandler.MOHOn(ctx, id); errMOH != nil {
+		log.Errorf("Could not hold the call. err: %v", errMOH)
+		return nil, errors.Wrap(errMOH, "could not hold the call")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDMOHDelete handles /v1/calls/<call-id>/moh DELETE request
+func (h *listenHandler) processV1CallsIDMOHDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDMOHDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errMOH := h.callHandler.MOHOff(ctx, id); errMOH != nil {
+		log.Errorf("Could not moh off the call. err: %v", errMOH)
+		return nil, errors.Wrap(errMOH, "could not moh off the call")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDSilencePost handles /v1/calls/<call-id>/silence POST request
+func (h *listenHandler) processV1CallsIDSilencePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDSilencePost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errSilence := h.callHandler.SilenceOn(ctx, id); errSilence != nil {
+		log.Errorf("Could not silence the call. err: %v", errSilence)
+		return nil, errors.Wrap(errSilence, "could not silence the call")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}
+
+// processV1CallsIDSilenceDelete handles /v1/calls/<call-id>/silence DELETE request
+func (h *listenHandler) processV1CallsIDSilenceDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CallsIDSilenceDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errSilence := h.callHandler.SilenceOff(ctx, id); errSilence != nil {
+		log.Errorf("Could not silence off the call. err: %v", errSilence)
+		return nil, errors.Wrap(errSilence, "could not silence off the call")
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+	}
+
+	return res, nil
+}

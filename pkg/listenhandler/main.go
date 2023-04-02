@@ -60,6 +60,10 @@ var (
 	regV1CallsIDChainedCallIDsIDs = regexp.MustCompile("/v1/calls/" + regUUID + "/chained-call-ids/" + regUUID + "$")
 	regV1CallsIDExternalMedia     = regexp.MustCompile("/v1/calls/" + regUUID + "/external-media$")
 	regV1CallsIDHangup            = regexp.MustCompile("/v1/calls/" + regUUID + "/hangup$")
+	regV1CallsIDHold              = regexp.MustCompile("/v1/calls/" + regUUID + "/hold$")
+	regV1CallsIDMute              = regexp.MustCompile("/v1/calls/" + regUUID + "/mute$")
+	regV1CallsIDMOH               = regexp.MustCompile("/v1/calls/" + regUUID + "/moh$")
+	regV1CallsIDSilence           = regexp.MustCompile("/v1/calls/" + regUUID + "/silence$")
 	regV1CallsIDConfbridgeID      = regexp.MustCompile("/v1/calls/" + regUUID + "/confbridge_id$")
 	regV1CallsIDRecordingID       = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_id$")
 	regV1CallsIDRecordingStart    = regexp.MustCompile("/v1/calls/" + regUUID + "/recording_start$")
@@ -312,6 +316,46 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CallsIDMediaStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1CallsIDMediaStopPost(ctx, m)
 		requestType = "/v1/calls/<call-id>/media_stop"
+
+	// POST /calls/<call-id>/hold
+	case regV1CallsIDHold.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDHoldPost(ctx, m)
+		requestType = "/v1/calls/<call-id>/hold"
+
+	// DELETE /calls/<call-id>/hold
+	case regV1CallsIDHold.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1CallsIDHoldDelete(ctx, m)
+		requestType = "/v1/calls/<call-id>/hold"
+
+	// POST /calls/<call-id>/mute
+	case regV1CallsIDMute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDMutePost(ctx, m)
+		requestType = "/v1/calls/<call-id>/mute"
+
+	// DELETE /calls/<call-id>/mute
+	case regV1CallsIDMute.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1CallsIDMuteDelete(ctx, m)
+		requestType = "/v1/calls/<call-id>/mute"
+
+	// POST /calls/<call-id>/moh
+	case regV1CallsIDMOH.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDMOHPost(ctx, m)
+		requestType = "/v1/calls/<call-id>/moh"
+
+	// DELETE /calls/<call-id>/moh
+	case regV1CallsIDMOH.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1CallsIDMOHDelete(ctx, m)
+		requestType = "/v1/calls/<call-id>/moh"
+
+	// POST /calls/<call-id>/silence
+	case regV1CallsIDSilence.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1CallsIDSilencePost(ctx, m)
+		requestType = "/v1/calls/<call-id>/silence"
+
+	// DELETE /calls/<call-id>/silence
+	case regV1CallsIDSilence.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1CallsIDSilenceDelete(ctx, m)
+		requestType = "/v1/calls/<call-id>/silence"
 
 	// GET /calls
 	case regV1CallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:

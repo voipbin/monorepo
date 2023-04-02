@@ -5,6 +5,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
@@ -124,4 +125,18 @@ type V1DataCallsIDTalkPost struct {
 // /v1/calls/<call-id>/play POST
 type V1DataCallsIDPlayPost struct {
 	MediaURLs []string `json:"media_urls,omitempty"` // url for media
+}
+
+// V1DataCallsIDMutePost is
+// v1 data type for
+// /v1/calls/<call-id>/mute POST
+type V1DataCallsIDMutePost struct {
+	Direction call.MuteDirection `json:"direction"`
+}
+
+// V1DataCallsIDMuteDelete is
+// v1 data type for
+// /v1/calls/<call-id>/mute DELETE
+type V1DataCallsIDMuteDelete struct {
+	Direction call.MuteDirection `json:"direction"`
 }
