@@ -629,31 +629,31 @@ func (mr *MockRequestHandlerMockRecorder) AstChannelMusicOnHoldOn(ctx, asteriskI
 }
 
 // AstChannelMuteOff mocks base method.
-func (m *MockRequestHandler) AstChannelMuteOff(ctx context.Context, asteriskID, channelID string) error {
+func (m *MockRequestHandler) AstChannelMuteOff(ctx context.Context, asteriskID, channelID, direction string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelMuteOff", ctx, asteriskID, channelID)
+	ret := m.ctrl.Call(m, "AstChannelMuteOff", ctx, asteriskID, channelID, direction)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelMuteOff indicates an expected call of AstChannelMuteOff.
-func (mr *MockRequestHandlerMockRecorder) AstChannelMuteOff(ctx, asteriskID, channelID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelMuteOff(ctx, asteriskID, channelID, direction interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelMuteOff", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelMuteOff), ctx, asteriskID, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelMuteOff", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelMuteOff), ctx, asteriskID, channelID, direction)
 }
 
 // AstChannelMuteOn mocks base method.
-func (m *MockRequestHandler) AstChannelMuteOn(ctx context.Context, asteriskID, channelID string) error {
+func (m *MockRequestHandler) AstChannelMuteOn(ctx context.Context, asteriskID, channelID, direction string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AstChannelMuteOn", ctx, asteriskID, channelID)
+	ret := m.ctrl.Call(m, "AstChannelMuteOn", ctx, asteriskID, channelID, direction)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AstChannelMuteOn indicates an expected call of AstChannelMuteOn.
-func (mr *MockRequestHandlerMockRecorder) AstChannelMuteOn(ctx, asteriskID, channelID interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AstChannelMuteOn(ctx, asteriskID, channelID, direction interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelMuteOn", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelMuteOn), ctx, asteriskID, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstChannelMuteOn", reflect.TypeOf((*MockRequestHandler)(nil).AstChannelMuteOn), ctx, asteriskID, channelID, direction)
 }
 
 // AstChannelPlay mocks base method.
