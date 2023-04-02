@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
@@ -685,10 +686,17 @@ func (r *requestHandler) CallV1CallHoldOff(ctx context.Context, callID uuid.UUID
 // CallV1CallMuteOn sends a request to call-manager
 // to mute the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID) error {
+func (r *requestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID, direction call.MuteDirection) error {
 	uri := fmt.Sprintf("/v1/calls/%s/mute", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/calls/<call-id>/mute", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	m, err := json.Marshal(cmrequest.V1DataCallsIDMutePost{
+		Direction: direction,
+	})
+	if err != nil {
+		return err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/calls/<call-id>/mute", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -705,10 +713,17 @@ func (r *requestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID)
 // CallV1CallMuteOff sends a request to call-manager
 // to unmute the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID) error {
+func (r *requestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID, direction call.MuteDirection) error {
 	uri := fmt.Sprintf("/v1/calls/%s/mute", callID)
 
-	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/calls/<call-id>/mute", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	m, err := json.Marshal(cmrequest.V1DataCallsIDMuteDelete{
+		Direction: direction,
+	})
+	if err != nil {
+		return err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, "call/calls/<call-id>/mute", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -1458,6 +1459,7 @@ func Test_CallV1CallMuteOn(t *testing.T) {
 		name string
 
 		callID uuid.UUID
+		direction call.MuteDirection
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -1467,11 +1469,14 @@ func Test_CallV1CallMuteOn(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b3c32e88-cef5-11ed-9f30-1b12722669f5"),
+			call.MuteDirectionBoth,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/calls/b3c32e88-cef5-11ed-9f30-1b12722669f5/mute",
 				Method: rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data: []byte(`{"direction":"both"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -1492,7 +1497,7 @@ func Test_CallV1CallMuteOn(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallMuteOn(ctx, tt.callID); err != nil {
+			if err := reqHandler.CallV1CallMuteOn(ctx, tt.callID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -1505,6 +1510,7 @@ func Test_CallV1CallMuteOff(t *testing.T) {
 		name string
 
 		callID uuid.UUID
+		direction call.MuteDirection
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -1514,11 +1520,14 @@ func Test_CallV1CallMuteOff(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b3ebe8dc-cef5-11ed-a05a-8730dc1ef961"),
+			call.MuteDirectionBoth,
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
 				URI:    "/v1/calls/b3ebe8dc-cef5-11ed-a05a-8730dc1ef961/mute",
 				Method: rabbitmqhandler.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+				Data: []byte(`{"direction":"both"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -1539,7 +1548,7 @@ func Test_CallV1CallMuteOff(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			if err := reqHandler.CallV1CallMuteOff(ctx, tt.callID); err != nil {
+			if err := reqHandler.CallV1CallMuteOff(ctx, tt.callID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

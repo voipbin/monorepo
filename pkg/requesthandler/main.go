@@ -12,6 +12,7 @@ import (
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmchannel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
@@ -412,8 +413,8 @@ type RequestHandler interface {
 	CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallHoldOn(ctx context.Context, callID uuid.UUID) error
 	CallV1CallHoldOff(ctx context.Context, callID uuid.UUID) error
-	CallV1CallMuteOn(ctx context.Context, callID uuid.UUID) error
-	CallV1CallMuteOff(ctx context.Context, callID uuid.UUID) error
+	CallV1CallMuteOn(ctx context.Context, callID uuid.UUID, direction call.MuteDirection) error
+	CallV1CallMuteOff(ctx context.Context, callID uuid.UUID, direction call.MuteDirection) error
 	CallV1CallMusicOnHoldOn(ctx context.Context, callID uuid.UUID) error
 	CallV1CallMusicOnHoldOff(ctx context.Context, callID uuid.UUID) error
 	CallV1CallSilenceOn(ctx context.Context, callID uuid.UUID) error
