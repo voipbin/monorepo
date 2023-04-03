@@ -5,12 +5,14 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
-// ParamConferencesGET is rquest param define for GET /conferences
+// ParamConferencesGET is rquest param define for
+// GET /v1.0/conferences
 type ParamConferencesGET struct {
 	Pagination
 }
 
-// BodyConferencesPOST is rquest body define for POST /conferences
+// BodyConferencesPOST is rquest body define for
+// POST /v1.0/conferences
 type BodyConferencesPOST struct {
 	Type        cfconference.Type `json:"type" binding:"required"`
 	Name        string            `json:"name"`
@@ -19,7 +21,8 @@ type BodyConferencesPOST struct {
 	PostActions []fmaction.Action `json:"post_actions"`
 }
 
-// BodyConferencesIDPUT is rquest body define for PUT /conferences/<conference-id>
+// BodyConferencesIDPUT is rquest body define for
+// PUT /v1.0/conferences/<conference-id>
 type BodyConferencesIDPUT struct {
 	Name        string            `json:"name"`
 	Detail      string            `json:"detail"`
@@ -28,7 +31,8 @@ type BodyConferencesIDPUT struct {
 	PostActions []fmaction.Action `json:"post_actions"`
 }
 
-// BodyConferencesIDTranscribeStartPOST is rquest body define for POST /conferences/<conference-id>/transcribe_start
+// BodyConferencesIDTranscribeStartPOST is rquest body define for
+// POST /v1.0/conferences/<conference-id>/transcribe_start
 type BodyConferencesIDTranscribeStartPOST struct {
 	Language string `json:"language"`
 }

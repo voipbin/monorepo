@@ -7,7 +7,8 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
-// BodyChatmessagesPOST is rquest body define for POST /chatmessages
+// BodyChatmessagesPOST is rquest body define for
+// POST /v1.0/chatmessages
 type BodyChatmessagesPOST struct {
 	ChatID uuid.UUID             `json:"chat_id"`
 	Source commonaddress.Address `json:"source"`
@@ -16,7 +17,8 @@ type BodyChatmessagesPOST struct {
 	Medias []chatmedia.Media     `json:"medias"`
 }
 
-// ParamChatmessagesGET is rquest param define for GET /chatmessages
+// ParamChatmessagesGET is rquest param define for
+// GET /v1.0/chatmessages
 type ParamChatmessagesGET struct {
 	ChatID string `form:"chat_id"`
 	Pagination

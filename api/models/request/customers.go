@@ -5,12 +5,14 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
-// ParamCustomersGET is request param define for GET /customers
+// ParamCustomersGET is request param define for
+// GET /v1.0/customers
 type ParamCustomersGET struct {
 	Pagination
 }
 
-// BodyCustomersPOST is rquest body define for POST /customers
+// BodyCustomersPOST is rquest body define for
+// POST /v1.0/customers
 type BodyCustomersPOST struct {
 	Username      string                   `json:"username"`
 	Password      string                   `json:"password"`
@@ -23,7 +25,8 @@ type BodyCustomersPOST struct {
 	PermissionIDs []uuid.UUID              `json:"permission_ids"`
 }
 
-// BodyCustomersIDPUT is rquest body define for PUT /customers/{id}
+// BodyCustomersIDPUT is rquest body define for
+// PUT /v1.0/customers/<customer-id>
 type BodyCustomersIDPUT struct {
 	Name          string                   `json:"name"`
 	Detail        string                   `json:"detail"`
@@ -31,17 +34,20 @@ type BodyCustomersIDPUT struct {
 	WebhookURI    string                   `json:"webhook_uri"`
 }
 
-// BodyCustomersIDPasswordPUT is rquest body define for PUT /customers/{id}/password
+// BodyCustomersIDPasswordPUT is rquest body define for
+// PUT /v1.0/customers/<customer-id>/password
 type BodyCustomersIDPasswordPUT struct {
 	Password string `json:"password"`
 }
 
-// BodyCustomersIDPermissionIDsPUT is rquest body define for PUT /customers/{id}/permission_ids
+// BodyCustomersIDPermissionIDsPUT is rquest body define for
+// PUT /v1.0/customers/<customer-id>/permission_ids
 type BodyCustomersIDPermissionIDsPUT struct {
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
 }
 
-// BodyCustomersIDLineInfoPUT is rquest body define for PUT /customers/{id}/line_info
+// BodyCustomersIDLineInfoPUT is rquest body define for
+// PUT /v1.0/customers/<customer-id>/line_info
 type BodyCustomersIDLineInfoPUT struct {
 	LineSecret string `json:"line_secret"`
 	LineToken  string `json:"line_token"`

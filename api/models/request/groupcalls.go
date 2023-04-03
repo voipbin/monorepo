@@ -7,7 +7,8 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
-// BodyGroupcallsPOST is rquest body define for POST /groupcalls
+// BodyGroupcallsPOST is rquest body define for
+// POST /v1.0/groupcalls
 type BodyGroupcallsPOST struct {
 	Source       commonaddress.Address    `json:"source" binding:"required"`
 	Destinations []commonaddress.Address  `json:"destinations" binding:"required"`
@@ -17,7 +18,8 @@ type BodyGroupcallsPOST struct {
 	AnswerMethod cmgroupcall.AnswerMethod `json:"answer_method"`
 }
 
-// ParamGroupcallsGET is rquest param define for GET /groupcalls
+// ParamGroupcallsGET is rquest param define for
+// GET /v1.0/groupcalls
 type ParamGroupcallsGET struct {
 	Pagination
 }
