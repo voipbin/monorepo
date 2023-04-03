@@ -6,14 +6,16 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 )
 
-// ParamAgentsGET is rquest param define for GET /calls
+// ParamAgentsGET is rquest param define for
+// GET /v1.0/agents
 type ParamAgentsGET struct {
 	Pagination
 	TagIDs string         `form:"tag_ids"`
 	Status amagent.Status `form:"status"`
 }
 
-// BodyAgentsPOST is rquest body define for POST /agents
+// BodyAgentsPOST is rquest body define for
+// POST /v1.0/agents
 type BodyAgentsPOST struct {
 	Username   string             `json:"username" binding:"required"`
 	Password   string             `json:"password" binding:"required"`
@@ -21,29 +23,33 @@ type BodyAgentsPOST struct {
 	Detail     string             `json:"detail"`
 	RingMethod amagent.RingMethod `json:"ring_method"`
 
-	Permission amagent.Permission  `json:"permission"`
-	TagIDs     []uuid.UUID         `json:"tag_ids"`
+	Permission amagent.Permission      `json:"permission"`
+	TagIDs     []uuid.UUID             `json:"tag_ids"`
 	Addresses  []commonaddress.Address `json:"addresses"`
 }
 
-// BodyAgentsIDPUT is rquest body define for PUT /agents/<agent-id>
+// BodyAgentsIDPUT is rquest body define for
+// PUT /v1.0/agents/<agent-id>
 type BodyAgentsIDPUT struct {
 	Name       string             `json:"name"`
 	Detail     string             `json:"detail"`
 	RingMethod amagent.RingMethod `json:"ring_method"`
 }
 
-// BodyAgentsIDAddressesPUT is rquest body define for PUT /agents/<agent-id>/addresses
+// BodyAgentsIDAddressesPUT is rquest body define for
+// PUT /v1.0/agents/<agent-id>/addresses
 type BodyAgentsIDAddressesPUT struct {
 	Addresses []commonaddress.Address `json:"addresses" binding:"required"`
 }
 
-// BodyAgentsIDTagIDsPUT is rquest body define for PUT /agents/<agent-id>/tag_ids
+// BodyAgentsIDTagIDsPUT is rquest body define for
+// PUT /v1.0/agents/<agent-id>/tag_ids
 type BodyAgentsIDTagIDsPUT struct {
 	TagIDs []uuid.UUID `json:"tag_ids" binding:"required"`
 }
 
-// BodyAgentsIDStatusPUT is rquest body define for PUT /agents/<agent-id>/status
+// BodyAgentsIDStatusPUT is rquest body define for
+// PUT /v1.0/agents/<agent-id>/status
 type BodyAgentsIDStatusPUT struct {
 	Status amagent.Status `json:"status" binding:"required"`
 }

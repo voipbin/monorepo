@@ -2,7 +2,8 @@ package request
 
 import "github.com/gofrs/uuid"
 
-// BodyExtensionsPOST is rquest body define for POST /extensions
+// BodyExtensionsPOST is rquest body define for
+// POST /v1.0/extensions
 type BodyExtensionsPOST struct {
 	Name     string    `json:"name"`
 	Detail   string    `json:"detail"`
@@ -12,13 +13,15 @@ type BodyExtensionsPOST struct {
 	Password  string `json:"password"`
 }
 
-// ParamExtensionsGET is rquest param define for GET /extensions
+// ParamExtensionsGET is rquest param define for
+// GET /v1.0/extensions
 type ParamExtensionsGET struct {
 	DomainID string `form:"domain_id" binding:"required,uuid"`
 	Pagination
 }
 
-// BodyExtensionsIDPUT is rquest body define for PUT /extensions/{id}
+// BodyExtensionsIDPUT is rquest body define for
+// PUT /v1.0/extensions/<extension-id>
 type BodyExtensionsIDPUT struct {
 	Name     string `json:"name"`
 	Detail   string `json:"detail"`

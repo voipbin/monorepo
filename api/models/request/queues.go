@@ -5,12 +5,14 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
 
-// ParamQueuesGET is request param define for GET /queues
+// ParamQueuesGET is request param define for
+// GET /v1.0/queues
 type ParamQueuesGET struct {
 	Pagination
 }
 
-// BodyQueuesPOST is request body define for POST /queues
+// BodyQueuesPOST is request body define for
+// POST /v1.0/queues
 type BodyQueuesPOST struct {
 	Name           string            `json:"name"`
 	Detail         string            `json:"detail"`
@@ -21,23 +23,27 @@ type BodyQueuesPOST struct {
 	TimeoutService int               `json:"timeout_service"`
 }
 
-// BodyQueuesIDPUT is request body define for PUT /queues/<queue-id>
+// BodyQueuesIDPUT is request body define for
+// PUT /v1.0/queues/<queue-id>
 type BodyQueuesIDPUT struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 }
 
-// BodyQueuesIDTagIDsPUT is request body define for PUT /queues/<queue-id>/tag_ids
+// BodyQueuesIDTagIDsPUT is request body define for
+// PUT /v1.0/queues/<queue-id>/tag_ids
 type BodyQueuesIDTagIDsPUT struct {
 	TagIDs []uuid.UUID `json:"tag_ids"`
 }
 
-// BodyQueuesIDRoutingMethodPUT is request body define for PUT /queues/<queue-id>/routing_method
+// BodyQueuesIDRoutingMethodPUT is request body define for
+// PUT /v1.0/queues/<queue-id>/routing_method
 type BodyQueuesIDRoutingMethodPUT struct {
 	RoutingMethod string `json:"routing_method"`
 }
 
-// BodyQueuesIDActionsPUT is request body define for PUT /queues/<queue-id>/actions
+// BodyQueuesIDActionsPUT is request body define for
+// PUT /v1.0/queues/<queue-id>/actions
 type BodyQueuesIDActionsPUT struct {
 	WaitActions    []fmaction.Action `json:"wait_actions"`
 	TimeoutWait    int               `json:"timeout_wait"`
