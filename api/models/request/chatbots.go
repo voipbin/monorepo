@@ -4,14 +4,16 @@ import (
 	chatbotchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 )
 
-// BodyChatbotsPOST is rquest body define for POST /chatbots
+// BodyChatbotsPOST is rquest body define for
+// POST /v1.0/chatbots
 type BodyChatbotsPOST struct {
 	Name       string                    `json:"name"`
 	Detail     string                    `json:"detail"`
 	EngineType chatbotchatbot.EngineType `json:"engine_type"`
 }
 
-// ParamChatbotsGET is rquest param define for GET /chatbots
+// ParamChatbotsGET is rquest param define for
+// GET /v1.0/chatbots
 type ParamChatbotsGET struct {
 	Pagination
 }
