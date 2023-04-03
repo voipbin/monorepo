@@ -5,7 +5,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
-// BodyConferencecallsPOST is rquest body define for POST /conferencecalls
+// BodyConferencecallsPOST is rquest body define for
+// POST /v1.0/conferencecalls
 type BodyConferencecallsPOST struct {
 	ConferenceID  uuid.UUID                    `json:"conference_id"`
 	ReferenceType conferencecall.ReferenceType `json:"reference_type"`
