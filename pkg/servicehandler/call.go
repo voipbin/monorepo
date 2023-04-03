@@ -16,8 +16,8 @@ import (
 // callGet validates the call's ownership and returns the call info.
 func (h *serviceHandler) callGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.Call, error) {
 	log := logrus.WithFields(logrus.Fields{"func": "callGet",
-		"customer_id":   u.ID,
-		"call_id": callID,
+		"customer_id": u.ID,
+		"call_id":     callID,
 	})
 
 	// send request
@@ -227,10 +227,226 @@ func (h *serviceHandler) CallTalk(ctx context.Context, u *cscustomer.Customer, c
 	}
 
 	// send request
-	if errTalk := h.reqHandler.CallV1CallTalk(ctx, callID, text, gender, language, 10000); errTalk != nil {
+	if errReq := h.reqHandler.CallV1CallTalk(ctx, callID, text, gender, language, 10000); errReq != nil {
 		// no call info found
-		log.Infof("Could not talk to the call. err: %v", errTalk)
-		return errTalk
+		log.Infof("Could not talk to the call. err: %v", errReq)
+		return errReq
+	}
+
+	return nil
+}
+
+// CallHoldOn sends a request to call-manager
+// to hold the call.
+// it returns error if it failed.
+func (h *serviceHandler) CallHoldOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "CallHoldOn",
+		"customer": u,
+		"call_id":  callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errReq := h.reqHandler.CallV1CallHoldOn(ctx, callID); errReq != nil {
+		// no call info found
+		log.Infof("Could not hold the call. err: %v", errReq)
+		return errReq
+	}
+
+	return nil
+}
+
+// CallHoldOff sends a request to call-manager
+// to unhold the call.
+// it returns error if it failed.
+func (h *serviceHandler) CallHoldOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "CallHoldOff",
+		"customer": u,
+		"call_id":  callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errReq := h.reqHandler.CallV1CallHoldOff(ctx, callID); errReq != nil {
+		// no call info found
+		log.Infof("Could not unhold the call. err: %v", errReq)
+		return errReq
+	}
+
+	return nil
+}
+
+// CallMuteOn sends a request to call-manager
+// to mute the call.
+// it returns error if it failed.
+func (h *serviceHandler) CallMuteOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, direction cmcall.MuteDirection) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "CallMuteOn",
+		"customer": u,
+		"call_id":  callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errReq := h.reqHandler.CallV1CallMuteOn(ctx, callID, direction); errReq != nil {
+		// no call info found
+		log.Infof("Could not mute the call. err: %v", errReq)
+		return errReq
+	}
+
+	return nil
+}
+
+// CallMuteOff sends a request to call-manager
+// to unmute the call.
+// it returns error if it failed.
+func (h *serviceHandler) CallMuteOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, direction cmcall.MuteDirection) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "CallMuteOff",
+		"customer": u,
+		"call_id":  callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errReq := h.reqHandler.CallV1CallMuteOff(ctx, callID, direction); errReq != nil {
+		// no call info found
+		log.Infof("Could not unmute the call. err: %v", errReq)
+		return errReq
+	}
+
+	return nil
+}
+
+// CallMOHOn sends a request to call-manager
+// to mute the call.
+// it returns error if it failed.
+func (h *serviceHandler) CallMOHOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "CallMOHOn",
+		"customer": u,
+		"call_id":  callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errReq := h.reqHandler.CallV1CallMusicOnHoldOn(ctx, callID); errReq != nil {
+		// no call info found
+		log.Infof("Could not mute the call. err: %v", errReq)
+		return errReq
+	}
+
+	return nil
+}
+
+// CallMOHOff sends a request to call-manager
+// to unmute the call.
+// it returns error if it failed.
+func (h *serviceHandler) CallMOHOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "CallMOHOff",
+		"customer": u,
+		"call_id":  callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errReq := h.reqHandler.CallV1CallMusicOnHoldOff(ctx, callID); errReq != nil {
+		// no call info found
+		log.Infof("Could not unmute the call. err: %v", errReq)
+		return errReq
+	}
+
+	return nil
+}
+
+// CallSilenceOn sends a request to call-manager
+// to mute the call.
+// it returns error if it failed.
+func (h *serviceHandler) CallSilenceOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "CallSilenceOn",
+		"customer": u,
+		"call_id":  callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errReq := h.reqHandler.CallV1CallSilenceOn(ctx, callID); errReq != nil {
+		// no call info found
+		log.Infof("Could not mute the call. err: %v", errReq)
+		return errReq
+	}
+
+	return nil
+}
+
+// CallSilenceOff sends a request to call-manager
+// to unmute the call.
+// it returns error if it failed.
+func (h *serviceHandler) CallSilenceOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "CallSilenceOff",
+		"customer": u,
+		"call_id":  callID,
+	})
+
+	_, err := h.callGet(ctx, u, callID)
+	if err != nil {
+		// no call info found
+		log.Infof("Could not get call info. err: %v", err)
+		return err
+	}
+
+	// send request
+	if errReq := h.reqHandler.CallV1CallSilenceOff(ctx, callID); errReq != nil {
+		// no call info found
+		log.Infof("Could not unmute the call. err: %v", errReq)
+		return errReq
 	}
 
 	return nil
