@@ -308,3 +308,355 @@ func callsIDTalkPOST(c *gin.Context) {
 
 	c.AbortWithStatus(200)
 }
+
+// callsIDHoldPOST handles GET /calls/{id}/hold request.
+// It holds the call.
+// @Summary Hold the call.
+// @Description Hold the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/hold [post]
+func callsIDHoldPOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDHoldPOST",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDHoldPOST.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallHoldOn(c.Request.Context(), &u, id); err != nil {
+		log.Errorf("Could not hold the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// callsIDHoldDELETE handles DELETE /calls/{id}/hold request.
+// It unholds the call.
+// @Summary Unhold the call.
+// @Description Unhold the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/hold [delete]
+func callsIDHoldDELETE(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDHoldDELETE",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDUnholdPOST.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallHoldOff(c.Request.Context(), &u, id); err != nil {
+		log.Errorf("Could not unhold the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// callsIDMutePOST handles POST /calls/{id}/mute request.
+// It mutes the call.
+// @Summary Mute the call.
+// @Description Mute the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/mute [post]
+func callsIDMutePOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDMutePOST",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+
+	var req request.BodyCallsIDMutePost
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	log.Debug("Executing callsIDMutePOST.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallMuteOn(c.Request.Context(), &u, id, req.Direction); err != nil {
+		log.Errorf("Could not mute the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// callsIDMuteDELETE handles DELETE /calls/{id}/mute request.
+// It unmutes the call.
+// @Summary Unmute the call.
+// @Description Unmute the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/mute [delete]
+func callsIDMuteDELETE(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDMuteDELETE",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+
+	var req request.BodyCallsIDMuteDelete
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	log.Debug("Executing callsIDMuteDELETE.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallMuteOff(c.Request.Context(), &u, id, req.Direction); err != nil {
+		log.Errorf("Could not unmute the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// callsIDMOHPOST handles POST /calls/{id}/moh request.
+// It moh the call.
+// @Summary MOH the call.
+// @Description MOH the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/moh [post]
+func callsIDMOHPOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDMOHPOST",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDMOHPOST.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallMOHOn(c.Request.Context(), &u, id); err != nil {
+		log.Errorf("Could not moh on the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// callsIDMOHDELETE handles DELETE /calls/{id}/moh request.
+// It moh the call.
+// @Summary MOH off the call.
+// @Description MOH off the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/moh [delete]
+func callsIDMOHDELETE(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDMOHDELETE",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDMOHDELETE.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallMOHOff(c.Request.Context(), &u, id); err != nil {
+		log.Errorf("Could not moh off the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// callsIDSilencePOST handles POST /calls/{id}/silence request.
+// It silence the call.
+// @Summary Silence the call.
+// @Description Silence the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/silence [post]
+func callsIDSilencePOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDSilencePOST",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDSilencePOST.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallSilenceOn(c.Request.Context(), &u, id); err != nil {
+		log.Errorf("Could not moh on the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}
+
+// callsIDSilenceDELETE handles DELETE /calls/{id}/silence request.
+// It silence off the call.
+// @Summary Silence off the call.
+// @Description Silence off the call.
+// @Produce json
+// @Param id path string true "The ID of the call"
+// @Success 200
+// @Router /v1.0/calls/{id}/silence [delete]
+func callsIDSilenceDELETE(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "callsIDSilenceDELETE",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		logrus.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("call_id", id)
+	log.Debug("Executing callsIDSilenceDELETE.")
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := serviceHandler.CallSilenceOff(c.Request.Context(), &u, id); err != nil {
+		log.Errorf("Could not moh off the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.AbortWithStatus(200)
+}

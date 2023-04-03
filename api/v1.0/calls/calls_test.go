@@ -386,7 +386,7 @@ func Test_callsIDHangupPOST(t *testing.T) {
 	}
 }
 
-func Test_CallsTalkPOST(t *testing.T) {
+func Test_CallsIDTalkPOST(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -396,7 +396,6 @@ func Test_CallsTalkPOST(t *testing.T) {
 		reqBody  request.BodyCallsIDTalkPOST
 
 		expectCallID uuid.UUID
-		expectRes    string
 	}
 
 	tests := []test{
@@ -414,7 +413,6 @@ func Test_CallsTalkPOST(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("ed229366-a4b7-11ed-bfe7-b38647d68a3d"),
-			`[{"id":"98b963ac-8df9-11ec-b26b-031d30ff93df","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"direction":"","hangup_by":"","hangup_reason":"","tm_progressing":"","tm_ringing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}]`,
 		},
 	}
 
@@ -445,6 +443,446 @@ func Test_CallsTalkPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().CallTalk(req.Context(), &tt.customer, tt.expectCallID, tt.reqBody.Text, tt.reqBody.Gender, tt.reqBody.Language).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_CallsIDHoldPOST(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+
+		expectCallID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/eb763a4a-cf0f-11ed-a989-8fbebcdb62c2/hold",
+
+			uuid.FromStringOrNil("eb763a4a-cf0f-11ed-a989-8fbebcdb62c2"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallHoldOn(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_CallsIDHoldDELETE(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+
+		expectCallID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/ebbb2f06-cf0f-11ed-be2c-27600beaf155/hold",
+
+			uuid.FromStringOrNil("ebbb2f06-cf0f-11ed-be2c-27600beaf155"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallHoldOff(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_CallsIDMutePOST(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqBody  []byte
+		reqQuery string
+
+		expectCallID    uuid.UUID
+		expectDirection cmcall.MuteDirection
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			[]byte(`{"direction":"both"}`),
+			"/v1.0/calls/ebeb87b4-cf0f-11ed-bd36-5f06aa4155f5/mute",
+
+			uuid.FromStringOrNil("ebeb87b4-cf0f-11ed-bd36-5f06aa4155f5"),
+			cmcall.MuteDirectionBoth,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallMuteOn(req.Context(), &tt.customer, tt.expectCallID, tt.expectDirection).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_CallsIDMuteDELETE(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+		reqBody  []byte
+
+		expectCallID    uuid.UUID
+		expectDirection cmcall.MuteDirection
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/97b7fadc-cf10-11ed-b07a-7b718bb9eef9/mute",
+			[]byte(`{"direction":"both"}`),
+
+			uuid.FromStringOrNil("97b7fadc-cf10-11ed-b07a-7b718bb9eef9"),
+			cmcall.MuteDirectionBoth,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallMuteOff(req.Context(), &tt.customer, tt.expectCallID, tt.expectDirection).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_CallsIDMOHPOST(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+
+		expectCallID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/4c72ec78-d13e-11ed-b853-cff593bdd1af/moh",
+
+			uuid.FromStringOrNil("4c72ec78-d13e-11ed-b853-cff593bdd1af"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallMOHOn(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_CallsIDMOHDELETE(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+
+		expectCallID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/4cb3b1ae-d13e-11ed-a27d-f78da612d3c4/moh",
+
+			uuid.FromStringOrNil("4cb3b1ae-d13e-11ed-a27d-f78da612d3c4"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallMOHOff(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_CallsIDSilencePOST(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+
+		expectCallID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/836320ae-d13e-11ed-9b0c-efff68751c5a/silence",
+
+			uuid.FromStringOrNil("836320ae-d13e-11ed-9b0c-efff68751c5a"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallSilenceOn(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
+
+func Test_CallsIDSilenceDELETE(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+
+		expectCallID uuid.UUID
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			"/v1.0/calls/839a7b62-d13e-11ed-9448-e71729a96494/silence",
+
+			uuid.FromStringOrNil("839a7b62-d13e-11ed-9448-e71729a96494"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CallSilenceOff(req.Context(), &tt.customer, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

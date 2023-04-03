@@ -100,6 +100,14 @@ type ServiceHandler interface {
 	CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallHangup(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallTalk(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, text string, gender string, language string) error
+	CallHoldOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error
+	CallHoldOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error
+	CallMuteOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, direction cmcall.MuteDirection) error
+	CallMuteOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID, direction cmcall.MuteDirection) error
+	CallMOHOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error
+	CallMOHOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error
+	CallSilenceOn(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error
+	CallSilenceOff(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) error
 
 	// campaign handlers
 	CampaignCreate(
