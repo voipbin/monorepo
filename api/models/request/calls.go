@@ -2,6 +2,7 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 )
@@ -27,9 +28,24 @@ type BodyCallsIDTranscribePOST struct {
 	Actions      []fmaction.Action       `json:"actions"`
 }
 
-// BodyCallsIDTalkPOST is rquest body define for POST /calls/<call-id>/talk
+// BodyCallsIDTalkPOST is rquest body define for
+// POST /calls/<call-id>/talk
 type BodyCallsIDTalkPOST struct {
 	Text     string `json:"text"`
 	Gender   string `json:"gender"`
 	Language string `json:"language"`
+}
+
+// BodyCallsIDMutePost is
+// v1 data type for
+// /v1/calls/<call-id>/mute POST
+type BodyCallsIDMutePost struct {
+	Direction cmcall.MuteDirection `json:"direction"`
+}
+
+// BodyCallsIDMuteDelete is
+// v1 data type for
+// /v1/calls/<call-id>/mute DELETE
+type BodyCallsIDMuteDelete struct {
+	Direction cmcall.MuteDirection `json:"direction"`
 }

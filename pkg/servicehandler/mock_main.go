@@ -374,6 +374,118 @@ func (mr *MockServiceHandlerMockRecorder) CallHangup(ctx, u, callID interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHangup", reflect.TypeOf((*MockServiceHandler)(nil).CallHangup), ctx, u, callID)
 }
 
+// CallHoldOff mocks base method.
+func (m *MockServiceHandler) CallHoldOff(ctx context.Context, u *customer.Customer, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallHoldOff", ctx, u, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallHoldOff indicates an expected call of CallHoldOff.
+func (mr *MockServiceHandlerMockRecorder) CallHoldOff(ctx, u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHoldOff", reflect.TypeOf((*MockServiceHandler)(nil).CallHoldOff), ctx, u, callID)
+}
+
+// CallHoldOn mocks base method.
+func (m *MockServiceHandler) CallHoldOn(ctx context.Context, u *customer.Customer, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallHoldOn", ctx, u, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallHoldOn indicates an expected call of CallHoldOn.
+func (mr *MockServiceHandlerMockRecorder) CallHoldOn(ctx, u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHoldOn", reflect.TypeOf((*MockServiceHandler)(nil).CallHoldOn), ctx, u, callID)
+}
+
+// CallMOHOff mocks base method.
+func (m *MockServiceHandler) CallMOHOff(ctx context.Context, u *customer.Customer, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallMOHOff", ctx, u, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallMOHOff indicates an expected call of CallMOHOff.
+func (mr *MockServiceHandlerMockRecorder) CallMOHOff(ctx, u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallMOHOff", reflect.TypeOf((*MockServiceHandler)(nil).CallMOHOff), ctx, u, callID)
+}
+
+// CallMOHOn mocks base method.
+func (m *MockServiceHandler) CallMOHOn(ctx context.Context, u *customer.Customer, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallMOHOn", ctx, u, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallMOHOn indicates an expected call of CallMOHOn.
+func (mr *MockServiceHandlerMockRecorder) CallMOHOn(ctx, u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallMOHOn", reflect.TypeOf((*MockServiceHandler)(nil).CallMOHOn), ctx, u, callID)
+}
+
+// CallMuteOff mocks base method.
+func (m *MockServiceHandler) CallMuteOff(ctx context.Context, u *customer.Customer, callID uuid.UUID, direction call.MuteDirection) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallMuteOff", ctx, u, callID, direction)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallMuteOff indicates an expected call of CallMuteOff.
+func (mr *MockServiceHandlerMockRecorder) CallMuteOff(ctx, u, callID, direction interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallMuteOff", reflect.TypeOf((*MockServiceHandler)(nil).CallMuteOff), ctx, u, callID, direction)
+}
+
+// CallMuteOn mocks base method.
+func (m *MockServiceHandler) CallMuteOn(ctx context.Context, u *customer.Customer, callID uuid.UUID, direction call.MuteDirection) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallMuteOn", ctx, u, callID, direction)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallMuteOn indicates an expected call of CallMuteOn.
+func (mr *MockServiceHandlerMockRecorder) CallMuteOn(ctx, u, callID, direction interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallMuteOn", reflect.TypeOf((*MockServiceHandler)(nil).CallMuteOn), ctx, u, callID, direction)
+}
+
+// CallSilenceOff mocks base method.
+func (m *MockServiceHandler) CallSilenceOff(ctx context.Context, u *customer.Customer, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSilenceOff", ctx, u, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSilenceOff indicates an expected call of CallSilenceOff.
+func (mr *MockServiceHandlerMockRecorder) CallSilenceOff(ctx, u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSilenceOff", reflect.TypeOf((*MockServiceHandler)(nil).CallSilenceOff), ctx, u, callID)
+}
+
+// CallSilenceOn mocks base method.
+func (m *MockServiceHandler) CallSilenceOn(ctx context.Context, u *customer.Customer, callID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSilenceOn", ctx, u, callID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSilenceOn indicates an expected call of CallSilenceOn.
+func (mr *MockServiceHandlerMockRecorder) CallSilenceOn(ctx, u, callID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSilenceOn", reflect.TypeOf((*MockServiceHandler)(nil).CallSilenceOn), ctx, u, callID)
+}
+
 // CallTalk mocks base method.
 func (m *MockServiceHandler) CallTalk(ctx context.Context, u *customer.Customer, callID uuid.UUID, text, gender, language string) error {
 	m.ctrl.T.Helper()
