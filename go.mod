@@ -20,7 +20,7 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.8.12
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230402162803-30cb45f877c4
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230404045350-4bf44d1bae33
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230402164742-fc1ab52f4fef
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230401184419-b137b84b4846
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9
@@ -55,7 +55,7 @@ require (
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bytedance/sonic v1.8.6 // indirect
+	github.com/bytedance/sonic v1.8.7 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -86,7 +86,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230204142400-175f62ac7400 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	google.golang.org/genproto v0.0.0-20230331144136-dcfb400f0633 // indirect
+	google.golang.org/genproto v0.0.0-20230403163135-c38d8f061ccd // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
