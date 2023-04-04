@@ -65,6 +65,9 @@ func Test_MuteOn(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockChannel.EXPECT().MuteOn(ctx, tt.responseCall.ChannelID, channel.MuteDirection(tt.direction)).Return(nil)
+			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.direction).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			if err := h.MuteOn(ctx, tt.id, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -81,7 +84,8 @@ func Test_MuteOff(t *testing.T) {
 		id        uuid.UUID
 		direction call.MuteDirection
 
-		responseCall *call.Call
+		responseCall        *call.Call
+		expectMuteDirection call.MuteDirection
 	}{
 		{
 			name: "normal",
@@ -93,6 +97,7 @@ func Test_MuteOff(t *testing.T) {
 				ID:        uuid.FromStringOrNil("183303a2-d13a-11ed-a800-9b0f57c3143f"),
 				ChannelID: "9a6e4122-cef3-11ed-b195-5b72e7449d60",
 			},
+			expectMuteDirection: call.MuteDirectionNone,
 		},
 	}
 
@@ -121,6 +126,9 @@ func Test_MuteOff(t *testing.T) {
 
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockChannel.EXPECT().MuteOff(ctx, tt.responseCall.ChannelID, channel.MuteDirection(tt.direction)).Return(nil)
+			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.expectMuteDirection).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			if err := h.MuteOff(ctx, tt.id, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

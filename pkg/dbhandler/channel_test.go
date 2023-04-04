@@ -1542,3 +1542,86 @@ func Test_ChannelSetDirection(t *testing.T) {
 		})
 	}
 }
+
+func Test_ChannelSetMuteDirection(t *testing.T) {
+
+	type test struct {
+		name string
+
+		channel       *channel.Channel
+		muteDirection channel.MuteDirection
+
+		responseCurTime string
+		expectRes       *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&channel.Channel{
+				AsteriskID: "3e:50:6b:43:bb:30",
+				ID:         "7ac68c3a-d245-11ed-b6dd-53479be2c198",
+			},
+			channel.MuteDirectionBoth,
+
+			"2020-04-20 03:22:17.995000",
+			&channel.Channel{
+				AsteriskID:    "3e:50:6b:43:bb:30",
+				ID:            "7ac68c3a-d245-11ed-b6dd-53479be2c198",
+				Data:          map[string]interface{}{},
+				StasisData:    map[string]string{},
+				MuteDirection: channel.MuteDirectionBoth,
+
+				TMRinging: DefaultTimeStamp,
+				TMAnswer:  DefaultTimeStamp,
+				TMEnd:     DefaultTimeStamp,
+
+				TMCreate: "2020-04-20 03:22:17.995000",
+				TMUpdate: "2020-04-20 03:22:17.995000",
+				TMDelete: DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			// prepare
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			if err := h.ChannelSetMuteDirection(ctx, tt.channel.ID, tt.muteDirection); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
+			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
+			if err != nil {
+				t.Errorf("Could not get channel. err: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, resChannel) == false {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, resChannel)
+			}
+		})
+	}
+}

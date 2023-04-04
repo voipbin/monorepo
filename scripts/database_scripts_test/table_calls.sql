@@ -36,6 +36,8 @@ create table calls(
   action            json,           -- current action
   action_next_hold  boolean,        -- hold the action next
   direction         varchar(16),    -- direction of call. incoming/outgoing
+  mute_direction    varchar(16),    -- mute direction
+
   hangup_by         varchar(16),    -- local/remote/empty for not sure.
   hangup_reason     varchar(16),    -- reason
 

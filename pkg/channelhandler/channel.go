@@ -393,3 +393,25 @@ func (h *channelHandler) getWithTimeout(ctx context.Context, id string, timeout 
 		return nil, fmt.Errorf("could not get a channel within timeout. GetUntilTimeout. err: %v", cctx.Err())
 	}
 }
+
+// UpdateMuteDirection updates the channel's mute direction.
+func (h *channelHandler) UpdateMuteDirection(ctx context.Context, id string, muteDirection channel.MuteDirection) (*channel.Channel, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "UpdateMuteDirection",
+		"channel_id":     id,
+		"mute_direction": muteDirection,
+	})
+
+	if errSet := h.db.ChannelSetMuteDirection(ctx, id, muteDirection); errSet != nil {
+		log.Errorf("Could not update the channel's mute direction. channel_id: %s, err: %v", id, errSet)
+		return nil, errSet
+	}
+
+	res, err := h.db.ChannelGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated channel info. channel_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return res, nil
+}

@@ -39,6 +39,7 @@ const (
 		hangup_cause,
 
 		direction,
+		mute_direction,
 
 		tm_create,
 		tm_update,
@@ -88,6 +89,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 		&res.HangupCause,
 
 		&res.Direction,
+		&res.MuteDirection,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -158,6 +160,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		hangup_cause,
 
 		direction,
+		mute_direction,
 
 		tm_create,
 		tm_update,
@@ -173,7 +176,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,
 		?, ?,
-		?,
+		?, ?,
 		?, ?, ?,
 		?, ?, ?
 		)
@@ -214,6 +217,7 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		c.HangupCause,
 
 		c.Direction,
+		c.MuteDirection,
 
 		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
@@ -603,6 +607,28 @@ func (h *handler) channelSetToCache(ctx context.Context, channel *channel.Channe
 	if err := h.cache.ChannelSet(ctx, channel); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// ChannelSetMuteDirection sets the channel's mute_direction
+func (h *handler) ChannelSetMuteDirection(ctx context.Context, id string, muteDirection channel.MuteDirection) error {
+	//prepare
+	q := `
+	update channels set
+		mute_direction = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, muteDirection, h.utilHandler.GetCurTime(), id)
+	if err != nil {
+		return fmt.Errorf("could not execute. ChannelSetMuteDirection. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.channelUpdateToCache(ctx, id)
 
 	return nil
 }

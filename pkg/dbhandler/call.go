@@ -43,6 +43,7 @@ const (
 		action,
 		action_next_hold,
 		direction,
+		mute_direction,
 
 		hangup_by,
 		hangup_reason,
@@ -101,6 +102,7 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 		&action,
 		&res.ActionNextHold,
 		&res.Direction,
+		&res.MuteDirection,
 
 		&res.HangupBy,
 		&res.HangupReason,
@@ -227,6 +229,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		action,
 		action_next_hold,
 		direction,
+		mute_direction,
 
 		hangup_by,
 		hangup_reason,
@@ -247,7 +250,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?,
 		?, ?,
 		?, ?,
 		?, ?, ?,
@@ -324,6 +327,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		tmpAction,
 		c.ActionNextHold,
 		c.Direction,
+		c.MuteDirection,
 
 		c.HangupBy,
 		c.HangupReason,
@@ -1040,6 +1044,30 @@ func (h *handler) CallSetData(ctx context.Context, id uuid.UUID, data map[call.D
 	_, err = h.db.Exec(q, tmpData, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetData. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.callUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// CallSetMuteDirection sets the call mute direction
+func (h *handler) CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDirection call.MuteDirection) error {
+	// prepare
+	q := `	
+	update
+		calls
+	set
+		mute_direction = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, muteDirection, h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CallSetMuteDirection. err: %v", err)
 	}
 
 	// update the cache

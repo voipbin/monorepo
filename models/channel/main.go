@@ -35,7 +35,8 @@ type Channel struct {
 	DialResult  string           `json:"dial_result"`
 	HangupCause ari.ChannelCause `json:"hangup_cause"`
 
-	Direction Direction `json:"direction"`
+	Direction     Direction     `json:"direction"`
+	MuteDirection MuteDirection `json:"mute_direction"`
 
 	TMAnswer  string `json:"tm_answer"`
 	TMRinging string `json:"tm_ringing"`

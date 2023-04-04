@@ -27,11 +27,13 @@ type WebhookMessage struct {
 	Destination commonaddress.Address `json:"destination"`
 
 	// info
-	Status       Status          `json:"status"`
-	Action       fmaction.Action `json:"action"`
-	Direction    Direction       `json:"direction"`
-	HangupBy     HangupBy        `json:"hangup_by"`
-	HangupReason HangupReason    `json:"hangup_reason"`
+	Status        Status          `json:"status"`
+	Action        fmaction.Action `json:"action"`
+	Direction     Direction       `json:"direction"`
+	MuteDirection MuteDirection   `json:"mute_direction"`
+
+	HangupBy     HangupBy     `json:"hangup_by"`
+	HangupReason HangupReason `json:"hangup_reason"`
 
 	// timestamp
 	TMProgressing string `json:"tm_progressing"`
@@ -58,9 +60,11 @@ func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 
 		Source:      h.Source,
 		Destination: h.Destination,
-		Status:      h.Status,
-		Action:      h.Action,
-		Direction:   h.Direction,
+
+		Status:        h.Status,
+		Action:        h.Action,
+		Direction:     h.Direction,
+		MuteDirection: h.MuteDirection,
 
 		HangupBy:     h.HangupBy,
 		HangupReason: h.HangupReason,
@@ -69,9 +73,9 @@ func (h *Call) ConvertWebhookMessage() *WebhookMessage {
 		TMProgressing: h.TMProgressing,
 		TMHangup:      h.TMHangup,
 
-		TMCreate:      h.TMCreate,
-		TMUpdate:      h.TMUpdate,
-		TMDelete:      h.TMDelete,
+		TMCreate: h.TMCreate,
+		TMUpdate: h.TMUpdate,
+		TMDelete: h.TMDelete,
 	}
 }
 

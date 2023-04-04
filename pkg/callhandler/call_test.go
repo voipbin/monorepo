@@ -680,3 +680,59 @@ func Test_UpdateHangup(t *testing.T) {
 		})
 	}
 }
+
+func Test_UpdateMuteDirection(t *testing.T) {
+
+	tests := []struct {
+		name          string
+		id            uuid.UUID
+		muteDirection call.MuteDirection
+		responseCall  *call.Call
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("bdc4f862-d247-11ed-ac90-97e32d3ee2b6"),
+			call.MuteDirectionBoth,
+
+			&call.Call{
+				ID:     uuid.FromStringOrNil("bdc4f862-d247-11ed-ac90-97e32d3ee2b6"),
+				Status: call.StatusHangup,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotfiy,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.muteDirection).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
+
+			_, err := h.UpdateMuteDirection(ctx, tt.id, tt.muteDirection)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
