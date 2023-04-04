@@ -401,6 +401,20 @@ func (mr *MockDBHandlerMockRecorder) CallSetMasterCallID(ctx, id, callID interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetMasterCallID", reflect.TypeOf((*MockDBHandler)(nil).CallSetMasterCallID), ctx, id, callID)
 }
 
+// CallSetMuteDirection mocks base method.
+func (m *MockDBHandler) CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDirection call.MuteDirection) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetMuteDirection", ctx, id, muteDirection)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallSetMuteDirection indicates an expected call of CallSetMuteDirection.
+func (mr *MockDBHandlerMockRecorder) CallSetMuteDirection(ctx, id, muteDirection interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetMuteDirection", reflect.TypeOf((*MockDBHandler)(nil).CallSetMuteDirection), ctx, id, muteDirection)
+}
+
 // CallSetRecordingID mocks base method.
 func (m *MockDBHandler) CallSetRecordingID(ctx context.Context, id, recordingID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -610,6 +624,20 @@ func (m *MockDBHandler) ChannelSetDirection(ctx context.Context, id string, dire
 func (mr *MockDBHandlerMockRecorder) ChannelSetDirection(ctx, id, direction interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetDirection", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetDirection), ctx, id, direction)
+}
+
+// ChannelSetMuteDirection mocks base method.
+func (m *MockDBHandler) ChannelSetMuteDirection(ctx context.Context, id string, muteDirection channel.MuteDirection) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelSetMuteDirection", ctx, id, muteDirection)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelSetMuteDirection indicates an expected call of ChannelSetMuteDirection.
+func (mr *MockDBHandlerMockRecorder) ChannelSetMuteDirection(ctx, id, muteDirection interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSetMuteDirection", reflect.TypeOf((*MockDBHandler)(nil).ChannelSetMuteDirection), ctx, id, muteDirection)
 }
 
 // ChannelSetPlaybackID mocks base method.

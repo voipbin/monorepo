@@ -59,6 +59,8 @@ func Test_MuteOn(t *testing.T) {
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 			mockReq.EXPECT().AstChannelMuteOn(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, string(tt.direction)).Return(nil)
+			mockDB.EXPECT().ChannelSetMuteDirection(ctx, tt.id, tt.direction).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			if err := h.MuteOn(ctx, tt.id, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -72,10 +74,11 @@ func Test_MuteOff(t *testing.T) {
 	type test struct {
 		name string
 
-		id        string
-		direction channel.MuteDirection
+		id            string
+		muteDirection channel.MuteDirection
 
-		responseChannel *channel.Channel
+		responseChannel     *channel.Channel
+		expectMuteDirection channel.MuteDirection
 	}
 
 	tests := []test{
@@ -90,6 +93,7 @@ func Test_MuteOff(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				TMDelete:   dbhandler.DefaultTimeStamp,
 			},
+			channel.MuteDirectionNone,
 		},
 	}
 
@@ -112,9 +116,11 @@ func Test_MuteOff(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelMuteOff(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, string(tt.direction)).Return(nil)
+			mockReq.EXPECT().AstChannelMuteOff(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, string(tt.muteDirection)).Return(nil)
+			mockDB.EXPECT().ChannelSetMuteDirection(ctx, tt.id, tt.expectMuteDirection).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
-			if err := h.MuteOff(ctx, tt.id, tt.direction); err != nil {
+			if err := h.MuteOff(ctx, tt.id, tt.muteDirection); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

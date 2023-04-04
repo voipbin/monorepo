@@ -52,6 +52,7 @@ type DBHandler interface {
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) error
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
+	CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDirection call.MuteDirection) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error
 	CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error
 	CallSetStatusRinging(ctx context.Context, id uuid.UUID) error
@@ -71,6 +72,7 @@ type DBHandler interface {
 	ChannelSetStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) error
 	ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error
+	ChannelSetMuteDirection(ctx context.Context, id string, muteDirection channel.MuteDirection) error
 	ChannelSetPlaybackID(ctx context.Context, id string, playbackID string) error
 	ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error
 	ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error

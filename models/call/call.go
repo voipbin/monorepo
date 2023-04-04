@@ -44,9 +44,11 @@ type Call struct {
 	Data           map[DataType]string `json:"data"`             //
 	Action         fmaction.Action     `json:"action"`           // call's current action.
 	ActionNextHold bool                `json:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
-	Direction      Direction           `json:"direction"`
-	HangupBy       HangupBy            `json:"hangup_by"`
-	HangupReason   HangupReason        `json:"hangup_reason"`
+	Direction      Direction           `json:"direction"`        //  direction of call. incoming/outgoing
+	MuteDirection  MuteDirection       `json:"mute_direction"`   // mute direction
+
+	HangupBy     HangupBy     `json:"hangup_by"`
+	HangupReason HangupReason `json:"hangup_reason"`
 
 	// dialroute(valid only tel type outgoing call)
 	DialrouteID uuid.UUID       `json:"dialroute_id"` // dialroute id(current use)

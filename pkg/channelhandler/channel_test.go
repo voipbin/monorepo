@@ -736,3 +736,64 @@ func Test_UpdateBridgeID(t *testing.T) {
 		})
 	}
 }
+
+func Test_UpdateMuteDirection(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id            string
+		muteDirection channel.MuteDirection
+
+		responseChannel *channel.Channel
+		expectRes       *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			"e07af06a-d246-11ed-abee-7b29895cb95c",
+			channel.MuteDirectionBoth,
+
+			&channel.Channel{
+				ID: "e07af06a-d246-11ed-abee-7b29895cb95c",
+			},
+			&channel.Channel{
+				ID: "e07af06a-d246-11ed-abee-7b29895cb95c",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelSetMuteDirection(ctx, tt.id, tt.muteDirection).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+
+			res, err := h.UpdateMuteDirection(ctx, tt.id, tt.muteDirection)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

@@ -392,3 +392,26 @@ func (h *callHandler) UpdateData(ctx context.Context, id uuid.UUID, data map[cal
 
 	return res, nil
 }
+
+// UpdateMuteDirection updates call's muteDirection
+func (h *callHandler) UpdateMuteDirection(ctx context.Context, id uuid.UUID, muteDirection call.MuteDirection) (*call.Call, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "UpdateMuteDirection",
+		"call_id":        id,
+		"mute_direction": muteDirection,
+	})
+
+	if errSet := h.db.CallSetMuteDirection(ctx, id, muteDirection); errSet != nil {
+		log.Errorf("Could not update the data. err: %v", errSet)
+		return nil, errSet
+	}
+
+	res, err := h.db.CallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated call info. call_id: %s, err: %v", id, err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallUpdated, res)
+
+	return res, nil
+}
