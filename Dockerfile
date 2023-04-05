@@ -1,7 +1,8 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=20.0.0
+ARG ASTERISK_VERSION=20.2.1
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
+ARG CGSFUSE_VERSION=0.42.3
 
 RUN apt-get update
 
@@ -59,8 +60,8 @@ RUN apt-get install -y \
     fuse
 
 # Install gcsfuse
-RUN curl -L -O https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v0.41.1/gcsfuse_0.41.1_amd64.deb
-RUN dpkg --install gcsfuse_0.41.1_amd64.deb
+RUN curl -L -O https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/v${CGSFUSE_VERSION}/gcsfuse_${CGSFUSE_VERSION}_amd64.deb
+RUN dpkg --install gcsfuse_${CGSFUSE_VERSION}_amd64.deb
 
 # Download Asterisk source
 RUN git clone https://gerrit.asterisk.org/asterisk ${ASTERISK_SOURCE_DIRECTORY}
