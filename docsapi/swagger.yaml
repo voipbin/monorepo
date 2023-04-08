@@ -17,6 +17,75 @@ definitions:
       type:
         type: string
     type: object
+  activeflow.Activeflow:
+    properties:
+      current_action:
+        $ref: '#/definitions/action.Action'
+      current_stack_id:
+        description: current info
+        type: string
+      customer_id:
+        type: string
+      execute_count:
+        description: execute
+        type: integer
+      executed_actions:
+        description: list of executed actions
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      flow_id:
+        type: string
+      forward_action_id:
+        type: string
+      forward_stack_id:
+        description: forward info
+        type: string
+      id:
+        type: string
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+      stack_map:
+        additionalProperties:
+          $ref: '#/definitions/stack.Stack'
+        description: stack
+        type: object
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
+  activeflow.WebhookMessage:
+    properties:
+      current_action:
+        $ref: '#/definitions/action.Action'
+      customer_id:
+        type: string
+      flow_id:
+        type: string
+      forward_action_id:
+        type: string
+      id:
+        type: string
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+      status:
+        type: string
+      tm_create:
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
   address.Address:
     properties:
       detail:
@@ -186,12 +255,16 @@ definitions:
           $ref: '#/definitions/route.Route'
         type: array
       direction:
+        description: direction of call. incoming/outgoing
         type: string
       external_media_id:
         description: external media id(current)
         type: string
       flow_id:
         description: flow id
+        type: string
+      groupcall_id:
+        description: groupcall id
         type: string
       hangup_by:
         type: string
@@ -202,6 +275,9 @@ definitions:
         type: string
       master_call_id:
         description: etc info
+        type: string
+      mute_direction:
+        description: mute direction
         type: string
       recording_id:
         description: recording id(current)
@@ -248,6 +324,7 @@ definitions:
       destination:
         $ref: '#/definitions/address.Address'
       direction:
+        description: direction of call. incoming/outgoing
         type: string
       flow_id:
         description: flow id
@@ -261,6 +338,9 @@ definitions:
         type: string
       master_call_id:
         description: etc info
+        type: string
+      mute_direction:
+        description: mute direction
         type: string
       recording_id:
         description: recording id(current)
@@ -989,6 +1069,68 @@ definitions:
       tm_update:
         type: string
       type:
+        type: string
+    type: object
+  groupcall.Groupcall:
+    properties:
+      answer_call_id:
+        description: valid only when the answered_method  is hangup others
+        type: string
+      answer_method:
+        type: string
+      call_ids:
+        items:
+          type: string
+        type: array
+      customer_id:
+        type: string
+      destinations:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      id:
+        type: string
+      ring_method:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+      tm_create:
+        description: timestamp
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
+        type: string
+    type: object
+  groupcall.WebhookMessage:
+    properties:
+      answer_call_id:
+        description: valid only when the answered_method  is hangup others
+        type: string
+      answer_method:
+        type: string
+      call_ids:
+        items:
+          type: string
+        type: array
+      customer_id:
+        type: string
+      destinations:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      id:
+        type: string
+      ring_method:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+      tm_create:
+        description: timestamp
+        type: string
+      tm_delete:
+        type: string
+      tm_update:
         type: string
     type: object
   message.Message:
@@ -1783,6 +1925,28 @@ definitions:
       name:
         type: string
     type: object
+  request.BodyGroupcallsPOST:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      answer_method:
+        type: string
+      destinations:
+        items:
+          $ref: '#/definitions/address.Address'
+        type: array
+      flow_id:
+        type: string
+      ring_method:
+        type: string
+      source:
+        $ref: '#/definitions/address.Address'
+    required:
+    - destinations
+    - source
+    type: object
   request.BodyLoginPOST:
     properties:
       password:
@@ -2005,6 +2169,15 @@ definitions:
       reference_type:
         type: string
     type: object
+  response.BodyActiveflowsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/activeflow.WebhookMessage'
+        type: array
+    type: object
   response.BodyAgentsGET:
     properties:
       next_page_token:
@@ -2129,6 +2302,15 @@ definitions:
           $ref: '#/definitions/flow.WebhookMessage'
         type: array
     type: object
+  response.BodyGroupcallsGET:
+    properties:
+      next_page_token:
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/groupcall.WebhookMessage'
+        type: array
+    type: object
   response.BodyLoginPOST:
     properties:
       token:
@@ -2248,6 +2430,19 @@ definitions:
       tm_delete:
         type: string
       tm_update:
+        type: string
+    type: object
+  stack.Stack:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/action.Action'
+        type: array
+      id:
+        type: string
+      return_action_id:
+        type: string
+      return_stack_id:
         type: string
     type: object
   tag.Tag:
@@ -2409,6 +2604,76 @@ paths:
         "200":
           description: '{"message": "pong"}'
       summary: Returns message pong
+  /v1.0/activeflows:
+    get:
+      description: get activeflows of the customer
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyActiveflowsGET'
+      summary: Get list of activeflows
+  /v1.0/activeflows/{id}:
+    delete:
+      description: Deletes activeflow info of the given activeflow id.
+      parameters:
+      - description: The ID of the activeflow
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/activeflow.Activeflow'
+      summary: Deletes activeflow info.
+    get:
+      description: Returns detail activeflow info of the given activeflow id.
+      parameters:
+      - description: The ID of the activeflow
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/activeflow.Activeflow'
+      summary: Get detail activeflow info.
+  /v1.0/activeflows/{id}/stop:
+    post:
+      description: Stops activeflow of the given activeflow id.
+      parameters:
+      - description: The ID of the activeflow
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/activeflow.Activeflow'
+      summary: Stops the given activeflow.
   /v1.0/agents:
     get:
       description: get agents of the user
@@ -2674,6 +2939,122 @@ paths:
           schema:
             $ref: '#/definitions/call.Call'
       summary: Hangup the call.
+  /v1.0/calls/{id}/hold:
+    delete:
+      description: Unhold the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Unhold the call.
+    post:
+      description: Hold the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Hold the call.
+  /v1.0/calls/{id}/moh:
+    delete:
+      description: MOH off the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: MOH off the call.
+    post:
+      description: MOH the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: MOH the call.
+  /v1.0/calls/{id}/mute:
+    delete:
+      description: Unmute the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Unmute the call.
+    post:
+      description: Mute the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Mute the call.
+  /v1.0/calls/{id}/silence:
+    delete:
+      description: Silence off the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Silence off the call.
+    post:
+      description: Silence the call.
+      parameters:
+      - description: The ID of the call
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Silence the call.
   /v1.0/calls/{id}/talk:
     post:
       description: Talks to the call.
@@ -4047,6 +4428,93 @@ paths:
           schema:
             $ref: '#/definitions/flow.Flow'
       summary: Update a flow and reuturns updated flow info.
+  /v1.0/groupcalls:
+    get:
+      description: Gets a list of groupcalls
+      parameters:
+      - description: The size of results. Max 100
+        in: query
+        name: page_size
+        type: integer
+      - description: The token. tm_create
+        in: query
+        name: page_token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BodyGroupcallsGET'
+      summary: Gets a list of groupcalls.
+    post:
+      description: Create a new groupcall and returns detail created groupcall info.
+      parameters:
+      - description: groupcall info.
+        in: body
+        name: flow
+        required: true
+        schema:
+          $ref: '#/definitions/request.BodyGroupcallsPOST'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groupcall.Groupcall'
+      summary: Create a new groupcall and returns detail created groupcall info.
+  /v1.0/groupcalls/{id}:
+    delete:
+      description: Delete the groupcall of the given groupcall id.
+      parameters:
+      - description: The ID of the groupcall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groupcall.Groupcall'
+      summary: Delete the groupcall.
+    get:
+      description: Returns detail groupcall info of the given groupcall id.
+      parameters:
+      - description: The ID of the groupcall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groupcall.Groupcall'
+      summary: Returns detail groupcall info.
+  /v1.0/groupcalls/{id}/hangup:
+    post:
+      description: Hangup the groupcall of the given groupcall id.
+      parameters:
+      - description: The ID of the groupcall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/groupcall.Groupcall'
+      summary: Hangup the groupcall.
   /v1.0/messages:
     get:
       description: get messages
@@ -4636,6 +5104,21 @@ paths:
       summary: Returns detail queuecall info.
   /v1.0/queuecalls/{id}:
     delete:
+      description: Deletes the queuecall.
+      parameters:
+      - description: The ID of the queuecall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Deletes the queuecall.
+  /v1.0/queuecalls/{id}/kick:
+    post:
       description: Kicks the queuecall.
       parameters:
       - description: The ID of the queuecall
@@ -4649,6 +5132,21 @@ paths:
         "200":
           description: OK
       summary: Kicks the queuecall from the queue.
+  /v1.0/queuecalls/reference_id/{id}/kick:
+    post:
+      description: Kicks the queuecall of the given reference id.
+      parameters:
+      - description: The ID of the queuecall
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Kicks the queuecall of the given reference id from the queue.
   /v1.0/queues:
     get:
       description: get queues of the customer
