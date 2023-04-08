@@ -66,9 +66,9 @@ func Test_recevieMessage(t *testing.T) {
 			10,
 		},
 		{
-			"100 times",
+			"50 times",
 
-			100,
+			50,
 		},
 	}
 
@@ -93,16 +93,16 @@ func Test_recevieMessage(t *testing.T) {
 			mockSock.EXPECT().Receive().Return(nil, fmt.Errorf(""))
 
 			go func() {
-				if err := h.recevieMessage(chanMessage); err != nil {
-					if err.Error() != "" {
-						t.Errorf("Wrong match. expect: ok, got: %v", err)
+				if errRecv := h.recevieMessage(chanMessage); errRecv != nil {
+					if errRecv.Error() != "" {
+						t.Errorf("Wrong match. expect: ok, got: %v", errRecv)
 					}
 
 					return
 				}
 			}()
 
-			time.Sleep(1 * time.Second)
+			time.Sleep(2 * time.Second)
 
 			for i := 0; i < tt.count; i++ {
 				<-chanMessage

@@ -54,6 +54,113 @@
                 }
             }
         },
+        "/v1.0/activeflows": {
+            "get": {
+                "description": "get activeflows of the customer",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get list of activeflows",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyActiveflowsGET"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/activeflows/{id}": {
+            "get": {
+                "description": "Returns detail activeflow info of the given activeflow id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get detail activeflow info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the activeflow",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/activeflow.Activeflow"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes activeflow info of the given activeflow id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Deletes activeflow info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the activeflow",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/activeflow.Activeflow"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/activeflows/{id}/stop": {
+            "post": {
+                "description": "Stops activeflow of the given activeflow id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Stops the given activeflow.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the activeflow",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/activeflow.Activeflow"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/agents": {
             "get": {
                 "description": "get agents of the user",
@@ -454,6 +561,182 @@
                         "schema": {
                             "$ref": "#/definitions/call.Call"
                         }
+                    }
+                }
+            }
+        },
+        "/v1.0/calls/{id}/hold": {
+            "post": {
+                "description": "Hold the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Hold the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Unhold the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Unhold the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/calls/{id}/moh": {
+            "post": {
+                "description": "MOH the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "MOH the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "description": "MOH off the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "MOH off the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/calls/{id}/mute": {
+            "post": {
+                "description": "Mute the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Mute the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Unmute the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Unmute the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/calls/{id}/silence": {
+            "post": {
+                "description": "Silence the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Silence the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Silence off the call.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Silence off the call.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the call",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -2542,6 +2825,139 @@
                 }
             }
         },
+        "/v1.0/groupcalls": {
+            "get": {
+                "description": "Gets a list of groupcalls",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of groupcalls.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyGroupcallsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new groupcall and returns detail created groupcall info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new groupcall and returns detail created groupcall info.",
+                "parameters": [
+                    {
+                        "description": "groupcall info.",
+                        "name": "flow",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyGroupcallsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/groupcall.Groupcall"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/groupcalls/{id}": {
+            "get": {
+                "description": "Returns detail groupcall info of the given groupcall id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail groupcall info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the groupcall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/groupcall.Groupcall"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete the groupcall of the given groupcall id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete the groupcall.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the groupcall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/groupcall.Groupcall"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/groupcalls/{id}/hangup": {
+            "post": {
+                "description": "Hangup the groupcall of the given groupcall id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Hangup the groupcall.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the groupcall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/groupcall.Groupcall"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/messages": {
             "get": {
                 "description": "get messages",
@@ -3434,8 +3850,54 @@
                 }
             }
         },
+        "/v1.0/queuecalls/reference_id/{id}/kick": {
+            "post": {
+                "description": "Kicks the queuecall of the given reference id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Kicks the queuecall of the given reference id from the queue.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queuecall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/v1.0/queuecalls/{id}": {
             "delete": {
+                "description": "Deletes the queuecall.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Deletes the queuecall.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the queuecall",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/v1.0/queuecalls/{id}/kick": {
+            "post": {
                 "description": "Kicks the queuecall.",
                 "produces": [
                     "application/json"
@@ -4254,6 +4716,108 @@
                 }
             }
         },
+        "activeflow.Activeflow": {
+            "type": "object",
+            "properties": {
+                "current_action": {
+                    "$ref": "#/definitions/action.Action"
+                },
+                "current_stack_id": {
+                    "description": "current info",
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "execute_count": {
+                    "description": "execute",
+                    "type": "integer"
+                },
+                "executed_actions": {
+                    "description": "list of executed actions",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "forward_action_id": {
+                    "type": "string"
+                },
+                "forward_stack_id": {
+                    "description": "forward info",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "string"
+                },
+                "stack_map": {
+                    "description": "stack",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/stack.Stack"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "activeflow.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "current_action": {
+                    "$ref": "#/definitions/action.Action"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "forward_action_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
         "address.Address": {
             "type": "object",
             "properties": {
@@ -4489,6 +5053,7 @@
                     }
                 },
                 "direction": {
+                    "description": "direction of call. incoming/outgoing",
                     "type": "string"
                 },
                 "external_media_id": {
@@ -4497,6 +5062,10 @@
                 },
                 "flow_id": {
                     "description": "flow id",
+                    "type": "string"
+                },
+                "groupcall_id": {
+                    "description": "groupcall id",
                     "type": "string"
                 },
                 "hangup_by": {
@@ -4511,6 +5080,10 @@
                 },
                 "master_call_id": {
                     "description": "etc info",
+                    "type": "string"
+                },
+                "mute_direction": {
+                    "description": "mute direction",
                     "type": "string"
                 },
                 "recording_id": {
@@ -4577,6 +5150,7 @@
                     "$ref": "#/definitions/address.Address"
                 },
                 "direction": {
+                    "description": "direction of call. incoming/outgoing",
                     "type": "string"
                 },
                 "flow_id": {
@@ -4595,6 +5169,10 @@
                 },
                 "master_call_id": {
                     "description": "etc info",
+                    "type": "string"
+                },
+                "mute_direction": {
+                    "description": "mute direction",
                     "type": "string"
                 },
                 "recording_id": {
@@ -5669,6 +6247,98 @@
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "groupcall.Groupcall": {
+            "type": "object",
+            "properties": {
+                "answer_call_id": {
+                    "description": "valid only when the answered_method  is hangup others",
+                    "type": "string"
+                },
+                "answer_method": {
+                    "type": "string"
+                },
+                "call_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "destinations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ring_method": {
+                    "type": "string"
+                },
+                "source": {
+                    "$ref": "#/definitions/address.Address"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "groupcall.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "answer_call_id": {
+                    "description": "valid only when the answered_method  is hangup others",
+                    "type": "string"
+                },
+                "answer_method": {
+                    "type": "string"
+                },
+                "call_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "destinations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ring_method": {
+                    "type": "string"
+                },
+                "source": {
+                    "$ref": "#/definitions/address.Address"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
                     "type": "string"
                 }
             }
@@ -6843,6 +7513,39 @@
                 }
             }
         },
+        "request.BodyGroupcallsPOST": {
+            "type": "object",
+            "required": [
+                "destinations",
+                "source"
+            ],
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "answer_method": {
+                    "type": "string"
+                },
+                "destinations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "ring_method": {
+                    "type": "string"
+                },
+                "source": {
+                    "$ref": "#/definitions/address.Address"
+                }
+            }
+        },
         "request.BodyLoginPOST": {
             "type": "object",
             "required": [
@@ -7186,6 +7889,20 @@
                 }
             }
         },
+        "response.BodyActiveflowsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/activeflow.WebhookMessage"
+                    }
+                }
+            }
+        },
         "response.BodyAgentsGET": {
             "type": "object",
             "properties": {
@@ -7379,6 +8096,20 @@
                 }
             }
         },
+        "response.BodyGroupcallsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/groupcall.WebhookMessage"
+                    }
+                }
+            }
+        },
         "response.BodyLoginPOST": {
             "type": "object",
             "properties": {
@@ -7560,6 +8291,26 @@
                     "type": "string"
                 },
                 "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
+        "stack.Stack": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/action.Action"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "return_action_id": {
+                    "type": "string"
+                },
+                "return_stack_id": {
                     "type": "string"
                 }
             }
