@@ -642,6 +642,8 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230401183343-7e042420
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230401183343-7e0424202d9e/go.mod h1:Z4K85bsNjmlLmUG0yEsqo4tJgnp5quCplwR+Hw8V8+Q=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230402141158-1104f03d9284 h1:C/CIrp6b2Uthhq7XIIwU4ERZwi9SDG6ZMXuLAkmjrJ8=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230402141158-1104f03d9284/go.mod h1:Z4K85bsNjmlLmUG0yEsqo4tJgnp5quCplwR+Hw8V8+Q=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230409095332-8254bb99493d h1:K5t0g479AcWjnURbrs2+foniqYHOQa6rHuCgo1ryhAY=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230409095332-8254bb99493d/go.mod h1:ZQZp3Oduw0Vc63JsXFPlZ36xJWOw3GwpfpDjE68LxKk=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa h1:PP+lN42xD4htGHyiwpzki5O9qhYqJQoO2vvbsjslr9g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa/go.mod h1:ZmH0dxGw24CBuZhNZO4JYFTFfY3Ti+aeQkMHG97Swas=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a h1:6tQaB5eQ8du+G2tXWGrm1E9oI2fPZQT+slbcYFcVqPE=
@@ -664,6 +666,8 @@ gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230401170616-fcfa8689ef
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230401170616-fcfa8689efed/go.mod h1:d5CBCU2hooWrxWWwsILEn5W5+In9wyr/DaZ7jg2p67A=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230401184419-b137b84b4846 h1:rWWXseYhIN69g/t2/Cj0Cl6YEep9jEhLsvVvXMdhL98=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230401184419-b137b84b4846/go.mod h1:d5CBCU2hooWrxWWwsILEn5W5+In9wyr/DaZ7jg2p67A=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230409092659-5068ec8c1d46 h1:tR6dKiuQ0H6Nbyb2DPZ30fNzfZOGhxXWXiqQ0YLCJc8=
+gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230409092659-5068ec8c1d46/go.mod h1:1SVseXVyt6KQnTbKy6CDVcpcxCDsmJAJDpdnxbY2SS8=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20230306090132-4738c2e4e0eb h1:78AXbvjvR51gTgReYvvyP5Av+G8YlaujltnzSf1ZDlQ=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20230306090132-4738c2e4e0eb/go.mod h1:XnEvGVrxHrwNie+5H0Us8OTwbonbk5terGYZOip0ZmU=
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf6b027 h1:HHPVErpeXQtXLSKZ/dJsqF/YBC6hKilrQiq8JU4lk08=
@@ -914,6 +918,8 @@ golang.org/x/sys v0.4.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0 h1:MVltZSvRTcU2ljQOhs94SXPftV6DCNnZViHeQps87pQ=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.7.0 h1:3jlCCIQZPdOYu1h8BkNvLz8Kgwtae2cagcG/VamtZRU=
+golang.org/x/sys v0.7.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/term v0.2.0/go.mod h1:TVmDHMZPmdnySmBfhjOoOdhjzdE1h4u1VwSiw2l1Nuc=
@@ -1188,6 +1194,8 @@ google.golang.org/genproto v0.0.0-20230330200707-38013875ee22 h1:n3ThVoQnHbCbnkh
 google.golang.org/genproto v0.0.0-20230330200707-38013875ee22/go.mod h1:UUQDJDOlWu4KYeJZffbWgBkS1YFobzKbLVfK69pe0Ak=
 google.golang.org/genproto v0.0.0-20230331144136-dcfb400f0633 h1:0BOZf6qNozI3pkN3fJLwNubheHJYHhMh91GRFOWWK08=
 google.golang.org/genproto v0.0.0-20230331144136-dcfb400f0633/go.mod h1:UUQDJDOlWu4KYeJZffbWgBkS1YFobzKbLVfK69pe0Ak=
+google.golang.org/genproto v0.0.0-20230403163135-c38d8f061ccd h1:sLpv7bNL1AsX3fdnWh9WVh7ejIzXdOc1RRHGeAmeStU=
+google.golang.org/genproto v0.0.0-20230403163135-c38d8f061ccd/go.mod h1:UUQDJDOlWu4KYeJZffbWgBkS1YFobzKbLVfK69pe0Ak=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=

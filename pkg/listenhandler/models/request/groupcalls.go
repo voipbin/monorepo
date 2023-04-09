@@ -18,5 +18,4 @@ type V1DataGroupcallsPost struct {
 	MasterCallID uuid.UUID               `json:"master_call_id,omitempty"`
 	RingMethod   groupcall.RingMethod    `json:"ring_method,omitempty"`
 	AnswerMethod groupcall.AnswerMethod  `json:"answer_method,omitempty"`
-	Connect      bool                    `json:"connect,omitempty"` //Deprecated: Connect // if the call is created for connect, sets this to true,
 }
