@@ -447,7 +447,6 @@ type RequestHandler interface {
 		masterCallID uuid.UUID,
 		ringMethod cmgroupcall.RingMethod,
 		answerMethod cmgroupcall.AnswerMethod,
-		connect bool,
 	) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cmgroupcall.Groupcall, error)
 	CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)

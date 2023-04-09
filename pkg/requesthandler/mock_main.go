@@ -1421,18 +1421,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaStop(ctx, externalM
 }
 
 // CallV1GroupcallCreate mocks base method.
-func (m *MockRequestHandler) CallV1GroupcallCreate(ctx context.Context, customerID uuid.UUID, source address.Address, destinations []address.Address, flowID, masterCallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod, connect bool) (*groupcall.Groupcall, error) {
+func (m *MockRequestHandler) CallV1GroupcallCreate(ctx context.Context, customerID uuid.UUID, source address.Address, destinations []address.Address, flowID, masterCallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1GroupcallCreate", ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect)
+	ret := m.ctrl.Call(m, "CallV1GroupcallCreate", ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod)
 	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1GroupcallCreate indicates an expected call of CallV1GroupcallCreate.
-func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallCreate(ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallCreate(ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallCreate), ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod, connect)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallCreate), ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod)
 }
 
 // CallV1GroupcallDelete mocks base method.

@@ -116,7 +116,6 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 		masterCallID uuid.UUID
 		ringMethod   cmgroupcall.RingMethod
 		answerMethod cmgroupcall.AnswerMethod
-		connect      bool
 
 		response *rabbitmqhandler.Response
 
@@ -146,7 +145,6 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 			masterCallID: uuid.FromStringOrNil("2b4f5b44-bbae-11ed-9629-dfffd3ac6a43"),
 			ringMethod:   cmgroupcall.RingMethodRingAll,
 			answerMethod: cmgroupcall.AnswerMethodHangupOthers,
-			connect:      true,
 
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -159,7 +157,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 				URI:      "/v1/groupcalls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"flow_id":"2b1f1682-bbae-11ed-b06b-3be413b33b07","master_call_id":"2b4f5b44-bbae-11ed-9629-dfffd3ac6a43","ring_method":"ring_all","answer_method":"hangup_others","connect":true}`),
+				Data:     []byte(`{"customer_id":"2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"flow_id":"2b1f1682-bbae-11ed-b06b-3be413b33b07","master_call_id":"2b4f5b44-bbae-11ed-9629-dfffd3ac6a43","ring_method":"ring_all","answer_method":"hangup_others"}`),
 			},
 			expectRes: &cmgroupcall.Groupcall{
 				ID: uuid.FromStringOrNil("2b7dc4ac-bbae-11ed-b868-f762b6f7fd23"),
@@ -181,7 +179,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1GroupcallCreate(ctx, tt.customerID, tt.source, tt.destinations, tt.flowID, tt.masterCallID, tt.ringMethod, tt.answerMethod, tt.connect)
+			res, err := reqHandler.CallV1GroupcallCreate(ctx, tt.customerID, tt.source, tt.destinations, tt.flowID, tt.masterCallID, tt.ringMethod, tt.answerMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

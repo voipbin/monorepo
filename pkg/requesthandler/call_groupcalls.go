@@ -26,7 +26,6 @@ func (r *requestHandler) CallV1GroupcallCreate(
 	masterCallID uuid.UUID,
 	ringMethod cmgroupcall.RingMethod,
 	answerMethod cmgroupcall.AnswerMethod,
-	connect bool,
 ) (*cmgroupcall.Groupcall, error) {
 	uri := "/v1/groupcalls"
 
@@ -38,7 +37,6 @@ func (r *requestHandler) CallV1GroupcallCreate(
 		MasterCallID: masterCallID,
 		RingMethod:   ringMethod,
 		AnswerMethod: answerMethod,
-		Connect:      connect,
 	}
 
 	m, err := json.Marshal(reqData)
