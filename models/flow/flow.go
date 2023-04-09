@@ -37,6 +37,7 @@ const (
 	TypeConference Type = "conference" // conference-manager
 	TypeQueue      Type = "queue"      // queue-manager
 	TypeCampaign   Type = "campaign"   // campaign-manager
+	TypeTransfer   Type = "transfer"   // transfer-manager
 )
 
 // Matches return true if the given items are the same
