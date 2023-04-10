@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
@@ -258,7 +257,7 @@ func (r *requestHandler) CallV1ConfbridgeRecordingStop(ctx context.Context, conf
 // CallV1ConfbridgeFlagAdd sends a request to call-manager
 // to add the flag to the given confbridge.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1ConfbridgeFlagAdd(ctx context.Context, confbridgeID uuid.UUID, flag confbridge.Flag) (*cmconfbridge.Confbridge, error) {
+func (r *requestHandler) CallV1ConfbridgeFlagAdd(ctx context.Context, confbridgeID uuid.UUID, flag cmconfbridge.Flag) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s/flags", confbridgeID)
 
 	reqData := &cmrequest.V1DataConfbridgesIDFlagsPost{
@@ -292,7 +291,7 @@ func (r *requestHandler) CallV1ConfbridgeFlagAdd(ctx context.Context, confbridge
 // CallV1ConfbridgeFlagRemove sends a request to call-manager
 // to remove the flag from the given confbridge.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1ConfbridgeFlagRemove(ctx context.Context, confbridgeID uuid.UUID, flag confbridge.Flag) (*cmconfbridge.Confbridge, error) {
+func (r *requestHandler) CallV1ConfbridgeFlagRemove(ctx context.Context, confbridgeID uuid.UUID, flag cmconfbridge.Flag) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s/flags", confbridgeID)
 
 	reqData := &cmrequest.V1DataConfbridgesIDFlagsDelete{

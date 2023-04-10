@@ -1330,6 +1330,36 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeDelete(ctx, confbridge
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeDelete", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeDelete), ctx, confbridgeID)
 }
 
+// CallV1ConfbridgeFlagAdd mocks base method.
+func (m *MockRequestHandler) CallV1ConfbridgeFlagAdd(ctx context.Context, confbridgeID uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1ConfbridgeFlagAdd", ctx, confbridgeID, flag)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1ConfbridgeFlagAdd indicates an expected call of CallV1ConfbridgeFlagAdd.
+func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeFlagAdd(ctx, confbridgeID, flag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeFlagAdd", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeFlagAdd), ctx, confbridgeID, flag)
+}
+
+// CallV1ConfbridgeFlagRemove mocks base method.
+func (m *MockRequestHandler) CallV1ConfbridgeFlagRemove(ctx context.Context, confbridgeID uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1ConfbridgeFlagRemove", ctx, confbridgeID, flag)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1ConfbridgeFlagRemove indicates an expected call of CallV1ConfbridgeFlagRemove.
+func (mr *MockRequestHandlerMockRecorder) CallV1ConfbridgeFlagRemove(ctx, confbridgeID, flag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ConfbridgeFlagRemove", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ConfbridgeFlagRemove), ctx, confbridgeID, flag)
+}
+
 // CallV1ConfbridgeGet mocks base method.
 func (m *MockRequestHandler) CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
