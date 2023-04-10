@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
@@ -170,8 +171,8 @@ func (r *requestHandler) CallV1ConfbridgeExternalMediaStart(
 // CallV1ConfbridgeExternalMediaStop sends a request to call-manager
 // to stop the external media.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, callID uuid.UUID) (*cmconfbridge.Confbridge, error) {
-	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", callID)
+func (r *requestHandler) CallV1ConfbridgeExternalMediaStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
+	uri := fmt.Sprintf("/v1/confbridges/%s/external-media", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridgesIDExternalMedia, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
@@ -232,10 +233,78 @@ func (r *requestHandler) CallV1ConfbridgeRecordingStart(ctx context.Context, con
 // CallV1ConfbridgeRecordingStop sends a request to call-manager
 // to starts the given confbridge's recording.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1ConfbridgeRecordingStop(ctx context.Context, callID uuid.UUID) (*cmconfbridge.Confbridge, error) {
-	uri := fmt.Sprintf("/v1/confbridges/%s/recording_stop", callID)
+func (r *requestHandler) CallV1ConfbridgeRecordingStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
+	uri := fmt.Sprintf("/v1/confbridges/%s/recording_stop", confbridgeID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridgesRecordingStop, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmconfbridge.Confbridge
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallV1ConfbridgeFlagAdd sends a request to call-manager
+// to add the flag to the given confbridge.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1ConfbridgeFlagAdd(ctx context.Context, confbridgeID uuid.UUID, flag confbridge.Flag) (*cmconfbridge.Confbridge, error) {
+	uri := fmt.Sprintf("/v1/confbridges/%s/flags", confbridgeID)
+
+	reqData := &cmrequest.V1DataConfbridgesIDFlagsPost{
+		Flag: flag,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridgesRecordingStop, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmconfbridge.Confbridge
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallV1ConfbridgeFlagRemove sends a request to call-manager
+// to remove the flag from the given confbridge.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1ConfbridgeFlagRemove(ctx context.Context, confbridgeID uuid.UUID, flag confbridge.Flag) (*cmconfbridge.Confbridge, error) {
+	uri := fmt.Sprintf("/v1/confbridges/%s/flags", confbridgeID)
+
+	reqData := &cmrequest.V1DataConfbridgesIDFlagsDelete{
+		Flag: flag,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridgesRecordingStop, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

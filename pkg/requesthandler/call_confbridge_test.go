@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 
@@ -410,6 +411,132 @@ func Test_CallV1ConfbridgeRecordingStop(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ConfbridgeRecordingStop(ctx, tt.confbridgeID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallV1ConfbridgeFlagAdd(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		confbridgeID uuid.UUID
+		flag         confbridge.Flag
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmconfbridge.Confbridge
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("367d97a2-d7be-11ed-90bb-3354b92cec8a"),
+			confbridge.FlagNoAutoLeave,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"367d97a2-d7be-11ed-90bb-3354b92cec8a"}`),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/confbridges/367d97a2-d7be-11ed-90bb-3354b92cec8a/flags",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"flag":"no_auto_leave"}`),
+			},
+			&cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("367d97a2-d7be-11ed-90bb-3354b92cec8a"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1ConfbridgeFlagAdd(ctx, tt.confbridgeID, tt.flag)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CallV1ConfbridgeFlagRemove(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		confbridgeID uuid.UUID
+		flag         confbridge.Flag
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmconfbridge.Confbridge
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("96c67bf6-d7be-11ed-abd3-efffaa03c246"),
+			confbridge.FlagNoAutoLeave,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"96c67bf6-d7be-11ed-abd3-efffaa03c246"}`),
+			},
+
+			&rabbitmqhandler.Request{
+				URI:      "/v1/confbridges/96c67bf6-d7be-11ed-abd3-efffaa03c246/flags",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"flag":"no_auto_leave"}`),
+			},
+			&cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("96c67bf6-d7be-11ed-abd3-efffaa03c246"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CallV1ConfbridgeFlagRemove(ctx, tt.confbridgeID, tt.flag)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
