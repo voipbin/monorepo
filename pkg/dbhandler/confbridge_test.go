@@ -33,6 +33,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 			"2023-01-18 03:22:18.995000",
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
+				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 				TMCreate:       "2023-01-18 03:22:18.995000",
@@ -40,13 +41,15 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 				TMDelete:       DefaultTimeStamp,
 			},
 		},
-
 		{
 			"have all",
 			&confbridge.Confbridge{
 				ID:       uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
 				Type:     confbridge.TypeConnect,
 				BridgeID: "f4959208-972c-11ed-be90-6b3eb4bef16d",
+				Flags: []confbridge.Flag{
+					confbridge.FlagNoAutoLeave,
+				},
 				ChannelCallIDs: map[string]uuid.UUID{
 					"e655ea4e-972c-11ed-9de8-bbd3892344ca": uuid.FromStringOrNil("f4173688-972c-11ed-88f7-7b8c8c882ba4"),
 				},
@@ -63,6 +66,9 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 				ID:       uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
 				Type:     confbridge.TypeConnect,
 				BridgeID: "f4959208-972c-11ed-be90-6b3eb4bef16d",
+				Flags: []confbridge.Flag{
+					confbridge.FlagNoAutoLeave,
+				},
 				ChannelCallIDs: map[string]uuid.UUID{
 					"e655ea4e-972c-11ed-9de8-bbd3892344ca": uuid.FromStringOrNil("f4173688-972c-11ed-88f7-7b8c8c882ba4"),
 				},
@@ -140,6 +146,7 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
 				BridgeID:       "bfc5a1e4-34ef-11ec-ad12-870a5704955c",
+				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
 				TMCreate:       "2023-01-18 03:22:18.995000",
@@ -205,6 +212,7 @@ func Test_ConfbridgeSetRecordingID(t *testing.T) {
 			"2023-01-18 03:22:18.995000",
 			&confbridge.Confbridge{
 				ID:             uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
+				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingID:    uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
 				RecordingIDs:   []uuid.UUID{},
@@ -279,6 +287,7 @@ func Test_ConfbridgeSetExternalMediaID(t *testing.T) {
 			"2023-01-18 03:22:18.995000",
 			&confbridge.Confbridge{
 				ID:              uuid.FromStringOrNil("a587afdc-972e-11ed-9c8a-c71ab8ef38bd"),
+				Flags:           []confbridge.Flag{},
 				ChannelCallIDs:  map[string]uuid.UUID{},
 				RecordingIDs:    []uuid.UUID{},
 				ExternalMediaID: uuid.FromStringOrNil("a5b2cc80-972e-11ed-86cc-a31ac34ae6bc"),
@@ -314,6 +323,84 @@ func Test_ConfbridgeSetExternalMediaID(t *testing.T) {
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeSetExternalMediaID(ctx, tt.confbridge.ID, tt.externalMediaID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			res, err := h.ConfbridgeGet(ctx, tt.confbridge.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConfbridgeSetFlags(t *testing.T) {
+
+	type test struct {
+		name       string
+		confbridge *confbridge.Confbridge
+		flags      []confbridge.Flag
+
+		responseCurTime string
+		expectRes       *confbridge.Confbridge
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("64a9668e-d709-11ed-a3f4-d75381c89660"),
+			},
+			[]confbridge.Flag{
+				confbridge.FlagNoAutoLeave,
+			},
+
+			"2023-01-18 03:22:18.995000",
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("64a9668e-d709-11ed-a3f4-d75381c89660"),
+				Flags: []confbridge.Flag{
+					confbridge.FlagNoAutoLeave,
+				},
+				ChannelCallIDs: map[string]uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+				TMCreate:       "2023-01-18 03:22:18.995000",
+				TMUpdate:       "2023-01-18 03:22:18.995000",
+				TMDelete:       DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			if err := h.ConfbridgeSetFlags(ctx, tt.confbridge.ID, tt.flags); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

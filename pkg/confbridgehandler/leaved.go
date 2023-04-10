@@ -44,7 +44,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 	}()
 
 	// check the confbridge type
-	if cb.Type == confbridge.TypeConnect && len(cb.ChannelCallIDs) == 1 {
+	if !h.flagExist(ctx, cb.Flags, confbridge.FlagNoAutoLeave) && cb.Type == confbridge.TypeConnect && len(cb.ChannelCallIDs) == 1 {
 		// kick the other channel
 		for _, joinedCallID := range cb.ChannelCallIDs {
 			go func(kickID uuid.UUID) {

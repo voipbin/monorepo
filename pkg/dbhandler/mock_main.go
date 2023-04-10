@@ -880,6 +880,20 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeSetExternalMediaID(ctx, id, exter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetExternalMediaID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetExternalMediaID), ctx, id, externalMediaID)
 }
 
+// ConfbridgeSetFlags mocks base method.
+func (m *MockDBHandler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeSetFlags", ctx, id, flags)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConfbridgeSetFlags indicates an expected call of ConfbridgeSetFlags.
+func (mr *MockDBHandlerMockRecorder) ConfbridgeSetFlags(ctx, id, flags interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetFlags", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetFlags), ctx, id, flags)
+}
+
 // ConfbridgeSetRecordingID mocks base method.
 func (m *MockDBHandler) ConfbridgeSetRecordingID(ctx context.Context, id, recordingID uuid.UUID) error {
 	m.ctrl.T.Helper()

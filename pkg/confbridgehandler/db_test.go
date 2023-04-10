@@ -39,11 +39,19 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("c08d26e6-9c73-11ed-ba48-ab8447f05e1d"),
 
 			&confbridge.Confbridge{
-				ID:             uuid.FromStringOrNil("c08d26e6-9c73-11ed-ba48-ab8447f05e1d"),
-				CustomerID:     uuid.FromStringOrNil("c050fd9c-9c73-11ed-85ab-e77970de1f56"),
-				Type:           confbridge.TypeConference,
-				RecordingIDs:   []uuid.UUID{},
+				ID:         uuid.FromStringOrNil("c08d26e6-9c73-11ed-ba48-ab8447f05e1d"),
+				CustomerID: uuid.FromStringOrNil("c050fd9c-9c73-11ed-85ab-e77970de1f56"),
+
+				Type:     confbridge.TypeConference,
+				BridgeID: "",
+				Flags:    []confbridge.Flag{},
+
 				ChannelCallIDs: map[string]uuid.UUID{},
+
+				RecordingID:  uuid.Nil,
+				RecordingIDs: []uuid.UUID{},
+
+				ExternalMediaID: uuid.Nil,
 			},
 		},
 	}

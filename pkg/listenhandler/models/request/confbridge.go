@@ -36,3 +36,17 @@ type V1DataConfbridgesIDRecordingStartPost struct {
 	EndOfKey     string           `json:"end_of_key,omitempty"`     // DTMF input to terminate recording. none, any, *, #
 	Duration     int              `json:"duration,omitempty"`       // Maximum duration of the recording, in seconds. 0 for no limit.
 }
+
+// V1DataConfbridgesIDFlagsPost is
+// v1 data type for
+// /v1/confbridges/<confbridge-id>/flags POST
+type V1DataConfbridgesIDFlagsPost struct {
+	Flag confbridge.Flag `json:"flag,omitempty"` //
+}
+
+// V1DataConfbridgesIDFlagsDelete is
+// v1 data type for
+// /v1/confbridges/<confbridge-id>/flags DELETE
+type V1DataConfbridgesIDFlagsDelete struct {
+	Flag confbridge.Flag `json:"flag,omitempty"` //
+}

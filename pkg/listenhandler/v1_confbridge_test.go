@@ -47,7 +47,7 @@ func Test_processV1ConfbridgePost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","customer_id":"a09c9c80-98f5-11ed-a7d4-eb729c335ae0","type":"connect","bridge_id":"73453fa8-3609-11ec-af18-075139856086","channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","customer_id":"a09c9c80-98f5-11ed-a7d4-eb729c335ae0","type":"connect","bridge_id":"73453fa8-3609-11ec-af18-075139856086","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 		{
@@ -70,7 +70,7 @@ func Test_processV1ConfbridgePost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7a995638-977d-11ec-bd1d-6f78844899df","customer_id":"b405bcb6-98f5-11ed-8c1e-439c0a428f05","type":"conference","bridge_id":"7b7c4d9e-977d-11ec-96d3-0780fcb609eb","channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"7a995638-977d-11ec-bd1d-6f78844899df","customer_id":"b405bcb6-98f5-11ed-8c1e-439c0a428f05","type":"conference","bridge_id":"7b7c4d9e-977d-11ec-96d3-0780fcb609eb","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		}}
 
@@ -316,7 +316,7 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"594c42fe-97ce-11ed-8d9f-ab7694f63546","customer_id":"474e1f30-98f7-11ed-8c35-dfd5f4d2a313","type":"","bridge_id":"","channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"594c42fe-97ce-11ed-8d9f-ab7694f63546","customer_id":"474e1f30-98f7-11ed-8c35-dfd5f4d2a313","type":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -379,7 +379,7 @@ func Test_processV1ConfbridgesIDExternalMediaDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"0a3c7a34-97cf-11ed-8adf-4b1653edac02","customer_id":"00000000-0000-0000-0000-000000000000","type":"","bridge_id":"","channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"0a3c7a34-97cf-11ed-8adf-4b1653edac02","customer_id":"00000000-0000-0000-0000-000000000000","type":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -455,7 +455,7 @@ func Test_processV1ConfbridgesIDRecordingStartPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"99cc7924-996e-11ed-bc44-6fda69332002","customer_id":"00000000-0000-0000-0000-000000000000","type":"","bridge_id":"","channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"99cc7924-996e-11ed-bc44-6fda69332002","customer_id":"00000000-0000-0000-0000-000000000000","type":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -517,7 +517,7 @@ func Test_processV1ConfbridgesIDRecordingStopPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9a30f390-996e-11ed-8b2b-133b9632eea1","customer_id":"00000000-0000-0000-0000-000000000000","type":"","bridge_id":"","channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"9a30f390-996e-11ed-8b2b-133b9632eea1","customer_id":"00000000-0000-0000-0000-000000000000","type":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -535,6 +535,134 @@ func Test_processV1ConfbridgesIDRecordingStopPost(t *testing.T) {
 				confbridgeHandler: mockConfbridge,
 			}
 			mockConfbridge.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(tt.responseCall, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ConfbridgesIDFlagsPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		responseConfbridge *confbridge.Confbridge
+
+		expectID   uuid.UUID
+		expectFlag confbridge.Flag
+		expectRes  *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/confbridges/68e83474-d7b7-11ed-a7fb-5b38b6216d42/flags",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"flag":"no_auto_leave"}`),
+			},
+
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("68e83474-d7b7-11ed-a7fb-5b38b6216d42"),
+			},
+
+			uuid.FromStringOrNil("68e83474-d7b7-11ed-a7fb-5b38b6216d42"),
+			confbridge.FlagNoAutoLeave,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"68e83474-d7b7-11ed-a7fb-5b38b6216d42","customer_id":"00000000-0000-0000-0000-000000000000","type":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				confbridgeHandler: mockConfbridge,
+			}
+			mockConfbridge.EXPECT().FlagAdd(gomock.Any(), tt.expectID, tt.expectFlag).Return(tt.responseConfbridge, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ConfbridgesIDFlagsDelete(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		responseConfbridge *confbridge.Confbridge
+
+		expectID   uuid.UUID
+		expectFlag confbridge.Flag
+		expectRes  *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/confbridges/4e812144-d7b8-11ed-b8c5-cb2f9c49fce6/flags",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: "application/json",
+				Data:     []byte(`{"flag":"no_auto_leave"}`),
+			},
+
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("4e812144-d7b8-11ed-b8c5-cb2f9c49fce6"),
+			},
+
+			uuid.FromStringOrNil("4e812144-d7b8-11ed-b8c5-cb2f9c49fce6"),
+			confbridge.FlagNoAutoLeave,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"4e812144-d7b8-11ed-b8c5-cb2f9c49fce6","customer_id":"00000000-0000-0000-0000-000000000000","type":"","bridge_id":"","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				confbridgeHandler: mockConfbridge,
+			}
+			mockConfbridge.EXPECT().FlagRemove(gomock.Any(), tt.expectID, tt.expectFlag).Return(tt.responseConfbridge, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

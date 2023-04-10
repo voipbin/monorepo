@@ -24,10 +24,17 @@ func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, co
 	cb := &confbridge.Confbridge{
 		ID:         id,
 		CustomerID: customerID,
-		Type:       confbridgeType,
 
-		RecordingIDs:   []uuid.UUID{},
+		Type:     confbridgeType,
+		BridgeID: "",
+		Flags:    []confbridge.Flag{},
+
 		ChannelCallIDs: map[string]uuid.UUID{},
+
+		RecordingID:  uuid.Nil,
+		RecordingIDs: []uuid.UUID{},
+
+		ExternalMediaID: uuid.Nil,
 	}
 
 	// create a confbridge
@@ -215,6 +222,29 @@ func (h *confbridgeHandler) Delete(ctx context.Context, id uuid.UUID) (*confbrid
 		return nil, errors.Wrap(err, "Could not get deleted confbridge.")
 	}
 	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, res)
+
+	return res, nil
+}
+
+// UpdateFlags updates the confbridge's flags
+func (h *confbridgeHandler) UpdateFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) (*confbridge.Confbridge, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateFlags",
+		"confbridge_id": id,
+		"flags":         flags,
+	})
+
+	if errSet := h.db.ConfbridgeSetFlags(ctx, id, flags); errSet != nil {
+		log.Errorf("Could not set flags. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not set flags")
+	}
+
+	// notify conference deleted event
+	res, err := h.db.ConfbridgeGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get deleted confbridge info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get deleted confbridge.")
+	}
 
 	return res, nil
 }

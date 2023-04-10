@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
@@ -17,8 +18,10 @@ const (
 	select
 		id,
 		customer_id,
+
 		type,
 		bridge_id,
+		flags,
 
 		channel_call_ids,
 
@@ -40,13 +43,16 @@ const (
 func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, error) {
 	var recordingIDs sql.NullString
 	var channelCallIDs sql.NullString
+	var flags sql.NullString
 
 	res := &confbridge.Confbridge{}
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+
 		&res.Type,
 		&res.BridgeID,
+		&flags,
 
 		&channelCallIDs,
 
@@ -82,6 +88,15 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 		res.RecordingIDs = []uuid.UUID{}
 	}
 
+	if flags.Valid {
+		if err := json.Unmarshal([]byte(flags.String), &res.Flags); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the flags. confbridgeGetFromRow. err: %v", err)
+		}
+	}
+	if res.Flags == nil {
+		res.Flags = []confbridge.Flag{}
+	}
+
 	return res, nil
 }
 
@@ -90,8 +105,10 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 	q := `insert into confbridges(
 		id,
 		customer_id,
+
 		type,
 		bridge_id,
+		flags,
 
 		channel_call_ids,
 
@@ -104,7 +121,8 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?, ?,
+		?, ?,
+		?, ?, ?,
 		?,
 		?, ?,
 		?,
@@ -112,9 +130,14 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		)
 	`
 
+	flags, err := json.Marshal(cb.Flags)
+	if err != nil {
+		return fmt.Errorf("could not marshal flags. ConfbridgeCreate. err: %v", err)
+	}
+
 	callChannelIDs, err := json.Marshal(cb.ChannelCallIDs)
 	if err != nil {
-		return fmt.Errorf("could not marshal calls. ConfbridgeCreate. err: %v", err)
+		return fmt.Errorf("could not marshal callChannelIDs. ConfbridgeCreate. err: %v", err)
 	}
 
 	recordingIDs, err := json.Marshal(cb.RecordingIDs)
@@ -125,8 +148,10 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 	_, err = h.db.Exec(q,
 		cb.ID.Bytes(),
 		cb.CustomerID.Bytes(),
+
 		cb.Type,
 		cb.BridgeID,
+		flags,
 
 		callChannelIDs,
 
@@ -410,6 +435,35 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 	_, err := h.db.Exec(q, key, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.confbridgeUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ConfbridgeSetFlags sets the confbridge's flags
+func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) error {
+
+	// prepare
+	q := `
+	update
+		confbridges
+	set
+		flags = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	tmp, err := json.Marshal(flags)
+	if err != nil {
+		return errors.Wrap(err, "could not marshal the flags")
+	}
+
+	_, err = h.db.Exec(q, tmp, h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConfbridgeSetFlags. err: %v", err)
 	}
 
 	// update the cache
