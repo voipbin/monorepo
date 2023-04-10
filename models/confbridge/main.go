@@ -8,7 +8,8 @@ type Confbridge struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 
 	Type     Type   `json:"type"`
-	BridgeID string `json:"bridge_id"`
+	BridgeID string `json:"bridge_id"` // bridge id
+	Flags    []Flag `json:"flags"`     // list of flags
 
 	ChannelCallIDs map[string]uuid.UUID `json:"channel_call_ids"` // channelid:callid
 
@@ -33,4 +34,12 @@ type Type string
 const (
 	TypeConnect    Type = "connect"    // the confbridge will be terminated if there is only 1 channel left in the bridge.
 	TypeConference Type = "conference" // the confbridge will not be terminated until someone sends a request to destroy it.
+)
+
+// Flag define
+type Flag string
+
+// list of flags
+const (
+	FlagNoAutoLeave Flag = "no_auto_leave" // blocks auto leave for connect type of confbridge. if this sets, it blocks the last call leave in the confbridge.
 )

@@ -53,6 +53,9 @@ type ConfbridgeHandler interface {
 
 	ExternalMediaStart(ctx context.Context, id uuid.UUID, externalHost string, encapsulation string, transport string, connectionType string, format string, direction string) (*confbridge.Confbridge, error)
 	ExternalMediaStop(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
+
+	FlagAdd(ctx context.Context, id uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error)
+	FlagRemove(ctx context.Context, id uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error)
 }
 
 // confbridgeHandler structure for service handle

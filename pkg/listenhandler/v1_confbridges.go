@@ -302,3 +302,83 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStopPost(ctx context.Cont
 
 	return res, nil
 }
+
+// processV1ConfbridgesIDFlagsPost handles /v1/confbridges/<confbridge-id>/flags POST request
+func (h *listenHandler) processV1ConfbridgesIDFlagsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDFlagsPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataConfbridgesIDFlagsPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	tmp, err := h.confbridgeHandler.FlagAdd(ctx, id, req.Flag)
+	if err != nil {
+		log.Errorf("Could not add the flag. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConfbridgesIDFlagsDelete handles /v1/confbridges/<confbridge-id>/flags DELETE request
+func (h *listenHandler) processV1ConfbridgesIDFlagsDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDFlagsDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataConfbridgesIDFlagsDelete
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	tmp, err := h.confbridgeHandler.FlagRemove(ctx, id, req.Flag)
+	if err != nil {
+		log.Errorf("Could not remove the flag. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", data, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

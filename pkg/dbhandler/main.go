@@ -91,6 +91,7 @@ type DBHandler interface {
 	ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error
 	ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
 	ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error
+	ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) error
 	ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 
 	// external media

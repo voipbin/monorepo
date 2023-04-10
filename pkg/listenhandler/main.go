@@ -82,6 +82,7 @@ var (
 	regV1ConfbridgesIDCallsID        = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
 	regV1ConfbridgesIDRecordingStart = regexp.MustCompile("/v1/confbridges/" + regUUID + "/recording_start$")
 	regV1ConfbridgesIDRecordingStop  = regexp.MustCompile("/v1/confbridges/" + regUUID + "/recording_stop$")
+	regV1ConfbridgesIDFlags          = regexp.MustCompile("/v1/confbridges/" + regUUID + "/flags$")
 
 	// external-medias
 	regV1ExternalMedias   = regexp.MustCompile("/v1/external-medias$")
@@ -423,6 +424,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ConfbridgesIDRecordingStop.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConfbridgesIDRecordingStopPost(ctx, m)
 		requestType = "/v1/confbridges/<confbridge-id>/recording_stop"
+
+	// POST /confbridges/<confbridge-id>/flags
+	case regV1ConfbridgesIDFlags.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConfbridgesIDFlagsPost(ctx, m)
+		requestType = "/v1/confbridges/<confbridge-id>/flags"
+
+	// DELETE /confbridges/<confbridge-id>/flags
+	case regV1ConfbridgesIDFlags.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1ConfbridgesIDFlagsDelete(ctx, m)
+		requestType = "/v1/confbridges/<confbridge-id>/flags"
 
 	////////////////////
 	// external-medias

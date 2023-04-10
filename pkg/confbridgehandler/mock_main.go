@@ -140,6 +140,36 @@ func (mr *MockConfbridgeHandlerMockRecorder) ExternalMediaStop(ctx, id interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExternalMediaStop", reflect.TypeOf((*MockConfbridgeHandler)(nil).ExternalMediaStop), ctx, id)
 }
 
+// FlagAdd mocks base method.
+func (m *MockConfbridgeHandler) FlagAdd(ctx context.Context, id uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlagAdd", ctx, id, flag)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlagAdd indicates an expected call of FlagAdd.
+func (mr *MockConfbridgeHandlerMockRecorder) FlagAdd(ctx, id, flag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlagAdd", reflect.TypeOf((*MockConfbridgeHandler)(nil).FlagAdd), ctx, id, flag)
+}
+
+// FlagRemove mocks base method.
+func (m *MockConfbridgeHandler) FlagRemove(ctx context.Context, id uuid.UUID, flag confbridge.Flag) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlagRemove", ctx, id, flag)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlagRemove indicates an expected call of FlagRemove.
+func (mr *MockConfbridgeHandlerMockRecorder) FlagRemove(ctx, id, flag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlagRemove", reflect.TypeOf((*MockConfbridgeHandler)(nil).FlagRemove), ctx, id, flag)
+}
+
 // Get mocks base method.
 func (m *MockConfbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
