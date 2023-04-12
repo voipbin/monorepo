@@ -43,7 +43,8 @@ type GroupcallHandler interface {
 		answerMethod groupcall.AnswerMethod,
 	) (*groupcall.Groupcall, error)
 	Answer(ctx context.Context, groupcallID uuid.UUID, answerCallID uuid.UUID) error
-	Hangup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+	Hangingup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+	DecreaseCallCount(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
 }
 
 // groupcallHandler structure for service handle

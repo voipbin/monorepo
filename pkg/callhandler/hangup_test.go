@@ -16,9 +16,11 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/groupcallhandler"
 )
 
 func Test_Hangup(t *testing.T) {
@@ -64,6 +66,23 @@ func Test_Hangup(t *testing.T) {
 				},
 			},
 		},
+		{
+			"has groupcall info",
+			&channel.Channel{
+				ID:          "09e6139c-d901-11ed-9ec4-c7733d43bc03",
+				AsteriskID:  "80:fa:5b:5e:da:81",
+				HangupCause: ari.ChannelCauseNormalClearing,
+			},
+			&call.Call{
+				ID:        uuid.FromStringOrNil("0a3988a6-d901-11ed-9e5a-af6485ff8915"),
+				ChannelID: "09e6139c-d901-11ed-9ec4-c7733d43bc03",
+				Status:    call.StatusProgressing,
+				Action: fmaction.Action{
+					Type: fmaction.TypeEcho,
+				},
+				GroupcallID: uuid.FromStringOrNil("0a660c00-d901-11ed-9d27-eb63c32e1192"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -78,14 +97,16 @@ func Test_Hangup(t *testing.T) {
 			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &callHandler{
-				utilHandler:    mockUtil,
-				reqHandler:     mockReq,
-				db:             mockDB,
-				notifyHandler:  mockNotfiy,
-				channelHandler: mockChannel,
-				bridgeHandler:  mockBridge,
+				utilHandler:      mockUtil,
+				reqHandler:       mockReq,
+				db:               mockDB,
+				notifyHandler:    mockNotfiy,
+				channelHandler:   mockChannel,
+				bridgeHandler:    mockBridge,
+				groupcallHandler: mockGroupcall,
 			}
 			ctx := context.Background()
 
@@ -97,6 +118,9 @@ func Test_Hangup(t *testing.T) {
 			tt.responseCall.Status = call.StatusHangup
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, gomock.Any())
+			if tt.responseCall.GroupcallID != uuid.Nil {
+				mockGroupcall.EXPECT().DecreaseCallCount(ctx, tt.responseCall.GroupcallID).Return(&groupcall.Groupcall{}, nil)
+			}
 			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
 
 			for _, chainedCallID := range tt.responseCall.ChainedCallIDs {

@@ -59,6 +59,15 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 		return err
 	}
 
+	// check the call is part of groupcall
+	if cc.GroupcallID != uuid.Nil {
+		log.Debugf("The call has groupcall id. Updating groupcall answer call info. groupcall_id: %s", cc.GroupcallID)
+		_, err := h.groupcallHandler.DecreaseCallCount(ctx, cc.GroupcallID)
+		if err != nil {
+			log.Errorf("Could not update the group dial answer call id. err: %v", err)
+		}
+	}
+
 	// send activeflow stop
 	log.Debugf("Deleting activeflow. activeflow_id: %s", c.ActiveFlowID)
 	_, err = h.reqHandler.FlowV1ActiveflowStop(ctx, c.ActiveFlowID)

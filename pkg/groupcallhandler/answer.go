@@ -39,7 +39,7 @@ func (h *groupcallHandler) Answer(ctx context.Context, groupcallID uuid.UUID, an
 	}
 
 	// hangup others
-	if errHangup := h.HangupOthers(ctx, res); errHangup != nil {
+	if errHangup := h.HangingupOthers(ctx, res); errHangup != nil {
 		// could not hangup the other calls. but we don't do any other actions here.
 		log.Errorf("Could not hang up the other calls correctly. err: %v", errHangup)
 	}

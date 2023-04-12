@@ -66,6 +66,21 @@ func (mr *MockGroupcallHandlerMockRecorder) Create(ctx, customerID, source, dest
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockGroupcallHandler)(nil).Create), ctx, customerID, source, destinations, callIDs, ringMethod, answerMethod)
 }
 
+// DecreaseCallCount mocks base method.
+func (m *MockGroupcallHandler) DecreaseCallCount(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DecreaseCallCount", ctx, id)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DecreaseCallCount indicates an expected call of DecreaseCallCount.
+func (mr *MockGroupcallHandlerMockRecorder) DecreaseCallCount(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecreaseCallCount", reflect.TypeOf((*MockGroupcallHandler)(nil).DecreaseCallCount), ctx, id)
+}
+
 // Delete mocks base method.
 func (m *MockGroupcallHandler) Delete(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
@@ -111,19 +126,19 @@ func (mr *MockGroupcallHandlerMockRecorder) Gets(ctx, customerID, size, token in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockGroupcallHandler)(nil).Gets), ctx, customerID, size, token)
 }
 
-// Hangup mocks base method.
-func (m *MockGroupcallHandler) Hangup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
+// Hangingup mocks base method.
+func (m *MockGroupcallHandler) Hangingup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Hangup", ctx, id)
+	ret := m.ctrl.Call(m, "Hangingup", ctx, id)
 	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Hangup indicates an expected call of Hangup.
-func (mr *MockGroupcallHandlerMockRecorder) Hangup(ctx, id interface{}) *gomock.Call {
+// Hangingup indicates an expected call of Hangingup.
+func (mr *MockGroupcallHandlerMockRecorder) Hangingup(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangup", reflect.TypeOf((*MockGroupcallHandler)(nil).Hangup), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangingup", reflect.TypeOf((*MockGroupcallHandler)(nil).Hangingup), ctx, id)
 }
 
 // Start mocks base method.

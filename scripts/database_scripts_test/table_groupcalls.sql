@@ -12,6 +12,8 @@ create table groupcalls(
   answer_call_id    binary(16),
   call_ids          json,
 
+  call_count  integer,
+
   -- timestamps
   tm_create datetime(6),
   tm_update datetime(6),

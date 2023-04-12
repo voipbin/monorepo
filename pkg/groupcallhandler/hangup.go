@@ -10,10 +10,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 )
 
-// HangupOthers hangs up the call except answered call.
-func (h *groupcallHandler) HangupOthers(ctx context.Context, gd *groupcall.Groupcall) error {
+// HangingupOthers hangs up the call except answered call.
+func (h *groupcallHandler) HangingupOthers(ctx context.Context, gd *groupcall.Groupcall) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "HangupOthers",
+		"func":      "HangingupOthers",
 		"groupcall": gd,
 	})
 
@@ -31,10 +31,10 @@ func (h *groupcallHandler) HangupOthers(ctx context.Context, gd *groupcall.Group
 	return nil
 }
 
-// Hangup hangs up the groupcalls.
-func (h *groupcallHandler) Hangup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
+// Hangingup hangs up the groupcalls.
+func (h *groupcallHandler) Hangingup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "Hangup",
+		"func":         "Hangingup",
 		"groupcall_id": id,
 	})
 
