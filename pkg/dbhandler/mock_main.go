@@ -965,6 +965,20 @@ func (mr *MockDBHandlerMockRecorder) GroupcallCreate(ctx, data interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallCreate", reflect.TypeOf((*MockDBHandler)(nil).GroupcallCreate), ctx, data)
 }
 
+// GroupcallDecreaseCallCount mocks base method.
+func (m *MockDBHandler) GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallDecreaseCallCount", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupcallDecreaseCallCount indicates an expected call of GroupcallDecreaseCallCount.
+func (mr *MockDBHandlerMockRecorder) GroupcallDecreaseCallCount(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallDecreaseCallCount", reflect.TypeOf((*MockDBHandler)(nil).GroupcallDecreaseCallCount), ctx, id)
+}
+
 // GroupcallDelete mocks base method.
 func (m *MockDBHandler) GroupcallDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()

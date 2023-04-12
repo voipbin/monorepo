@@ -41,9 +41,14 @@ func (h *groupcallHandler) Create(
 
 		Source:       source,
 		Destinations: destinations,
-		CallIDs:      callIDs,
+
 		RingMethod:   ringMethod,
 		AnswerMethod: answerMethod,
+
+		AnswerCallID: uuid.Nil,
+		CallIDs:      callIDs,
+
+		CallCount: len(callIDs),
 	}
 
 	if errCreate := h.db.GroupcallCreate(ctx, tmp); errCreate != nil {
@@ -106,7 +111,7 @@ func (h *groupcallHandler) UpdateAnswerCallID(ctx context.Context, id uuid.UUID,
 		log.Errorf("Could not get updated groupcall info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get updated groupcall info.")
 	}
-	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, res)
+	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, res)
 
 	return res, nil
 }
@@ -128,7 +133,33 @@ func (h *groupcallHandler) Delete(ctx context.Context, id uuid.UUID) (*groupcall
 		log.Errorf("Could not get deleted groupcall info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get deleted groupcall info.")
 	}
-	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, res)
+	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallDeleted, res)
+
+	return res, nil
+}
+
+// DecreaseCallCount decreases the groupcall's call count.
+func (h *groupcallHandler) DecreaseCallCount(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "DecreaseCallCount",
+		"groupcall_id": id,
+	})
+
+	if errDecrease := h.db.GroupcallDecreaseCallCount(ctx, id); errDecrease != nil {
+		log.Errorf("Could not decrease the groupcall call_count. err: %v", errDecrease)
+		return nil, errors.Wrap(errDecrease, "Could not decrease the groupcall call_count.")
+	}
+
+	res, err := h.db.GroupcallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get decreased groupcall info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get decreased groupcall info.")
+	}
+
+	if res.CallCount <= 0 {
+		log.Debugf("Groupcall's call count is 0. groupcall_id: %s", res.ID)
+		h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, res)
+	}
 
 	return res, nil
 }

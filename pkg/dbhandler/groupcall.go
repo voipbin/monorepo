@@ -29,6 +29,8 @@ const (
 		answer_call_id,
 		call_ids,
 
+		call_count,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -56,6 +58,8 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 
 		&res.AnswerCallID,
 		&callIDs,
+
+		&res.CallCount,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -110,6 +114,8 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		answer_call_id,
 		call_ids,
 
+		call_count,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -118,6 +124,7 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		?, ?,
 		?, ?,
 		?, ?,
+		?,
 		?, ?, ?
 		)`
 
@@ -157,6 +164,8 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 
 		data.AnswerCallID.Bytes(),
 		tmpCallIDs,
+
+		data.CallCount,
 
 		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
@@ -323,6 +332,29 @@ func (h *handler) GroupcallDelete(ctx context.Context, id uuid.UUID) error {
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. GroupcallDelete. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.groupcallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// GroupcallDecreaseCallCount decreases the call count
+func (h *handler) GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) error {
+	//prepare
+	q := `
+	update groupcalls set
+		call_count = call_count - 1,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. GroupcallDecreaseCallCount. err: %v", err)
 	}
 
 	// update the cache

@@ -71,7 +71,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"05a4617c-bb41-11ed-8591-d72108ff17fd","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"05a4617c-bb41-11ed-8591-d72108ff17fd","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"call_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -149,7 +149,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"d8896324-bd7d-11ed-bdea-5b96b47c0bf4","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"d8ae01d4-bd7d-11ed-b570-236fa9212eba","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"d8896324-bd7d-11ed-bdea-5b96b47c0bf4","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"call_count":0,"tm_create":"","tm_update":"","tm_delete":""},{"id":"d8ae01d4-bd7d-11ed-b570-236fa9212eba","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"call_count":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 	}
@@ -208,7 +208,7 @@ func Test_processV1GroupcallsIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6b59c9a6-bd7d-11ed-98cc-536b0b571118","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"6b59c9a6-bd7d-11ed-98cc-536b0b571118","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"call_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -267,7 +267,7 @@ func Test_processV1GroupcallsIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"922b2b46-bd7e-11ed-8754-3772984da05b","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"922b2b46-bd7e-11ed-8754-3772984da05b","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"call_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -326,7 +326,7 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"b055775c-bd7e-11ed-a2b8-1f2c8369029a","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"b055775c-bd7e-11ed-a2b8-1f2c8369029a","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","source":null,"destinations":null,"ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"call_count":0,"tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -346,7 +346,7 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().Hangup(gomock.Any(), tt.expectID).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Hangingup(gomock.Any(), tt.expectID).Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

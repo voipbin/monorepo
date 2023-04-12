@@ -19,6 +19,8 @@ type Groupcall struct {
 	AnswerCallID uuid.UUID   `json:"answer_call_id"` // valid only when the answered_method  is hangup others
 	CallIDs      []uuid.UUID `json:"call_ids"`
 
+	CallCount int `json:"call_count"` // represent left number of calls
+
 	// timestamp
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

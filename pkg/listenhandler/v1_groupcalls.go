@@ -183,7 +183,7 @@ func (h *listenHandler) processV1GroupcallsIDHangupPost(ctx context.Context, m *
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	tmp, err := h.groupcallHandler.Hangup(ctx, id)
+	tmp, err := h.groupcallHandler.Hangingup(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get groupcall info. err: %v", err)
 		return simpleResponse(500), nil

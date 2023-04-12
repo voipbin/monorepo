@@ -58,7 +58,7 @@ func Test_Answer(t *testing.T) {
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
 			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.groupcallID, tt.answerCallID).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallAnswered, tt.responseGroupcall)
+			mockNotify.EXPECT().PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			if errAnswer := h.Answer(ctx, tt.groupcallID, tt.answerCallID); errAnswer != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errAnswer)
