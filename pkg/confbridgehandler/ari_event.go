@@ -52,3 +52,13 @@ func (h *confbridgeHandler) ARIChannelEnteredBridge(ctx context.Context, cn *cha
 
 	return h.Joined(ctx, cn, br)
 }
+
+// ARIBridgeDestroyed handles BridgeDestroyed ARI event for conference types.
+func (h *confbridgeHandler) ARIBridgeDestroyed(ctx context.Context, br *bridge.Bridge) error {
+
+	if br.ReferenceType != bridge.ReferenceTypeConfbridge {
+		return nil
+	}
+
+	return h.Terminate(ctx, br.ReferenceID)
+}

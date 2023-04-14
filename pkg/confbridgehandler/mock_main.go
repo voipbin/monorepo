@@ -39,6 +39,20 @@ func (m *MockConfbridgeHandler) EXPECT() *MockConfbridgeHandlerMockRecorder {
 	return m.recorder
 }
 
+// ARIBridgeDestroyed mocks base method.
+func (m *MockConfbridgeHandler) ARIBridgeDestroyed(ctx context.Context, br *bridge.Bridge) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIBridgeDestroyed", ctx, br)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ARIBridgeDestroyed indicates an expected call of ARIBridgeDestroyed.
+func (mr *MockConfbridgeHandlerMockRecorder) ARIBridgeDestroyed(ctx, br interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIBridgeDestroyed", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIBridgeDestroyed), ctx, br)
+}
+
 // ARIChannelEnteredBridge mocks base method.
 func (m *MockConfbridgeHandler) ARIChannelEnteredBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
 	m.ctrl.T.Helper()
@@ -108,6 +122,21 @@ func (m *MockConfbridgeHandler) Create(ctx context.Context, customerID uuid.UUID
 func (mr *MockConfbridgeHandlerMockRecorder) Create(ctx, customerID, confbridgeType interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConfbridgeHandler)(nil).Create), ctx, customerID, confbridgeType)
+}
+
+// Delete mocks base method.
+func (m *MockConfbridgeHandler) Delete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockConfbridgeHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockConfbridgeHandler)(nil).Delete), ctx, id)
 }
 
 // ExternalMediaStart mocks base method.
@@ -285,18 +314,19 @@ func (mr *MockConfbridgeHandlerMockRecorder) Ring(ctx, id interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ring", reflect.TypeOf((*MockConfbridgeHandler)(nil).Ring), ctx, id)
 }
 
-// Terminate mocks base method.
-func (m *MockConfbridgeHandler) Terminate(ctx context.Context, id uuid.UUID) error {
+// Terminating mocks base method.
+func (m *MockConfbridgeHandler) Terminating(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Terminate", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Terminating", ctx, id)
+	ret0, _ := ret[0].(*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// Terminate indicates an expected call of Terminate.
-func (mr *MockConfbridgeHandlerMockRecorder) Terminate(ctx, id interface{}) *gomock.Call {
+// Terminating indicates an expected call of Terminating.
+func (mr *MockConfbridgeHandlerMockRecorder) Terminating(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockConfbridgeHandler)(nil).Terminate), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminating", reflect.TypeOf((*MockConfbridgeHandler)(nil).Terminating), ctx, id)
 }
 
 // UpdateExternalMediaID mocks base method.

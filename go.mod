@@ -10,12 +10,12 @@ require (
 	github.com/joonix/log v0.0.0-20230221083239-7988383bab32
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.14.0
+	github.com/prometheus/client_golang v1.15.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/smotes/purse v1.0.1
 	github.com/ttacon/libphonenumber v1.2.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230409095332-8254bb99493d
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230410171824-6095726fc537
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230409092659-5068ec8c1d46
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9

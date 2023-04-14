@@ -577,6 +577,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_golang v1.14.0 h1:nJdhIvne2eSX/XRAFV9PcvFFRbrjbcTUj0VP62TMhnw=
 github.com/prometheus/client_golang v1.14.0/go.mod h1:8vpkKitgIVNcqrRBWh1C4TIUQgYNtG/XQE4E/Zae36Y=
+github.com/prometheus/client_golang v1.15.0 h1:5fCgGYogn0hFdhyhLbw7hEsWxufKtY9klyvdNfFlFhM=
+github.com/prometheus/client_golang v1.15.0/go.mod h1:e9yaBhRPU2pPNsZwE+JdQl0KEt1N9XgF6zxWmaC0xOk=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/prometheus/client_model v0.2.0/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/prometheus/client_model v0.3.0 h1:UBgGFHqYdG/TPFD1B1ogZywDqEkwp3fBMvqdiQ7Xew4=
@@ -644,6 +646,8 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230402141158-1104f03d
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230402141158-1104f03d9284/go.mod h1:Z4K85bsNjmlLmUG0yEsqo4tJgnp5quCplwR+Hw8V8+Q=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230409095332-8254bb99493d h1:K5t0g479AcWjnURbrs2+foniqYHOQa6rHuCgo1ryhAY=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230409095332-8254bb99493d/go.mod h1:ZQZp3Oduw0Vc63JsXFPlZ36xJWOw3GwpfpDjE68LxKk=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230410171824-6095726fc537 h1:nWLsf+NhljoXVgbCa6p1JXNYtgOaGlyHmESjmqdeLCE=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230410171824-6095726fc537/go.mod h1:UdCXu3CCkdrSreBmpZaJDk1yFAvf4bQz2av9o9BLHcE=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa h1:PP+lN42xD4htGHyiwpzki5O9qhYqJQoO2vvbsjslr9g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa/go.mod h1:ZmH0dxGw24CBuZhNZO4JYFTFfY3Ti+aeQkMHG97Swas=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20220722162017-92d117261a6a h1:6tQaB5eQ8du+G2tXWGrm1E9oI2fPZQT+slbcYFcVqPE=

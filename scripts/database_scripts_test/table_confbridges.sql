@@ -4,6 +4,7 @@ create table confbridges(
   customer_id   binary(16),   -- customer id
 
   type          varchar(255), -- type
+  status        varchar(16),  -- status
   bridge_id     varchar(255), -- conference's bridge id
   flags         json,
 

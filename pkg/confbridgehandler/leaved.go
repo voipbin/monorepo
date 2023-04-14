@@ -29,7 +29,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 	})
 	log.Debug("Leaved channel from the confbridge.")
 
-	cb, err := h.RemoveChannelCallID(ctx, confbridgeID, cn.ID)
+	cb, err := h.RemoveChannelCallID(ctx, confbridgeID, cn.ID, callID)
 	if err != nil {
 		log.Errorf("Could not remove the channel info from the confbridge. err: %v", err)
 		return errors.Wrap(err, "could not remove the channel info from the confbridge")
@@ -43,25 +43,18 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		}
 	}()
 
-	// check the confbridge type
-	if !h.flagExist(ctx, cb.Flags, confbridge.FlagNoAutoLeave) && cb.Type == confbridge.TypeConnect && len(cb.ChannelCallIDs) == 1 {
-		// kick the other channel
-		for _, joinedCallID := range cb.ChannelCallIDs {
-			go func(kickID uuid.UUID) {
-				log.Debugf("Kicking out the call from the confbridge. call_id: %s", kickID)
-				if errKick := h.reqHandler.CallV1ConfbridgeCallKick(ctx, cb.ID, kickID); errKick != nil {
-					log.Errorf("Could not kick the call from the confbridge. err: %v", errKick)
-				}
-			}(joinedCallID)
-		}
+	if cb.Type == confbridge.TypeConference {
+		// nothing to do
+		return nil
 	}
 
-	// Publish the event
-	evt := &confbridge.EventConfbridgeLeaved{
-		Confbridge:   *cb,
-		LeavedCallID: callID,
+	if len(cb.ChannelCallIDs) != 1 || !h.flagExist(ctx, cb.Flags, confbridge.FlagNoAutoLeave) {
+		_, err := h.Terminating(ctx, cb.ID)
+		if err != nil {
+			log.Errorf("Could not terminating the confbridge. err: %v", err)
+			return errors.Wrap(err, "could not terminating the confbridge")
+		}
 	}
-	h.notifyHandler.PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, evt)
 
 	return nil
 }

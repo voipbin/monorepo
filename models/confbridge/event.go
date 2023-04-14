@@ -4,10 +4,12 @@ import "github.com/gofrs/uuid"
 
 // list of confbridge event types
 const (
-	EventTypeConfbridgeCreated string = "confbridge_created" // confbridge created
-	EventTypeConfbridgeDeleted string = "confbridge_deleted" // confbridge deleted
-	EventTypeConfbridgeJoined  string = "confbridge_joined"  // EventConfbridgeJoined, the call has joined to the confbridge
-	EventTypeConfbridgeLeaved  string = "confbridge_leaved"  // EventConfbridgeLeaved, the call has left from the confbridge
+	EventTypeConfbridgeCreated     string = "confbridge_created" // confbridge created
+	EventTypeConfbridgeDeleted     string = "confbridge_deleted" // confbridge deleted
+	EventTypeConfbridgeTerminating string = "confbridge_terminating"
+	EventTypeConfbridgeTerminated  string = "confbridge_terminated" // confbridge terminated
+	EventTypeConfbridgeJoined      string = "confbridge_joined"     // EventConfbridgeJoined, the call has joined to the confbridge
+	EventTypeConfbridgeLeaved      string = "confbridge_leaved"     // EventConfbridgeLeaved, the call has left from the confbridge
 )
 
 // EventConfbridgeLeaved event struct for confbridge leaved

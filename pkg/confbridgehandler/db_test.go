@@ -43,6 +43,7 @@ func Test_Create(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("c050fd9c-9c73-11ed-85ab-e77970de1f56"),
 
 				Type:     confbridge.TypeConference,
+				Status:   confbridge.StatusProgressing,
 				BridgeID: "",
 				Flags:    []confbridge.Flag{},
 
@@ -340,6 +341,72 @@ func Test_Delete(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, tt.responseConfbridge)
 
 			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseConfbridge) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConfbridge, res)
+			}
+		})
+	}
+}
+
+func Test_UpdateStatus(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id     uuid.UUID
+		status confbridge.Status
+
+		responseConfbridge *confbridge.Confbridge
+		expectEventType    string
+	}{
+		{
+			name: "normal",
+
+			id:     uuid.FromStringOrNil("49331904-83e7-4cd9-a9e2-75c7406554cf"),
+			status: confbridge.StatusTerminating,
+
+			responseConfbridge: &confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("49331904-83e7-4cd9-a9e2-75c7406554cf"),
+			},
+			expectEventType: confbridge.EventTypeConfbridgeTerminating,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &confbridgeHandler{
+				utilHandler:    mockUtil,
+				db:             mockDB,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				cache:          mockCache,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.id, tt.status).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, tt.expectEventType, tt.responseConfbridge)
+
+			res, err := h.UpdateStatus(ctx, tt.id, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

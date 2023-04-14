@@ -35,15 +35,17 @@ type ConfbridgeHandler interface {
 	ARIChannelEnteredBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	ARIStasisStart(ctx context.Context, cn *channel.Channel) error
+	ARIBridgeDestroyed(ctx context.Context, br *bridge.Bridge) error
 
 	Create(ctx context.Context, customerID uuid.UUID, confbridgeType confbridge.Type) (*confbridge.Confbridge, error)
+	Delete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error)
 	Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	Join(ctx context.Context, confbridgeID, callID uuid.UUID) error
 	Joined(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	Kick(ctx context.Context, id, callID uuid.UUID) error
 	Leaved(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
-	Terminate(ctx context.Context, id uuid.UUID) error
+	Terminating(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 
 	Ring(ctx context.Context, id uuid.UUID) error
 	Answer(ctx context.Context, id uuid.UUID) error

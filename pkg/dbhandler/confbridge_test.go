@@ -46,6 +46,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 			&confbridge.Confbridge{
 				ID:       uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
 				Type:     confbridge.TypeConnect,
+				Status:   confbridge.StatusProgressing,
 				BridgeID: "f4959208-972c-11ed-be90-6b3eb4bef16d",
 				Flags: []confbridge.Flag{
 					confbridge.FlagNoAutoLeave,
@@ -65,6 +66,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 			&confbridge.Confbridge{
 				ID:       uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
 				Type:     confbridge.TypeConnect,
+				Status:   confbridge.StatusProgressing,
 				BridgeID: "f4959208-972c-11ed-be90-6b3eb4bef16d",
 				Flags: []confbridge.Flag{
 					confbridge.FlagNoAutoLeave,
@@ -401,6 +403,82 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeSetFlags(ctx, tt.confbridge.ID, tt.flags); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			res, err := h.ConfbridgeGet(ctx, tt.confbridge.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConfbridgeSetStatus(t *testing.T) {
+
+	type test struct {
+		name       string
+		confbridge *confbridge.Confbridge
+		status     confbridge.Status
+
+		responseCurTime string
+		expectRes       *confbridge.Confbridge
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&confbridge.Confbridge{
+				ID:     uuid.FromStringOrNil("623042b0-6193-42dc-9b80-299f12b3df24"),
+				Status: confbridge.StatusProgressing,
+			},
+			confbridge.StatusTerminating,
+
+			"2023-01-18 03:22:18.995000",
+			&confbridge.Confbridge{
+				ID:             uuid.FromStringOrNil("623042b0-6193-42dc-9b80-299f12b3df24"),
+				Status:         confbridge.StatusTerminating,
+				Flags:          []confbridge.Flag{},
+				ChannelCallIDs: map[string]uuid.UUID{},
+				RecordingIDs:   []uuid.UUID{},
+				TMCreate:       "2023-01-18 03:22:18.995000",
+				TMUpdate:       "2023-01-18 03:22:18.995000",
+				TMDelete:       DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
+			if err := h.ConfbridgeSetStatus(ctx, tt.confbridge.ID, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
