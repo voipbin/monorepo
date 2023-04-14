@@ -144,10 +144,12 @@ const (
 	resourceAstChannelsExternalMedia resource = "ast/channels/externalmedia"
 	resourceAstChannelsHangup        resource = "ast/channels/hangup"
 	resourceAstChannelsHold          resource = "ast/channels/hold"
+	resourceAstChannelsMOH           resource = "ast/channels/moh"
+	resourceAstChannelsMute          resource = "ast/channels/mute"
 	resourceAstChannelsPlay          resource = "ast/channels/play"
 	resourceAstChannelsRecord        resource = "ast/channels/record"
+	resourceAstChannelsSilence       resource = "ast/channels/silence"
 	resourceAstChannelsSnoop         resource = "ast/channels/snoop"
-	resourceAstChannelsUnhold        resource = "ast/channels/unhold"
 	resourceAstChannelsVar           resource = "ast/channels/var"
 
 	resourceAstPlaybacks resource = "ast/playbacks"
@@ -176,9 +178,9 @@ const (
 	resourceCallCallsCallIDTalk            resource = "call/calls/<call-id>/talk"
 	resourceCallCallsCallIDPlay            resource = "call/calls/<call-id>/play"
 	resourceCallCallsCallIDHold            resource = "call/calls/<call-id>/hold"
-	resourceCallCallsCallIDUnhold          resource = "call/calls/<call-id>/unhold"
+	resourceCallCallsCallIDMOH             resource = "call/calls/<call-id>/moh"
 	resourceCallCallsCallIDMute            resource = "call/calls/<call-id>/mute"
-	resourceCallCallsCallIDUnmute          resource = "call/calls/<call-id>/unmute"
+	resourceCallCallsCallIDSilence         resource = "call/calls/<call-id>/silence"
 	resourceCallChannelsHealth             resource = "call/channels/health"
 	resourceCallConfbridges                resource = "call/confbridges"
 	resourceCallConfbridgesIDExternalMedia resource = "call/confbridges/<confbridge-id>/external-media"
@@ -425,14 +427,15 @@ type RequestHandler interface {
 
 	// call-manager confbridge
 	CallV1ConfbridgeCreate(ctx context.Context, customerID uuid.UUID, confbridgeType cmconfbridge.Type) (*cmconfbridge.Confbridge, error)
-	CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) error
+	CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeCallKick(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
 	CallV1ConfbridgeCallAdd(ctx context.Context, confbridgeID uuid.UUID, callID uuid.UUID) error
 	CallV1ConfbridgeFlagAdd(ctx context.Context, confbridgeID uuid.UUID, flag cmconfbridge.Flag) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeFlagRemove(ctx context.Context, confbridgeID uuid.UUID, flag cmconfbridge.Flag) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeGet(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeRecordingStart(ctx context.Context, confbridgeID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmconfbridge.Confbridge, error)
-	CallV1ConfbridgeRecordingStop(ctx context.Context, callID uuid.UUID) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeRecordingStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeTerminate(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 
 	// call-manager external-media
 	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)

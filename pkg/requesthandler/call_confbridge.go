@@ -25,39 +25,44 @@ func (r *requestHandler) CallV1ConfbridgeCreate(ctx context.Context, customerID 
 		return nil, err
 	}
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		return nil, fmt.Errorf("no response found")
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var cb cmconfbridge.Confbridge
-	if errUnmarshal := json.Unmarshal([]byte(res.Data), &cb); errUnmarshal != nil {
+	var res cmconfbridge.Confbridge
+	if errUnmarshal := json.Unmarshal([]byte(tmp.Data), &res); errUnmarshal != nil {
 		return nil, errUnmarshal
 	}
 
-	return &cb, nil
+	return &res, nil
 }
 
 // CallV1ConfbridgeDelete sends the request for confbridge delete.
-func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) error {
+func (r *requestHandler) CallV1ConfbridgeDelete(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
 	uri := fmt.Sprintf("/v1/confbridges/%s", confbridgeID)
 
-	res, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridges, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
-		return err
-	case res == nil:
-		return fmt.Errorf("no response found")
-	case res.StatusCode > 299:
-		return fmt.Errorf("response code: %d", res.StatusCode)
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("no response found")
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	return nil
+	var res cmconfbridge.Confbridge
+	if errUnmarshal := json.Unmarshal([]byte(tmp.Data), &res); errUnmarshal != nil {
+		return nil, errUnmarshal
+	}
+
+	return &res, nil
 }
 
 // CallV1ConfbridgeGet sends a request to call-manager
@@ -304,6 +309,31 @@ func (r *requestHandler) CallV1ConfbridgeFlagRemove(ctx context.Context, confbri
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceCallConfbridgesRecordingStop, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmconfbridge.Confbridge
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallV1ConfbridgeTerminate sends a request to call-manager
+// to terminate the confbridge.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1ConfbridgeTerminate(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error) {
+	uri := fmt.Sprintf("/v1/confbridges/%s/terminate", confbridgeID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges/<confbridge-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err

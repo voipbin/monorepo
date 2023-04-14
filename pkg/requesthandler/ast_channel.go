@@ -441,7 +441,7 @@ func (r *requestHandler) AstChannelRing(ctx context.Context, asteriskID string, 
 func (r *requestHandler) AstChannelHoldOn(ctx context.Context, asteriskID string, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/hold", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsHold, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -455,7 +455,7 @@ func (r *requestHandler) AstChannelHoldOn(ctx context.Context, asteriskID string
 func (r *requestHandler) AstChannelHoldOff(ctx context.Context, asteriskID string, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/hold", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsHold, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -469,7 +469,7 @@ func (r *requestHandler) AstChannelHoldOff(ctx context.Context, asteriskID strin
 func (r *requestHandler) AstChannelMusicOnHoldOn(ctx context.Context, asteriskID string, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/moh", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsMOH, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -483,7 +483,7 @@ func (r *requestHandler) AstChannelMusicOnHoldOn(ctx context.Context, asteriskID
 func (r *requestHandler) AstChannelMusicOnHoldOff(ctx context.Context, asteriskID string, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/moh", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsMOH, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -497,7 +497,7 @@ func (r *requestHandler) AstChannelMusicOnHoldOff(ctx context.Context, asteriskI
 func (r *requestHandler) AstChannelSilenceOn(ctx context.Context, asteriskID string, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/silence", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsSilence, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -511,7 +511,7 @@ func (r *requestHandler) AstChannelSilenceOn(ctx context.Context, asteriskID str
 func (r *requestHandler) AstChannelSilenceOff(ctx context.Context, asteriskID string, channelID string) error {
 	url := fmt.Sprintf("/ari/channels/%s/silence", channelID)
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsSilence, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err
@@ -537,7 +537,7 @@ func (r *requestHandler) AstChannelMuteOn(ctx context.Context, asteriskID string
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodPost, resourceAstChannelsMute, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err
@@ -563,7 +563,7 @@ func (r *requestHandler) AstChannelMuteOff(ctx context.Context, asteriskID strin
 		return err
 	}
 
-	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsRecord, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestAst(ctx, asteriskID, url, rabbitmqhandler.RequestMethodDelete, resourceAstChannelsMute, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return err

@@ -32,6 +32,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_golang v1.14.0 h1:nJdhIvne2eSX/XRAFV9PcvFFRbrjbcTUj0VP62TMhnw=
 github.com/prometheus/client_golang v1.14.0/go.mod h1:8vpkKitgIVNcqrRBWh1C4TIUQgYNtG/XQE4E/Zae36Y=
+github.com/prometheus/client_golang v1.15.0 h1:5fCgGYogn0hFdhyhLbw7hEsWxufKtY9klyvdNfFlFhM=
+github.com/prometheus/client_golang v1.15.0/go.mod h1:e9yaBhRPU2pPNsZwE+JdQl0KEt1N9XgF6zxWmaC0xOk=
 github.com/prometheus/client_model v0.3.0 h1:UBgGFHqYdG/TPFD1B1ogZywDqEkwp3fBMvqdiQ7Xew4=
 github.com/prometheus/client_model v0.3.0/go.mod h1:LDGWKZIo7rky3hgvBe+caln+Dr3dPggB5dvjtD7w9+w=
 github.com/prometheus/common v0.39.0 h1:oOyhkDq05hPZKItWVBkJ6g6AtGxi+fy7F4JvUV8uhsI=
@@ -91,6 +93,8 @@ gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230404045350-4bf44d1bae
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230404045350-4bf44d1bae33/go.mod h1:yst6anndKgs9QSS9qZTDckWoUPadVUQq31THYCoUShg=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230410162747-8aee45ac187e h1:QI02iJtnthg4II7JkBr6Mpzq2uuEZ4f5foedIfiNNHQ=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230410162747-8aee45ac187e/go.mod h1:m1e8NXigFJS4WnBrCuPIDbRjFAJc5auM25+AKeTU1aM=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230414171426-e3c0d72dbd93 h1:Ne4yAYau8pzG6zdujoFYCk7m9m1cUNfUQj4lUqr/PlM=
+gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230414171426-e3c0d72dbd93/go.mod h1:tjK/h+l5op2noeGpEj6uyyf/qcr7yZtLGSwbJj+BCH0=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20221207172609-98006dd828f9 h1:OyChNsS6NknbNfiZi6iC28/Tt9lbaLUeMubUst+Fh7c=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20221207172609-98006dd828f9/go.mod h1:RSdWVAc9zm0kkPKM4muy1D91nKVJI61AA52a9efnYYc=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230227073237-63773bf91cae h1:gVoOMxFj4PGPWfL8Np0Ysw601DaggHLb+FZ0jp5fJjU=
