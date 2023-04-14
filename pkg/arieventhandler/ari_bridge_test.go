@@ -13,6 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/confbridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -179,19 +180,22 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 
 			h := eventHandler{
-				db:            mockDB,
-				rabbitSock:    mockSock,
-				reqHandler:    mockRequest,
-				callHandler:   mockCall,
-				bridgeHandler: mockBridge,
+				db:                mockDB,
+				rabbitSock:        mockSock,
+				reqHandler:        mockRequest,
+				callHandler:       mockCall,
+				bridgeHandler:     mockBridge,
+				confbridgeHandler: mockConfbridge,
 			}
 
 			ctx := context.Background()
 
 			mockBridge.EXPECT().Get(ctx, tt.expectBridgeID).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().Delete(ctx, tt.expectBridgeID).Return(tt.responseBridge, nil)
+			mockConfbridge.EXPECT().ARIBridgeDestroyed(ctx, tt.responseBridge).Return(nil)
 
 			if err := h.EventHandlerBridgeDestroyed(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

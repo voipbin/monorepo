@@ -93,6 +93,7 @@ type DBHandler interface {
 	ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) error
 	ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) error
 	ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
+	ConfbridgeSetStatus(ctx context.Context, id uuid.UUID, status confbridge.Status) error
 
 	// external media
 	ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error

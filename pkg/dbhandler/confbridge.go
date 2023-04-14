@@ -20,6 +20,7 @@ const (
 		customer_id,
 
 		type,
+		status,
 		bridge_id,
 		flags,
 
@@ -51,6 +52,7 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 		&res.CustomerID,
 
 		&res.Type,
+		&res.Status,
 		&res.BridgeID,
 		&flags,
 
@@ -107,6 +109,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		customer_id,
 
 		type,
+		status,
 		bridge_id,
 		flags,
 
@@ -122,7 +125,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		tm_delete
 	) values(
 		?, ?,
-		?, ?, ?,
+		?, ?, ?, ?,
 		?,
 		?, ?,
 		?,
@@ -150,6 +153,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 		cb.CustomerID.Bytes(),
 
 		cb.Type,
+		cb.Status,
 		cb.BridgeID,
 		flags,
 
@@ -464,6 +468,28 @@ func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []
 	_, err = h.db.Exec(q, tmp, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetFlags. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.confbridgeUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// ConfbridgeSetStatus sets the status
+func (h *handler) ConfbridgeSetStatus(ctx context.Context, id uuid.UUID, status confbridge.Status) error {
+	//prepare
+	q := `
+	update confbridges set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConfbridgeSetStatus. err: %v", err)
 	}
 
 	// update the cache

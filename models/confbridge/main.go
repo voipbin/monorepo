@@ -8,6 +8,7 @@ type Confbridge struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 
 	Type     Type   `json:"type"`
+	Status   Status `json:"status"`
 	BridgeID string `json:"bridge_id"` // bridge id
 	Flags    []Flag `json:"flags"`     // list of flags
 
@@ -34,6 +35,16 @@ type Type string
 const (
 	TypeConnect    Type = "connect"    // the confbridge will be terminated if there is only 1 channel left in the bridge.
 	TypeConference Type = "conference" // the confbridge will not be terminated until someone sends a request to destroy it.
+)
+
+// Status define
+type Status string
+
+// list of statuses
+const (
+	StatusProgressing Status = "progressing" // confbridge is ongoing
+	StatusTerminating Status = "terminating" // confbridge is terminating
+	StatusTerminated  Status = "terminated"  // confbridge terminated.
 )
 
 // Flag define

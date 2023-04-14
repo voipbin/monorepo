@@ -908,6 +908,20 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeSetRecordingID(ctx, id, recording
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetRecordingID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetRecordingID), ctx, id, recordingID)
 }
 
+// ConfbridgeSetStatus mocks base method.
+func (m *MockDBHandler) ConfbridgeSetStatus(ctx context.Context, id uuid.UUID, status confbridge.Status) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeSetStatus", ctx, id, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConfbridgeSetStatus indicates an expected call of ConfbridgeSetStatus.
+func (mr *MockDBHandlerMockRecorder) ConfbridgeSetStatus(ctx, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetStatus), ctx, id, status)
+}
+
 // ExternalMediaDelete mocks base method.
 func (m *MockDBHandler) ExternalMediaDelete(ctx context.Context, externalMediaID uuid.UUID) error {
 	m.ctrl.T.Helper()

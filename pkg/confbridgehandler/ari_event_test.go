@@ -150,6 +150,7 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 		channel *channel.Channel
 		bridge  *bridge.Bridge
 
+		responseConfbridge *confbridge.Confbridge
 		expectConfbridgeID uuid.UUID
 		expectCallID       uuid.UUID
 	}{
@@ -171,6 +172,10 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 			},
 
+			&confbridge.Confbridge{
+				ID:   uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
+				Type: confbridge.TypeConference,
+			},
 			uuid.FromStringOrNil("e9051ac8-9566-11ea-bde6-331b8236a4c2"),
 			uuid.FromStringOrNil("ef83edb2-3bf9-11ec-bc7d-1f524326656b"),
 		},
@@ -197,7 +202,7 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 
 			// Leaved
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(&confbridge.Confbridge{}, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, gomock.Any())
 
 			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, uuid.Nil).Return(&call.Call{}, nil)

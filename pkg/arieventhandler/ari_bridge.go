@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -60,18 +61,23 @@ func (h *eventHandler) EventHandlerBridgeDestroyed(ctx context.Context, evt inte
 		"event": e,
 	})
 
-	br, err := h.bridgeHandler.Get(ctx, e.Bridge.ID)
+	tmp, err := h.bridgeHandler.Get(ctx, e.Bridge.ID)
 	if err != nil {
 		log.Error("The given bridge is not in our database.")
 		return fmt.Errorf("no bridge found")
 	}
 
-	tmp, err := h.bridgeHandler.Delete(ctx, br.ID)
+	br, err := h.bridgeHandler.Delete(ctx, tmp.ID)
 	if err != nil {
 		log.Errorf("Coudl not delete the bridge. err: %v", err)
 		return err
 	}
-	log.WithField("bridge", tmp).Debugf("Deleted bridge. bridge_id: %s", tmp.ID)
+	log.WithField("bridge", br).Debugf("Deleted bridge. bridge_id: %s", br.ID)
+
+	if errDestoryed := h.confbridgeHandler.ARIBridgeDestroyed(ctx, br); errDestoryed != nil {
+		log.Errorf("Could not handle the event by the confbridgehandler. err: %v", errDestoryed)
+		return errors.Wrap(errDestoryed, "could not handle the event by the confbridgehandler")
+	}
 
 	return nil
 }

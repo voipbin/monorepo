@@ -99,12 +99,60 @@ func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *rab
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	if err := h.confbridgeHandler.Terminate(ctx, id); err != nil {
+	tmp, err := h.confbridgeHandler.Delete(ctx, id)
+	if err != nil {
 		log.Errorf("Could not terminate the confbridge. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	return simpleResponse(200), nil
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ConfbridgesIDTerminatePost handles /v1/confbridges/<id>/terminate POST request
+func (h *listenHandler) processV1ConfbridgesIDTerminatePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDTerminatePost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.confbridgeHandler.Terminating(ctx, id)
+	if err != nil {
+		log.Errorf("Could not terminate the confbridge. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
 }
 
 // processV1ConfbridgesIDCallsIDDelete handles /v1/confbridges/<confbridge-id>/calls/<call-id> DELETE request
