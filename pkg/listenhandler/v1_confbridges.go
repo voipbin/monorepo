@@ -430,3 +430,47 @@ func (h *listenHandler) processV1ConfbridgesIDFlagsDelete(ctx context.Context, m
 
 	return res, nil
 }
+
+// processV1ConfbridgesIDRingPost handles /v1/confbridges/<confbridge-id>/ring POST request
+func (h *listenHandler) processV1ConfbridgesIDRingPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDRingPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errRing := h.confbridgeHandler.Ring(ctx, id); errRing != nil {
+		log.Errorf("Could not ring the confbridge. err: %v", errRing)
+		return simpleResponse(500), nil
+	}
+
+	return simpleResponse(200), nil
+}
+
+// processV1ConfbridgesIDAnswerPost handles /v1/confbridges/<confbridge-id>/answer POST request
+func (h *listenHandler) processV1ConfbridgesIDAnswerPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConfbridgesIDAnswerPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	if errRing := h.confbridgeHandler.Answer(ctx, id); errRing != nil {
+		log.Errorf("Could not answer the confbridge. err: %v", errRing)
+		return simpleResponse(500), nil
+	}
+
+	return simpleResponse(200), nil
+}

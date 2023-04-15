@@ -78,10 +78,12 @@ var (
 	// confbridges
 	regV1Confbridges                 = regexp.MustCompile("/v1/confbridges$")
 	regV1ConfbridgesID               = regexp.MustCompile("/v1/confbridges/" + regUUID + "$")
+	regV1ConfbridgesIDAnswer         = regexp.MustCompile("/v1/confbridges/" + regUUID + "/answer$")
 	regV1ConfbridgesIDExternalMedia  = regexp.MustCompile("/v1/confbridges/" + regUUID + "/external-media$")
 	regV1ConfbridgesIDCallsID        = regexp.MustCompile("/v1/confbridges/" + regUUID + "/calls/" + regUUID + "$")
 	regV1ConfbridgesIDRecordingStart = regexp.MustCompile("/v1/confbridges/" + regUUID + "/recording_start$")
 	regV1ConfbridgesIDRecordingStop  = regexp.MustCompile("/v1/confbridges/" + regUUID + "/recording_stop$")
+	regV1ConfbridgesIDRing           = regexp.MustCompile("/v1/confbridges/" + regUUID + "/ring$")
 	regV1ConfbridgesIDFlags          = regexp.MustCompile("/v1/confbridges/" + regUUID + "/flags$")
 	regV1ConfbridgesIDTerminate      = regexp.MustCompile("/v1/confbridges/" + regUUID + "/terminate$")
 
@@ -440,6 +442,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1ConfbridgesIDTerminate.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1ConfbridgesIDTerminatePost(ctx, m)
 		requestType = "/v1/confbridges/<confbridge-id>/terminate"
+
+	// POST /confbridges/<confbridge-id>/ring
+	case regV1ConfbridgesIDRing.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConfbridgesIDRingPost(ctx, m)
+		requestType = "/v1/confbridges/<confbridge-id>/ring"
+
+	// POST /confbridges/<confbridge-id>/answer
+	case regV1ConfbridgesIDAnswer.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1ConfbridgesIDAnswerPost(ctx, m)
+		requestType = "/v1/confbridges/<confbridge-id>/answer"
 
 	////////////////////
 	// external-medias
