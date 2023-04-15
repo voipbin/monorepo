@@ -436,6 +436,8 @@ type RequestHandler interface {
 	CallV1ConfbridgeRecordingStart(ctx context.Context, confbridgeID uuid.UUID, format cmrecording.Format, endOfSilence int, endOfKey string, duration int) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeRecordingStop(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
 	CallV1ConfbridgeTerminate(ctx context.Context, confbridgeID uuid.UUID) (*cmconfbridge.Confbridge, error)
+	CallV1ConfbridgeRing(ctx context.Context, confbridgeID uuid.UUID) error
+	CallV1ConfbridgeAnswer(ctx context.Context, confbridgeID uuid.UUID) error
 
 	// call-manager external-media
 	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)

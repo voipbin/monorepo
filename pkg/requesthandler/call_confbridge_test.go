@@ -606,3 +606,107 @@ func Test_CallV1ConfbridgeTerminate(t *testing.T) {
 		})
 	}
 }
+
+func Test_CallV1ConfbridgeRing(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		confbridgeID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmconfbridge.Confbridge
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("2d37d7f0-db8f-11ed-a1f7-53a2bd6a697d"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/confbridges/2d37d7f0-db8f-11ed-a1f7-53a2bd6a697d/ring",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("2d37d7f0-db8f-11ed-a1f7-53a2bd6a697d"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			if errRing := reqHandler.CallV1ConfbridgeRing(ctx, tt.confbridgeID); errRing != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errRing)
+			}
+		})
+	}
+}
+
+func Test_CallV1ConfbridgeAnswer(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		confbridgeID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cmconfbridge.Confbridge
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("2d7289f4-db8f-11ed-8c13-efbe206011b3"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			&rabbitmqhandler.Request{
+				URI:    "/v1/confbridges/2d7289f4-db8f-11ed-8c13-efbe206011b3/answer",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&cmconfbridge.Confbridge{
+				ID: uuid.FromStringOrNil("2d7289f4-db8f-11ed-8c13-efbe206011b3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), "bin-manager.call-manager.request", tt.expectRequest).Return(tt.response, nil)
+
+			if errRing := reqHandler.CallV1ConfbridgeAnswer(ctx, tt.confbridgeID); errRing != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errRing)
+			}
+		})
+	}
+}

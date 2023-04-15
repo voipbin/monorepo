@@ -351,3 +351,43 @@ func (r *requestHandler) CallV1ConfbridgeTerminate(ctx context.Context, confbrid
 
 	return &res, nil
 }
+
+// CallV1ConfbridgeRing sends a request to call-manager
+// to ring the confbridge.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1ConfbridgeRing(ctx context.Context, confbridgeID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/confbridges/%s/ring", confbridgeID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges/<confbridge-id>/ring", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
+
+// CallV1ConfbridgeAnswer sends a request to call-manager
+// to answer the confbridge.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1ConfbridgeAnswer(ctx context.Context, confbridgeID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/confbridges/%s/answer", confbridgeID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/confbridges/<confbridge-id>/answer", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
