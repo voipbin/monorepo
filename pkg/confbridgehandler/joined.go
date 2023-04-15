@@ -57,10 +57,10 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 // joinedTypeConnect handles confbridge connect type joining channel
 func (h *confbridgeHandler) joinedTypeConnect(ctx context.Context, channelID string, c *call.Call, cb *confbridge.Confbridge) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "joinedTypeConnect",
-		"channel_id":    channelID,
-		"call_id":       c.ID,
-		"confbridge_id": cb.ID,
+		"func":       "joinedTypeConnect",
+		"channel_id": channelID,
+		"call":       c,
+		"confbridge": cb,
 	})
 
 	if len(cb.ChannelCallIDs) == 1 {

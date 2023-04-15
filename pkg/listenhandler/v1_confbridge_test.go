@@ -739,3 +739,119 @@ func Test_processV1ConfbridgesIDTerminatePost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1ConfbridgesIDRingPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		responseConfbridge *confbridge.Confbridge
+
+		expectID  uuid.UUID
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/confbridges/df5f86c0-db8b-11ed-a3a9-2bfab0c1cf79/ring",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("df5f86c0-db8b-11ed-a3a9-2bfab0c1cf79"),
+			},
+
+			uuid.FromStringOrNil("df5f86c0-db8b-11ed-a3a9-2bfab0c1cf79"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				confbridgeHandler: mockConfbridge,
+			}
+			mockConfbridge.EXPECT().Ring(gomock.Any(), tt.expectID).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ConfbridgesIDAnswerPost(t *testing.T) {
+
+	type test struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		responseConfbridge *confbridge.Confbridge
+
+		expectID  uuid.UUID
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/confbridges/dfb6fc20-db8b-11ed-a49e-9f25af48b85e/answer",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			&confbridge.Confbridge{
+				ID: uuid.FromStringOrNil("dfb6fc20-db8b-11ed-a49e-9f25af48b85e"),
+			},
+
+			uuid.FromStringOrNil("dfb6fc20-db8b-11ed-a49e-9f25af48b85e"),
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:        mockSock,
+				confbridgeHandler: mockConfbridge,
+			}
+			mockConfbridge.EXPECT().Answer(gomock.Any(), tt.expectID).Return(nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
