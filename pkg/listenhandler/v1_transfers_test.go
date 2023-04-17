@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/transferhandler"
 )
 
-func Test_processV1ServicesTypeTransferPost(t *testing.T) {
+func Test_processV1TransfersPost(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -29,7 +29,7 @@ func Test_processV1ServicesTypeTransferPost(t *testing.T) {
 		{
 			name: "type blind",
 			request: &rabbitmqhandler.Request{
-				URI:      "/v1/services/type/transfer",
+				URI:      "/v1/transfers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"blind","transferer_call_id":"9d6ae370-dc73-11ed-a491-aff35612aed5","transferee_addresses":[{"type":"tel","target":"+821100000001"}]}`),
