@@ -243,3 +243,11 @@ func (r *requestHandler) sendRequestChatbot(ctx context.Context, uri string, met
 
 	return r.sendRequest(ctx, queueChatbot, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestTransfer send a request to the transfer-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestTransfer(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(ctx, queueTransfer, uri, method, resource, timeout, delayed, dataType, data)
+}

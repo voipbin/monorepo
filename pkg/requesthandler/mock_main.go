@@ -60,6 +60,7 @@ import (
 	bucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	transfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 	tts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 	user "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	webhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
@@ -4355,6 +4356,21 @@ func (m *MockRequestHandler) TranscribeV1TranscriptGets(ctx context.Context, tra
 func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscriptGets(ctx, transcribeID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscriptGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscriptGets), ctx, transcribeID)
+}
+
+// TransferV1TransferStart mocks base method.
+func (m *MockRequestHandler) TransferV1TransferStart(ctx context.Context, transferType transfer.Type, transfererCallID uuid.UUID, transfereeAddresses []address.Address) (*transfer.Transfer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransferV1TransferStart", ctx, transferType, transfererCallID, transfereeAddresses)
+	ret0, _ := ret[0].(*transfer.Transfer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TransferV1TransferStart indicates an expected call of TransferV1TransferStart.
+func (mr *MockRequestHandlerMockRecorder) TransferV1TransferStart(ctx, transferType, transfererCallID, transfereeAddresses interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferV1TransferStart", reflect.TypeOf((*MockRequestHandler)(nil).TransferV1TransferStart), ctx, transferType, transfererCallID, transfereeAddresses)
 }
 
 // UserV1UserCreate mocks base method.
