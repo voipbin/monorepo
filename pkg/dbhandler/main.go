@@ -1,0 +1,51 @@
+package dbhandler
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
+	"gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
+	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/cachehandler"
+)
+
+// DBHandler interface for database handle
+type DBHandler interface {
+	TransferCreate(ctx context.Context, tr *transfer.Transfer) error
+	TransferGet(ctx context.Context, id uuid.UUID) (*transfer.Transfer, error)
+	TransferGetByTransfererCallID(ctx context.Context, transfererCallID uuid.UUID) (*transfer.Transfer, error)
+	TransferGetByGroupcallID(ctx context.Context, groupcallID uuid.UUID) (*transfer.Transfer, error)
+	TransferUpdate(ctx context.Context, tr *transfer.Transfer) error
+}
+
+// handler database handler
+type handler struct {
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
+}
+
+// handler errors
+var (
+	ErrNotFound = errors.New("record not found")
+)
+
+// list of default variables
+const (
+	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
+)
+
+// NewHandler creates DBHandler
+func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
+	h := &handler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       cache,
+	}
+	return h
+}
