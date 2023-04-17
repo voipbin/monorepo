@@ -58,6 +58,7 @@ import (
 	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 	tmtts "gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
 	umuser "gitlab.com/voipbin/bin-manager/user-manager.git/models/user"
 	wmwebhook "gitlab.com/voipbin/bin-manager/webhook-manager.git/models/webhook"
@@ -113,6 +114,7 @@ const (
 	queueRoute        = "bin-manager.route-manager.request"
 	queueStorage      = "bin-manager.storage-manager.request"
 	queueTranscribe   = "bin-manager.transcribe-manager.request"
+	queueTransfer     = "bin-manager.transfer-manager.request"
 	queueTTS          = "bin-manager.tts-manager.request"
 	queueUser         = "bin-manager.user-manager.request"
 	queueWebhook      = "bin-manager.webhook-manager.request"
@@ -846,7 +848,7 @@ type RequestHandler interface {
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)
 
-	// // transcribe-manager
+	// transcribe-manager
 	TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay int, retryCount int) error
@@ -861,6 +863,9 @@ type RequestHandler interface {
 	TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeDelete(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscriptGets(ctx context.Context, transcribeID uuid.UUID) ([]tmtranscript.Transcript, error)
+
+	// transfer-manager
+	TransferV1TransferStart(ctx context.Context, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.Transfer, error)
 
 	// user-manager
 	UserV1UserCreate(ctx context.Context, timeout int, username, password, name, detail string, permission umuser.Permission) (*umuser.User, error)
