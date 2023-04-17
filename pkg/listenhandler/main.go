@@ -38,11 +38,9 @@ type listenHandler struct {
 }
 
 var (
-	// regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-
 	// v1
-	// services
-	regV1ServicesTypeTransfer = regexp.MustCompile("/v1/services/type/transfer$")
+	// transfers
+	regV1Transfers = regexp.MustCompile("/v1/transfers$")
 )
 
 var (
@@ -164,9 +162,9 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	// transfers
 	////////////////////
 	// POST /transfers
-	case regV1ServicesTypeTransfer.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1ServicesTypeTransferPost(ctx, m)
-		requestType = "/v1/services/type/transfer"
+	case regV1Transfers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1TransfersPost(ctx, m)
+		requestType = "/v1/transfers"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

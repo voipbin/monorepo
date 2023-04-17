@@ -10,14 +10,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/transfer-manager.git/pkg/listenhandler/models/request"
 )
 
-// processV1ServicesTypeTransferPost handles POST /v1/services/type/transfer request
-func (h *listenHandler) processV1ServicesTypeTransferPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1TransfersPost handles POST /v1/transfers request
+func (h *listenHandler) processV1TransfersPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ServicesTypeTransferPost",
 		"request": m,
 	})
 
-	var req request.V1DataServicesTypeTransferPost
+	var req request.V1DataTransfersPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Errorf("Could not unmarshal the requested data. err: %v", err)
 		return nil, err
