@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
@@ -29,6 +30,9 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 	})
 	log.Debug("Leaved channel from the confbridge.")
 
+	// hang up the channel
+	_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
+
 	cb, err := h.RemoveChannelCallID(ctx, confbridgeID, cn.ID, callID)
 	if err != nil {
 		log.Errorf("Could not remove the channel info from the confbridge. err: %v", err)
@@ -48,7 +52,7 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		return nil
 	}
 
-	if len(cb.ChannelCallIDs) != 1 || !h.flagExist(ctx, cb.Flags, confbridge.FlagNoAutoLeave) {
+	if len(cb.ChannelCallIDs) == 1 && !h.flagExist(ctx, cb.Flags, confbridge.FlagNoAutoLeave) {
 		_, err := h.Terminating(ctx, cb.ID)
 		if err != nil {
 			log.Errorf("Could not terminating the confbridge. err: %v", err)

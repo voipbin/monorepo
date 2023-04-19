@@ -10,6 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
@@ -191,16 +192,20 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := &confbridgeHandler{
 				db:            mockDB,
 				notifyHandler: mockNotify,
 				reqHandler:    mockReq,
 				cache:         mockCache,
+
+				channelHandler: mockChannel,
 			}
 			ctx := context.Background()
 
 			// Leaved
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(tt.channel, nil)
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, gomock.Any())
