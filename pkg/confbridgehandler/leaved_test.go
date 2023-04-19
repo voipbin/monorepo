@@ -10,12 +10,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -102,15 +104,19 @@ func Test_Leaved(t *testing.T) {
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
 			h := confbridgeHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				cache:         mockCache,
-				notifyHandler: mockNotify,
-				bridgeHandler: mockBridge,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				cache:          mockCache,
+				notifyHandler:  mockNotify,
+				bridgeHandler:  mockBridge,
+				channelHandler: mockChannel,
 			}
 			ctx := context.Background()
+
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(tt.channel, nil)
 
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
