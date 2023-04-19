@@ -22,12 +22,10 @@ import (
 // @Success 200 {object} messagechat.WebhookMessage
 // @Router /v1.0/chatmessages [post]
 func chatmessagesPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatmessagesPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatmessagesPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -74,12 +72,10 @@ func chatmessagesPOST(c *gin.Context) {
 // @Success 200 {object} response.BodyChatmessagesGET
 // @Router /v1.0/chatmessages [get]
 func chatmessagesGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatmessagesGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatmessagesGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -147,12 +143,10 @@ func chatmessagesGET(c *gin.Context) {
 // @Success 200 {object} messagechat.Messagechat
 // @Router /v1.0/chatmessages/{id} [get]
 func chatmessagesIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatmessagesIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatmessagesIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -194,12 +188,10 @@ func chatmessagesIDGET(c *gin.Context) {
 // @Success 200 {object} messagechat.Messagechat
 // @Router /v1.0/chatmessages/{id} [delete]
 func chatmessagesIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatmessagesIDDELETE",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatmessagesIDDELETE",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

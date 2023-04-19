@@ -23,12 +23,10 @@ import (
 // @Success 200 {object} response.BodyCallsGET
 // @Router /v1.0/conferences [get]
 func conferencesGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -95,12 +93,10 @@ func conferencesGET(c *gin.Context) {
 // @Success 200 {object} conference.Conference
 // @Router /v1.0/conferences [post]
 func conferencesPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -145,12 +141,10 @@ func conferencesPOST(c *gin.Context) {
 // @Success 200 {object} conference.Conference
 // @Router /v1.0/conferences/{id} [get]
 func conferencesIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -193,12 +187,10 @@ func conferencesIDGET(c *gin.Context) {
 // @Success 200 {object} conference.Conference
 // @Router /v1.0/conferences/{id} [put]
 func conferencesIDPUT(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesIDPUT",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesIDPUT",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -247,12 +239,10 @@ func conferencesIDPUT(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/conferences/{id} [delete]
 func conferencesIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesIDDELETE",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesIDDELETE",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -294,12 +284,10 @@ func conferencesIDDELETE(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/conferences/{id}/recording_start [post]
 func conferencesIDRecordingStartPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesIDRecordingStartPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesIDRecordingStartPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -341,12 +329,10 @@ func conferencesIDRecordingStartPOST(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/conferences/{id}/recording_stop [post]
 func conferencesIDRecordingStopPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesIDRecordingStopPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesIDRecordingStopPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -388,12 +374,10 @@ func conferencesIDRecordingStopPOST(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/conferences/{id}/transcribe_start [post]
 func conferencesIDTranscribeStartPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesIDTranscribeStartPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesIDTranscribeStartPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -443,12 +427,10 @@ func conferencesIDTranscribeStartPOST(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/conferences/{id}/transcribe_stop [post]
 func conferencesIDTranscribeStopPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencesIDTranscribeStopPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencesIDTranscribeStopPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

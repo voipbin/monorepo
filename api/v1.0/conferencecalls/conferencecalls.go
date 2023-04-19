@@ -20,12 +20,10 @@ import (
 // @Success 200 {object} conferencecall.Conferencecall
 // @Router /v1.0/conferencecalls/{id} [get]
 func conferencecallsIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencecallsIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencecallsIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -67,12 +65,10 @@ func conferencecallsIDGET(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/conferencecalls/{id} [delete]
 func conferencecallsIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conferencecallsIDDELETE",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencecallsIDDELETE",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

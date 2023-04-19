@@ -21,6 +21,10 @@ import (
 // @Success 200 {object} response.BodyAvailableNumbersGET
 // @Router /v1.0/available_numbers [get]
 func availableNumbersGET(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "availableNumbersGET",
+		"request_address": c.ClientIP,
+	})
 
 	var requestParam request.ParamAvailableNumbersGET
 
@@ -28,11 +32,6 @@ func availableNumbersGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	log := logrus.WithFields(
-		logrus.Fields{
-			"request_address": c.ClientIP,
-		},
-	)
 	log.Debugf("availableNumbersGET. Received request detail. page_size: %d, country_code: %s", requestParam.PageSize, requestParam.CountyCode)
 
 	// get customer

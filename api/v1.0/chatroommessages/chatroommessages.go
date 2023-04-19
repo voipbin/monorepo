@@ -24,12 +24,10 @@ import (
 // @Success 200 {object} response.BodyChatsGET
 // @Router /v1.0/chatroommessages [get]
 func chatroommessagesGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatroommessagesGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatroommessagesGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -97,12 +95,10 @@ func chatroommessagesGET(c *gin.Context) {
 // @Success 200 {object} messagechatroom.Messagechatroom
 // @Router /v1.0/chatroommessages/{id} [get]
 func chatroommessagesIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatroommessagesIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatroommessagesIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -144,12 +140,10 @@ func chatroommessagesIDGET(c *gin.Context) {
 // @Success 200 {object} messagechatroom.Messagechatroom
 // @Router /v1.0/chatroommessages/{id} [delete]
 func chatroommessagesIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatroommessagesIDDELETE",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatroommessagesIDDELETE",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

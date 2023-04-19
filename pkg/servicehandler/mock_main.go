@@ -49,6 +49,7 @@ import (
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	transfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 )
 
 // MockServiceHandler is a mock of ServiceHandler interface.
@@ -2702,6 +2703,21 @@ func (m *MockServiceHandler) TranscriptGets(ctx context.Context, u *customer.Cus
 func (mr *MockServiceHandlerMockRecorder) TranscriptGets(ctx, u, transcribeID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptGets", reflect.TypeOf((*MockServiceHandler)(nil).TranscriptGets), ctx, u, transcribeID)
+}
+
+// TransferStart mocks base method.
+func (m *MockServiceHandler) TransferStart(ctx context.Context, u *customer.Customer, transferType transfer.Type, transfererCallID uuid.UUID, transfereeAddresses []address.Address) (*transfer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransferStart", ctx, u, transferType, transfererCallID, transfereeAddresses)
+	ret0, _ := ret[0].(*transfer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TransferStart indicates an expected call of TransferStart.
+func (mr *MockServiceHandlerMockRecorder) TransferStart(ctx, u, transferType, transfererCallID, transfereeAddresses interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferStart", reflect.TypeOf((*MockServiceHandler)(nil).TransferStart), ctx, u, transferType, transfererCallID, transfereeAddresses)
 }
 
 // WebsockCreate mocks base method.
