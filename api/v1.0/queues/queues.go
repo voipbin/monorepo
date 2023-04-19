@@ -23,12 +23,10 @@ import (
 // @Success 200 {object} response.BodyQueuesGET
 // @Router /v1.0/queues [get]
 func queuesGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "queuesGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuesGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -37,13 +35,11 @@ func queuesGET(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	var req request.ParamQueuesGET
 	if err := c.BindQuery(&req); err != nil {
@@ -96,12 +92,10 @@ func queuesGET(c *gin.Context) {
 // @Success 200 {object} queue.WebhookMessage
 // @Router /v1.0/queues [post]
 func queuesPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "queuesPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuesPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -110,13 +104,11 @@ func queuesPOST(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	var req request.BodyQueuesPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -158,12 +150,10 @@ func queuesPOST(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/queues/{id} [delete]
 func queuesIDDelete(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "queuesIDDelete",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuesIDDelete",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -172,13 +162,11 @@ func queuesIDDelete(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -211,12 +199,10 @@ func queuesIDDelete(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/queues/{id} [get]
 func queuesIDGet(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "queuesIDGet",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuesIDGet",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -225,13 +211,11 @@ func queuesIDGet(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -261,12 +245,10 @@ func queuesIDGet(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/queues/{id} [put]
 func queuesIDPUT(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "queuesIDPUT",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuesIDPUT",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -275,13 +257,11 @@ func queuesIDPUT(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -318,12 +298,10 @@ func queuesIDPUT(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/queues/{id}/tag_ids [put]
 func queuesIDTagIDsPUT(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "queuesIDTagIDsPUT",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuesIDTagIDsPUT",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -332,13 +310,11 @@ func queuesIDTagIDsPUT(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -374,12 +350,10 @@ func queuesIDTagIDsPUT(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/queues/{id}/routing_method [put]
 func queuesIDRoutingMethodPUT(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "queuesIDRoutingMethodPUT",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuesIDRoutingMethodPUT",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -388,13 +362,11 @@ func queuesIDRoutingMethodPUT(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -430,12 +402,10 @@ func queuesIDRoutingMethodPUT(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/queues/{id}/status [put]
 func queuesIDActionsPUT(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "queuesIDActionsPUT",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuesIDActionsPUT",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -444,13 +414,11 @@ func queuesIDActionsPUT(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))

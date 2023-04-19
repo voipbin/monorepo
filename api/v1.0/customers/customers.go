@@ -21,12 +21,10 @@ import (
 // @Success 200 {object} customer.Customer
 // @Router /v1.0/customers [post]
 func customersPost(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "customersPost",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersPost",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -85,12 +83,10 @@ func customersPost(c *gin.Context) {
 // @Success 200 {object} response.BodyCustomersGET
 // @Router /v1.0/customers [get]
 func customersGet(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "customersGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -156,12 +152,10 @@ func customersGet(c *gin.Context) {
 // @Success 200 {object} customer.Customer
 // @Router /v1.0/customers/{id} [get]
 func customersIDGet(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "customersIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -203,12 +197,10 @@ func customersIDGet(c *gin.Context) {
 // @Success 200 {object} customer.Customer
 // @Router /v1.0/customers/{id} [put]
 func customersIDPut(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "customersIDPUT",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersIDPUT",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -256,12 +248,10 @@ func customersIDPut(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/customers/{id} [delete]
 func customersIDDelete(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "customersIDDelete",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersIDDelete",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -303,12 +293,10 @@ func customersIDDelete(c *gin.Context) {
 // @Success 200 {object} customer.Customer
 // @Router /v1.0/customers/{id}/permissions_ids [put]
 func customersIDPermissionIDsPut(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "customersIDPermissionIDsPut",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersIDPermissionIDsPut",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -356,12 +344,10 @@ func customersIDPermissionIDsPut(c *gin.Context) {
 // @Success 200 {object} customer.Customer
 // @Router /v1.0/customers/{id}/password [put]
 func customersIDPasswordPut(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "customersIDPasswordPut",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersIDPasswordPut",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -409,12 +395,10 @@ func customersIDPasswordPut(c *gin.Context) {
 // @Success 200 {object} customer.Customer
 // @Router /v1.0/customers/{id}/line_info [put]
 func customersIDLineInfoPut(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "customersIDLineInfoPut",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersIDLineInfoPut",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

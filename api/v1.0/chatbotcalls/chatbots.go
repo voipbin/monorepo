@@ -1,12 +1,12 @@
 package chatbotcalls
 
 import (
-	_ "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall" // for swag use
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	_ "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall" // for swag use
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
@@ -23,12 +23,10 @@ import (
 // @Success 200 {object} response.BodyChatbotcallsGET
 // @Router /v1.0/chatbotcalls [get]
 func chatbotcallsGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatbotcallsGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatbotcallsGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -94,12 +92,10 @@ func chatbotcallsGET(c *gin.Context) {
 // @Success 200 {object} chatbotcall.Chatbotcall
 // @Router /v1.0/chatbotcalls/{id} [get]
 func chatbotcallsIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatbotcallsIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatbotcallsIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -141,12 +137,10 @@ func chatbotcallsIDGET(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/chatbotcalls/{id} [delete]
 func chatbotcallsIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatbotcallsIDDELETE",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatbotcallsIDDELETE",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

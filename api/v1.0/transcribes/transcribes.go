@@ -21,12 +21,10 @@ import (
 // @Success 200 {object} transcribe.Transcribe
 // @Router /v1.0/transcribes [post]
 func transcribesPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "transcribesPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "transcribesPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -35,12 +33,10 @@ func transcribesPOST(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id": u.ID,
-			"username":    u.Username,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id": u.ID,
+		"username":    u.Username,
+	})
 
 	var req request.BodyTranscribesPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -74,12 +70,10 @@ func transcribesPOST(c *gin.Context) {
 // @Success 200 {object} response.BodyTranscribesGET
 // @Router /v1.0/transcribes [get]
 func transcribesGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "transcribesGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "transcribesGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -145,12 +139,10 @@ func transcribesGET(c *gin.Context) {
 // @Success 200 {object} transcribe.Transcribe
 // @Router /v1.0/transcribe/{id} [get]
 func transcribesIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "transcribesIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "transcribesIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -193,12 +185,10 @@ func transcribesIDGET(c *gin.Context) {
 // @Success 200 {object} transcribe.Transcribe
 // @Router /v1.0/transcribes/{id} [delete]
 func transcribesIDDelete(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "transcribesIDDelete",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "transcribesIDDelete",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -242,12 +232,10 @@ func transcribesIDDelete(c *gin.Context) {
 // @Success 200 {object} transcribe.Transcribe
 // @Router /v1.0/transcribes/{id}/stop [post]
 func transcribesIDStopPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "transcribesIDStopPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "transcribesIDStopPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -256,12 +244,10 @@ func transcribesIDStopPOST(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id": u.ID,
-			"username":    u.Username,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id": u.ID,
+		"username":    u.Username,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))

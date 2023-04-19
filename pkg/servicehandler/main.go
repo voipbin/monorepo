@@ -47,6 +47,7 @@ import (
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
+	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/websockhandler"
@@ -455,7 +456,11 @@ type ServiceHandler interface {
 	TranscribeStop(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 	TranscribeDelete(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
 
+	// transcript handlers
 	TranscriptGets(ctx context.Context, u *cscustomer.Customer, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error)
+
+	// transfer handler
+	TransferStart(ctx context.Context, u *cscustomer.Customer, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.WebhookMessage, error)
 
 	WebsockCreate(ctx context.Context, u *cscustomer.Customer, w http.ResponseWriter, r *http.Request) error
 }
