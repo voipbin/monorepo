@@ -45,8 +45,8 @@ func (h *handler) transferSetToCache(ctx context.Context, conference *transfer.T
 func (h *handler) TransferGet(ctx context.Context, id uuid.UUID) (*transfer.Transfer, error) {
 
 	res, err := h.transferGetFromCache(ctx, id)
-	if err == nil {
-		return res, nil
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil
@@ -56,8 +56,8 @@ func (h *handler) TransferGet(ctx context.Context, id uuid.UUID) (*transfer.Tran
 func (h *handler) TransferGetByTransfererCallID(ctx context.Context, transfererCallID uuid.UUID) (*transfer.Transfer, error) {
 
 	res, err := h.cache.TransferGetByTransfererCallID(ctx, transfererCallID)
-	if err == nil {
-		return res, nil
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil
@@ -67,8 +67,8 @@ func (h *handler) TransferGetByTransfererCallID(ctx context.Context, transfererC
 func (h *handler) TransferGetByGroupcallID(ctx context.Context, groupcallID uuid.UUID) (*transfer.Transfer, error) {
 
 	res, err := h.cache.TransferGetByGroupcallID(ctx, groupcallID)
-	if err == nil {
-		return res, nil
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil
@@ -78,7 +78,7 @@ func (h *handler) TransferGetByGroupcallID(ctx context.Context, groupcallID uuid
 func (h *handler) TransferUpdate(ctx context.Context, tr *transfer.Transfer) error {
 
 	tr.TMUpdate = h.utilHandler.GetCurTime()
-	if errSet := h.cache.TransferSet(ctx, tr); errSet == nil {
+	if errSet := h.cache.TransferSet(ctx, tr); errSet != nil {
 		return errSet
 	}
 
