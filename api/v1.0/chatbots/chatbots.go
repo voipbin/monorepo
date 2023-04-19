@@ -1,12 +1,12 @@
 package chatbots
 
 import (
-	_ "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot" // for swag use
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	_ "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot" // for swag use
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
@@ -22,12 +22,10 @@ import (
 // @Success 200 {object} chatbot.WebhookMessage
 // @Router /v1.0/chatbots [post]
 func chatbotsPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatbotsPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatbotsPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -74,12 +72,10 @@ func chatbotsPOST(c *gin.Context) {
 // @Success 200 {object} response.BodyChatbotsGET
 // @Router /v1.0/chatbots [get]
 func chatbotsGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatbotsGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatbotsGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -145,12 +141,10 @@ func chatbotsGET(c *gin.Context) {
 // @Success 200 {object} chatbot.Chatbot
 // @Router /v1.0/chatbots/{id} [get]
 func chatbotsIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatbotsIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatbotsIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -192,12 +186,10 @@ func chatbotsIDGET(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/chatbots/{id} [delete]
 func chatbotsIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "chatbotsIDDELETE",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatbotsIDDELETE",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

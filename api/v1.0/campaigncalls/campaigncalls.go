@@ -20,12 +20,10 @@ import (
 // @Success 200 {object} campaigncall.WebhookMessage
 // @Router /v1.0/campaigncalls/{id} [get]
 func campaigncallsIDGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "campaigncallsIDGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "campaigncallsIDGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -67,12 +65,10 @@ func campaigncallsIDGET(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/campaigncalls/{id} [delete]
 func campaigncallsIDDELETE(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "campaigncallsIDDELETE",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "campaigncallsIDDELETE",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

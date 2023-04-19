@@ -24,12 +24,10 @@ import (
 // @Success 200 {object} response.BodyConversationsGET
 // @Router /v1.0/conversations [get]
 func conversationsGet(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conversationsGet",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conversationsGet",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -95,12 +93,10 @@ func conversationsGet(c *gin.Context) {
 // @Success 200 {object} conversation.WebhookMessage
 // @Router /v1.0/conversations/{id} [get]
 func conversationsIDGet(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conversationsIDGet",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conversationsIDGet",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -143,12 +139,10 @@ func conversationsIDGet(c *gin.Context) {
 // @Success 200 {object} response.BodyConversationsIDMessagesGET
 // @Router /v1.0/conversations/{id}/messages [get]
 func conversationsIDMessagesGet(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conversationsIDMessagesGet",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conversationsIDMessagesGet",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -217,12 +211,10 @@ func conversationsIDMessagesGet(c *gin.Context) {
 // @Success 200 {object} message.WebhookMessage
 // @Router /v1.0/conversations/{id}/messages [post]
 func conversationsIDMessagesPost(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conversationsIDMessagesPost",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conversationsIDMessagesPost",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -272,12 +264,10 @@ func conversationsIDMessagesPost(c *gin.Context) {
 // @Success 200 {object} message.WebhookMessage
 // @Router /v1.0/conversations/setup [post]
 func conversationsSetupPost(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "conversationsSetupPost",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conversationsSetupPost",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {

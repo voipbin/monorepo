@@ -139,7 +139,7 @@ func Test_GroupcallCreate(t *testing.T) {
 			if targetFlowID == uuid.Nil {
 				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customer.ID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(tt.responseFlow, nil)
 			}
-			mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.customer.ID, tt.source, tt.destinations, targetFlowID, uuid.Nil, tt.ringMethod, tt.answerMethod, false).Return(tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.customer.ID, tt.source, tt.destinations, targetFlowID, uuid.Nil, tt.ringMethod, tt.answerMethod).Return(tt.responseGroupcall, nil)
 
 			res, err := h.GroupcallCreate(ctx, tt.customer, tt.source, tt.destinations, tt.flowID, tt.actions, tt.ringMethod, tt.answerMethod)
 			if err != nil {

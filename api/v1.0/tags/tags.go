@@ -21,12 +21,10 @@ import (
 // @Success 200 {object} tag.Tag
 // @Router /v1.0/tags [post]
 func tagsPOST(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "tagsPOST",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "tagsPOST",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	u := tmp.(cscustomer.Customer)
@@ -35,13 +33,11 @@ func tagsPOST(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	var req request.BodyTagsPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -54,7 +50,7 @@ func tagsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create flow
-	res, err := serviceHandler.TagCreate(c.Request.Context(),&u, req.Name, req.Detail)
+	res, err := serviceHandler.TagCreate(c.Request.Context(), &u, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a new tag. err: %v", err)
 		c.AbortWithStatus(400)
@@ -73,12 +69,10 @@ func tagsPOST(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/tags/{id} [delete]
 func tagsIDDelete(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "tagsIDDelete",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "tagsIDDelete",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -87,13 +81,11 @@ func tagsIDDelete(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -107,7 +99,7 @@ func tagsIDDelete(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// delete
-	res, err := serviceHandler.TagDelete(c.Request.Context(),&u, id)
+	res, err := serviceHandler.TagDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -126,12 +118,10 @@ func tagsIDDelete(c *gin.Context) {
 // @Success 200 {object} tag.Tag
 // @Router /v1.0/tags/{id} [get]
 func tagsIDGet(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "tagsIDGet",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "tagsIDGet",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -140,13 +130,11 @@ func tagsIDGet(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -160,7 +148,7 @@ func tagsIDGet(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get
-	res, err := serviceHandler.TagGet(c.Request.Context(),&u, id)
+	res, err := serviceHandler.TagGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Infof("Could not get the tag info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -180,12 +168,10 @@ func tagsIDGet(c *gin.Context) {
 // @Success 200 {object} response.BodyTagsGET
 // @Router /v1.0/tags [get]
 func tagsGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "tagsGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "tagsGET",
+		"request_address": c.ClientIP,
+	})
 
 	tmp, exists := c.Get("customer")
 	if !exists {
@@ -194,13 +180,11 @@ func tagsGET(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	var req request.ParamTagsGET
 	if err := c.BindQuery(&req); err != nil {
@@ -224,7 +208,7 @@ func tagsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get tmps
-	tmps, err := serviceHandler.TagGets(c.Request.Context(),&u, pageSize, req.PageToken)
+	tmps, err := serviceHandler.TagGets(c.Request.Context(), &u, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -255,12 +239,10 @@ func tagsGET(c *gin.Context) {
 // @Success 200
 // @Router /v1.0/tags/{id} [put]
 func tagsIDPUT(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "tagsIDPUT",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "tagsIDPUT",
+		"request_address": c.ClientIP,
+	})
 
 	// get customer info
 	tmp, exists := c.Get("customer")
@@ -270,13 +252,11 @@ func tagsIDPUT(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -292,7 +272,7 @@ func tagsIDPUT(c *gin.Context) {
 
 	// update the tag
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.TagUpdate(c.Request.Context(),&u, id, req.Name, req.Detail)
+	res, err := serviceHandler.TagUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the tag. err: %v", err)
 		c.AbortWithStatus(400)
