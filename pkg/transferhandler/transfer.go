@@ -25,7 +25,7 @@ func (h *transferHandler) ServiceStart(ctx context.Context, transferType transfe
 		"transferee_addresses": transfereeAddresses,
 	})
 
-	transfererCall, flow, err := h.serviceInit(ctx, transfererCallID)
+	transfererCall, flow, err := h.transferInit(ctx, transfererCallID)
 	if err != nil {
 		log.Errorf("Could not initiate the transfer. err: %v", err)
 		return nil, errors.Wrap(err, "could not initiate the transfer")
@@ -44,8 +44,8 @@ func (h *transferHandler) ServiceStart(ctx context.Context, transferType transfe
 	}
 }
 
-// serviceInit initiates the transfer
-func (h *transferHandler) serviceInit(ctx context.Context, transfererCallID uuid.UUID) (*cmcall.Call, *fmflow.Flow, error) {
+// transferInit initiates the transfer
+func (h *transferHandler) transferInit(ctx context.Context, transfererCallID uuid.UUID) (*cmcall.Call, *fmflow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "transferInit",
 		"transferer_call_id": transfererCallID,

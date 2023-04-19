@@ -68,7 +68,7 @@ func Test_serviceInit(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.transfererCallID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseCall.CustomerID, fmflow.TypeTransfer, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
 
-			resCall, resFlow, err := h.serviceInit(ctx, tt.transfererCallID)
+			resCall, resFlow, err := h.transferInit(ctx, tt.transfererCallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
