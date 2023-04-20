@@ -1,4 +1,4 @@
-.. _quickstart_call:
+.. _quickstart_queue:
 
 Queue
 =====
