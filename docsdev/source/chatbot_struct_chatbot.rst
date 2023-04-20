@@ -3,7 +3,7 @@
 Chatbot
 ========
 
-.. _chat-struct-chatroom-chatroom:
+.. _chatbot-struct-chatroom-chatroom:
 
 Chatroom
 --------
