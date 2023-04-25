@@ -371,65 +371,6 @@ func Test_CallV1GroupcallHangup(t *testing.T) {
 	}
 }
 
-func Test_CallV1GroupcallDecreaseGroupcallCount(t *testing.T) {
-	tests := []struct {
-		name string
-
-		groupcallID uuid.UUID
-
-		response *rabbitmqhandler.Response
-
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		expectRes     *cmgroupcall.Groupcall
-	}{
-		{
-			name: "normal",
-
-			groupcallID: uuid.FromStringOrNil("1441cca6-e328-11ed-9fec-d34d08a9a0b0"),
-
-			response: &rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"1441cca6-e328-11ed-9fec-d34d08a9a0b0"}`),
-			},
-
-			expectTarget: "bin-manager.call-manager.request",
-			expectRequest: &rabbitmqhandler.Request{
-				URI:    "/v1/groupcalls/1441cca6-e328-11ed-9fec-d34d08a9a0b0/decrease_groupcall_count",
-				Method: rabbitmqhandler.RequestMethodPost,
-			},
-			expectRes: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("1441cca6-e328-11ed-9fec-d34d08a9a0b0"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
-			ctx := context.Background()
-
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.CallV1GroupcallDecreaseGroupcallCount(ctx, tt.groupcallID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_CallV1GroupcallUpdateAnswerGroupcallID(t *testing.T) {
 	tests := []struct {
 		name string
@@ -503,7 +444,6 @@ func Test_CallV1GroupcallHangupOthers(t *testing.T) {
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectRes     *cmgroupcall.Groupcall
 	}{
 		{
 			name: "normal",
@@ -520,9 +460,6 @@ func Test_CallV1GroupcallHangupOthers(t *testing.T) {
 			expectRequest: &rabbitmqhandler.Request{
 				URI:    "/v1/groupcalls/5bde1332-e32b-11ed-8ed7-ef18f8cb924d/hangup_others",
 				Method: rabbitmqhandler.RequestMethodPost,
-			},
-			expectRes: &cmgroupcall.Groupcall{
-				ID: uuid.FromStringOrNil("5bde1332-e32b-11ed-8ed7-ef18f8cb924d"),
 			},
 		},
 	}
@@ -541,6 +478,102 @@ func Test_CallV1GroupcallHangupOthers(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			if err := reqHandler.CallV1GroupcallHangupOthers(ctx, tt.groupcallID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1GroupcallHangupCall(t *testing.T) {
+	tests := []struct {
+		name string
+
+		groupcallID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			name: "normal",
+
+			groupcallID: uuid.FromStringOrNil("d810fc56-e337-11ed-bdbb-57b799f47676"),
+
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			expectTarget: "bin-manager.call-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:    "/v1/groupcalls/d810fc56-e337-11ed-bdbb-57b799f47676/hangup_call",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1GroupcallHangupCall(ctx, tt.groupcallID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_CallV1GroupcallHangupGroupcall(t *testing.T) {
+	tests := []struct {
+		name string
+
+		groupcallID uuid.UUID
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+	}{
+		{
+			name: "normal",
+
+			groupcallID: uuid.FromStringOrNil("02fdbce2-e338-11ed-92cd-7f5633b75bad"),
+
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+
+			expectTarget: "bin-manager.call-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:    "/v1/groupcalls/02fdbce2-e338-11ed-92cd-7f5633b75bad/hangup_groupcall",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.CallV1GroupcallHangupGroupcall(ctx, tt.groupcallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
