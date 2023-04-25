@@ -1585,6 +1585,20 @@ func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallHangup(ctx, groupcallID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallHangup", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallHangup), ctx, groupcallID)
 }
 
+// CallV1GroupcallHangupOthers mocks base method.
+func (m *MockRequestHandler) CallV1GroupcallHangupOthers(ctx context.Context, groupcallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1GroupcallHangupOthers", ctx, groupcallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallV1GroupcallHangupOthers indicates an expected call of CallV1GroupcallHangupOthers.
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallHangupOthers(ctx, groupcallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallHangupOthers", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallHangupOthers), ctx, groupcallID)
+}
+
 // CallV1GroupcallUpdateAnswerGroupcallID mocks base method.
 func (m *MockRequestHandler) CallV1GroupcallUpdateAnswerGroupcallID(ctx context.Context, groupcallID, answerGroupcallID uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()

@@ -223,3 +223,23 @@ func (r *requestHandler) CallV1GroupcallUpdateAnswerGroupcallID(ctx context.Cont
 
 	return &res, nil
 }
+
+// CallV1GroupcallHangupOthers sends a request to call-manager
+// to hangup the related calls and groupcalls except answer_call_id or answer_groupcall_id.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1GroupcallHangupOthers(ctx context.Context, groupcallID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup_others", groupcallID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/hangup_others", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return err
+	case tmp == nil:
+		// not found
+		return fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	return nil
+}
