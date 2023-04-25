@@ -13,7 +13,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/prometheus/client_golang v1.15.0
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230415130850-a3496a106baf
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230419032458-08442f11f64a
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093
 	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d4449242c
@@ -30,7 +30,7 @@ require (
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450
-	gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230417151954-ae19b4743cb6
+	gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230204142400-175f62ac7400
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61
