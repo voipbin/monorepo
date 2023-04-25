@@ -141,10 +141,71 @@ func (r *requestHandler) CallV1GroupcallDelete(ctx context.Context, groupcallID 
 // CallV1GroupcallHangup sends a request to call-manager
 // to hangup the groupcall.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1GroupcallHangup(ctx context.Context, callID uuid.UUID) (*cmgroupcall.Groupcall, error) {
-	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup", callID)
+func (r *requestHandler) CallV1GroupcallHangup(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
+	uri := fmt.Sprintf("/v1/groupcalls/%s/hangup", groupcallID)
 
 	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallGroupcallsIDHangup, requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmgroupcall.Groupcall
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallV1GroupcallDecreaseGroupcallCount sends a request to call-manager
+// to decrease the groupcall's groupcall_count.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1GroupcallDecreaseGroupcallCount(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
+	uri := fmt.Sprintf("/v1/groupcalls/%s/decrease_groupcall_count", groupcallID)
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/decrease_groupcall_count", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cmgroupcall.Groupcall
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CallV1GroupcallUpdateAnswerGroupcallID sends a request to call-manager
+// to update the answer_groupcall_id of the given groupcall.
+// it returns error if something went wrong.
+func (r *requestHandler) CallV1GroupcallUpdateAnswerGroupcallID(ctx context.Context, groupcallID uuid.UUID, answerGroupcallID uuid.UUID) (*cmgroupcall.Groupcall, error) {
+	uri := fmt.Sprintf("/v1/groupcalls/%s/answer_groupcall_id", groupcallID)
+
+	reqData := struct {
+		AnswerGroupcallID uuid.UUID `json:"answer_groupcall_id"`
+	}{
+		AnswerGroupcallID: answerGroupcallID,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, "call/groupcalls/<groupcall-id>/answer_groupcall_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
