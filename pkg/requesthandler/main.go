@@ -461,9 +461,10 @@ type RequestHandler interface {
 	CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallDelete(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallHangup(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
-	CallV1GroupcallDecreaseGroupcallCount(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallUpdateAnswerGroupcallID(ctx context.Context, groupcallID uuid.UUID, answerGroupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallHangupOthers(ctx context.Context, groupcallID uuid.UUID) error
+	CallV1GroupcallHangupCall(ctx context.Context, groupcallID uuid.UUID) error
+	CallV1GroupcallHangupGroupcall(ctx context.Context, groupcallID uuid.UUID) error
 
 	// call-manager recordings
 	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
