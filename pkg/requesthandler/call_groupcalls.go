@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -19,25 +18,49 @@ import (
 // it returns created groupcall info if it succeed.
 func (r *requestHandler) CallV1GroupcallCreate(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
+	flowID uuid.UUID,
 	source commonaddress.Address,
 	destinations []commonaddress.Address,
-	flowID uuid.UUID,
 	masterCallID uuid.UUID,
+	masterGroupcallID uuid.UUID,
 	ringMethod cmgroupcall.RingMethod,
 	answerMethod cmgroupcall.AnswerMethod,
 ) (*cmgroupcall.Groupcall, error) {
 	uri := "/v1/groupcalls"
 
-	reqData := &cmrequest.V1DataGroupcallsPost{
-		CustomerID:   customerID,
-		Source:       source,
-		Destinations: destinations,
-		FlowID:       flowID,
-		MasterCallID: masterCallID,
-		RingMethod:   ringMethod,
-		AnswerMethod: answerMethod,
+	reqData := &struct {
+		ID                uuid.UUID                `json:"id,omitempty"`
+		CustomerID        uuid.UUID                `json:"customer_id,omitempty"`
+		FlowID            uuid.UUID                `json:"flow_id,omitempty"`
+		Source            commonaddress.Address    `json:"source,omitempty"`
+		Destinations      []commonaddress.Address  `json:"destinations,omitempty"`
+		MasterCallID      uuid.UUID                `json:"master_call_id,omitempty"`
+		MasterGroupcallID uuid.UUID                `json:"master_groupcall_id,omitempty"`
+		RingMethod        cmgroupcall.RingMethod   `json:"ring_method,omitempty"`
+		AnswerMethod      cmgroupcall.AnswerMethod `json:"answer_method,omitempty"`
+	}{
+		ID:                id,
+		CustomerID:        customerID,
+		FlowID:            flowID,
+		Source:            source,
+		Destinations:      destinations,
+		MasterCallID:      masterCallID,
+		MasterGroupcallID: masterGroupcallID,
+		RingMethod:        ringMethod,
+		AnswerMethod:      answerMethod,
 	}
+
+	// reqData := &cmrequest.V1DataGroupcallsPost{
+	// 	CustomerID:   customerID,
+	// 	Source:       source,
+	// 	Destinations: destinations,
+	// 	FlowID:       flowID,
+	// 	MasterCallID: masterCallID,
+	// 	RingMethod:   ringMethod,
+	// 	AnswerMethod: answerMethod,
+	// }
 
 	m, err := json.Marshal(reqData)
 	if err != nil {

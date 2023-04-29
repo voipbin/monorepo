@@ -108,14 +108,16 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ctx          context.Context
-		customerID   uuid.UUID
-		source       commonaddress.Address
-		destinations []commonaddress.Address
-		flowID       uuid.UUID
-		masterCallID uuid.UUID
-		ringMethod   cmgroupcall.RingMethod
-		answerMethod cmgroupcall.AnswerMethod
+		ctx               context.Context
+		id                uuid.UUID
+		customerID        uuid.UUID
+		source            commonaddress.Address
+		destinations      []commonaddress.Address
+		flowID            uuid.UUID
+		masterCallID      uuid.UUID
+		masterGroupcallID uuid.UUID
+		ringMethod        cmgroupcall.RingMethod
+		answerMethod      cmgroupcall.AnswerMethod
 
 		response *rabbitmqhandler.Response
 
@@ -126,6 +128,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 		{
 			name: "normal",
 
+			id:         uuid.FromStringOrNil("812e519b-bbf6-415f-9c49-b4db5c76f68d"),
 			customerID: uuid.FromStringOrNil("2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9"),
 			source: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -141,10 +144,11 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 					Target: "+821100000003",
 				},
 			},
-			flowID:       uuid.FromStringOrNil("2b1f1682-bbae-11ed-b06b-3be413b33b07"),
-			masterCallID: uuid.FromStringOrNil("2b4f5b44-bbae-11ed-9629-dfffd3ac6a43"),
-			ringMethod:   cmgroupcall.RingMethodRingAll,
-			answerMethod: cmgroupcall.AnswerMethodHangupOthers,
+			flowID:            uuid.FromStringOrNil("2b1f1682-bbae-11ed-b06b-3be413b33b07"),
+			masterCallID:      uuid.FromStringOrNil("2b4f5b44-bbae-11ed-9629-dfffd3ac6a43"),
+			masterGroupcallID: uuid.FromStringOrNil("e6310999-eab1-48fc-b0ce-f5ee55743864"),
+			ringMethod:        cmgroupcall.RingMethodRingAll,
+			answerMethod:      cmgroupcall.AnswerMethodHangupOthers,
 
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -157,7 +161,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 				URI:      "/v1/groupcalls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"flow_id":"2b1f1682-bbae-11ed-b06b-3be413b33b07","master_call_id":"2b4f5b44-bbae-11ed-9629-dfffd3ac6a43","ring_method":"ring_all","answer_method":"hangup_others"}`),
+				Data:     []byte(`{"id":"812e519b-bbf6-415f-9c49-b4db5c76f68d","customer_id":"2ac49ec8-bbae-11ed-b9cd-8f47fd0602b9","flow_id":"2b1f1682-bbae-11ed-b06b-3be413b33b07","source":{"type":"tel","target":"+821100000001","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821100000002","target_name":"","name":"","detail":""},{"type":"tel","target":"+821100000003","target_name":"","name":"","detail":""}],"master_call_id":"2b4f5b44-bbae-11ed-9629-dfffd3ac6a43","master_groupcall_id":"e6310999-eab1-48fc-b0ce-f5ee55743864","ring_method":"ring_all","answer_method":"hangup_others"}`),
 			},
 			expectRes: &cmgroupcall.Groupcall{
 				ID: uuid.FromStringOrNil("2b7dc4ac-bbae-11ed-b868-f762b6f7fd23"),
@@ -179,7 +183,7 @@ func Test_CallV1GroupcallCreate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1GroupcallCreate(ctx, tt.customerID, tt.source, tt.destinations, tt.flowID, tt.masterCallID, tt.ringMethod, tt.answerMethod)
+			res, err := reqHandler.CallV1GroupcallCreate(ctx, tt.id, tt.customerID, tt.flowID, tt.source, tt.destinations, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
