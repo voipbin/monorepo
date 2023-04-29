@@ -449,11 +449,13 @@ type RequestHandler interface {
 	// call-manager groupcall
 	CallV1GroupcallCreate(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
+		flowID uuid.UUID,
 		source commonaddress.Address,
 		destinations []commonaddress.Address,
-		flowID uuid.UUID,
 		masterCallID uuid.UUID,
+		masterGroupcallID uuid.UUID,
 		ringMethod cmgroupcall.RingMethod,
 		answerMethod cmgroupcall.AnswerMethod,
 	) (*cmgroupcall.Groupcall, error)
