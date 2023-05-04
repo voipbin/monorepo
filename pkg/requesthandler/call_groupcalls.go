@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -30,17 +31,7 @@ func (r *requestHandler) CallV1GroupcallCreate(
 ) (*cmgroupcall.Groupcall, error) {
 	uri := "/v1/groupcalls"
 
-	reqData := &struct {
-		ID                uuid.UUID                `json:"id,omitempty"`
-		CustomerID        uuid.UUID                `json:"customer_id,omitempty"`
-		FlowID            uuid.UUID                `json:"flow_id,omitempty"`
-		Source            commonaddress.Address    `json:"source,omitempty"`
-		Destinations      []commonaddress.Address  `json:"destinations,omitempty"`
-		MasterCallID      uuid.UUID                `json:"master_call_id,omitempty"`
-		MasterGroupcallID uuid.UUID                `json:"master_groupcall_id,omitempty"`
-		RingMethod        cmgroupcall.RingMethod   `json:"ring_method,omitempty"`
-		AnswerMethod      cmgroupcall.AnswerMethod `json:"answer_method,omitempty"`
-	}{
+	reqData := &cmrequest.V1DataGroupcallsPost{
 		ID:                id,
 		CustomerID:        customerID,
 		FlowID:            flowID,
@@ -51,16 +42,6 @@ func (r *requestHandler) CallV1GroupcallCreate(
 		RingMethod:        ringMethod,
 		AnswerMethod:      answerMethod,
 	}
-
-	// reqData := &cmrequest.V1DataGroupcallsPost{
-	// 	CustomerID:   customerID,
-	// 	Source:       source,
-	// 	Destinations: destinations,
-	// 	FlowID:       flowID,
-	// 	MasterCallID: masterCallID,
-	// 	RingMethod:   ringMethod,
-	// 	AnswerMethod: answerMethod,
-	// }
 
 	m, err := json.Marshal(reqData)
 	if err != nil {

@@ -7,8 +7,8 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	cmrequest "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/request"
 	cmresponse "gitlab.com/voipbin/bin-manager/call-manager.git/pkg/listenhandler/models/response"
@@ -96,8 +96,8 @@ func (r *requestHandler) CallV1CallActionNext(ctx context.Context, callID uuid.U
 }
 
 // CallV1CallCreate sends a request to call-manager
-// to creating a call.
-// it returns created call if it succeed.
+// to creating a calls and groupcalls depending on the destination's type.
+// it returns created calls and groupcalls if it succeed.
 func (r *requestHandler) CallV1CallsCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -107,7 +107,7 @@ func (r *requestHandler) CallV1CallsCreate(
 	destinations []commonaddress.Address,
 	ealryExecution bool,
 	connect bool,
-) ([]cmcall.Call, error) {
+) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error) {
 	uri := "/v1/calls"
 
 	m, err := json.Marshal(cmrequest.V1DataCallsPost{
@@ -120,26 +120,26 @@ func (r *requestHandler) CallV1CallsCreate(
 		Connect:        connect,
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	tmp, err := r.sendRequestCall(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceCallCalls, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
-		return nil, err
+		return nil, nil, err
 	case tmp == nil:
 		// not found
-		return nil, fmt.Errorf("response code: %d", 404)
+		return nil, nil, fmt.Errorf("response code: %d", 404)
 	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var res []cmcall.Call
+	res := &cmresponse.V1ResponseCallsPost{}
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return res, nil
+	return res.Calls, res.Groupcalls, nil
 }
 
 // CallV1CallCreateWithID sends a request to call-manager
@@ -686,7 +686,7 @@ func (r *requestHandler) CallV1CallHoldOff(ctx context.Context, callID uuid.UUID
 // CallV1CallMuteOn sends a request to call-manager
 // to mute the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID, direction call.MuteDirection) error {
+func (r *requestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID, direction cmcall.MuteDirection) error {
 	uri := fmt.Sprintf("/v1/calls/%s/mute", callID)
 
 	m, err := json.Marshal(cmrequest.V1DataCallsIDMutePost{
@@ -713,7 +713,7 @@ func (r *requestHandler) CallV1CallMuteOn(ctx context.Context, callID uuid.UUID,
 // CallV1CallMuteOff sends a request to call-manager
 // to unmute the call.
 // it returns error if something went wrong.
-func (r *requestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID, direction call.MuteDirection) error {
+func (r *requestHandler) CallV1CallMuteOff(ctx context.Context, callID uuid.UUID, direction cmcall.MuteDirection) error {
 	uri := fmt.Sprintf("/v1/calls/%s/mute", callID)
 
 	m, err := json.Marshal(cmrequest.V1DataCallsIDMuteDelete{

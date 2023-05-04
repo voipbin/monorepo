@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
@@ -214,45 +215,53 @@ func Test_CallV1CallsCreate(t *testing.T) {
 		ealryExecution bool
 		connect        bool
 
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		response      *rabbitmqhandler.Response
-		expectRes     []cmcall.Call
+		response *rabbitmqhandler.Response
+
+		expectTarget        string
+		expectRequest       *rabbitmqhandler.Request
+		expectResCalls      []*cmcall.Call
+		expectResGroupcalls []*cmgroupcall.Groupcall
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("3a09efda-7f52-11ec-a775-cfd868cdc292"),
-			uuid.FromStringOrNil("0783c168-4c70-11ec-a613-bfcd98aaa6da"),
-			uuid.FromStringOrNil("ecd7b104-8c97-11ec-895d-67294ed5a4d0"),
-			&address.Address{
+			customerID:   uuid.FromStringOrNil("3a09efda-7f52-11ec-a775-cfd868cdc292"),
+			flowID:       uuid.FromStringOrNil("0783c168-4c70-11ec-a613-bfcd98aaa6da"),
+			masterCallID: uuid.FromStringOrNil("ecd7b104-8c97-11ec-895d-67294ed5a4d0"),
+			source: &address.Address{
 				Type:   address.TypeTel,
 				Target: "+821021656521",
 			},
-			[]address.Address{
+			destinations: []address.Address{
 				{
 					Type:   address.TypeTel,
 					Target: "+821021656522",
 				},
 			},
-			true,
-			true,
+			ealryExecution: true,
+			connect:        true,
 
-			"bin-manager.call-manager.request",
-			&rabbitmqhandler.Request{
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"calls":[{"id":"fa0ddb32-25cd-11eb-a604-8b239b305055"}],"groupcalls":[{"id":"69b105a6-939b-4eb0-99a5-0efa5b3cd80e"}]}`),
+			},
+
+			expectTarget: "bin-manager.call-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"flow_id":"0783c168-4c70-11ec-a613-bfcd98aaa6da","customer_id":"3a09efda-7f52-11ec-a775-cfd868cdc292","master_call_id":"ecd7b104-8c97-11ec-895d-67294ed5a4d0","source":{"type":"tel","target":"+821021656521","target_name":"","name":"","detail":""},"destinations":[{"type":"tel","target":"+821021656522","target_name":"","name":"","detail":""}],"early_execution":true,"connect":true}`),
 			},
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`[{"id":"fa0ddb32-25cd-11eb-a604-8b239b305055"}]`),
-			},
-			[]cmcall.Call{
+			expectResCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
+				},
+			},
+			expectResGroupcalls: []*cmgroupcall.Groupcall{
+				{
+					ID: uuid.FromStringOrNil("69b105a6-939b-4eb0-99a5-0efa5b3cd80e"),
 				},
 			},
 		},
@@ -271,14 +280,18 @@ func Test_CallV1CallsCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.ealryExecution, tt.connect)
+			resCalls, resGroupcalls, err := reqHandler.CallV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.ealryExecution, tt.connect)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			if !reflect.DeepEqual(resCalls, tt.expectResCalls) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResCalls, resCalls)
 			}
+			if !reflect.DeepEqual(resGroupcalls, tt.expectResGroupcalls) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResGroupcalls, resGroupcalls)
+			}
+
 		})
 	}
 }
@@ -1458,7 +1471,7 @@ func Test_CallV1CallMuteOn(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID uuid.UUID
+		callID    uuid.UUID
 		direction call.MuteDirection
 
 		expectTarget  string
@@ -1473,10 +1486,10 @@ func Test_CallV1CallMuteOn(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/calls/b3c32e88-cef5-11ed-9f30-1b12722669f5/mute",
-				Method: rabbitmqhandler.RequestMethodPost,
+				URI:      "/v1/calls/b3c32e88-cef5-11ed-9f30-1b12722669f5/mute",
+				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data: []byte(`{"direction":"both"}`),
+				Data:     []byte(`{"direction":"both"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -1509,7 +1522,7 @@ func Test_CallV1CallMuteOff(t *testing.T) {
 	tests := []struct {
 		name string
 
-		callID uuid.UUID
+		callID    uuid.UUID
 		direction call.MuteDirection
 
 		expectTarget  string
@@ -1524,10 +1537,10 @@ func Test_CallV1CallMuteOff(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&rabbitmqhandler.Request{
-				URI:    "/v1/calls/b3ebe8dc-cef5-11ed-a05a-8730dc1ef961/mute",
-				Method: rabbitmqhandler.RequestMethodDelete,
+				URI:      "/v1/calls/b3ebe8dc-cef5-11ed-a05a-8730dc1ef961/mute",
+				Method:   rabbitmqhandler.RequestMethodDelete,
 				DataType: ContentTypeJSON,
-				Data: []byte(`{"direction":"both"}`),
+				Data:     []byte(`{"direction":"both"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
