@@ -13,6 +13,7 @@ import (
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/externalmediahandler"
@@ -409,9 +410,10 @@ func Test_processV1CallsPost(t *testing.T) {
 		earlyExeuction bool
 		connect        bool
 
-		responseCall []*call.Call
-		request      *rabbitmqhandler.Request
-		expectRes    *rabbitmqhandler.Response
+		responseCalls      []*call.Call
+		responseGroupcalls []*groupcall.Groupcall
+		request            *rabbitmqhandler.Request
+		expectRes          *rabbitmqhandler.Response
 	}
 
 	tests := []test{
@@ -435,11 +437,17 @@ func Test_processV1CallsPost(t *testing.T) {
 			earlyExeuction: true,
 			connect:        true,
 
-			responseCall: []*call.Call{
+			responseCalls: []*call.Call{
 				{
 					ID: uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
 				},
 			},
+			responseGroupcalls: []*groupcall.Groupcall{
+				{
+					ID: uuid.FromStringOrNil("4f1e2d54-7d52-4c1f-ad49-5b51feea0055"),
+				},
+			},
+
 			request: &rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
@@ -449,7 +457,7 @@ func Test_processV1CallsPost(t *testing.T) {
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"cd561ba6-f3a8-11ea-b7ac-57b19fa28e09","customer_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`{"calls":[{"id":"cd561ba6-f3a8-11ea-b7ac-57b19fa28e09","customer_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}],"groupcalls":[{"id":"4f1e2d54-7d52-4c1f-ad49-5b51feea0055","customer_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}]}`),
 			},
 		},
 		{
@@ -463,15 +471,17 @@ func Test_processV1CallsPost(t *testing.T) {
 			earlyExeuction: false,
 			connect:        false,
 
-			responseCall: []*call.Call{
+			responseCalls: []*call.Call{
 				{
-					ID:          uuid.FromStringOrNil("72d56d08-f3a8-11ea-9c0c-ef8258d54f42"),
-					CustomerID:  uuid.FromStringOrNil("34e72f78-7f51-11ec-a83b-cfc69cd4a641"),
-					FlowID:      uuid.FromStringOrNil("78fd1276-f3a8-11ea-9734-6735e73fd720"),
-					Source:      commonaddress.Address{},
-					Destination: commonaddress.Address{},
+					ID: uuid.FromStringOrNil("72d56d08-f3a8-11ea-9c0c-ef8258d54f42"),
 				},
 			},
+			responseGroupcalls: []*groupcall.Groupcall{
+				{
+					ID: uuid.FromStringOrNil("50e70d60-d722-43ce-a6b6-d69a28e36cbe"),
+				},
+			},
+
 			request: &rabbitmqhandler.Request{
 				URI:      "/v1/calls",
 				Method:   rabbitmqhandler.RequestMethodPost,
@@ -481,7 +491,7 @@ func Test_processV1CallsPost(t *testing.T) {
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"72d56d08-f3a8-11ea-9c0c-ef8258d54f42","customer_id":"34e72f78-7f51-11ec-a83b-cfc69cd4a641","channel_id":"","bridge_id":"","flow_id":"78fd1276-f3a8-11ea-9734-6735e73fd720","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`{"calls":[{"id":"72d56d08-f3a8-11ea-9c0c-ef8258d54f42","customer_id":"00000000-0000-0000-0000-000000000000","channel_id":"","bridge_id":"","flow_id":"00000000-0000-0000-0000-000000000000","active_flow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"","target":"","target_name":"","name":"","detail":""},"destination":{"type":"","target":"","target_name":"","name":"","detail":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":""},"action_next_hold":false,"direction":"","mute_direction":"","hangup_by":"","hangup_reason":"","dialroute_id":"00000000-0000-0000-0000-000000000000","dialroutes":null,"tm_ringing":"","tm_progressing":"","tm_hangup":"","tm_create":"","tm_update":"","tm_delete":""}],"groupcalls":[{"id":"50e70d60-d722-43ce-a6b6-d69a28e36cbe","customer_id":"00000000-0000-0000-0000-000000000000","status":"","flow_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","ring_method":"","answer_method":"","answer_call_id":"00000000-0000-0000-0000-000000000000","call_ids":null,"answer_groupcall_id":"00000000-0000-0000-0000-000000000000","groupcall_ids":null,"call_count":0,"groupcall_count":0,"tm_create":"","tm_update":"","tm_delete":""}]}`),
 			},
 		},
 	}
@@ -499,7 +509,7 @@ func Test_processV1CallsPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect).Return(tt.responseCall, nil)
+			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

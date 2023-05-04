@@ -321,7 +321,7 @@ func Test_joinedTypeConnect(t *testing.T) {
 			} else {
 				i := 0
 				for _, callID := range tt.confbridge.ChannelCallIDs {
-					mockReq.EXPECT().CallV1CallGet(ctx, callID).Return(tt.responseCalls[i], nil)
+					mockReq.EXPECT().CallV1CallGet(ctx, callID).Return(tt.responseCalls[i], nil).AnyTimes()
 					i++
 				}
 

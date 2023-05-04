@@ -993,6 +993,20 @@ func (mr *MockDBHandlerMockRecorder) GroupcallDecreaseCallCount(ctx, id interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallDecreaseCallCount", reflect.TypeOf((*MockDBHandler)(nil).GroupcallDecreaseCallCount), ctx, id)
 }
 
+// GroupcallDecreaseGroupcallCount mocks base method.
+func (m *MockDBHandler) GroupcallDecreaseGroupcallCount(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallDecreaseGroupcallCount", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupcallDecreaseGroupcallCount indicates an expected call of GroupcallDecreaseGroupcallCount.
+func (mr *MockDBHandlerMockRecorder) GroupcallDecreaseGroupcallCount(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallDecreaseGroupcallCount", reflect.TypeOf((*MockDBHandler)(nil).GroupcallDecreaseGroupcallCount), ctx, id)
+}
+
 // GroupcallDelete mocks base method.
 func (m *MockDBHandler) GroupcallDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -1049,6 +1063,62 @@ func (m *MockDBHandler) GroupcallSetAnswerCallID(ctx context.Context, id, answer
 func (mr *MockDBHandlerMockRecorder) GroupcallSetAnswerCallID(ctx, id, answerCallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSetAnswerCallID", reflect.TypeOf((*MockDBHandler)(nil).GroupcallSetAnswerCallID), ctx, id, answerCallID)
+}
+
+// GroupcallSetAnswerGroupcallID mocks base method.
+func (m *MockDBHandler) GroupcallSetAnswerGroupcallID(ctx context.Context, id, answerGroupcallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallSetAnswerGroupcallID", ctx, id, answerGroupcallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupcallSetAnswerGroupcallID indicates an expected call of GroupcallSetAnswerGroupcallID.
+func (mr *MockDBHandlerMockRecorder) GroupcallSetAnswerGroupcallID(ctx, id, answerGroupcallID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSetAnswerGroupcallID", reflect.TypeOf((*MockDBHandler)(nil).GroupcallSetAnswerGroupcallID), ctx, id, answerGroupcallID)
+}
+
+// GroupcallSetCallIDsAndCallCountAndDialIndex mocks base method.
+func (m *MockDBHandler) GroupcallSetCallIDsAndCallCountAndDialIndex(ctx context.Context, id uuid.UUID, callIDs []uuid.UUID, callCount, dialIndex int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallSetCallIDsAndCallCountAndDialIndex", ctx, id, callIDs, callCount, dialIndex)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupcallSetCallIDsAndCallCountAndDialIndex indicates an expected call of GroupcallSetCallIDsAndCallCountAndDialIndex.
+func (mr *MockDBHandlerMockRecorder) GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, id, callIDs, callCount, dialIndex interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSetCallIDsAndCallCountAndDialIndex", reflect.TypeOf((*MockDBHandler)(nil).GroupcallSetCallIDsAndCallCountAndDialIndex), ctx, id, callIDs, callCount, dialIndex)
+}
+
+// GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex mocks base method.
+func (m *MockDBHandler) GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx context.Context, id uuid.UUID, groupcallIDs []uuid.UUID, groupcallCount, dialIndex int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex", ctx, id, groupcallIDs, groupcallCount, dialIndex)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex indicates an expected call of GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex.
+func (mr *MockDBHandlerMockRecorder) GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx, id, groupcallIDs, groupcallCount, dialIndex interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex", reflect.TypeOf((*MockDBHandler)(nil).GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex), ctx, id, groupcallIDs, groupcallCount, dialIndex)
+}
+
+// GroupcallSetStatus mocks base method.
+func (m *MockDBHandler) GroupcallSetStatus(ctx context.Context, id uuid.UUID, status groupcall.Status) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallSetStatus", ctx, id, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupcallSetStatus indicates an expected call of GroupcallSetStatus.
+func (mr *MockDBHandlerMockRecorder) GroupcallSetStatus(ctx, id, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSetStatus", reflect.TypeOf((*MockDBHandler)(nil).GroupcallSetStatus), ctx, id, status)
 }
 
 // RecordingCreate mocks base method.

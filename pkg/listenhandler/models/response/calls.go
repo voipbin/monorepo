@@ -1,5 +1,18 @@
 package response
 
+import (
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+)
+
+// V1ResponseCallsPost is
+// v1 response type for
+// /v1/calls POST
+type V1ResponseCallsPost struct {
+	Calls      []*call.Call           `json:"calls,omitempty"`
+	Groupcalls []*groupcall.Groupcall `json:"groupcalls,omitempty"`
+}
+
 // V1ResponseCallsIDExternalMediaPost is
 // v1 response type for
 // /v1/calls/<id>/external-media POST

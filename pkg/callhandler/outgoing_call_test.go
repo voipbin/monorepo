@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -372,13 +373,10 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 		customerID   uuid.UUID
 		flowID       uuid.UUID
 		masterCallID uuid.UUID
-		source       commonaddress.Address
-		destination  commonaddress.Address
+		source       *commonaddress.Address
+		destination  *commonaddress.Address
 
 		responseGroupcall *groupcall.Groupcall
-		responseCalls     []*call.Call
-
-		expectGroupcall *groupcall.Groupcall
 	}{
 		{
 			name: "normal",
@@ -386,11 +384,11 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			customerID:   uuid.FromStringOrNil("e9a6c252-b5c4-11ed-8431-0f528880d39a"),
 			flowID:       uuid.FromStringOrNil("e9ebb18c-b5c4-11ed-9775-cf1b5f3ac127"),
 			masterCallID: uuid.FromStringOrNil("7ca3f4f7-a5c3-4df3-8a8a-a008ac2380be"),
-			source: commonaddress.Address{
+			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			destination: commonaddress.Address{
+			destination: &commonaddress.Address{
 				Type:   commonaddress.TypeEndpoint,
 				Target: "test-exten@test-domain",
 			},
@@ -400,31 +398,6 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 				CallIDs: []uuid.UUID{
 					uuid.FromStringOrNil("9da13d85-1a50-46d7-a4f6-e1a70650a648"),
 					uuid.FromStringOrNil("8815fce3-7560-4574-a659-20905f928f5a"),
-				},
-			},
-			responseCalls: []*call.Call{
-				{
-					ID: uuid.FromStringOrNil("9da13d85-1a50-46d7-a4f6-e1a70650a648"),
-				},
-				{
-					ID: uuid.FromStringOrNil("8815fce3-7560-4574-a659-20905f928f5a"),
-				},
-			},
-
-			expectGroupcall: &groupcall.Groupcall{
-				ID:         uuid.FromStringOrNil("08701bca-b5e8-11ed-9257-4bee6cbc72bf"),
-				CustomerID: uuid.FromStringOrNil("e9a6c252-b5c4-11ed-8431-0f528880d39a"),
-				Destinations: []commonaddress.Address{
-					{
-						Type:   commonaddress.TypeEndpoint,
-						Target: "test-exten@test-domain",
-					},
-				},
-				RingMethod:   groupcall.RingMethodRingAll,
-				AnswerMethod: groupcall.AnswerMethodHangupOthers,
-				CallIDs: []uuid.UUID{
-					uuid.FromStringOrNil("a62ac2ae-b5eb-11ed-9607-fff199830675"),
-					uuid.FromStringOrNil("a65415be-b5eb-11ed-86f5-83763d30dbf1"),
 				},
 			},
 		},
@@ -452,26 +425,92 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			destinations := []commonaddress.Address{
-				tt.destination,
-			}
-			mockGroupcall.EXPECT().Start(ctx, tt.customerID, &tt.source, destinations, tt.flowID, tt.masterCallID, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
-
-			for i, callID := range tt.responseGroupcall.CallIDs {
-				mockDB.EXPECT().CallGet(ctx, callID).Return(tt.responseCalls[i], nil)
-			}
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
 
 			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.responseCalls) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseCalls, res)
+			if !reflect.DeepEqual(res, tt.responseGroupcall) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseGroupcall, res)
 			}
 		})
 	}
+}
 
+func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		masterCallID uuid.UUID
+		source       *commonaddress.Address
+		destination  *commonaddress.Address
+
+		responseGroupcall *groupcall.Groupcall
+	}{
+		{
+			name: "agent ring method ring linear",
+
+			customerID:   uuid.FromStringOrNil("f5979302-e274-11ed-8e02-f7e891b8718e"),
+			flowID:       uuid.FromStringOrNil("f5cfdd2a-e274-11ed-a8cb-eb89c814da27"),
+			masterCallID: uuid.FromStringOrNil("f5fc5972-e274-11ed-999b-2743d4d4b02a"),
+			source: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: &commonaddress.Address{
+				Type:   commonaddress.TypeAgent,
+				Target: "8794f182-e275-11ed-b53f-93e62e46ec3d",
+			},
+
+			responseGroupcall: &groupcall.Groupcall{
+				ID: uuid.FromStringOrNil("f6223d68-e274-11ed-805f-4329b5f9076e"),
+				CallIDs: []uuid.UUID{
+					uuid.FromStringOrNil("f64b0bd0-e274-11ed-8457-63d2b832a8c0"),
+					uuid.FromStringOrNil("f673400a-e274-11ed-920b-535097d30c6f"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+
+			h := &callHandler{
+				utilHandler:      mockUtil,
+				reqHandler:       mockReq,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				channelHandler:   mockChannel,
+				groupcallHandler: mockGroupcall,
+			}
+			ctx := context.Background()
+
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
+
+			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseGroupcall) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseGroupcall, res)
+			}
+		})
+	}
 }
 
 func Test_getDialURI_Tel(t *testing.T) {
@@ -1259,6 +1298,85 @@ func Test_getSourceForOutgoingCall(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := getSourceForOutgoingCall(tt.source, tt.destination)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_getGroupcallRingMethod_destination_type_agent(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		destination commonaddress.Address
+
+		responseAgent *amagent.Agent
+
+		expectRes groupcall.RingMethod
+	}{
+		{
+			name: "agent ring method ring linear",
+
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeAgent,
+				Target: "de4249b4-e278-11ed-adcd-0b3ffc5eafb6",
+			},
+
+			responseAgent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("de4249b4-e278-11ed-adcd-0b3ffc5eafb6"),
+				RingMethod: amagent.RingMethodLinear,
+			},
+
+			expectRes: groupcall.RingMethodLinear,
+		},
+		{
+			name: "agent ring method ring all",
+
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeAgent,
+				Target: "de806866-e278-11ed-83fd-17826e514dba",
+			},
+
+			responseAgent: &amagent.Agent{
+				ID:         uuid.FromStringOrNil("de806866-e278-11ed-83fd-17826e514dba"),
+				RingMethod: amagent.RingMethodRingAll,
+			},
+
+			expectRes: groupcall.RingMethodRingAll,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+
+			h := &callHandler{
+				utilHandler:      mockUtil,
+				reqHandler:       mockReq,
+				db:               mockDB,
+				notifyHandler:    mockNotify,
+				channelHandler:   mockChannel,
+				groupcallHandler: mockGroupcall,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().AgentV1AgentGet(ctx, uuid.FromStringOrNil(tt.destination.Target)).Return(tt.responseAgent, nil)
+
+			res, err := h.getGroupcallRingMethod(ctx, tt.destination)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

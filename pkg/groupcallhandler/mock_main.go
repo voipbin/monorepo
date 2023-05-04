@@ -37,48 +37,33 @@ func (m *MockGroupcallHandler) EXPECT() *MockGroupcallHandlerMockRecorder {
 	return m.recorder
 }
 
-// Answer mocks base method.
-func (m *MockGroupcallHandler) Answer(ctx context.Context, groupcallID, answerCallID uuid.UUID) error {
+// AnswerCall mocks base method.
+func (m *MockGroupcallHandler) AnswerCall(ctx context.Context, groupcallID, answerCallID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Answer", ctx, groupcallID, answerCallID)
+	ret := m.ctrl.Call(m, "AnswerCall", ctx, groupcallID, answerCallID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Answer indicates an expected call of Answer.
-func (mr *MockGroupcallHandlerMockRecorder) Answer(ctx, groupcallID, answerCallID interface{}) *gomock.Call {
+// AnswerCall indicates an expected call of AnswerCall.
+func (mr *MockGroupcallHandlerMockRecorder) AnswerCall(ctx, groupcallID, answerCallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Answer", reflect.TypeOf((*MockGroupcallHandler)(nil).Answer), ctx, groupcallID, answerCallID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnswerCall", reflect.TypeOf((*MockGroupcallHandler)(nil).AnswerCall), ctx, groupcallID, answerCallID)
 }
 
-// Create mocks base method.
-func (m *MockGroupcallHandler) Create(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, callIDs []uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.Groupcall, error) {
+// AnswerGroupcall mocks base method.
+func (m *MockGroupcallHandler) AnswerGroupcall(ctx context.Context, id, answerGroupcallID uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, source, destinations, callIDs, ringMethod, answerMethod)
+	ret := m.ctrl.Call(m, "AnswerGroupcall", ctx, id, answerGroupcallID)
 	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Create indicates an expected call of Create.
-func (mr *MockGroupcallHandlerMockRecorder) Create(ctx, customerID, source, destinations, callIDs, ringMethod, answerMethod interface{}) *gomock.Call {
+// AnswerGroupcall indicates an expected call of AnswerGroupcall.
+func (mr *MockGroupcallHandlerMockRecorder) AnswerGroupcall(ctx, id, answerGroupcallID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockGroupcallHandler)(nil).Create), ctx, customerID, source, destinations, callIDs, ringMethod, answerMethod)
-}
-
-// DecreaseCallCount mocks base method.
-func (m *MockGroupcallHandler) DecreaseCallCount(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DecreaseCallCount", ctx, id)
-	ret0, _ := ret[0].(*groupcall.Groupcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DecreaseCallCount indicates an expected call of DecreaseCallCount.
-func (mr *MockGroupcallHandlerMockRecorder) DecreaseCallCount(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecreaseCallCount", reflect.TypeOf((*MockGroupcallHandler)(nil).DecreaseCallCount), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnswerGroupcall", reflect.TypeOf((*MockGroupcallHandler)(nil).AnswerGroupcall), ctx, id, answerGroupcallID)
 }
 
 // Delete mocks base method.
@@ -141,19 +126,63 @@ func (mr *MockGroupcallHandlerMockRecorder) Hangingup(ctx, id interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hangingup", reflect.TypeOf((*MockGroupcallHandler)(nil).Hangingup), ctx, id)
 }
 
-// Start mocks base method.
-func (m *MockGroupcallHandler) Start(ctx context.Context, customerID uuid.UUID, source *address.Address, destinations []address.Address, flowID, masterCallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.Groupcall, error) {
+// HangupCall mocks base method.
+func (m *MockGroupcallHandler) HangupCall(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod)
+	ret := m.ctrl.Call(m, "HangupCall", ctx, id)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HangupCall indicates an expected call of HangupCall.
+func (mr *MockGroupcallHandlerMockRecorder) HangupCall(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangupCall", reflect.TypeOf((*MockGroupcallHandler)(nil).HangupCall), ctx, id)
+}
+
+// HangupGroupcall mocks base method.
+func (m *MockGroupcallHandler) HangupGroupcall(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HangupGroupcall", ctx, id)
+	ret0, _ := ret[0].(*groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HangupGroupcall indicates an expected call of HangupGroupcall.
+func (mr *MockGroupcallHandlerMockRecorder) HangupGroupcall(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HangupGroupcall", reflect.TypeOf((*MockGroupcallHandler)(nil).HangupGroupcall), ctx, id)
+}
+
+// IsGroupcallTypeAddress mocks base method.
+func (m *MockGroupcallHandler) IsGroupcallTypeAddress(destination *address.Address) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsGroupcallTypeAddress", destination)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsGroupcallTypeAddress indicates an expected call of IsGroupcallTypeAddress.
+func (mr *MockGroupcallHandlerMockRecorder) IsGroupcallTypeAddress(destination interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsGroupcallTypeAddress", reflect.TypeOf((*MockGroupcallHandler)(nil).IsGroupcallTypeAddress), destination)
+}
+
+// Start mocks base method.
+func (m *MockGroupcallHandler) Start(ctx context.Context, id, customerID, flowID uuid.UUID, source *address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start", ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod)
 	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockGroupcallHandlerMockRecorder) Start(ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod interface{}) *gomock.Call {
+func (mr *MockGroupcallHandlerMockRecorder) Start(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockGroupcallHandler)(nil).Start), ctx, customerID, source, destinations, flowID, masterCallID, ringMethod, answerMethod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockGroupcallHandler)(nil).Start), ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod)
 }
 
 // UpdateAnswerCallID mocks base method.
