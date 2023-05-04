@@ -22,10 +22,10 @@ type Groupcall struct {
 	RingMethod   RingMethod   `json:"ring_method"`
 	AnswerMethod AnswerMethod `json:"answer_method"`
 
-	AnswerCallID uuid.UUID   `json:"answer_call_id"` // valid only when the answered_method  is hangup others
+	AnswerCallID uuid.UUID   `json:"answer_call_id"` // represents answered call id.
 	CallIDs      []uuid.UUID `json:"call_ids"`
 
-	AnswerGroupcallID uuid.UUID   `json:"answer_groupcall_id"`
+	AnswerGroupcallID uuid.UUID   `json:"answer_groupcall_id"` // represents answered groupcall id
 	GroupcallIDs      []uuid.UUID `json:"groupcall_ids"`
 
 	CallCount      int `json:"call_count"`           // represent left number of calls for current dial
