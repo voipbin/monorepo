@@ -1246,12 +1246,13 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallUpdateConfbridgeID(ctx, call
 }
 
 // CallV1CallsCreate mocks base method.
-func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address, ealryExecution, connect bool) ([]call.Call, error) {
+func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address, ealryExecution, connect bool) ([]*call.Call, []*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallV1CallsCreate", ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect)
-	ret0, _ := ret[0].([]call.Call)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].([]*call.Call)
+	ret1, _ := ret[1].([]*groupcall.Groupcall)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // CallV1CallsCreate indicates an expected call of CallV1CallsCreate.
