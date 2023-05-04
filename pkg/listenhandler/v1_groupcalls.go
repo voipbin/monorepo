@@ -75,7 +75,19 @@ func (h *listenHandler) processV1GroupcallsPost(ctx context.Context, m *rabbitmq
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.groupcallHandler.Start(ctx, req.CustomerID, &req.Source, req.Destinations, req.FlowID, req.MasterCallID, req.RingMethod, req.AnswerMethod)
+	// start groupcall
+	tmp, err := h.groupcallHandler.Start(
+		ctx,
+		req.ID,
+		req.CustomerID,
+		req.FlowID,
+		&req.Source,
+		req.Destinations,
+		req.MasterCallID,
+		req.MasterGroupcallID,
+		req.RingMethod,
+		req.AnswerMethod,
+	)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
@@ -184,6 +196,120 @@ func (h *listenHandler) processV1GroupcallsIDHangupPost(ctx context.Context, m *
 	id := uuid.FromStringOrNil(uriItems[3])
 
 	tmp, err := h.groupcallHandler.Hangingup(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get groupcall info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1GroupcallsIDAnswerGroupcallIDPost handles POST /v1/groupcalls/<groupcall-id>/answer_groupcall_id request
+// It hangup the groupcall.
+func (h *listenHandler) processV1GroupcallsIDAnswerGroupcallIDPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1GroupcallsIDAnswerGroupcallIDPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	var req request.V1DataGroupcallsIDAnswerGroupcallIDPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.groupcallHandler.AnswerGroupcall(ctx, id, req.AnswerGroupcallID)
+	if err != nil {
+		log.Errorf("Could not get groupcall info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1GroupcallsIDHangupGroupcallPost handles POST /v1/groupcalls/<groupcall-id>/hangup_groupcall request
+// It handles hangup the groupcall.
+func (h *listenHandler) processV1GroupcallsIDHangupGroupcallPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1GroupcallsIDHangupGroupcallPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.groupcallHandler.HangupGroupcall(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get groupcall info. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1GroupcallsIDHangupCallPost handles POST /v1/groupcalls/<groupcall-id>/hangup_call request
+// It handles hangup the groupcall.
+func (h *listenHandler) processV1GroupcallsIDHangupCallPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1GroupcallsIDHangupCallPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.groupcallHandler.HangupCall(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get groupcall info. err: %v", err)
 		return simpleResponse(500), nil

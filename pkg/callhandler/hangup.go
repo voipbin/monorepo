@@ -17,8 +17,8 @@ import (
 // Hangup Hangup the call
 func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "Hangup",
-		"channel_id": cn.ID,
+		"func":    "Hangup",
+		"channel": cn,
 	})
 
 	// get call info
@@ -28,7 +28,7 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 		log.Errorf("Could not get the call info from the db. err: %v", err)
 		return nil
 	}
-	log = log.WithField("call_id", c.ID)
+	log = log.WithField("call", c)
 
 	// remove the call bridge
 	if errDestroy := h.bridgeHandler.Destroy(ctx, c.BridgeID); errDestroy != nil {
@@ -61,32 +61,34 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) error {
 
 	// check the call is part of groupcall
 	if cc.GroupcallID != uuid.Nil {
-		log.Debugf("The call has groupcall id. Updating groupcall answer call info. groupcall_id: %s", cc.GroupcallID)
-		_, err := h.groupcallHandler.DecreaseCallCount(ctx, cc.GroupcallID)
-		if err != nil {
-			log.Errorf("Could not update the group dial answer call id. err: %v", err)
-		}
+		log.Debugf("The call has groupcall id. Updating groupcall hangup call info. groupcall_id: %s", cc.GroupcallID)
+		go func(id uuid.UUID) {
+			if errReq := h.reqHandler.CallV1GroupcallHangupCall(ctx, id); errReq != nil {
+				// we don't do any error handle here.
+				// just write the log.
+				log.Errorf("Could not hangup the groupcall. err: %v", err)
+			}
+		}(cc.GroupcallID)
 	}
 
 	// send activeflow stop
-	log.Debugf("Deleting activeflow. activeflow_id: %s", c.ActiveFlowID)
+	log.Debugf("Stopping the activeflow. activeflow_id: %s", c.ActiveFlowID)
 	_, err = h.reqHandler.FlowV1ActiveflowStop(ctx, c.ActiveFlowID)
 	if err != nil {
-		// we don't do anything here. just write log only
-		log.Errorf("Could not delete activeflow correctly. err: %v", err)
+		// we don't do anything here. just write the log
+		log.Errorf("Could not stop the activeflow correctly. err: %v", err)
 	}
 
 	// hangup the chained call
 	for _, callID := range cc.ChainedCallIDs {
 		// hang up the call
-		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
+		_, err = h.HangingUp(ctx, callID, call.HangupReasonNormal)
 		if err != nil {
+			// we don't do any error handle here.
+			// just write the log
 			log.Errorf("Could not hangup the chained call. err: %v", err)
 		}
 	}
-
-	// execute the master call execution
-	h.handleMasterCallExecution(ctx, cc)
 
 	return nil
 }
@@ -155,8 +157,9 @@ func (h *callHandler) hangingUpWithCause(ctx context.Context, id uuid.UUID, caus
 // isRetryable returns true if the given call is dial retryable
 func (h *callHandler) isRetryable(ctx context.Context, c *call.Call, cn *channel.Channel) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"call_id":      c.ID,
-		"channel_id":   cn.ID,
+		"func":         "isRetryable",
+		"call":         c,
+		"channel":      cn,
 		"hangup_cause": cn.HangupCause,
 	})
 
@@ -211,43 +214,6 @@ func (h *callHandler) isRetryable(ctx context.Context, c *call.Call, cn *channel
 	log.Debugf("The call is dial retryable. call_id: %s", c.ID)
 
 	return true
-}
-
-// handleMasterCallExecution handles master call execution.
-// this is useful for connect calls.
-// if the connecting(ougtoing) call failed the dialing, the master call will wait in the confbridge forever.
-// so, to prevent that, we need to execute the master call's next action manually.
-func (h *callHandler) handleMasterCallExecution(ctx context.Context, c *call.Call) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "handleMasterCallExecution",
-		"call_id": c.ID,
-	})
-
-	if c.Direction == call.DirectionIncoming {
-		// nothing to do for the incoming call
-		return
-	}
-
-	if c.MasterCallID == uuid.Nil {
-		return
-	}
-
-	if c.Data[call.DataTypeEarlyExecution] == "true" {
-		return
-	}
-
-	if c.Data[call.DataTypeExecuteNextMasterOnHangup] == "false" {
-		return
-	}
-
-	if c.HangupReason == call.HangupReasonNormal {
-		return
-	}
-
-	// execut the master call action next
-	if errNext := h.reqHandler.CallV1CallActionNext(ctx, c.MasterCallID, false); errNext != nil {
-		log.Errorf("Could not execute the master call's next action. err: %v", errNext)
-	}
 }
 
 // hangingupWithReference hanging up the call with the same reason of the given reference id.

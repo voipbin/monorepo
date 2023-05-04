@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/ttacon/libphonenumber"
+	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
@@ -38,19 +39,23 @@ func (h *callHandler) CreateCallsOutgoing(
 	destinations []commonaddress.Address,
 	earlyExecution bool,
 	connect bool,
-) ([]*call.Call, error) {
+) ([]*call.Call, []*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "CreateCallsOutgoing",
-		"customer_id":  customerID,
-		"flow_id":      flowID,
-		"source":       source,
-		"destinations": destinations,
+		"func":            "CreateCallsOutgoing",
+		"customer_id":     customerID,
+		"flow_id":         flowID,
+		"master_call_id":  masterCallID,
+		"source":          source,
+		"destinations":    destinations,
+		"early_execution": earlyExecution,
+		"connect":         connect,
 	})
 
-	res := []*call.Call{}
+	resCalls := []*call.Call{}
+	resGroupcalls := []*groupcall.Groupcall{}
 	for _, destination := range destinations {
-		switch destination.Type {
-		case commonaddress.TypeSIP, commonaddress.TypeTel:
+		switch {
+		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
 			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
@@ -58,24 +63,24 @@ func (h *callHandler) CreateCallsOutgoing(
 			}
 			log.WithField("call", c).Debugf("Created outgoing call. call_id: %s, destination_type: %s, destination_target: %s", c.ID, destination.Type, destination.Target)
 
-			res = append(res, c)
+			resCalls = append(resCalls, c)
 
-		case commonaddress.TypeEndpoint, commonaddress.TypeAgent:
-			calls, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, source, destination)
+		case h.groupcallHandler.IsGroupcallTypeAddress(&destination):
+			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, &source, &destination)
 			if err != nil {
-				log.WithField("destination", destination).Errorf("Could not create outgoing calls. destination_type: %s, err: %v", destination.Type, err)
+				log.Errorf("Could not create outgoing groupcall. err: %v", err)
 				continue
 			}
-			log.WithField("calls", calls).Debugf("Created outgoing calls. destination_type: %s, destination_target: %s", destination.Type, destination.Target)
+			log.WithField("groupcall", gc).Debugf("Created outgoing groupcall. groupcall_id: %s, destination_type: %s, destination_target: %s", gc.ID, destination.Type, destination.Target)
 
-			res = append(res, calls...)
+			resGroupcalls = append(resGroupcalls, gc)
 
 		default:
 			log.WithField("destination", destination).Errorf("Unsupported destination type. destination_type: %s", destination.Type)
 		}
 	}
 
-	return res, nil
+	return resCalls, resGroupcalls, nil
 }
 
 // CreateCallOutgoing creates a call for outgoing
@@ -269,15 +274,87 @@ func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, err
 	}
 }
 
-// createCallsOutgoingGroupcall creates an outgoing call to the endpoint type destination
+// getGroupcallRingMethod returns groupcall ring method of the given destination
+func (h *callHandler) getGroupcallRingMethod(ctx context.Context, destination commonaddress.Address) (groupcall.RingMethod, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getGroupcallRingMethod",
+		"destination": destination,
+	})
+
+	switch destination.Type {
+	case commonaddress.TypeAgent:
+		// the destination type is agent. we need to check the agent's ring method.
+		// get agent
+		ag, err := h.reqHandler.AgentV1AgentGet(ctx, uuid.FromStringOrNil(destination.Target))
+		if err != nil {
+			log.Errorf("Could not get agent info. err: %v", err)
+			return groupcall.RingMethodNone, errors.Wrap(err, "could not get agent info")
+		}
+		log.WithField("agent", ag).Debugf("Found agent info. ring_method: %s", ag.RingMethod)
+
+		// check the agent's ring method
+		if ag.RingMethod == amagent.RingMethodLinear {
+			return groupcall.RingMethodLinear, nil
+		}
+
+		return groupcall.RingMethodRingAll, nil
+
+	default:
+		log.Debugf("Selecting default groupcall ringmethod. ring_method: %s", groupcall.RingMethodRingAll)
+		return groupcall.RingMethodRingAll, nil
+	}
+}
+
+// // createCallsOutgoingGroupcallOld creates an outgoing call to the endpoint type destination
+// func (h *callHandler) createCallsOutgoingGroupcallOld(
+// 	ctx context.Context,
+// 	customerID uuid.UUID,
+// 	flowID uuid.UUID,
+// 	masterCallID uuid.UUID,
+// 	source commonaddress.Address,
+// 	destination commonaddress.Address,
+// ) ([]*call.Call, error) {
+// 	log := logrus.WithFields(logrus.Fields{
+// 		"func":           "createCallsOutgoingGroupcall",
+// 		"customer_id":    customerID,
+// 		"flow_id":        flowID,
+// 		"master_call_id": masterCallID,
+// 		"source":         source,
+// 		"destination":    destination,
+// 	})
+
+// 	// start groupcall
+// 	gc, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, &source, []commonaddress.Address{destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers)
+// 	if err != nil {
+// 		log.Errorf("Could not start the groupcall. err: %v", err)
+// 		return nil, errors.Wrap(err, "Could not start the groupcall.")
+// 	}
+// 	log.WithField("groulcall", gc).Debugf("Created groupcall. groupcall_id: %s", gc.ID)
+
+// 	// get created calls
+// 	res := []*call.Call{}
+// 	for _, callID := range gc.CallIDs {
+// 		tmp, err := h.Get(ctx, callID)
+// 		if err != nil {
+// 			log.Errorf("Could not get created call. err: %v", err)
+// 			continue
+// 		}
+
+// 		res = append(res, tmp)
+// 	}
+
+// 	return res, nil
+// }
+
+// createCallsOutgoingGroupcallOld creates an outgoing call to the endpoint type destination
 func (h *callHandler) createCallsOutgoingGroupcall(
 	ctx context.Context,
 	customerID uuid.UUID,
 	flowID uuid.UUID,
 	masterCallID uuid.UUID,
-	source commonaddress.Address,
-	destination commonaddress.Address,
-) ([]*call.Call, error) {
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
+) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "createCallsOutgoingGroupcall",
 		"customer_id":    customerID,
@@ -288,24 +365,12 @@ func (h *callHandler) createCallsOutgoingGroupcall(
 	})
 
 	// start groupcall
-	gc, err := h.groupcallHandler.Start(ctx, customerID, &source, []commonaddress.Address{destination}, flowID, masterCallID, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers)
+	res, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, source, []commonaddress.Address{*destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers)
 	if err != nil {
 		log.Errorf("Could not start the groupcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not start the groupcall.")
 	}
-	log.WithField("groulcall", gc).Debugf("Created groupcall. groupcall_id: %s", gc.ID)
-
-	// get created calls
-	res := []*call.Call{}
-	for _, callID := range gc.CallIDs {
-		tmp, err := h.Get(ctx, callID)
-		if err != nil {
-			log.Errorf("Could not get created call. err: %v", err)
-			continue
-		}
-
-		res = append(res, tmp)
-	}
+	log.WithField("groulcall", res).Debugf("Created groupcall. groupcall_id: %s", res.ID)
 
 	return res, nil
 }

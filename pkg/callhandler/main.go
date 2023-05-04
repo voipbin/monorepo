@@ -17,6 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
@@ -58,7 +59,7 @@ type CallHandler interface {
 		destinations []commonaddress.Address,
 		earlyExecution bool,
 		connect bool,
-	) ([]*call.Call, error)
+	) ([]*call.Call, []*groupcall.Groupcall, error)
 	CreateCallOutgoing(
 		ctx context.Context,
 		id uuid.UUID,

@@ -92,10 +92,13 @@ var (
 	regV1ExternalMediasID = regexp.MustCompile("/v1/external-medias/" + regUUID + "$")
 
 	// groupcalls
-	regV1Groupcalls         = regexp.MustCompile("/v1/groupcalls$")
-	regV1GroupcallsGet      = regexp.MustCompile(`/v1/groupcalls\?`)
-	regV1GroupcallsID       = regexp.MustCompile("/v1/groupcalls/" + regUUID + "$")
-	regV1GroupcallsIDHangup = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup$")
+	regV1Groupcalls                    = regexp.MustCompile("/v1/groupcalls$")
+	regV1GroupcallsGet                 = regexp.MustCompile(`/v1/groupcalls\?`)
+	regV1GroupcallsID                  = regexp.MustCompile("/v1/groupcalls/" + regUUID + "$")
+	regV1GroupcallsIDHangup            = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup$")
+	regV1GroupcallsIDHangupGroupcall   = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup_groupcall$")
+	regV1GroupcallsIDHangupCall        = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup_call$")
+	regV1GroupcallsIDAnswerGroupcallID = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/answer_groupcall_id$")
 
 	// recordings
 	regV1RecordingsGet    = regexp.MustCompile(`/v1/recordings\?`)
@@ -498,6 +501,21 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1GroupcallsIDHangup.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1GroupcallsIDHangupPost(ctx, m)
 		requestType = "/v1/groupcalls/<groupcall-id>/hangup"
+
+	// POST /groupcalls/<groupcall-id>/hangup_groupcall
+	case regV1GroupcallsIDHangupGroupcall.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1GroupcallsIDHangupGroupcallPost(ctx, m)
+		requestType = "/v1/groupcalls/<groupcall-id>/hangup_groupcall"
+
+	// POST /groupcalls/<groupcall-id>/hangup_call
+	case regV1GroupcallsIDHangupCall.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1GroupcallsIDHangupCallPost(ctx, m)
+		requestType = "/v1/groupcalls/<groupcall-id>/hangup_call"
+
+	// POST /groupcalls/<groupcall-id>/hangup_call
+	case regV1GroupcallsIDAnswerGroupcallID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1GroupcallsIDAnswerGroupcallIDPost(ctx, m)
+		requestType = "/v1/groupcalls/<groupcall-id>/answer_groupcall_id"
 
 	//////////////
 	// recordings

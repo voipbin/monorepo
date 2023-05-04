@@ -105,7 +105,12 @@ type DBHandler interface {
 	GroupcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*groupcall.Groupcall, error)
 	GroupcallCreate(ctx context.Context, data *groupcall.Groupcall) error
 	GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) error
+	GroupcallDecreaseGroupcallCount(ctx context.Context, id uuid.UUID) error
 	GroupcallSetAnswerCallID(ctx context.Context, id uuid.UUID, answerCallID uuid.UUID) error
+	GroupcallSetAnswerGroupcallID(ctx context.Context, id uuid.UUID, answerGroupcallID uuid.UUID) error
+	GroupcallSetStatus(ctx context.Context, id uuid.UUID, status groupcall.Status) error
+	GroupcallSetCallIDsAndCallCountAndDialIndex(ctx context.Context, id uuid.UUID, callIDs []uuid.UUID, callCount int, dialIndex int) error
+	GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx context.Context, id uuid.UUID, groupcallIDs []uuid.UUID, groupcallCount int, dialIndex int) error
 	GroupcallDelete(ctx context.Context, id uuid.UUID) error
 
 	// recordings

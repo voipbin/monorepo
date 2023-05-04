@@ -447,6 +447,8 @@ github.com/go-redis/redis/v8 v8.11.5 h1:AcZZR7igkdvfVmQTPnu9WE37LRrO/YrBH5zWyjDC
 github.com/go-redis/redis/v8 v8.11.5/go.mod h1:gREzHqY1hg6oD9ngVRbLStwAWKhA0FEgq8Jd4h5lpwo=
 github.com/go-sql-driver/mysql v1.7.0 h1:ueSltNNllEqE3qcWBTD0iQd3IpL/6U+mJxLkazJ7YPc=
 github.com/go-sql-driver/mysql v1.7.0/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
+github.com/go-sql-driver/mysql v1.7.1 h1:lUIinVbN1DY0xBg0eMOzmmtGoHwWBbvnWubQUrtU8EI=
+github.com/go-sql-driver/mysql v1.7.1/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
 github.com/gofrs/uuid v4.4.0+incompatible h1:3qXRTX8/NbyulANqlc0lchS1gqAVxRgsuW1YrTJupqA=
 github.com/gofrs/uuid v4.4.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
@@ -628,6 +630,14 @@ gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d444
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d4449242c/go.mod h1:5iaYVv3U9iqJ76Y1lhKqCLtICVgiY5q0M8ht0znn47c=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230417155516-53ee2eee9637 h1:lCkzzmtp3ZLbsbBIetmPcRb5DrYys4HlXBaVcSaiEog=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230417155516-53ee2eee9637/go.mod h1:q6f/mryLRWnbbo2UpAp4HYJywEzFMF5DoCMmon2Pp0g=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230425053317-110fb9a26828 h1:+yqkF8z3mZEXYnxSd3cgxVGc1hsUKiTut3rl4moEmIY=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230425053317-110fb9a26828/go.mod h1:q6f/mryLRWnbbo2UpAp4HYJywEzFMF5DoCMmon2Pp0g=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230425055326-651f6c614ed1 h1:1EXr93AhKcjBv2Ldbo8BV68uMyurK76MXlJnHpq+cxI=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230425055326-651f6c614ed1/go.mod h1:/6ILgn1TonVWtFRJbyc1JSuJomgsT8BtMWG+frKGBxc=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230425072554-3187d7d3b720 h1:gF9i5/NV3e3hZwZxkCq7/Bv7T6BCGgXmS2iSEH3pP/M=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230425072554-3187d7d3b720/go.mod h1:/6ILgn1TonVWtFRJbyc1JSuJomgsT8BtMWG+frKGBxc=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230429044321-12b08cca76de h1:/L4w8IoHi9zVAwyPlQpaik/nfCEm+iAuRHiXWkBYTD8=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230429044321-12b08cca76de/go.mod h1:/6ILgn1TonVWtFRJbyc1JSuJomgsT8BtMWG+frKGBxc=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa h1:PP+lN42xD4htGHyiwpzki5O9qhYqJQoO2vvbsjslr9g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa/go.mod h1:ZmH0dxGw24CBuZhNZO4JYFTFfY3Ti+aeQkMHG97Swas=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230321074025-d4c5a292e9e1 h1:4Tq/9nkalAnUyT9DYuZucxTpZ0c0+1am/hrZrvim4Hs=

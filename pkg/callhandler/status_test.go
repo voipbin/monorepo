@@ -340,7 +340,7 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
-			mockGroupcall.EXPECT().Answer(ctx, tt.responseCall.GroupcallID, tt.responseCall.ID).Return(nil)
+			mockGroupcall.EXPECT().AnswerCall(ctx, tt.responseCall.GroupcallID, tt.responseCall.ID).Return(nil)
 
 			// handleSIPCallID
 			mockChannel.EXPECT().VariableGet(ctx, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()

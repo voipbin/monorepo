@@ -66,18 +66,20 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		return nil
 	}
 
+	// set the call's SIP call id
+	go h.handleSIPCallID(ctx, cn, res)
+
+	// check the groupcall info and answer the groupcall
 	if res.GroupcallID != uuid.Nil {
-		log.Debugf("The call has groupcall id. Updating groupcall answer call info. groupcall_id: %s", res.GroupcallID)
-		if errAnswer := h.groupcallHandler.Answer(ctx, res.GroupcallID, res.ID); errAnswer != nil {
+		log.Debugf("The call has groupcall id. Answering the groupcall. groupcall_id: %s", res.GroupcallID)
+		if errAnswer := h.groupcallHandler.AnswerCall(ctx, res.GroupcallID, res.ID); errAnswer != nil {
 			log.Errorf("Could not update the group dial answer call id. err: %v", errAnswer)
 		}
 	}
 
-	// set the call's SIP call id
-	go h.handleSIPCallID(ctx, cn, res)
-
-	// send answer all if the call is in the confbridge
+	// check the confbridge info and answer the confbridge
 	if res.ConfbridgeID != uuid.Nil {
+		log.Debugf("The call has confbridge id. Answering the confbridge. groupcall_id: %s", res.GroupcallID)
 		if errAnswer := h.confbridgeHandler.Answer(ctx, res.ConfbridgeID); errAnswer != nil {
 			log.Errorf("Could not answer the confbridge. err: %v", errAnswer)
 		}
@@ -92,12 +94,11 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 }
 
 // handleSIPCallID gets the sip call id and sets to the VB-SIP_CALLID.
-// valid only for outgoing call.
 func (h *callHandler) handleSIPCallID(ctx context.Context, cn *channel.Channel, c *call.Call) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "handleSIPCallID",
-		"call_id":    c.ID,
-		"channel_id": cn.ID,
+		"func":    "handleSIPCallID",
+		"call":    c,
+		"channel": cn,
 	})
 
 	sipCallID, err := h.channelHandler.VariableGet(ctx, cn.ID, `CHANNEL(pjsip,call-id)`)

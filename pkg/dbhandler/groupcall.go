@@ -20,8 +20,14 @@ const (
 		id,
 		customer_id,
 
+		status,
+		flow_id,
+
 		source,
 		destinations,
+
+		master_call_id,
+		master_groupcall_id,
 
 		ring_method,
 		answer_method,
@@ -29,7 +35,12 @@ const (
 		answer_call_id,
 		call_ids,
 
+		answer_groupcall_id,
+		groupcall_ids,
+
 		call_count,
+		groupcall_count,
+		dial_index,
 
 		tm_create,
 		tm_update,
@@ -44,14 +55,21 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 	var source sql.NullString
 	var destinations sql.NullString
 	var callIDs sql.NullString
+	var groupcallIDs sql.NullString
 
 	res := &groupcall.Groupcall{}
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
 
+		&res.Status,
+		&res.FlowID,
+
 		&source,
 		&destinations,
+
+		&res.MasterCallID,
+		&res.MasterGroupcallID,
 
 		&res.RingMethod,
 		&res.AnswerMethod,
@@ -59,7 +77,12 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 		&res.AnswerCallID,
 		&callIDs,
 
+		&res.AnswerGroupcallID,
+		&groupcallIDs,
+
 		&res.CallCount,
+		&res.GroupcallCount,
+		&res.DialIndex,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -95,6 +118,15 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 		res.CallIDs = []uuid.UUID{}
 	}
 
+	// GroupcallIDs
+	if groupcallIDs.Valid {
+		if err := json.Unmarshal([]byte(groupcallIDs.String), &res.GroupcallIDs); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the groupcall_ids. groupcallGetFromRow. err: %v", err)
+		}
+	} else {
+		res.GroupcallIDs = []uuid.UUID{}
+	}
+
 	return res, nil
 }
 
@@ -105,8 +137,14 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		id,
 		customer_id,
 
+		status,
+		flow_id,
+
 		source,
 		destinations,
+
+		master_call_id,
+		master_groupcall_id,
 
 		ring_method,
 		answer_method,
@@ -114,7 +152,12 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		answer_call_id,
 		call_ids,
 
+		answer_groupcall_id,
+		groupcall_ids,
+
 		call_count,
+		groupcall_count,
+		dial_index,
 
 		tm_create,
 		tm_update,
@@ -124,7 +167,10 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		?, ?,
 		?, ?,
 		?, ?,
-		?,
+		?, ?,
+		?, ?,
+		?, ?,
+		?, ?, ?,
 		?, ?, ?
 		)`
 
@@ -152,12 +198,26 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		return errors.Wrap(err, "could not marshal the call_ids. GroupcallCreate.")
 	}
 
+	if data.GroupcallIDs == nil {
+		data.GroupcallIDs = []uuid.UUID{}
+	}
+	tmpGroupcallIDs, err := json.Marshal(data.GroupcallIDs)
+	if err != nil {
+		return errors.Wrap(err, "could not marshal the groupcall_ids. GroupcallCreate.")
+	}
+
 	_, err = h.db.Exec(q,
 		data.ID.Bytes(),
 		data.CustomerID.Bytes(),
 
+		data.Status,
+		data.FlowID.Bytes(),
+
 		tmpSource,
 		tmpDestinations,
+
+		data.MasterCallID.Bytes(),
+		data.MasterGroupcallID.Bytes(),
 
 		data.RingMethod,
 		data.AnswerMethod,
@@ -165,7 +225,12 @@ func (h *handler) GroupcallCreate(ctx context.Context, data *groupcall.Groupcall
 		data.AnswerCallID.Bytes(),
 		tmpCallIDs,
 
+		data.AnswerGroupcallID.Bytes(),
+		tmpGroupcallIDs,
+
 		data.CallCount,
+		data.GroupcallCount,
+		data.DialIndex,
 
 		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
@@ -249,6 +314,30 @@ func (h *handler) GroupcallSetAnswerCallID(ctx context.Context, id uuid.UUID, an
 	_, err := h.db.Exec(q, answerCallID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. GroupcallSetAnswerCallID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.groupcallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// GroupcallSetAnswerGroupcallID updates the answer groupcall id.
+func (h *handler) GroupcallSetAnswerGroupcallID(ctx context.Context, id uuid.UUID, answerGroupcallID uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		groupcalls
+	set
+		answer_groupcall_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	_, err := h.db.Exec(q, answerGroupcallID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. GroupcallSetAnswerGroupcallID. err: %v", err)
 	}
 
 	// update the cache
@@ -355,6 +444,118 @@ func (h *handler) GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) 
 	_, err := h.db.Exec(q, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. GroupcallDecreaseCallCount. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.groupcallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// GroupcallDecreaseGroupcallCount decreases the groupcall count
+func (h *handler) GroupcallDecreaseGroupcallCount(ctx context.Context, id uuid.UUID) error {
+	//prepare
+	q := `
+	update groupcalls set
+		groupcall_count = groupcall_count - 1,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. GroupcallDecreaseGroupcallCount. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.groupcallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// GroupcallSetStatus updates the status
+func (h *handler) GroupcallSetStatus(ctx context.Context, id uuid.UUID, status groupcall.Status) error {
+	//prepare
+	q := `
+	update groupcalls set
+		status = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, status, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. GroupcallSetStatus. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.groupcallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// GroupcallSetCallIDsAndCallCountAndDialIndex updates the call_ids and call_count and dial_index
+func (h *handler) GroupcallSetCallIDsAndCallCountAndDialIndex(ctx context.Context, id uuid.UUID, callIDs []uuid.UUID, callCount int, dialIndex int) error {
+	//prepare
+	q := `
+	update groupcalls set
+		call_ids = ?,
+		call_count = ?,
+		dial_index = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if callIDs == nil {
+		callIDs = []uuid.UUID{}
+	}
+	tmpCallIDs, err := json.Marshal(callIDs)
+	if err != nil {
+		return errors.Wrap(err, "could not marshal the call_ids. GroupcallSetCallIDsAndCallCountAndDialIndex.")
+	}
+
+	ts := h.utilHandler.GetCurTime()
+	_, err = h.db.Exec(q, tmpCallIDs, callCount, dialIndex, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. GroupcallSetCallIDsAndCallCountAndDialIndex. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.groupcallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex updates the call_ids and call_count and dial_index
+func (h *handler) GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx context.Context, id uuid.UUID, groupcallIDs []uuid.UUID, groupcallCount int, dialIndex int) error {
+	//prepare
+	q := `
+	update groupcalls set
+		groupcall_ids = ?,
+		groupcall_count = ?,
+		dial_index = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	if groupcallIDs == nil {
+		groupcallIDs = []uuid.UUID{}
+	}
+	tmpGroupcallIDs, err := json.Marshal(groupcallIDs)
+	if err != nil {
+		return errors.Wrap(err, "could not marshal the call_ids. GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex.")
+	}
+
+	ts := h.utilHandler.GetCurTime()
+	_, err = h.db.Exec(q, tmpGroupcallIDs, groupcallCount, dialIndex, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex. err: %v", err)
 	}
 
 	// update the cache

@@ -14,33 +14,43 @@ import (
 // Create creates a new groupcall.
 func (h *groupcallHandler) Create(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
+	flowID uuid.UUID,
 	source *commonaddress.Address,
 	destinations []commonaddress.Address,
 	callIDs []uuid.UUID,
+	groupcallIDs []uuid.UUID,
+	masterCallID uuid.UUID,
+	masterGroupcallID uuid.UUID,
 	ringMethod groupcall.RingMethod,
 	answerMethod groupcall.AnswerMethod,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "Create",
-		"customer_id":   customerID,
-		"source":        source,
-		"destinations":  destinations,
-		"call_ids":      callIDs,
-		"ring_method":   ringMethod,
-		"answer_method": answerMethod,
+		"func":           "Create",
+		"id":             id,
+		"customer_id":    customerID,
+		"source":         source,
+		"destinations":   destinations,
+		"call_ids":       callIDs,
+		"master_call_id": masterCallID,
+		"ring_method":    ringMethod,
+		"answer_method":  answerMethod,
 	})
-
-	id := h.utilHandler.CreateUUID()
-	log = log.WithField("groupcall_id", id)
 
 	// create groupcall
 	tmp := &groupcall.Groupcall{
 		ID:         id,
 		CustomerID: customerID,
 
+		Status: groupcall.StatusProgressing,
+		FlowID: flowID,
+
 		Source:       source,
 		Destinations: destinations,
+
+		MasterCallID:      masterCallID,
+		MasterGroupcallID: masterGroupcallID,
 
 		RingMethod:   ringMethod,
 		AnswerMethod: answerMethod,
@@ -48,7 +58,12 @@ func (h *groupcallHandler) Create(
 		AnswerCallID: uuid.Nil,
 		CallIDs:      callIDs,
 
-		CallCount: len(callIDs),
+		AnswerGroupcallID: uuid.Nil,
+		GroupcallIDs:      groupcallIDs,
+
+		CallCount:      len(callIDs),
+		GroupcallCount: len(groupcallIDs),
+		DialIndex:      0,
 	}
 
 	if errCreate := h.db.GroupcallCreate(ctx, tmp); errCreate != nil {
@@ -116,6 +131,29 @@ func (h *groupcallHandler) UpdateAnswerCallID(ctx context.Context, id uuid.UUID,
 	return res, nil
 }
 
+// UpdateAnswerGroupcallID updates the answer groupcall id.
+func (h *groupcallHandler) UpdateAnswerGroupcallID(ctx context.Context, id uuid.UUID, answerGroupcallID uuid.UUID) (*groupcall.Groupcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":                "UpdateAnswerGroupcallID",
+		"groupcall_id":        id,
+		"answer_groupcall_id": answerGroupcallID,
+	})
+
+	if errSet := h.db.GroupcallSetAnswerGroupcallID(ctx, id, answerGroupcallID); errSet != nil {
+		log.Errorf("Could not set the answer groupcall id. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "Could not set answer groupcall id.")
+	}
+
+	res, err := h.db.GroupcallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated groupcall info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get updated groupcall info.")
+	}
+	h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallProgressing, res)
+
+	return res, nil
+}
+
 // Delete deletes the groupcall.
 func (h *groupcallHandler) Delete(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -156,9 +194,95 @@ func (h *groupcallHandler) DecreaseCallCount(ctx context.Context, id uuid.UUID) 
 		return nil, errors.Wrap(err, "Could not get decreased groupcall info.")
 	}
 
-	if res.CallCount <= 0 {
-		log.Debugf("Groupcall's call count is 0. groupcall_id: %s", res.ID)
-		h.notifyHandler.PublishEvent(ctx, groupcall.EventTypeGroupcallHangup, res)
+	return res, nil
+}
+
+// DecreaseGroupcallCount decreases the groupcall's groupcall count.
+func (h *groupcallHandler) DecreaseGroupcallCount(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "DecreaseGroupcallCount",
+		"groupcall_id": id,
+	})
+
+	if errDecrease := h.db.GroupcallDecreaseGroupcallCount(ctx, id); errDecrease != nil {
+		log.Errorf("Could not decrease the groupcall groupcall_count. err: %v", errDecrease)
+		return nil, errors.Wrap(errDecrease, "Could not decrease the groupcall groupcall_count.")
+	}
+
+	res, err := h.db.GroupcallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get decreased groupcall info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get decreased groupcall info.")
+	}
+
+	return res, nil
+}
+
+// UpdateCallIDsAndCallCountAndDialIndex updates the given groupcall's call_ids, call_count, dial_index.
+func (h *groupcallHandler) UpdateCallIDsAndCallCountAndDialIndex(ctx context.Context, id uuid.UUID, callIDs []uuid.UUID, callCount int, dialIndex int) (*groupcall.Groupcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateCallIDsAndCallCountAndDialIndex",
+		"groupcall_id": id,
+		"call_ids":     callIDs,
+		"call_count":   callCount,
+		"dial_index":   dialIndex,
+	})
+
+	if errSet := h.db.GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, id, callIDs, callCount, dialIndex); errSet != nil {
+		log.Errorf("Could not decrease the groupcall call_count. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "Could not decrease the groupcall call_count.")
+	}
+
+	res, err := h.db.GroupcallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated groupcall info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get decreased groupcall info.")
+	}
+
+	return res, nil
+}
+
+// UpdateGroupcallIDsAndGroupcallCountAndDialIndex updates the given groupcall's groupcall_ids, groupcall_count, dial_index.
+func (h *groupcallHandler) UpdateGroupcallIDsAndGroupcallCountAndDialIndex(ctx context.Context, id uuid.UUID, groupcallIDs []uuid.UUID, groupcallCount int, dialIndex int) (*groupcall.Groupcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "UpdateGroupcallIDsAndGroupcallCountAndDialIndex",
+		"groupcall_id":    id,
+		"groupcall_ids":   groupcallIDs,
+		"groupcall_count": groupcallCount,
+		"dial_index":      dialIndex,
+	})
+
+	if errSet := h.db.GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx, id, groupcallIDs, groupcallCount, dialIndex); errSet != nil {
+		log.Errorf("Could not update the groupcall info. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "Could not update the groupcall info.")
+	}
+
+	res, err := h.db.GroupcallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated groupcall info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get decreased groupcall info.")
+	}
+
+	return res, nil
+}
+
+// UpdateStatus updates the given groupcall's status.
+func (h *groupcallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status groupcall.Status) (*groupcall.Groupcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateStatus",
+		"groupcall_id": id,
+		"status":       status,
+	})
+
+	if errSet := h.db.GroupcallSetStatus(ctx, id, status); errSet != nil {
+		log.Errorf("Could not decrease the groupcall call_count. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "Could not decrease the groupcall call_count.")
+	}
+
+	res, err := h.db.GroupcallGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated groupcall info. err: %v", err)
+		return nil, errors.Wrap(err, "Could not get decreased groupcall info.")
 	}
 
 	return res, nil

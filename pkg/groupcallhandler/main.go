@@ -18,15 +18,6 @@ import (
 
 // GroupcallHandler is interface for service handle
 type GroupcallHandler interface {
-	Create(
-		ctx context.Context,
-		customerID uuid.UUID,
-		source *commonaddress.Address,
-		destinations []commonaddress.Address,
-		callIDs []uuid.UUID,
-		ringMethod groupcall.RingMethod,
-		answerMethod groupcall.AnswerMethod,
-	) (*groupcall.Groupcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*groupcall.Groupcall, error)
 	UpdateAnswerCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) (*groupcall.Groupcall, error)
@@ -34,17 +25,24 @@ type GroupcallHandler interface {
 
 	Start(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
+		flowID uuid.UUID,
 		source *commonaddress.Address,
 		destinations []commonaddress.Address,
-		flowID uuid.UUID,
 		masterCallID uuid.UUID,
+		masterGroupcallID uuid.UUID,
 		ringMethod groupcall.RingMethod,
 		answerMethod groupcall.AnswerMethod,
 	) (*groupcall.Groupcall, error)
-	Answer(ctx context.Context, groupcallID uuid.UUID, answerCallID uuid.UUID) error
+	AnswerCall(ctx context.Context, groupcallID uuid.UUID, answerCallID uuid.UUID) error
+	AnswerGroupcall(ctx context.Context, id uuid.UUID, answerGroupcallID uuid.UUID) (*groupcall.Groupcall, error)
 	Hangingup(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
-	DecreaseCallCount(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+
+	HangupCall(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+	HangupGroupcall(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
+
+	IsGroupcallTypeAddress(destination *commonaddress.Address) bool
 }
 
 // groupcallHandler structure for service handle

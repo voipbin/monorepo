@@ -4,19 +4,21 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
+	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -119,7 +121,7 @@ func Test_Hangup(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, gomock.Any())
 			if tt.responseCall.GroupcallID != uuid.Nil {
-				mockGroupcall.EXPECT().DecreaseCallCount(ctx, tt.responseCall.GroupcallID).Return(&groupcall.Groupcall{}, nil)
+				mockReq.EXPECT().CallV1GroupcallHangupCall(ctx, tt.responseCall.GroupcallID).Return(nil)
 			}
 			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveFlowID).Return(&fmactiveflow.Activeflow{}, nil)
 
@@ -143,6 +145,8 @@ func Test_Hangup(t *testing.T) {
 			if err := h.Hangup(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			time.Sleep(time.Millisecond * 100)
 		})
 	}
 }
@@ -330,6 +334,160 @@ func Test_hangingupWithReference(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.responseCall, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseCall, res)
+			}
+		})
+	}
+}
+
+func Test_isRetryable(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		call    *call.Call
+		channel *channel.Channel
+
+		expectRes bool
+	}{
+		{
+			name: "call needs retry",
+
+			call: &call.Call{
+				Status:    call.StatusRinging,
+				Direction: call.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+				DialrouteID: uuid.FromStringOrNil("acda1e28-e1d9-11ed-a059-2bb9e2d99f68"),
+				Dialroutes: []route.Route{
+					{
+						ID: uuid.FromStringOrNil("acda1e28-e1d9-11ed-a059-2bb9e2d99f68"),
+					},
+					{
+						ID: uuid.FromStringOrNil("ad1edd92-e1d9-11ed-b07f-43651ba67795"),
+					},
+				},
+			},
+			channel: &channel.Channel{
+				HangupCause: ari.ChannelCauseInterworking,
+			},
+
+			expectRes: true,
+		},
+		{
+			name: "call direction is not outgoing",
+
+			call: &call.Call{
+				Direction: call.DirectionIncoming,
+			},
+			channel: &channel.Channel{},
+
+			expectRes: false,
+		},
+		{
+			name: "destination type is not tel type",
+
+			call: &call.Call{
+				Direction: call.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeAgent,
+				},
+			},
+			channel: &channel.Channel{},
+
+			expectRes: false,
+		},
+		{
+			name: "early media and ringing",
+
+			call: &call.Call{
+				Status:    call.StatusRinging,
+				Direction: call.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+				Data: map[call.DataType]string{
+					call.DataTypeEarlyExecution: "true",
+				},
+			},
+			channel: &channel.Channel{},
+
+			expectRes: false,
+		},
+		{
+			name: "not retryable codes",
+
+			call: &call.Call{
+				Status:    call.StatusRinging,
+				Direction: call.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+			},
+			channel: &channel.Channel{
+				HangupCause: ari.ChannelCauseNormalClearing,
+			},
+
+			expectRes: false,
+		},
+		{
+			name: "call status is not retryable",
+
+			call: &call.Call{
+				Status:    call.StatusProgressing,
+				Direction: call.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+			},
+			channel: &channel.Channel{
+				HangupCause: ari.ChannelCauseCallDurationTimeout,
+			},
+
+			expectRes: false,
+		},
+		{
+			name: "call has no dial route",
+
+			call: &call.Call{
+				Status:    call.StatusRinging,
+				Direction: call.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+			},
+			channel: &channel.Channel{
+				HangupCause: ari.ChannelCauseUserBusy,
+			},
+
+			expectRes: false,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotfiy := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotfiy,
+				channelHandler: mockChannel,
+			}
+			ctx := context.Background()
+
+			res := h.isRetryable(ctx, tt.call, tt.channel)
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}
