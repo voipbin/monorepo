@@ -21,6 +21,7 @@ type WebhookMessage struct {
 	ChainedCallIDs []uuid.UUID `json:"chained_call_ids"` // chained call ids
 	RecordingID    uuid.UUID   `json:"recording_id"`     // recording id(current)
 	RecordingIDs   []uuid.UUID `json:"recording_ids"`    // recording ids
+	GroupcallID    uuid.UUID   `json:"groupcall_id"`     // groupcall id, if this set, that means this call is part of given groupcall.
 
 	// source/destination
 	Source      commonaddress.Address `json:"source"`

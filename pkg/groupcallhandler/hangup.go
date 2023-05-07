@@ -91,7 +91,7 @@ func (h *groupcallHandler) Hangup(ctx context.Context, id uuid.UUID) (*groupcall
 	if res.MasterGroupcallID != uuid.Nil {
 		log.Debugf("Groupcall has master groupcall id. master_groupcall_id: %s", res.MasterGroupcallID)
 		go func(id uuid.UUID) {
-			if errGroupcall := h.reqHandler.CallV1GroupcallHangupGroupcall(ctx, res.MasterCallID); errGroupcall != nil {
+			if errGroupcall := h.reqHandler.CallV1GroupcallHangupGroupcall(ctx, id); errGroupcall != nil {
 				log.Errorf("Could not hangup the related groupcall id from the master_groupcall_id. master_groupcall_id: %s, err: %v", id, errGroupcall)
 			}
 		}(res.MasterGroupcallID)
@@ -110,7 +110,7 @@ func (h *groupcallHandler) HangupGroupcall(ctx context.Context, id uuid.UUID) (*
 	// decrease the groupcall count
 	gc, err := h.DecreaseGroupcallCount(ctx, id)
 	if err != nil {
-		log.Errorf("Could not decrease the call count. err: %v", err)
+		log.Errorf("Could not decrease the groupcall count. err: %v", err)
 		return nil, errors.Wrap(err, "could not decrease the call count")
 	}
 
@@ -144,6 +144,11 @@ func (h *groupcallHandler) hangupCommon(ctx context.Context, gc *groupcall.Group
 	if gc.GroupcallCount > 0 || gc.CallCount > 0 {
 		// groupcall still have ongoing outgoing call. nothing to do here
 		return gc, nil
+	}
+
+	if gc.AnswerCallID != uuid.Nil {
+		// already answered call. nothing to do here
+		return h.Hangup(ctx, gc.ID)
 	}
 
 	if gc.Status == groupcall.StatusHangingup {
