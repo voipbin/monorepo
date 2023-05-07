@@ -512,7 +512,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1GroupcallsIDHangupCallPost(ctx, m)
 		requestType = "/v1/groupcalls/<groupcall-id>/hangup_call"
 
-	// POST /groupcalls/<groupcall-id>/hangup_call
+	// POST /groupcalls/<groupcall-id>/answer_groupcall_id
 	case regV1GroupcallsIDAnswerGroupcallID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1GroupcallsIDAnswerGroupcallIDPost(ctx, m)
 		requestType = "/v1/groupcalls/<groupcall-id>/answer_groupcall_id"
