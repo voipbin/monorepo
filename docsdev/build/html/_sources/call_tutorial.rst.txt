@@ -540,3 +540,77 @@ Getting a given call uuid's call info.
         "tm_ringing": "2021-01-29 03:17:55.392000",
         "tm_hangup": "2021-01-29 03:18:22.131000"
     }
+
+Make a groupcall
+-----------------
+
+Make a groupcall to the multiple destinations.
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/groupcalls?token=eyJhbGcslkj' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "source": {
+                "type": "tel",
+                "target": "+821100000001"
+            },
+            "destinations": [
+                {
+                    "type": "endpoint",
+                    "target": "test11@test"
+                },
+                {
+                    "type": "endpoint",
+                    "target": "test12@test"
+                }
+            ],
+            "actions": [
+                {
+                    "type": "talk",
+                    "option": {
+                        "text": "hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye",
+                        "gender": "female",
+                        "language": "en-US"
+                    }
+                }
+            ]
+        }'
+
+    {
+        "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "source": {
+            "type": "tel",
+            "target": "+821028286521",
+            "target_name": "",
+            "name": "",
+            "detail": ""
+        },
+        "destinations": [
+            {
+                "type": "endpoint",
+                "target": "test11@test",
+                "target_name": "",
+                "name": "",
+                "detail": ""
+            },
+            {
+                "type": "endpoint",
+                "target": "test12@test",
+                "target_name": "",
+                "name": "",
+                "detail": ""
+            }
+        ],
+        "ring_method": "",
+        "answer_method": "",
+        "answer_call_id": "00000000-0000-0000-0000-000000000000",
+        "call_ids": [
+            "3c77eb43-2098-4890-bb6c-5af0707ba4a6",
+            "2bcaff64-e05d-11ed-84a6-133172844032"
+        ],
+        "tm_create": "2023-04-21 15:33:28.569053",
+        "tm_update": "9999-01-01 00:00:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }

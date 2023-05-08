@@ -95,7 +95,7 @@ type ServiceHandler interface {
 	AvailableNumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
 
 	// call handlers
-	CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, error)
+	CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error)
 	CallGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.WebhookMessage, error)

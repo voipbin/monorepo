@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
@@ -43,8 +44,8 @@ func (h *serviceHandler) callGet(ctx context.Context, u *cscustomer.Customer, ca
 
 // CallCreate sends a request to call-manager
 // to creating a call.
-// it returns created call info if it succeed.
-func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, error) {
+// it returns created calls and groupcalls info if it succeed.
+func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallCreate",
 		"customer_id": u.ID,
@@ -54,8 +55,6 @@ func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer,
 		"source":      source,
 		"destination": destinations,
 	})
-
-	// send request
 	log.Debug("Creating a new call.")
 
 	targetFlowID := flowID
@@ -64,26 +63,32 @@ func (h *serviceHandler) CallCreate(ctx context.Context, u *cscustomer.Customer,
 		f, err := h.FlowCreate(ctx, u, "tmp", "tmp outbound flow", actions, false)
 		if err != nil {
 			log.Errorf("Could not create a flow for outoing call. err: %v", err)
-			return nil, err
+			return nil, nil, err
 		}
 		log.WithField("flow", f).Debugf("Create a new tmp flow for call dialing. flow_id: %s", f.ID)
 
 		targetFlowID = f.ID
 	}
 
-	tmps, err := h.reqHandler.CallV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations, false, false)
+	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, u.ID, targetFlowID, uuid.Nil, source, destinations, false, false)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	res := []*cmcall.WebhookMessage{}
-	for _, tmp := range tmps {
+	resCalls := []*cmcall.WebhookMessage{}
+	for _, tmp := range tmpCalls {
 		t := tmp.ConvertWebhookMessage()
-		res = append(res, t)
+		resCalls = append(resCalls, t)
 	}
 
-	return res, err
+	resGroupcalls := []*cmgroupcall.WebhookMessage{}
+	for _, tmp := range tmpGroupcalls {
+		t := tmp.ConvertWebhookMessage()
+		resGroupcalls = append(resGroupcalls, t)
+	}
+
+	return resCalls, resGroupcalls, nil
 }
 
 // CallGet sends a request to call-manager
