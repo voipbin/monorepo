@@ -129,7 +129,7 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, u *cscustomer.Cust
 		targetFlowID = f.ID
 	}
 
-	tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, u.ID, source, destinations, targetFlowID, uuid.Nil, ringMethod, answerMethod)
+	tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, uuid.Nil, u.ID, targetFlowID, source, destinations, uuid.Nil, uuid.Nil, ringMethod, answerMethod)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err

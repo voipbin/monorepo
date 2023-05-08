@@ -2,3 +2,4 @@ vendor
 api-manager
 !cmd/*
 .vscode
+.DS_Store

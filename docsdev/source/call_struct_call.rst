@@ -1,7 +1,7 @@
 .. _call-struct-call:
 
-Call
-====
+Struct Call
+===========
 
 .. _call-struct-call-call:
 

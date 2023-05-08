@@ -50,11 +50,16 @@ func callsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create call
-	res, err := serviceHandler.CallCreate(c.Request.Context(), &u, req.FlowID, req.Actions, &req.Source, req.Destinations)
+	tmpCalls, tmpGroupcalls, err := serviceHandler.CallCreate(c.Request.Context(), &u, req.FlowID, req.Actions, &req.Source, req.Destinations)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)
 		return
+	}
+
+	res := &response.BodyCallsPOST{
+		Calls:      tmpCalls,
+		Groupcalls: tmpGroupcalls,
 	}
 
 	c.JSON(200, res)
