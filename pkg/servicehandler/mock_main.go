@@ -301,12 +301,13 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(ctx, u, size, coun
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(ctx context.Context, u *customer.Customer, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address) ([]*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallCreate(ctx context.Context, u *customer.Customer, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address) ([]*call.WebhookMessage, []*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", ctx, u, flowID, actions, source, destinations)
 	ret0, _ := ret[0].([]*call.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].([]*groupcall.WebhookMessage)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // CallCreate indicates an expected call of CallCreate.

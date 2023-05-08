@@ -1,31 +1,73 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Extension &mdash; voipbin  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-    <script src="_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Number" href="number.html" />
-    <link rel="prev" title="Domain" href="domain.html" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Extension &mdash; voipbin  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="voipbin  documentation" href="index.html"/>
+        <link rel="next" title="Number" href="number.html"/>
+        <link rel="prev" title="Domain" href="domain.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav" role="document">
+
+   
   <div class="wy-grid-for-nav">
+
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search">
+          
+
+          
             <a href="index.html" class="icon icon-home"> voipbin
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -33,7 +75,17 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
@@ -82,44 +134,81 @@
 <li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
 </ul>
 
+            
+          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">voipbin</a>
+        
       </nav>
 
+
+      
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
       <li>Extension</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+            
             <a href="_sources/extension.rst.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="extension">
-<h1>Extension<a class="headerlink" href="#extension" title="Permalink to this headline"></a></h1>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+            
+  <div class="section" id="extension">
+<h1>Extension<a class="headerlink" href="#extension" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>In order for your SIP endpoint to receive calls from Voipbin, you need a domain, extension and registration.</p>
 <p>Calling a registered SIP endpoint works the same as calling any other SIP URI, only you will now be using the AOR of your registered SIP extension(endpoint).</p>
 <p>When calling your registered SIP extension(endpoint), you should use the general SIP domain URI, omitting the Voipbin’s sip URI i.e.:</p>
 <p><cite>{extension}&#64;{your voipbin domain}.sip.voipbin.net</cite></p>
-</section>
-<section id="extension-struct-extension">
-<span id="id1"></span><h2>Extension<a class="headerlink" href="#extension-struct-extension" title="Permalink to this headline"></a></h2>
-<section id="extension-struct-extension-extension">
-<span id="id2"></span><h3>Extension<a class="headerlink" href="#extension-struct-extension-extension" title="Permalink to this headline"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+</div>
+<div class="section" id="extension-struct-extension">
+<span id="id1"></span><h2>Extension<a class="headerlink" href="#extension-struct-extension" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="extension-struct-extension-extension">
+<span id="id2"></span><h3>Extension<a class="headerlink" href="#extension-struct-extension-extension" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e1491290-c61c-4349-a7ff-5890c796b61b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test domain&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test domain creation&quot;</span><span class="p">,</span>
@@ -132,20 +221,20 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>id: Extension’s id.</p></li>
-<li><p>name: Extension’s name.</p></li>
-<li><p>detail: Extensions’s detail description.</p></li>
-<li><p>domain_id: Domain’s id.</p></li>
-<li><p>extension: Extension</p></li>
+<li>id: Extension’s id.</li>
+<li>name: Extension’s name.</li>
+<li>detail: Extensions’s detail description.</li>
+<li>domain_id: Domain’s id.</li>
+<li>extension: Extension</li>
 </ul>
-</section>
-</section>
-<section id="tutorial">
-<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline"></a></h2>
-<section id="get-list-of-extensions">
-<h3>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Permalink to this headline"></a></h3>
+</div>
+</div>
+<div class="section" id="tutorial">
+<h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="get-list-of-extensions">
+<h3>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Permalink to this headline">¶</a></h3>
 <p>Gets the list of registered extensions of the given domain.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&amp;domain_id=cc6a05eb-33a4-444b-bf8a-359de7d95499&#39;
+<div class="code highlight-default"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&amp;domain_id=cc6a05eb-33a4-444b-bf8a-359de7d95499&#39;
 
 {
     &quot;result&quot;: [
@@ -166,11 +255,11 @@
 }
 </pre></div>
 </div>
-</section>
-<section id="get-detail-of-specified-extension">
-<h3>Get detail of specified extension<a class="headerlink" href="#get-detail-of-specified-extension" title="Permalink to this headline"></a></h3>
+</div>
+<div class="section" id="get-detail-of-specified-extension">
+<h3>Get detail of specified extension<a class="headerlink" href="#get-detail-of-specified-extension" title="Permalink to this headline">¶</a></h3>
 <p>Gets the detail of registered extension.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions/0e7f8158-c770-4930-a98e-f2165b189c1f?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
+<div class="code highlight-default"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions/0e7f8158-c770-4930-a98e-f2165b189c1f?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
 
 {
     &quot;id&quot;: &quot;0e7f8158-c770-4930-a98e-f2165b189c1f&quot;,
@@ -186,11 +275,11 @@
 }
 </pre></div>
 </div>
-</section>
-<section id="create-a-extension">
-<h3>Create a extension<a class="headerlink" href="#create-a-extension" title="Permalink to this headline"></a></h3>
+</div>
+<div class="section" id="create-a-extension">
+<h3>Create a extension<a class="headerlink" href="#create-a-extension" title="Permalink to this headline">¶</a></h3>
 <p>Create a new extension.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
+<div class="code highlight-default"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;name&quot;: &quot;test domain&quot;,
@@ -215,11 +304,11 @@
 }
 </pre></div>
 </div>
-</section>
-<section id="update-the-extension">
-<h3>Update the extension<a class="headerlink" href="#update-the-extension" title="Permalink to this headline"></a></h3>
+</div>
+<div class="section" id="update-the-extension">
+<h3>Update the extension<a class="headerlink" href="#update-the-extension" title="Permalink to this headline">¶</a></h3>
 <p>Update the existed extension with given info.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
+<div class="code highlight-default"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;name&quot;: &quot;update test extension name&quot;,
@@ -241,46 +330,87 @@
 }
 </pre></div>
 </div>
-</section>
-<section id="delete-the-extension">
-<h3>Delete the extension<a class="headerlink" href="#delete-the-extension" title="Permalink to this headline"></a></h3>
+</div>
+<div class="section" id="delete-the-extension">
+<h3>Delete the extension<a class="headerlink" href="#delete-the-extension" title="Permalink to this headline">¶</a></h3>
 <p>Delete the existed extension of given id.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
+<div class="code highlight-default"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&#39;
 </pre></div>
 </div>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="domain.html" class="btn btn-neutral float-left" title="Domain" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="number.html" class="btn btn-neutral float-right" title="Number" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="number.html" class="btn btn-neutral float-right" title="Number" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="domain.html" class="btn btn-neutral" title="Domain" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020, Sungtae Kim.</p>
-  </div>
+    <p>
+        &copy; Copyright 2020, Sungtae Kim.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
+          SphinxRtdTheme.StickyNav.enable();
       });
-  </script> 
+  </script>
+   
 
 </body>
 </html>

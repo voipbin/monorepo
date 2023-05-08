@@ -123,6 +123,12 @@ $ sudo apt install python3-sphinx
 $ pip3 install sphinx-rtd-theme
 ```
 
+## Sphinx with docker
+```
+$ cd docsdev
+$ docker run --rm -v /Users/sungtaekim/gitlab/voipbin/bin-manager/api-manager/docsdev:/documents suttang/sphinx-rtd-theme make html
+```
+
 ## Create html
 ```
 $ cd docsdev

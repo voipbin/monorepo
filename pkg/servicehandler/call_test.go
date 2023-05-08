@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -145,105 +146,148 @@ func Test_callGet_error(t *testing.T) {
 func Test_CallCreate(t *testing.T) {
 
 	tests := []struct {
-		name         string
+		name string
+
 		customer     *cscustomer.Customer
 		flowID       uuid.UUID
 		actions      []fmaction.Action
 		source       *commonaddress.Address
 		destinations []commonaddress.Address
 
-		responseCall []cmcall.Call
-		expectRes    []*cmcall.WebhookMessage
+		responseCalls      []*cmcall.Call
+		responseGroupcalls []*cmgroupcall.Groupcall
+
+		expectResCalls      []*cmcall.WebhookMessage
+		expectResGroupcalls []*cmgroupcall.WebhookMessage
 	}{
 		{
-			"normal",
-			&cscustomer.Customer{
+			name: "normal",
+
+			customer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
-			uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
-			[]fmaction.Action{},
-			&commonaddress.Address{
+			flowID:  uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
+			actions: []fmaction.Action{},
+			source: &commonaddress.Address{
 				Type:   commonaddress.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			[]commonaddress.Address{
+			destinations: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeSIP,
 					Target: "testdestination@test.com",
 				},
 			},
-			[]cmcall.Call{
+
+			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				},
 			},
-			[]*cmcall.WebhookMessage{
+			responseGroupcalls: []*cmgroupcall.Groupcall{
+				{
+					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+				},
+			},
+
+			expectResCalls: []*cmcall.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				},
+			},
+			expectResGroupcalls: []*cmgroupcall.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
 				},
 			},
 		},
 		{
-			"with actions only",
-			&cscustomer.Customer{
+			name: "with actions only",
+
+			customer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
-			uuid.Nil,
-			[]fmaction.Action{
+			flowID: uuid.Nil,
+			actions: []fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			&commonaddress.Address{
+			source: &commonaddress.Address{
 				Type:   commonaddress.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			[]commonaddress.Address{
+			destinations: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeSIP,
 					Target: "testdestination@test.com",
 				},
 			},
-			[]cmcall.Call{
+
+			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				},
 			},
-			[]*cmcall.WebhookMessage{
+			responseGroupcalls: []*cmgroupcall.Groupcall{
+				{
+					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+				},
+			},
+
+			expectResCalls: []*cmcall.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				},
+			},
+			expectResGroupcalls: []*cmgroupcall.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
 				},
 			},
 		},
 		{
-			"if both has given, flowid has more priority",
-			&cscustomer.Customer{
+			name: "if both has given, flowid has more priority",
+
+			customer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
-			uuid.FromStringOrNil("2ca43d36-8df9-11ec-846a-ebf271da36c8"),
-			[]fmaction.Action{
+			flowID: uuid.FromStringOrNil("2ca43d36-8df9-11ec-846a-ebf271da36c8"),
+			actions: []fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			&commonaddress.Address{
+			source: &commonaddress.Address{
 				Type:   commonaddress.TypeSIP,
 				Target: "testsource@test.com",
 			},
-			[]commonaddress.Address{
+			destinations: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeSIP,
 					Target: "testdestination@test.com",
 				},
 			},
-			[]cmcall.Call{
+
+			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				},
 			},
-			[]*cmcall.WebhookMessage{
+			responseGroupcalls: []*cmgroupcall.Groupcall{
+				{
+					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
+				},
+			},
+
+			expectResCalls: []*cmcall.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
+				},
+			},
+			expectResGroupcalls: []*cmgroupcall.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("44b6d84f-48bd-4189-aad2-b9271de78ca7"),
 				},
 			},
 		},
@@ -268,16 +312,20 @@ func Test_CallCreate(t *testing.T) {
 				targetFlowID = uuid.Must(uuid.NewV4())
 				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customer.ID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, false).Return(&fmflow.Flow{ID: targetFlowID}, nil)
 			}
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations, false, false).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.customer.ID, targetFlowID, uuid.Nil, tt.source, tt.destinations, false, false).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
-			res, err := h.CallCreate(ctx, tt.customer, tt.flowID, tt.actions, tt.source, tt.destinations)
+			resCalls, resGroupcalls, err := h.CallCreate(ctx, tt.customer, tt.flowID, tt.actions, tt.source, tt.destinations)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
+			if !reflect.DeepEqual(resCalls, tt.expectResCalls) {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectResCalls, resCalls)
 			}
+			if !reflect.DeepEqual(resGroupcalls, tt.expectResGroupcalls) {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectResGroupcalls, resGroupcalls)
+			}
+
 		})
 	}
 
