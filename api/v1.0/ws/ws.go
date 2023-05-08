@@ -17,12 +17,10 @@ import (
 // @Success 200 {object} queue.WebhookMessage
 // @Router /v1.0/ws [get]
 func wsGET(c *gin.Context) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "wsGET",
-			"request_address": c.ClientIP,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "wsGET",
+		"request_address": c.ClientIP,
+	})
 	log.Debugf("Received websocket request.")
 
 	tmp, exists := c.Get("customer")
