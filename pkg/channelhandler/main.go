@@ -42,7 +42,9 @@ type ChannelHandler interface {
 	SetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error
 	SetDirection(ctx context.Context, id string, direction channel.Direction) error
 	SetSIPCallID(ctx context.Context, id string, sipCallID string) error
-	SetType(ctx context.Context, id string, channelType channel.Type) error
+
+	ARIChannelStateChange(ctx context.Context, e *ari.ChannelStateChange) (*channel.Channel, error)
+	ARIStasisStart(ctx context.Context, e *ari.StasisStart) (*channel.Channel, error)
 
 	AddressGetSource(cn *channel.Channel, addressType commonaddress.Type) *commonaddress.Address
 	AddressGetDestination(cn *channel.Channel, addressType commonaddress.Type) *commonaddress.Address
@@ -51,7 +53,6 @@ type ChannelHandler interface {
 	UpdateStasisName(ctx context.Context, id string, stasisName string) (*channel.Channel, error)
 	UpdateState(ctx context.Context, id string, state ari.ChannelState) (*channel.Channel, error)
 	UpdateBridgeID(ctx context.Context, id string, bridgeID string) (*channel.Channel, error)
-	UpdateStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) (*channel.Channel, error)
 	UpdatePlaybackID(ctx context.Context, id string, playbackID string) (*channel.Channel, error)
 
 	Answer(ctx context.Context, id string) error
@@ -91,7 +92,6 @@ type ChannelHandler interface {
 	Record(ctx context.Context, id string, filename string, format string, duration int, silence int, beep bool, endKey string, ifExists string) error
 	Ring(ctx context.Context, id string) error
 
-	VariableGet(ctx context.Context, id string, key string) (string, error)
 	VariableSet(ctx context.Context, id string, key string, value string) error
 
 	Dial(ctx context.Context, id string, caller string, timeout int) error

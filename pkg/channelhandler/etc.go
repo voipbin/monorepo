@@ -119,11 +119,11 @@ func (h *channelHandler) Dial(ctx context.Context, id string, caller string, tim
 }
 
 // Redirect redirects the given channel to the given context.exten.priority.
-func (h *channelHandler) Redirect(ctx context.Context, id string, context string, exten string, priority string) error {
+func (h *channelHandler) Redirect(ctx context.Context, id string, contextName string, exten string, priority string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "AMIRedirect",
+		"func":       "Redirect",
 		"channel_id": id,
-		"context":    context,
+		"context":    contextName,
 		"exten":      exten,
 		"priority":   priority,
 	})
@@ -139,7 +139,7 @@ func (h *channelHandler) Redirect(ctx context.Context, id string, context string
 		return fmt.Errorf("the channel has hungup already")
 	}
 
-	if err := h.reqHandler.AstAMIRedirect(ctx, cn.AsteriskID, cn.ID, context, exten, priority); err != nil {
+	if err := h.reqHandler.AstAMIRedirect(ctx, cn.AsteriskID, cn.ID, contextName, exten, priority); err != nil {
 		log.Errorf("Could not redirect the channel.err: %v", err)
 		return errors.Wrap(err, "could not redirect the channel")
 	}

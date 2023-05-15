@@ -66,9 +66,6 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		return nil
 	}
 
-	// set the call's SIP call id
-	go h.handleSIPCallID(ctx, cn, res)
-
 	// check the groupcall info and answer the groupcall
 	if res.GroupcallID != uuid.Nil {
 		log.Debugf("The call has groupcall id. Answering the groupcall. groupcall_id: %s", res.GroupcallID)
@@ -91,25 +88,4 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 	}
 
 	return h.ActionNext(ctx, res)
-}
-
-// handleSIPCallID gets the sip call id and sets to the VB-SIP_CALLID.
-func (h *callHandler) handleSIPCallID(ctx context.Context, cn *channel.Channel, c *call.Call) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "handleSIPCallID",
-		"call":    c,
-		"channel": cn,
-	})
-
-	sipCallID, err := h.channelHandler.VariableGet(ctx, cn.ID, `CHANNEL(pjsip,call-id)`)
-	if err != nil {
-		log.Errorf("Could not get channel variable. err: %v", err)
-		return
-	}
-	log.Debugf("Received sip call id. sip_call_id: %s", sipCallID)
-
-	if errSet := h.channelHandler.VariableSet(ctx, cn.ID, "VB-SIP_CALLID", sipCallID); errSet != nil {
-		log.Errorf("Could not set sip_call_id. err: %v", errSet)
-		return
-	}
 }

@@ -3,6 +3,7 @@ package arieventhandler
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
@@ -176,7 +177,7 @@ func (h *eventHandler) EventHandlerChannelStateChange(ctx context.Context, evt i
 		"event": e,
 	})
 
-	cn, err := h.channelHandler.UpdateState(ctx, e.Channel.ID, e.Channel.State)
+	cn, err := h.channelHandler.ARIChannelStateChange(ctx, e)
 	if err != nil {
 		log.Errorf("Could not update the channel state. err: %v", err)
 		return err
@@ -198,45 +199,9 @@ func (h *eventHandler) EventHandlerChannelVarset(ctx context.Context, evt interf
 		"event": e,
 	})
 
-	switch e.Variable {
-	case "VB-CONTEXT_TYPE":
-		if err := h.channelHandler.SetDataItem(ctx, e.Channel.ID, "context_type", e.Value); err != nil {
-			log.Errorf("Could not set the variable. err: %v", err)
-			return err
-		}
-
-	case "VB-DIRECTION":
-		if err := h.channelHandler.SetDirection(ctx, e.Channel.ID, channel.Direction(e.Value)); err != nil {
-			log.Errorf("Could not set the variable. err: %v", err)
-			return err
-		}
-
-	case "VB-SIP_CALLID":
-		if err := h.channelHandler.SetSIPCallID(ctx, e.Channel.ID, e.Value); err != nil {
-			log.Errorf("Could not set the variable. err: %v", err)
-			return err
-		}
-
-	case "VB-SIP_PAI":
-		if err := h.channelHandler.SetDataItem(ctx, e.Channel.ID, "sip_pai", e.Value); err != nil {
-			log.Errorf("Could not set the variable. err: %v", err)
-			return err
-		}
-
-	case "VB-SIP_PRIVACY":
-		if err := h.channelHandler.SetDataItem(ctx, e.Channel.ID, "sip_privacy", e.Value); err != nil {
-			log.Errorf("Could not set the variable. err: %v", err)
-			return err
-		}
-
-	case "VB-SIP_TRANSPORT":
-		if err := h.channelHandler.SetSIPTransport(ctx, e.Channel.ID, channel.SIPTransport(e.Value)); err != nil {
-			log.Errorf("Could not set the variable. err: %v", err)
-			return err
-		}
-
-	default:
-		return nil
+	if errSet := h.channelHandler.SetDataItem(ctx, e.Channel.ID, e.Variable, e.Value); errSet != nil {
+		log.Errorf("Could not set the variable. err: %v", errSet)
+		return errors.Wrap(errSet, "could not set the variable")
 	}
 
 	return nil

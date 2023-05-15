@@ -35,7 +35,7 @@ func Test_StartContextIncoming(t *testing.T) {
 				AsteriskID:        "80:fa:5b:5e:da:81",
 				Name:              "PJSIP/in-voipbin-00000948",
 				DestinationNumber: "d93fdf46-977c-11ec-8403-5b0f71484cde",
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"call_id":       "a6a017f6-a3c7-11ed-9313-b7e5ce254097",
 					"confbridge_id": "a6c4e9c8-a3c7-11ed-8961-7390b2c3f45c",
 				},
@@ -73,7 +73,6 @@ func Test_StartContextIncoming(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeConfbridge).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseConfbridge.BridgeID, tt.channel.ID, "", false, false).Return(nil)
 

@@ -22,8 +22,8 @@ func (h *confbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel, br 
 		"bridge":  br,
 	})
 
-	confbridgeID := uuid.FromStringOrNil(cn.StasisData["confbridge_id"])
-	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])
+	confbridgeID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeConfbridgeID])
+	callID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeCallID])
 	log = log.WithFields(logrus.Fields{
 		"call_id":       callID,
 		"confbridge_id": confbridgeID,

@@ -17,7 +17,7 @@ import (
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 )
 
@@ -305,47 +305,6 @@ func (h *callHandler) getGroupcallRingMethod(ctx context.Context, destination co
 	}
 }
 
-// // createCallsOutgoingGroupcallOld creates an outgoing call to the endpoint type destination
-// func (h *callHandler) createCallsOutgoingGroupcallOld(
-// 	ctx context.Context,
-// 	customerID uuid.UUID,
-// 	flowID uuid.UUID,
-// 	masterCallID uuid.UUID,
-// 	source commonaddress.Address,
-// 	destination commonaddress.Address,
-// ) ([]*call.Call, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":           "createCallsOutgoingGroupcall",
-// 		"customer_id":    customerID,
-// 		"flow_id":        flowID,
-// 		"master_call_id": masterCallID,
-// 		"source":         source,
-// 		"destination":    destination,
-// 	})
-
-// 	// start groupcall
-// 	gc, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, &source, []commonaddress.Address{destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers)
-// 	if err != nil {
-// 		log.Errorf("Could not start the groupcall. err: %v", err)
-// 		return nil, errors.Wrap(err, "Could not start the groupcall.")
-// 	}
-// 	log.WithField("groulcall", gc).Debugf("Created groupcall. groupcall_id: %s", gc.ID)
-
-// 	// get created calls
-// 	res := []*call.Call{}
-// 	for _, callID := range gc.CallIDs {
-// 		tmp, err := h.Get(ctx, callID)
-// 		if err != nil {
-// 			log.Errorf("Could not get created call. err: %v", err)
-// 			continue
-// 		}
-
-// 		res = append(res, tmp)
-// 	}
-
-// 	return res, nil
-// }
-
 // createCallsOutgoingGroupcallOld creates an outgoing call to the endpoint type destination
 func (h *callHandler) createCallsOutgoingGroupcall(
 	ctx context.Context,
@@ -421,12 +380,18 @@ func (h *callHandler) createChannel(ctx context.Context, c *call.Call) error {
 
 	// set channel variables
 	channelVariables := map[string]string{}
-	setChannelVariableTransport(channelVariables, dialURI)
+	transport := getDestinationTransport(dialURI)
+	setChannelVariableTransport(channelVariables, transport)
 	setChannelVariablesCallerID(channelVariables, c)
 	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v", dialURI, channelVariables)
 
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s", common.ContextOutgoingCall, c.ID)
+	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s",
+		channel.StasisDataTypeContextType, channel.TypeCall,
+		channel.StasisDataTypeContext, channel.ContextCallOutgoing,
+		channel.StasisDataTypeCallID, c.ID,
+		channel.StasisDataTypeTransport, transport,
+	)
 
 	// create a channel
 	tmp, err := h.channelHandler.StartChannel(ctx, requesthandler.AsteriskIDCall, c.ChannelID, appArgs, dialURI, "", "", "", channelVariables)
@@ -491,16 +456,34 @@ func (h *callHandler) getNextDialroute(ctx context.Context, c *call.Call) (*rmro
 	return &c.Dialroutes[idx+1], nil
 }
 
-// setChannelVariableTransport sets the outgoit call's media transport type
-func setChannelVariableTransport(variables map[string]string, endpointDestination string) {
+// getDestinationTransport returns given destination's transport
+func getDestinationTransport(endpointDestination string) channel.SIPTransport {
 
-	// webrtc allows only UDP/TLS/RTP/SAVPF
-	if strings.Contains(endpointDestination, "transport=ws") || strings.Contains(endpointDestination, "transport=wss") {
+	if strings.Contains(endpointDestination, "transport=wss") {
+		return channel.SIPTransportWSS
+	} else if strings.Contains(endpointDestination, "transport=ws") {
+		return channel.SIPTransportWS
+	} else if strings.Contains(endpointDestination, "transport=tcp") {
+		return channel.SIPTransportTCP
+	} else if strings.Contains(endpointDestination, "transport=tls") {
+		return channel.SIPTransportTLS
+	} else {
+		return channel.SIPTransportUDP
+	}
+}
+
+// setChannelVariableTransport sets the outgoit call's media transport type
+func setChannelVariableTransport(variables map[string]string, transport channel.SIPTransport) {
+
+	switch transport {
+	case channel.SIPTransportWS, channel.SIPTransportWSS:
 		variables["PJSIP_HEADER(add,VBOUT-SDP_Transport)"] = "UDP/TLS/RTP/SAVPF"
 		return
-	}
 
-	variables["PJSIP_HEADER(add,VBOUT-SDP_Transport)"] = "RTP/AVP"
+	default:
+		variables["PJSIP_HEADER(add,VBOUT-SDP_Transport)"] = "RTP/AVP"
+		return
+	}
 }
 
 // setChannelVariablesCallerID sets the outgoit call's caller

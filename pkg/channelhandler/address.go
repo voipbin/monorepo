@@ -16,7 +16,7 @@ func (h *channelHandler) AddressGetSource(cn *channel.Channel, addressType commo
 
 	target := ""
 	if addressType == commonaddress.TypeEndpoint {
-		domainName := strings.TrimSuffix(cn.StasisData["domain"], common.DomainSIPSuffix)
+		domainName := strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainSIPSuffix)
 		target = fmt.Sprintf("%s@%s", cn.SourceNumber, domainName)
 	} else {
 		target = cn.SourceNumber
@@ -84,7 +84,7 @@ func (h *channelHandler) AddressGetDestinationWithoutSpecificType(cn *channel.Ch
 		if strings.Contains(tmpTarget, "@") {
 			target = tmpTarget
 		} else {
-			target = tmpTarget + "@" + strings.TrimSuffix(cn.StasisData["domain"], common.DomainSIPSuffix)
+			target = tmpTarget + "@" + strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainSIPSuffix)
 		}
 	}
 

@@ -25,12 +25,12 @@ type Channel struct {
 	DestinationName   string `json:"destination_name"`
 	DestinationNumber string `json:"destination_number"`
 
-	State      ari.ChannelState       `json:"state"`
-	Data       map[string]interface{} `json:"data"`
-	StasisName string                 `json:"stasis_name"` // stasis name
-	StasisData map[string]string      `json:"stasis_data"` // stasis data
-	BridgeID   string                 `json:"bridge_id"`
-	PlaybackID string                 `json:"playback_id"` // playback id
+	State      ari.ChannelState          `json:"state"`
+	Data       map[string]interface{}    `json:"data"`
+	StasisName string                    `json:"stasis_name"` // stasis name
+	StasisData map[StasisDataType]string `json:"stasis_data"` // stasis data
+	BridgeID   string                    `json:"bridge_id"`
+	PlaybackID string                    `json:"playback_id"` // playback id
 
 	DialResult  string           `json:"dial_result"`
 	HangupCause ari.ChannelCause `json:"hangup_cause"`
@@ -74,6 +74,26 @@ const (
 	TypeApplication Type = "application" // general purpose for do nothing
 )
 
+// Context defines channel's context
+type Context string
+
+// List of context
+const (
+	// call
+	ContextCallIncoming  Context = "call-in"            // context for the incoming channel
+	ContextCallOutgoing  Context = "call-out"           // context for the outgoing channel
+	ContextRecording     Context = "call-record"        // context for the channel which created only for recording
+	ContextCallService   Context = "call-svc"           // context for the channel where it came back to stasis from the other asterisk application
+	ContextJoinCall      Context = "call-join"          // context for the channel for conference joining
+	ContextExternalMedia Context = "call-externalmedia" // context for the external media channel. this channel will get the media from the external
+	ContextExternalSoop  Context = "call-externalsnoop" // context for the external snoop channel
+	ContextApplication   Context = "call-application"   // context for dialplan application execution
+
+	// conf
+	ContextConfIncoming Context = "conf-in"  // context for the incoming channel to the conference-asterisk
+	ContextConfOutgoing Context = "conf-out" // context for the outgoing channel from the conference-asterisk
+)
+
 // SIPTransport represent channel's sip transport type.
 type SIPTransport string
 
@@ -83,6 +103,7 @@ const (
 	SIPTransportUDP  SIPTransport = "udp"
 	SIPTransportTCP  SIPTransport = "tcp"
 	SIPTransportTLS  SIPTransport = "tls"
+	SIPTransportWS   SIPTransport = "ws"
 	SIPTransportWSS  SIPTransport = "wss"
 )
 
@@ -119,12 +140,54 @@ const (
 )
 
 // ContextType represent channel's context type.
+// it points which handler needs to handle the channel.
+// normally, it designed for which asterisk type generated the channel(ex asterisk-call, asterisk-conference).
+// but it can be used for type's for context as well.
 type ContextType string
 
 // List of ContextType types.
 const (
-	ContextTypeConference ContextType = "conf"
-	ContextTypeCall       ContextType = "call"
+	ContextTypeConference ContextType = "conf" // conference type context. callhandler needs to handle this channel.
+	ContextTypeCall       ContextType = "call" // call type context. conferencehandler needs to handle this channel.
+)
+
+// StasisDataType represents channel's stasis data types
+type StasisDataType string
+
+// List of StasisDataType types
+const (
+	// voipbin dependent types
+	StasisDataTypeContextType     StasisDataType = "context_type"     // type: channel's contexr type
+	StasisDataTypeContext         StasisDataType = "context"          // context: channel's context
+	StasisDataTypeContextFrom     StasisDataType = "context_from"     // represents based context. used for service return stasis arg
+	StasisDataTypeDomain          StasisDataType = "domain"           // requested domain name.
+	StasisDataTypeSource          StasisDataType = "source"           // request source ip
+	StasisDataTypeDirection       StasisDataType = "direction"        // channel's direction. incoming for this case.
+	StasisDataTypeCallID          StasisDataType = "call_id"          // voipbin call id
+	StasisDataTypeConfbridgeID    StasisDataType = "confbridge_id"    // voipbin confbridge id
+	StasisDataTypeTransport       StasisDataType = "transport"        // channel's transport(SIP transport)
+	StasisDataTypeApplicationName StasisDataType = "application_name" // application name
+	StasisDataTypeBridgeID        StasisDataType = "bridge_id"        // bridge's id
+	StasisDataTypeReferenceType   StasisDataType = "reference_type"   // given channel's reference type
+	StasisDataTypeReferenceID     StasisDataType = "reference_id"     // given channel's reference id
+
+	// SIP dependent types
+	StasisDataTypeSIPCallID  StasisDataType = "sip_call_id" // SIP Call-ID
+	StasisDataTypeSIPPAI     StasisDataType = "sip_pai"     // SIP P-Asserted-Identity
+	StasisDataTypeSIPPrivacy StasisDataType = "sip_privacy" // SIP Privacy
+
+	// recording
+	StasisDataTypeRecordingID           StasisDataType = "recording_id"
+	StasisDataTypeRecordingName         StasisDataType = "recording_name"
+	StasisDataTypeRecordingDirection    StasisDataType = "recording_direction"
+	StasisDataTypeRecordingFormat       StasisDataType = "recording_format"
+	StasisDataTypeRecordingEndOfSilence StasisDataType = "recording_end_of_silence"
+	StasisDataTypeRecordingEndOfKey     StasisDataType = "recording_end_of_key"
+	StasisDataTypeRecordingDuration     StasisDataType = "recording_duration"
+
+	// service - amd
+	StasisDataTypeServiceAMDStatus StasisDataType = "amd_status" // amd result status
+	StasisDataTypeServiceAMDCause  StasisDataType = "amd_cause"  // amd result cause
 )
 
 // NewChannelByChannelCreated creates Channel based on ARI ChannelCreated event
@@ -143,9 +206,9 @@ func NewChannelByStasisStart(e *ari.StasisStart) *Channel {
 	c.TMCreate = string(e.Timestamp)
 
 	// get stasis name and stasis data
-	stasisData := map[string]string{}
+	stasisData := map[StasisDataType]string{}
 	for k, v := range e.Args {
-		stasisData[k] = v
+		stasisData[StasisDataType(k)] = v
 	}
 	c.StasisName = e.Application
 	c.StasisData = stasisData
@@ -167,7 +230,7 @@ func NewChannelByARIChannel(e *ari.Channel) *Channel {
 
 		State:      e.State,
 		Data:       map[string]interface{}{},
-		StasisData: map[string]string{},
+		StasisData: map[StasisDataType]string{},
 	}
 
 	for k, i := range e.ChannelVars {

@@ -13,25 +13,22 @@ import (
 // ARIStasisStart handles StasisStart ARI event for conference types.
 func (h *confbridgeHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "ARIStasisStart",
-		"asterisk_id":    cn.AsteriskID,
-		"channel_id":     cn.ID,
-		"channel_status": cn.State,
-		"channel_data":   cn.StasisData,
+		"func":    "ARIStasisStart",
+		"channel": cn,
 	})
 
-	confContext := cn.StasisData["context"]
-	switch confContext {
-	case contextConfbridgeIncoming:
+	chContext := cn.StasisData[channel.StasisDataTypeContext]
+	switch channel.Context(chContext) {
+	case channel.ContextConfIncoming:
 		return h.StartContextIncoming(ctx, cn)
 
-	case contextConfbridgeOutgoing:
-		log.Errorf("Currently, we don't support conference outgoing context. Something was wrong. context: %s", confContext)
-		return fmt.Errorf("unsupported conference context type. context: %s", confContext)
+	case channel.ContextConfOutgoing:
+		log.Errorf("Currently, we don't support conference outgoing context. Something was wrong. context: %s", chContext)
+		return fmt.Errorf("unsupported conference context type. context: %s", chContext)
 
 	default:
-		log.Errorf("Unsuppurted context type. context: %s", confContext)
-		return fmt.Errorf("unsupported conference context type. context: %s", confContext)
+		log.Errorf("Unsuppurted context type. context: %s", chContext)
+		return fmt.Errorf("unsupported conference context type. context: %s", chContext)
 	}
 }
 

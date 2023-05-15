@@ -67,11 +67,13 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callI
 
 	// create a snoop channel
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s,bridge_id=%s",
-		common.ContextExternalSoop,
-		c.ID,
-		br.ID,
+	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s",
+		channel.StasisDataTypeContextType, channel.ContextTypeCall,
+		channel.StasisDataTypeContext, channel.ContextExternalSoop,
+		channel.StasisDataTypeCallID, c.ID,
+		channel.StasisDataTypeBridgeID, br.ID,
 	)
+
 	snoopID := h.utilHandler.CreateUUID().String()
 	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth)
 	if err != nil {

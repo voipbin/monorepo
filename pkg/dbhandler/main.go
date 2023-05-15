@@ -69,7 +69,7 @@ type DBHandler interface {
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error
 	ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error
-	ChannelSetStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) error
+	ChannelSetStasisInfo(ctx context.Context, id string, chType channel.Type, stasisName string, stasisData map[channel.StasisDataType]string, direction channel.Direction) error
 	ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error
 	ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error
 	ChannelSetMuteDirection(ctx context.Context, id string, muteDirection channel.MuteDirection) error

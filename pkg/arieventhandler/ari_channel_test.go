@@ -234,9 +234,6 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 		event *ari.ChannelStateChange
 
 		responseChannel *channel.Channel
-
-		expectChannelID string
-		expectState     ari.ChannelState
 	}{
 		{
 			"normal",
@@ -266,10 +263,9 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 				},
 			},
 
-			&channel.Channel{},
-
-			"1587842233.10218",
-			ari.ChannelStateUp,
+			&channel.Channel{
+				ID: "1587842233.10218",
+			},
 		},
 	}
 
@@ -293,7 +289,7 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdateState(ctx, tt.expectChannelID, tt.expectState).Return(tt.responseChannel, nil)
+			mockChannel.EXPECT().ARIChannelStateChange(ctx, tt.event).Return(tt.responseChannel, nil)
 			mockCall.EXPECT().ARIChannelStateChange(ctx, tt.responseChannel).Return(nil)
 
 			if err := h.EventHandlerChannelStateChange(ctx, tt.event); err != nil {
@@ -827,301 +823,7 @@ func Test_EventHandlerChannelDtmfReceived(t *testing.T) {
 	}
 }
 
-func Test_EventHandlerChannelVarsetDirection(t *testing.T) {
-
-	tests := []struct {
-		name      string
-		event     *ari.ChannelVarset
-		channel   *channel.Channel
-		direction channel.Direction
-	}{
-		{
-			"None",
-			&ari.ChannelVarset{
-				Event: ari.Event{
-					Type:        ari.EventTypeChannelVarset,
-					Application: "voipbin",
-					Timestamp:   "2020-08-16T00:52:39.218",
-					AsteriskID:  "42:01:0a:a4:0f:ce",
-				},
-				Channel: ari.Channel{
-					ID:           "instance-asterisk-production-europe-west4-a-1-1597539159.10032",
-					Name:         "PJSIP/call-in-00004fb4",
-					Language:     "en",
-					CreationTime: "2020-08-16T00:52:39.214",
-					State:        ari.ChannelStateRing,
-					Caller: ari.CallerID{
-						Number: "7trunk",
-					},
-					Dialplan: ari.DialplanCEP{
-						Context:  "call-in",
-						Exten:    "34967970028",
-						Priority: 3,
-						AppName:  "Stasis",
-						AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77",
-					},
-				},
-				Variable: "VB-DIRECTION",
-				Value:    "",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.10032",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			channel.DirectionNone,
-		},
-		{
-			"incoming",
-			&ari.ChannelVarset{
-				Event: ari.Event{
-					Type:        ari.EventTypeChannelVarset,
-					Application: "voipbin",
-					Timestamp:   "2020-08-16T00:52:39.218",
-					AsteriskID:  "42:01:0a:a4:0f:ce",
-				},
-				Channel: ari.Channel{
-					ID:           "instance-asterisk-production-europe-west4-a-1-1597539159.10042",
-					Name:         "PJSIP/call-in-00004fb4",
-					Language:     "en",
-					CreationTime: "2020-08-16T00:52:39.214",
-					State:        ari.ChannelStateRing,
-					Caller: ari.CallerID{
-						Number: "7trunk",
-					},
-					Dialplan: ari.DialplanCEP{
-						Context:  "call-in",
-						Exten:    "34967970028",
-						Priority: 3,
-						AppName:  "Stasis",
-						AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77",
-					},
-				},
-				Variable: "VB-DIRECTION",
-				Value:    "incoming",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.10042",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			channel.DirectionIncoming,
-		},
-		{
-			"outgoing",
-			&ari.ChannelVarset{
-				Event: ari.Event{
-					Type:        ari.EventTypeChannelVarset,
-					Application: "voipbin",
-					Timestamp:   "2020-08-16T00:52:39.218",
-					AsteriskID:  "42:01:0a:a4:0f:ce",
-				},
-				Channel: ari.Channel{
-					ID:           "instance-asterisk-production-europe-west4-a-1-1597539159.11042",
-					Name:         "PJSIP/call-in-00004fb4",
-					Language:     "en",
-					CreationTime: "2020-08-16T00:52:39.214",
-					State:        ari.ChannelStateRing,
-					Caller: ari.CallerID{
-						Number: "7trunk",
-					},
-					Dialplan: ari.DialplanCEP{
-						Context:  "call-in",
-						Exten:    "34967970028",
-						Priority: 3,
-						AppName:  "Stasis",
-						AppData:  "voipbin,CONTEXT=call-in,SIP_CALLID=7b9d3e3148cb48aca801f7a015e7aa7b@1634430,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=51.79.98.77",
-					},
-				},
-				Variable: "VB-DIRECTION",
-				Value:    "outgoing",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.11042",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			channel.DirectionOutgoing,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockRequest := requesthandler.NewMockRequestHandler(mc)
-			mockCall := callhandler.NewMockCallHandler(mc)
-			mockChannel := channelhandler.NewMockChannelHandler(mc)
-			h := eventHandler{
-				db:             mockDB,
-				rabbitSock:     mockSock,
-				reqHandler:     mockRequest,
-				callHandler:    mockCall,
-				channelHandler: mockChannel,
-			}
-
-			ctx := context.Background()
-
-			mockChannel.EXPECT().SetDirection(ctx, tt.channel.ID, tt.direction).Return(nil)
-			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_EventHandlerChannelVarsetSIPTransport(t *testing.T) {
-
-	tests := []struct {
-		name         string
-		event        *ari.ChannelVarset
-		channel      *channel.Channel
-		sipTransport channel.SIPTransport
-	}{
-		{
-			"tcp type",
-			&ari.ChannelVarset{
-				Channel: ari.Channel{
-					ID: "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				},
-				Variable: "VB-SIP_TRANSPORT",
-				Value:    "tcp",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			channel.SIPTransportTCP,
-		},
-		{
-			"udp type",
-			&ari.ChannelVarset{
-				Channel: ari.Channel{
-					ID: "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				},
-				Variable: "VB-SIP_TRANSPORT",
-				Value:    "udp",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			channel.SIPTransportUDP,
-		},
-		{
-			"tls type",
-			&ari.ChannelVarset{
-				Channel: ari.Channel{
-					ID: "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				},
-				Variable: "VB-SIP_TRANSPORT",
-				Value:    "tls",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			channel.SIPTransportTLS,
-		},
-		{
-			"wss type",
-			&ari.ChannelVarset{
-				Channel: ari.Channel{
-					ID: "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				},
-				Variable: "VB-SIP_TRANSPORT",
-				Value:    "wss",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			channel.SIPTransportWSS,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockRequest := requesthandler.NewMockRequestHandler(mc)
-			mockCall := callhandler.NewMockCallHandler(mc)
-			mockChannel := channelhandler.NewMockChannelHandler(mc)
-			h := eventHandler{
-				db:             mockDB,
-				rabbitSock:     mockSock,
-				reqHandler:     mockRequest,
-				callHandler:    mockCall,
-				channelHandler: mockChannel,
-			}
-
-			ctx := context.Background()
-
-			mockChannel.EXPECT().SetSIPTransport(ctx, tt.channel.ID, tt.sipTransport).Return(nil)
-			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_EventHandlerChannelVarsetSIPCallID(t *testing.T) {
-
-	tests := []struct {
-		name      string
-		event     *ari.ChannelVarset
-		channel   *channel.Channel
-		sipCallID string
-	}{
-		{
-			"normal",
-			&ari.ChannelVarset{
-				Channel: ari.Channel{
-					ID: "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				},
-				Variable: "VB-SIP_CALLID",
-				Value:    "d224d2a8-e471-11ea-93f2-e302e86922cc",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			"d224d2a8-e471-11ea-93f2-e302e86922cc",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			mockRequest := requesthandler.NewMockRequestHandler(mc)
-			mockCall := callhandler.NewMockCallHandler(mc)
-			mockChannel := channelhandler.NewMockChannelHandler(mc)
-			h := eventHandler{
-				db:             mockDB,
-				rabbitSock:     mockSock,
-				reqHandler:     mockRequest,
-				callHandler:    mockCall,
-				channelHandler: mockChannel,
-			}
-
-			ctx := context.Background()
-
-			mockChannel.EXPECT().SetSIPCallID(ctx, tt.channel.ID, tt.sipCallID).Return(nil)
-			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_EventHandlerChannelVarsetSIPDataItem(t *testing.T) {
+func Test_EventHandlerChannelVarset(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -1131,36 +833,20 @@ func Test_EventHandlerChannelVarsetSIPDataItem(t *testing.T) {
 		value   interface{}
 	}{
 		{
-			"test VB-SIP_PAI",
+			"normal",
 			&ari.ChannelVarset{
 				Channel: ari.Channel{
 					ID: "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
 				},
-				Variable: "VB-SIP_PAI",
-				Value:    "tel:+31616818985",
+				Variable: "test_key",
+				Value:    "test_value",
 			},
 			&channel.Channel{
 				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
 				AsteriskID: "42:01:0a:a4:0f:ce",
 			},
-			"sip_pai",
-			"tel:+31616818985",
-		},
-		{
-			"test VB-SIP_PRIVACY",
-			&ari.ChannelVarset{
-				Channel: ari.Channel{
-					ID: "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				},
-				Variable: "VB-SIP_PRIVACY",
-				Value:    "id",
-			},
-			&channel.Channel{
-				ID:         "instance-asterisk-production-europe-west4-a-1-1597539159.90042",
-				AsteriskID: "42:01:0a:a4:0f:ce",
-			},
-			"sip_privacy",
-			"id",
+			"test_key",
+			"test_value",
 		},
 	}
 

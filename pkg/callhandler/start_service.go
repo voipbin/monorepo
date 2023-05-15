@@ -9,16 +9,18 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
 const (
 	amdStatusMachine = "MACHINE" // amd status result machine
 )
 
-func (h *callHandler) startServiceFromDefault(ctx context.Context, channelID string, data map[string]string) error {
+func (h *callHandler) startServiceFromDefault(ctx context.Context, channelID string, data map[channel.StasisDataType]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startServiceFromDefault",
 		"channel_id": channelID,
+		"data":       data,
 	})
 	log.Debug("Executing default service handler.")
 
@@ -33,17 +35,18 @@ func (h *callHandler) startServiceFromDefault(ctx context.Context, channelID str
 }
 
 // startServiceFromAMD handles context-from amd service call.
-func (h *callHandler) startServiceFromAMD(ctx context.Context, channelID string, data map[string]string) error {
+func (h *callHandler) startServiceFromAMD(ctx context.Context, channelID string, data map[channel.StasisDataType]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startServiceFromAMD",
 		"channel_id": channelID,
+		"data":       data,
 	})
 	defer func() {
 		_, _ = h.channelHandler.HangingUp(ctx, channelID, ari.ChannelCauseNormalClearing)
 	}()
 
-	status := data["amd_status"]
-	cause := data["amd_cause"]
+	status := data[channel.StasisDataTypeServiceAMDStatus]
+	cause := data[channel.StasisDataTypeServiceAMDCause]
 	log.Debugf("Received amd result. status: %s, cause: %s", status, cause)
 
 	// get amd option

@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
 // EventHandlerStasisStart handles StasisStart ARI event
@@ -27,30 +28,24 @@ func (h *eventHandler) EventHandlerStasisStart(ctx context.Context, evt interfac
 	}
 	log.WithField("channel", tmp).Debugf("Found channel info. channel_id: %s", tmp.ID)
 
-	// get stasis name and parse the stasis data
-	stasisName := e.Application
-	stasisData := e.Args
-
-	// update channel's stasis name and stasis data
-	cn, err := h.channelHandler.UpdateStasisNameAndStasisData(ctx, e.Channel.ID, stasisName, stasisData)
+	cn, err := h.channelHandler.ARIStasisStart(ctx, e)
 	if err != nil {
-		log.Errorf("Could not update the channel's stasis name and stasis data. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, e.Channel.ID, ari.ChannelCauseUnallocated)
-		return err
+		log.Errorf("The channel handler could not handle the event. err: %v", err)
+		return errors.Wrap(err, "the channel handler could not handle the event")
 	}
 	log.WithField("channel", cn).Debugf("Updated channel info. channel_id: %s", cn.ID)
 
-	contextType := getContextType(stasisData["context"])
-	switch contextType {
-	case contextTypeCall:
+	// execute the context type handler
+	switch channel.ContextType(cn.StasisData[channel.StasisDataTypeContextType]) {
+	case channel.ContextTypeCall:
 		err = h.callHandler.ARIStasisStart(ctx, cn)
 
-	case contextTypeConfbridge:
+	case channel.ContextTypeConference:
 		err = h.confbridgeHandler.ARIStasisStart(ctx, cn)
 
 	default:
-		log.Errorf("Could not find context type handler. context_type: %s", contextType)
-		err = fmt.Errorf("could not find context type handler. context_type: %s", contextType)
+		log.Errorf("Could not find context type handler. context_type: %s", cn.StasisData[channel.StasisDataTypeContextType])
+		err = fmt.Errorf("could not find context type handler. context_type: %s", cn.StasisData[channel.StasisDataTypeContextType])
 	}
 	if err != nil {
 		log.Errorf("Could not handle the event correctly. err: %v", err)

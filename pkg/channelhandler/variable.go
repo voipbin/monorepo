@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
@@ -14,6 +16,8 @@ func (h *channelHandler) VariableSet(ctx context.Context, id string, key string,
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "VariableSet",
 		"channel_id": id,
+		"variable":   key,
+		"value":      value,
 	})
 
 	res, err := h.Get(ctx, id)
@@ -28,33 +32,24 @@ func (h *channelHandler) VariableSet(ctx context.Context, id string, key string,
 	}
 
 	if errSet := h.reqHandler.AstChannelVariableSet(ctx, res.AsteriskID, res.ID, key, value); errSet != nil {
-		return errSet
+		log.Errorf("Could not set the channel variable. err: %v", errSet)
+		return errors.Wrap(errSet, "could not set the channel variable")
 	}
 
 	return nil
 }
 
-// VariableGet gets the variable
-func (h *channelHandler) VariableGet(ctx context.Context, id string, key string) (string, error) {
+// variableGet gets the variable
+func (h *channelHandler) variableGet(ctx context.Context, cn *channel.Channel, key string) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "VariableGet",
-		"channel_id": id,
+		"func":    "variableGet",
+		"channel": cn,
 	})
 
-	tmp, err := h.Get(ctx, id)
+	res, err := h.reqHandler.AstChannelVariableGet(ctx, cn.AsteriskID, cn.ID, key)
 	if err != nil {
-		log.Errorf("Could not get channel info. err: %v", err)
-		return "", err
-	}
-
-	if tmp.TMDelete < dbhandler.DefaultTimeStamp {
-		// already hungup nothing to do
-		return "", fmt.Errorf("already hungup")
-	}
-
-	res, err := h.reqHandler.AstChannelVariableGet(ctx, tmp.AsteriskID, tmp.ID, key)
-	if err != nil {
-		return "", err
+		log.Errorf("Could not get variable. err: %v", err)
+		return "", errors.Wrap(err, "could not get variable")
 	}
 
 	return res, nil
