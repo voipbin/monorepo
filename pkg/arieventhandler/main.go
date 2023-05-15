@@ -4,7 +4,6 @@ package arieventhandler
 
 import (
 	"context"
-	"strings"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -87,28 +86,4 @@ func NewEventHandler(
 	}
 
 	return h
-}
-
-// contextType
-type contextType string
-
-// List of contextType types.
-const (
-	contextTypeConfbridge contextType = "conf"
-	contextTypeCall       contextType = "call"
-)
-
-// getContextType returns CONTEXT's type
-func getContextType(message interface{}) contextType {
-	if message == nil {
-		return contextTypeCall
-	}
-
-	tmp := strings.Split(message.(string), "-")[0]
-	switch tmp {
-	case string(contextTypeConfbridge):
-		return contextTypeConfbridge
-	default:
-		return contextTypeCall
-	}
 }

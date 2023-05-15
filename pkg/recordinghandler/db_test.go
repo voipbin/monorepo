@@ -87,8 +87,8 @@ func Test_Start_call(t *testing.T) {
 				"4af70a04-8fd6-11ed-a294-4b2bc83c1829",
 			},
 			expectArgs: []string{
-				"context=call-record,reference_type=call,reference_id=d883a3f2-8fd4-11ed-baee-af9907e4df67,recording_id=e141bb2c-8fd5-11ed-a0f9-9735e31b8411,recording_name=call_d883a3f2-8fd4-11ed-baee-af9907e4df67_2023-01-05T14:58:05Z,direction=in,format=wav,end_of_silence=0,end_of_key=,duration=0",
-				"context=call-record,reference_type=call,reference_id=d883a3f2-8fd4-11ed-baee-af9907e4df67,recording_id=e141bb2c-8fd5-11ed-a0f9-9735e31b8411,recording_name=call_d883a3f2-8fd4-11ed-baee-af9907e4df67_2023-01-05T14:58:05Z,direction=out,format=wav,end_of_silence=0,end_of_key=,duration=0",
+				"context_type=call,context=call-record,reference_type=call,reference_id=d883a3f2-8fd4-11ed-baee-af9907e4df67,recording_id=e141bb2c-8fd5-11ed-a0f9-9735e31b8411,recording_name=call_d883a3f2-8fd4-11ed-baee-af9907e4df67_2023-01-05T14:58:05Z,recording_direction=in,recording_format=wav,recording_end_of_silence=0,recording_end_of_key=,recording_duration=0",
+				"context_type=call,context=call-record,reference_type=call,reference_id=d883a3f2-8fd4-11ed-baee-af9907e4df67,recording_id=e141bb2c-8fd5-11ed-a0f9-9735e31b8411,recording_name=call_d883a3f2-8fd4-11ed-baee-af9907e4df67_2023-01-05T14:58:05Z,recording_direction=out,recording_format=wav,recording_end_of_silence=0,recording_end_of_key=,recording_duration=0",
 			},
 			expectRecording: &recording.Recording{
 				ID:            uuid.FromStringOrNil("e141bb2c-8fd5-11ed-a0f9-9735e31b8411"),

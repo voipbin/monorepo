@@ -9,8 +9,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	channel "gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/callhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -24,17 +23,11 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 
 		responseChannel *channel.Channel
 
-		expectAsteriskID string
-		expectChannelID  string
-		expectStatus     call.Status
-		expectData       map[string]string
-
-		expactStasisData map[string]string
-		expectStasisname string
+		expectChannelID string
 	}{
 		{
-			"normal",
-			&ari.StasisStart{
+			name: "normal",
+			event: &ari.StasisStart{
 				Event: ari.Event{
 					Type:        ari.EventTypeStasisStart,
 					Application: "voipbin",
@@ -42,9 +35,13 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 					AsteriskID:  "42:01:0a:a4:00:03",
 				},
 				Args: ari.ArgsMap{
-					"context": "call-in",
-					"domain":  "sip-service.voipbin.net",
-					"source":  "213.127.79.161",
+					"context_type": "call",
+					"context":      "call-in",
+					"domain":       "sip-service.voipbin.net",
+					"source":       "213.127.79.161",
+					"sip_call_id":  "8juJJyujlS",
+					"sip_pai":      "",
+					"sip_privacy":  "",
 				},
 				Channel: ari.Channel{
 					ID:           "1587774438.2390",
@@ -61,39 +58,29 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 						Exten:    "1234234324",
 						Priority: 2,
 						AppName:  "Stasis",
-						AppData:  "voipbin,CONTEXT=in-voipbin,SIP_CALLID=8juJJyujlS,SIP_PAI=,SIP_PRIVACY=,DOMAIN=sip-service.voipbin.net,SOURCE=213.127.79.161",
+						AppData:  "voipbin,context_type=call,context=call-in,domain=sip-service.voipbin.net,source=213.127.79.161,sip_call_id=8juJJyujlS,sip_pai=,sip_privacy=",
 					},
 				},
 			},
 
-			&channel.Channel{
+			responseChannel: &channel.Channel{
 				ID:         "1587774438.2390",
 				AsteriskID: "42:01:0a:a4:00:03",
 				Name:       "PJSIP/in-voipbin-00000948",
 				State:      ari.ChannelStateRing,
-				Data: map[string]interface{}{
-					"context": "call-in",
-					"domain":  "sip-service.voipbin.net",
-					"source":  "213.127.79.161",
+				StasisData: map[channel.StasisDataType]string{
+					"context_type": "call",
+					"context":      "call-in",
+					"sip_call_id":  "8juJJyujlS",
+					"sip_pai":      "",
+					"sip_privacy":  "",
+					"domain":       "sip-service.voipbin.net",
+					"source":       "213.127.79.161",
 				},
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 
-			"42:01:0a:a4:00:03",
-			"1587774438.2390",
-			call.StatusRinging,
-			map[string]string{
-				"context": "call-in",
-				"domain":  "sip-service.voipbin.net",
-				"source":  "213.127.79.161",
-			},
-
-			map[string]string{
-				"context": "call-in",
-				"domain":  "sip-service.voipbin.net",
-				"source":  "213.127.79.161",
-			},
-			"voipbin",
+			expectChannelID: "1587774438.2390",
 		},
 	}
 
@@ -118,7 +105,7 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 			ctx := context.Background()
 
 			mockChannel.EXPECT().Get(ctx, tt.expectChannelID).Return(tt.responseChannel, nil)
-			mockChannel.EXPECT().UpdateStasisNameAndStasisData(ctx, tt.expectChannelID, tt.expectStasisname, tt.expectData).Return(tt.responseChannel, nil)
+			mockChannel.EXPECT().ARIStasisStart(ctx, tt.event).Return(tt.responseChannel, nil)
 
 			mockCall.EXPECT().ARIStasisStart(gomock.Any(), tt.responseChannel).Return(nil)
 

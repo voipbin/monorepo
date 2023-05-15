@@ -119,7 +119,7 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 		}
 	}
 	if res.StasisData == nil {
-		res.StasisData = map[string]string{}
+		res.StasisData = map[channel.StasisDataType]string{}
 	}
 
 	// TMDelete
@@ -526,13 +526,18 @@ func (h *handler) ChannelEndAndDelete(ctx context.Context, id string, hangup ari
 	return nil
 }
 
-// ChannelSetStasisNameAndStasisData sets the data and stasis
-func (h *handler) ChannelSetStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) error {
+// ChannelSetStasisInfoAndSIPInfo sets stasis info and SIP info
+func (h *handler) ChannelSetStasisInfo(ctx context.Context, id string, chType channel.Type, stasisName string, stasisData map[channel.StasisDataType]string, direction channel.Direction) error {
 	//prepare
 	q := `
 	update channels set
+		type = ?,
+
 		stasis_name = ?,
 		stasis_data = ?,
+
+		direction = ?,
+
 		tm_update = ?
 	where
 		id = ?
@@ -540,12 +545,22 @@ func (h *handler) ChannelSetStasisNameAndStasisData(ctx context.Context, id stri
 
 	tmpData, err := json.Marshal(stasisData)
 	if err != nil {
-		return fmt.Errorf("ChannelSetStasisNameAndStasisData: Could not marshal the stasis_data. err: %v", err)
+		return fmt.Errorf("ChannelSetStasisInfo: Could not marshal the stasis_data. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, stasisName, tmpData, h.utilHandler.GetCurTime(), id)
+	_, err = h.db.Exec(q,
+		chType,
+
+		stasisName,
+		tmpData,
+
+		direction,
+
+		h.utilHandler.GetCurTime(),
+		id,
+	)
 	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetStasisNameAndStasisData. err: %v", err)
+		return fmt.Errorf("could not execute. ChannelSetStasisInfo. err: %v", err)
 	}
 
 	// update the cache

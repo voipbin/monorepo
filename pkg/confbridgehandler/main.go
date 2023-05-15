@@ -24,12 +24,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/recordinghandler"
 )
 
-// Contexts of confbridge types
-const (
-	contextConfbridgeIncoming string = "conf-in"
-	contextConfbridgeOutgoing string = "conf-out"
-)
-
 // ConfbridgeHandler is interface for conference handle
 type ConfbridgeHandler interface {
 	ARIChannelEnteredBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error

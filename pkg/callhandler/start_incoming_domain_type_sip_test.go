@@ -50,7 +50,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeAgent(t *testing.T) {
 				SourceName:        "",
 				SourceNumber:      "test01",
 
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "test.sip.voipbin.net",
 					"source":  "222.112.233.190",
@@ -158,7 +158,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeConference(t *testing.T) {
 				SourceName:        "",
 				SourceNumber:      "test01",
 
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "test.sip.voipbin.net",
 					"source":  "222.112.233.190",
@@ -266,7 +266,7 @@ func Test_startIncomingDomainTypeSIPDestinationTypeTel(t *testing.T) {
 				SourceName:        "",
 				SourceNumber:      "test01",
 
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context": "call-in",
 					"domain":  "test.sip.voipbin.net",
 					"source":  "222.112.233.190",

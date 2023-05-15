@@ -37,7 +37,7 @@ func Test_Joined_type_connect(t *testing.T) {
 			channel: &channel.Channel{
 				AsteriskID: "00:11:22:33:44:55",
 				ID:         "4268f036-38d0-11ec-a912-ebca1cd51965",
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"confbridge_id": "eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2",
 					"call_id":       "ebb3c432-38cf-11ec-ad96-fb9640d4c6ee",
 				},
@@ -131,7 +131,7 @@ func Test_Joined_type_conference(t *testing.T) {
 			channel: &channel.Channel{
 				AsteriskID: "00:11:22:33:44:55",
 				ID:         "27faec50-a3bd-11ed-b330-23d982f79917",
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"confbridge_id": "282882b4-a3bd-11ed-9f93-3b874a128ea2",
 					"call_id":       "28582dac-a3bd-11ed-9f5e-93bf1afcbcf6",
 				},

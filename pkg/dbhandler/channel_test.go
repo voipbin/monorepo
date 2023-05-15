@@ -40,7 +40,7 @@ func Test_ChannelCreate(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
 				TMUpdate:   DefaultTimeStamp,
 				TMDelete:   DefaultTimeStamp,
@@ -64,7 +64,7 @@ func Test_ChannelCreate(t *testing.T) {
 				ID:         "fd4ed562-823f-11ea-a6b2-bbfcd3647952",
 				State:      "Up",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
 				TMUpdate:   DefaultTimeStamp,
 				TMDelete:   DefaultTimeStamp,
@@ -93,7 +93,7 @@ func Test_ChannelCreate(t *testing.T) {
 				Data: map[string]interface{}{
 					"key1": "val1",
 				},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				TMCreate:   "2020-04-18T03:22:17.995000",
 				TMUpdate:   DefaultTimeStamp,
 				TMDelete:   DefaultTimeStamp,
@@ -108,7 +108,7 @@ func Test_ChannelCreate(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "19b5d1e2-3793-11ec-906e-e37773ea39d0",
 				State:      "Up",
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"key1": "val1",
 				},
 				TMCreate: "2020-04-18T03:22:17.995000",
@@ -120,7 +120,7 @@ func Test_ChannelCreate(t *testing.T) {
 				ID:         "19b5d1e2-3793-11ec-906e-e37773ea39d0",
 				State:      "Up",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"key1": "val1",
 				},
 				TMCreate:  "2020-04-18T03:22:17.995000",
@@ -191,7 +191,7 @@ func Test_ChannelGet(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "edcf72a4-8230-11ea-9f7f-ff89da373481",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				TMRinging:  DefaultTimeStamp,
 				TMAnswer:   DefaultTimeStamp,
 				TMEnd:      DefaultTimeStamp,
@@ -263,7 +263,7 @@ func Test_ChannelEndAndDelete(t *testing.T) {
 				AsteriskID:  "3e:50:6b:43:bb:30",
 				ID:          "810a31da-8245-11ea-881e-df4110bf6754",
 				Data:        map[string]interface{}{},
-				StasisData:  map[string]string{},
+				StasisData:  map[channel.StasisDataType]string{},
 				HangupCause: ari.ChannelCauseNormalClearing,
 
 				TMRinging: DefaultTimeStamp,
@@ -347,7 +347,7 @@ func Test_ChannelSetStateAnswer(t *testing.T) {
 				ID:         "bbed0da6-6e6d-11ed-9544-937fb1cf3a60",
 				State:      ari.ChannelStateUp,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMAnswer:  "2020-04-20 03:23:20.995000",
 				TMRinging: DefaultTimeStamp,
@@ -433,7 +433,7 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 				ID:         "dbb6d036-6e6d-11ed-8256-7b4b5eef5694",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMAnswer:  DefaultTimeStamp,
 				TMRinging: "2020-04-20 03:23:20.995000",
@@ -460,7 +460,7 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 				ID:         "f03c8a28-6e6d-11ed-a20b-bfaa56fb5a4c",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMAnswer:  DefaultTimeStamp,
 				TMRinging: "2020-04-20 03:23:20.995000",
@@ -546,7 +546,7 @@ func Test_ChannelSetStasis(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				StasisName: "voipbin",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
@@ -630,7 +630,7 @@ func Test_ChannelSetType(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				Type:       channel.TypeNone,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
@@ -657,7 +657,7 @@ func Test_ChannelSetType(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				Type:       channel.TypeCall,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
@@ -684,7 +684,7 @@ func Test_ChannelSetType(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				Type:       channel.TypeConfbridge,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
@@ -711,7 +711,7 @@ func Test_ChannelSetType(t *testing.T) {
 				State:      ari.ChannelStateRing,
 				Type:       channel.TypeJoin,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
@@ -793,7 +793,7 @@ func Test_ChannelSetData(t *testing.T) {
 				ID:         "f7ca1534-8fd7-11ea-8626-438559ccdb88",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
@@ -826,7 +826,7 @@ func Test_ChannelSetData(t *testing.T) {
 					"SIP_CALLID":  "AWV705JjED",
 					"SIP_PRIVACY": "",
 				},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
@@ -881,14 +881,19 @@ func Test_ChannelSetData(t *testing.T) {
 	}
 }
 
-func Test_ChannelSetDataAndStasis(t *testing.T) {
+func Test_ChannelSetStasisInfo(t *testing.T) {
 
 	type test struct {
-		name string
+		name    string
+		channel *channel.Channel
 
-		channel    *channel.Channel
-		stasisName string
-		stasisData map[string]string
+		id string
+
+		channelType channel.Type
+		stasisName  string
+		stasisData  map[channel.StasisDataType]string
+
+		direction channel.Direction
 
 		responseCurTime string
 		expectRes       *channel.Channel
@@ -896,58 +901,48 @@ func Test_ChannelSetDataAndStasis(t *testing.T) {
 
 	tests := []test{
 		{
-			"empty data",
-			&channel.Channel{
+			name: "normal",
+
+			channel: &channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "e27e0d7e-8fd8-11ea-9b19-5b7e412d9d1c",
+				ID:         "670c5460-1b3f-4548-80c9-d3c96cef6a58",
 				State:      ari.ChannelStateRing,
 			},
-			"voipbin",
-			map[string]string{},
 
-			"2020-04-20 03:22:17.995000",
-			&channel.Channel{
+			id: "670c5460-1b3f-4548-80c9-d3c96cef6a58",
+
+			channelType: channel.TypeCall,
+			stasisName:  "voipbin",
+			stasisData: map[channel.StasisDataType]string{
+				channel.StasisDataTypeContextType: "call",
+				channel.StasisDataTypeContext:     "call-in",
+				channel.StasisDataTypeDomain:      "sip-service.voipbin.net",
+				channel.StasisDataTypeSource:      "213.127.79.161",
+				channel.StasisDataTypeSIPPAI:      "",
+				channel.StasisDataTypeSIPCallID:   "AWV705JjED",
+				channel.StasisDataTypeSIPPrivacy:  "",
+			},
+			direction: channel.DirectionIncoming,
+
+			responseCurTime: "2020-04-20 03:22:17.995000",
+			expectRes: &channel.Channel{
 				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "e27e0d7e-8fd8-11ea-9b19-5b7e412d9d1c",
+				ID:         "670c5460-1b3f-4548-80c9-d3c96cef6a58",
+				Type:       channel.TypeCall,
+
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
 				StasisName: "voipbin",
-				StasisData: map[string]string{},
-
-				TMRinging: DefaultTimeStamp,
-				TMAnswer:  DefaultTimeStamp,
-				TMEnd:     DefaultTimeStamp,
-
-				TMCreate: "2020-04-20 03:22:17.995000",
-				TMUpdate: "2020-04-20 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
-			},
-		},
-		{
-			"have some data",
-			&channel.Channel{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "de94c572-8fd8-11ea-8a51-cfff145aaab5",
-				State:      ari.ChannelStateRing,
-			},
-			"voipbin",
-			map[string]string{"DOMAIN": "sip-service.voipbin.net", "SOURCE": "213.127.79.161", "CONTEXT": "in-voipbin", "SIP_PAI": "", "SIP_CALLID": "AWV705JjED", "SIP_PRIVACY": ""},
-
-			"2020-04-20 03:22:17.995000",
-			&channel.Channel{
-				AsteriskID: "3e:50:6b:43:bb:30",
-				ID:         "de94c572-8fd8-11ea-8a51-cfff145aaab5",
-				State:      ari.ChannelStateRing,
-				Data:       map[string]interface{}{},
-				StasisName: "voipbin",
-				StasisData: map[string]string{
-					"DOMAIN":      "sip-service.voipbin.net",
-					"SOURCE":      "213.127.79.161",
-					"CONTEXT":     "in-voipbin",
-					"SIP_PAI":     "",
-					"SIP_CALLID":  "AWV705JjED",
-					"SIP_PRIVACY": "",
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeContextType: "call",
+					channel.StasisDataTypeContext:     "call-in",
+					channel.StasisDataTypeDomain:      "sip-service.voipbin.net",
+					channel.StasisDataTypeSource:      "213.127.79.161",
+					channel.StasisDataTypeSIPPAI:      "",
+					channel.StasisDataTypeSIPCallID:   "AWV705JjED",
+					channel.StasisDataTypeSIPPrivacy:  "",
 				},
+				Direction: channel.DirectionIncoming,
 
 				TMRinging: DefaultTimeStamp,
 				TMAnswer:  DefaultTimeStamp,
@@ -974,29 +969,37 @@ func Test_ChannelSetDataAndStasis(t *testing.T) {
 				db:          dbTest,
 				cache:       mockCache,
 			}
+			ctx := context.Background()
 
 			// prepare
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
+			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-			if err := h.ChannelSetStasisNameAndStasisData(context.Background(), tt.channel.ID, tt.stasisName, tt.stasisData); err != nil {
+			if err := h.ChannelSetStasisInfo(
+				ctx,
+				tt.channel.ID,
+				tt.channelType,
+				tt.stasisName,
+				tt.stasisData,
+				tt.direction,
+			); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().ChannelGet(gomock.Any(), tt.channel.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
-			resChannel, err := h.ChannelGet(context.Background(), tt.channel.ID)
+			res, err := h.ChannelGet(context.Background(), tt.channel.ID)
 			if err != nil {
 				t.Errorf("Could not get channel. err: %v", err)
 			}
 
-			if reflect.DeepEqual(tt.expectRes, resChannel) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, resChannel)
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -1031,7 +1034,7 @@ func Test_ChannelSetBridgeID(t *testing.T) {
 				ID:         "4c10052c-9177-11ea-bee2-8f5a79d2f22b",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				BridgeID:   "",
 
 				TMRinging: DefaultTimeStamp,
@@ -1058,7 +1061,7 @@ func Test_ChannelSetBridgeID(t *testing.T) {
 				ID:         "463ea0ea-9177-11ea-8893-a396f178d2b6",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				BridgeID:   "506009d8-9177-11ea-8793-e70255f860f8",
 
 				TMRinging: DefaultTimeStamp,
@@ -1143,7 +1146,7 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				ID:           "fbded60a-e46e-11ea-902e-df33108e8067",
 				State:        ari.ChannelStateRing,
 				Data:         map[string]interface{}{},
-				StasisData:   map[string]string{},
+				StasisData:   map[channel.StasisDataType]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportNone,
 
@@ -1171,7 +1174,7 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				ID:           "02aafd92-e46f-11ea-b2fa-47bf7497a896",
 				State:        ari.ChannelStateRing,
 				Data:         map[string]interface{}{},
-				StasisData:   map[string]string{},
+				StasisData:   map[channel.StasisDataType]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportUDP,
 
@@ -1199,7 +1202,7 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				ID:           "08c3dc4e-e46f-11ea-9485-9b1b4d3b6eff",
 				State:        ari.ChannelStateRing,
 				Data:         map[string]interface{}{},
-				StasisData:   map[string]string{},
+				StasisData:   map[channel.StasisDataType]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportTCP,
 
@@ -1227,7 +1230,7 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				ID:           "0de1d6cc-e46f-11ea-b74a-8367c248db58",
 				State:        ari.ChannelStateRing,
 				Data:         map[string]interface{}{},
-				StasisData:   map[string]string{},
+				StasisData:   map[channel.StasisDataType]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportTLS,
 
@@ -1255,7 +1258,7 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 				ID:           "14465b0a-e46f-11ea-bde1-7bd4574e50ee",
 				State:        ari.ChannelStateRing,
 				Data:         map[string]interface{}{},
-				StasisData:   map[string]string{},
+				StasisData:   map[channel.StasisDataType]string{},
 				BridgeID:     "",
 				SIPTransport: channel.SIPTransportWSS,
 
@@ -1342,7 +1345,7 @@ func Test_ChannelSetSIPCallID(t *testing.T) {
 				ID:         "865526ea-e46f-11ea-8149-5b36febf5766",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				BridgeID:   "",
 				SIPCallID:  "8b647c44-e46f-11ea-8015-97545f4bc809",
 
@@ -1429,7 +1432,7 @@ func Test_ChannelSetDirection(t *testing.T) {
 				ID:         "ca2738ea-dfd3-11ea-8083-971809e1ac12",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				BridgeID:   "",
 				Direction:  channel.DirectionNone,
 
@@ -1457,7 +1460,7 @@ func Test_ChannelSetDirection(t *testing.T) {
 				ID:         "1db9f1d2-dfd4-11ea-b001-7bdfb0d41751",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				BridgeID:   "",
 				Direction:  channel.DirectionIncoming,
 
@@ -1485,7 +1488,7 @@ func Test_ChannelSetDirection(t *testing.T) {
 				ID:         "5dd41c2e-dfd5-11ea-abd7-ef8fe2a633c4",
 				State:      ari.ChannelStateRing,
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[channel.StasisDataType]string{},
 				BridgeID:   "",
 				Direction:  channel.DirectionOutgoing,
 
@@ -1569,7 +1572,7 @@ func Test_ChannelSetMuteDirection(t *testing.T) {
 				AsteriskID:    "3e:50:6b:43:bb:30",
 				ID:            "7ac68c3a-d245-11ed-b6dd-53479be2c198",
 				Data:          map[string]interface{}{},
-				StasisData:    map[string]string{},
+				StasisData:    map[channel.StasisDataType]string{},
 				MuteDirection: channel.MuteDirectionBoth,
 
 				TMRinging: DefaultTimeStamp,

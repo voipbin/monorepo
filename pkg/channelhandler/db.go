@@ -54,7 +54,7 @@ func (h *channelHandler) Create(
 		State:      state,
 		Data:       map[string]interface{}{},
 		StasisName: "",
-		StasisData: map[string]string{},
+		StasisData: map[channel.StasisDataType]string{},
 		BridgeID:   "",
 		PlaybackID: "",
 
@@ -141,6 +141,8 @@ func (h *channelHandler) SetDataItem(ctx context.Context, id string, key string,
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "SetDataItem",
 		"channel_id": id,
+		"key":        key,
+		"value":      value,
 	})
 	log.Debugf("Setting channel's data item. key: %s, value: %s", key, value)
 
@@ -273,25 +275,52 @@ func (h *channelHandler) UpdateState(ctx context.Context, id string, state ari.C
 	return res, nil
 }
 
-// UpdateStasisNameAndStasisData updates the channel's stasis_name and stasis_data.
-func (h *channelHandler) UpdateStasisNameAndStasisData(ctx context.Context, id string, stasisName string, stasisData map[string]string) (*channel.Channel, error) {
+// setSIPCallID gets the sip call id and sets to the channel.
+func (h *channelHandler) setSIPCallID(ctx context.Context, id string, sipCallID string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "UpdateStasisNameAndStasisData",
-		"channel_id": id,
+		"func":        "setSIPCallID",
+		"channel_id":  id,
+		"sip_call_id": sipCallID,
 	})
 
-	if errSet := h.db.ChannelSetStasisNameAndStasisData(ctx, id, stasisName, stasisData); errSet != nil {
-		log.Errorf("Could not update the channel stasis_name and stasis_data. err: %v", errSet)
-		return nil, errors.Wrap(errSet, "could not update the channel stasis_name and stasis_data")
+	if err := h.db.ChannelSetSIPCallID(ctx, id, sipCallID); err != nil {
+		log.Errorf("Could not set the channel's sip_call_id. channel_id: %s, err: %v", id, err)
+		return errors.Wrap(err, "could not set channel's sip_call_id")
 	}
 
-	res, err := h.db.ChannelGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated channel info. channel_id: %s, err: %v", id, err)
-		return nil, err
+	return nil
+}
+
+// setSIPPai gets the sip pai info and sets to the channel.
+func (h *channelHandler) setSIPPai(ctx context.Context, id string, sipPai string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "setSIPPai",
+		"channel_id": id,
+		"sip_pai":    sipPai,
+	})
+
+	if errSet := h.SetDataItem(ctx, id, "sip_pai", sipPai); errSet != nil {
+		log.Errorf("could not set channel's sip_call_id. err: %v", errSet)
+		return errors.Wrap(errSet, "could not set channel's sip_pai")
 	}
 
-	return res, nil
+	return nil
+}
+
+// setSIPPrivacy gets the sip privacy info and sets to the channel.
+func (h *channelHandler) setSIPPrivacy(ctx context.Context, id string, sipPrivacy string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "setSIPPrivacy",
+		"channel_id":  id,
+		"sip_privacy": sipPrivacy,
+	})
+
+	if errSet := h.SetDataItem(ctx, id, "sip_privacy", sipPrivacy); errSet != nil {
+		log.Errorf("could not set channel's sip_privacy. err: %v", errSet)
+		return errors.Wrap(errSet, "could not set channel's sip_privacy")
+	}
+
+	return nil
 }
 
 // UpdateStasisName updates the channel's stasis_name.
@@ -410,6 +439,132 @@ func (h *channelHandler) UpdateMuteDirection(ctx context.Context, id string, mut
 	res, err := h.db.ChannelGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated channel info. channel_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// updateStasisInfo updates the channel's stasis info and sip info.
+func (h *channelHandler) updateStasisInfo(
+	ctx context.Context,
+	id string,
+	chType channel.Type,
+	stasisName string,
+	stasisData map[channel.StasisDataType]string,
+	direction channel.Direction,
+) (*channel.Channel, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "updateStasisInfo",
+		"channel_id":   id,
+		"channel_type": chType,
+		"stasis_name":  stasisName,
+		"stasis_data":  stasisData,
+		"direction":    direction,
+	})
+
+	// update the channel's stasis and sip info
+	if errSet := h.db.ChannelSetStasisInfo(
+		ctx,
+		id,
+		chType,
+		stasisName,
+		stasisData,
+		direction,
+	); errSet != nil {
+		log.Errorf("Could not update the channel stasis_name and stasis_data. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not update the channel stasis_name and stasis_data")
+	}
+
+	res, err := h.db.ChannelGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated channel info. channel_id: %s, err: %v", id, err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateSIPInfoByChannelVariable updates's channel's SIP info.
+func (h *channelHandler) UpdateSIPInfoByChannelVariable(ctx context.Context, cn *channel.Channel) (*channel.Channel, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "UpdateSIPInfo",
+		"channel": cn,
+	})
+
+	// set sip call-id
+	sipCallID, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,Call-ID)`)
+	if err != nil {
+		log.Errorf("Could not get channel variable. err: %v", err)
+		return nil, errors.Wrap(err, "could not get channel variable")
+	}
+
+	// set sip pai
+	sipPai, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,P-Asserted-Identity)`)
+	if err != nil {
+		log.Errorf("Could not get channel variable. err: %v", err)
+		return nil, errors.Wrap(err, "could not get channel variable")
+	}
+
+	// set sip privacy
+	sipPrivacy, err := h.variableGet(ctx, cn, `CHANNEL(pjsip,Privacy)`)
+	if err != nil {
+		log.Errorf("Could not get channel variable. err: %v", err)
+		return nil, errors.Wrap(err, "could not get channel variable")
+	}
+
+	// set sip sipTransport
+	sipTransport := channel.SIPTransport(cn.StasisData[channel.StasisDataTypeTransport])
+
+	// get updated channel
+	res, err := h.UpdateSIPInfo(ctx, cn.ID, sipCallID, sipPai, sipPrivacy, sipTransport)
+	if err != nil {
+		log.Errorf("Could not get updated channel. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateSIPInfoByChannel updates's channel's SIP info.
+func (h *channelHandler) UpdateSIPInfo(ctx context.Context, id string, sipCallID string, sipPai string, sipPrivacy string, sipTransport channel.SIPTransport) (*channel.Channel, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "UpdateSIPInfo",
+		"channel_id":    id,
+		"sip_call_id":   sipCallID,
+		"sip_pai":       sipPai,
+		"sip_privacy":   sipPrivacy,
+		"sip_transport": sipTransport,
+	})
+
+	// set sip call-id
+	if errSet := h.setSIPCallID(ctx, id, sipCallID); errSet != nil {
+		log.Errorf("Could not set sip call id info. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not set sip call id info")
+	}
+
+	// set sip p-asserted-identity
+	if errSet := h.setSIPPai(ctx, id, sipPai); errSet != nil {
+		log.Errorf("Could not set sip pai info. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not set sip pai info")
+	}
+
+	// set sip privacy
+	if errSet := h.setSIPPrivacy(ctx, id, sipPrivacy); errSet != nil {
+		log.Errorf("Could not set sip privacy info. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not set sip privacy info")
+	}
+
+	// set sip transport
+	if errSet := h.SetSIPTransport(ctx, id, sipTransport); errSet != nil {
+		log.Errorf("Could not set sip transport info. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not set sip transport info")
+	}
+
+	// get updated channel
+	res, err := h.get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated channel. err: %v", err)
 		return nil, err
 	}
 

@@ -81,7 +81,7 @@ func Test_Create(t *testing.T) {
 				State:             ari.ChannelStateRing,
 				Data:              map[string]interface{}{},
 				StasisName:        "",
-				StasisData:        map[string]string{},
+				StasisData:        map[channel.StasisDataType]string{},
 				BridgeID:          "",
 				PlaybackID:        "",
 				DialResult:        "",
@@ -676,6 +676,198 @@ func Test_UpdateState(t *testing.T) {
 	}
 }
 
+func Test_setSIPCallID(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id        string
+		sipCallID string
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			id:        "04245724-f1d5-11ed-a080-2f94d1616a75",
+			sipCallID: "0c1e1b40-f1d5-11ed-8d96-c37af7788faa",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.id, tt.sipCallID).Return(nil)
+
+			if err := h.setSIPCallID(ctx, tt.id, tt.sipCallID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_setSIPPai(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id     string
+		sipPai string
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			id:     "04245724-f1d5-11ed-a080-2f94d1616a75",
+			sipPai: "0c1e1b40-f1d5-11ed-8d96-c37af7788faa",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.id, "sip_pai", tt.sipPai).Return(nil)
+
+			if err := h.setSIPPai(ctx, tt.id, tt.sipPai); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_setSIPPrivacy(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id         string
+		sipPrivacy string
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			id:         "88d8c6bc-f1d5-11ed-911b-972e99d029f5",
+			sipPrivacy: "id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.id, "sip_privacy", tt.sipPrivacy).Return(nil)
+
+			if err := h.setSIPPrivacy(ctx, tt.id, tt.sipPrivacy); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_UpdateStasisName(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id         string
+		stasisName string
+
+		responseChannel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			id:         "b7e84cf2-f1d5-11ed-a3ad-4fc6f2acba8c",
+			stasisName: "voipbin",
+
+			responseChannel: &channel.Channel{
+				ID: "b7e84cf2-f1d5-11ed-a3ad-4fc6f2acba8c",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelSetStasis(ctx, tt.id, tt.stasisName).Return(nil)
+			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(tt.responseChannel, nil)
+
+			res, err := h.UpdateStasisName(ctx, tt.id, tt.stasisName)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseChannel, res) {
+				t.Errorf("Wrong match.\nexpect: %vgot: %v", tt.responseChannel, res)
+			}
+		})
+	}
+}
+
 func Test_UpdateBridgeID(t *testing.T) {
 
 	type test struct {
@@ -726,6 +918,67 @@ func Test_UpdateBridgeID(t *testing.T) {
 			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.UpdateBridgeID(ctx, tt.id, tt.bridgeID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_UpdatePlaybackID(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id         string
+		playbackID string
+
+		responseChannel *channel.Channel
+		expectRes       *channel.Channel
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			"2b7b2f90-f1d6-11ed-afd3-f38ba952ed15",
+			"2ba4b180-f1d6-11ed-b331-07ed2083bb9c",
+
+			&channel.Channel{
+				ID: "2b7b2f90-f1d6-11ed-afd3-f38ba952ed15",
+			},
+			&channel.Channel{
+				ID: "2b7b2f90-f1d6-11ed-afd3-f38ba952ed15",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChannelSetPlaybackID(ctx, tt.id, tt.playbackID).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+
+			res, err := h.UpdatePlaybackID(ctx, tt.id, tt.playbackID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -75,7 +75,7 @@ func TestNewChannelByChannelCreated(t *testing.T) {
 
 				State:      "Ring",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[StasisDataType]string{},
 
 				TMCreate: "2020-04-25T00:08:32.346",
 			},
@@ -98,7 +98,7 @@ func TestNewChannelByChannelCreated(t *testing.T) {
 	}
 }
 
-func TestNewChannelByStasisStart(t *testing.T) {
+func Test_NewChannelByStasisStart(t *testing.T) {
 	type test struct {
 		name          string
 		message       string
@@ -122,7 +122,7 @@ func TestNewChannelByStasisStart(t *testing.T) {
 				State:      "Ring",
 				Data:       make(map[string]interface{}, 1),
 				StasisName: "voipbin",
-				StasisData: map[string]string{
+				StasisData: map[StasisDataType]string{
 					"CONTEXT":     "in-voipbin",
 					"SIP_CALLID":  "1578514523-1170819966-743482919",
 					"SIP_PAI":     "",
@@ -194,7 +194,7 @@ func TestNewChannelByARIChannel(t *testing.T) {
 					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
 					"UNICASTRTP_LOCAL_PORT":    "10492",
 				},
-				StasisData: map[string]string{},
+				StasisData: map[StasisDataType]string{},
 			},
 		},
 	}

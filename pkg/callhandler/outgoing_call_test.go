@@ -2,7 +2,6 @@ package callhandler
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -20,7 +19,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -47,39 +45,40 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 		expectDialrouteTarget string
 		expectCall            *call.Call
+		expectArgs            string
 		expectEndpointDst     string
 		expectVariables       map[string]string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
-			uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
-			uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
-			uuid.FromStringOrNil("679f0eb2-8c21-41a6-876d-9d778b1b0167"),
-			uuid.FromStringOrNil("5935ff8a-8c8f-11ec-b26a-3fee169eaf45"),
-			commonaddress.Address{
+			id:           uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
+			customerID:   uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+			flowID:       uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+			activeflowID: uuid.FromStringOrNil("679f0eb2-8c21-41a6-876d-9d778b1b0167"),
+			masterCallID: uuid.FromStringOrNil("5935ff8a-8c8f-11ec-b26a-3fee169eaf45"),
+			source: commonaddress.Address{
 				Type:       commonaddress.TypeSIP,
 				Target:     "testsrc@test.com",
 				TargetName: "test",
 			},
-			commonaddress.Address{
+			destination: commonaddress.Address{
 				Type:       commonaddress.TypeSIP,
 				Target:     "testoutgoing@test.com",
 				TargetName: "test target",
 			},
-			true,
-			true,
+			earlyExecution: true,
+			connect:        true,
 
-			&fmactiveflow.Activeflow{
+			responseActiveflow: &fmactiveflow.Activeflow{
 				CurrentAction: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
 			},
-			uuid.FromStringOrNil("80d67b3a-5f3b-11ed-a709-0f2943ef0184"),
+			responseUUIDChannel: uuid.FromStringOrNil("80d67b3a-5f3b-11ed-a709-0f2943ef0184"),
 
-			"",
-			&call.Call{
+			expectDialrouteTarget: "",
+			expectCall: &call.Call{
 				ID:         uuid.FromStringOrNil("f1afa9ce-ecb2-11ea-ab94-a768ab787da0"),
 				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
 				ChannelID:  "80d67b3a-5f3b-11ed-a709-0f2943ef0184",
@@ -118,8 +117,9 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				TMProgressing: dbhandler.DefaultTimeStamp,
 				TMHangup:      dbhandler.DefaultTimeStamp,
 			},
-			"pjsip/call-out/sip:testoutgoing@test.com",
-			map[string]string{
+			expectArgs:        "context_type=call,context=call-out,call_id=f1afa9ce-ecb2-11ea-ab94-a768ab787da0,transport=udp",
+			expectEndpointDst: "pjsip/call-out/sip:testoutgoing@test.com",
+			expectVariables: map[string]string{
 				"CALLERID(name)":                        "test",
 				"CALLERID(num)":                         "testsrc@test.com",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
@@ -171,7 +171,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 			}
 
-			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", common.ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
 			if err != nil {
@@ -208,49 +208,50 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 		expectDialrouteTarget string
 		expectCall            *call.Call
 		expectProviderID      uuid.UUID
+		expectArgs            string
 		expectEndpointDst     string
 		expectVariables       map[string]string
 	}{
 		{
-			"have all",
+			name: "have all",
 
-			uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
-			uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
-			uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
-			uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
-			uuid.FromStringOrNil("61c0fe66-8c8f-11ec-873a-ff90a846a02f"),
-			commonaddress.Address{
+			id:           uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+			customerID:   uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+			flowID:       uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+			activeflowID: uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+			masterCallID: uuid.FromStringOrNil("61c0fe66-8c8f-11ec-873a-ff90a846a02f"),
+			source: commonaddress.Address{
 				Type:       commonaddress.TypeTel,
 				Target:     "+99999888",
 				TargetName: "test",
 			},
-			commonaddress.Address{
+			destination: commonaddress.Address{
 				Type:       commonaddress.TypeTel,
 				Target:     "+821121656521",
 				TargetName: "test target",
 			},
-			true,
-			true,
+			earlyExecution: true,
+			connect:        true,
 
-			&fmactiveflow.Activeflow{
+			responseActiveflow: &fmactiveflow.Activeflow{
 				ID: uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
 				CurrentAction: fmaction.Action{
 					ID: fmaction.IDStart,
 				},
 			},
-			[]rmroute.Route{
+			responseRoutes: []rmroute.Route{
 				{
 					ID:         uuid.FromStringOrNil("f86d48aa-5de6-11ed-a69e-9f3df36c7aa8"),
 					ProviderID: uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
 				},
 			},
-			uuid.FromStringOrNil("d948969e-5de3-11ed-94f5-137ec429b6b6"),
-			&rmprovider.Provider{
+			responseUUIDChannel: uuid.FromStringOrNil("d948969e-5de3-11ed-94f5-137ec429b6b6"),
+			responseProvider: &rmprovider.Provider{
 				Hostname: "sip.telnyx.com",
 			},
 
-			"+82",
-			&call.Call{
+			expectDialrouteTarget: "+82",
+			expectCall: &call.Call{
 				ID:             uuid.FromStringOrNil("b7c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
 				CustomerID:     uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
 				ChannelID:      "d948969e-5de3-11ed-94f5-137ec429b6b6",
@@ -293,9 +294,10 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				TMProgressing: dbhandler.DefaultTimeStamp,
 				TMHangup:      dbhandler.DefaultTimeStamp,
 			},
-			uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
-			"pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
-			map[string]string{
+			expectProviderID:  uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
+			expectArgs:        "context_type=call,context=call-out,call_id=b7c40962-07fb-11eb-bb82-a3bd16bf1bd9,transport=udp",
+			expectEndpointDst: "pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
+			expectVariables: map[string]string{
 				"CALLERID(name)":                        "test",
 				"CALLERID(num)":                         "+99999888",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
@@ -351,7 +353,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
 
-			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), fmt.Sprintf("context=%s,call_id=%s", common.ContextOutgoingCall, tt.id), tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
 			if err != nil {
@@ -744,9 +746,9 @@ func Test_createChannel(t *testing.T) {
 		expectVariables  map[string]string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&call.Call{
+			call: &call.Call{
 				ID:         uuid.FromStringOrNil("7e0a846a-5d96-11ed-9005-07794a4f93cb"),
 				CustomerID: uuid.FromStringOrNil("6f3fd136-534d-11ed-90a2-ff71219800e5"),
 
@@ -768,15 +770,15 @@ func Test_createChannel(t *testing.T) {
 				},
 			},
 
-			&rmprovider.Provider{
+			responseProvider: &rmprovider.Provider{
 				ID:       uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
 				Hostname: "test.com",
 			},
 
-			uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
-			"context=call-out,call_id=7e0a846a-5d96-11ed-9005-07794a4f93cb",
-			"pjsip/call-out/sip:+821100000001@test.com;transport=udp",
-			map[string]string{
+			expectProviderID: uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
+			expectArgs:       "context_type=call,context=call-out,call_id=7e0a846a-5d96-11ed-9005-07794a4f93cb,transport=udp",
+			expectDialURI:    "pjsip/call-out/sip:+821100000001@test.com;transport=udp",
+			expectVariables: map[string]string{
 				"CALLERID(name)":                        "",
 				"CALLERID(num)":                         "+821100000002",
 				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
@@ -894,7 +896,7 @@ func Test_createFailoverChannel(t *testing.T) {
 
 			uuid.FromStringOrNil("c403ec52-5f7d-11ed-9b6f-5b9ada249a57"),
 			uuid.FromStringOrNil("cc3d77a8-5f7d-11ed-9232-03d402cb4d34"),
-			"context=call-out,call_id=25c7a29a-5f7d-11ed-86cc-bb999f3cccaf",
+			"context_type=call,context=call-out,call_id=25c7a29a-5f7d-11ed-86cc-bb999f3cccaf,transport=udp",
 			"pjsip/call-out/sip:+821100000001@test.com;transport=udp",
 			map[string]string{
 				"CALLERID(name)":                        "",
@@ -1187,7 +1189,7 @@ func Test_getDialroutes(t *testing.T) {
 	}
 }
 
-func Test_getVariablesCallerID(t *testing.T) {
+func Test_setChannelVariablesCallerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -1379,6 +1381,147 @@ func Test_getGroupcallRingMethod_destination_type_agent(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_getDestinationTransport(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		endpoint string
+
+		expectRes channel.SIPTransport
+	}{
+		{
+			name: "websocket",
+
+			endpoint:  ";transport=ws",
+			expectRes: channel.SIPTransportWS,
+		},
+		{
+			name: "secured websocket",
+
+			endpoint:  ";transport=wss",
+			expectRes: channel.SIPTransportWSS,
+		},
+		{
+			name: "tcp",
+
+			endpoint:  ";transport=tcp",
+			expectRes: channel.SIPTransportTCP,
+		},
+		{
+			name: "tls",
+
+			endpoint:  ";transport=tls",
+			expectRes: channel.SIPTransportTLS,
+		},
+		{
+			name: "udp",
+
+			endpoint:  ";transport=udp",
+			expectRes: channel.SIPTransportUDP,
+		},
+		{
+			name: "default",
+
+			endpoint:  ";transport=",
+			expectRes: channel.SIPTransportUDP,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := getDestinationTransport(tt.endpoint)
+			if res != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_setChannelVariableTransport(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		variables map[string]string
+		transport channel.SIPTransport
+
+		expectRes map[string]string
+	}{
+		{
+			name: "ws",
+
+			variables: map[string]string{},
+			transport: channel.SIPTransportWS,
+
+			expectRes: map[string]string{
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "UDP/TLS/RTP/SAVPF",
+			},
+		},
+		{
+			name: "wss",
+
+			variables: map[string]string{},
+			transport: channel.SIPTransportWSS,
+
+			expectRes: map[string]string{
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "UDP/TLS/RTP/SAVPF",
+			},
+		},
+		{
+			name: "tcp",
+
+			variables: map[string]string{},
+			transport: channel.SIPTransportTCP,
+
+			expectRes: map[string]string{
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+			},
+		},
+		{
+			name: "tls",
+
+			variables: map[string]string{},
+			transport: channel.SIPTransportTLS,
+
+			expectRes: map[string]string{
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+			},
+		},
+		{
+			name: "udp",
+
+			variables: map[string]string{},
+			transport: channel.SIPTransportUDP,
+
+			expectRes: map[string]string{
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+			},
+		},
+		{
+			name: "default",
+
+			variables: map[string]string{},
+			transport: channel.SIPTransportNone,
+
+			expectRes: map[string]string{
+				"PJSIP_HEADER(add,VBOUT-SDP_Transport)": "RTP/AVP",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			setChannelVariableTransport(tt.variables, tt.transport)
+			if !reflect.DeepEqual(tt.variables, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, tt.variables)
 			}
 		})
 	}

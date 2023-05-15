@@ -60,36 +60,36 @@ const (
 func (h *callHandler) Start(ctx context.Context, cn *channel.Channel) error {
 
 	// check the stasis's context
-	chCtx, ok := cn.StasisData["context"]
+	chCtx, ok := cn.StasisData[channel.StasisDataTypeContext]
 	if !ok {
 		logrus.Errorf("Could not get channel context. stasis_data: %v", cn.StasisData)
 		return fmt.Errorf("no context found")
 	}
 
-	switch chCtx {
+	switch channel.Context(chCtx) {
 
-	case common.ContextServiceCall:
+	case channel.ContextCallService:
 		return h.startContextServiceCall(ctx, cn)
 
-	case common.ContextIncomingCall:
+	case channel.ContextCallIncoming:
 		return h.startContextIncomingCall(ctx, cn)
 
-	case common.ContextOutgoingCall:
+	case channel.ContextCallOutgoing:
 		return h.startContextOutgoingCall(ctx, cn)
 
-	case common.ContextRecording:
+	case channel.ContextRecording:
 		return h.startContextRecording(ctx, cn)
 
-	case common.ContextExternalSoop:
+	case channel.ContextExternalSoop:
 		return h.startContextExternalSoop(ctx, cn)
 
-	case common.ContextExternalMedia:
+	case channel.ContextExternalMedia:
 		return h.startContextExternalMedia(ctx, cn)
 
-	case common.ContextJoinCall:
+	case channel.ContextJoinCall:
 		return h.startContextJoinCall(ctx, cn)
 
-	case common.ContextApplication:
+	case channel.ContextApplication:
 		return h.startContextApplication(ctx, cn)
 
 	default:
@@ -103,9 +103,9 @@ func (h *callHandler) startContextServiceCall(ctx context.Context, cn *channel.C
 		"func":       "startContextServiceCall",
 		"channel_id": cn.ID,
 	})
-	log.Infof("Executing startHandlerContextFromServiceCall. context: %s", cn.StasisData["context"])
+	log.Infof("Executing startHandlerContextFromServiceCall. context: %s", cn.StasisData[channel.StasisDataTypeContext])
 
-	fromContext := cn.StasisData["context_from"]
+	fromContext := cn.StasisData[channel.StasisDataTypeContextFrom]
 	switch fromContext {
 	case serviceContextAMD:
 		return h.startServiceFromAMD(ctx, cn.ID, cn.StasisData)
@@ -122,21 +122,15 @@ func (h *callHandler) startContextRecording(ctx context.Context, cn *channel.Cha
 	})
 	log.Infof("Executing startHandlerContextRecording. channel_id: %s", cn.ID)
 
-	// set channel's type.
-	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeRecording); errSet != nil {
-		log.Errorf("Could not set channel type recording. err: %v", errSet)
-		return errors.Wrap(errSet, "Could not set channel type recording.")
-	}
-
-	referenceType := cn.StasisData["reference_type"]
-	referenceID := cn.StasisData["reference_id"]
-	recordingID := cn.StasisData["recording_id"]
-	name := cn.StasisData["recording_name"]
-	format := cn.StasisData["format"]
-	duration, _ := strconv.Atoi(cn.StasisData["duration"])
-	silence, _ := strconv.Atoi(cn.StasisData["end_of_silence"])
-	endKey := cn.StasisData["end_of_key"]
-	direction := cn.StasisData["direction"]
+	referenceType := cn.StasisData[channel.StasisDataTypeReferenceType]
+	referenceID := cn.StasisData[channel.StasisDataTypeReferenceID]
+	recordingID := cn.StasisData[channel.StasisDataTypeRecordingID]
+	name := cn.StasisData[channel.StasisDataTypeRecordingName]
+	format := cn.StasisData[channel.StasisDataTypeRecordingFormat]
+	duration, _ := strconv.Atoi(cn.StasisData[channel.StasisDataTypeRecordingDuration])
+	silence, _ := strconv.Atoi(cn.StasisData[channel.StasisDataTypeRecordingEndOfSilence])
+	endKey := cn.StasisData[channel.StasisDataTypeRecordingEndOfKey]
+	direction := cn.StasisData[channel.StasisDataTypeRecordingDirection]
 
 	// parse recording name
 	recordingName := fmt.Sprintf("%s_%s", name, direction)
@@ -157,14 +151,8 @@ func (h *callHandler) startContextExternalSoop(ctx context.Context, cn *channel.
 	})
 	log.Infof("Executing startHandlerContextExternalSnoop. channel_id: %s", cn.ID)
 
-	// set channel's type external.
-	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeExternal); errSet != nil {
-		log.Errorf("Could not set channel type external. err: %v", errSet)
-		return errors.Wrap(errSet, "Could not set channel type external.")
-	}
-
-	callID := cn.StasisData["call_id"]
-	bridgeID := cn.StasisData["bridge_id"]
+	callID := cn.StasisData[channel.StasisDataTypeCallID]
+	bridgeID := cn.StasisData[channel.StasisDataTypeBridgeID]
 	log = log.WithFields(logrus.Fields{
 		"call_id":   callID,
 		"bridge_id": bridgeID,
@@ -188,14 +176,8 @@ func (h *callHandler) startContextExternalMedia(ctx context.Context, cn *channel
 	})
 	log.Infof("Executing startHandlerContextExternalMedia. channel_id: %s", cn.ID)
 
-	// set channel's type external.
-	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeExternal); errSet != nil {
-		log.Errorf("Could not set channel type external. err: %v", errSet)
-		return errors.Wrap(errSet, "Could not set channel type external.")
-	}
-
-	callID := cn.StasisData["call_id"]
-	bridgeID := cn.StasisData["bridge_id"]
+	callID := cn.StasisData[channel.StasisDataTypeCallID]
+	bridgeID := cn.StasisData[channel.StasisDataTypeBridgeID]
 	log.Debugf("Parsed info. call: %s, bridge: %s", callID, bridgeID)
 	log = log.WithField("bridge_id", bridgeID)
 
@@ -216,15 +198,9 @@ func (h *callHandler) startContextJoinCall(ctx context.Context, cn *channel.Chan
 	})
 	log.Infof("Executing startHandlerContextJoin. channel_id: %s", cn.ID)
 
-	// set channel's type join.
-	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeJoin); errSet != nil {
-		log.Errorf("Could not set channel type join. err: %v", errSet)
-		return errors.Wrap(errSet, "Could not set channel type join.")
-	}
-
-	confbridgeID := cn.StasisData["confbridge_id"]
-	callID := cn.StasisData["call_id"]
-	bridgeID := cn.StasisData["bridge_id"]
+	confbridgeID := cn.StasisData[channel.StasisDataTypeConfbridgeID]
+	callID := cn.StasisData[channel.StasisDataTypeCallID]
+	bridgeID := cn.StasisData[channel.StasisDataTypeBridgeID]
 	log.Debugf("Parsed info. call_id: %s, bridge_id: %s, confbridge_id: %s", callID, bridgeID, confbridgeID)
 
 	// put the channel to the bridge
@@ -251,13 +227,6 @@ func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.
 	})
 	log.Infof("Executing startHandlerContextIncomingCall. data: %v", cn.StasisData)
 
-	// set channel's type call.
-	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeCall); errSet != nil {
-		log.Errorf("Could not set channel type call. err: %v", errSet)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // response 500
-		return nil
-	}
-
 	// set the call durationtimeout
 	_, err := h.channelHandler.HangingUpWithDelay(ctx, cn.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration)
 	if err != nil {
@@ -267,7 +236,7 @@ func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.
 	}
 
 	// get call type
-	domainType := getDomainTypeIncomingCall(cn.StasisData["domain"])
+	domainType := getDomainTypeIncomingCall(cn.StasisData[channel.StasisDataTypeDomain])
 	switch domainType {
 	case domainTypeConference:
 		return h.startIncomingDomainTypeConference(ctx, cn)
@@ -295,19 +264,12 @@ func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.
 	log.Infof("Executing startContextOutgoingCall. channel_id: %s, data: %v", cn.ID, cn.StasisData)
 
 	// get
-	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])
+	callID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeCallID])
 	if callID == uuid.Nil {
 		log.Errorf("Could not get call_id info.")
 		return fmt.Errorf("could not get correct call_id")
 	}
 	log = log.WithField("call_id", callID.String())
-
-	// set channel's type call.
-	if errSet := h.channelHandler.SetType(ctx, cn.ID, channel.TypeCall); errSet != nil {
-		log.Errorf("Could not set channel type call. err: %v", errSet)
-		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
-		return errors.Wrap(errSet, "could not set channel's type")
-	}
 
 	// set the call durationtimeout
 	_, err := h.channelHandler.HangingUpWithDelay(ctx, cn.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration)
@@ -348,7 +310,7 @@ func (h *callHandler) startContextApplication(ctx context.Context, cn *channel.C
 		"channel_id": cn.ID,
 	})
 
-	appName := cn.StasisData["application_name"]
+	appName := cn.StasisData[channel.StasisDataTypeApplicationName]
 	log.Debugf("Parsed application info. application: %s", appName)
 
 	switch appName {

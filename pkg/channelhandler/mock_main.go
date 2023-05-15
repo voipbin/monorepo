@@ -38,6 +38,36 @@ func (m *MockChannelHandler) EXPECT() *MockChannelHandlerMockRecorder {
 	return m.recorder
 }
 
+// ARIChannelStateChange mocks base method.
+func (m *MockChannelHandler) ARIChannelStateChange(ctx context.Context, e *ari.ChannelStateChange) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIChannelStateChange", ctx, e)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ARIChannelStateChange indicates an expected call of ARIChannelStateChange.
+func (mr *MockChannelHandlerMockRecorder) ARIChannelStateChange(ctx, e interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelStateChange", reflect.TypeOf((*MockChannelHandler)(nil).ARIChannelStateChange), ctx, e)
+}
+
+// ARIStasisStart mocks base method.
+func (m *MockChannelHandler) ARIStasisStart(ctx context.Context, e *ari.StasisStart) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ARIStasisStart", ctx, e)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ARIStasisStart indicates an expected call of ARIStasisStart.
+func (mr *MockChannelHandlerMockRecorder) ARIStasisStart(ctx, e interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIStasisStart", reflect.TypeOf((*MockChannelHandler)(nil).ARIStasisStart), ctx, e)
+}
+
 // AddressGetDestination mocks base method.
 func (m *MockChannelHandler) AddressGetDestination(cn *channel.Channel, addressType address.Type) *address.Address {
 	m.ctrl.T.Helper()
@@ -462,20 +492,6 @@ func (mr *MockChannelHandlerMockRecorder) SetSIPTransport(ctx, id, transport int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSIPTransport", reflect.TypeOf((*MockChannelHandler)(nil).SetSIPTransport), ctx, id, transport)
 }
 
-// SetType mocks base method.
-func (m *MockChannelHandler) SetType(ctx context.Context, id string, channelType channel.Type) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetType", ctx, id, channelType)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetType indicates an expected call of SetType.
-func (mr *MockChannelHandlerMockRecorder) SetType(ctx, id, channelType interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetType", reflect.TypeOf((*MockChannelHandler)(nil).SetType), ctx, id, channelType)
-}
-
 // SilenceOff mocks base method.
 func (m *MockChannelHandler) SilenceOff(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
@@ -609,21 +625,6 @@ func (mr *MockChannelHandlerMockRecorder) UpdateStasisName(ctx, id, stasisName i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStasisName", reflect.TypeOf((*MockChannelHandler)(nil).UpdateStasisName), ctx, id, stasisName)
 }
 
-// UpdateStasisNameAndStasisData mocks base method.
-func (m *MockChannelHandler) UpdateStasisNameAndStasisData(ctx context.Context, id, stasisName string, stasisData map[string]string) (*channel.Channel, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStasisNameAndStasisData", ctx, id, stasisName, stasisData)
-	ret0, _ := ret[0].(*channel.Channel)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateStasisNameAndStasisData indicates an expected call of UpdateStasisNameAndStasisData.
-func (mr *MockChannelHandlerMockRecorder) UpdateStasisNameAndStasisData(ctx, id, stasisName, stasisData interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStasisNameAndStasisData", reflect.TypeOf((*MockChannelHandler)(nil).UpdateStasisNameAndStasisData), ctx, id, stasisName, stasisData)
-}
-
 // UpdateState mocks base method.
 func (m *MockChannelHandler) UpdateState(ctx context.Context, id string, state ari.ChannelState) (*channel.Channel, error) {
 	m.ctrl.T.Helper()
@@ -637,21 +638,6 @@ func (m *MockChannelHandler) UpdateState(ctx context.Context, id string, state a
 func (mr *MockChannelHandlerMockRecorder) UpdateState(ctx, id, state interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateState", reflect.TypeOf((*MockChannelHandler)(nil).UpdateState), ctx, id, state)
-}
-
-// VariableGet mocks base method.
-func (m *MockChannelHandler) VariableGet(ctx context.Context, id, key string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VariableGet", ctx, id, key)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// VariableGet indicates an expected call of VariableGet.
-func (mr *MockChannelHandlerMockRecorder) VariableGet(ctx, id, key interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VariableGet", reflect.TypeOf((*MockChannelHandler)(nil).VariableGet), ctx, id, key)
 }
 
 // VariableSet mocks base method.

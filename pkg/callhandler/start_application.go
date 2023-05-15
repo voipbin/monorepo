@@ -15,18 +15,13 @@ const (
 )
 
 // startHandlerContextApplication handles contextApplication context type of StasisStart event.
-func (h *callHandler) applicationHandleAMD(ctx context.Context, channelID string, data map[string]string) error {
+func (h *callHandler) applicationHandleAMD(ctx context.Context, channelID string, data map[channel.StasisDataType]string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "applicationHandleAMD",
-		"channel_id": channelID,
-		"call_id":    data["call_id"],
+		"func":        "applicationHandleAMD",
+		"channel_id":  channelID,
+		"stasis_data": data,
 	})
 	log.Debug("Executing the applciationHandleAMD.")
-
-	if errSet := h.channelHandler.SetType(ctx, channelID, channel.TypeApplication); errSet != nil {
-		log.Errorf("Could not set channel type application. err: %v", errSet)
-		return errors.Wrap(errSet, "could not set channel type application.")
-	}
 
 	// put the cahnnel to the amd
 	if errContinue := h.channelHandler.Continue(ctx, channelID, serviceContextAMD, "", 0, ""); errContinue != nil {

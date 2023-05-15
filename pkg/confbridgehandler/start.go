@@ -11,30 +11,24 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 )
 
-// StartContextIncoming handles the call which has CONTEXT=conf-in in the StasisStart argument.
+// StartContextIncoming handles the call which has context=conf-in in the StasisStart argument.
 func (h *confbridgeHandler) StartContextIncoming(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "StartContextIncoming",
-		"channel_id": cn.ID,
+		"func":    "StartContextIncoming",
+		"channel": cn,
 	})
 
 	channelID := cn.ID
 	data := cn.StasisData
 	log = log.WithFields(logrus.Fields{
-		"call_id":       data["call_id"],
-		"confbridge_id": data["confbridge_id"],
+		"call_id":       data[channel.StasisDataTypeCallID],
+		"confbridge_id": data[channel.StasisDataTypeConfbridgeID],
 	})
 	log.Debugf("Executing StartContextIncoming. data: %v", data)
 
-	// set channel type
-	if errSet := h.channelHandler.SetType(ctx, channelID, channel.TypeConfbridge); errSet != nil {
-		log.Errorf("Could not set channel type confbridge. err: %v", errSet)
-		return errors.Wrap(errSet, "Could not set channel type confbridge.")
-	}
-
 	// get conf info
-	confbridgeID := uuid.FromStringOrNil(data["confbridge_id"])
-	callID := uuid.FromStringOrNil(data["call_id"])
+	confbridgeID := uuid.FromStringOrNil(data[channel.StasisDataTypeConfbridgeID])
+	callID := uuid.FromStringOrNil(data[channel.StasisDataTypeCallID])
 	if confbridgeID == uuid.Nil || callID == uuid.Nil {
 		log.Errorf("Could not get confbridge or call info. confbridge_id: %s, call_id: %s", confbridgeID, callID)
 		return fmt.Errorf("could not get confbridge id or call id info")

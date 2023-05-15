@@ -14,6 +14,130 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
+func Test_AddressGetSource(t *testing.T) {
+
+	type test struct {
+		name string
+
+		channel     *channel.Channel
+		addressType commonaddress.Type
+
+		expectRes *commonaddress.Address
+	}
+
+	tests := []test{
+		{
+			name: "address type is endpoint",
+
+			channel: &channel.Channel{
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeDomain: "test.sip.voipbin.net",
+				},
+				SourceNumber: "2000",
+			},
+			addressType: commonaddress.TypeEndpoint,
+
+			expectRes: &commonaddress.Address{
+				Type:   commonaddress.TypeEndpoint,
+				Target: "2000@test",
+			},
+		},
+		{
+			name: "address type is tel",
+
+			channel: &channel.Channel{
+				SourceNumber: "+821100000001",
+				SourceName:   "test number",
+			},
+			addressType: commonaddress.TypeTel,
+
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+821100000001",
+				TargetName: "test number",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			res := h.AddressGetSource(tt.channel, tt.addressType)
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AddressGetDestination(t *testing.T) {
+
+	type test struct {
+		name string
+
+		channel     *channel.Channel
+		addressType commonaddress.Type
+
+		expectRes *commonaddress.Address
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			channel: &channel.Channel{
+				DestinationNumber: "+821100000001",
+				DestinationName:   "test number",
+			},
+			addressType: commonaddress.TypeTel,
+
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+821100000001",
+				TargetName: "test number",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := channelHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+			}
+			res := h.AddressGetDestination(tt.channel, tt.addressType)
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 
 	type test struct {
@@ -76,8 +200,8 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 
 			&channel.Channel{
 				DestinationNumber: "2000",
-				StasisData: map[string]string{
-					"domain": "test.sip.voipbin.net",
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeDomain: "test.sip.voipbin.net",
 				},
 			},
 			&commonaddress.Address{
@@ -91,8 +215,8 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 			&channel.Channel{
 				// 3000@test_domain
 				DestinationNumber: "3000%40test_domain",
-				StasisData: map[string]string{
-					"domain": "test.sip.voipbin.net",
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeDomain: "test.sip.voipbin.net",
 				},
 			},
 			&commonaddress.Address{

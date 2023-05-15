@@ -15,7 +15,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	callapplication "gitlab.com/voipbin/bin-manager/call-manager.git/models/callapplication"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
 )
 
@@ -742,10 +741,11 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call) error 
 
 	// create a snoop channel
 	// set app args
-	appArgs := fmt.Sprintf("context=%s,call_id=%s,application_name=%s",
-		common.ContextApplication,
-		c.ID,
-		applicationAMD,
+	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s",
+		channel.StasisDataTypeContextType, channel.ContextTypeCall,
+		channel.StasisDataTypeContext, channel.ContextApplication,
+		channel.StasisDataTypeCallID, c.ID,
+		channel.StasisDataTypeApplicationName, applicationAMD,
 	)
 
 	snoopID := h.utilHandler.CreateUUID().String()

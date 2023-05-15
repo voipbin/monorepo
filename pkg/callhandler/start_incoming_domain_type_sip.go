@@ -34,7 +34,7 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 	log.Debugf("Starting the flow incoming call handler. source_target: %s, destinaiton_target: %s", source.Target, destination.Target)
 
 	// get domain info
-	domainName := strings.TrimSuffix(cn.StasisData["domain"], common.DomainSIPSuffix)
+	domainName := strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainSIPSuffix)
 	d, err := h.reqHandler.RegistrarV1DomainGetByDomainName(ctx, domainName)
 	if err != nil {
 		log.Errorf("Could not get domain info. err: %v", err)

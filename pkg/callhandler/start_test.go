@@ -91,7 +91,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000999",
 				DestinationNumber: "bad943d8-9b59-11ea-b409-4ba263721f17",
 				State:             ari.ChannelStateRing,
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context": common.ContextIncomingCall,
 					"domain":  "conference.voipbin.net",
 				},
@@ -200,7 +200,6 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeCall).Return(nil)
 			mockChannel.EXPECT().HangingUpWithDelay(ctx, gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeSIP).Return(tt.responseSource)
@@ -263,7 +262,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000911",
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context": common.ContextIncomingCall,
 					"domain":  "pstn.voipbin.net",
 				},
@@ -373,7 +372,6 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeCall).Return(nil)
 			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
@@ -424,7 +422,7 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000912",
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context": common.ContextOutgoingCall,
 					"domain":  "pstn.voipbin.net",
 					"call_id": "086c90e2-8b31-11eb-b3a0-4ba972148103",
@@ -446,7 +444,7 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000913",
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context": common.ContextOutgoingCall,
 					"call_id": "d4420dd7-0b31-4bc1-b933-9c0283b8e93d",
 				},
@@ -484,7 +482,6 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
-			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeCall).Return(nil)
 			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridge)
@@ -518,7 +515,7 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 				Name:              "PJSIP/in-voipbin-00000915",
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context":   common.ContextExternalMedia,
 					"bridge_id": "fab96694-0300-11ec-b4d4-c3bcab7364fd",
 					"call_id":   "0648d6c0-0301-11ec-818e-53865044b15c",
@@ -549,7 +546,6 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeExternal).Return(nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -573,7 +569,7 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 				ID:         "asterisk-call-5765d977d8-c4k5q-1629607067.6639",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.132-00000000",
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context":   common.ContextExternalSoop,
 					"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
 					"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",
@@ -603,7 +599,6 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeExternal).Return(nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -626,7 +621,7 @@ func Test_Start_ContextJoinCall(t *testing.T) {
 				ID:         "asterisk-call-06627464-431a-11ec-bda3-2f0d6128b98f",
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.139-00000000",
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"context":       common.ContextJoinCall,
 					"bridge_id":     "ed08cbf8-4319-11ec-a768-23af5da287d4",
 					"call_id":       "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
@@ -658,7 +653,6 @@ func Test_Start_ContextJoinCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChannel.EXPECT().SetType(ctx, tt.channel.ID, channel.TypeJoin).Return(nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, "", defaultDialTimeout).Return(nil)
 

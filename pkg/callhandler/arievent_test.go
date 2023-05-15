@@ -94,10 +94,6 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.responseCall, nil)
 			mockNotfiy.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 			if tt.call.Direction != call.DirectionIncoming {
-				// handleSIPCallID
-				mockChannel.EXPECT().VariableGet(ctx, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
-				mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
-
 				// ActionNext
 				// consider the call was hungup already to make this test done quickly.
 				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{Status: call.StatusHangup}, nil)

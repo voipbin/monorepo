@@ -25,7 +25,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 
 		responseAMD *callapplication.AMD
 
-		data map[string]string
+		data map[channel.StasisDataType]string
 	}{
 		{
 			"amd result HUMAN",
@@ -36,7 +36,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 				MachineHandle: callapplication.AMDMachineHandleHangup,
 				Async:         false,
 			},
-			map[string]string{
+			map[channel.StasisDataType]string{
 				"amd_status": "HUMAN",
 			},
 		},
@@ -49,7 +49,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 				MachineHandle: callapplication.AMDMachineHandleContinue,
 				Async:         false,
 			},
-			map[string]string{
+			map[channel.StasisDataType]string{
 				"amd_status": "MACHINE",
 			},
 		},
@@ -62,7 +62,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 				MachineHandle: callapplication.AMDMachineHandleHangup,
 				Async:         false,
 			},
-			map[string]string{
+			map[channel.StasisDataType]string{
 				"amd_status": "MACHINE",
 			},
 		},
@@ -92,7 +92,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 
 			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channelID).Return(tt.responseAMD, nil)
 
-			if tt.responseAMD.MachineHandle == callapplication.AMDMachineHandleHangup && tt.data["amd_status"] == amdStatusMachine {
+			if tt.responseAMD.MachineHandle == callapplication.AMDMachineHandleHangup && tt.data[channel.StasisDataTypeServiceAMDStatus] == amdStatusMachine {
 				mockDB.EXPECT().CallGet(ctx, tt.responseAMD.CallID).Return(&call.Call{}, nil)
 				mockDB.EXPECT().CallSetStatus(ctx, gomock.Any(), call.StatusTerminating).Return(nil)
 

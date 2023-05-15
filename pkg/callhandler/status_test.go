@@ -254,9 +254,6 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
 			if tt.call.Direction != call.DirectionIncoming {
-				// handleSIPCallID
-				mockChannel.EXPECT().VariableGet(ctx, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
-				mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
 
 				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
@@ -341,10 +338,6 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
 			mockGroupcall.EXPECT().AnswerCall(ctx, tt.responseCall.GroupcallID, tt.responseCall.ID).Return(nil)
-
-			// handleSIPCallID
-			mockChannel.EXPECT().VariableGet(ctx, tt.channel.ID, `CHANNEL(pjsip,call-id)`).Return("test call id", nil).AnyTimes()
-			mockChannel.EXPECT().VariableSet(ctx, tt.channel.ID, "VB-SIP_CALLID", gomock.Any()).Return(nil).AnyTimes()
 
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())

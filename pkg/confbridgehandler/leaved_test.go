@@ -38,7 +38,7 @@ func Test_Leaved(t *testing.T) {
 			&channel.Channel{
 				AsteriskID: "00:11:22:33:44:55",
 				ID:         "372b84b4-38e8-11ec-b135-638987bdf59b",
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"confbridge_id": "eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2",
 					"call_id":       "eaa09918-38e7-11ec-b386-bb681c4ba744",
 				},
@@ -68,7 +68,7 @@ func Test_Leaved(t *testing.T) {
 			&channel.Channel{
 				AsteriskID: "00:11:22:33:44:55",
 				ID:         "372b84b4-38e8-11ec-b135-638987bdf59b",
-				StasisData: map[string]string{
+				StasisData: map[channel.StasisDataType]string{
 					"confbridge_id": "72c6f936-d6d6-11ec-ae21-2f89b16a3e4b",
 					"call_id":       "eaa09918-38e7-11ec-b386-bb681c4ba744",
 				},

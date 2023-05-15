@@ -22,8 +22,8 @@ func (h *confbridgeHandler) Joined(ctx context.Context, cn *channel.Channel, br 
 		"bridge_id":  br.ID,
 	})
 
-	confbridgeID := uuid.FromStringOrNil(cn.StasisData["confbridge_id"])
-	callID := uuid.FromStringOrNil(cn.StasisData["call_id"])
+	confbridgeID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeConfbridgeID])
+	callID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeCallID])
 	log = log.WithFields(logrus.Fields{
 		"conbridge_id": confbridgeID,
 		"call_id":      callID,
