@@ -60,7 +60,7 @@ func (r *requestHandler) ChatbotV1ChatbotGet(ctx context.Context, chatbotID uuid
 	return &res, nil
 }
 
-// ChatbotV1ChatbotCreate sends a request to chat-manager
+// ChatbotV1ChatbotCreate sends a request to chatbot-manager
 // to creating a chatbot.
 // it returns created chat if it succeed.
 func (r *requestHandler) ChatbotV1ChatbotCreate(
@@ -130,9 +130,9 @@ func (r *requestHandler) ChatbotV1ChatbotDelete(ctx context.Context, chatbotID u
 	return &res, nil
 }
 
-// ChatbotV1ChatbotCreate sends a request to chat-manager
-// to creating a chatbot.
-// it returns created chat if it succeed.
+// ChatbotV1ChatbotUpdate sends a request to chatbot-manager
+// to updating a chatbot.
+// it returns updated chatbot if it succeed.
 func (r *requestHandler) ChatbotV1ChatbotUpdate(
 	ctx context.Context,
 	chatbotID uuid.UUID,
@@ -155,7 +155,7 @@ func (r *requestHandler) ChatbotV1ChatbotUpdate(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceChatbotChatbotsID, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceChatbotChatbotsID, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

@@ -308,7 +308,7 @@ func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
 			expectTarget: "bin-manager.chatbot-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/chatbots/76380ede-f84a-11ed-a288-2bf54d8b92e6",
-				Method:   rabbitmqhandler.RequestMethodPost,
+				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","init_prompt":"test init prompt"}`),
 			},
