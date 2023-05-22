@@ -15,6 +15,7 @@ type V1DataChatbotsPost struct {
 	Detail     string    `json:"detail"`
 
 	EngineType chatbot.EngineType `json:"engine_type"`
+	InitPrompt string             `json:"init_prompt"`
 }
 
 // V1DataChatbotsIDPut is
