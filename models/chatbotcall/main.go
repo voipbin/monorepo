@@ -2,13 +2,16 @@ package chatbotcall
 
 import (
 	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 )
 
 // Chatbotcall define
 type Chatbotcall struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
-	ChatbotID  uuid.UUID `json:"chatbot_id"`
+	ID                uuid.UUID          `json:"id"`
+	CustomerID        uuid.UUID          `json:"customer_id"`
+	ChatbotID         uuid.UUID          `json:"chatbot_id"`
+	ChatbotEngineType chatbot.EngineType `json:"chatbot_engine_type"`
 
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
@@ -20,6 +23,8 @@ type Chatbotcall struct {
 
 	Gender   Gender `json:"gender"`
 	Language string `json:"language"`
+
+	Messages []Message `json:"messages"`
 
 	TMEnd    string `json:"tm_end"`
 	TMCreate string `json:"tm_create"`
@@ -54,3 +59,9 @@ const (
 	GenderFemale  Gender = "female"
 	GenderNuetral Gender = "neutral"
 )
+
+// Message defines
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}

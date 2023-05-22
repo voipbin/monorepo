@@ -58,11 +58,13 @@ func (h *chatbotcallHandler) ProcessEnd(ctx context.Context, cb *chatbotcall.Cha
 	}
 
 	// destroy the confbridge
-	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, cb.ConfbridgeID); errDelete != nil {
+	tmp, err := h.reqHandler.CallV1ConfbridgeDelete(ctx, cb.ConfbridgeID)
+	if err != nil {
 		// we couldn't delete the confbridge here.
 		// but we don't return any error here because it doesn't affect to the activeflow execution.
-		log.Errorf("Could not delete the confbridge. err: %v", errDelete)
+		log.Errorf("Could not delete the confbridge. err: %v", err)
 	}
+	log.WithField("confbridge", tmp).Debugf("Destroyed the confbridge. confbridge_id: %s", tmp.ID)
 
 	return res, nil
 }

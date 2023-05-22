@@ -6,17 +6,18 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatgpthandler"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
-func Test_Chat(t *testing.T) {
+func Test_ChatMessage(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -24,26 +25,50 @@ func Test_Chat(t *testing.T) {
 		chatbotcall *chatbotcall.Chatbotcall
 		message     string
 
-		responseChatbot *chatbot.Chatbot
-		responseText    string
+		responseMessages    []chatbotcall.Message
+		responseChatbotcall *chatbotcall.Chatbotcall
+
+		expectText string
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&chatbotcall.Chatbotcall{
-				ID:            uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
-				ReferenceType: chatbotcall.ReferenceTypeCall,
-				ChatbotID:     uuid.FromStringOrNil("0f7a3d29-fdb5-41ba-8fa9-3a85e02ce17a"),
-				Gender:        chatbotcall.GenderFemale,
-				Language:      "en-US",
+			chatbotcall: &chatbotcall.Chatbotcall{
+				ID:                uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
+				ReferenceType:     chatbotcall.ReferenceTypeCall,
+				ChatbotID:         uuid.FromStringOrNil("0f7a3d29-fdb5-41ba-8fa9-3a85e02ce17a"),
+				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				Gender:            chatbotcall.GenderFemale,
+				Language:          "en-US",
 			},
-			"Hi",
+			message: "Hi",
 
-			&chatbot.Chatbot{
-				ID:         uuid.FromStringOrNil("0f7a3d29-fdb5-41ba-8fa9-3a85e02ce17a"),
-				EngineType: chatbot.EngineTypeChatGPT,
+			responseMessages: []chatbotcall.Message{
+				{
+					Content: "hi",
+				},
+				{
+					Content: "Hello, my name is chat-gpt.",
+				},
 			},
-			"Hello, my name is chat-gpt.",
+			responseChatbotcall: &chatbotcall.Chatbotcall{
+				ID:                uuid.FromStringOrNil("02732972-96f1-4c51-9f76-38b32377493c"),
+				ReferenceType:     chatbotcall.ReferenceTypeCall,
+				ChatbotID:         uuid.FromStringOrNil("0f7a3d29-fdb5-41ba-8fa9-3a85e02ce17a"),
+				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				Gender:            chatbotcall.GenderFemale,
+				Language:          "en-US",
+				Messages: []chatbotcall.Message{
+					{
+						Content: "hi",
+					},
+					{
+						Content: "Hello, my name is chat-gpt.",
+					},
+				},
+			},
+
+			expectText: "Hello, my name is chat-gpt.",
 		},
 	}
 
@@ -67,16 +92,78 @@ func Test_Chat(t *testing.T) {
 				chatbotHandler: mockChatbot,
 				chatgptHandler: mockChatgpt,
 			}
-
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.chatbotcall.ReferenceID).Return(nil)
-			mockChatbot.EXPECT().Get(ctx, tt.chatbotcall.ChatbotID).Return(tt.responseChatbot, nil)
-			mockChatgpt.EXPECT().Chat(ctx, tt.message).Return(tt.responseText, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.chatbotcall.ReferenceID, tt.responseText, string(tt.chatbotcall.Gender), tt.chatbotcall.Language, 10000).Return(nil)
+			mockChatgpt.EXPECT().ChatMessage(ctx, tt.chatbotcall.Messages, tt.message).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages)
+			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.responseChatbotcall, nil)
+			mockReq.EXPECT().CallV1CallTalk(ctx, tt.chatbotcall.ReferenceID, tt.expectText, string(tt.chatbotcall.Gender), tt.chatbotcall.Language, 10000).Return(nil)
 
-			if err := h.Chat(ctx, tt.chatbotcall, tt.message); err != nil {
+			if err := h.ChatMessage(ctx, tt.chatbotcall, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_ChatInit(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatbot     *chatbot.Chatbot
+		chatbotcall *chatbotcall.Chatbotcall
+
+		responseMessages []chatbotcall.Message
+	}{
+		{
+			name: "normal",
+
+			chatbot: &chatbot.Chatbot{
+				EngineType: chatbot.EngineTypeChatGPT,
+			},
+			chatbotcall: &chatbotcall.Chatbotcall{
+				ID: uuid.FromStringOrNil("9bb7079c-f556-11ed-afbb-0f109793414b"),
+			},
+
+			responseMessages: []chatbotcall.Message{
+				{
+					Role:    "system",
+					Content: "test message",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
+			mockChatgpt := chatgpthandler.NewMockChatgptHandler(mc)
+
+			h := &chatbotcallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				chatbotHandler: mockChatbot,
+				chatgptHandler: mockChatgpt,
+			}
+			ctx := context.Background()
+
+			mockChatgpt.EXPECT().ChatNew(ctx, tt.chatbot.InitPrompt).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.chatbotcall.ID, tt.responseMessages).Return(nil)
+			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.chatbotcall, nil)
+
+			if errInit := h.ChatInit(ctx, tt.chatbot, tt.chatbotcall); errInit != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errInit)
 			}
 		})
 	}

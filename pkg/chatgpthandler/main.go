@@ -5,26 +5,27 @@ package chatgpthandler
 import (
 	"context"
 
-	"github.com/otiai10/openaigo"
+	"github.com/sashabaranov/go-openai"
+
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 )
 
 // ChatgptHandler define
 type ChatgptHandler interface {
-	Chat(ctx context.Context, text string) (string, error)
-}
+	ChatNew(ctx context.Context, initPrompt string) ([]chatbotcall.Message, error)
+	ChatMessage(ctx context.Context, messages []chatbotcall.Message, text string) ([]chatbotcall.Message, error)
 
-const (
-	constModel = "text-davinci-003" // default gpt model fot chatgpt
-)
+	MessageSend(ctx context.Context, messages []chatbotcall.Message, role string, text string) ([]chatbotcall.Message, error)
+}
 
 // chatgptHandler define
 type chatgptHandler struct {
-	client *openaigo.Client
+	client *openai.Client
 }
 
 // NewChatgptHandler define
 func NewChatgptHandler(apiKey string) ChatgptHandler {
-	client := openaigo.NewClient(apiKey)
+	client := openai.NewClient(apiKey)
 
 	return &chatgptHandler{
 		client: client,

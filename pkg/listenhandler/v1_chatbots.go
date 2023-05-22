@@ -60,7 +60,7 @@ func (h *listenHandler) processV1ChatbotsGet(ctx context.Context, m *rabbitmqhan
 	return res, nil
 }
 
-// processV1ChatbotsPost handles POST /v1/chatbots/<chatbot-id> request
+// processV1ChatbotsPost handles POST /v1/chatbots request
 func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1ChatbotsPost",
@@ -146,6 +146,47 @@ func (h *listenHandler) processV1ChatbotsIDDelete(ctx context.Context, m *rabbit
 	tmp, err := h.chatbotHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete chatbot. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ChatbotsPost handles PUT /v1/chatbots/<chatbot-id> request
+func (h *listenHandler) processV1ChatbotsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ChatbotsIDPut",
+		"request": m,
+	})
+
+	var req request.V1DataChatbotsIDPut
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return nil, err
+	}
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.chatbotHandler.Update(ctx, id, req.Name, req.Detail, req.EngineType, req.InitPrompt)
+	if err != nil {
+		log.Errorf("Could not update chatbot. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

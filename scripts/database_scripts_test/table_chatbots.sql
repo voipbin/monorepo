@@ -6,7 +6,9 @@ create table chatbots(
   -- info
   name        varchar(255),   -- name
   detail      text,           -- detail description
+
   engine_type varchar(255),   --
+  init_prompt text,           -- initial prompt
 
   -- timestamps
   tm_create datetime(6),  --

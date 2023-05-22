@@ -89,6 +89,65 @@ func Test_Create(t *testing.T) {
 	}
 }
 
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		size       uint64
+		token      string
+
+		responseChatbots []*chatbot.Chatbot
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("132be434-f839-11ed-ae95-efa657af10fb"),
+			size:       10,
+			token:      "2023-01-03 21:35:02.809",
+
+			responseChatbots: []*chatbot.Chatbot{
+				{
+					ID: uuid.FromStringOrNil("31b00c64-f839-11ed-8f59-ab874a16ee9c"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &chatbotHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChatbotGets(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseChatbots, nil)
+
+			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseChatbots) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseChatbots, res)
+			}
+		})
+	}
+}
+
 func Test_Get(t *testing.T) {
 
 	tests := []struct {
@@ -186,6 +245,69 @@ func Test_Delete(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbot.CustomerID, chatbot.EventTypeChatbotDeleted, tt.responseChatbot)
 
 			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseChatbot) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseChatbot, res)
+			}
+		})
+	}
+}
+
+func Test_Update(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		chatbotName string
+		detail      string
+		engineType  chatbot.EngineType
+		initPrompt  string
+
+		responseChatbot *chatbot.Chatbot
+	}{
+		{
+			name: "normal",
+
+			id:          uuid.FromStringOrNil("fd49c1d6-f82e-11ed-8893-dfb489cd9bb9"),
+			chatbotName: "new name",
+			detail:      "new detail",
+			engineType:  chatbot.EngineTypeChatGPT,
+			initPrompt:  "new init prompt",
+
+			responseChatbot: &chatbot.Chatbot{
+				ID: uuid.FromStringOrNil("fd49c1d6-f82e-11ed-8893-dfb489cd9bb9"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &chatbotHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ChatbotSetInfo(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt).Return(nil)
+			mockDB.EXPECT().ChatbotGet(ctx, tt.id).Return(tt.responseChatbot, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbot.CustomerID, chatbot.EventTypeChatbotUpdated, tt.responseChatbot)
+
+			res, err := h.Update(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

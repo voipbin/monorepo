@@ -22,6 +22,7 @@ const (
 		detail,
 
 		engine_type,
+		init_prompt,
 
 		tm_create,
 		tm_update,
@@ -42,6 +43,7 @@ func (h *handler) chatbotGetFromRow(row *sql.Rows) (*chatbot.Chatbot, error) {
 		&res.Detail,
 
 		&res.EngineType,
+		&res.InitPrompt,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -63,6 +65,7 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 		detail,
 
 		engine_type,
+		init_prompt,
 
 		tm_create,
 		tm_update,
@@ -70,7 +73,7 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 	) values (
 		?, ?,
 		?, ?,
-		?,
+		?, ?,
 		?, ?, ?
 		)
 	`
@@ -83,6 +86,7 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 		c.Detail,
 
 		c.EngineType,
+		c.InitPrompt,
 
 		h.utilHandler.GetCurTime(),
 		DefaultTimeStamp,
@@ -232,4 +236,30 @@ func (h *handler) ChatbotGets(ctx context.Context, customerID uuid.UUID, size ui
 	}
 
 	return res, nil
+}
+
+// ChatbotSetInfo sets the chatbot info
+func (h *handler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) error {
+	//prepare
+	q := `
+	update chatbots set
+		name = ?,
+		detail = ?,
+		engine_type = ?,
+		init_prompt = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, name, detail, engineType, initPrompt, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ChatbotSetInfo. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.chatbotUpdateToCache(ctx, id)
+
+	return nil
 }

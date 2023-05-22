@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -134,7 +135,7 @@ func Test_ProcessEnd(t *testing.T) {
 			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.chatbotcall.TranscribeID).Return(&tmtranscribe.Transcribe{}, nil)
 			mockDB.EXPECT().ChatbotcallUpdateStatusEnd(ctx, tt.chatbotcall.ID).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.chatbotcall.ID).Return(tt.chatbotcall, nil)
-			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.chatbotcall.ConfbridgeID).Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.chatbotcall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.chatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallEnd, tt.chatbotcall)
 
 			res, err := h.ProcessEnd(ctx, tt.chatbotcall)

@@ -7,11 +7,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
-	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
-
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 )
 
 // ServiceStart is creating a new chatbotcall.
@@ -26,8 +27,21 @@ func (h *chatbotcallHandler) ServiceStart(
 	language string,
 ) (*service.Service, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "ServiceStart",
+		"func":           "ServiceStart",
+		"customer_id":    customerID,
+		"chatbot_id":     chatbotID,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
+		"gender":         gender,
+		"language":       language,
 	})
+
+	// get chatbot
+	c, err := h.chatbotHandler.Get(ctx, chatbotID)
+	if err != nil {
+		log.Errorf("Could not get chatbot. err: %v", err)
+		return nil, errors.Wrap(err, "could not get chatbot info")
+	}
 
 	// create confbridge
 	cb, err := h.reqHandler.CallV1ConfbridgeCreate(ctx, customerID, cmconfbridge.TypeConference)
@@ -37,12 +51,18 @@ func (h *chatbotcallHandler) ServiceStart(
 	}
 
 	// create chatbotcall
-	cc, err := h.Create(ctx, customerID, chatbotID, referenceType, referenceID, cb.ID, gender, language)
+	cc, err := h.Create(ctx, customerID, c.ID, c.EngineType, referenceType, referenceID, cb.ID, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")
 	}
 	log.WithField("chatbotcall", cc).Debugf("Created chatbotcall. chatbotcall_id: %s", cc.ID)
+
+	go func(c *chatbot.Chatbot, cc *chatbotcall.Chatbotcall) {
+		if errInit := h.ChatInit(ctx, c, cc); errInit != nil {
+			log.Errorf("Could not init chatbotcall. err: %v", errInit)
+		}
+	}(c, cc)
 
 	// create push actions for service start
 	optJoin := fmaction.OptionConfbridgeJoin{
