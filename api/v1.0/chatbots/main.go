@@ -11,4 +11,5 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	chatbots.DELETE("/:id", chatbotsIDDELETE)
 	chatbots.GET("/:id", chatbotsIDGET)
+	chatbots.PUT("/:id", chatbotsIDPUT)
 }

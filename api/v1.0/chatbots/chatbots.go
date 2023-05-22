@@ -34,13 +34,11 @@ func chatbotsPOST(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	var req request.BodyChatbotsPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -52,7 +50,7 @@ func chatbotsPOST(c *gin.Context) {
 
 	// create a chatbot
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.ChatbotCreate(c.Request.Context(), &u, req.Name, req.Detail, req.EngineType)
+	res, err := serviceHandler.ChatbotCreate(c.Request.Context(), &u, req.Name, req.Detail, req.EngineType, req.InitPrompt)
 	if err != nil {
 		log.Errorf("Could not create a chatbot. err: %v", err)
 		c.AbortWithStatus(400)
@@ -84,13 +82,11 @@ func chatbotsGET(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	var req request.ParamChatbotsGET
 	if err := c.BindQuery(&req); err != nil {
@@ -153,13 +149,11 @@ func chatbotsIDGET(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -198,13 +192,11 @@ func chatbotsIDDELETE(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -216,6 +208,57 @@ func chatbotsIDDELETE(c *gin.Context) {
 	res, err := serviceHandler.ChatbotDelete(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not delete the chatbot. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// chatbotsIDPUT handles PUT /chatbots/<chatbot-id> request.
+// It updates the existed chatbot with the given info and returns updated chatbot info.
+// @Summary Update the chatbot and returns updated chatbot info.
+// @Description Update the chatbot and returns updated chatbot info.
+// @Produce json
+// @Param chatbot body request.BodyChatbotsIDPUT true "chatbot info."
+// @Success 200 {object} chatbot.WebhookMessage
+// @Router /v1.0/chatbots/{id} [put]
+func chatbotsIDPUT(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "chatbotsIDPUT",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	var req request.BodyChatbotsIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("chatbot_id", id)
+	log.Debug("Executing chatbotsIDPUT.")
+
+	// update the chatbot
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ChatbotUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.EngineType, req.InitPrompt)
+	if err != nil {
+		log.Errorf("Could not update the chatbot. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

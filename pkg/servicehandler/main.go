@@ -165,10 +165,20 @@ type ServiceHandler interface {
 		name string,
 		detail string,
 		engineType chatbotchatbot.EngineType,
+		initPrompt string,
 	) (*chatbotchatbot.WebhookMessage, error)
 	ChatbotGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*chatbotchatbot.WebhookMessage, error)
 	ChatbotGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error)
 	ChatbotDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbot.WebhookMessage, error)
+	ChatbotUpdate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		id uuid.UUID,
+		name string,
+		detail string,
+		engineType chatbotchatbot.EngineType,
+		initPrompt string,
+	) (*chatbotchatbot.WebhookMessage, error)
 
 	// chatbotcall handlers
 	ChatbotcallGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*chatbotchatbotcall.WebhookMessage, error)
