@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/golang/mock v1.6.0
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.2
 	github.com/streadway/amqp v1.0.0
 	golang.org/x/sys v0.8.0 // indirect
 )
@@ -13,10 +13,10 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/prometheus/client_golang v1.15.1
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230504151716-2c6e39f74644
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230515051958-a599dd7c5b4f
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093
-	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230219062948-733d4449242c
+	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230522022442-b0cd03ff58e8
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230321074025-d4c5a292e9e1
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5
@@ -42,7 +42,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
-	github.com/prometheus/common v0.42.0 // indirect
+	github.com/prometheus/common v0.43.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 )

@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -17,12 +18,13 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID    uuid.UUID
-		chatbotID     uuid.UUID
-		referenceType cbchatbotcall.ReferenceType
-		referenceID   uuid.UUID
-		gender        cbchatbotcall.Gender
-		language      string
+		customerID     uuid.UUID
+		chatbotID      uuid.UUID
+		referenceType  cbchatbotcall.ReferenceType
+		referenceID    uuid.UUID
+		gender         cbchatbotcall.Gender
+		language       string
+		requestTimeout int
 
 		response *rabbitmqhandler.Response
 
@@ -31,29 +33,30 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 		expectRes     *cbservice.Service
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("7654ef82-949f-4f0f-8711-6d1c370537be"),
-			uuid.FromStringOrNil("9469e101-d269-4895-9679-fe49531f7c12"),
-			cbchatbotcall.ReferenceTypeCall,
-			uuid.FromStringOrNil("865089bd-dc1b-45d5-89af-4a09c1d90cea"),
-			"female",
-			"en-US",
+			customerID:     uuid.FromStringOrNil("7654ef82-949f-4f0f-8711-6d1c370537be"),
+			chatbotID:      uuid.FromStringOrNil("9469e101-d269-4895-9679-fe49531f7c12"),
+			referenceType:  cbchatbotcall.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("865089bd-dc1b-45d5-89af-4a09c1d90cea"),
+			gender:         "female",
+			language:       "en-US",
+			requestTimeout: 5000,
 
-			&rabbitmqhandler.Response{
+			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"}`),
 			},
 
-			"bin-manager.chatbot-manager.request",
-			&rabbitmqhandler.Request{
+			expectTarget: "bin-manager.chatbot-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/services/type/chatbotcall",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"7654ef82-949f-4f0f-8711-6d1c370537be","chatbot_id":"9469e101-d269-4895-9679-fe49531f7c12","reference_type":"call","reference_id":"865089bd-dc1b-45d5-89af-4a09c1d90cea","gender":"female","language":"en-US"}`),
 			},
-			&cbservice.Service{
+			expectRes: &cbservice.Service{
 				ID: uuid.FromStringOrNil("134c25c9-c9f9-4800-83bb-b5eaa84bb4ab"),
 			},
 		},
@@ -72,7 +75,7 @@ func Test_ChatbotV1ServiceTypeChabotcallStart(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, tt.customerID, tt.chatbotID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			cf, err := reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, tt.customerID, tt.chatbotID, tt.referenceType, tt.referenceID, tt.gender, tt.language, tt.requestTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

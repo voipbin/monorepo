@@ -421,7 +421,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			&cmchannel.Channel{
 				ID:         "1e5eaa2b-ae8b-412c-b85b-c9d25e70d365",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[cmchannel.StasisDataType]string{},
 			},
 		},
 		{
@@ -447,7 +447,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			&cmchannel.Channel{
 				ID:         "1a367dd8-9635-426c-8f76-3bcafdd71b3c",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[cmchannel.StasisDataType]string{},
 			},
 		},
 		{
@@ -473,7 +473,7 @@ func Test_ChannelAstChannelCreateSnoop(t *testing.T) {
 			&cmchannel.Channel{
 				ID:         "17dea6c7-ce67-452d-82dd-97afabe6f0ee",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[cmchannel.StasisDataType]string{},
 			},
 		},
 	}
@@ -556,7 +556,7 @@ func Test_AstChannelGet(t *testing.T) {
 				State:             cmari.ChannelStateUp,
 
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[cmchannel.StasisDataType]string{},
 			},
 		},
 	}
@@ -711,7 +711,7 @@ func Test_AstChannelCreate(t *testing.T) {
 			&cmchannel.Channel{
 				ID:         "e28258f0-4267-475c-99a3-348bc580f9dd",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[cmchannel.StasisDataType]string{},
 			},
 		},
 		{
@@ -740,7 +740,7 @@ func Test_AstChannelCreate(t *testing.T) {
 			&cmchannel.Channel{
 				ID:         "186d1169-ff9a-4b91-84cd-011585a63dc4",
 				Data:       map[string]interface{}{},
-				StasisData: map[string]string{},
+				StasisData: map[cmchannel.StasisDataType]string{},
 			},
 		}}
 
@@ -1015,7 +1015,7 @@ func Test_AstChannelExternalMedia(t *testing.T) {
 					"UNICASTRTP_LOCAL_ADDRESS": "127.0.0.1",
 					"UNICASTRTP_LOCAL_PORT":    "10492",
 				},
-				StasisData: map[string]string{},
+				StasisData: map[cmchannel.StasisDataType]string{},
 			},
 		},
 	}
