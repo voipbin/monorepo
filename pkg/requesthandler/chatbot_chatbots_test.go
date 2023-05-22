@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	cbchatbot "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
+
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -151,6 +152,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 		chatbotName string
 		detail      string
 		engineType  cbchatbot.EngineType
+		initPrompt  string
 
 		response *rabbitmqhandler.Response
 
@@ -159,27 +161,28 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 		expectRes     *cbchatbot.Chatbot
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
-			"test name",
-			"test detail",
-			cbchatbot.EngineTypeChatGPT,
+			customerID:  uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
+			chatbotName: "test name",
+			detail:      "test detail",
+			engineType:  cbchatbot.EngineTypeChatGPT,
+			initPrompt:  "test init prompt",
 
-			&rabbitmqhandler.Response{
+			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"e6248322-de4f-4313-bd89-f9de1c6466a8"}`),
 			},
 
-			"bin-manager.chatbot-manager.request",
-			&rabbitmqhandler.Request{
+			expectTarget: "bin-manager.chatbot-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/chatbots",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_type":"chatGPT"}`),
+				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_type":"chatGPT","init_prompt":"test init prompt"}`),
 			},
-			&cbchatbot.Chatbot{
+			expectRes: &cbchatbot.Chatbot{
 				ID: uuid.FromStringOrNil("e6248322-de4f-4313-bd89-f9de1c6466a8"),
 			},
 		},
@@ -198,7 +201,7 @@ func Test_ChatbotV1ChatbotCreate(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.ChatbotV1ChatbotCreate(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType)
+			cf, err := reqHandler.ChatbotV1ChatbotCreate(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -265,6 +268,76 @@ func Test_ConferenceV1ChatbotDelete(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ChatbotV1ChatbotUpdate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		chatbotName string
+		detail      string
+		engineType  cbchatbot.EngineType
+		initPrompt  string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *cbchatbot.Chatbot
+	}{
+		{
+			name: "normal",
+
+			id:          uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
+			chatbotName: "test name",
+			detail:      "test detail",
+			engineType:  cbchatbot.EngineTypeChatGPT,
+			initPrompt:  "test init prompt",
+
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"76380ede-f84a-11ed-a288-2bf54d8b92e6"}`),
+			},
+
+			expectTarget: "bin-manager.chatbot-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/chatbots/76380ede-f84a-11ed-a288-2bf54d8b92e6",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"test name","detail":"test detail","engine_type":"chatGPT","init_prompt":"test init prompt"}`),
+			},
+			expectRes: &cbchatbot.Chatbot{
+				ID: uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			cf, err := reqHandler.ChatbotV1ChatbotUpdate(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(cf, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, cf)
 			}
 		})
 	}

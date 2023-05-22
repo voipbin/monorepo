@@ -597,8 +597,17 @@ type RequestHandler interface {
 		name string,
 		detail string,
 		engineType cbchatbot.EngineType,
+		initPrompt string,
 	) (*cbchatbot.Chatbot, error)
 	ChatbotV1ChatbotDelete(ctx context.Context, chatbotID uuid.UUID) (*cbchatbot.Chatbot, error)
+	ChatbotV1ChatbotUpdate(
+		ctx context.Context,
+		chatbotID uuid.UUID,
+		name string,
+		detail string,
+		engineType cbchatbot.EngineType,
+		initPrompt string,
+	) (*cbchatbot.Chatbot, error)
 
 	// chatbot-manager chatbotcall
 	ChatbotV1ChatbotcallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cbchatbotcall.Chatbotcall, error)
@@ -614,6 +623,7 @@ type RequestHandler interface {
 		referenceID uuid.UUID,
 		gender cbchatbotcall.Gender,
 		language string,
+		requestTimeout int,
 	) (*cbservice.Service, error)
 
 	// customer-manager customer

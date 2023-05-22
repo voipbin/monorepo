@@ -24,6 +24,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 	referenceID uuid.UUID,
 	gender cbchatbotcall.Gender,
 	language string,
+	requestTimeout int,
 ) (*cbservice.Service, error) {
 	uri := "/v1/services/type/chatbotcall"
 
@@ -41,7 +42,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceChatbotServiceTypeChatbotcall, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestChatbot(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceChatbotServiceTypeChatbotcall, requestTimeout, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
