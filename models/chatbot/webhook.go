@@ -15,6 +15,7 @@ type WebhookMessage struct {
 	Detail string `json:"detail"`
 
 	EngineType EngineType `json:"engine_type"`
+	InitPrompt string     `json:"init_prompt"`
 
 	// timestamp
 	TMCreate string `json:"tm_create"`
@@ -32,6 +33,7 @@ func (h *Chatbot) ConvertWebhookMessage() *WebhookMessage {
 		Detail: h.Detail,
 
 		EngineType: h.EngineType,
+		InitPrompt: h.InitPrompt,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
