@@ -53,13 +53,14 @@ func Test_chatbotsPOST(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				EngineType: chatbot.EngineTypeChatGPT,
+				InitPrompt: "test init prompt",
 			},
 
 			&chatbotchatbot.WebhookMessage{
 				ID: uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88"),
 			},
 
-			`{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -94,6 +95,7 @@ func Test_chatbotsPOST(t *testing.T) {
 				tt.reqBody.Name,
 				tt.reqBody.Detail,
 				tt.reqBody.EngineType,
+				tt.reqBody.InitPrompt,
 			).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
@@ -141,7 +143,7 @@ func Test_chatbotsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -170,7 +172,7 @@ func Test_chatbotsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -232,7 +234,7 @@ func Test_chatbotsIDGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("07f52215-8366-4060-902f-a86857243351"),
 			},
 
-			`{"id":"07f52215-8366-4060-902f-a86857243351","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"07f52215-8366-4060-902f-a86857243351","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -294,7 +296,7 @@ func Test_chatbotsIDDELETE(t *testing.T) {
 				ID: uuid.FromStringOrNil("ab6f6c84-b9c2-4350-9978-4336b677603c"),
 			},
 
-			`{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -317,6 +319,93 @@ func Test_chatbotsIDDELETE(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			mockSvc.EXPECT().ChatbotDelete(req.Context(), &tt.customer, tt.chatbotID).Return(tt.responseChatbot, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_chatbotsIDPUT(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery string
+		reqID    uuid.UUID
+		reqBody  request.BodyChatbotsIDPUT
+
+		response *chatbotchatbot.WebhookMessage
+
+		expectRes string
+	}{
+		{
+			name: "normal",
+			customer: cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+
+			reqQuery: "/v1.0/chatbots/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
+			reqID:    uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			reqBody: request.BodyChatbotsIDPUT{
+				Name:       "test name",
+				Detail:     "test detail",
+				EngineType: chatbot.EngineTypeChatGPT,
+				InitPrompt: "test init prompt",
+			},
+
+			response: &chatbotchatbot.WebhookMessage{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+
+			expectRes: `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.reqBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ChatbotUpdate(
+				req.Context(),
+				&tt.customer,
+				tt.reqID,
+				tt.reqBody.Name,
+				tt.reqBody.Detail,
+				tt.reqBody.EngineType,
+				tt.reqBody.InitPrompt,
+			).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
