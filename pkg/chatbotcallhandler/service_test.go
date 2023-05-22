@@ -4,20 +4,22 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
-
-	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
-	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatgpthandler"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 )
 
 func Test_ServiceStart(t *testing.T) {
@@ -32,45 +34,64 @@ func Test_ServiceStart(t *testing.T) {
 		gender        chatbotcall.Gender
 		language      string
 
-		responseConfbridge      *cmconfbridge.Confbridge
-		responseUUIDChatbotcall uuid.UUID
-		responseChatbotcall     *chatbotcall.Chatbotcall
-		responseUUIDAction      uuid.UUID
+		responseChatbot             *chatbot.Chatbot
+		responseConfbridge          *cmconfbridge.Confbridge
+		responseUUIDChatbotcall     uuid.UUID
+		responseChatbotcall         *chatbotcall.Chatbotcall
+		responseChatbotcallMessages []chatbotcall.Message
+		responseUUIDAction          uuid.UUID
 
 		expectChatbotcall *chatbotcall.Chatbotcall
 		expectRes         *service.Service
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
-			uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
-			chatbotcall.ReferenceTypeCall,
-			uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
-			chatbotcall.GenderFemale,
-			"en-US",
+			customerID:    uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+			chatbotID:     uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+			referenceType: chatbotcall.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
+			gender:        chatbotcall.GenderFemale,
+			language:      "en-US",
 
-			&cmconfbridge.Confbridge{
+			responseChatbot: &chatbot.Chatbot{
+				ID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+				EngineType: chatbot.EngineTypeChatGPT,
+				InitPrompt: "hello, this is init prompt message.",
+			},
+			responseConfbridge: &cmconfbridge.Confbridge{
 				ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 			},
-			uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
-			&chatbotcall.Chatbotcall{
+			responseUUIDChatbotcall: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
+			responseChatbotcall: &chatbotcall.Chatbotcall{
 				ID: uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 			},
-			uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
-
-			&chatbotcall.Chatbotcall{
-				ID:            uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
-				CustomerID:    uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
-				ChatbotID:     uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
-				ReferenceType: chatbotcall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
-				ConfbridgeID:  uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
-				Gender:        chatbotcall.GenderFemale,
-				Language:      "en-US",
-				Status:        chatbotcall.StatusInitiating,
+			responseChatbotcallMessages: []chatbotcall.Message{
+				{
+					Role:    "system",
+					Content: "test system message.",
+				},
+				{
+					Role:    "assistant",
+					Content: "test assistant message.",
+				},
 			},
-			&service.Service{
+			responseUUIDAction: uuid.FromStringOrNil("5001add9-0806-4adf-a535-15fc220a2019"),
+
+			expectChatbotcall: &chatbotcall.Chatbotcall{
+				ID:                uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
+				CustomerID:        uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				ChatbotID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				ReferenceType:     chatbotcall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
+				ConfbridgeID:      uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				Gender:            chatbotcall.GenderFemale,
+				Language:          "en-US",
+				Messages:          []chatbotcall.Message{},
+				Status:            chatbotcall.StatusInitiating,
+			},
+			expectRes: &service.Service{
 				ID:   uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 				Type: service.TypeChatbotcall,
 				PushActions: []fmaction.Action{
@@ -107,17 +128,25 @@ func Test_ServiceStart(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockChatbot.EXPECT().Get(ctx, tt.chatbotID).Return(tt.responseChatbot, nil)
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.customerID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChatbotcall)
 			mockDB.EXPECT().ChatbotcallCreate(ctx, tt.expectChatbotcall).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
+
+			mockChatgpt.EXPECT().ChatNew(ctx, tt.responseChatbot.InitPrompt).Return(tt.responseChatbotcallMessages, nil)
+			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.responseChatbotcall.ID, tt.responseChatbotcallMessages).Return(nil)
+			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
+
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDAction)
 
 			res, err := h.ServiceStart(ctx, tt.customerID, tt.chatbotID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			time.Sleep(time.Millisecond * 100)
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)

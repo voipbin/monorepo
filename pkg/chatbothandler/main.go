@@ -27,6 +27,7 @@ type ChatbotHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbot.Chatbot, error)
 	Delete(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
+	Update(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.Chatbot, error)
 }
 
 // chatbotHandler structure for service handle

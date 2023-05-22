@@ -95,3 +95,18 @@ func (mr *MockChatbotHandlerMockRecorder) Gets(ctx, customerID, size, token inte
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockChatbotHandler)(nil).Gets), ctx, customerID, size, token)
 }
+
+// Update mocks base method.
+func (m *MockChatbotHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.Chatbot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, engineType, initPrompt)
+	ret0, _ := ret[0].(*chatbot.Chatbot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockChatbotHandlerMockRecorder) Update(ctx, id, name, detail, engineType, initPrompt interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockChatbotHandler)(nil).Update), ctx, id, name, detail, engineType, initPrompt)
+}

@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatbothandler"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/pkg/chatgpthandler"
@@ -22,13 +23,14 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID    uuid.UUID
-		chatbotID     uuid.UUID
-		referenceType chatbotcall.ReferenceType
-		referenceID   uuid.UUID
-		confbridgeID  uuid.UUID
-		gender        chatbotcall.Gender
-		language      string
+		customerID        uuid.UUID
+		chatbotID         uuid.UUID
+		chatbotEngineType chatbot.EngineType
+		referenceType     chatbotcall.ReferenceType
+		referenceID       uuid.UUID
+		confbridgeID      uuid.UUID
+		gender            chatbotcall.Gender
+		language          string
 
 		responseUUID        uuid.UUID
 		responseChatbotcall *chatbotcall.Chatbotcall
@@ -36,10 +38,11 @@ func Test_Create(t *testing.T) {
 		expectChatbotcall *chatbotcall.Chatbotcall
 	}{
 		{
-			"normal",
+			"have all",
 
 			uuid.FromStringOrNil("81880ddc-a707-11ed-be35-87b2fee31bb7"),
 			uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
+			chatbot.EngineTypeChatGPT,
 			chatbotcall.ReferenceTypeCall,
 			uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
 			uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
@@ -52,15 +55,17 @@ func Test_Create(t *testing.T) {
 			},
 
 			&chatbotcall.Chatbotcall{
-				ID:            uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
-				CustomerID:    uuid.FromStringOrNil("81880ddc-a707-11ed-be35-87b2fee31bb7"),
-				ChatbotID:     uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
-				ReferenceType: chatbotcall.ReferenceTypeCall,
-				ReferenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
-				ConfbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
-				Gender:        chatbotcall.GenderFemale,
-				Language:      "en-US",
-				Status:        chatbotcall.StatusInitiating,
+				ID:                uuid.FromStringOrNil("820745c0-a707-11ed-9b12-9bce1a08774b"),
+				CustomerID:        uuid.FromStringOrNil("81880ddc-a707-11ed-be35-87b2fee31bb7"),
+				ChatbotID:         uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
+				ChatbotEngineType: chatbot.EngineTypeChatGPT,
+				ReferenceType:     chatbotcall.ReferenceTypeCall,
+				ReferenceID:       uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
+				ConfbridgeID:      uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
+				Gender:            chatbotcall.GenderFemale,
+				Language:          "en-US",
+				Status:            chatbotcall.StatusInitiating,
+				Messages:          []chatbotcall.Message{},
 			},
 		},
 	}
@@ -93,7 +98,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUID).Return(tt.responseChatbotcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
 
-			res, err := h.Create(ctx, tt.customerID, tt.chatbotID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language)
+			res, err := h.Create(ctx, tt.customerID, tt.chatbotID, tt.chatbotEngineType, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 )
 
@@ -15,25 +16,25 @@ func (h *chatbotcallHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
 	chatbotID uuid.UUID,
+	chatbotEngineType chatbot.EngineType,
 	referenceType chatbotcall.ReferenceType,
 	referenceID uuid.UUID,
 	confbridgeID uuid.UUID,
 	gender chatbotcall.Gender,
 	language string,
 ) (*chatbotcall.Chatbotcall, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "Create",
-			"customer_id":    customerID,
-			"chatbotcall_id": chatbotID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "Create",
+		"customer_id":    customerID,
+		"chatbotcall_id": chatbotID,
+	})
 
 	id := h.utilHandler.CreateUUID()
 	tmp := &chatbotcall.Chatbotcall{
-		ID:         id,
-		CustomerID: customerID,
-		ChatbotID:  chatbotID,
+		ID:                id,
+		CustomerID:        customerID,
+		ChatbotID:         chatbotID,
+		ChatbotEngineType: chatbotEngineType,
 
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
@@ -42,6 +43,8 @@ func (h *chatbotcallHandler) Create(
 
 		Gender:   gender,
 		Language: language,
+
+		Messages: []chatbotcall.Message{},
 
 		Status: chatbotcall.StatusInitiating,
 	}
@@ -183,6 +186,29 @@ func (h *chatbotcallHandler) Gets(ctx context.Context, customerID uuid.UUID, siz
 	res, err := h.db.ChatbotcallGets(ctx, customerID, size, token)
 	if err != nil {
 		log.Errorf("Could not get chatbotcalls. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// UpdateChatbotcallMessages updates the chatbotcall's messages
+func (h *chatbotcallHandler) UpdateChatbotcallMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) (*chatbotcall.Chatbotcall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":       "UpdateChatbotcallMessages",
+			"chatbot_id": id,
+		},
+	)
+
+	if errSet := h.db.ChatbotcallSetMessages(ctx, id, messages); errSet != nil {
+		log.Errorf("Could not set chatbotcall messages. err: %v", errSet)
+		return nil, errSet
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated chatbotcall info. err: %v", err)
 		return nil, err
 	}
 

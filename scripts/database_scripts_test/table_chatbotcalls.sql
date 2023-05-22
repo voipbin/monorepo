@@ -3,7 +3,8 @@ create table chatbotcalls(
   id            binary(16),   -- id
   customer_id   binary(16),   -- customer id
 
-  chatbot_id    binary(16),   -- chatbot id
+  chatbot_id          binary(16),   -- chatbot id
+  chatbot_engine_type varchar(255), -- chatbot engine type
 
   reference_type    varchar(255),
   reference_id      binary(16),
@@ -15,6 +16,8 @@ create table chatbotcalls(
 
   gender    varchar(255), -- gender
   language  varchar(255), -- language
+
+  messages json,
 
   -- timestamps
   tm_end    datetime(6),  --

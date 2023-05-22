@@ -192,6 +192,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ChatbotsIDDelete(ctx, m)
 		requestType = "/v1/chatbots/<chatbot-id>"
 
+	// PUT /chatbots/<chatbot-id>
+	case regV1ChatbotsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1ChatbotsIDPut(ctx, m)
+		requestType = "/v1/chatbots/<chatbot-id>"
+
 	///////////////
 	// chatbotcalls
 	///////////////

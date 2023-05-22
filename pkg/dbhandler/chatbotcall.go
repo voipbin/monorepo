@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	uuid "github.com/gofrs/uuid"
@@ -16,6 +17,7 @@ const (
 		id,
 		customer_id,
 		chatbot_id,
+		chatbot_engine_type,
 
 		reference_type,
 		reference_id,
@@ -27,6 +29,8 @@ const (
 
 		gender,
 		language,
+
+		messages,
 
 		tm_end,
 		tm_create,
@@ -40,12 +44,14 @@ const (
 
 // chatbotcallGetFromRow gets the chatbotcall from the row.
 func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall, error) {
+	var messages sql.NullString
 
 	res := &chatbotcall.Chatbotcall{}
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
 		&res.ChatbotID,
+		&res.ChatbotEngineType,
 
 		&res.ReferenceType,
 		&res.ReferenceID,
@@ -58,12 +64,24 @@ func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall
 		&res.Gender,
 		&res.Language,
 
+		&messages,
+
 		&res.TMEnd,
 		&res.TMCreate,
 		&res.TMUpdate,
 		&res.TMDelete,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. chatbotcallGetFromRow. err: %v", err)
+	}
+
+	// messages
+	if messages.Valid {
+		if err := json.Unmarshal([]byte(messages.String), &res.Messages); err != nil {
+			return nil, fmt.Errorf("could not unmarshal the chained_call_ids. callGetFromRow. err: %v", err)
+		}
+	}
+	if res.Messages == nil {
+		res.Messages = []chatbotcall.Message{}
 	}
 
 	return res, nil
@@ -75,6 +93,7 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		id,
 		customer_id,
 		chatbot_id,
+		chatbot_engine_type,
 
 		reference_type,
 		reference_id,
@@ -87,24 +106,36 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		gender,
 		language,
 
+		messages,
+
 		tm_end,
 		tm_create,
 		tm_update,
 		tm_delete
 	) values(
 		?, ?, ?,
-		?, ?,
+		?, ?, ?,
 		?, ?,
 		?,
 		?, ?,
+		?,
 		?, ?, ?, ?
 		)
 	`
 
-	_, err := h.db.Exec(q,
+	if cb.Messages == nil {
+		cb.Messages = []chatbotcall.Message{}
+	}
+	tmpMessages, err := json.Marshal(cb.Messages)
+	if err != nil {
+		return fmt.Errorf("could not marshal calls. ChatbotcallCreate. err: %v", err)
+	}
+
+	_, err = h.db.Exec(q,
 		cb.ID.Bytes(),
 		cb.CustomerID.Bytes(),
 		cb.ChatbotID.Bytes(),
+		cb.ChatbotEngineType,
 
 		cb.ReferenceType,
 		cb.ReferenceID.Bytes(),
@@ -116,6 +147,8 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 
 		cb.Gender,
 		cb.Language,
+
+		tmpMessages,
 
 		DefaultTimeStamp,
 		h.utilHandler.GetCurTime(),
@@ -376,4 +409,33 @@ func (h *handler) ChatbotcallGets(ctx context.Context, customerID uuid.UUID, siz
 	}
 
 	return res, nil
+}
+
+// ChatbotcallSetMessages sets the chatbotcall's messages
+func (h *handler) ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) error {
+
+	//prepare
+	q := `
+	update chatbotcalls set
+		messages = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	tmpMessages, err := json.Marshal(messages)
+	if err != nil {
+		return fmt.Errorf("could not marshal calls. ChatbotcallSetMessages. err: %v", err)
+	}
+
+	ts := h.utilHandler.GetCurTime()
+	_, err = h.db.Exec(q, tmpMessages, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ChatbotcallSetMessages. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.chatbotcallUpdateToCache(ctx, id)
+
+	return nil
 }

@@ -52,12 +52,10 @@ func (h *chatbotHandler) Create(
 
 // Get returns chatbot.
 func (h *chatbotHandler) Get(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Get",
-			"chatbot_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Get",
+		"chatbot_id": id,
+	})
 
 	res, err := h.db.ChatbotGet(ctx, id)
 	if err != nil {
@@ -86,12 +84,10 @@ func (h *chatbotHandler) Gets(ctx context.Context, customerID uuid.UUID, size ui
 
 // Delete deletes the chatbot.
 func (h *chatbotHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Delete",
-			"chatbot_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Delete",
+		"chatbot_id": id,
+	})
 
 	if err := h.db.ChatbotDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the chatbot. err: %v", err)
@@ -104,6 +100,32 @@ func (h *chatbotHandler) Delete(ctx context.Context, id uuid.UUID) (*chatbot.Cha
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chatbot.EventTypeChatbotDeleted, res)
+
+	return res, nil
+}
+
+// Update updates the chatbot info
+func (h *chatbotHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.Chatbot, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Update",
+		"chatbot_id":  id,
+		"name":        name,
+		"detail":      detail,
+		"engine_type": engineType,
+		"init_prompt": initPrompt,
+	})
+
+	if err := h.db.ChatbotSetInfo(ctx, id, name, detail, engineType, initPrompt); err != nil {
+		log.Errorf("Could not update the chatbot. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.ChatbotGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not updated chatbot. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, chatbot.EventTypeChatbotUpdated, res)
 
 	return res, nil
 }

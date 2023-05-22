@@ -48,7 +48,7 @@ type ChatbotcallHandler interface {
 		language string,
 	) (*service.Service, error)
 
-	Chat(ctx context.Context, cb *chatbotcall.Chatbotcall, message string) error
+	ChatMessage(ctx context.Context, cb *chatbotcall.Chatbotcall, message string) error
 }
 
 // chatbotcallHandler define
@@ -73,11 +73,34 @@ var (
 		},
 		[]string{"reference_type"},
 	)
+	promChatInitTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "chatbotcall_chat_init_time",
+			Help:      "Process time of chat initialization",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000, 6000,
+			},
+		},
+		[]string{"engine_type"},
+	)
+	promChatMessageProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "chatbotcall_chat_process_time",
+			Help:      "Process time of chat",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000, 6000,
+			},
+		},
+		[]string{"engine_type"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promChatbotcallCreateTotal,
+		promChatMessageProcessTime,
 	)
 }
 

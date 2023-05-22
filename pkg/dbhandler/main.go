@@ -21,6 +21,7 @@ type DBHandler interface {
 	ChatbotDelete(ctx context.Context, id uuid.UUID) error
 	ChatbotGet(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
 	ChatbotGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbot.Chatbot, error)
+	ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string, detail string, engineType chatbot.EngineType, initPrompt string) error
 
 	ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbotcall) error
 	ChatbotcallDelete(ctx context.Context, id uuid.UUID) error
@@ -30,6 +31,7 @@ type DBHandler interface {
 	ChatbotcallGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbotcall.Chatbotcall, error)
 	ChatbotcallUpdateStatusProgressing(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
 	ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) error
+	ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, messages []chatbotcall.Message) error
 }
 
 // handler database handler

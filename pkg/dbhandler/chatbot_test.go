@@ -33,6 +33,7 @@ func Test_ChatbotCreate(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				EngineType: chatbot.EngineTypeChatGPT,
+				InitPrompt: "test is test init prompt",
 			},
 
 			"2023-01-03 21:35:02.809",
@@ -42,6 +43,7 @@ func Test_ChatbotCreate(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				EngineType: chatbot.EngineTypeChatGPT,
+				InitPrompt: "test is test init prompt",
 
 				TMCreate: "2023-01-03 21:35:02.809",
 				TMUpdate: DefaultTimeStamp,
@@ -251,6 +253,89 @@ func Test_ChatbotGets(t *testing.T) {
 			}
 
 			res, err := h.ChatbotGets(ctx, tt.customerID, 10, utilhandler.GetCurTime())
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_ChatbotSetInfo(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		chatbot *chatbot.Chatbot
+
+		id          uuid.UUID
+		chatbotName string
+		detail      string
+		engineType  chatbot.EngineType
+		initPrompt  string
+
+		responseCurTime string
+		expectRes       *chatbot.Chatbot
+	}{
+		{
+			name: "normal",
+			chatbot: &chatbot.Chatbot{
+				ID: uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
+			},
+
+			id:          uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
+			chatbotName: "new name",
+			detail:      "new detail",
+			engineType:  chatbot.EngineTypeChatGPT,
+			initPrompt:  "new init prompt",
+
+			responseCurTime: "2023-01-03 21:35:02.809",
+			expectRes: &chatbot.Chatbot{
+				ID:         uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
+				Name:       "new name",
+				Detail:     "new detail",
+				EngineType: chatbot.EngineTypeChatGPT,
+				InitPrompt: "new init prompt",
+				TMCreate:   "2023-01-03 21:35:02.809",
+				TMUpdate:   "2023-01-03 21:35:02.809",
+				TMDelete:   DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ChatbotSet(ctx, gomock.Any())
+			if err := h.ChatbotCreate(ctx, tt.chatbot); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ChatbotSet(ctx, gomock.Any())
+			if errDel := h.ChatbotSetInfo(ctx, tt.id, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt); errDel != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
+			}
+
+			mockCache.EXPECT().ChatbotGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChatbotSet(ctx, gomock.Any())
+			res, err := h.ChatbotGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
