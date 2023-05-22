@@ -70,6 +70,11 @@ func Test_recevieMessage(t *testing.T) {
 
 			50,
 		},
+		{
+			"500 times",
+
+			500,
+		},
 	}
 
 	for _, tt := range tests {
@@ -102,11 +107,13 @@ func Test_recevieMessage(t *testing.T) {
 				}
 			}()
 
-			time.Sleep(2 * time.Second)
+			time.Sleep(time.Millisecond * 300)
 
 			for i := 0; i < tt.count; i++ {
 				<-chanMessage
 			}
+
+			time.Sleep(time.Millisecond * 100)
 		})
 	}
 }
