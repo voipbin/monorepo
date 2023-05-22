@@ -13,13 +13,11 @@ import (
 
 // chatbotGet validates the chatbot's ownership and returns the chatbot info.
 func (h *serviceHandler) chatbotGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatbotchatbot.Chatbot, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "chatbotGet",
-			"customer_id": u.ID,
-			"chatbot_id":  id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "chatbotGet",
+		"customer_id": u.ID,
+		"chatbot_id":  id,
+	})
 
 	// send request
 	res, err := h.reqHandler.ChatbotV1ChatbotGet(ctx, id)
@@ -43,11 +41,15 @@ func (h *serviceHandler) ChatbotCreate(
 	name string,
 	detail string,
 	engineType chatbotchatbot.EngineType,
+	initPrompt string,
 ) (*chatbotchatbot.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ChatbotCreate",
 		"customer_id": u.ID,
 		"name":        name,
+		"detail":      detail,
+		"engine_type": engineType,
+		"init_prompt": initPrompt,
 	})
 
 	tmp, err := h.reqHandler.ChatbotV1ChatbotCreate(
@@ -56,6 +58,7 @@ func (h *serviceHandler) ChatbotCreate(
 		name,
 		detail,
 		engineType,
+		initPrompt,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new chatbot. err: %v", err)
@@ -85,7 +88,7 @@ func (h *serviceHandler) ChatbotGetsByCustomerID(ctx context.Context, u *cscusto
 	// get chatbots
 	tmps, err := h.reqHandler.ChatbotV1ChatbotGetsByCustomerID(ctx, u.ID, token, size)
 	if err != nil {
-		log.Errorf("Could not get chats info from the chatobt manager. err: %v", err)
+		log.Errorf("Could not get chatbots info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
 	}
 
@@ -112,7 +115,7 @@ func (h *serviceHandler) ChatbotGet(ctx context.Context, u *cscustomer.Customer,
 	// get chatbot
 	tmp, err := h.chatbotGet(ctx, u, id)
 	if err != nil {
-		log.Errorf("Could not get chat info from the chatobt manager. err: %v", err)
+		log.Errorf("Could not get chatbot info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)
 	}
 
@@ -133,7 +136,7 @@ func (h *serviceHandler) ChatbotDelete(ctx context.Context, u *cscustomer.Custom
 	// get chat
 	_, err := h.chatbotGet(ctx, u, id)
 	if err != nil {
-		log.Errorf("Could not get chat info from the chatbot-manager. err: %v", err)
+		log.Errorf("Could not get chatbot info from the chatbot-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)
 	}
 
@@ -142,6 +145,51 @@ func (h *serviceHandler) ChatbotDelete(ctx context.Context, u *cscustomer.Custom
 		log.Errorf("Could not delete the chatbot. err: %v", err)
 		return nil, err
 	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ChatbotUpdate is a service handler for chatbot update.
+func (h *serviceHandler) ChatbotUpdate(
+	ctx context.Context,
+	u *cscustomer.Customer,
+	id uuid.UUID,
+	name string,
+	detail string,
+	engineType chatbotchatbot.EngineType,
+	initPrompt string,
+) (*chatbotchatbot.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ChatbotUpdate",
+		"customer_id": u.ID,
+		"id":          id,
+		"name":        name,
+		"detail":      detail,
+		"engine_type": engineType,
+		"init_prompt": initPrompt,
+	})
+
+	// get chat
+	_, err := h.chatbotGet(ctx, u, id)
+	if err != nil {
+		log.Errorf("Could not get chatbot info from the chatbot-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find chatbot info. err: %v", err)
+	}
+
+	tmp, err := h.reqHandler.ChatbotV1ChatbotUpdate(
+		ctx,
+		id,
+		name,
+		detail,
+		engineType,
+		initPrompt,
+	)
+	if err != nil {
+		log.Errorf("Could not update the chatbot. err: %v", err)
+		return nil, err
+	}
+	log.WithField("chatbot", tmp).Debugf("Updated chatbot info. chatbot_id: %s", tmp.ID)
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
