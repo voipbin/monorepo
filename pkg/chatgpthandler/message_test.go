@@ -28,20 +28,20 @@ func Test_Create(t *testing.T) {
 			messages: []chatbotcall.Message{
 				{
 					Role:    openai.ChatMessageRoleSystem,
-					Content: `Just say yes to all message.`,
+					Content: `Just say "yes" to all message.`,
 				},
 			},
 			role: openai.ChatMessageRoleUser,
-			text: "this is test message",
+			text: "this is test message.",
 
 			expectRes: []chatbotcall.Message{
 				{
 					Role:    openai.ChatMessageRoleSystem,
-					Content: `Just say yes to all message.`,
+					Content: `Just say "yes" to all message.`,
 				},
 				{
 					Role:    openai.ChatMessageRoleUser,
-					Content: `this is test message`,
+					Content: `this is test message.`,
 				},
 				{
 					Role:    openai.ChatMessageRoleAssistant,

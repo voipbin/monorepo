@@ -16,11 +16,15 @@ func (h *chatbotHandler) Create(
 	name string,
 	detail string,
 	engineType chatbot.EngineType,
+	initPrompt string,
 ) (*chatbot.Chatbot, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
 		"customer_id": customerID,
+		"name":        name,
+		"detail":      detail,
 		"engine_type": engineType,
+		"init_prompt": initPrompt,
 	})
 
 	id := h.utilHandler.CreateUUID()
@@ -32,6 +36,7 @@ func (h *chatbotHandler) Create(
 		Detail: detail,
 
 		EngineType: engineType,
+		InitPrompt: initPrompt,
 	}
 	log.WithField("chatbot", c).Debugf("Creating a new chatbot. chatbot_id: %s", c.ID)
 

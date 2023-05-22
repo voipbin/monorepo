@@ -23,6 +23,7 @@ type ChatbotHandler interface {
 		name string,
 		detail string,
 		engineType chatbot.EngineType,
+		initPrompt string,
 	) (*chatbot.Chatbot, error)
 	Get(ctx context.Context, id uuid.UUID) (*chatbot.Chatbot, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*chatbot.Chatbot, error)

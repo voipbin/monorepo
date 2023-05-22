@@ -24,6 +24,7 @@ func Test_Create(t *testing.T) {
 		chatbotName string
 		detail      string
 		engineType  chatbot.EngineType
+		initPrompt  string
 
 		responseUUID    uuid.UUID
 		responseChatbot *chatbot.Chatbot
@@ -31,24 +32,26 @@ func Test_Create(t *testing.T) {
 		expectChatbot *chatbot.Chatbot
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
-			"test name",
-			"test detail",
-			chatbot.EngineTypeChatGPT,
+			customerID:  uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
+			chatbotName: "test name",
+			detail:      "test detail",
+			engineType:  chatbot.EngineTypeChatGPT,
+			initPrompt:  "test init prompt",
 
-			uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
-			&chatbot.Chatbot{
+			responseUUID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
+			responseChatbot: &chatbot.Chatbot{
 				ID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
 			},
 
-			&chatbot.Chatbot{
+			expectChatbot: &chatbot.Chatbot{
 				ID:         uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
 				CustomerID: uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
 				Name:       "test name",
 				Detail:     "test detail",
 				EngineType: chatbot.EngineTypeChatGPT,
+				InitPrompt: "test init prompt",
 			},
 		},
 	}
@@ -77,7 +80,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ChatbotGet(ctx, tt.responseUUID).Return(tt.responseChatbot, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbot.CustomerID, chatbot.EventTypeChatbotCreated, tt.responseChatbot)
 
-			res, err := h.Create(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType)
+			res, err := h.Create(ctx, tt.customerID, tt.chatbotName, tt.detail, tt.engineType, tt.initPrompt)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

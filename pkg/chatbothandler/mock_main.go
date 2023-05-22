@@ -37,18 +37,18 @@ func (m *MockChatbotHandler) EXPECT() *MockChatbotHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockChatbotHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, engineType chatbot.EngineType) (*chatbot.Chatbot, error) {
+func (m *MockChatbotHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, engineType chatbot.EngineType, initPrompt string) (*chatbot.Chatbot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, engineType)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, engineType, initPrompt)
 	ret0, _ := ret[0].(*chatbot.Chatbot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockChatbotHandlerMockRecorder) Create(ctx, customerID, name, detail, engineType interface{}) *gomock.Call {
+func (mr *MockChatbotHandlerMockRecorder) Create(ctx, customerID, name, detail, engineType, initPrompt interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockChatbotHandler)(nil).Create), ctx, customerID, name, detail, engineType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockChatbotHandler)(nil).Create), ctx, customerID, name, detail, engineType, initPrompt)
 }
 
 // Delete mocks base method.

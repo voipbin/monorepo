@@ -73,7 +73,7 @@ func (h *listenHandler) processV1ChatbotsPost(ctx context.Context, m *rabbitmqha
 		return nil, err
 	}
 
-	tmp, err := h.chatbotHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.EngineType)
+	tmp, err := h.chatbotHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.EngineType, req.InitPrompt)
 	if err != nil {
 		log.Errorf("Could not create chatbot. err: %v", err)
 		return simpleResponse(500), nil

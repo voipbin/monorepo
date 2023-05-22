@@ -91,27 +91,28 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 		expectName       string
 		expectDetail     string
 		expectEngineType chatbot.EngineType
+		expectInitPrompt string
 		expectRes        *rabbitmqhandler.Response
 	}{
 		{
-			"normal",
-			&rabbitmqhandler.Request{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/chatbots",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"chatGPT"}`),
+				Data:     []byte(`{"customer_id": "58e7502c-a770-11ed-9b86-7fabe2dba847", "name": "test name", "detail": "test detail", "engine_type":"chatGPT", "init_prompt": "test init prompt"}`),
 			},
 
-			&chatbot.Chatbot{
+			responseChatbot: &chatbot.Chatbot{
 				ID: uuid.FromStringOrNil("59230ca2-a770-11ed-b5dd-2783587ed477"),
 			},
 
-			uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847"),
-			"test name",
-			"test detail",
-			chatbot.EngineTypeChatGPT,
-
-			&rabbitmqhandler.Response{
+			expectCustomerID: uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847"),
+			expectName:       "test name",
+			expectDetail:     "test detail",
+			expectEngineType: chatbot.EngineTypeChatGPT,
+			expectInitPrompt: "test init prompt",
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"59230ca2-a770-11ed-b5dd-2783587ed477","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","engine_type":"","init_prompt":"","tm_create":"","tm_update":"","tm_delete":""}`),
@@ -132,7 +133,7 @@ func Test_processV1ChatbotsPost(t *testing.T) {
 				chatbotHandler: mockChatbot,
 			}
 
-			mockChatbot.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEngineType).Return(tt.responseChatbot, nil)
+			mockChatbot.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEngineType, tt.expectInitPrompt).Return(tt.responseChatbot, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
