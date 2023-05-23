@@ -118,7 +118,7 @@ func (h *chatbotcallHandler) ChatInit(ctx context.Context, cb *chatbot.Chatbot, 
 	log.WithField("chatbotcall", tmp).Debugf("Updated chatbotcall messages. chatbotcall_id: %s", tmp.ID)
 
 	elapsed := time.Since(start)
-	promChatInitTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(elapsed.Milliseconds()))
+	promChatInitProcessTime.WithLabelValues(string(cc.ChatbotEngineType)).Observe(float64(elapsed.Milliseconds()))
 	log.Debugf("Chat has initialized. elapsed: %v", elapsed)
 
 	return nil

@@ -15,7 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.9.2
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230515051958-a599dd7c5b4f
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230504160911-b97b46fcaff4
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230522035649-ccfe10ddc36f
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230409092659-5068ec8c1d46
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450
 )
@@ -27,8 +27,8 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
-	github.com/prometheus/common v0.43.0 // indirect
-	github.com/prometheus/procfs v0.9.0 // indirect
+	github.com/prometheus/common v0.44.0 // indirect
+	github.com/prometheus/procfs v0.10.0 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca // indirect
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206 // indirect
