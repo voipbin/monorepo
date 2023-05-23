@@ -73,11 +73,11 @@ var (
 		},
 		[]string{"reference_type"},
 	)
-	promChatInitTime = prometheus.NewHistogramVec(
+	promChatInitProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
-			Name:      "chatbotcall_chat_init_time",
-			Help:      "Process time of chat initialization",
+			Name:      "chatbotcall_chat_init_process_time",
+			Help:      "Process time of chat initialization.",
 			Buckets: []float64{
 				50, 100, 500, 1000, 3000, 6000,
 			},
@@ -87,8 +87,8 @@ var (
 	promChatMessageProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
-			Name:      "chatbotcall_chat_process_time",
-			Help:      "Process time of chat",
+			Name:      "chatbotcall_chat_message_process_time",
+			Help:      "Process time of chat message.",
 			Buckets: []float64{
 				50, 100, 500, 1000, 3000, 6000,
 			},
@@ -100,6 +100,7 @@ var (
 func init() {
 	prometheus.MustRegister(
 		promChatbotcallCreateTotal,
+		promChatInitProcessTime,
 		promChatMessageProcessTime,
 	)
 }
