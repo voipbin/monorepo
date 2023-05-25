@@ -2972,6 +2972,21 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowGets(ctx, customerID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowGets", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowGets), ctx, customerID, pageToken, pageSize)
 }
 
+// FlowV1ActiveflowPushActions mocks base method.
+func (m *MockRequestHandler) FlowV1ActiveflowPushActions(ctx context.Context, activeflowID uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowV1ActiveflowPushActions", ctx, activeflowID, actions)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowV1ActiveflowPushActions indicates an expected call of FlowV1ActiveflowPushActions.
+func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowPushActions(ctx, activeflowID, actions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowPushActions", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowPushActions), ctx, activeflowID, actions)
+}
+
 // FlowV1ActiveflowStop mocks base method.
 func (m *MockRequestHandler) FlowV1ActiveflowStop(ctx context.Context, activeflowID uuid.UUID) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
