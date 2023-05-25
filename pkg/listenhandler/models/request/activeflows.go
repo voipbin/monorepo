@@ -39,3 +39,10 @@ type V1DataActiveFlowsIDForwardActionIDPut struct {
 type V1DataFlowIDActionsPut struct {
 	Actions []action.Action `json:"actions"` // actions
 }
+
+// V1DataActiveFlowsIDPushActionPost is
+// v1 data type request struct for
+// /v1/activeflows/{id}/push_action POST
+type V1DataActiveFlowsIDPushActionPost struct {
+	Actions []action.Action `json:"actions"` // actions
+}

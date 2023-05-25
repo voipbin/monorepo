@@ -506,15 +506,21 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a call for connect
-	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, af.ReferenceID, &opt.Source, opt.Destinations, earlyExecution, executeNext)
+	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, af.ReferenceID, &opt.Source, opt.Destinations, earlyExecution, executeNext)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
 	}
-	log.WithField("calls", resCalls).Debugf("Created outgoing calls for connect. count: %d", len(resCalls))
+	log.WithFields(logrus.Fields{
+		"calls":      resCalls,
+		"groupcalls": resGroupcalls,
+	}).Debugf("Created outgoing calls for connect. call_count: %d, groupcall_count: %d", len(resCalls), len(resGroupcalls))
 
-	if len(resCalls) == 0 {
-		log.WithField("calls", resCalls).Errorf("Could not create any outgoing calls for connect.")
+	if len(resCalls) == 0 && len(resGroupcalls) == 0 {
+		log.WithFields(logrus.Fields{
+			"calls":      resCalls,
+			"groupcalls": resGroupcalls,
+		}).Errorf("Could not create any outgoing calls or groupcalls for connect.")
 		return fmt.Errorf("could not create any outgoing calls")
 	}
 
@@ -528,7 +534,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		},
 	}
 
-	if opt.RelayReason {
+	if len(resGroupcalls) == 0 && opt.RelayReason {
 		// get reference id
 		// we consider the first call of get the reference
 		referenceID := resCalls[0].ID
@@ -823,12 +829,15 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 		masterCallID = af.ReferenceID
 	}
 
-	resCalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution, false)
+	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution, false)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
 	}
-	log.WithField("calls", resCalls).Debugf("Created outgoing calls for action call. count: %d", len(resCalls))
+	log.WithFields(logrus.Fields{
+		"calls":      resCalls,
+		"groupcalls": resGroupcalls,
+	}).Debugf("Created outgoing calls for action call. call_count: %d, groupcall_count: %d", len(resCalls), len(resGroupcalls))
 
 	return nil
 }
@@ -950,7 +959,7 @@ func (h *activeflowHandler) actionHandleChatbotTalk(ctx context.Context, af *act
 	}
 
 	// start service
-	sv, err := h.reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, af.CustomerID, opt.ChatbotID, cbchatbotcall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language)
+	sv, err := h.reqHandler.ChatbotV1ServiceTypeChabotcallStart(ctx, af.CustomerID, opt.ChatbotID, cbchatbotcall.ReferenceTypeCall, af.ReferenceID, opt.Gender, opt.Language, 3000)
 	if err != nil {
 		log.Errorf("Could not start the service. err: %v", err)
 		return errors.Wrap(err, "Could not start the service.")

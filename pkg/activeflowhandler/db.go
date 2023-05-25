@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
@@ -264,7 +265,7 @@ func (h *activeflowHandler) GetsByCustomerID(ctx context.Context, customerID uui
 	return res, nil
 }
 
-// PushStack pushes the given action to the stack
+// PushStack pushes the given action to the stack with a new stack
 func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Activeflow, actions []action.Action) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "PushStack",
@@ -289,4 +290,39 @@ func (h *activeflowHandler) PushStack(ctx context.Context, af *activeflow.Active
 	}
 
 	return nil
+}
+
+// PushActions pushes the given actions in a new stack.
+// pushed new stack will be executed in a next action request.
+func (h *activeflowHandler) PushActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "PushActions",
+		"activeflow_id": id,
+		"actions":       actions,
+	})
+
+	af, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get activeflow info. err: %v", err)
+		return nil, err
+	}
+
+	flowActions, err := h.actionHandler.GenerateFlowActions(ctx, actions)
+	if err != nil {
+		log.Errorf("Could not generate the flow actions. err: %v", err)
+		return nil, errors.Wrap(err, "could not generate the flow actions")
+	}
+
+	if errPush := h.PushStack(ctx, af, flowActions); errPush != nil {
+		log.Errorf("Could not push the new stack for flow actions. err: %v", errPush)
+		return nil, errors.Wrap(err, "could not push the new stack for flow actions")
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated activeflow info. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated activeflow info")
+	}
+
+	return res, nil
 }

@@ -126,6 +126,21 @@ func (mr *MockActiveflowHandlerMockRecorder) GetsByCustomerID(ctx, customerID, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockActiveflowHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
 }
 
+// PushActions mocks base method.
+func (m *MockActiveflowHandler) PushActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushActions", ctx, id, actions)
+	ret0, _ := ret[0].(*activeflow.Activeflow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PushActions indicates an expected call of PushActions.
+func (mr *MockActiveflowHandlerMockRecorder) PushActions(ctx, id, actions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushActions", reflect.TypeOf((*MockActiveflowHandler)(nil).PushActions), ctx, id, actions)
+}
+
 // SetForwardActionID mocks base method.
 func (m *MockActiveflowHandler) SetForwardActionID(ctx context.Context, callID, actionID uuid.UUID, forwardNow bool) error {
 	m.ctrl.T.Helper()
