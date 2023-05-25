@@ -42,6 +42,8 @@ type ActiveflowHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*activeflow.Activeflow, error)
 
+	PushActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*activeflow.Activeflow, error)
+
 	SetForwardActionID(ctx context.Context, callID uuid.UUID, actionID uuid.UUID, forwardNow bool) error
 	Stop(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 

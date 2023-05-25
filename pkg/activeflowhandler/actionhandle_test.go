@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	cbchatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	cbservice "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
@@ -46,7 +47,8 @@ func Test_actionHandleConnect(t *testing.T) {
 
 		responseConfbridge         *cmconfbridge.Confbridge
 		responseFlow               *flow.Flow
-		responseCalls              []cmcall.Call
+		responseCalls              []*cmcall.Call
+		responseGroupcalls         []*cmgroupcall.Groupcall
 		responseUUIDConfbridgeJoin uuid.UUID
 		responseUUIDHangup         uuid.UUID
 		responsePushStackID        uuid.UUID
@@ -91,11 +93,12 @@ func Test_actionHandleConnect(t *testing.T) {
 			responseFlow: &flow.Flow{
 				ID: uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
 			},
-			responseCalls: []cmcall.Call{
+			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("1273f20c-b586-11ed-ab1c-03ffc97ffcfb"),
 				},
 			},
+			responseGroupcalls: []*cmgroupcall.Groupcall{},
 
 			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
 			responsePushStackID:        uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
@@ -192,11 +195,12 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID:         uuid.FromStringOrNil("cc480ff8-2710-11eb-8869-0fcf3d58fd6a"),
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
-			responseCalls: []cmcall.Call{
+			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("2f03e863-5cba-4661-84d0-972c1e860815"),
 				},
 			},
+			responseGroupcalls:         []*cmgroupcall.Groupcall{},
 			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("8b138d81-5d06-44d0-b7fb-36dea3a00ded"),
 			responsePushStackID:        uuid.FromStringOrNil("73af2dfc-d4c2-11ec-a692-9b1eafe93075"),
 			responsePushAction: &action.Action{
@@ -294,11 +298,12 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID:         uuid.FromStringOrNil("229ef410-2712-11eb-9dea-a737f7b6ef2b"),
 				CustomerID: uuid.FromStringOrNil("a356975a-8055-11ec-9c11-37c0ba53de51"),
 			},
-			responseCalls: []cmcall.Call{
+			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("97d2b51e-b58b-11ed-b1e0-93fbb2f1280c"),
 				},
 			},
+			responseGroupcalls:         []*cmgroupcall.Groupcall{},
 			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("6f9adfc1-7d2e-49bc-b8b2-ca5123b013c3"),
 			responsePushStackID:        uuid.FromStringOrNil("d913dcf6-d4c2-11ec-902b-37f50ff7b4b4"),
 			responsePushAction: &action.Action{
@@ -396,11 +401,12 @@ func Test_actionHandleConnect(t *testing.T) {
 				ID:         uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
 				CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
 			},
-			responseCalls: []cmcall.Call{
+			responseCalls: []*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("f7e05cb8-a253-11ed-9f37-0fef5e1b2aa9"),
 				},
 			},
+			responseGroupcalls:         []*cmgroupcall.Groupcall{},
 			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("222a9d00-a257-11ed-8e79-5309100e27e4"),
 			responseUUIDHangup:         uuid.FromStringOrNil("2257c8e8-a257-11ed-b228-a38777d47451"),
 			responsePushStackID:        uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
@@ -492,7 +498,7 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup).Return(tt.responseCalls, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDConfbridgeJoin)
 			if tt.responseUUIDHangup != uuid.Nil {
@@ -2733,8 +2739,9 @@ func Test_actionHandleCall(t *testing.T) {
 		masterCallID   uuid.UUID
 		earlyExecution bool
 
-		responseFlow *flow.Flow
-		responseCall []cmcall.Call
+		responseFlow      *flow.Flow
+		responseCall      []*cmcall.Call
+		responseGroupcall []*cmgroupcall.Groupcall
 	}{
 		{
 			"have all",
@@ -2777,11 +2784,12 @@ func Test_actionHandleCall(t *testing.T) {
 			true,
 
 			&flow.Flow{},
-			[]cmcall.Call{
+			[]*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("a49dda82-a941-11ec-b5a9-9baf180541e9"),
 				},
 			},
+			[]*cmgroupcall.Groupcall{},
 		},
 		{
 			"2 destinations with flow id",
@@ -2828,7 +2836,7 @@ func Test_actionHandleCall(t *testing.T) {
 			false,
 
 			&flow.Flow{},
-			[]cmcall.Call{
+			[]*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("ff16e1f2-a941-11ec-b2c1-c3aa4ce144a0"),
 				},
@@ -2836,6 +2844,7 @@ func Test_actionHandleCall(t *testing.T) {
 					ID: uuid.FromStringOrNil("ff477790-a941-11ec-8475-035d159c8a77"),
 				},
 			},
+			[]*cmgroupcall.Groupcall{},
 		},
 		{
 			"single destination with actions",
@@ -2888,11 +2897,12 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("3936013c-a943-11ec-bdf1-af72361eecf4"),
 			},
-			[]cmcall.Call{
+			[]*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("39691e00-a943-11ec-a69c-7f0e69becb70"),
 				},
 			},
+			[]*cmgroupcall.Groupcall{},
 		},
 		{
 			"2 destinations with actions",
@@ -2945,7 +2955,7 @@ func Test_actionHandleCall(t *testing.T) {
 			&flow.Flow{
 				ID: uuid.FromStringOrNil("f46f3e96-a943-11ec-b4e1-2bfce6b84c2b"),
 			},
-			[]cmcall.Call{
+			[]*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("f4a90298-a943-11ec-b31a-bf1f552ced44"),
 				},
@@ -2953,6 +2963,7 @@ func Test_actionHandleCall(t *testing.T) {
 					ID: uuid.FromStringOrNil("f4dd1e0c-a943-11ec-9295-6f71727bd164"),
 				},
 			},
+			[]*cmgroupcall.Groupcall{},
 		},
 		{
 			"single destination with flow id and chained",
@@ -2997,11 +3008,12 @@ func Test_actionHandleCall(t *testing.T) {
 			false,
 
 			&flow.Flow{},
-			[]cmcall.Call{
+			[]*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("2aafe7e4-a994-11ec-8bae-338c6a067225"),
 				},
 			},
+			[]*cmgroupcall.Groupcall{},
 		},
 		{
 			"single destination with flow id and chained but reference type is message",
@@ -3046,11 +3058,12 @@ func Test_actionHandleCall(t *testing.T) {
 			false,
 
 			&flow.Flow{},
-			[]cmcall.Call{
+			[]*cmcall.Call{
 				{
 					ID: uuid.FromStringOrNil("8873be9e-a996-11ec-993b-438622bb78da"),
 				},
 			},
+			[]*cmgroupcall.Groupcall{},
 		},
 	}
 
@@ -3080,7 +3093,7 @@ func Test_actionHandleCall(t *testing.T) {
 				flowID = tt.responseFlow.ID
 			}
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false).Return(tt.responseCall, tt.responseGroupcall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)
@@ -3404,7 +3417,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectCustomerID, tt.expectChatbotID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage).Return(tt.responseService, nil)
+			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectCustomerID, tt.expectChatbotID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, 3000).Return(tt.responseService, nil)
 
 			// push stack
 			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)

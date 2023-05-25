@@ -285,3 +285,42 @@ func (h *listenHandler) v1ActiveflowsIDStopPost(ctx context.Context, m *rabbitmq
 
 	return res, nil
 }
+
+// v1ActiveflowsIDPushActionsPost handles
+// /v1/activeflows/<activeflow-id>/push_actions Post
+func (h *listenHandler) v1ActiveflowsIDPushActionsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1ActiveflowsIDPushActionsPost",
+		"request": m,
+	})
+
+	// "/v1/activeflows/be2692f8-066a-11eb-847f-1b4de696fafb/push_actions"
+	tmpVals := strings.Split(m.URI, "/")
+	id := uuid.FromStringOrNil(tmpVals[3])
+
+	var req request.V1DataActiveFlowsIDPushActionPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+
+	tmp, err := h.activeflowHandler.PushActions(ctx, id, req.Actions)
+	if err != nil {
+		log.Errorf("Could not stop the activeflow correctly. err: %v", err)
+		return nil, errors.Wrap(err, "Could not stop the activeflow.")
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the result. err: %v", err)
+		return nil, err
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
