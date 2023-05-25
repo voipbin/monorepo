@@ -614,3 +614,71 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 		})
 	}
 }
+
+func Test_FlowV1ActiveflowPushActions(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+		actions      []fmaction.Action
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *fmactiveflow.Activeflow
+	}{
+		{
+			name: "normal",
+
+			activeflowID: uuid.FromStringOrNil("0dd10f12-fb1a-11ed-a3e2-dbe67cf6376c"),
+			actions: []fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"0dd10f12-fb1a-11ed-a3e2-dbe67cf6376c"}`),
+			},
+
+			expectTarget: "bin-manager.flow-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/activeflows/0dd10f12-fb1a-11ed-a3e2-dbe67cf6376c/push_actions",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
+			},
+			expectRes: &fmactiveflow.Activeflow{
+				ID: uuid.FromStringOrNil("0dd10f12-fb1a-11ed-a3e2-dbe67cf6376c"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.FlowV1ActiveflowPushActions(ctx, tt.activeflowID, tt.actions)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

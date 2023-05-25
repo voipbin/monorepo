@@ -211,3 +211,32 @@ func (r *requestHandler) FlowV1ActiveflowStop(ctx context.Context, activeflowID 
 
 	return &res, nil
 }
+
+// FlowV1ActiveflowPushActions pushes actions to next to the current action of the given activeflow.
+func (r *requestHandler) FlowV1ActiveflowPushActions(ctx context.Context, activeflowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.Activeflow, error) {
+
+	uri := fmt.Sprintf("/v1/activeflows/%s/push_actions", activeflowID)
+
+	m, err := json.Marshal(fmrequest.V1DataActiveFlowsIDPushActionPost{
+		Actions: actions,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestFlow(ctx, uri, rabbitmqhandler.RequestMethodPost, "flow/activeflows/<activeflow-id>/push_actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	if tmp.StatusCode >= 299 {
+		return nil, fmt.Errorf("could not stop the activeflow")
+	}
+
+	var res fmactiveflow.Activeflow
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
