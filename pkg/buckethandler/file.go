@@ -12,10 +12,14 @@ import (
 )
 
 // FileUpload uploads the filename to the bucket(target)
-func (h *bucketHandler) FileUpload(ctx context.Context, src, dest string) error {
+func (h *bucketHandler) FileUpload(ctx context.Context, src string, dest string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "FileUpload",
+		"func":        "FileUpload",
+		"source":      src,
+		"destination": dest,
 	})
+
+	start := time.Now()
 
 	// open file
 	f, err := os.Open(src)
@@ -40,6 +44,9 @@ func (h *bucketHandler) FileUpload(ctx context.Context, src, dest string) error 
 		return err
 	}
 
+	elapsed := time.Since(start)
+	promBucketUploadProcessTime.Observe(float64(elapsed.Milliseconds()))
+
 	return nil
 }
 
@@ -63,8 +70,12 @@ func (h *bucketHandler) FileExist(ctx context.Context, target string) bool {
 // FileGetDownloadURL returns google cloud storage signed url for file download
 func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "FileGetDownloadURL",
+		"func":   "FileGetDownloadURL",
+		"target": target,
+		"expire": expire,
 	})
+
+	start := time.Now()
 
 	// create opt
 	opts := &storage.SignedURLOptions{
@@ -82,19 +93,18 @@ func (h *bucketHandler) FileGetDownloadURL(target string, expire time.Time) (str
 		return "", err
 	}
 
+	elapsed := time.Since(start)
+	promBucketURLProcessTime.Observe(float64(elapsed.Milliseconds()))
+
 	return u, nil
 }
 
-// FileGetDownloadURL returns google cloud storage signed url for file download
-// The caller must close the returned reader.
-func (h *bucketHandler) FileGet(target string) ([]byte, error) {
-	ctx := context.Background()
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"target": target,
-		},
-	)
+// FileGet downloads the given target file.
+func (h *bucketHandler) FileGet(ctx context.Context, target string) ([]byte, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "FileGet",
+		"target": target,
+	})
 
 	rc, err := h.client.Bucket(h.bucketName).Object(target).NewReader(ctx)
 	if err != nil {
