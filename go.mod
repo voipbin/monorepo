@@ -15,8 +15,8 @@ require (
 	github.com/sirupsen/logrus v1.9.2
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230515051958-a599dd7c5b4f
-	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230523090151-4709fb499ba4
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230522035649-ccfe10ddc36f
+	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230526095512-b24c67e40013
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230526100408-b89d9681613d
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230321074025-d4c5a292e9e1
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf6b027
@@ -51,6 +51,6 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230204142400-175f62ac7400 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
-	google.golang.org/genproto v0.0.0-20230524185152-1884fd1fac28 // indirect
+	google.golang.org/genproto v0.0.0-20230526015343-6ee61e4f9d5f // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 )

@@ -3343,6 +3343,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 		expectCustomerID    uuid.UUID
 		expectChatbotID     uuid.UUID
+		expectActiveflowID  uuid.UUID
 		expectReferenceType cbchatbotcall.ReferenceType
 		expectReferenceID   uuid.UUID
 		expectGender        cbchatbotcall.Gender
@@ -3388,6 +3389,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 			uuid.FromStringOrNil("baba6a92-a8f5-11ed-926f-fb93cea60103"),
 			uuid.FromStringOrNil("bb17f504-a8f5-11ed-a974-2f810c03cbf8"),
+			uuid.FromStringOrNil("ba68f5ae-a8f5-11ed-8a90-27dd6442f0e6"),
 			cbchatbotcall.ReferenceTypeCall,
 			uuid.FromStringOrNil("bb41c82a-a8f5-11ed-a9ce-b7bbefea1a83"),
 			cbchatbotcall.GenderFemale,
@@ -3417,7 +3419,7 @@ func Test_actionHandleChatbotTalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectCustomerID, tt.expectChatbotID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, 3000).Return(tt.responseService, nil)
+			mockReq.EXPECT().ChatbotV1ServiceTypeChabotcallStart(ctx, tt.expectCustomerID, tt.expectChatbotID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectGender, tt.expectLanguage, 3000).Return(tt.responseService, nil)
 
 			// push stack
 			mockStack.EXPECT().Push(ctx, tt.activeflow.StackMap, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(uuid.Nil, &action.Action{}, nil)
