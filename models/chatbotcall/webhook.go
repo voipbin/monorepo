@@ -12,6 +12,7 @@ type WebhookMessage struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 	ChatbotID  uuid.UUID `json:"chatbot_id"`
 
+	ActiveflowID  uuid.UUID     `json:"activeflow_id"`
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 
@@ -36,6 +37,7 @@ func (h *Chatbotcall) ConvertWebhookMessage() *WebhookMessage {
 		CustomerID: h.CustomerID,
 		ChatbotID:  h.ChatbotID,
 
+		ActiveflowID:  h.ActiveflowID,
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
 

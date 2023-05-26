@@ -21,6 +21,7 @@ func (h *chatbotcallHandler) ServiceStart(
 	ctx context.Context,
 	customerID uuid.UUID,
 	chatbotID uuid.UUID,
+	activeflowID uuid.UUID,
 	referenceType chatbotcall.ReferenceType,
 	referenceID uuid.UUID,
 	gender chatbotcall.Gender,
@@ -30,6 +31,7 @@ func (h *chatbotcallHandler) ServiceStart(
 		"func":           "ServiceStart",
 		"customer_id":    customerID,
 		"chatbot_id":     chatbotID,
+		"activeflow_id":  activeflowID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"gender":         gender,
@@ -51,7 +53,7 @@ func (h *chatbotcallHandler) ServiceStart(
 	}
 
 	// create chatbotcall
-	cc, err := h.Create(ctx, customerID, c.ID, c.EngineType, referenceType, referenceID, cb.ID, gender, language)
+	cc, err := h.Create(ctx, customerID, c.ID, c.EngineType, activeflowID, referenceType, referenceID, cb.ID, gender, language)
 	if err != nil {
 		log.Errorf("Could not create chatbotcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create chatbotcall.")

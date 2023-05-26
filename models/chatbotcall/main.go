@@ -13,6 +13,7 @@ type Chatbotcall struct {
 	ChatbotID         uuid.UUID          `json:"chatbot_id"`
 	ChatbotEngineType chatbot.EngineType `json:"chatbot_engine_type"`
 
+	ActiveflowID  uuid.UUID     `json:"activeflow_id"`
 	ReferenceType ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id"`
 

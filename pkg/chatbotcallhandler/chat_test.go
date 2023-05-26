@@ -6,9 +6,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
+	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbot"
 	"gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
@@ -164,6 +167,61 @@ func Test_ChatInit(t *testing.T) {
 
 			if errInit := h.ChatInit(ctx, tt.chatbot, tt.chatbotcall); errInit != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errInit)
+			}
+		})
+	}
+}
+
+func Test_chatMessageActionsHandle(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatbotcall *chatbotcall.Chatbotcall
+		actions     []fmaction.Action
+	}{
+		{
+			name: "normal",
+
+			chatbotcall: &chatbotcall.Chatbotcall{
+				ID:           uuid.FromStringOrNil("c243f296-fba3-11ed-b685-934f90d45843"),
+				ActiveflowID: uuid.FromStringOrNil("75496c7e-fba7-11ed-b6a8-f7993d25b0ab"),
+			},
+			actions: []fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChatbot := chatbothandler.NewMockChatbotHandler(mc)
+			mockChatgpt := chatgpthandler.NewMockChatgptHandler(mc)
+
+			h := &chatbotcallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				chatbotHandler: mockChatbot,
+				chatgptHandler: mockChatgpt,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1ActiveflowPushActions(ctx, tt.chatbotcall.ActiveflowID, tt.actions).Return(&fmactiveflow.Activeflow{}, nil)
+			mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.chatbotcall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
+
+			if errHandle := h.chatMessageActionsHandle(ctx, tt.chatbotcall, tt.actions); errHandle != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errHandle)
 			}
 		})
 	}

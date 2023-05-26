@@ -19,6 +19,7 @@ const (
 		chatbot_id,
 		chatbot_engine_type,
 
+		activeflow_id,
 		reference_type,
 		reference_id,
 
@@ -53,6 +54,7 @@ func (h *handler) chatbotcallGetFromRow(row *sql.Rows) (*chatbotcall.Chatbotcall
 		&res.ChatbotID,
 		&res.ChatbotEngineType,
 
+		&res.ActiveflowID,
 		&res.ReferenceType,
 		&res.ReferenceID,
 
@@ -95,6 +97,7 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		chatbot_id,
 		chatbot_engine_type,
 
+		activeflow_id,
 		reference_type,
 		reference_id,
 
@@ -113,7 +116,7 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		tm_update,
 		tm_delete
 	) values(
-		?, ?, ?,
+		?, ?, ?, ?,
 		?, ?, ?,
 		?, ?,
 		?,
@@ -137,6 +140,7 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		cb.ChatbotID.Bytes(),
 		cb.ChatbotEngineType,
 
+		cb.ActiveflowID.Bytes(),
 		cb.ReferenceType,
 		cb.ReferenceID.Bytes(),
 

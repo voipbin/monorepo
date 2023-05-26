@@ -6,6 +6,7 @@ create table chatbotcalls(
   chatbot_id          binary(16),   -- chatbot id
   chatbot_engine_type varchar(255), -- chatbot engine type
 
+  activeflow_id     binary(16),
   reference_type    varchar(255),
   reference_id      binary(16),
 
@@ -34,4 +35,5 @@ create index idx_chatbotcalls_reference_type on chatbotcalls(reference_type);
 create index idx_chatbotcalls_reference_id on chatbotcalls(reference_id);
 create index idx_chatbotcalls_transcribe_id on chatbotcalls(transcribe_id);
 create index idx_chatbotcalls_create on chatbotcalls(tm_create);
+create index idx_chatbotcalls_activeflow_id on chatbotcalls(activeflow_id);
 

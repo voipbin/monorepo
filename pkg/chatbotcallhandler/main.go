@@ -20,15 +20,6 @@ import (
 
 // ChatbotcallHandler define
 type ChatbotcallHandler interface {
-	// Create(
-	// 	ctx context.Context,
-	// 	customerID uuid.UUID,
-	// 	chatbotID uuid.UUID,
-	// 	referenceType chatbotcall.ReferenceType,
-	// 	referenceID uuid.UUID,
-	// 	gender chatbotcall.Gender,
-	// 	language string,
-	// ) (*chatbotcall.Chatbotcall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*chatbotcall.Chatbotcall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*chatbotcall.Chatbotcall, error)
@@ -42,6 +33,7 @@ type ChatbotcallHandler interface {
 		ctx context.Context,
 		customerID uuid.UUID,
 		chatbotID uuid.UUID,
+		activeflowID uuid.UUID,
 		referenceType chatbotcall.ReferenceType,
 		referenceID uuid.UUID,
 		gender chatbotcall.Gender,
