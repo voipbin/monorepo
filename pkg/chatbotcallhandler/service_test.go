@@ -29,6 +29,7 @@ func Test_ServiceStart(t *testing.T) {
 
 		customerID    uuid.UUID
 		chatbotID     uuid.UUID
+		activeflowID  uuid.UUID
 		referenceType chatbotcall.ReferenceType
 		referenceID   uuid.UUID
 		gender        chatbotcall.Gender
@@ -49,6 +50,7 @@ func Test_ServiceStart(t *testing.T) {
 
 			customerID:    uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 			chatbotID:     uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+			activeflowID:  uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
 			referenceType: chatbotcall.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
 			gender:        chatbotcall.GenderFemale,
@@ -82,6 +84,7 @@ func Test_ServiceStart(t *testing.T) {
 				ID:                uuid.FromStringOrNil("a6cd01d0-d785-467f-9069-684e46cc2644"),
 				CustomerID:        uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
 				ChatbotID:         uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+				ActiveflowID:      uuid.FromStringOrNil("45357f3e-fba5-11ed-aec8-f3762a730824"),
 				ChatbotEngineType: chatbot.EngineTypeChatGPT,
 				ReferenceType:     chatbotcall.ReferenceTypeCall,
 				ReferenceID:       uuid.FromStringOrNil("3b86f912-a459-4fd8-80ec-e6b632a2150a"),
@@ -141,7 +144,7 @@ func Test_ServiceStart(t *testing.T) {
 
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDAction)
 
-			res, err := h.ServiceStart(ctx, tt.customerID, tt.chatbotID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
+			res, err := h.ServiceStart(ctx, tt.customerID, tt.chatbotID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

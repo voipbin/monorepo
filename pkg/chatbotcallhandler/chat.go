@@ -73,11 +73,59 @@ func (h *chatbotcallHandler) ChatMessage(ctx context.Context, cc *chatbotcall.Ch
 
 	// check the response message
 	tmpActions := []fmaction.Action{}
-	if errUnmarshal := json.Unmarshal([]byte(text), &tmpActions); errUnmarshal == nil {
-		log.WithField("actions", tmpActions).Debugf("God a action arrays. len_actions: %d", len(tmpActions))
+	errUnmarshal := json.Unmarshal([]byte(text), &tmpActions)
+	if errUnmarshal == nil {
+		log.WithField("actions", tmpActions).Debugf("Got a action arrays. len_actions: %d", len(tmpActions))
+		if errHandle := h.chatMessageActionsHandle(ctx, cc, tmpActions); errHandle != nil {
+			log.Errorf("Could not handle the response actions correctly. err: %v", errHandle)
+			return errors.Wrap(err, "could not handle the response actions correctly")
+		}
+	} else {
+		log.WithField("text", text).Debugf("Got an message text. text: %s", text)
+		if errHandle := h.chatMessageTextHandle(ctx, cc, text); errHandle != nil {
+			log.Errorf("Could not handle the response message text correctly. err: %v", errHandle)
+			return errors.Wrap(err, "could not handle the response message text correctly")
+		}
 	}
 
-	// talk to the call
+	return nil
+}
+
+// chatMessageActionsHandle handles chat message actions
+func (h *chatbotcallHandler) chatMessageActionsHandle(ctx context.Context, cc *chatbotcall.Chatbotcall, actions []fmaction.Action) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "chatMessageActionsHandle",
+		"chatbotcall": cc,
+		"actions":     actions,
+	})
+
+	// push the actions
+	af, err := h.reqHandler.FlowV1ActiveflowPushActions(ctx, cc.ActiveflowID, actions)
+	if err != nil {
+		log.Errorf("Could not push the actions to the activeflow. err: %v", err)
+		return errors.Wrap(err, "could not push the actions to the activeflow")
+	}
+	log.WithField("activeflow", af).Debugf("Pushed actions to the activeflow. activeflow_id: %s", af.ID)
+
+	// destroy the confbridge
+	tmp, err := h.reqHandler.CallV1ConfbridgeTerminate(ctx, cc.ConfbridgeID)
+	if err != nil {
+		log.Errorf("Could not terminate the chatbotcall confbridge. err: %v", err)
+		return errors.Wrap(err, "could not terminate the chatbotcall confbridge")
+	}
+	log.WithField("confbridge", tmp).Debugf("Terminated confbridge. confbridge_id: %s", tmp.ID)
+
+	return nil
+}
+
+// chatMessageTextHandle handles chat message text
+func (h *chatbotcallHandler) chatMessageTextHandle(ctx context.Context, cc *chatbotcall.Chatbotcall, text string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "chatMessageTextHandle",
+		"chatbotcall": cc,
+		"text":        text,
+	})
+
 	if errTalk := h.reqHandler.CallV1CallTalk(ctx, cc.ReferenceID, text, string(cc.Gender), cc.Language, 10000); errTalk != nil {
 		log.Errorf("Could not talk to the call. err: %v", errTalk)
 		return errors.Wrap(errTalk, "could not talk to the call")

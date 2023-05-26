@@ -17,6 +17,7 @@ func (h *chatbotcallHandler) Create(
 	customerID uuid.UUID,
 	chatbotID uuid.UUID,
 	chatbotEngineType chatbot.EngineType,
+	activeflowID uuid.UUID,
 	referenceType chatbotcall.ReferenceType,
 	referenceID uuid.UUID,
 	confbridgeID uuid.UUID,
@@ -36,6 +37,7 @@ func (h *chatbotcallHandler) Create(
 		ChatbotID:         chatbotID,
 		ChatbotEngineType: chatbotEngineType,
 
+		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 
