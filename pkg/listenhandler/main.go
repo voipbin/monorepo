@@ -88,20 +88,19 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
 	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPC(queue, "tts-manager", h.processRequest)
-			if err != nil {
-				logrus.Errorf("Could not consume the message correctly. Will try again after 1 second. err: %v", err)
+			if errRPC := h.rabbitSock.ConsumeRPC(queue, "tts-manager", h.processRequest); errRPC != nil {
+				logrus.Errorf("Could not consume the message correctly. Will try again after 1 second. err: %v", errRPC)
 				time.Sleep(time.Second * 1)
 			}
 		}
@@ -110,19 +109,18 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	return nil
 }
 
+// processRequest
 func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processRequest",
+		"request": m,
+	})
 
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
 
-	logrus.WithFields(
-		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debug("Received request.")
+	log.Debug("Received request.")
 
 	ctx := context.Background()
 	start := time.Now()
@@ -134,11 +132,7 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.v1SpeechesPost(ctx, m)
 
 	default:
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		log.Errorf("Could not find corresponded message handler. data: %s", m.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
