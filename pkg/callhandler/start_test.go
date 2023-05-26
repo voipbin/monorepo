@@ -21,7 +21,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/bridgehandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/channelhandler"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
@@ -92,7 +91,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				DestinationNumber: "bad943d8-9b59-11ea-b409-4ba263721f17",
 				State:             ari.ChannelStateRing,
 				StasisData: map[channel.StasisDataType]string{
-					"context": common.ContextIncomingCall,
+					"context": string(channel.ContextCallIncoming),
 					"domain":  "conference.voipbin.net",
 				},
 			},
@@ -263,7 +262,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
 				StasisData: map[channel.StasisDataType]string{
-					"context": common.ContextIncomingCall,
+					"context": string(channel.ContextCallIncoming),
 					"domain":  "pstn.voipbin.net",
 				},
 			},
@@ -423,7 +422,7 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
 				StasisData: map[channel.StasisDataType]string{
-					"context": common.ContextOutgoingCall,
+					"context": string(channel.ContextCallOutgoing),
 					"domain":  "pstn.voipbin.net",
 					"call_id": "086c90e2-8b31-11eb-b3a0-4ba972148103",
 				},
@@ -445,7 +444,7 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
 				StasisData: map[channel.StasisDataType]string{
-					"context": common.ContextOutgoingCall,
+					"context": string(channel.ContextCallOutgoing),
 					"call_id": "d4420dd7-0b31-4bc1-b933-9c0283b8e93d",
 				},
 			},
@@ -516,7 +515,7 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 				DestinationNumber: "+123456789",
 				State:             ari.ChannelStateRing,
 				StasisData: map[channel.StasisDataType]string{
-					"context":   common.ContextExternalMedia,
+					"context":   string(channel.ContextExternalMedia),
 					"bridge_id": "fab96694-0300-11ec-b4d4-c3bcab7364fd",
 					"call_id":   "0648d6c0-0301-11ec-818e-53865044b15c",
 				},
@@ -570,7 +569,7 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.132-00000000",
 				StasisData: map[channel.StasisDataType]string{
-					"context":   common.ContextExternalSoop,
+					"context":   string(channel.ContextExternalSoop),
 					"bridge_id": "d6aecd56-0301-11ec-aee0-77d9356147eb",
 					"call_id":   "da646758-0301-11ec-b3eb-f3c05485b756",
 				},
@@ -622,7 +621,7 @@ func Test_Start_ContextJoinCall(t *testing.T) {
 				AsteriskID: "80:fa:5b:5e:da:81",
 				Name:       "Snoop/asterisk-call-5765d977d8-c4k5q-1629250154.139-00000000",
 				StasisData: map[channel.StasisDataType]string{
-					"context":       common.ContextJoinCall,
+					"context":       string(channel.ContextJoinCall),
 					"bridge_id":     "ed08cbf8-4319-11ec-a768-23af5da287d4",
 					"call_id":       "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
 					"confbridge_id": "ed70a890-4319-11ec-a8dc-8baa3bdb6a39",

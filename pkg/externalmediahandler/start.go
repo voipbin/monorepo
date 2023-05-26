@@ -10,7 +10,6 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/externalmedia"
 )
 
@@ -134,8 +133,15 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, asteriskI
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 	})
+
 	// create a external media channel
-	chData := fmt.Sprintf("context=%s,bridge_id=%s,reference_type=%s,reference_id=%s", common.ContextExternalMedia, bridgeID, referenceType, referenceID)
+	chData := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
+		channel.StasisDataTypeContextType, channel.ContextTypeCall,
+		channel.StasisDataTypeContext, channel.ContextExternalMedia,
+		channel.StasisDataTypeBridgeID, bridgeID,
+		channel.StasisDataTypeReferenceType, referenceType,
+		channel.StasisDataTypeReferenceID, referenceID,
+	)
 	extChannelID := h.utilHandler.CreateUUID().String()
 	extCh, err := h.channelHandler.StartExternalMedia(ctx, asteriskID, extChannelID, externalHost, constEncapsulation, constTransport, constConnectionType, constFormat, constDirection, chData, nil)
 	if err != nil {
