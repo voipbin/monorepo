@@ -16,7 +16,7 @@ require (
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230515051958-a599dd7c5b4f
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093
-	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230523090151-4709fb499ba4
+	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230526095512-b24c67e40013
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230321074025-d4c5a292e9e1
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5
