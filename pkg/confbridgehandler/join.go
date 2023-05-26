@@ -10,7 +10,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 )
 
@@ -64,11 +64,12 @@ func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.
 	// confbridge_id: The conference ID which this channel belongs to.
 	// bridge_id: The bridge ID where this channel entered after StasisStart.
 	// call_id: The call ID which this channel has related with.
-	args := fmt.Sprintf("context=%s,confbridge_id=%s,bridge_id=%s,call_id=%s",
-		common.ContextJoinCall,
-		cb.ID.String(),
-		c.BridgeID,
-		c.ID.String(),
+	args := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
+		channel.StasisDataTypeContextType, channel.ContextTypeCall,
+		channel.StasisDataTypeContext, channel.ContextJoinCall,
+		channel.StasisDataTypeConfbridgeID, cb.ID.String(),
+		channel.StasisDataTypeBridgeID, c.BridgeID,
+		channel.StasisDataTypeCallID, c.ID.String(),
 	)
 
 	// create variables

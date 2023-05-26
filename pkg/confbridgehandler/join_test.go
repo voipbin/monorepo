@@ -68,7 +68,7 @@ func Test_Join(t *testing.T) {
 			responseAsteriskAddressInternal: "test.com",
 			responseUUIDChannel:             uuid.FromStringOrNil("2b6f7cb4-9c76-11ed-9714-8b312d1ce8a5"),
 
-			expectChannelArgs:            "context=call-join,confbridge_id=9c637510-36e2-11ec-b37c-63ed644a2629,bridge_id=7154276e-a3cb-11ed-bb8d-f307ed271462,call_id=00b8301e-9f1d-11ea-a08e-038ccf4318cd",
+			expectChannelArgs:            "context_type=call,context=call-join,confbridge_id=9c637510-36e2-11ec-b37c-63ed644a2629,bridge_id=7154276e-a3cb-11ed-bb8d-f307ed271462,call_id=00b8301e-9f1d-11ea-a08e-038ccf4318cd",
 			expectChannelDialDestination: "PJSIP/conf-join/sip:a5c525ec-dca0-11ea-b139-17780451d9da@test.com:5060",
 			expectReqVariables: map[string]string{
 				"PJSIP_HEADER(add,VB-CALL-ID)":       "00b8301e-9f1d-11ea-a08e-038ccf4318cd",
@@ -103,7 +103,7 @@ func Test_Join(t *testing.T) {
 
 			expectBridgeArgs:             "reference_type=confbridge,reference_id=20fb7f68-38e4-11ec-a269-8f5f84d4c603",
 			expectBridgeTypes:            []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia},
-			expectChannelArgs:            "context=call-join,confbridge_id=20fb7f68-38e4-11ec-a269-8f5f84d4c603,bridge_id=5909845a-a3cc-11ed-a8ec-cf8e4729c180,call_id=2133ea06-38e4-11ec-a400-df96309626a9",
+			expectChannelArgs:            "context_type=call,context=call-join,confbridge_id=20fb7f68-38e4-11ec-a269-8f5f84d4c603,bridge_id=5909845a-a3cc-11ed-a8ec-cf8e4729c180,call_id=2133ea06-38e4-11ec-a400-df96309626a9",
 			expectChannelDialDestination: "PJSIP/conf-join/sip:214c8606-38e4-11ec-8960-0fff1696a6b1@test.com:5060",
 			expectReqVariables: map[string]string{
 				"PJSIP_HEADER(add,VB-CALL-ID)":       "2133ea06-38e4-11ec-a400-df96309626a9",

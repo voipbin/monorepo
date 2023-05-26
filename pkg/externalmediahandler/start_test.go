@@ -87,7 +87,7 @@ func Test_Start_reference_type_call(t *testing.T) {
 			"client",
 			"ulaw",
 			"both",
-			"context=call-externalmedia,bridge_id=9b6c7a78-96e3-11ed-904b-9baa2c0183fd,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
+			"context_type=call,context=call-externalmedia,bridge_id=9b6c7a78-96e3-11ed-904b-9baa2c0183fd,reference_type=call,reference_id=7f6dbc1a-02fb-11ec-897b-ef9b30e25c57",
 			&externalmedia.ExternalMedia{
 				ID:             uuid.FromStringOrNil("ae01d90e-96e2-11ed-8b03-f31329c0298c"),
 				AsteriskID:     "42:01:0a:a4:00:05",
@@ -200,7 +200,7 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 			uuid.FromStringOrNil("54b24914-97ba-11ed-952b-7ff363f5a0a0"),
 
 			"example.com",
-			"context=call-externalmedia,bridge_id=5466b238-97ba-11ed-9021-0b336edbced2,reference_type=confbridge,reference_id=543f0d00-97ba-11ed-86fe-ef2b82ea3c6f",
+			"context_type=call,context=call-externalmedia,bridge_id=5466b238-97ba-11ed-9021-0b336edbced2,reference_type=confbridge,reference_id=543f0d00-97ba-11ed-86fe-ef2b82ea3c6f",
 			&externalmedia.ExternalMedia{
 				ID:             uuid.FromStringOrNil("54b24914-97ba-11ed-952b-7ff363f5a0a0"),
 				AsteriskID:     "42:01:0a:a4:00:05",
