@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -15,10 +16,10 @@ import (
 
 // BucketHandler intreface for GCP bucket handler
 type BucketHandler interface {
-	FileGet(target string) ([]byte, error)
+	FileGet(ctx context.Context, target string) ([]byte, error)
 	FileGetDownloadURL(target string, expire time.Time) (string, error)
 	FileExist(ctx context.Context, target string) bool
-	FileUpload(ctx context.Context, src, dest string) error
+	FileUpload(ctx context.Context, src string, dest string) error
 
 	GetBucketName() string
 }
@@ -30,6 +31,39 @@ type bucketHandler struct {
 	bucketName string
 	accessID   string
 	privateKey []byte
+}
+
+var (
+	metricsNamespace = "tts_manager"
+
+	promBucketUploadProcessTime = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "bucket_upload_process_time",
+			Help:      "Process time of bucket file upload.",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000, 10000,
+			},
+		},
+	)
+
+	promBucketURLProcessTime = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "bucket_url_process_time",
+			Help:      "Process time of download url generate.",
+			Buckets: []float64{
+				50, 100, 500, 1000, 3000, 10000,
+			},
+		},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promBucketUploadProcessTime,
+		promBucketURLProcessTime,
+	)
 }
 
 // NewBucketHandler create bucket handler

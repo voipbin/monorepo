@@ -50,18 +50,18 @@ func (mr *MockBucketHandlerMockRecorder) FileExist(ctx, target interface{}) *gom
 }
 
 // FileGet mocks base method.
-func (m *MockBucketHandler) FileGet(target string) ([]byte, error) {
+func (m *MockBucketHandler) FileGet(ctx context.Context, target string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileGet", target)
+	ret := m.ctrl.Call(m, "FileGet", ctx, target)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FileGet indicates an expected call of FileGet.
-func (mr *MockBucketHandlerMockRecorder) FileGet(target interface{}) *gomock.Call {
+func (mr *MockBucketHandlerMockRecorder) FileGet(ctx, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGet", reflect.TypeOf((*MockBucketHandler)(nil).FileGet), target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGet", reflect.TypeOf((*MockBucketHandler)(nil).FileGet), ctx, target)
 }
 
 // FileGetDownloadURL mocks base method.
