@@ -20,6 +20,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 	ctx context.Context,
 	customerID uuid.UUID,
 	chatbotID uuid.UUID,
+	activeflowID uuid.UUID,
 	referenceType cbchatbotcall.ReferenceType,
 	referenceID uuid.UUID,
 	gender cbchatbotcall.Gender,
@@ -31,6 +32,7 @@ func (r *requestHandler) ChatbotV1ServiceTypeChabotcallStart(
 	data := &cbrequest.V1DataServicesTypeChatbotcallPost{
 		CustomerID:    customerID,
 		ChatbotID:     chatbotID,
+		ActiveflowID:  activeflowID,
 		ReferenceType: referenceType,
 		ReferenceID:   referenceID,
 		Gender:        gender,

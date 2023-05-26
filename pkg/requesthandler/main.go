@@ -619,6 +619,7 @@ type RequestHandler interface {
 		ctx context.Context,
 		customerID uuid.UUID,
 		chatbotID uuid.UUID,
+		activeflowID uuid.UUID,
 		referenceType cbchatbotcall.ReferenceType,
 		referenceID uuid.UUID,
 		gender cbchatbotcall.Gender,
