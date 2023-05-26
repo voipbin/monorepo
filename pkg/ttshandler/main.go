@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
@@ -23,6 +24,28 @@ type ttsHandler struct {
 
 	audioHandler  audiohandler.AudioHandler
 	bucketHandler buckethandler.BucketHandler
+}
+
+var (
+	metricsNamespace = "tts_manager"
+
+	promHashProcessTime = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "hash_process_time",
+			Help:      "Process time of hash gererate.",
+			Buckets: []float64{
+				50, 100, 500, 1000,
+			},
+		},
+		[]string{},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promHashProcessTime,
+	)
 }
 
 // NewTTSHandler create TTSHandler

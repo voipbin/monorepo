@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -71,11 +72,22 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 
 // filenameHashGenerator generates hashed filename for tts wav file.
 func (h *ttsHandler) filenameHashGenerator(text string, lang string, gender tts.Gender) string {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "filenameHashGenerator",
+	})
+
 	s := fmt.Sprintf("%s%s%s", text, lang, gender)
+	start := time.Now()
 
 	sh1 := sha1.New()
 	sh1.Write([]byte(s))
 	bs := sh1.Sum(nil)
 
-	return fmt.Sprintf("%x.wav", bs)
+	res := fmt.Sprintf("%x.wav", bs)
+	elapsed := time.Since(start)
+
+	log.Debugf("Hashing duration. res: %s, duration: %s", res, elapsed)
+	promHashProcessTime.WithLabelValues().Observe(float64(elapsed.Milliseconds()))
+
+	return res
 }

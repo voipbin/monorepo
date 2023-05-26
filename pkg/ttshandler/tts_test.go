@@ -89,3 +89,49 @@ func Test_Create(t *testing.T) {
 		})
 	}
 }
+
+func Test_filenameHashGenerator(t *testing.T) {
+
+	type test struct {
+		name string
+
+		text     string
+		gender   tts.Gender
+		language string
+
+		expectRes string
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			text:     "Hello, welcome to the voipbin! This is test message. Please feel free to enjoy the voipbin service.",
+			gender:   tts.GenderFemale,
+			language: "en-US",
+
+			expectRes: "1e8561db13fe0f60473e9708cad94c339c018328.wav",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAudio := audiohandler.NewMockAudioHandler(mc)
+			mockBucket := buckethandler.NewMockBucketHandler(mc)
+
+			h := &ttsHandler{
+				audioHandler:  mockAudio,
+				bucketHandler: mockBucket,
+			}
+
+			res := h.filenameHashGenerator(tt.text, tt.language, tt.gender)
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
+			}
+		})
+	}
+}
