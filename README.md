@@ -2,8 +2,6 @@
 
 The flow-manager manages the flows.
 
-grpc, pubsub
-
 # Usage
 ```
 $ ./flow-manager -h
