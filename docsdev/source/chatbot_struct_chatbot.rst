@@ -5,7 +5,7 @@ Chatbot
 
 .. _chatbot-struct-chatroom-chatroom:
 
-Chatroom
+Chatbot
 --------
 
 .. code::
@@ -16,6 +16,7 @@ Chatroom
         "name": "<string>",
         "detail": "<string>",
         "engine_type": "<string>",
+        "init_prompt": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -26,6 +27,7 @@ Chatroom
 * name: Chatbot's name.
 * detail: Chatbot's detail.
 * *engine_type*: Chatbot's engine type. See detail :ref:`here <chatbot-struct-chatbot-engine_type>`
+* init_prompt: Defines chatbot's initial prompt. It will define the chatbot engine's behavior.
 
 Example
 +++++++
