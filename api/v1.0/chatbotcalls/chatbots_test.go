@@ -55,7 +55,7 @@ func Test_chatbotcallsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:21.995000",
 				},
 			},
-			`{"result":[{"id":"fa136fec-eca6-4958-b9a8-21fd8d61b8aa","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			`{"result":[{"id":"fa136fec-eca6-4958-b9a8-21fd8d61b8aa","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
 		},
 		{
 			"more than 2 items",
@@ -84,7 +84,7 @@ func Test_chatbotcallsGET(t *testing.T) {
 					TMCreate: "2020-09-20T03:23:23.995000",
 				},
 			},
-			`{"result":[{"id":"f7576695-a944-4427-b7d6-1a776f83aa9a","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"f34d51d0-4a74-40d7-9050-edc6fd1654f7","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"227edc68-c2da-4ed8-bd28-08d8fab8c17c","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			`{"result":[{"id":"f7576695-a944-4427-b7d6-1a776f83aa9a","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"f34d51d0-4a74-40d7-9050-edc6fd1654f7","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"227edc68-c2da-4ed8-bd28-08d8fab8c17c","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
 		},
 	}
 
@@ -146,7 +146,7 @@ func Test_chatbotcallsIDGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("f199188b-8d78-4778-8891-8f276cd56de5"),
 			},
 
-			`{"id":"f199188b-8d78-4778-8891-8f276cd56de5","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"f199188b-8d78-4778-8891-8f276cd56de5","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
@@ -208,7 +208,7 @@ func Test_chatbotcallsIDDELETE(t *testing.T) {
 				ID: uuid.FromStringOrNil("c1a95988-5382-4769-98a9-b404823a64bf"),
 			},
 
-			`{"id":"c1a95988-5382-4769-98a9-b404823a64bf","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			`{"id":"c1a95988-5382-4769-98a9-b404823a64bf","customer_id":"00000000-0000-0000-0000-000000000000","chatbot_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","status":"","gender":"","language":"","tm_end":"","tm_create":"","tm_update":"","tm_delete":""}`,
 		},
 	}
 
