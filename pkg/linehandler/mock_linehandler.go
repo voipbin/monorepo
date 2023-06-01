@@ -8,9 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -40,24 +40,24 @@ func (m *MockLineHandler) EXPECT() *MockLineHandlerMockRecorder {
 }
 
 // GetParticipant mocks base method.
-func (m *MockLineHandler) GetParticipant(ctx context.Context, customerID uuid.UUID, id string) (*address.Address, error) {
+func (m *MockLineHandler) GetParticipant(ctx context.Context, ac *account.Account, id string) (*address.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetParticipant", ctx, customerID, id)
+	ret := m.ctrl.Call(m, "GetParticipant", ctx, ac, id)
 	ret0, _ := ret[0].(*address.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetParticipant indicates an expected call of GetParticipant.
-func (mr *MockLineHandlerMockRecorder) GetParticipant(ctx, customerID, id interface{}) *gomock.Call {
+func (mr *MockLineHandlerMockRecorder) GetParticipant(ctx, ac, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipant", reflect.TypeOf((*MockLineHandler)(nil).GetParticipant), ctx, customerID, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipant", reflect.TypeOf((*MockLineHandler)(nil).GetParticipant), ctx, ac, id)
 }
 
 // Hook mocks base method.
-func (m *MockLineHandler) Hook(ctx context.Context, customerID uuid.UUID, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
+func (m *MockLineHandler) Hook(ctx context.Context, ac *account.Account, data []byte) ([]*conversation.Conversation, []*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Hook", ctx, customerID, data)
+	ret := m.ctrl.Call(m, "Hook", ctx, ac, data)
 	ret0, _ := ret[0].([]*conversation.Conversation)
 	ret1, _ := ret[1].([]*message.Message)
 	ret2, _ := ret[2].(error)
@@ -65,35 +65,35 @@ func (m *MockLineHandler) Hook(ctx context.Context, customerID uuid.UUID, data [
 }
 
 // Hook indicates an expected call of Hook.
-func (mr *MockLineHandlerMockRecorder) Hook(ctx, customerID, data interface{}) *gomock.Call {
+func (mr *MockLineHandlerMockRecorder) Hook(ctx, ac, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockLineHandler)(nil).Hook), ctx, customerID, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockLineHandler)(nil).Hook), ctx, ac, data)
 }
 
 // Send mocks base method.
-func (m *MockLineHandler) Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) error {
+func (m *MockLineHandler) Send(ctx context.Context, cv *conversation.Conversation, ac *account.Account, text string, medias []media.Media) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", ctx, cv, text, medias)
+	ret := m.ctrl.Call(m, "Send", ctx, cv, ac, text, medias)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockLineHandlerMockRecorder) Send(ctx, cv, text, medias interface{}) *gomock.Call {
+func (mr *MockLineHandlerMockRecorder) Send(ctx, cv, ac, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockLineHandler)(nil).Send), ctx, cv, text, medias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockLineHandler)(nil).Send), ctx, cv, ac, text, medias)
 }
 
 // Setup mocks base method.
-func (m *MockLineHandler) Setup(ctx context.Context, customerID uuid.UUID) error {
+func (m *MockLineHandler) Setup(ctx context.Context, ac *account.Account) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Setup", ctx, customerID)
+	ret := m.ctrl.Call(m, "Setup", ctx, ac)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Setup indicates an expected call of Setup.
-func (mr *MockLineHandlerMockRecorder) Setup(ctx, customerID interface{}) *gomock.Call {
+func (mr *MockLineHandlerMockRecorder) Setup(ctx, ac interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Setup", reflect.TypeOf((*MockLineHandler)(nil).Setup), ctx, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Setup", reflect.TypeOf((*MockLineHandler)(nil).Setup), ctx, ac)
 }

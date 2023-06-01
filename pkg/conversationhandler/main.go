@@ -11,6 +11,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
@@ -26,8 +27,6 @@ type ConversationHandler interface {
 	Hook(ctx context.Context, uri string, data []byte) error
 	Event(ctx context.Context, referenceType conversation.ReferenceType, data []byte) error
 
-	Setup(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType) error
-
 	MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error)
 }
 
@@ -36,16 +35,25 @@ type conversationHandler struct {
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 
+	accountHandler accounthandler.AccountHandler
 	messageHandler messagehandler.MessageHandler
 	lineHandler    linehandler.LineHandler
 	smsHandler     smshandler.SMSHandler
 }
 
 // NewConversationHandler returns a new ConversationHandler
-func NewConversationHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageHandler messagehandler.MessageHandler, lineHandler linehandler.LineHandler, smsHandler smshandler.SMSHandler) ConversationHandler {
+func NewConversationHandler(
+	db dbhandler.DBHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	accountHandler accounthandler.AccountHandler,
+	messageHandler messagehandler.MessageHandler,
+	lineHandler linehandler.LineHandler,
+	smsHandler smshandler.SMSHandler,
+) ConversationHandler {
 	return &conversationHandler{
 		db:             db,
 		notifyHandler:  notifyHandler,
+		accountHandler: accountHandler,
 		messageHandler: messageHandler,
 
 		lineHandler: lineHandler,

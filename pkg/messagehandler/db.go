@@ -27,15 +27,13 @@ func (h *messageHandler) Create(
 	text string,
 	medias []media.Media,
 ) (*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "Create",
-			"conversation_id": conversationID,
-			"reference_type":  referenceType,
-			"reference_id":    referenceID,
-			"transaction_id":  transactionID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "Create",
+		"conversation_id": conversationID,
+		"reference_type":  referenceType,
+		"reference_id":    referenceID,
+		"transaction_id":  transactionID,
+	})
 	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s, source_target: %s", referenceType, referenceID, source.Target)
 
 	// create a message
@@ -77,12 +75,10 @@ func (h *messageHandler) Create(
 
 // Delete deletes the message and return the deleted message
 func (h *messageHandler) Delete(ctx context.Context, id uuid.UUID) (*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "Delete",
-			"message_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "Delete",
+		"message_id": id,
+	})
 
 	if err := h.db.MessageDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the message. err: %v", err)
@@ -101,12 +97,10 @@ func (h *messageHandler) Delete(ctx context.Context, id uuid.UUID) (*message.Mes
 
 // GetsByConversationID returns list of messages of the given conversation
 func (h *messageHandler) GetsByConversationID(ctx context.Context, conversationID uuid.UUID, pageToken string, pageSize uint64) ([]*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":            "GetsByConversationID",
-			"conversation_id": conversationID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetsByConversationID",
+		"conversation_id": conversationID,
+	})
 
 	res, err := h.db.MessageGetsByConversationID(ctx, conversationID, pageToken, pageSize)
 	if err != nil {
@@ -119,12 +113,10 @@ func (h *messageHandler) GetsByConversationID(ctx context.Context, conversationI
 
 // GetsByTransactionID returns list of messages of the given transaction id
 func (h *messageHandler) GetsByTransactionID(ctx context.Context, transactionID string, pageToken string, pageSize uint64) ([]*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":           "GetsByConversationID",
-			"transaction_id": transactionID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "GetsByConversationID",
+		"transaction_id": transactionID,
+	})
 
 	res, err := h.db.MessageGetsByTransactionID(ctx, transactionID, pageToken, pageSize)
 	if err != nil {
@@ -137,12 +129,10 @@ func (h *messageHandler) GetsByTransactionID(ctx context.Context, transactionID 
 
 // UpdateStatus returns list of messages of the given conversation
 func (h *messageHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) (*message.Message, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "UpdateStatus",
-			"message_id": id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdateStatus",
+		"message_id": id,
+	})
 
 	if err := h.db.MessageUpdateStatus(ctx, id, status); err != nil {
 		log.Errorf("Could not update the message status. err: %v", err)

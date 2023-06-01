@@ -125,7 +125,6 @@ func Test_Delete(t *testing.T) {
 				notifyHandler: mockNotify,
 				lineHandler:   mockLine,
 			}
-
 			ctx := context.Background()
 
 			mockDB.EXPECT().MessageDelete(ctx, tt.id).Return(nil)
@@ -183,7 +182,6 @@ func Test_GetsByConversationID(t *testing.T) {
 				notifyHandler: mockNotify,
 				lineHandler:   mockLine,
 			}
-
 			ctx := context.Background()
 
 			mockDB.EXPECT().MessageGetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
@@ -240,7 +238,6 @@ func Test_GetsByTransactionID(t *testing.T) {
 				notifyHandler: mockNotify,
 				lineHandler:   mockLine,
 			}
-
 			ctx := context.Background()
 
 			mockDB.EXPECT().MessageGetsByTransactionID(ctx, tt.transactionID, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)

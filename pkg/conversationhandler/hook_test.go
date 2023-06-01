@@ -8,8 +8,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
@@ -23,16 +25,17 @@ func Test_Hook(t *testing.T) {
 		uri  string
 		data []byte
 
-		expectCustomerID uuid.UUID
+		expectAccountID uuid.UUID
 
+		responseAccount       *account.Account
 		responseConversations []*conversation.Conversation
 		responseMessages      []*message.Message
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			"https://hook.voipbin.net/v1.0/conversation/customers/e8f5795a-e6eb-11ec-bb81-c3cec34bd99c/line",
-			[]byte(`{
+			uri: "https://hook.voipbin.net/v1.0/conversation/accounts/e8f5795a-e6eb-11ec-bb81-c3cec34bd99c",
+			data: []byte(`{
 				"destination": "U11298214116e3afbad432b5794a6d3a0",
 				"events": [
 					{
@@ -57,14 +60,18 @@ func Test_Hook(t *testing.T) {
 				]
 			}`),
 
-			uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+			expectAccountID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
 
-			[]*conversation.Conversation{
+			responseAccount: &account.Account{
+				ID:   uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
+				Type: account.TypeLine,
+			},
+			responseConversations: []*conversation.Conversation{
 				{
 					CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
 				},
 			},
-			[]*message.Message{
+			responseMessages: []*message.Message{
 				{},
 			},
 		},
@@ -77,18 +84,21 @@ func Test_Hook(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
 			h := &conversationHandler{
 				db:             mockDB,
 				notifyHandler:  mockNotify,
+				accountHandler: mockAccount,
 				messageHandler: mockMessage,
 				lineHandler:    mockLine,
 			}
-
 			ctx := context.Background()
 
-			mockLine.EXPECT().Hook(ctx, tt.expectCustomerID, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
+			mockAccount.EXPECT().Get(ctx, tt.expectAccountID).Return(tt.responseAccount, nil)
+
+			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
 
 			// conversations
 			for range tt.responseConversations {
@@ -115,8 +125,8 @@ func Test_hookLine(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		data       []byte
+		account *account.Account
+		data    []byte
 
 		responseConversation *conversation.Conversation
 
@@ -126,7 +136,9 @@ func Test_hookLine(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+			&account.Account{
+				ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+			},
 			[]byte(`{
 				"destination": "U11298214116e3afbad432b5794a6d3a0",
 				"events": [
@@ -186,7 +198,7 @@ func Test_hookLine(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockLine.EXPECT().Hook(ctx, tt.customerID, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
+			mockLine.EXPECT().Hook(ctx, tt.account, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
 
 			// conversations
 			for range tt.responseConversations {
@@ -213,7 +225,7 @@ func Test_hookLine(t *testing.T) {
 				).Return(&message.Message{}, nil)
 			}
 
-			if err := h.hookLine(ctx, tt.customerID, tt.data); err != nil {
+			if err := h.hookLine(ctx, tt.account, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

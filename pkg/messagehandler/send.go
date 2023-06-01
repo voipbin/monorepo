@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -73,6 +74,13 @@ func (h *messageHandler) sendToConversationLine(ctx context.Context, cv *convers
 		"func": "sendToConversationLine",
 	})
 
+	// get account
+	ac, err := h.accountHandler.Get(ctx, cv.AccountID)
+	if err != nil {
+		log.Errorf("Could not get account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get account")
+	}
+
 	// create a sent message
 	tmp, err := h.Create(ctx, cv.CustomerID, cv.ID, message.DirectionOutgoing, message.StatusSending, cv.ReferenceType, cv.ReferenceID, "", cv.Source, text, medias)
 	if err != nil {
@@ -80,7 +88,7 @@ func (h *messageHandler) sendToConversationLine(ctx context.Context, cv *convers
 		return nil, err
 	}
 
-	if errSend := h.lineHandler.Send(ctx, cv, text, medias); errSend != nil {
+	if errSend := h.lineHandler.Send(ctx, cv, ac, text, medias); errSend != nil {
 		log.Errorf("Could not send the message. err: %v", errSend)
 		_, _ = h.UpdateStatus(ctx, tmp.ID, message.StatusFailed)
 		return nil, errSend

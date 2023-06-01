@@ -25,7 +25,6 @@ func (h *smsHandler) Send(ctx context.Context, cv *conversation.Conversation, tr
 			Target: cv.ReferenceID,
 		},
 	}
-
 	id := uuid.FromStringOrNil(transactionID)
 
 	// send

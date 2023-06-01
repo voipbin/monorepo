@@ -2,6 +2,7 @@ create table conversation_conversations(
   -- identity
   id            binary(16),     -- id
   customer_id   binary(16),     -- customer id
+  account_id    binary(16),     -- account id
 
   name    varchar(255),
   detail  text,

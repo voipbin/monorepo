@@ -9,6 +9,7 @@ import (
 type Conversation struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
+	AccountID  uuid.UUID `json:"account_id"`
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`

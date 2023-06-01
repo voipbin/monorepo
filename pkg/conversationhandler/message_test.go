@@ -68,7 +68,7 @@ func Test_MessageSend(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
-			mockMessage.EXPECT().SendToConversation(ctx, tt.responseConversation,  tt.text, tt.medias).Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().SendToConversation(ctx, tt.responseConversation, tt.text, tt.medias).Return(tt.responseMessage, nil)
 			res, err := h.MessageSend(ctx, tt.conversationID, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -80,62 +80,3 @@ func Test_MessageSend(t *testing.T) {
 		})
 	}
 }
-
-// func Test_MessageGetsByConversationID(t *testing.T) {
-
-// 	tests := []struct {
-// 		name string
-
-// 		conversationID uuid.UUID
-// 		pageToken      string
-// 		pageSize       uint64
-
-// 		responseMessages []*message.Message
-// 	}{
-// 		{
-// 			"normal",
-
-// 			uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
-// 			"2022-04-18 03:22:17.995000",
-// 			100,
-
-// 			[]*message.Message{
-// 				{
-// 					ID: uuid.FromStringOrNil("ead67924-e7bb-11ec-9f65-a7aafd81f40b"),
-// 				},
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
-// 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-// 			mockMessage := messagehandler.NewMockMessageHandler(mc)
-// 			mockLine := linehandler.NewMockLineHandler(mc)
-// 			h := &conversationHandler{
-// 				db:             mockDB,
-// 				notifyHandler:  mockNotify,
-// 				messageHandler: mockMessage,
-// 				lineHandler:    mockLine,
-// 			}
-
-// 			ctx := context.Background()
-
-// 			mockDB.EXPECT().MessageGetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
-
-// 			res, err := h.MessageGetsByConversationID(ctx, tt.conversationID, tt.pageToken, tt.pageSize)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-
-// 			if !reflect.DeepEqual(res, tt.responseMessages) {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessages, res)
-// 			}
-
-// 		})
-// 	}
-// }

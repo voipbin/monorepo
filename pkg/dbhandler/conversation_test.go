@@ -26,11 +26,12 @@ func Test_ConversationCreate(t *testing.T) {
 		expectRes       *conversation.Conversation
 	}{
 		{
-			name: "normal",
+			name: "have all",
 
 			conversation: &conversation.Conversation{
 				ID:            uuid.FromStringOrNil("586e8e64-e428-11ec-baf2-7b14625ea112"),
 				CustomerID:    uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
+				AccountID:     uuid.FromStringOrNil("5d634a2a-fdec-11ed-b49e-07e9ef4b45cf"),
 				Name:          "conversation name",
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,
@@ -52,6 +53,7 @@ func Test_ConversationCreate(t *testing.T) {
 			expectRes: &conversation.Conversation{
 				ID:            uuid.FromStringOrNil("586e8e64-e428-11ec-baf2-7b14625ea112"),
 				CustomerID:    uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
+				AccountID:     uuid.FromStringOrNil("5d634a2a-fdec-11ed-b49e-07e9ef4b45cf"),
 				Name:          "conversation name",
 				Detail:        "conversation detail",
 				ReferenceType: conversation.ReferenceTypeLine,

@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/smshandler"
@@ -44,17 +45,25 @@ type messageHandler struct {
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	lineHandler linehandler.LineHandler
-	smsHandler  smshandler.SMSHandler
+	accountHandler accounthandler.AccountHandler
+	lineHandler    linehandler.LineHandler
+	smsHandler     smshandler.SMSHandler
 }
 
 // NewMessageHandler returns a new ConversationHandler
-func NewMessageHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, lineHandler linehandler.LineHandler, smsHandler smshandler.SMSHandler) MessageHandler {
+func NewMessageHandler(
+	db dbhandler.DBHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	accountHandler accounthandler.AccountHandler,
+	lineHandler linehandler.LineHandler,
+	smsHandler smshandler.SMSHandler,
+) MessageHandler {
 	return &messageHandler{
 		db:            db,
 		notifyHandler: notifyHandler,
 
-		lineHandler: lineHandler,
-		smsHandler:  smsHandler,
+		accountHandler: accountHandler,
+		lineHandler:    lineHandler,
+		smsHandler:     smsHandler,
 	}
 }

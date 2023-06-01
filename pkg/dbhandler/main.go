@@ -24,8 +24,11 @@ type DBHandler interface {
 	// common
 	GetCurTime() string
 
+	AccountCreate(ctx context.Context, ac *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	AccountSet(ctx context.Context, u *account.Account) error
+	AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*account.Account, error)
+	AccountSet(ctx context.Context, id uuid.UUID, name string, detail string, secret string, token string) error
+	AccountDelete(ctx context.Context, id uuid.UUID) error
 
 	ConversationCreate(ctx context.Context, cv *conversation.Conversation) error
 	ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
