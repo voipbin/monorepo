@@ -29,6 +29,7 @@ import (
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media0 "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -1252,6 +1253,81 @@ func (mr *MockServiceHandlerMockRecorder) ConferencecallKick(ctx, u, conferencec
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallKick", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallKick), ctx, u, conferencecallID)
 }
 
+// ConversationAccountCreate mocks base method.
+func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, u *customer.Customer, accountType account.Type, name, detail, secret, token string) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationAccountCreate", ctx, u, accountType, name, detail, secret, token)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationAccountCreate indicates an expected call of ConversationAccountCreate.
+func (mr *MockServiceHandlerMockRecorder) ConversationAccountCreate(ctx, u, accountType, name, detail, secret, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountCreate), ctx, u, accountType, name, detail, secret, token)
+}
+
+// ConversationAccountDelete mocks base method.
+func (m *MockServiceHandler) ConversationAccountDelete(ctx context.Context, u *customer.Customer, accountID uuid.UUID) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationAccountDelete", ctx, u, accountID)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationAccountDelete indicates an expected call of ConversationAccountDelete.
+func (mr *MockServiceHandlerMockRecorder) ConversationAccountDelete(ctx, u, accountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountDelete", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountDelete), ctx, u, accountID)
+}
+
+// ConversationAccountGet mocks base method.
+func (m *MockServiceHandler) ConversationAccountGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationAccountGet", ctx, u, id)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationAccountGet indicates an expected call of ConversationAccountGet.
+func (mr *MockServiceHandlerMockRecorder) ConversationAccountGet(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountGet", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountGet), ctx, u, id)
+}
+
+// ConversationAccountGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) ConversationAccountGetsByCustomerID(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationAccountGetsByCustomerID", ctx, u, size, token)
+	ret0, _ := ret[0].([]*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationAccountGetsByCustomerID indicates an expected call of ConversationAccountGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) ConversationAccountGetsByCustomerID(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountGetsByCustomerID), ctx, u, size, token)
+}
+
+// ConversationAccountUpdate mocks base method.
+func (m *MockServiceHandler) ConversationAccountUpdate(ctx context.Context, u *customer.Customer, accountID uuid.UUID, name, detail, secret, token string) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationAccountUpdate", ctx, u, accountID, name, detail, secret, token)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationAccountUpdate indicates an expected call of ConversationAccountUpdate.
+func (mr *MockServiceHandlerMockRecorder) ConversationAccountUpdate(ctx, u, accountID, name, detail, secret, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountUpdate), ctx, u, accountID, name, detail, secret, token)
+}
+
 // ConversationGet mocks base method.
 func (m *MockServiceHandler) ConversationGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -1310,20 +1386,6 @@ func (m *MockServiceHandler) ConversationMessageSend(ctx context.Context, u *cus
 func (mr *MockServiceHandlerMockRecorder) ConversationMessageSend(ctx, u, conversationID, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationMessageSend", reflect.TypeOf((*MockServiceHandler)(nil).ConversationMessageSend), ctx, u, conversationID, text, medias)
-}
-
-// ConversationSetup mocks base method.
-func (m *MockServiceHandler) ConversationSetup(ctx context.Context, u *customer.Customer, referenceType conversation.ReferenceType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationSetup", ctx, u, referenceType)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ConversationSetup indicates an expected call of ConversationSetup.
-func (mr *MockServiceHandlerMockRecorder) ConversationSetup(ctx, u, referenceType interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationSetup", reflect.TypeOf((*MockServiceHandler)(nil).ConversationSetup), ctx, u, referenceType)
 }
 
 // CustomerCreate mocks base method.

@@ -31,12 +31,6 @@ func setupServer(app *gin.Engine) {
 
 func Test_conversationsGet(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name     string
 		customer cscustomer.Customer
@@ -77,6 +71,11 @@ func Test_conversationsGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -113,12 +112,6 @@ func Test_conversationsGet(t *testing.T) {
 
 func Test_conversationsIDGet(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name     string
 		customer cscustomer.Customer
@@ -150,6 +143,11 @@ func Test_conversationsIDGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -184,12 +182,6 @@ func Test_conversationsIDGet(t *testing.T) {
 }
 
 func Test_conversationsIDMessagesGet(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name     string
@@ -233,6 +225,11 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -269,12 +266,6 @@ func Test_conversationsIDMessagesGet(t *testing.T) {
 
 func Test_conversationsIDMessagesPost(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name     string
 		customer cscustomer.Customer
@@ -307,60 +298,7 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set(common.OBJServiceHandler, mockSvc)
-				c.Set("customer", tt.customer)
-			})
-			setupServer(r)
-
-			// create body
-			body, err := json.Marshal(tt.req)
-			if err != nil {
-				t.Errorf("Wong match. expect: ok, got: %v", err)
-			}
-			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
-
-			mockSvc.EXPECT().ConversationMessageSend(req.Context(), &tt.customer, tt.id, tt.req.Text, []cvmedia.Media{}).Return(tt.expectRes, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-
-		})
-	}
-}
-
-func Test_conversationsSetupPost(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		customer cscustomer.Customer
-		target   string
-
-		req request.ParamConversationsSetupPOST
-
-	}{
-		{
-			"normal",
-			cscustomer.Customer{
-				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-			},
-			"/v1.0/conversations/setup",
-
-			request.ParamConversationsSetupPOST{
-				ReferenceType: cvconversation.ReferenceTypeLine,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+			// create mock
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -383,7 +321,7 @@ func Test_conversationsSetupPost(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationSetup(req.Context(), &tt.customer, tt.req.ReferenceType).Return(nil)
+			mockSvc.EXPECT().ConversationMessageSend(req.Context(), &tt.customer, tt.id, tt.req.Text, []cvmedia.Media{}).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
