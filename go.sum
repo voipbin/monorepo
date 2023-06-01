@@ -399,6 +399,7 @@ github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6r
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.3.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.4.1/go.mod h1:4T9NM4+4Vw91VeyqjLS6ao50K5bOcLKN6Q42XnYaRYw=
+github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
@@ -626,8 +627,8 @@ gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac0
 gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093/go.mod h1:CMWCrp4ClhtjFGbcJY/VHmLkQ/D+tX5pUCp0Rsedj4k=
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230526095512-b24c67e40013 h1:g6VWRb5hkSg63L2U7q1612LEoaTv3Zfd8ZbQOptkL7Q=
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230526095512-b24c67e40013/go.mod h1:Od3yvRoB8BPdORva69VWQ9kTcU/Fqg76gycUfI36rt8=
-gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230526100408-b89d9681613d h1:IQ6UDK2oo7XPa8NzsDVzWrnotz9fds4RtchLeWvlDBc=
-gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230526100408-b89d9681613d/go.mod h1:LShlxyLit7fzF69oI7Q1RDYc+XmfgA4pQPg+LsdH3Io=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230601055233-bc022872cb9d h1:gXS3wk6QlcxXrspY4zZJPA1Qg23TkhNamnrn8+QMDOM=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230601055233-bc022872cb9d/go.mod h1:TaP+vpJxg7QCK3XNDLafpqVFWCNAkAi7G677+29GXpY=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa h1:PP+lN42xD4htGHyiwpzki5O9qhYqJQoO2vvbsjslr9g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa/go.mod h1:ZmH0dxGw24CBuZhNZO4JYFTFfY3Ti+aeQkMHG97Swas=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20220616065935-caa48b9b0bb5 h1:l2PNnUrTq8qZNqqi9eu2b6EaQKNz/oar9P9/H0d+6hU=
