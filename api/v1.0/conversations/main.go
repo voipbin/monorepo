@@ -9,6 +9,7 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	conversations.GET("", conversationsGet)
 
 	conversations.GET("/:id", conversationsIDGet)
+	conversations.PUT("/:id", conversationsIDPut)
 
 	conversations.GET("/:id/messages", conversationsIDMessagesGet)
 	conversations.POST("/:id/messages", conversationsIDMessagesPost)

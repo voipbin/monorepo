@@ -105,7 +105,7 @@ func Test_ConversationGet(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 			&cvconversation.WebhookMessage{
-				ID: uuid.FromStringOrNil("828e75ba-ed24-11ec-bbf2-7f0e56ac76f1"),
+				ID:         uuid.FromStringOrNil("828e75ba-ed24-11ec-bbf2-7f0e56ac76f1"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
 		},
@@ -272,6 +272,69 @@ func Test_ConversationMessageSend(t *testing.T) {
 			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias).Return(tt.responseMessage, nil)
 
 			res, err := h.ConversationMessageSend(ctx, tt.customer, tt.conversationID, tt.text, tt.medias)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(*res, *tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConversationUpdate(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer *cscustomer.Customer
+
+		conversationID   uuid.UUID
+		conversationName string
+		detail           string
+
+		responseConversation *cvconversation.Conversation
+		expectRes            *cvconversation.WebhookMessage
+	}{
+		{
+			name: "normal",
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+
+			conversationID:   uuid.FromStringOrNil("50fbe844-007d-11ee-a616-0fe1db6961e5"),
+			conversationName: "test name",
+			detail:           "test detail",
+
+			responseConversation: &cvconversation.Conversation{
+				ID:         uuid.FromStringOrNil("50fbe844-007d-11ee-a616-0fe1db6961e5"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			expectRes: &cvconversation.WebhookMessage{
+				ID:         uuid.FromStringOrNil("50fbe844-007d-11ee-a616-0fe1db6961e5"),
+				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
+			mockReq.EXPECT().ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.conversationName, tt.detail).Return(tt.responseConversation, nil)
+			res, err := h.ConversationUpdate(ctx, tt.customer, tt.conversationID, tt.conversationName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

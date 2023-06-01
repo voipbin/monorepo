@@ -237,6 +237,7 @@ type ServiceHandler interface {
 	// conversation handlers
 	ConversationGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cvconversation.WebhookMessage, error)
 	ConversationGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cvconversation.WebhookMessage, error)
+	ConversationUpdate(ctx context.Context, u *cscustomer.Customer, conversationID uuid.UUID, name string, detail string) (*cvconversation.WebhookMessage, error)
 	ConversationMessageGetsByConversationID(
 		ctx context.Context,
 		u *cscustomer.Customer,

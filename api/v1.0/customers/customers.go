@@ -95,13 +95,11 @@ func customersGet(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	var req request.ParamCustomersGET
 	if err := c.BindQuery(&req); err != nil {
