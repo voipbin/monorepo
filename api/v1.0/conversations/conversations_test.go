@@ -272,7 +272,7 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 		target   string
 
 		id  uuid.UUID
-		req request.ParamConversationsIDMessagesPOST
+		req request.BodyConversationsIDMessagesPOST
 
 		expectRes *cvmessage.WebhookMessage
 	}
@@ -286,7 +286,7 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 			"/v1.0/conversations/5950b02c-ed2f-11ec-9093-d3dcc91a72fa/messages",
 
 			uuid.FromStringOrNil("5950b02c-ed2f-11ec-9093-d3dcc91a72fa"),
-			request.ParamConversationsIDMessagesPOST{
+			request.BodyConversationsIDMessagesPOST{
 				Text: "hello world.",
 			},
 
@@ -322,6 +322,75 @@ func Test_conversationsIDMessagesPost(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().ConversationMessageSend(req.Context(), &tt.customer, tt.id, tt.req.Text, []cvmedia.Media{}).Return(tt.expectRes, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+		})
+	}
+}
+
+func Test_conversationsIDPut(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+		target   string
+
+		id  uuid.UUID
+		req request.BodyConversationsIDPUT
+
+		expectRes *cvconversation.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			"normal",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+			"/v1.0/conversations/0e288b58-007d-11ee-b0ac-8be49d249ca9",
+
+			uuid.FromStringOrNil("0e288b58-007d-11ee-b0ac-8be49d249ca9"),
+			request.BodyConversationsIDPUT{
+				Name:   "test name",
+				Detail: "test detail",
+			},
+
+			&cvconversation.WebhookMessage{
+				ID: uuid.FromStringOrNil("0e288b58-007d-11ee-b0ac-8be49d249ca9"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.req)
+			if err != nil {
+				t.Errorf("Wong match. expect: ok, got: %v", err)
+			}
+			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().ConversationUpdate(req.Context(), &tt.customer, tt.id, tt.req.Name, tt.req.Detail).Return(tt.expectRes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
