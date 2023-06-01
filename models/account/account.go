@@ -2,24 +2,31 @@ package account
 
 import (
 	"github.com/gofrs/uuid"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
 // Account defines
 type Account struct {
-	ID uuid.UUID `json:"id"` // customer id
+	ID         uuid.UUID `json:"id"`          // customer id
+	CustomerID uuid.UUID `json:"customer_id"` // customer
 
-	// line
-	LineSecret string `json:"line_secret"`
-	LineToken  string `json:"line_token"`
+	Type Type `json:"type"`
+
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
+	Secret string `json:"secret"` // secret
+	Token  string `json:"token"`  // usually api token
+
+	TMCreate string `json:"tm_create"`
+	TMUpdate string `json:"tm_update"`
+	TMDelete string `json:"tm_delete"`
 }
 
-// CreateAccountFromCustomer creates messagetarget using the cscustomer.Customer
-func CreateAccountFromCustomer(cs *cscustomer.Customer) *Account {
-	return &Account{
-		ID: cs.ID,
+// Type defines
+type Type string
 
-		LineSecret: cs.LineSecret,
-		LineToken:  cs.LineToken,
-	}
-}
+// list of types
+const (
+	TypeLine Type = "line"
+	TypeSMS  Type = "sms"
+)

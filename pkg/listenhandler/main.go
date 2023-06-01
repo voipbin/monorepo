@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/conversationhandler"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/messagehandler"
 )
@@ -35,6 +36,11 @@ var (
 
 	// v1
 
+	// accounts
+	regV1AccountsGet = regexp.MustCompile(`/v1/accounts\?`)
+	regV1Accounts    = regexp.MustCompile("/v1/accounts$")
+	regV1AccountsID  = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
+
 	// conversations
 	regV1ConversationsGet           = regexp.MustCompile(`/v1/conversations\?`)
 	regV1ConversationsID            = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
@@ -43,9 +49,6 @@ var (
 
 	// hooks
 	regV1Hooks = regexp.MustCompile(`/v1/hooks$`)
-
-	// setup
-	regV1Setup = regexp.MustCompile(`/v1/setup$`)
 
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
@@ -83,15 +86,22 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
+	accountHandler      accounthandler.AccountHandler
 	conversationHandler conversationhandler.ConversationHandler
 	messageHandler      messagehandler.MessageHandler
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(rabbitSock rabbitmqhandler.Rabbit, conversationHandler conversationhandler.ConversationHandler, messageHandler messagehandler.MessageHandler) ListenHandler {
+func NewListenHandler(
+	rabbitSock rabbitmqhandler.Rabbit,
+	accountHandler accounthandler.AccountHandler,
+	conversationHandler conversationhandler.ConversationHandler,
+	messageHandler messagehandler.MessageHandler,
+) ListenHandler {
 	h := &listenHandler{
 		rabbitSock: rabbitSock,
 
+		accountHandler:      accountHandler,
 		conversationHandler: conversationHandler,
 		messageHandler:      messageHandler,
 	}
@@ -169,6 +179,34 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	////////////////////
+	// accounts
+	////////////////////
+	// GET /accounts
+	case regV1AccountsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1AccountsGet(ctx, m)
+		requestType = "/v1/accounts"
+
+	// POST /accounts
+	case regV1Accounts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1AccountsPost(ctx, m)
+		requestType = "/v1/accounts"
+
+	// GET /accounts/<account-id>
+	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1AccountsIDGet(ctx, m)
+		requestType = "/v1/accounts/<account-id>"
+
+	// PUT /accounts/<account-id>
+	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1AccountsIDPut(ctx, m)
+		requestType = "/v1/accounts/<account-id>"
+
+	// DELETE /accounts/<account-id>
+	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1AccountsIDDelete(ctx, m)
+		requestType = "/v1/accounts/<account-id>"
+
+	////////////////////
 	// conversations
 	////////////////////
 	// GET /conversations
@@ -198,14 +236,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1Hooks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
 		response, err = h.processV1HooksPost(ctx, m)
 		requestType = "/v1/hooks"
-
-	////////////////////
-	// setup
-	////////////////////
-	// POST /setup
-	case regV1Setup.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1SetupPost(ctx, m)
-		requestType = "/v1/setup"
 
 	////////////////////
 	// messages

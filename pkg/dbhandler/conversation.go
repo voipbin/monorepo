@@ -18,6 +18,7 @@ const (
 	select
 		id,
 		customer_id,
+		account_id,
 
 		name,
 		detail,
@@ -45,6 +46,7 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 	if err := row.Scan(
 		&res.ID,
 		&res.CustomerID,
+		&res.AccountID,
 
 		&res.Name,
 		&res.Detail,
@@ -87,6 +89,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 	q := `insert into conversation_conversations(
 		id,
 		customer_id,
+		account_id,
 
 		name,
 		detail,
@@ -101,7 +104,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 		tm_update,
 		tm_delete
 	) values(
-		?, ?,
+		?, ?, ?,
 		?, ?,
 		?, ?,
 		?, ?,
@@ -126,6 +129,7 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 	_, err = stmt.ExecContext(ctx,
 		cv.ID.Bytes(),
 		cv.CustomerID.Bytes(),
+		cv.AccountID.Bytes(),
 
 		cv.Name,
 		cv.Detail,

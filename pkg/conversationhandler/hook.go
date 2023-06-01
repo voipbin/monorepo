@@ -7,9 +7,11 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
@@ -18,50 +20,59 @@ import (
 func (h *conversationHandler) Hook(ctx context.Context, uri string, data []byte) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Hook",
+		"uri":  uri,
+		"data": data,
 	})
 	log.Debugf("Hook detail. uri: %s", uri)
 
-	// "https://hook.voipbin.net/v1.0/conversation/customers/<customer_id>/line",
+	// "https://hook.voipbin.net/v1.0/conversation/accounts/<account_id>",
 	u, err := url.Parse(uri)
 	if err != nil {
 		return err
 	}
 
-	// /v1.0/conversation/customers/<customer_id>/line
+	// /v1.0/conversation/accounts/<account_id>
 	tmpVals := strings.Split(u.Path, "/")
-	if len(tmpVals) < 6 {
+	if len(tmpVals) < 4 {
 		log.Debugf("Wrong hook request. Could not get customerID.")
 		return fmt.Errorf("no customer info found")
 	}
+	accountID := uuid.FromStringOrNil(tmpVals[4])
 
-	customerID := uuid.FromStringOrNil(tmpVals[4])
-	referenceType := tmpVals[5]
-	log.Debugf("Parsed data. customer_id: %s, provider: %s", customerID, referenceType)
+	log.Debugf("Parsed data. customer_id: %s", accountID)
 
-	switch referenceType {
-	case string(conversation.ReferenceTypeLine):
+	// get account info
+	ac, err := h.accountHandler.Get(ctx, accountID)
+	if err != nil {
+		log.Errorf("Could not get account info. err: %v", err)
+		return errors.Wrap(err, "could not get account info")
+	}
+
+	switch ac.Type {
+	case account.TypeLine:
 		// line message
-		if errEvent := h.hookLine(ctx, customerID, data); errEvent != nil {
+		if errEvent := h.hookLine(ctx, ac, data); errEvent != nil {
 			log.Errorf("Could not handle the event type line. err: %v", errEvent)
 			return errEvent
 		}
 
 	default:
-		log.Errorf("Unsupported reference type. reference_type: %s", referenceType)
-		return fmt.Errorf("unsupported reference type. reference_type: %s", referenceType)
+		log.Errorf("Unsupported account type. account_type: %s", ac.Type)
+		return fmt.Errorf("unsupported account type. account_type: %s", ac.Type)
 	}
 
 	return nil
 }
 
 // hookLine handle the line type of hook message
-func (h *conversationHandler) hookLine(ctx context.Context, customerID uuid.UUID, data []byte) error {
+func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account, data []byte) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "hookLine",
+		"func":       "hookLine",
+		"account_id": ac.ID,
 	})
 
 	// parse a messages
-	conversations, messages, err := h.lineHandler.Hook(ctx, customerID, data)
+	conversations, messages, err := h.lineHandler.Hook(ctx, ac, data)
 	if err != nil {
 		log.Errorf("Could not parse the message. err: %v", err)
 		return err
@@ -87,7 +98,7 @@ func (h *conversationHandler) hookLine(ctx context.Context, customerID uuid.UUID
 
 			// get address
 			// get user info
-			p, err := h.lineHandler.GetParticipant(ctx, customerID, tmp.ReferenceID)
+			p, err := h.lineHandler.GetParticipant(ctx, ac, tmp.ReferenceID)
 			if err != nil {
 				log.Errorf("Could not get participant info. err: %v", err)
 				p = &commonaddress.Address{

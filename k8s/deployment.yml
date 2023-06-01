@@ -33,7 +33,7 @@ spec:
             - '-rabbit_addr'
             - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
             - '-rabbit_exchange_subscribes'
-            - 'bin-manager.customer-manager.event,bin-manager.message-manager.event'
+            - 'bin-manager.message-manager.event'
             - '-redis_addr'
             - '10.164.15.220:6379'
             - '-redis_db'

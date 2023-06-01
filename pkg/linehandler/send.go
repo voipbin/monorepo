@@ -5,16 +5,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/sirupsen/logrus"
 
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 )
 
 // Send sends the message to the destination
-func (h *lineHandler) Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) error {
+func (h *lineHandler) Send(ctx context.Context, cv *conversation.Conversation, ac *account.Account, text string, medias []media.Media) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "Send",
 		"conversation": cv,
@@ -24,7 +24,7 @@ func (h *lineHandler) Send(ctx context.Context, cv *conversation.Conversation, t
 	log.Debug("Sending a message.")
 
 	// get clinet
-	c, err := h.getClient(ctx, cv.CustomerID)
+	c, err := h.getClient(ctx, ac)
 	if err != nil {
 		log.Errorf("Could not get client. err: %v", err)
 		return err
@@ -54,18 +54,11 @@ func (h *lineHandler) Send(ctx context.Context, cv *conversation.Conversation, t
 }
 
 // getClient returns given customer's line client.
-func (h *lineHandler) getClient(ctx context.Context, customerID uuid.UUID) (*linebot.Client, error) {
+func (h *lineHandler) getClient(ctx context.Context, ac *account.Account) (*linebot.Client, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "getClient",
-		"customer_id": customerID,
+		"func":       "getClient",
+		"account_id": ac.ID,
 	})
-
-	// get secret/token
-	a, err := h.accountHandler.Get(ctx, customerID)
-	if err != nil {
-		log.Errorf("Could not get account. err: %v", err)
-		return nil, err
-	}
 
 	client := &http.Client{
 		Timeout: 60 * time.Second,
@@ -75,8 +68,8 @@ func (h *lineHandler) getClient(ctx context.Context, customerID uuid.UUID) (*lin
 	}
 
 	res, err := linebot.New(
-		a.LineSecret,
-		a.LineToken,
+		ac.Secret,
+		ac.Token,
 		linebot.WithHTTPClient(client),
 	)
 	if err != nil {

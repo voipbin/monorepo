@@ -11,7 +11,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
@@ -138,13 +137,6 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	var err error
 	start := time.Now()
 	switch {
-
-	// customer-manager
-	case m.Publisher == publisherCustomerManager && (m.Type == string(cscustomer.EventTypeCustomerCreated)):
-		err = h.processEventCustomerCustomerCreatedORUpdated(ctx, m)
-
-	case m.Publisher == publisherCustomerManager && (m.Type == string(cscustomer.EventTypeCustomerUpdated)):
-		err = h.processEventCustomerCustomerCreatedORUpdated(ctx, m)
 
 	// message-manager
 	case m.Publisher == publisherMessageManager && (m.Type == string(mmmessage.EventTypeMessageCreated)):

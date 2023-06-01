@@ -153,15 +153,15 @@ func run(dbHandler dbhandler.DBHandler) {
 	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitExchangeNotify, serviceName)
 
-	accountHandler := accounthandler.NewAccountHandler(dbHandler, reqHandler)
-	lineHandler := linehandler.NewLineHandler(accountHandler)
+	lineHandler := linehandler.NewLineHandler()
+	accountHandler := accounthandler.NewAccountHandler(dbHandler, reqHandler, notifyHandler, lineHandler)
 	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 
-	messageHandler := messagehandler.NewMessageHandler(dbHandler, notifyHandler, lineHandler, smsHandler)
-	conversationHandler := conversationhandler.NewConversationHandler(dbHandler, notifyHandler, messageHandler, lineHandler, smsHandler)
+	messageHandler := messagehandler.NewMessageHandler(dbHandler, notifyHandler, accountHandler, lineHandler, smsHandler)
+	conversationHandler := conversationhandler.NewConversationHandler(dbHandler, notifyHandler, accountHandler, messageHandler, lineHandler, smsHandler)
 
 	// run listen
-	if errListen := runListen(rabbitSock, conversationHandler, messageHandler); errListen != nil {
+	if errListen := runListen(rabbitSock, accountHandler, conversationHandler, messageHandler); errListen != nil {
 		log.Errorf("Could not run the listen correctly. err: %v", errListen)
 		return
 	}
@@ -176,12 +176,13 @@ func run(dbHandler dbhandler.DBHandler) {
 // runListen runs the listen service
 func runListen(
 	sockListen rabbitmqhandler.Rabbit,
+	accountHandler accounthandler.AccountHandler,
 	conversationHandler conversationhandler.ConversationHandler,
 	messageHandler messagehandler.MessageHandler,
 ) error {
 	log := logrus.WithField("func", "runListen")
 
-	listenHandler := listenhandler.NewListenHandler(sockListen, conversationHandler, messageHandler)
+	listenHandler := listenhandler.NewListenHandler(sockListen, accountHandler, conversationHandler, messageHandler)
 
 	// run the service
 	if errRun := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); errRun != nil {

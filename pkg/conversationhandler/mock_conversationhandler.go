@@ -125,17 +125,3 @@ func (mr *MockConversationHandlerMockRecorder) MessageSend(ctx, conversationID, 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSend", reflect.TypeOf((*MockConversationHandler)(nil).MessageSend), ctx, conversationID, text, medias)
 }
-
-// Setup mocks base method.
-func (m *MockConversationHandler) Setup(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Setup", ctx, customerID, referenceType)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Setup indicates an expected call of Setup.
-func (mr *MockConversationHandlerMockRecorder) Setup(ctx, customerID, referenceType interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Setup", reflect.TypeOf((*MockConversationHandler)(nil).Setup), ctx, customerID, referenceType)
-}
