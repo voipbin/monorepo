@@ -52,7 +52,7 @@ func (h *conversationHandler) Create(
 		"func": "Create",
 	})
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.utilHandler.CreateUUID()
 	tmp := &conversation.Conversation{
 		ID:            id,
 		CustomerID:    customerID,
@@ -75,6 +75,30 @@ func (h *conversationHandler) Create(
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationCreated, res)
+
+	return res, nil
+}
+
+// Update updates conversation and return a updated conversation.
+func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string) (*conversation.Conversation, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "Update",
+		"id":     id,
+		"name":   name,
+		"detail": detail,
+	})
+
+	if errSet := h.db.ConversationSet(ctx, id, name, detail); errSet != nil {
+		log.Errorf("Could not set conversation. err: %v", errSet)
+		return nil, errSet
+	}
+
+	res, err := h.db.ConversationGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated conversation. err: %v", err)
+		return nil, err
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationUpdated, res)
 
 	return res, nil
 }

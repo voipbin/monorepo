@@ -34,6 +34,7 @@ type DBHandler interface {
 	ConversationGet(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
 	ConversationGetByReferenceInfo(ctx context.Context, customerID uuid.UUID, referenceType conversation.ReferenceType, referenceID string) (*conversation.Conversation, error)
 	ConversationGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*conversation.Conversation, error)
+	ConversationSet(ctx context.Context, id uuid.UUID, name string, detail string) error
 
 	MediaCreate(ctx context.Context, m *media.Media) error
 	MediaGet(ctx context.Context, id uuid.UUID) (*media.Media, error)

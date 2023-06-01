@@ -299,3 +299,79 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConversationSet(t *testing.T) {
+	tests := []struct {
+		name         string
+		conversation *conversation.Conversation
+
+		id               uuid.UUID
+		conversationName string
+		detail           string
+
+		responseCurTime string
+		expectRes       *conversation.Conversation
+	}{
+		{
+			name: "normal",
+			conversation: &conversation.Conversation{
+				ID:         uuid.FromStringOrNil("fbb24a9a-0068-11ee-985d-fffb84d2b682"),
+				CustomerID: uuid.FromStringOrNil("fbdb45f8-0068-11ee-9984-63f5b1d1e1c4"),
+			},
+
+			id:               uuid.FromStringOrNil("fbb24a9a-0068-11ee-985d-fffb84d2b682"),
+			conversationName: "test name",
+			detail:           "test detail",
+
+			responseCurTime: "2020-04-18T03:22:17.995000",
+			expectRes: &conversation.Conversation{
+				ID:         uuid.FromStringOrNil("fbb24a9a-0068-11ee-985d-fffb84d2b682"),
+				CustomerID: uuid.FromStringOrNil("fbdb45f8-0068-11ee-9984-63f5b1d1e1c4"),
+				Name:       "test name",
+				Detail:     "test detail",
+				TMCreate:   "2020-04-18T03:22:17.995000",
+				TMUpdate:   "2020-04-18T03:22:17.995000",
+				TMDelete:   DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
+			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any()).Return(nil)
+			if err := h.ConversationSet(ctx, tt.id, tt.conversationName, tt.detail); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ConversationGet(ctx, tt.conversation.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
+			res, err := h.ConversationGet(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

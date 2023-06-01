@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -29,6 +30,7 @@ func Test_Hook(t *testing.T) {
 
 		responseAccount       *account.Account
 		responseConversations []*conversation.Conversation
+		responseUUIDs         []uuid.UUID
 		responseMessages      []*message.Message
 	}{
 		{
@@ -71,6 +73,9 @@ func Test_Hook(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
 				},
 			},
+			responseUUIDs: []uuid.UUID{
+				uuid.FromStringOrNil("cb285f42-0075-11ee-ad73-0fae8c027ffc"),
+			},
 			responseMessages: []*message.Message{
 				{},
 			},
@@ -82,12 +87,14 @@ func Test_Hook(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mocKUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
 			h := &conversationHandler{
+				utilHandler:    mocKUtil,
 				db:             mockDB,
 				notifyHandler:  mockNotify,
 				accountHandler: mockAccount,
@@ -101,7 +108,8 @@ func Test_Hook(t *testing.T) {
 			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
 
 			// conversations
-			for range tt.responseConversations {
+			for i := 0; i < len(tt.responseConversations); i++ {
+				mocKUtil.EXPECT().CreateUUID().Return(tt.responseUUIDs[i])
 				mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(&conversation.Conversation{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), conversation.EventTypeConversationCreated, gomock.Any())
@@ -130,16 +138,17 @@ func Test_hookLine(t *testing.T) {
 
 		responseConversation *conversation.Conversation
 
+		responseUUIDs         []uuid.UUID
 		responseConversations []*conversation.Conversation
 		responseMessages      []*message.Message
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&account.Account{
+			account: &account.Account{
 				ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
 			},
-			[]byte(`{
+			data: []byte(`{
 				"destination": "U11298214116e3afbad432b5794a6d3a0",
 				"events": [
 					{
@@ -164,17 +173,20 @@ func Test_hookLine(t *testing.T) {
 				]
 			}`),
 
-			&conversation.Conversation{
+			responseConversation: &conversation.Conversation{
 				ID:            uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
 				ReferenceType: conversation.ReferenceTypeLine,
 			},
 
-			[]*conversation.Conversation{
+			responseUUIDs: []uuid.UUID{
+				uuid.FromStringOrNil("4d94b5ca-0076-11ee-8c59-6fff2eb90055"),
+			},
+			responseConversations: []*conversation.Conversation{
 				{
 					CustomerID: uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c"),
 				},
 			},
-			[]*message.Message{
+			responseMessages: []*message.Message{
 				{},
 			},
 		},
@@ -185,11 +197,13 @@ func Test_hookLine(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
 			h := &conversationHandler{
+				utilHandler:    mockUtil,
 				db:             mockDB,
 				notifyHandler:  mockNotify,
 				messageHandler: mockMessage,
@@ -201,7 +215,8 @@ func Test_hookLine(t *testing.T) {
 			mockLine.EXPECT().Hook(ctx, tt.account, tt.data).Return(tt.responseConversations, tt.responseMessages, nil)
 
 			// conversations
-			for range tt.responseConversations {
+			for i := range tt.responseConversations {
+				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDs[i])
 				mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(&conversation.Conversation{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), conversation.EventTypeConversationCreated, gomock.Any())

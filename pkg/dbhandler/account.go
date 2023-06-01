@@ -252,7 +252,7 @@ func (h *handler) AccountSet(ctx context.Context, id uuid.UUID, name string, det
 	ts := h.utilHandler.GetCurTime()
 	_, err := h.db.Exec(q, name, detail, secret, token, ts, id.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. BridgeEnd. err: %v", err)
+		return fmt.Errorf("could not execute. AccountSet. err: %v", err)
 	}
 
 	// update the cache

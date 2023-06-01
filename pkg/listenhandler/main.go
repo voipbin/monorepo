@@ -219,6 +219,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ConversationsIDGet(ctx, m)
 		requestType = "/v1/conversations/<conversation-id>"
 
+	// PUT /conversations/<conversation-id>
+	case regV1ConversationsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1ConversationsIDPut(ctx, m)
+		requestType = "/v1/conversations/<conversation-id>"
+
 	// GET /conversations/<conversation-id>/messages
 	case regV1ConversationsIDMessagesGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ConversationsIDMessagesGet(ctx, m)

@@ -302,3 +302,28 @@ func (h *handler) ConversationGetsByCustomerID(ctx context.Context, customerID u
 
 	return res, nil
 }
+
+// ConversationSet returns sets the conversation info
+func (h *handler) ConversationSet(ctx context.Context, id uuid.UUID, name string, detail string) error {
+
+	// prepare
+	q := `
+	update conversation_conversations set
+		name = ?,
+		detail = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, name, detail, ts, id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. ConversationSet. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.conversationUpdateToCache(ctx, id)
+
+	return nil
+}
