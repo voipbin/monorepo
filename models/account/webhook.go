@@ -13,6 +13,9 @@ type WebhookMessage struct {
 
 	Type Type `json:"type"`
 
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
 	Secret string `json:"secret"` // secret
 	Token  string `json:"token"`  // usually api token
 
@@ -28,6 +31,9 @@ func (h *Account) ConvertWebhookMessage() *WebhookMessage {
 		CustomerID: h.CustomerID,
 
 		Type: h.Type,
+
+		Name:   h.Name,
+		Detail: h.Detail,
 
 		Secret: h.Secret,
 		Token:  h.Token,
