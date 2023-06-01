@@ -12,12 +12,10 @@ import (
 
 // customerGet validates the customer's ownership and returns the customer info.
 func (h *serviceHandler) customerGet(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.Customer, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "customerGet",
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "customerGet",
+		"customer_id": customerID,
+	})
 
 	if _, found := Find(u.PermissionIDs, cspermission.PermissionAdmin.ID); !found {
 		if u.ID != customerID {
@@ -76,12 +74,10 @@ func (h *serviceHandler) CustomerCreate(
 
 // UserGet returns customer info of given customerID.
 func (h *serviceHandler) CustomerGet(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "CustomerGet",
-			"customer_id": u.ID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CustomerGet",
+		"customer_id": u.ID,
+	})
 
 	tmp, err := h.customerGet(ctx, u, customerID)
 	if err != nil {
