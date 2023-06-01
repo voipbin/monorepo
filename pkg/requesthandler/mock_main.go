@@ -2766,6 +2766,21 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationMessageGetsB
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationMessageGetsByConversationID", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationMessageGetsByConversationID), ctx, conversationID, pageToken, pageSize)
 }
 
+// ConversationV1ConversationUpdate mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, name, detail string) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1ConversationUpdate", ctx, conversationID, name, detail)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1ConversationUpdate indicates an expected call of ConversationV1ConversationUpdate.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationUpdate(ctx, conversationID, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationUpdate), ctx, conversationID, name, detail)
+}
+
 // ConversationV1Hook mocks base method.
 func (m *MockRequestHandler) ConversationV1Hook(ctx context.Context, hm *hook.Hook) error {
 	m.ctrl.T.Helper()

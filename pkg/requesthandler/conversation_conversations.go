@@ -62,6 +62,40 @@ func (r *requestHandler) ConversationV1ConversationGetsByCustomerID(ctx context.
 	return res, nil
 }
 
+// ConversationV1ConversationUpdate sends a request to conversation-manager
+// to update the conversation info.
+// it returns updated conversation info if it succeed.
+func (r *requestHandler) ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, name string, detail string) (*cvconversation.Conversation, error) {
+	uri := fmt.Sprintf("/v1/conversations/%s", conversationID)
+
+	data := &cvrequest.V1DataConversationsIDPut{
+		Name:   name,
+		Detail: detail,
+	}
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, rabbitmqhandler.RequestMethodPut, "conversation/conversations/<conversation_id>", 30000, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res cvconversation.Conversation
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 // ConversationV1MessageSend sends a request to conversation-manager
 // to send a message to the given conversation.
 // it returns detail list of conversation info if it succeed.

@@ -286,3 +286,70 @@ func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConversationV1ConversationUpdate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conversationID   uuid.UUID
+		conversationName string
+		detail           string
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectRes *cvconversation.Conversation
+	}{
+		{
+			name: "normal",
+
+			conversationID:   uuid.FromStringOrNil("1397bde6-007a-11ee-903f-4b1fc025c9a9"),
+			conversationName: "test name",
+			detail:           "test detail",
+
+			expectTarget: "bin-manager.conversation-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/conversations/1397bde6-007a-11ee-903f-4b1fc025c9a9",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"test name","detail":"test detail"}`),
+			},
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"1397bde6-007a-11ee-903f-4b1fc025c9a9"}`),
+			},
+
+			expectRes: &cvconversation.Conversation{
+				ID: uuid.FromStringOrNil("1397bde6-007a-11ee-903f-4b1fc025c9a9"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.conversationName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
