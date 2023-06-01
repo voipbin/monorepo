@@ -1,58 +1,72 @@
 package smshandler
 
-// func Test_Send(t *testing.T) {
+import (
+	"context"
+	"testing"
 
-// 	tests := []struct {
-// 		name string
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 
-// 		conversation  *conversation.Conversation
-// 		transactionID string
-// 		text          string
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
+	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/accounthandler"
+)
 
-// 		responseMessage *message.Message
+func Test_Send(t *testing.T) {
 
-// 		expectDestinations []commonaddress.Address
-// 	}{
-// 		{
-// 			name: "received message",
+	tests := []struct {
+		name string
 
-// 			conversation: &conversation.Conversation{
-// 				ID:          uuid.FromStringOrNil("b3181e20-ffd4-11ed-aa4e-37a91163c788"),
-// 				ReferenceID: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
-// 			},
-// 			transactionID: "b37322e8-ffd4-11ed-a984-7b6db99c07e8",
-// 			text:          "test message.",
+		conversation  *conversation.Conversation
+		transactionID string
+		text          string
 
-// 			responseMessage: &message.Message{
-// 				ID: uuid.FromStringOrNil("b39d29ee-ffd4-11ed-9b1e-170678b894f5"),
-// 			},
-// 			expectDestinations: []commonaddress.Address{
-// 				{
-// 					Target: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
-// 				},
-// 			},
-// 		},
-// 	}
+		responseMessage *mmmessage.Message
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
+		expectDestinations []commonaddress.Address
+	}{
+		{
+			name: "received message",
 
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+			conversation: &conversation.Conversation{
+				ID:          uuid.FromStringOrNil("b3181e20-ffd4-11ed-aa4e-37a91163c788"),
+				ReferenceID: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
+			},
+			transactionID: "b37322e8-ffd4-11ed-a984-7b6db99c07e8",
+			text:          "test message.",
 
-// 			mockReq := requesthandler.NewMockRequestHandler(mc)
-// 			mockAccount := accounthandler.NewMockAccountHandler(mc)
-// 			h := smsHandler{
-// 				reqHandler:     mockReq,
-// 				accountHandler: mockAccount,
-// 			}
-// 			ctx := context.Background()
+			responseMessage: &mmmessage.Message{
+				ID: uuid.FromStringOrNil("b39d29ee-ffd4-11ed-9b1e-170678b894f5"),
+			},
+			expectDestinations: []commonaddress.Address{
+				{
+					Target: "b39d29ee-ffd4-11ed-9b1e-170678b894f5",
+				},
+			},
+		},
+	}
 
-// 			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.FromStringOrNil(tt.transactionID), tt.conversation.CustomerID, tt.conversation.Source, tt.expectDestinations, tt.text).Return(tt.responseMessage, nil)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-// 			if err := h.Send(ctx, tt.conversation, tt.transactionID, tt.text); err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-// 		})
-// 	}
-// }
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			h := smsHandler{
+				reqHandler:     mockReq,
+				accountHandler: mockAccount,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.FromStringOrNil(tt.transactionID), tt.conversation.CustomerID, tt.conversation.Source, tt.expectDestinations, tt.text).Return(tt.responseMessage, nil)
+
+			if err := h.Send(ctx, tt.conversation, tt.transactionID, tt.text); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
