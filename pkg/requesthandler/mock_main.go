@@ -35,6 +35,7 @@ import (
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	service0 "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
+	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media0 "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -2645,6 +2646,81 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ServiceTypeConferencecallS
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ServiceTypeConferencecallStart", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ServiceTypeConferencecallStart), ctx, conferenceID, referenceType, referenceID)
 }
 
+// ConversationV1AccountCreate mocks base method.
+func (m *MockRequestHandler) ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType account.Type, name, detail, secret, token string) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1AccountCreate", ctx, customerID, accountType, name, detail, secret, token)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1AccountCreate indicates an expected call of ConversationV1AccountCreate.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountCreate(ctx, customerID, accountType, name, detail, secret, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountCreate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountCreate), ctx, customerID, accountType, name, detail, secret, token)
+}
+
+// ConversationV1AccountDelete mocks base method.
+func (m *MockRequestHandler) ConversationV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1AccountDelete", ctx, accountID)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1AccountDelete indicates an expected call of ConversationV1AccountDelete.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountDelete(ctx, accountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountDelete", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountDelete), ctx, accountID)
+}
+
+// ConversationV1AccountGet mocks base method.
+func (m *MockRequestHandler) ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1AccountGet", ctx, accountID)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1AccountGet indicates an expected call of ConversationV1AccountGet.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGet(ctx, accountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountGet), ctx, accountID)
+}
+
+// ConversationV1AccountGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) ConversationV1AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1AccountGetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1AccountGetsByCustomerID indicates an expected call of ConversationV1AccountGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountGetsByCustomerID), ctx, customerID, pageToken, pageSize)
+}
+
+// ConversationV1AccountUpdate mocks base method.
+func (m *MockRequestHandler) ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, name, detail, secret, token string) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1AccountUpdate", ctx, accountID, name, detail, secret, token)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1AccountUpdate indicates an expected call of ConversationV1AccountUpdate.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountUpdate(ctx, accountID, name, detail, secret, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountUpdate), ctx, accountID, name, detail, secret, token)
+}
+
 // ConversationV1ConversationGet mocks base method.
 func (m *MockRequestHandler) ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*conversation.Conversation, error) {
 	m.ctrl.T.Helper()
@@ -2717,20 +2793,6 @@ func (m *MockRequestHandler) ConversationV1MessageSend(ctx context.Context, conv
 func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageSend(ctx, conversationID, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageSend), ctx, conversationID, text, medias)
-}
-
-// ConversationV1Setup mocks base method.
-func (m *MockRequestHandler) ConversationV1Setup(ctx context.Context, customerID uuid.UUID, ReferenceType conversation.ReferenceType) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1Setup", ctx, customerID, ReferenceType)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ConversationV1Setup indicates an expected call of ConversationV1Setup.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1Setup(ctx, customerID, ReferenceType interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1Setup", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1Setup), ctx, customerID, ReferenceType)
 }
 
 // CustomerV1CustomerCreate mocks base method.
