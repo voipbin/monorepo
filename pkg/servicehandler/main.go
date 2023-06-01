@@ -27,6 +27,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	cfconference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	cfconferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
+	cvaccount "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	cvmessage "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -250,7 +251,28 @@ type ServiceHandler interface {
 		text string,
 		medias []cvmedia.Media,
 	) (*cvmessage.WebhookMessage, error)
-	ConversationSetup(ctx context.Context, u *cscustomer.Customer, referenceType cvconversation.ReferenceType) error
+
+	ConversationAccountGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cvaccount.WebhookMessage, error)
+	ConversationAccountGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cvaccount.WebhookMessage, error)
+	ConversationAccountCreate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		accountType cvaccount.Type,
+		name string,
+		detail string,
+		secret string,
+		token string,
+	) (*cvaccount.WebhookMessage, error)
+	ConversationAccountUpdate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		accountID uuid.UUID,
+		name string,
+		detail string,
+		secret string,
+		token string,
+	) (*cvaccount.WebhookMessage, error)
+	ConversationAccountDelete(ctx context.Context, u *cscustomer.Customer, accountID uuid.UUID) (*cvaccount.WebhookMessage, error)
 
 	// customer handlers
 	CustomerCreate(
