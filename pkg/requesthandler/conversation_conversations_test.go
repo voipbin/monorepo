@@ -38,7 +38,7 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      "/v1/conversations/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 
 			&rabbitmqhandler.Response{
@@ -105,7 +105,7 @@ func Test_ConversationV1ConversationGetsByCustomerID(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd",
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -242,7 +242,7 @@ func Test_ConversationV1ConversationMessageGetsByConversationID(t *testing.T) {
 			&rabbitmqhandler.Request{
 				URI:      "/v1/conversations/a43e7c74-ec60-11ec-b1af-c73ec1bcf7cd/messages?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
