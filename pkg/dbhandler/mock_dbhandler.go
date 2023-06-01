@@ -170,6 +170,20 @@ func (mr *MockDBHandlerMockRecorder) ConversationGetsByCustomerID(ctx, customerI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).ConversationGetsByCustomerID), ctx, customerID, token, limit)
 }
 
+// ConversationSet mocks base method.
+func (m *MockDBHandler) ConversationSet(ctx context.Context, id uuid.UUID, name, detail string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationSet", ctx, id, name, detail)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConversationSet indicates an expected call of ConversationSet.
+func (mr *MockDBHandlerMockRecorder) ConversationSet(ctx, id, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationSet", reflect.TypeOf((*MockDBHandler)(nil).ConversationSet), ctx, id, name, detail)
+}
+
 // GetCurTime mocks base method.
 func (m *MockDBHandler) GetCurTime() string {
 	m.ctrl.T.Helper()

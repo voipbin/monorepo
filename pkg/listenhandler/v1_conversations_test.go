@@ -326,3 +326,68 @@ func Test_processV1ConversationsIDMessagesPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1ConversationsIDPut(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		request *rabbitmqhandler.Request
+
+		responseConversation *conversation.Conversation
+
+		expectConversationID uuid.UUID
+		expectName           string
+		expectDetail         string
+		expectRes            *rabbitmqhandler.Response
+	}{
+		{
+			name: "normal",
+
+			request: &rabbitmqhandler.Request{
+				URI:      "/v1/conversations/8d8ab6ae-0074-11ee-80d0-df60c15605d7",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"test name", "detail":"test detail"}`),
+			},
+
+			responseConversation: &conversation.Conversation{
+				ID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+			},
+
+			expectConversationID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+			expectName:           "test name",
+			expectDetail:         "test detail",
+
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"8d8ab6ae-0074-11ee-80d0-df60c15605d7","customer_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","reference_type":"","reference_id":"","source":null,"participants":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockConversation := conversationhandler.NewMockConversationHandler(mc)
+
+			h := &listenHandler{
+				conversationHandler: mockConversation,
+			}
+
+			mockConversation.EXPECT().Update(gomock.Any(), tt.expectConversationID, tt.expectName, tt.expectDetail).Return(tt.responseConversation, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}

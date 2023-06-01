@@ -93,6 +93,48 @@ func (h *listenHandler) processV1ConversationsIDGet(ctx context.Context, req *ra
 	return res, nil
 }
 
+// processV1ConversationsIDPut handles
+// /v1/conversations/{id} PUT
+func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "processV1ConversationsIDPut",
+		"conversation_id": id,
+	})
+
+	var req request.V1DataConversationsIDPut
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Could not marshal the data. err: %v", err)
+		return nil, err
+	}
+	log.Debugf("Executing processV1ConversationsIDPut. message_id: %s", id)
+
+	tmp, err := h.conversationHandler.Update(ctx, id, req.Name, req.Detail)
+	if err != nil {
+		log.Debugf("Could not get a conversation. conversation_id: %s, err: %v", id, err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1ConversationsIDMessagesGet handles
 // /v1/conversations/<conversation-id>/messages GET
 func (h *listenHandler) processV1ConversationsIDMessagesGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
