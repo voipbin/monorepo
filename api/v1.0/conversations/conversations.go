@@ -129,6 +129,55 @@ func conversationsIDGet(c *gin.Context) {
 	c.JSON(200, res)
 }
 
+// conversationsIDPut handles PUT /conversations/{id} request.
+// It updates the  conversation info.
+// @Summary Update the conversation info.
+// @Description Update the conversation info of the given conversation id.
+// @Produce json
+// @Param id path string true "The ID of the conversation"
+// @Success 200 {object} conversation.WebhookMessage
+// @Router /v1.0/conversations/{id} [get]
+func conversationsIDPut(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conversationsIDPut",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	var req request.BodyConversationsIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("target_id", id)
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.ConversationUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not update the conversation. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // conversationsIDMessagesGet handles GET /conversations/{id}/messages request.
 // It gets a list of conversation messages with the given info.
 // @Summary Gets a list of conversation messages.
@@ -223,15 +272,13 @@ func conversationsIDMessagesPost(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
-	var req request.ParamConversationsIDMessagesPOST
+	var req request.BodyConversationsIDMessagesPOST
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)

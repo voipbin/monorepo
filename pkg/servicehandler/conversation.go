@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	cvconversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	cvmedia "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
@@ -90,6 +91,34 @@ func (h *serviceHandler) ConversationGet(ctx context.Context, u *cscustomer.Cust
 		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
 	}
 
+	return res, nil
+}
+
+// ConversationUpdate update the conversation of the given id.
+// It returns updated conversation if it succeed.
+func (h *serviceHandler) ConversationUpdate(ctx context.Context, u *cscustomer.Customer, conversationID uuid.UUID, name string, detail string) (*cvconversation.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "ConversationUpdate",
+		"customer_id":     u.ID,
+		"username":        u.Username,
+		"conversation_id": conversationID,
+	})
+	log.Debug("Updating the conversation.")
+
+	// get campaign
+	_, err := h.conversationGet(ctx, u, conversationID)
+	if err != nil {
+		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
+	}
+
+	tmp, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, name, detail)
+	if err != nil {
+		log.Errorf("Could not update the conversation. err: %v", err)
+		return nil, errors.Wrap(err, "could not update the conversation")
+	}
+
+	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
