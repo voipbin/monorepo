@@ -10,7 +10,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/dbhandler"
 )
 
 // Create creates a message and returns a created message.
@@ -37,8 +36,9 @@ func (h *messageHandler) Create(
 	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s, source_target: %s", referenceType, referenceID, source.Target)
 
 	// create a message
+	id := h.utilHandler.CreateUUID()
 	m := &message.Message{
-		ID:             uuid.Must(uuid.NewV4()),
+		ID:             id,
 		CustomerID:     customerID,
 		ConversationID: conversationID,
 		Direction:      direction,
@@ -52,10 +52,6 @@ func (h *messageHandler) Create(
 
 		Text:   text,
 		Medias: medias,
-
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: dbhandler.GetCurTime(),
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	if errCreate := h.db.MessageCreate(ctx, m); errCreate != nil {
@@ -63,7 +59,7 @@ func (h *messageHandler) Create(
 		return nil, errCreate
 	}
 
-	res, err := h.db.MessageGet(ctx, m.ID)
+	res, err := h.db.MessageGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get created message. err: %v", err)
 		return nil, err

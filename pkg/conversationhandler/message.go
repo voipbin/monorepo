@@ -28,7 +28,7 @@ func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uu
 	}
 
 	// send to conversation
-	m, err := h.messageHandler.SendToConversation(ctx, cv, text, medias)
+	m, err := h.messageHandler.Send(ctx, cv, text, medias)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
 		return nil, err

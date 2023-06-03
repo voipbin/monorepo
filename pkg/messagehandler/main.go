@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
@@ -38,10 +39,11 @@ type MessageHandler interface {
 	GetsByTransactionID(ctx context.Context, transactionID string, pageToken string, pageSize uint64) ([]*message.Message, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) (*message.Message, error)
 
-	SendToConversation(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error)
+	Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error)
 }
 
 type messageHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 
@@ -59,6 +61,7 @@ func NewMessageHandler(
 	smsHandler smshandler.SMSHandler,
 ) MessageHandler {
 	return &messageHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
 		notifyHandler: notifyHandler,
 

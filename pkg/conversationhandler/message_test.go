@@ -68,7 +68,7 @@ func Test_MessageSend(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
-			mockMessage.EXPECT().SendToConversation(ctx, tt.responseConversation, tt.text, tt.medias).Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().Send(ctx, tt.responseConversation, tt.text, tt.medias).Return(tt.responseMessage, nil)
 			res, err := h.MessageSend(ctx, tt.conversationID, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

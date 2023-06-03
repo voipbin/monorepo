@@ -1,9 +1,6 @@
 package message
 
 import (
-	"fmt"
-	"reflect"
-
 	"github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
@@ -55,36 +52,3 @@ const (
 	DirectionOutgoing Direction = "outgoing"
 	DirectionIncoming Direction = "incoming"
 )
-
-// // Type defines
-// type Type string
-
-// // list of types
-// const (
-// 	TypeText     Type = "text"
-// 	TypeImage    Type = "image"
-// 	TypeVideo    Type = "video"
-// 	TypeAudio    Type = "audio"
-// 	TypeFile     Type = "file"
-// 	TypeLocation Type = "location"
-// 	TypeSticker  Type = "sticker"
-// 	TypeTemplate Type = "template"
-// 	TypeImagemap Type = "imagemap"
-// 	TypeFlex     Type = "flex"
-// )
-
-// Matches return true if the given items are the same
-func (h *Message) Matches(x interface{}) bool {
-	comp := x.(*Message)
-	c := *h
-
-	c.TMCreate = comp.TMCreate
-	c.TMUpdate = comp.TMUpdate
-	c.TMDelete = comp.TMDelete
-
-	return reflect.DeepEqual(c, *comp)
-}
-
-func (h *Message) String() string {
-	return fmt.Sprintf("%v", *h)
-}

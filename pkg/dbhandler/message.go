@@ -159,9 +159,9 @@ func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
 		m.Text,
 		medias,
 
-		m.TMCreate,
-		m.TMUpdate,
-		m.TMDelete,
+		h.utilHandler.GetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. MessageCreate. err: %v", err)
@@ -336,8 +336,7 @@ func (h *handler) MessageUpdateStatus(ctx context.Context, id uuid.UUID, status 
 		id = ?
 	`
 
-	ts := GetCurTime()
-
+	ts := h.utilHandler.GetCurTime()
 	_, err := h.db.Exec(q,
 		status,
 		ts,
@@ -364,8 +363,7 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := GetCurTime()
-
+	ts := h.utilHandler.GetCurTime()
 	_, err := h.db.Exec(q,
 		ts,
 		ts,
