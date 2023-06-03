@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
@@ -19,7 +20,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/pkg/linehandler"
 )
 
-func Test_SendToConversation(t *testing.T) {
+func Test_SendToConversation_sendToConversationLine(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -29,7 +30,9 @@ func Test_SendToConversation(t *testing.T) {
 		medias       []media.Media
 
 		responseAccount *account.Account
-		responseMessage *message.Message
+		responseUUID    uuid.UUID
+
+		expectMessage *message.Message
 	}{
 		{
 			name: "line text type",
@@ -50,7 +53,23 @@ func Test_SendToConversation(t *testing.T) {
 			responseAccount: &account.Account{
 				ID: uuid.FromStringOrNil("086b4920-fe3f-11ed-b570-bf801ec89642"),
 			},
-			responseMessage: &message.Message{},
+			responseUUID: uuid.FromStringOrNil("a0a1478e-0246-11ee-9a48-57bb5aa639c8"),
+
+			expectMessage: &message.Message{
+				ID:             uuid.FromStringOrNil("a0a1478e-0246-11ee-9a48-57bb5aa639c8"),
+				CustomerID:     uuid.FromStringOrNil("e54ded88-e6ef-11ec-83af-7fac5b21e9aa"),
+				ConversationID: uuid.FromStringOrNil("7b1034a8-e6ef-11ec-9e9d-c3f3e36741ac"),
+				Direction:      message.DirectionOutgoing,
+				Status:         message.StatusSending,
+				ReferenceType:  conversation.ReferenceTypeLine,
+				ReferenceID:    "18a7a0e8-e6f0-11ec-8cee-47dd7e7164e3",
+				TransactionID:  "",
+				Source: &commonaddress.Address{
+					Target: "75a20d08-f1de-11ec-8eb1-97f517197fe2",
+				},
+				Text:   "hello, this is test message.",
+				Medias: []media.Media{},
+			},
 		},
 	}
 
@@ -59,11 +78,13 @@ func Test_SendToConversation(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
 			h := &messageHandler{
+				utilHandler:    mockUtil,
 				db:             mockDB,
 				notifyHandler:  mockNotify,
 				accountHandler: mockAccount,
@@ -74,24 +95,25 @@ func Test_SendToConversation(t *testing.T) {
 			mockAccount.EXPECT().Get(ctx, tt.conversation.AccountID).Return(tt.responseAccount, nil)
 
 			// create
-			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.expectMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
 			mockLine.EXPECT().Send(ctx, tt.conversation, tt.responseAccount, tt.text, tt.medias).Return(nil)
 
 			// update
-			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.responseMessage.ID, message.StatusSent).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.responseMessage.ID).Return(tt.responseMessage, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageUpdated, tt.responseMessage)
+			mockDB.EXPECT().MessageUpdateStatus(ctx, tt.expectMessage.ID, message.StatusSent).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageUpdated, tt.expectMessage)
 
-			res, err := h.SendToConversation(ctx, tt.conversation, tt.text, tt.medias)
+			res, err := h.Send(ctx, tt.conversation, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.responseMessage) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessage, res)
+			if !reflect.DeepEqual(res, tt.expectMessage) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectMessage, res)
 			}
 		})
 	}

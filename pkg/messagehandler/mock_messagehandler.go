@@ -99,19 +99,19 @@ func (mr *MockMessageHandlerMockRecorder) GetsByTransactionID(ctx, transactionID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByTransactionID", reflect.TypeOf((*MockMessageHandler)(nil).GetsByTransactionID), ctx, transactionID, pageToken, pageSize)
 }
 
-// SendToConversation mocks base method.
-func (m *MockMessageHandler) SendToConversation(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
+// Send mocks base method.
+func (m *MockMessageHandler) Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendToConversation", ctx, cv, text, medias)
+	ret := m.ctrl.Call(m, "Send", ctx, cv, text, medias)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SendToConversation indicates an expected call of SendToConversation.
-func (mr *MockMessageHandlerMockRecorder) SendToConversation(ctx, cv, text, medias interface{}) *gomock.Call {
+// Send indicates an expected call of Send.
+func (mr *MockMessageHandlerMockRecorder) Send(ctx, cv, text, medias interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendToConversation", reflect.TypeOf((*MockMessageHandler)(nil).SendToConversation), ctx, cv, text, medias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMessageHandler)(nil).Send), ctx, cv, text, medias)
 }
 
 // UpdateStatus mocks base method.

@@ -13,8 +13,8 @@ import (
 	"gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
 )
 
-// SendToConversation sends the message to the given conversation
-func (h *messageHandler) SendToConversation(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
+// Send sends the message to the given conversation
+func (h *messageHandler) Send(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "SendToConversation",
 		"conversation": cv,
@@ -25,10 +25,10 @@ func (h *messageHandler) SendToConversation(ctx context.Context, cv *conversatio
 
 	switch cv.ReferenceType {
 	case conversation.ReferenceTypeLine:
-		return h.sendToConversationLine(ctx, cv, text, medias)
+		return h.sendLine(ctx, cv, text, medias)
 
 	case conversation.ReferenceTypeMessage:
-		return h.sendToConversationSMS(ctx, cv, text, medias)
+		return h.sendSMS(ctx, cv, text, medias)
 
 	default:
 		log.Errorf("Unsupported reference type. reference_type: %s", cv.ReferenceType)
@@ -36,10 +36,10 @@ func (h *messageHandler) SendToConversation(ctx context.Context, cv *conversatio
 	}
 }
 
-// sendToConversationSMS sends the message to the sms type of conversation.
-func (h *messageHandler) sendToConversationSMS(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
+// sendSMS sends the message to the sms type of conversation.
+func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "sendToConversationSMS",
+		"func":         "sendSMS",
 		"conversation": cv,
 		"text":         text,
 		"medias":       medias,
@@ -68,10 +68,13 @@ func (h *messageHandler) sendToConversationSMS(ctx context.Context, cv *conversa
 	return res, nil
 }
 
-// sendToConversationLine sends the message to the line type of conversation.
-func (h *messageHandler) sendToConversationLine(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
+// sendLine sends the message to the line type of conversation.
+func (h *messageHandler) sendLine(ctx context.Context, cv *conversation.Conversation, text string, medias []media.Media) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "sendToConversationLine",
+		"func":         "sendLine",
+		"conversation": cv,
+		"text":         text,
+		"medias":       medias,
 	})
 
 	// get account
