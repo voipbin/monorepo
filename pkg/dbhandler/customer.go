@@ -25,9 +25,6 @@ const (
 		webhook_method,
 		webhook_uri,
 
-		line_secret,
-		line_token,
-
 		permission_ids,
 
 		tm_create,
@@ -53,9 +50,6 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 
 		&res.WebhookMethod,
 		&res.WebhookURI,
-
-		&res.LineSecret,
-		&res.LineToken,
 
 		&permissionIDs,
 
@@ -89,9 +83,6 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		webhook_method,
 		webhook_uri,
 
-		line_secret,
-		line_token,
-
 		permission_ids,
 
 		tm_create,
@@ -99,7 +90,6 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		tm_delete
 	) values(
 		?, ?, ?,
-		?, ?,
 		?, ?,
 		?, ?,
 		?,
@@ -115,6 +105,7 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		return fmt.Errorf("could not marshal the permission_ids. CustomerCreate. err: %v", err)
 	}
 
+	ts := h.utilHandler.GetCurTime()
 	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.Username,
@@ -126,14 +117,11 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		c.WebhookMethod,
 		c.WebhookURI,
 
-		c.LineSecret,
-		c.LineToken,
-
 		tmpPermissionIDs,
 
-		c.TMCreate,
-		c.TMUpdate,
-		c.TMDelete,
+		ts,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerCreate. err: %v", err)
@@ -258,7 +246,9 @@ func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, GetCurTime(), id.Bytes())
+
+	ts := h.utilHandler.GetCurTime()
+	_, err := h.db.Exec(q, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerDelete. err: %v", err)
 	}
@@ -307,7 +297,7 @@ func (h *handler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, 
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, webhookMethod, webhookURI, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, webhookMethod, webhookURI, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerSetBasicInfo. err: %v", err)
 	}
@@ -336,7 +326,7 @@ func (h *handler) CustomerSetPermissionIDs(ctx context.Context, id uuid.UUID, pe
 		return err
 	}
 
-	_, err = h.db.Exec(q, tmpPermissionIDs, GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpPermissionIDs, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerSetPermission. err: %v", err)
 	}
@@ -359,33 +349,9 @@ func (h *handler) CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, pas
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, passwordHash, GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, passwordHash, h.utilHandler.GetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerSetPasswordHash. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.customerUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// CustomerSetLineInfo sets the customer's line info.
-func (h *handler) CustomerSetLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) error {
-	// prepare
-	q := `
-	update
-		customers
-	set
-		line_secret = ?,
-		line_token = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, lineSecret, lineToken, GetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CustomerSetLineInfo. err: %v", err)
 	}
 
 	// update the cache

@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
@@ -69,23 +70,24 @@ func Test_Create(t *testing.T) {
 		detail        string
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
-		lineSecret    string
-		lintToken     string
 		permissionIDs []uuid.UUID
+
+		responseUUID uuid.UUID
 	}{
 		{
-			"normal",
-			"test username",
-			"test userpass",
-			"test1",
-			"detail1",
-			customer.WebhookMethodPost,
-			"test.com",
-			"d8d12020-ed3e-11ec-8651-e3cf0d4ad0d7",
-			"d90b9eda-ed3e-11ec-a271-6f460a099376",
-			[]uuid.UUID{
+			name: "normal",
+
+			username:      "test username",
+			password:      "test userpass",
+			userName:      "test1",
+			detail:        "detail1",
+			webhookMethod: customer.WebhookMethodPost,
+			webhookURI:    "test.com",
+			permissionIDs: []uuid.UUID{
 				permission.PermissionAdmin.ID,
 			},
+
+			responseUUID: uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
 		},
 	}
 
@@ -94,24 +96,26 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &customerHandler{
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyhandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerGetByUsername(gomock.Any(), tt.username).Return(nil, fmt.Errorf("not found"))
-			mockDB.EXPECT().CustomerCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerCreated, gomock.Any()).Return()
+			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockDB.EXPECT().CustomerGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
-			_, err := h.Create(ctx, tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lintToken, tt.permissionIDs)
+			_, err := h.Create(ctx, tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
