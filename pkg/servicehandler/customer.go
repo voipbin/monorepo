@@ -45,8 +45,6 @@ func (h *serviceHandler) CustomerCreate(
 	detail string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-	lineSecret string,
-	lineToken string,
 	permissionIDs []uuid.UUID,
 ) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -62,7 +60,7 @@ func (h *serviceHandler) CustomerCreate(
 		return nil, fmt.Errorf("has no permission")
 	}
 
-	tmp, err := h.reqHandler.CustomerV1CustomerCreate(ctx, 30000, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
+	tmp, err := h.reqHandler.CustomerV1CustomerCreate(ctx, 30000, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 	if err != nil {
 		log.Errorf("Could not create a new customer. err: %v", err)
 		return nil, err
@@ -224,30 +222,6 @@ func (h *serviceHandler) CustomerUpdatePermissionIDs(ctx context.Context, u *csc
 
 	// send request
 	res, err := h.reqHandler.CustomerV1CustomerUpdatePermissionIDs(ctx, customerID, permissionIDs)
-	if err != nil {
-		log.Errorf("Could not update the customer's permission. err: %v", err)
-		return nil, err
-	}
-
-	return res.ConvertWebhookMessage(), nil
-}
-
-// CustomerUpdateLineInfo sends a request to customer-manager
-// to update the customer's line info.
-func (h *serviceHandler) CustomerUpdateLineInfo(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, lineSecret string, lineToken string) (*cscustomer.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "CustomerUpdateLineInfo",
-		"customer_id": u.ID,
-		"username":    u.Username,
-	})
-
-	if _, found := Find(u.PermissionIDs, cspermission.PermissionAdmin.ID); !found {
-		log.Warn("The customer has no permission.")
-		return nil, fmt.Errorf("customer has no permission")
-	}
-
-	// send request
-	res, err := h.reqHandler.CustomerV1CustomerUpdateLineInfo(ctx, customerID, lineSecret, lineToken)
 	if err != nil {
 		log.Errorf("Could not update the customer's permission. err: %v", err)
 		return nil, err

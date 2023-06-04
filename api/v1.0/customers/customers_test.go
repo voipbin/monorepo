@@ -40,8 +40,6 @@ func Test_customersPOST(t *testing.T) {
 		detail        string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
-		lineSecret    string
-		lineToken     string
 		permissionIDs []uuid.UUID
 
 		expectRes *cscustomer.WebhookMessage
@@ -60,8 +58,6 @@ func Test_customersPOST(t *testing.T) {
 				Detail:        "test detail",
 				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
-				LineSecret:    "4ba6404c-ed46-11ec-b65f-633777921f81",
-				LineToken:     "4bdc26ee-ed46-11ec-b6e1-a37350901af7",
 				PermissionIDs: []uuid.UUID{
 					cspermission.PermissionAdmin.ID,
 				},
@@ -72,8 +68,6 @@ func Test_customersPOST(t *testing.T) {
 			"test detail",
 			cscustomer.WebhookMethodPost,
 			"test.com",
-			"4ba6404c-ed46-11ec-b65f-633777921f81",
-			"4bdc26ee-ed46-11ec-b6e1-a37350901af7",
 			[]uuid.UUID{
 				cspermission.PermissionAdmin.ID,
 			},
@@ -118,8 +112,6 @@ func Test_customersPOST(t *testing.T) {
 				tt.detail,
 				tt.webhookMethod,
 				tt.webhookURI,
-				tt.lineSecret,
-				tt.lineToken,
 				tt.permissionIDs,
 			).Return(tt.expectRes, nil)
 
