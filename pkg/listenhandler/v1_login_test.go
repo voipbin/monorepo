@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/customerhandler"
 )
 
-func TestProcessV1LoginPost(t *testing.T) {
+func Test_ProcessV1LoginPost(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -55,7 +55,7 @@ func TestProcessV1LoginPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e58a9424-7dc0-11ec-82b6-d387115f2157","username":"test","name":"","detail":"","webhook_method":"","webhook_uri":"","permission_ids":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"e58a9424-7dc0-11ec-82b6-d387115f2157","username":"test"}`),
 			},
 		},
 	}

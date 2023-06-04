@@ -123,20 +123,6 @@ func (mr *MockDBHandlerMockRecorder) CustomerSetBasicInfo(ctx, id, name, detail,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).CustomerSetBasicInfo), ctx, id, name, detail, webhookMethod, webhookURI)
 }
 
-// CustomerSetLineInfo mocks base method.
-func (m *MockDBHandler) CustomerSetLineInfo(ctx context.Context, id uuid.UUID, lineSecret, lineToken string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerSetLineInfo", ctx, id, lineSecret, lineToken)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CustomerSetLineInfo indicates an expected call of CustomerSetLineInfo.
-func (mr *MockDBHandlerMockRecorder) CustomerSetLineInfo(ctx, id, lineSecret, lineToken interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSetLineInfo", reflect.TypeOf((*MockDBHandler)(nil).CustomerSetLineInfo), ctx, id, lineSecret, lineToken)
-}
-
 // CustomerSetPasswordHash mocks base method.
 func (m *MockDBHandler) CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error {
 	m.ctrl.T.Helper()

@@ -13,14 +13,11 @@ type V1DataCustomersPost struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
 
-	WebhookMethod customer.WebhookMethod `json:"webhook_method"`
-	WebhookURI    string                 `json:"webhook_uri"`
-
-	LineSecret string `json:"line_secret"`
-	LineToken  string `json:"line_token"`
+	WebhookMethod customer.WebhookMethod `json:"webhook_method,omitempty"`
+	WebhookURI    string                 `json:"webhook_uri,omitempty"`
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
 }
@@ -36,10 +33,10 @@ type V1DataCustomersUsernameLoginPost struct {
 // v1 data type request struct for
 // /v1/customers/<customer-id> PUT
 type V1DataCustomersIDPut struct {
-	Name          string                 `json:"name"`
-	Detail        string                 `json:"detail"`
-	WebhookMethod customer.WebhookMethod `json:"webhook_method"`
-	WebhookURI    string                 `json:"webhook_uri"`
+	Name          string                 `json:"name,omitempty"`
+	Detail        string                 `json:"detail,omitempty"`
+	WebhookMethod customer.WebhookMethod `json:"webhook_method,omitempty"`
+	WebhookURI    string                 `json:"webhook_uri,omitempty"`
 }
 
 // V1DataCustomersIDPasswordPut is
@@ -54,12 +51,4 @@ type V1DataCustomersIDPasswordPut struct {
 // /v1/customers/<customer-id>/permission_ids PUT
 type V1DataCustomersIDPermissionIDsPut struct {
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
-}
-
-// V1DataCustomersIDLineInfoPut is
-// v1 data type request struct for
-// /v1/customers/<customer-id>/line_info PUT
-type V1DataCustomersIDLineInfoPut struct {
-	LineSecret string `json:"line_secret"`
-	LineToken  string `json:"line_token"`
 }
