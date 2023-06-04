@@ -638,8 +638,6 @@ type RequestHandler interface {
 		detail string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-		lineSecret string,
-		lineToken string,
 		permissionIDs []uuid.UUID,
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error)

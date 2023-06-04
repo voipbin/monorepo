@@ -227,8 +227,6 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 		detail        string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
-		lineSecret    string
-		lineToken     string
 		permissionIDs []uuid.UUID
 
 		expectTarget  string
@@ -246,8 +244,6 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 			"detail1",
 			cscustomer.WebhookMethodPost,
 			"test.com",
-			"f5cb47ec-ed42-11ec-b4a5-cfb1a63e302d",
-			"f6003650-ed42-11ec-8821-93d06ca99641",
 			[]uuid.UUID{
 				uuid.FromStringOrNil("db0e2c52-7e44-11ec-811d-ab2fbb79302a"),
 			},
@@ -257,12 +253,12 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","line_secret":"f5cb47ec-ed42-11ec-b4a5-cfb1a63e302d","line_token":"f6003650-ed42-11ec-8821-93d06ca99641","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
+				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","line_secret":"","line_token":"","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e46cbfd4-7e44-11ec-b7de-a7cfacf1121f","username":"test1","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","line_secret":"f5cb47ec-ed42-11ec-b4a5-cfb1a63e302d","line_token":"f6003650-ed42-11ec-8821-93d06ca99641","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
+				Data:       []byte(`{"id":"e46cbfd4-7e44-11ec-b7de-a7cfacf1121f","username":"test1","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
 			},
 			&cscustomer.Customer{
 				ID:            uuid.FromStringOrNil("e46cbfd4-7e44-11ec-b7de-a7cfacf1121f"),
@@ -271,8 +267,6 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				Detail:        "detail1",
 				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
-				LineSecret:    "f5cb47ec-ed42-11ec-b4a5-cfb1a63e302d",
-				LineToken:     "f6003650-ed42-11ec-8821-93d06ca99641",
 				PermissionIDs: []uuid.UUID{
 					uuid.FromStringOrNil("db0e2c52-7e44-11ec-811d-ab2fbb79302a"),
 				},
@@ -303,8 +297,6 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				tt.detail,
 				tt.webhookMethod,
 				tt.webhookURI,
-				tt.lineSecret,
-				tt.lineToken,
 				tt.permissionIDs,
 			)
 			if err != nil {

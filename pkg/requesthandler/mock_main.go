@@ -2811,18 +2811,18 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageSend(ctx, convers
 }
 
 // CustomerV1CustomerCreate mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI, lineSecret, lineToken string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
+func (m *MockRequestHandler) CustomerV1CustomerCreate(ctx context.Context, requestTimeout int, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerCreate", ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
+	ret := m.ctrl.Call(m, "CustomerV1CustomerCreate", ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 	ret0, _ := ret[0].(*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerV1CustomerCreate indicates an expected call of CustomerV1CustomerCreate.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerCreate(ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerCreate(ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerCreate", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerCreate), ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerCreate", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerCreate), ctx, requestTimeout, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 }
 
 // CustomerV1CustomerDelete mocks base method.
