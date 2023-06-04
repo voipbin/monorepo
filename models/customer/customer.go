@@ -6,25 +6,21 @@ import "github.com/gofrs/uuid"
 type Customer struct {
 	ID uuid.UUID `json:"id"` // Customer's ID
 
-	Username     string `json:"username"` // Customer's username
-	PasswordHash string `json:"-"`        // Hashed Password
+	Username     string `json:"username,omitempty"` // Customer's username
+	PasswordHash string `json:"-"`                  // Hashed Password
 
-	Name   string `json:"name"`   //  name
-	Detail string `json:"detail"` //  detail
+	Name   string `json:"name,omitempty"`   //  name
+	Detail string `json:"detail,omitempty"` //  detail
 
 	// webhook info
-	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
-	WebhookURI    string        `json:"webhook_uri"`    // webhook uri
+	WebhookMethod WebhookMethod `json:"webhook_method,omitempty"` // webhook method
+	WebhookURI    string        `json:"webhook_uri,omitempty"`    // webhook uri
 
-	// line info
-	LineSecret string `json:"line_secret,omitempty"` // line's secret
-	LineToken  string `json:"line_token,omitempty"`  // line's token
+	PermissionIDs []uuid.UUID `json:"permission_ids,omitempty"` // customer's permission ids
 
-	PermissionIDs []uuid.UUID `json:"permission_ids"` // customer's permission ids
-
-	TMCreate string `json:"tm_create"` // Created timestamp.
-	TMUpdate string `json:"tm_update"` // Updated timestamp.
-	TMDelete string `json:"tm_delete"` // Deleted timestamp.
+	TMCreate string `json:"tm_create,omitempty"` // Created timestamp.
+	TMUpdate string `json:"tm_update,omitempty"` // Updated timestamp.
+	TMDelete string `json:"tm_delete,omitempty"` // Deleted timestamp.
 }
 
 // WebhookMethod defines

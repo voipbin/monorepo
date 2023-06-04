@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
 )
 
 // Gets returns list of customers
@@ -46,8 +45,6 @@ func (h *customerHandler) Create(
 	detail string,
 	webhookMethod customer.WebhookMethod,
 	webhookURI string,
-	lineSecret string,
-	lineToken string,
 	permissionIDs []uuid.UUID,
 ) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -57,8 +54,6 @@ func (h *customerHandler) Create(
 		"detail":         detail,
 		"webhook_method": webhookMethod,
 		"webhook_uri":    webhookURI,
-		"line_secret":    lineSecret,
-		"line_token":     lineToken,
 		"permission_ids": permissionIDs,
 	})
 	log.Debug("Creating a new customer.")
@@ -77,7 +72,7 @@ func (h *customerHandler) Create(
 	}
 
 	// create customer
-	id := uuid.Must(uuid.NewV4())
+	id := h.utilHandler.CreateUUID()
 	u := &customer.Customer{
 		ID:           id,
 		Username:     username,
@@ -89,14 +84,7 @@ func (h *customerHandler) Create(
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
 
-		LineSecret: lineSecret,
-		LineToken:  lineToken,
-
 		PermissionIDs: permissionIDs,
-
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 
 	if err := h.db.CustomerCreate(ctx, u); err != nil {
@@ -246,32 +234,6 @@ func (h *customerHandler) Login(ctx context.Context, username, password string) 
 	if !checkHash(password, res.PasswordHash) {
 		return nil, fmt.Errorf("wrong password")
 	}
-
-	return res, nil
-}
-
-// UpdateLineInfo updates the customer's line info.
-func (h *customerHandler) UpdateLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) (*customer.Customer, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "UpdateLineInfo",
-		"user_id": id,
-	})
-	log.Debug("Updating the customer's line info.")
-
-	if err := h.db.CustomerSetLineInfo(ctx, id, lineSecret, lineToken); err != nil {
-		log.Errorf("Could not update the line info. err: %v", err)
-		return nil, err
-	}
-
-	res, err := h.db.CustomerGet(ctx, id)
-	if err != nil {
-		// we couldn't get updated item. but we've updated the customer already, just return the error here.
-		log.Errorf("Could not get updated customer. err: %v", err)
-		return nil, fmt.Errorf("could not get updated customer")
-	}
-
-	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
 
 	return res, nil
 }

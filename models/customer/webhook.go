@@ -19,10 +19,6 @@ type WebhookMessage struct {
 	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
 	WebhookURI    string        `json:"webhook_uri"`    // webhook uri
 
-	// line info
-	LineSecret string `json:"line_secret"` // line's secret
-	LineToken  string `json:"line_token"`  // line's token
-
 	PermissionIDs []uuid.UUID `json:"permission_ids"` // customer's permission ids
 
 	TMCreate string `json:"tm_create"` // Created timestamp.
@@ -41,9 +37,6 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 
 		WebhookMethod: h.WebhookMethod,
 		WebhookURI:    h.WebhookURI,
-
-		LineSecret: h.LineSecret,
-		LineToken:  h.LineToken,
 
 		PermissionIDs: h.PermissionIDs,
 

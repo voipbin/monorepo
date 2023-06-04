@@ -1,15 +1,14 @@
 package dbhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_dbhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package dbhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/cachehandler"
@@ -25,13 +24,13 @@ type DBHandler interface {
 	CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error
 	CustomerSetPermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error
 	CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error
-	CustomerSetLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) error
 }
 
 // handler database handler
 type handler struct {
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
 }
 
 // handler errors
@@ -51,12 +50,4 @@ func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 		cache: cache,
 	}
 	return h
-}
-
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

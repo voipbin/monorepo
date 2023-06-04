@@ -1,6 +1,6 @@
 package customerhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package customerhandler -destination ./mock_customerhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package customerhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"golang.org/x/crypto/bcrypt"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
@@ -24,8 +25,6 @@ type CustomerHandler interface {
 		detail string,
 		webhookMethod customer.WebhookMethod,
 		webhookURI string,
-		lineSecret string,
-		lineToken string,
 		permissionIDs []uuid.UUID,
 	) (*customer.Customer, error)
 	Delete(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
@@ -33,12 +32,12 @@ type CustomerHandler interface {
 	Gets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
 	Login(ctx context.Context, username, password string) (*customer.Customer, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error)
-	UpdateLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) (*customer.Customer, error)
 	UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error)
 	UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error)
 }
 
 type customerHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyhandler notifyhandler.NotifyHandler
@@ -47,6 +46,7 @@ type customerHandler struct {
 // NewCustomerHandler return UserHandler interface
 func NewCustomerHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) CustomerHandler {
 	return &customerHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyhandler: notifyHandler,

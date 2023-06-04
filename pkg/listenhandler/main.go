@@ -1,6 +1,6 @@
 package listenhandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_listenhandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
 	"context"
@@ -43,7 +43,6 @@ var (
 	regV1Customers                = regexp.MustCompile("/v1/customers$")
 	regV1CustomersGet             = regexp.MustCompile(`/v1/customers\?(.*)$`)
 	regV1CustomersID              = regexp.MustCompile("/v1/customers/" + regUUID + "$")
-	regV1CustomersIDLineInfo      = regexp.MustCompile("/v1/customers/" + regUUID + "/line_info$")
 	regV1CustomersIDPassword      = regexp.MustCompile("/v1/customers/" + regUUID + "/password$")
 	regV1CustomersIDPermissionIDs = regexp.MustCompile("/v1/customers/" + regUUID + "/permission_ids$")
 
@@ -124,7 +123,7 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 	// receive requests
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeRPCOpt(queue, "call-manager", false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, "call-manager", false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -195,11 +194,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CustomersIDPermissionIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1CustomersIDPermissionIDsPut(ctx, m)
 		requestType = "/v1/customers/<customer_id>/permission_ids"
-
-	// PUT /customers/<customer-id>/line_info
-	case regV1CustomersIDLineInfo.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1CustomersIDLineInfoPut(ctx, m)
-		requestType = "/v1/customers/<customer_id>/line_info"
 
 	////////////
 	// login
