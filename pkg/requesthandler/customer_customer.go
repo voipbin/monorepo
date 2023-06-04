@@ -232,36 +232,3 @@ func (r *requestHandler) CustomerV1CustomerUpdatePermissionIDs(ctx context.Conte
 
 	return &resData, nil
 }
-
-// CustomerV1CustomerUpdate sends a request to customer-manager
-// to update the detail customer info.
-func (r *requestHandler) CustomerV1CustomerUpdateLineInfo(ctx context.Context, id uuid.UUID, lineSecret string, lineToken string) (*cscustomer.Customer, error) {
-	uri := fmt.Sprintf("/v1/customers/%s/line_info", id)
-
-	data := &csrequest.V1DataCustomersIDLineInfoPut{
-		LineSecret: lineSecret,
-		LineToken:  lineToken,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
-	switch {
-	case err != nil:
-		return nil, err
-	case res == nil:
-		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
-	}
-
-	var resData cscustomer.Customer
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
-		return nil, err
-	}
-
-	return &resData, nil
-}
