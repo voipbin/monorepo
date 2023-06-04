@@ -1404,18 +1404,18 @@ func (mr *MockServiceHandlerMockRecorder) ConversationUpdate(ctx, u, conversatio
 }
 
 // CustomerCreate mocks base method.
-func (m *MockServiceHandler) CustomerCreate(ctx context.Context, u *customer.Customer, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI, lineSecret, lineToken string, permissionIDs []uuid.UUID) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerCreate(ctx context.Context, u *customer.Customer, username, password, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string, permissionIDs []uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerCreate", ctx, u, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
+	ret := m.ctrl.Call(m, "CustomerCreate", ctx, u, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerCreate indicates an expected call of CustomerCreate.
-func (mr *MockServiceHandlerMockRecorder) CustomerCreate(ctx, u, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CustomerCreate(ctx, u, username, password, name, detail, webhookMethod, webhookURI, permissionIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerCreate", reflect.TypeOf((*MockServiceHandler)(nil).CustomerCreate), ctx, u, username, password, name, detail, webhookMethod, webhookURI, lineSecret, lineToken, permissionIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerCreate", reflect.TypeOf((*MockServiceHandler)(nil).CustomerCreate), ctx, u, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
 }
 
 // CustomerDelete mocks base method.
@@ -1476,21 +1476,6 @@ func (m *MockServiceHandler) CustomerUpdate(ctx context.Context, u *customer.Cus
 func (mr *MockServiceHandlerMockRecorder) CustomerUpdate(ctx, u, id, name, detail, webhookMethod, webhookURI interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdate", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdate), ctx, u, id, name, detail, webhookMethod, webhookURI)
-}
-
-// CustomerUpdateLineInfo mocks base method.
-func (m *MockServiceHandler) CustomerUpdateLineInfo(ctx context.Context, u *customer.Customer, customerID uuid.UUID, lineSecret, lineToken string) (*customer.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerUpdateLineInfo", ctx, u, customerID, lineSecret, lineToken)
-	ret0, _ := ret[0].(*customer.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerUpdateLineInfo indicates an expected call of CustomerUpdateLineInfo.
-func (mr *MockServiceHandlerMockRecorder) CustomerUpdateLineInfo(ctx, u, customerID, lineSecret, lineToken interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateLineInfo", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateLineInfo), ctx, u, customerID, lineSecret, lineToken)
 }
 
 // CustomerUpdatePassword mocks base method.

@@ -60,8 +60,6 @@ func customersPost(c *gin.Context) {
 		req.Detail,
 		req.WebhookMethod,
 		req.WebhookURI,
-		req.LineSecret,
-		req.LineToken,
 		req.PermissionIDs,
 	)
 	if err != nil {
@@ -376,57 +374,6 @@ func customersIDPasswordPut(c *gin.Context) {
 	// update a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 	res, err := serviceHandler.CustomerUpdatePassword(c.Request.Context(), &u, id, req.Password)
-	if err != nil {
-		log.Errorf("Could not update the customer. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-// customersIDLineInfoPut handles PUT /customers/{id}/line_info request.
-// It updates a customer's line info.
-// @Summary Update a customer's line info.
-// @Description Update a customer's line info.
-// @Produce json
-// @Success 200 {object} customer.Customer
-// @Router /v1.0/customers/{id}/line_info [put]
-func customersIDLineInfoPut(c *gin.Context) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "customersIDLineInfoPut",
-		"request_address": c.ClientIP,
-	})
-
-	tmp, exists := c.Get("customer")
-	if !exists {
-		log.Errorf("Could not find customer info.")
-		c.AbortWithStatus(400)
-		return
-	}
-	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
-
-	// get id
-	id := uuid.FromStringOrNil(c.Params.ByName("id"))
-	log = log.WithField("target_id", id)
-
-	var req request.BodyCustomersIDLineInfoPUT
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	// update a customer
-	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerUpdateLineInfo(c.Request.Context(), &u, id, req.LineSecret, req.LineToken)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
