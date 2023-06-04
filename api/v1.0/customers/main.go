@@ -15,5 +15,4 @@ func ApplyRoutes(r *gin.RouterGroup) {
 
 	customers.PUT("/:id/permission_ids", customersIDPermissionIDsPut)
 	customers.PUT("/:id/password", customersIDPasswordPut)
-	customers.PUT("/:id/line_info", customersIDLineInfoPut)
 }
