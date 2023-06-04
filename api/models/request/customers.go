@@ -20,8 +20,6 @@ type BodyCustomersPOST struct {
 	Detail        string                   `json:"detail"`
 	WebhookMethod cscustomer.WebhookMethod `json:"webhook_method"`
 	WebhookURI    string                   `json:"webhook_uri"`
-	LineSecret    string                   `json:"line_secret"`
-	LineToken     string                   `json:"line_token"`
 	PermissionIDs []uuid.UUID              `json:"permission_ids"`
 }
 
@@ -44,11 +42,4 @@ type BodyCustomersIDPasswordPUT struct {
 // PUT /v1.0/customers/<customer-id>/permission_ids
 type BodyCustomersIDPermissionIDsPUT struct {
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
-}
-
-// BodyCustomersIDLineInfoPUT is rquest body define for
-// PUT /v1.0/customers/<customer-id>/line_info
-type BodyCustomersIDLineInfoPUT struct {
-	LineSecret string `json:"line_secret"`
-	LineToken  string `json:"line_token"`
 }

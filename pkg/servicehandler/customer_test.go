@@ -26,8 +26,6 @@ func TestCustomerCreate(t *testing.T) {
 		detail        string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
-		lineSecret    string
-		lineToken     string
 		permissionIDs []uuid.UUID
 
 		responseCustomer *cscustomer.Customer
@@ -50,8 +48,6 @@ func TestCustomerCreate(t *testing.T) {
 			"test detail",
 			cscustomer.WebhookMethodPost,
 			"test.com",
-			"c5ea6344-ed44-11ec-b5bf-6726d8b17878",
-			"c6511440-ed44-11ec-a3d7-3708bbaa641e",
 			[]uuid.UUID{
 				cspermission.PermissionAdmin.ID,
 			},
@@ -80,9 +76,9 @@ func TestCustomerCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lineToken, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerCreate(ctx, tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.lineSecret, tt.lineToken, tt.permissionIDs)
+			res, err := h.CustomerCreate(ctx, tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
