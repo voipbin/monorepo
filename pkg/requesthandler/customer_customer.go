@@ -74,8 +74,6 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 	detail string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-	lineSecret string,
-	lineToken string,
 	permissionIDs []uuid.UUID,
 ) (*cscustomer.Customer, error) {
 	uri := "/v1/customers"
@@ -87,8 +85,6 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 		Detail:        detail,
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
-		LineSecret:    lineSecret,
-		LineToken:     lineToken,
 		PermissionIDs: permissionIDs,
 	}
 
