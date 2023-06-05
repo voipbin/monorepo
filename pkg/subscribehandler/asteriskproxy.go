@@ -24,6 +24,8 @@ func (h *subscribeHandler) processEventAsteriskProxy(ctx context.Context, m *rab
 		log.Errorf("Could not parse the ari event. err: %v", err)
 		return errors.Wrapf(err, "Could not parse the message")
 	}
+	promARIEventTotal.WithLabelValues(event.AsteriskID, string(event.Type)).Inc()
+
 	log = log.WithFields(logrus.Fields{"event_type": event.Type})
 	log.WithField("event", event).Debugf("Received ARI event. event_type: %s", event.Type)
 

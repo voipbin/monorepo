@@ -163,7 +163,6 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 		"func":  "processEvent",
 		"event": m,
 	})
-
 	ctx := context.Background()
 
 	var err error
