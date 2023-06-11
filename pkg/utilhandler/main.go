@@ -15,6 +15,7 @@ type UtilHandler interface {
 	TimeGetCurTime() string
 	TimeGetCurTimeAdd(duration time.Duration) string
 	TimeGetCurTimeRFC3339() string
+	TimeParse(timeString string) time.Time
 }
 
 type utilHandler struct{}
