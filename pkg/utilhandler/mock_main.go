@@ -77,6 +77,20 @@ func (mr *MockUtilHandlerMockRecorder) TimeGetCurTimeRFC3339() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeGetCurTimeRFC3339", reflect.TypeOf((*MockUtilHandler)(nil).TimeGetCurTimeRFC3339))
 }
 
+// TimeParse mocks base method.
+func (m *MockUtilHandler) TimeParse(timeString string) time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimeParse", timeString)
+	ret0, _ := ret[0].(time.Time)
+	return ret0
+}
+
+// TimeParse indicates an expected call of TimeParse.
+func (mr *MockUtilHandlerMockRecorder) TimeParse(timeString interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeParse", reflect.TypeOf((*MockUtilHandler)(nil).TimeParse), timeString)
+}
+
 // UUIDCreate mocks base method.
 func (m *MockUtilHandler) UUIDCreate() uuid.UUID {
 	m.ctrl.T.Helper()

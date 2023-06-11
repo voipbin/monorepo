@@ -21,7 +21,7 @@ func (h *utilHandler) TimeGetCurTimeRFC3339() string {
 }
 
 // TimeParse parses the given time string
-func (h *utilHandler) TimeParse(timeString string) *time.Time {
+func (h *utilHandler) TimeParse(timeString string) time.Time {
 	return TimeParse(timeString)
 }
 
@@ -47,13 +47,13 @@ func TimeGetCurTimeRFC3339() string {
 }
 
 // TimeParse parse time string to the time.Time
-func TimeParse(timeString string) *time.Time {
+func TimeParse(timeString string) time.Time {
 
 	layout := "2006-01-02 15:04:05.000000"
 	res, err := time.Parse(layout, timeString)
 	if err != nil {
-		return nil
+		return time.Time{}
 	}
 
-	return &res
+	return res
 }
