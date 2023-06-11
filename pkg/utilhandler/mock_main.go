@@ -35,58 +35,58 @@ func (m *MockUtilHandler) EXPECT() *MockUtilHandlerMockRecorder {
 	return m.recorder
 }
 
-// CreateUUID mocks base method.
-func (m *MockUtilHandler) CreateUUID() uuid.UUID {
+// TimeGetCurTime mocks base method.
+func (m *MockUtilHandler) TimeGetCurTime() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUUID")
+	ret := m.ctrl.Call(m, "TimeGetCurTime")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// TimeGetCurTime indicates an expected call of TimeGetCurTime.
+func (mr *MockUtilHandlerMockRecorder) TimeGetCurTime() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeGetCurTime", reflect.TypeOf((*MockUtilHandler)(nil).TimeGetCurTime))
+}
+
+// TimeGetCurTimeAdd mocks base method.
+func (m *MockUtilHandler) TimeGetCurTimeAdd(duration time.Duration) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimeGetCurTimeAdd", duration)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// TimeGetCurTimeAdd indicates an expected call of TimeGetCurTimeAdd.
+func (mr *MockUtilHandlerMockRecorder) TimeGetCurTimeAdd(duration interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeGetCurTimeAdd", reflect.TypeOf((*MockUtilHandler)(nil).TimeGetCurTimeAdd), duration)
+}
+
+// TimeGetCurTimeRFC3339 mocks base method.
+func (m *MockUtilHandler) TimeGetCurTimeRFC3339() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimeGetCurTimeRFC3339")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// TimeGetCurTimeRFC3339 indicates an expected call of TimeGetCurTimeRFC3339.
+func (mr *MockUtilHandlerMockRecorder) TimeGetCurTimeRFC3339() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeGetCurTimeRFC3339", reflect.TypeOf((*MockUtilHandler)(nil).TimeGetCurTimeRFC3339))
+}
+
+// UUIDCreate mocks base method.
+func (m *MockUtilHandler) UUIDCreate() uuid.UUID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UUIDCreate")
 	ret0, _ := ret[0].(uuid.UUID)
 	return ret0
 }
 
-// CreateUUID indicates an expected call of CreateUUID.
-func (mr *MockUtilHandlerMockRecorder) CreateUUID() *gomock.Call {
+// UUIDCreate indicates an expected call of UUIDCreate.
+func (mr *MockUtilHandlerMockRecorder) UUIDCreate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUUID", reflect.TypeOf((*MockUtilHandler)(nil).CreateUUID))
-}
-
-// GetCurTime mocks base method.
-func (m *MockUtilHandler) GetCurTime() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurTime")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetCurTime indicates an expected call of GetCurTime.
-func (mr *MockUtilHandlerMockRecorder) GetCurTime() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurTime", reflect.TypeOf((*MockUtilHandler)(nil).GetCurTime))
-}
-
-// GetCurTimeAdd mocks base method.
-func (m *MockUtilHandler) GetCurTimeAdd(duration time.Duration) string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurTimeAdd", duration)
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetCurTimeAdd indicates an expected call of GetCurTimeAdd.
-func (mr *MockUtilHandlerMockRecorder) GetCurTimeAdd(duration interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurTimeAdd", reflect.TypeOf((*MockUtilHandler)(nil).GetCurTimeAdd), duration)
-}
-
-// GetCurTimeRFC3339 mocks base method.
-func (m *MockUtilHandler) GetCurTimeRFC3339() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurTimeRFC3339")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetCurTimeRFC3339 indicates an expected call of GetCurTimeRFC3339.
-func (mr *MockUtilHandlerMockRecorder) GetCurTimeRFC3339() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurTimeRFC3339", reflect.TypeOf((*MockUtilHandler)(nil).GetCurTimeRFC3339))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UUIDCreate", reflect.TypeOf((*MockUtilHandler)(nil).UUIDCreate))
 }

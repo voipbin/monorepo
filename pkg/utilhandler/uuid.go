@@ -2,12 +2,12 @@ package utilhandler
 
 import "github.com/gofrs/uuid"
 
-// CreateUUID returns a new uuid v4
-func (h *utilHandler) CreateUUID() uuid.UUID {
-	return CreateUUID()
+// UUIDCreate returns a new uuid v4
+func (h *utilHandler) UUIDCreate() uuid.UUID {
+	return UUIDCreate()
 }
 
-// CreateUUID returns a new uuid v4
-func CreateUUID() uuid.UUID {
+// UUIDCreate returns a new uuid v4
+func UUIDCreate() uuid.UUID {
 	return uuid.Must(uuid.NewV4())
 }

@@ -10,11 +10,11 @@ import (
 
 // UtilHandler defines
 type UtilHandler interface {
-	CreateUUID() uuid.UUID
+	UUIDCreate() uuid.UUID
 
-	GetCurTime() string
-	GetCurTimeAdd(duration time.Duration) string
-	GetCurTimeRFC3339() string
+	TimeGetCurTime() string
+	TimeGetCurTimeAdd(duration time.Duration) string
+	TimeGetCurTimeRFC3339() string
 }
 
 type utilHandler struct{}

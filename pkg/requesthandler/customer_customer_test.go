@@ -253,7 +253,7 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","line_secret":"","line_token":"","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
+				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
