@@ -1,40 +1,36 @@
 package subscribehandler
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -package subscribehandler -destination ./mock_subscribehandler_subscribehandler.go -source main.go -build_flags=-mod=mod
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -package subscribehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
+	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
+	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
 )
 
 // list of publishers
 const (
 	publisherAPIManager       = "api-manager"
 	publisherCallManager      = "call-manager"
+	publisherCustomerManager  = "customer-manager"
 	publisherFlowManager      = "flow-manager"
 	publisherNumberManager    = "number-manager"
+	publisherMessageManager   = "message-manager"
 	publisherRegistrarManager = "registrar-manager"
 	publisherStorageManager   = "storage-manager"
 	publisherTTSManager       = "tts-manager"
-)
-
-// list of call-manager event type
-const (
-	cmCallCreate = "call_created"
-	cmCallUpdate = "call_updated"
-	cmCallHangup = "call_hungup"
-
-	cmRecordingStarted  = "recording_started"
-	cmRecordingFinished = "recording_finished"
 )
 
 // SubscribeHandler interface
@@ -44,24 +40,16 @@ type SubscribeHandler interface {
 
 type subscribeHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
-	db         dbhandler.DBHandler
-	cache      cachehandler.CacheHandler
 
 	subscribeQueue    string
 	subscribesTargets string
 
-	webhookHandler webhookhandler.WebhookHandler
+	accountHandler accounthandler.AccountHandler
+	billingHandler billinghandler.BillingHandler
 }
 
 var (
-	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-	regAny  = "(.*)"
-
-	// v1
-)
-
-var (
-	metricsNamespace = "webhook_manager"
+	metricsNamespace = "billing_manager"
 
 	promEventProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -82,31 +70,21 @@ func init() {
 	)
 }
 
-// simpleResponse returns simple rabbitmq response
-func simpleResponse(code int) *rabbitmqhandler.Response {
-	return &rabbitmqhandler.Response{
-		StatusCode: code,
-	}
-}
-
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
-	db dbhandler.DBHandler,
-	cache cachehandler.CacheHandler,
 	subscribeQueue string,
 	subscribeTargets string,
+	accountHandler accounthandler.AccountHandler,
+	billingHandler billinghandler.BillingHandler,
 ) SubscribeHandler {
-	webhookHandler := webhookhandler.NewWebhookHandler(db, cache)
-
 	h := &subscribeHandler{
-		rabbitSock: rabbitSock,
-		db:         db,
-		cache:      cache,
-
+		rabbitSock:        rabbitSock,
 		subscribeQueue:    subscribeQueue,
 		subscribesTargets: subscribeTargets,
-		webhookHandler:    webhookHandler,
+
+		accountHandler: accountHandler,
+		billingHandler: billingHandler,
 	}
 
 	return h
@@ -114,6 +92,7 @@ func NewSubscribeHandler(
 
 func (h *subscribeHandler) Run(subscribeQueue, subscribeTargets string) error {
 	logrus.WithFields(logrus.Fields{
+		"func":              "Run",
 		"subscribe_queue":   subscribeQueue,
 		"subscribe_targets": subscribeTargets,
 	}).Info("Creating rabbitmq queue for listen.")
@@ -137,7 +116,7 @@ func (h *subscribeHandler) Run(subscribeQueue, subscribeTargets string) error {
 	// receive subscribe events
 	go func() {
 		for {
-			err := h.rabbitSock.ConsumeMessageOpt(subscribeQueue, "webhook-manager", false, false, false, h.processEventRun)
+			err := h.rabbitSock.ConsumeMessageOpt(subscribeQueue, "billing-manager", false, false, false, 10, h.processEventRun)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -149,47 +128,64 @@ func (h *subscribeHandler) Run(subscribeQueue, subscribeTargets string) error {
 
 // processEventRun runs the processEvent
 func (h *subscribeHandler) processEventRun(m *rabbitmqhandler.Event) error {
-	go h.processEvent(m)
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventRun",
+		"event": m,
+	})
+
+	if errProcess := h.processEvent(m); errProcess != nil {
+		log.Errorf("Could not consume the ARI event message correctly. err: %v", errProcess)
+	}
 
 	return nil
 }
 
 // processEvent processes the event message
-func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"message": m,
-		},
-	)
+func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processEvent",
+		"message": m,
+	})
 	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
+	ctx := context.Background()
 
 	var err error
+
 	start := time.Now()
 	switch {
 
 	//// call-manager
 	// call
-	case m.Publisher == publisherCallManager && (m.Type == cmCallCreate || m.Type == cmCallUpdate || m.Type == cmCallHangup):
-		err = h.processEventCMCallCommon(m)
+	case m.Publisher == publisherCallManager && m.Type == cmcall.EventTypeCallProgressing:
+		err = h.processEventCMCallProgressing(ctx, m)
 
-	// recording
-	case m.Publisher == publisherCallManager && (m.Type == cmRecordingStarted || m.Type == cmRecordingFinished):
-		err = h.processEventCMRecordingCommon(m)
+	case m.Publisher == publisherCallManager && m.Type == cmcall.EventTypeCallHangup:
+		err = h.processEventCMCallHangup(ctx, m)
+
+	//// message-manager
+	// message
+	case m.Publisher == publisherMessageManager && m.Type == mmmessage.EventTypeMessageCreated:
+		err = h.processEventMMMessageCreated(ctx, m)
+
+	//// customer-manager
+	// customer
+	case m.Publisher == publisherCustomerManager && m.Type == cscustomer.EventTypeCustomerCreated:
+		err = h.processEventCMCustomerCreated(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		err = fmt.Errorf("could not find an event handler")
+		// nothing to do
+		return nil
 	}
 	elapsed := time.Since(start)
 	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
 		log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
-		return
+		return errors.Wrap(err, "could not process the event correctly.")
 	}
 
-	return
+	return nil
 }

@@ -13,13 +13,16 @@ import (
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/dbhandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/listenhandler"
-	subscribehandler "gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/subsribehandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/cachehandler"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/subscribehandler"
 )
 
 // channels
@@ -31,9 +34,9 @@ var rabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:5672",
 
 var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.call-manager.event", "rabbitmq exchange name for subscribe")
 
-var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.webhook-manager.request", "rabbitmq queue name for request listen")
-var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.webhook-manager.event", "rabbitmq queue name for event notify")
-var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.webhook-manager.subscribe", "rabbitmq queue name for message subscribe")
+var rabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.billing-manager.request", "rabbitmq queue name for request listen")
+var rabbitQueueNotify = flag.String("rabbit_queue_notify", "bin-manager.billing-manager.event", "rabbitmq queue name for event notify")
+var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.billing-manager.subscribe", "rabbitmq queue name for message subscribe")
 
 var rabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
 
@@ -42,21 +45,26 @@ var promEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for promet
 var promListenAddr = flag.String("prom_listen_addr", ":2112", "endpoint for prometheus metric collecting.")
 
 // args for database
-var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for webhook-manager.")
+var dbDSN = flag.String("dbDSN", "testid:testpassword@tcp(127.0.0.1:3306)/test", "database dsn for bililng-manager.")
 
 // args for redis
 var redisAddr = flag.String("redis_addr", "127.0.0.1:6379", "redis address.")
 var redisPassword = flag.String("redis_password", "", "redis password")
 var redisDB = flag.Int("redis_db", 1, "redis database.")
 
-func main() {
+const (
+	serviceName = "billing-manager"
+)
 
-	logrus.Info("Starting webhook-manager.")
+func main() {
+	log := logrus.WithField("func", "main")
+
+	log.Info("Starting billing-manager.")
 
 	// connect to database
 	sqlDB, err := sql.Open("mysql", *dbDSN)
 	if err != nil {
-		logrus.Errorf("Could not access to database. err: %v", err)
+		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
 	defer sqlDB.Close()
@@ -64,14 +72,15 @@ func main() {
 	// connect to cache
 	cache := cachehandler.NewHandler(*redisAddr, *redisPassword, *redisDB)
 	if err := cache.Connect(); err != nil {
-		logrus.Errorf("Could not connect to cache server. err: %v", err)
+		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
-	run(sqlDB, cache)
+	// run
+	if errRun := run(sqlDB, cache); errRun != nil {
+		log.Errorf("Could not run the process correctly. err: %v", errRun)
+	}
 	<-chDone
-
-	return
 }
 
 // proces init
@@ -105,7 +114,7 @@ func initLog() {
 
 // initSignal inits sinal settings.
 func initSignal() {
-	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGHUP)
+	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 }
 
@@ -125,16 +134,29 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-// run runs the webhook-manager
-func run(db *sql.DB, cache cachehandler.CacheHandler) error {
+// run runs the billing-manager
+func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+
+	// dbhandler
+	db := dbhandler.NewHandler(sqlDB, cache)
+
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
+	rabbitSock.Connect()
+
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitQueueNotify, serviceName)
+
+	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler)
+	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler)
 
 	// run listen
-	if err := runListen(db, cache); err != nil {
+	if err := runListen(rabbitSock, accountHandler, billingHandler); err != nil {
 		return err
 	}
 
 	// run subscribe
-	if err := runSubscribe(db, cache); err != nil {
+	if err := runSubscribe(rabbitSock, accountHandler, billingHandler); err != nil {
 		return err
 	}
 
@@ -142,25 +164,22 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
-
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
+func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runSubscribe",
+	})
 
 	subHandler := subscribehandler.NewSubscribeHandler(
 		rabbitSock,
-		db,
-		cache,
 		*rabbitQueueSubscribe,
 		*rabbitListenSubscribes,
+		accoutHandler,
+		billingHandler,
 	)
 
 	// run
 	if err := subHandler.Run(*rabbitQueueSubscribe, *rabbitListenSubscribes); err != nil {
+		log.Errorf("Could not run the subscribe handler. err: %v", err)
 		return err
 	}
 
@@ -168,20 +187,16 @@ func runSubscribe(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen handler
-func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	// dbhandler
-	db := dbhandler.NewHandler(sqlDB, cache)
+func runListen(rabbitSock rabbitmqhandler.Rabbit, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runListen",
+	})
 
-	// rabbitmq sock connect
-	rabbitSock := rabbitmqhandler.NewRabbit(*rabbitAddr)
-	rabbitSock.Connect()
-
-	whHandler := webhookhandler.NewWebhookHandler(db, cache)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, whHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, accoutHandler, billingHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {
-		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
 	}
 
 	return nil
