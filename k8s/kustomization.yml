@@ -10,7 +10,7 @@ resources:
   - service.yml
 
 images:
-- name: webhook-manager-image
-  newName: webhook-manager
+- name: billing-manager-image
+  newName: billing-manager
   newTag: latest
 

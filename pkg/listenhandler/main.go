@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -8,9 +9,10 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
-	"gitlab.com/voipbin/bin-manager/webhook-manager.git/pkg/webhookhandler"
+
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
 )
 
 // pagination parameters
@@ -20,7 +22,7 @@ const (
 )
 
 const (
-	constCosumerName = "webhook-manager"
+	constCosumerName = "billing-manager"
 )
 
 // ListenHandler interface
@@ -31,21 +33,23 @@ type ListenHandler interface {
 type listenHandler struct {
 	rabbitSock rabbitmqhandler.Rabbit
 
-	whHandler webhookhandler.WebhookHandler
+	accountHandler accounthandler.AccountHandler
+	billingHandler billinghandler.BillingHandler
 }
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-	regAny  = "(.*)"
 
 	// v1
 
-	// webhooks
-	regV1Webhooks = regexp.MustCompile("/v1/webhooks")
+	// accounts
+	regV1AccountsID                         = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
+	regV1AccountsCustomerIDID               = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "$")
+	regV1AccountsCustomerIDIDIsValidBalance = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "/is_valid_balance$")
 )
 
 var (
-	metricsNamespace = "webhook_manager"
+	metricsNamespace = "billing_manager"
 
 	promReceivedRequestProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -76,11 +80,13 @@ func simpleResponse(code int) *rabbitmqhandler.Response {
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
-	whHandler webhookhandler.WebhookHandler,
+	accountHandler accounthandler.AccountHandler,
+	billingHandler billinghandler.BillingHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		rabbitSock: rabbitSock,
-		whHandler:  whHandler,
+		rabbitSock:     rabbitSock,
+		accountHandler: accountHandler,
+		billingHandler: billingHandler,
 	}
 
 	return h
@@ -104,19 +110,19 @@ func (h *listenHandler) Run(queue, exchangeDelay string) error {
 
 	// create a exchange for delayed message
 	if err := h.rabbitSock.ExchangeDeclareForDelay(exchangeDelay, true, false, false, false); err != nil {
-		return fmt.Errorf("Could not declare the exchange for dealyed message. err: %v", err)
+		return fmt.Errorf("could not declare the exchange for dealyed message. err: %v", err)
 	}
 
 	// bind a queue with delayed exchange
 	if err := h.rabbitSock.QueueBind(queue, queue, exchangeDelay, false, nil); err != nil {
-		return fmt.Errorf("Could not bind the queue and exchange. err: %v", err)
+		return fmt.Errorf("could not bind the queue and exchange. err: %v", err)
 	}
 
 	// receive requests
 	go func() {
 		for {
 			// consume the request
-			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, h.processRequest)
+			err := h.rabbitSock.ConsumeRPCOpt(queue, constCosumerName, false, false, false, 10, h.processRequest)
 			if err != nil {
 				logrus.Errorf("Could not consume the request message correctly. err: %v", err)
 			}
@@ -132,6 +138,8 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	var requestType string
 	var err error
 	var response *rabbitmqhandler.Response
+
+	ctx := context.Background()
 
 	uri, err := url.QueryUnescape(m.URI)
 	if err != nil {
@@ -152,12 +160,22 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	////////////////////
-	// webhooks
+	// accounts
 	////////////////////
-	// POST /webhooks
-	case regV1Webhooks.MatchString(m.URI) == true && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1WebhooksPost(m)
-		requestType = "/v1/webhooks"
+	// GET /accounts/<account-id>
+	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1AccountsIDGet(ctx, m)
+		requestType = "/v1/accounts/<account-id>"
+
+	// GET /accounts/customer_id/<customer-id>
+	case regV1AccountsCustomerIDID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1AccountsCustomerIDIDGet(ctx, m)
+		requestType = "/v1/accounts/customer_id/<customer-id>"
+
+	// GET /accounts/customer_id/<customer-id>/is_valid_balance
+	case regV1AccountsCustomerIDIDIsValidBalance.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1AccountsCustomerIDIDIsValidBalancePost(ctx, m)
+		requestType = "/v1/accounts/customer_id/<customer_id>/is_valid_balance"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
@@ -176,14 +194,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		log.Errorf("Could not process the request correctly. method: %s, uri: %s, err: %v", m.Method, uri, err)
 		response = simpleResponse(400)
 		err = nil
-		requestType = "notfound"
 	}
 
-	log.WithFields(
-		logrus.Fields{
-			"response": response,
-		},
-	).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
+	log.WithFields(logrus.Fields{
+		"response": response,
+	}).Debugf("Sending response. method: %s, uri: %s", m.Method, uri)
 
 	return response, err
 }

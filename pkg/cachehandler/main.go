@@ -6,6 +6,10 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/gofrs/uuid"
+
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 )
 
 type handler struct {
@@ -19,6 +23,14 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
+
+	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
+	AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
+	AccountSet(ctx context.Context, data *account.Account) error
+
+	BillingGet(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
+	BillingGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
+	BillingSet(ctx context.Context, data *billing.Billing) error
 }
 
 // NewHandler creates DBHandler
