@@ -76,6 +76,23 @@ func (h *accountHandler) GetByCustomerID(ctx context.Context, customerID uuid.UU
 	return res, nil
 }
 
+// Gets returns list of accounts.
+func (h *accountHandler) Gets(ctx context.Context, size uint64, token string) ([]*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "Gets",
+		"size":  size,
+		"token": token,
+	})
+
+	res, err := h.db.AccountGets(ctx, size, token)
+	if err != nil {
+		log.Errorf("Could not get accounts. err: %v", err)
+		return nil, errors.Wrap(err, "could not get accounts info")
+	}
+
+	return res, nil
+}
+
 // SubstractBalanceByCustomer substracts the balance of the given customer id.
 func (h *accountHandler) SubstractBalanceByCustomer(ctx context.Context, customerID uuid.UUID, balance float32) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{

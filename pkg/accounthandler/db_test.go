@@ -186,6 +186,64 @@ func Test_GetByCustomerID(t *testing.T) {
 	}
 }
 
+func Test_Gets(t *testing.T) {
+
+	type test struct {
+		name string
+
+		size  uint64
+		token string
+
+		responseAccounts []*account.Account
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			size:  10,
+			token: "2023-06-07 03:22:17.995000",
+			responseAccounts: []*account.Account{
+				{
+					ID: uuid.FromStringOrNil("ba0e7152-0b96-11ee-9bbb-ef5ba49d06fb"),
+				},
+				{
+					ID: uuid.FromStringOrNil("ba3c016c-0b96-11ee-9850-53f4edbab1be"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccountGets(ctx, tt.size, tt.token).Return(tt.responseAccounts, nil)
+
+			res, err := h.Gets(ctx, tt.size, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseAccounts, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAccounts, res)
+			}
+		})
+	}
+}
+
 func Test_SubstractBalanceByCustomer(t *testing.T) {
 
 	type test struct {

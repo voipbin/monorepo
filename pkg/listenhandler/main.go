@@ -43,6 +43,7 @@ var (
 	// v1
 
 	// accounts
+	regV1AccountsGet                        = regexp.MustCompile(`/v1/accounts\?`)
 	regV1AccountsID                         = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 	regV1AccountsCustomerIDID               = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "$")
 	regV1AccountsCustomerIDIDIsValidBalance = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "/is_valid_balance$")
@@ -162,6 +163,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 	// accounts
 	////////////////////
+	// GET /accounts/<account-id>
+	case regV1AccountsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1AccountsGet(ctx, m)
+		requestType = "/v1/accounts"
+
 	// GET /accounts/<account-id>
 	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1AccountsIDGet(ctx, m)

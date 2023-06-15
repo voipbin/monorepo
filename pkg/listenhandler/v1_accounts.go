@@ -3,6 +3,8 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -11,6 +13,43 @@ import (
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/response"
 )
+
+// processV1AccountsGet handles GET /v1/accounts request
+func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsGet",
+		"request": m,
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the pagination params
+	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := u.Query().Get(PageToken)
+
+	as, err := h.accountHandler.Gets(ctx, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	data, err := json.Marshal(as)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
 
 // processV1AccountsIDGet handles GET /v1/accounts/<account-id> request
 func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
