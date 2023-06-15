@@ -12,6 +12,73 @@ import (
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
 )
 
+func Test_processV1AccountsGet(t *testing.T) {
+
+	type test struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseAccounts []*account.Account
+
+		expectSize  uint64
+		expectToken string
+		expectRes   *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
+				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+
+			responseAccounts: []*account.Account{
+				{
+					ID: uuid.FromStringOrNil("dafc10d0-0b97-11ee-af30-2fb7811295dd"),
+				},
+				{
+					ID: uuid.FromStringOrNil("db4e7e24-0b97-11ee-91f9-c7d5620abcd7"),
+				},
+			},
+
+			expectSize:  10,
+			expectToken: "2023-06-08 03:22:17.995000",
+
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"dafc10d0-0b97-11ee-af30-2fb7811295dd","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"db4e7e24-0b97-11ee-91f9-c7d5620abcd7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				accountHandler: mockAccount,
+			}
+
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectSize, tt.expectToken).Return(tt.responseAccounts, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_processV1AccountsIDGet(t *testing.T) {
 
 	type test struct {

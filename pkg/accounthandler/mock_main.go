@@ -96,6 +96,21 @@ func (mr *MockAccountHandlerMockRecorder) GetByCustomerID(ctx, customerID interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCustomerID", reflect.TypeOf((*MockAccountHandler)(nil).GetByCustomerID), ctx, customerID)
 }
 
+// Gets mocks base method.
+func (m *MockAccountHandler) Gets(ctx context.Context, size uint64, token string) ([]*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token)
+	ret0, _ := ret[0].([]*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockAccountHandlerMockRecorder) Gets(ctx, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, size, token)
+}
+
 // IsValidBalanceByCustomerID mocks base method.
 func (m *MockAccountHandler) IsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error) {
 	m.ctrl.T.Helper()
