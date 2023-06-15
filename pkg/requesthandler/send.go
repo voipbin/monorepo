@@ -251,3 +251,11 @@ func (r *requestHandler) sendRequestTransfer(ctx context.Context, uri string, me
 
 	return r.sendRequest(ctx, queueTransfer, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestBilling send a request to the billing-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestBilling(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(ctx, queueBilling, uri, method, resource, timeout, delayed, dataType, data)
+}

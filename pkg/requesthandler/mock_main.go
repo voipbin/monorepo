@@ -12,6 +12,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
+	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -35,7 +36,7 @@ import (
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	service0 "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
-	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	account0 "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media0 "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -839,6 +840,66 @@ func (m *MockRequestHandler) AstRecordingUnpause(ctx context.Context, asteriskID
 func (mr *MockRequestHandlerMockRecorder) AstRecordingUnpause(ctx, asteriskID, recordingName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstRecordingUnpause", reflect.TypeOf((*MockRequestHandler)(nil).AstRecordingUnpause), ctx, asteriskID, recordingName)
+}
+
+// BillingV1AccountGet mocks base method.
+func (m *MockRequestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountGet", ctx, accountID)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountGet indicates an expected call of BillingV1AccountGet.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGet(ctx, accountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGet", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGet), ctx, accountID)
+}
+
+// BillingV1AccountGetByCustomerID mocks base method.
+func (m *MockRequestHandler) BillingV1AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountGetByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountGetByCustomerID indicates an expected call of BillingV1AccountGetByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGetByCustomerID(ctx, customerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGetByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGetByCustomerID), ctx, customerID)
+}
+
+// BillingV1AccountGets mocks base method.
+func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64) ([]account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountGets", ctx, pageToken, pageSize)
+	ret0, _ := ret[0].([]account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountGets indicates an expected call of BillingV1AccountGets.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGets(ctx, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGets), ctx, pageToken, pageSize)
+}
+
+// BillingV1AccountIsValidBalanceByCustomerID mocks base method.
+func (m *MockRequestHandler) BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountIsValidBalanceByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountIsValidBalanceByCustomerID indicates an expected call of BillingV1AccountIsValidBalanceByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalanceByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalanceByCustomerID), ctx, customerID)
 }
 
 // CallV1CallActionNext mocks base method.
@@ -2647,10 +2708,10 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ServiceTypeConferencecallS
 }
 
 // ConversationV1AccountCreate mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType account.Type, name, detail, secret, token string) (*account.Account, error) {
+func (m *MockRequestHandler) ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType account0.Type, name, detail, secret, token string) (*account0.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1AccountCreate", ctx, customerID, accountType, name, detail, secret, token)
-	ret0, _ := ret[0].(*account.Account)
+	ret0, _ := ret[0].(*account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2662,10 +2723,10 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountCreate(ctx, custo
 }
 
 // ConversationV1AccountDelete mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
+func (m *MockRequestHandler) ConversationV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*account0.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1AccountDelete", ctx, accountID)
-	ret0, _ := ret[0].(*account.Account)
+	ret0, _ := ret[0].(*account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2677,10 +2738,10 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountDelete(ctx, accou
 }
 
 // ConversationV1AccountGet mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
+func (m *MockRequestHandler) ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*account0.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1AccountGet", ctx, accountID)
-	ret0, _ := ret[0].(*account.Account)
+	ret0, _ := ret[0].(*account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2692,10 +2753,10 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGet(ctx, accountI
 }
 
 // ConversationV1AccountGetsByCustomerID mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]account.Account, error) {
+func (m *MockRequestHandler) ConversationV1AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]account0.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1AccountGetsByCustomerID", ctx, customerID, pageToken, pageSize)
-	ret0, _ := ret[0].([]account.Account)
+	ret0, _ := ret[0].([]account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2707,10 +2768,10 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGetsByCustomerID(
 }
 
 // ConversationV1AccountUpdate mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, name, detail, secret, token string) (*account.Account, error) {
+func (m *MockRequestHandler) ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, name, detail, secret, token string) (*account0.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationV1AccountUpdate", ctx, accountID, name, detail, secret, token)
-	ret0, _ := ret[0].(*account.Account)
+	ret0, _ := ret[0].(*account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

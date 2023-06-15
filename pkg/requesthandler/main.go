@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
+	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -98,6 +99,7 @@ const (
 
 	queueAgent        = "bin-manager.agent-manager.request"
 	queueAPI          = "bin-manager.api-manager.request"
+	queueBilling      = "bin-manager.billing-manager.request"
 	queueCall         = "bin-manager.call-manager.request"
 	queueCampaign     = "bin-manager.campaign-manager.request"
 	queueChat         = "bin-manager.chat-manager.request"
@@ -371,6 +373,12 @@ type RequestHandler interface {
 	AgentV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]amtag.Tag, error)
 	AgentV1TagUpdate(ctx context.Context, id uuid.UUID, name, detail string) (*amtag.Tag, error)
 	AgentV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
+
+	// billing-manager account
+	BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64) ([]bmaccount.Account, error)
+	BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
+	BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error)
+	BillingV1AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*bmaccount.Account, error)
 
 	// call-manager call
 	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
