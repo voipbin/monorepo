@@ -9,6 +9,7 @@ import (
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new billing and return the created billing.
@@ -43,7 +44,7 @@ func (h *billingHandler) Create(
 		CostTotal:        0,
 		BillingUnitCount: 0,
 		TMBillingStart:   tmBillingStart,
-		TMBillingEnd:     "",
+		TMBillingEnd:     dbhandler.DefaultTimeStamp,
 	}
 
 	if errCreate := h.db.BillingCreate(ctx, c); errCreate != nil {

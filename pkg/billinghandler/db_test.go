@@ -61,6 +61,7 @@ func Test_Create(t *testing.T) {
 				CostPerUnit:    defaultCostPerUnitReferenceTypeCall,
 				CostTotal:      0,
 				TMBillingStart: "2023-06-08 03:22:17.995000",
+				TMBillingEnd:   dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -141,6 +142,7 @@ func Test_CreateByCall(t *testing.T) {
 				CostPerUnit:    defaultCostPerUnitReferenceTypeCall,
 				CostTotal:      0,
 				TMBillingStart: "2023-06-08 03:22:17.995000",
+				TMBillingEnd:   dbhandler.DefaultTimeStamp,
 			},
 		},
 	}
