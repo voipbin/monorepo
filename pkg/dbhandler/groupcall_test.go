@@ -129,7 +129,7 @@ func Test_GroupcallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
 			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
@@ -243,13 +243,13 @@ func Test_GroupcallSetAnswerCallID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
 			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
 			if errSet := h.GroupcallSetAnswerCallID(ctx, tt.id, tt.answerCallID); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
@@ -334,13 +334,13 @@ func Test_GroupcallSetAnswerGroupcallID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
 			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
 			if errSet := h.GroupcallSetAnswerGroupcallID(ctx, tt.id, tt.answerGroupcallID); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
@@ -416,13 +416,13 @@ func Test_GroupcallDecreaseCallCount(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
 			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
 			if errSet := h.GroupcallDecreaseCallCount(ctx, tt.id); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
@@ -498,13 +498,13 @@ func Test_GroupcallDecreaseGroupcallCount(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
 			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
 			if errSet := h.GroupcallDecreaseGroupcallCount(ctx, tt.id); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
@@ -577,13 +577,13 @@ func Test_GroupcallSetStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
 			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
 			if errSet := h.GroupcallSetStatus(ctx, tt.id, tt.status); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
@@ -668,13 +668,13 @@ func Test_GroupcallSetCallIDsAndCallCountAndDialIndex(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any()).Return(nil)
 			if errCreate := h.GroupcallCreate(ctx, tt.data); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().GroupcallSet(ctx, gomock.Any())
 			if errSet := h.GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, tt.id, tt.callIDs, tt.callCount, tt.dialIndex); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)

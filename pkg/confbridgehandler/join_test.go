@@ -144,7 +144,7 @@ func Test_Join(t *testing.T) {
 				mockBridge.EXPECT().IsExist(ctx, tt.responseConfbridge.BridgeID).Return(true)
 			} else {
 				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
-				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDBridge)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
 				mockBridge.EXPECT().Start(ctx, requesthandler.AsteriskIDConference, tt.responseUUIDBridge.String(), tt.expectBridgeArgs, tt.expectBridgeTypes).Return(tt.responseBridge, nil)
 
 				mockDB.EXPECT().ConfbridgeSetBridgeID(ctx, tt.id, tt.responseBridge.ID).Return(nil)
@@ -153,7 +153,7 @@ func Test_Join(t *testing.T) {
 			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
 			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.responseBridge.AsteriskID).Return(tt.responseAsteriskAddressInternal, nil)
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannel)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockChannel.EXPECT().StartChannelWithBaseChannel(ctx, tt.rsponseCall.ChannelID, tt.responseUUIDChannel.String(), tt.expectChannelArgs, tt.expectChannelDialDestination, "", "vp8", "", tt.expectReqVariables).Return(&channel.Channel{}, nil)
 
 			if err := h.Join(ctx, tt.id, tt.callID); err != nil {
@@ -238,7 +238,7 @@ func Test_createConfbridgeBridge(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockBridge.EXPECT().Start(ctx, requesthandler.AsteriskIDConference, tt.responseUUID.String(), tt.expectBridgeName, tt.expectBridgeTypes).Return(tt.responseBridge, nil)
 			mockDB.EXPECT().ConfbridgeSetBridgeID(ctx, tt.responseConfbridge.ID, tt.responseBridge.ID).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)

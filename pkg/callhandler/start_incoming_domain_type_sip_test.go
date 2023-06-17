@@ -115,12 +115,13 @@ func Test_startIncomingDomainTypeSIPDestinationTypeAgent(t *testing.T) {
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 			mockReq.EXPECT().RegistrarV1DomainGetByDomainName(ctx, tt.expectDomainName).Return(tt.responseDomain, nil)
 
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseDomain.CustomerID).Return(true, nil)
 			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseDomain.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
 
 			// startCallTypeFlow
-			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
-			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
@@ -225,11 +226,12 @@ func Test_startIncomingDomainTypeSIPDestinationTypeConference(t *testing.T) {
 			mockReq.EXPECT().RegistrarV1DomainGetByDomainName(ctx, tt.expectDomainName).Return(tt.responseDomain, nil)
 
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectConferenceID).Return(tt.responseConference, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseConference.CustomerID).Return(true, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseDomain.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
 
 			// startCallTypeFlow
-			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
-			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
@@ -330,8 +332,9 @@ func Test_startIncomingDomainTypeSIPDestinationTypeTel(t *testing.T) {
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseDomain.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, false).Return(tt.responseFlow, nil)
 
 			// startCallTypeFlow
-			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
-			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseDomain.CustomerID).Return(true, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 

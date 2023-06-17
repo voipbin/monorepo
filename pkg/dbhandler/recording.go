@@ -156,7 +156,7 @@ func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) e
 		c.TMStart,
 		c.TMEnd,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -337,7 +337,7 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID)
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, recording.StatusRecording, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusRecording. err: %v", err)
@@ -364,7 +364,7 @@ func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID) error
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, recording.StatusEnded, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusEnd. err: %v", err)
@@ -390,7 +390,7 @@ func (h *handler) recordingSetStatusStopping(ctx context.Context, id uuid.UUID) 
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, recording.StatusStopping, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. recordingSetStatusStopping. err: %v", err)
@@ -413,7 +413,7 @@ func (h *handler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. RecordingDelete. err: %v", err)

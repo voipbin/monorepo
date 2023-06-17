@@ -332,7 +332,7 @@ func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, ca
 	})
 
 	// create call bridge
-	bridgeID := h.utilHandler.CreateUUID().String()
+	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCall, callID)
 	tmp, err := h.bridgeHandler.Start(ctx, cn.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 	if err != nil {
@@ -443,7 +443,14 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	})
 
 	// create call id
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
+
+	// validate balance
+	if validBalance := h.ValidateCustomerBalance(ctx, id, customerID, call.DirectionIncoming, *source, *destination); !validBalance {
+		log.Errorf("Could not pass the balance validation. customer_id: %s", customerID)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error
+		return
+	}
 
 	// create call bridge
 	callBridgeID, err := h.addCallBridge(ctx, cn, id)

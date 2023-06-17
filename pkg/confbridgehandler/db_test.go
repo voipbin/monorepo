@@ -83,7 +83,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().ConfbridgeCreate(ctx, tt.expectConfbridge).Return(nil)
 			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseUUID).Return(&confbridge.Confbridge{}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeCreated, &confbridge.Confbridge{})

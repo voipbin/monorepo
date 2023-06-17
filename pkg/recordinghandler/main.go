@@ -72,7 +72,7 @@ func NewRecordingHandler(
 
 // createRecordingName returns recording name for the given reference type and id.
 func (h *recordingHandler) createRecordingName(referenceType recording.ReferenceType, referenceID string) string {
-	ts := h.utilHandler.GetCurTimeRFC3339()
+	ts := h.utilHandler.TimeGetCurTimeRFC3339()
 	res := fmt.Sprintf("%s_%s_%s", referenceType, referenceID, ts)
 	return res
 }

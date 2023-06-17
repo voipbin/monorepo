@@ -72,7 +72,7 @@ func (h *groupcallHandler) dialNextDestinationGroupcall(ctx context.Context, gc 
 	}
 
 	// update chained groupcall info
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	groupcallIDs := append(gc.GroupcallIDs, id)
 	res, err := h.UpdateGroupcallIDsAndGroupcallCountAndDialIndex(ctx, gc.ID, groupcallIDs, gc.GroupcallCount+1, gc.DialIndex+1)
 	if err != nil {
@@ -103,7 +103,7 @@ func (h *groupcallHandler) dialNextDestinationCall(ctx context.Context, gc *grou
 	})
 
 	// update chained groupcall info
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	callIDs := append(gc.CallIDs, id)
 	res, err := h.UpdateCallIDsAndCallCountAndDialIndex(ctx, gc.ID, callIDs, gc.GroupcallCount+1, gc.DialIndex+1)
 	if err != nil {

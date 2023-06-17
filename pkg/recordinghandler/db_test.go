@@ -135,10 +135,10 @@ func Test_Start_call(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
-			mockUtil.EXPECT().GetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().TimeGetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
 			for i, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
-				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDsChannelIDs[i])
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDsChannelIDs[i])
 				mockChannel.EXPECT().StartSnoop(ctx, tt.expectTargetChannelID, tt.expectChannelIDs[i], tt.expectArgs[i], direction, channel.SnoopDirectionNone).Return(tt.responseChannels[i], nil)
 			}
 
@@ -255,8 +255,8 @@ func Test_Start_confbridge(t *testing.T) {
 
 			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
 			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
-			mockUtil.EXPECT().GetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().TimeGetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().AstBridgeRecord(

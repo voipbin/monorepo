@@ -79,7 +79,7 @@ func (h *confbridgeHandler) Join(ctx context.Context, id uuid.UUID, callID uuid.
 	}
 
 	// create a another channel with joining context
-	channelID := h.utilHandler.CreateUUID()
+	channelID := h.utilHandler.UUIDCreate()
 	tmp, err := h.channelHandler.StartChannelWithBaseChannel(ctx, c.ChannelID, channelID.String(), args, dialDestination, "", "vp8", "", variables)
 	if err != nil {
 		log.Errorf("Could not create a channel for joining. err: %v", err)
@@ -115,7 +115,7 @@ func (h *confbridgeHandler) createConfbridgeBridge(ctx context.Context, id uuid.
 		return nil, fmt.Errorf("unsupported confbridge type. confbridge_type: %s", cb.Type)
 	}
 
-	bridgeID := h.utilHandler.CreateUUID().String()
+	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := generateBridgeName(bridge.ReferenceTypeConfbridge, id)
 	log.Debugf("Creating a bridge for confbridge. birdge_id: %s, birdge_name: %s", bridgeID, bridgeName)
 

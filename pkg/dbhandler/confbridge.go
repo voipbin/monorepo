@@ -164,7 +164,7 @@ func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridg
 
 		cb.ExternalMediaID.Bytes(),
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -294,7 +294,7 @@ func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, bridgeID, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, bridgeID, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetBridgeID. err: %v", err)
 	}
@@ -315,7 +315,7 @@ func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeDelete. err: %v", err)
 	}
@@ -337,7 +337,7 @@ func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, re
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetRecordingID. err: %v", err)
 	}
@@ -363,7 +363,7 @@ func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddRecordingIDs. err: %v", err)
 	}
@@ -385,7 +385,7 @@ func (h *handler) ConfbridgeSetExternalMediaID(ctx context.Context, id uuid.UUID
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, externalMediaID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, externalMediaID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetExternalMediaID. err: %v", err)
 	}
@@ -411,7 +411,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, callID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, callID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
 	}
@@ -436,7 +436,7 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
 	}
@@ -465,7 +465,7 @@ func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []
 		return errors.Wrap(err, "could not marshal the flags")
 	}
 
-	_, err = h.db.Exec(q, tmp, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetFlags. err: %v", err)
 	}
@@ -487,7 +487,7 @@ func (h *handler) ConfbridgeSetStatus(ctx context.Context, id uuid.UUID, status 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetStatus. err: %v", err)
 	}

@@ -103,7 +103,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any()).Return(nil)
 			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -174,7 +174,7 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any()).Return(nil)
 			if err := h.ConfbridgeCreate(context.Background(), tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -241,13 +241,13 @@ func Test_ConfbridgeSetRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeSetRecordingID(ctx, tt.confbridge.ID, tt.recordID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -316,13 +316,13 @@ func Test_ConfbridgeSetExternalMediaID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeSetExternalMediaID(ctx, tt.confbridge.ID, tt.externalMediaID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -394,13 +394,13 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeSetFlags(ctx, tt.confbridge.ID, tt.flags); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -470,13 +470,13 @@ func Test_ConfbridgeSetStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeCreate(ctx, tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConfbridgeSet(ctx, gomock.Any())
 			if err := h.ConfbridgeSetStatus(ctx, tt.confbridge.ID, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

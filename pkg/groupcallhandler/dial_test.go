@@ -102,7 +102,7 @@ func Test_dialNextDestination_call(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectCallIDs, tt.expectCallCount, tt.expectDialIndex).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.responseGroupcall, nil)
 
@@ -226,7 +226,7 @@ func Test_dialNextDestination_groupcall(t *testing.T) {
 
 			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectGroupcallIDs, tt.expectGroupcallCount, tt.expectDialIndex).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.responseGroupcall, nil)
 

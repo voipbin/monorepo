@@ -188,7 +188,7 @@ func Test_Start_ringall(t *testing.T) {
 			ctx := context.Background()
 
 			for _, id := range tt.responseUUIDs {
-				mockUtil.EXPECT().CreateUUID().Return(id)
+				mockUtil.EXPECT().UUIDCreate().Return(id)
 			}
 
 			// create
@@ -299,7 +299,7 @@ func Test_Start_linear(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
 			mockDB.EXPECT().GroupcallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, gomock.Any()).Return(tt.responseGroupcall, nil)

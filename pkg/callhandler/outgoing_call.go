@@ -113,7 +113,7 @@ func (h *callHandler) CreateCallOutgoing(
 	log.Debug("Creating a call for outgoing.")
 
 	if id == uuid.Nil {
-		id = h.utilHandler.CreateUUID()
+		id = h.utilHandler.UUIDCreate()
 		log = log.WithField("id", id)
 		log.Debugf("The given call id is empty. Create new call id. call_id: %s", id)
 	}
@@ -122,6 +122,18 @@ func (h *callHandler) CreateCallOutgoing(
 	if destination.Type != commonaddress.TypeSIP && destination.Type != commonaddress.TypeTel {
 		log.Errorf("Wrong destination type to call. destination_type: %s", destination.Type)
 		return nil, fmt.Errorf("the destination type must be sip or tel")
+	}
+
+	// validate customer's account balance
+	if validBalance := h.ValidateCustomerBalance(ctx, id, customerID, call.DirectionOutgoing, source, destination); !validBalance {
+		log.Debugf("Could not pass the balance validation. customer_id: %s", customerID)
+		return nil, fmt.Errorf("could not pass the balance validation")
+	}
+
+	// validate destination
+	if validDestination := h.ValidateDestination(ctx, customerID, destination); !validDestination {
+		log.Debugf("Could not pass the destination validation. customer_id: %s", customerID)
+		return nil, fmt.Errorf("could not pass the destination validation")
 	}
 
 	// get dialroutes
@@ -146,7 +158,7 @@ func (h *callHandler) CreateCallOutgoing(
 	log.Debugf("Created active-flow. active-flow: %v", af)
 
 	// create channel id
-	channelID := h.utilHandler.CreateUUID().String()
+	channelID := h.utilHandler.UUIDCreate().String()
 
 	// get source address for outgoing
 	s := getSourceForOutgoingCall(&source, &destination)
@@ -420,7 +432,7 @@ func (h *callHandler) createFailoverChannel(ctx context.Context, c *call.Call) (
 	dialrouteID := dialroute.ID
 
 	// create a new channel id
-	channelID := h.utilHandler.CreateUUID().String()
+	channelID := h.utilHandler.UUIDCreate().String()
 
 	// update call
 	cc, err := h.updateForRouteFailover(ctx, c.ID, channelID, dialrouteID)

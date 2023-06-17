@@ -97,7 +97,7 @@ func Test_RecordingCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().RecordingSet(ctx, gomock.Any()).Return(nil)
 			if err := h.RecordingCreate(ctx, tt.recording); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -210,12 +210,12 @@ func Test_RecordingGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, recording := range tt.recordings {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().RecordingSet(ctx, gomock.Any()).Return(nil)
 				_ = h.RecordingCreate(ctx, recording)
 			}
 
-			res, err := h.RecordingGets(ctx, tt.customerID, 10, utilhandler.GetCurTime())
+			res, err := h.RecordingGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -277,13 +277,13 @@ func Test_RecordingDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().RecordingSet(ctx, gomock.Any())
 			if err := h.RecordingCreate(ctx, tt.recording); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().RecordingSet(ctx, gomock.Any())
 			if err := h.RecordingDelete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

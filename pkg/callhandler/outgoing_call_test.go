@@ -150,7 +150,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id).Return(tt.responseActiveflow, nil)
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannel)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID).Return(true, nil)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
@@ -330,7 +331,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			// getDialURI
 			mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.expectCall.CustomerID, tt.expectDialrouteTarget).Return(tt.responseRoutes, nil)
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannel)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID).Return(true, nil)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
@@ -953,7 +955,7 @@ func Test_createFailoverChannel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChannel)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 
 			// updateForRouteFailover
 			mockDB.EXPECT().CallSetForRouteFailover(ctx, tt.call.ID, tt.responseUUIDChannel.String(), tt.expectDialrouteID).Return(nil)

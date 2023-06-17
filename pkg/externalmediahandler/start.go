@@ -56,7 +56,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callI
 	}
 
 	// create a bridge
-	bridgeID := h.utilHandler.CreateUUID().String()
+	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
 	br, err := h.bridgeHandler.Start(ctx, ch.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia})
 	if err != nil {
@@ -73,7 +73,7 @@ func (h *externalMediaHandler) startReferenceTypeCall(ctx context.Context, callI
 		channel.StasisDataTypeBridgeID, br.ID,
 	)
 
-	snoopID := h.utilHandler.CreateUUID().String()
+	snoopID := h.utilHandler.UUIDCreate().String()
 	tmp, err := h.channelHandler.StartSnoop(ctx, ch.ID, snoopID, appArgs, channel.SnoopDirection(direction), channel.SnoopDirectionBoth)
 	if err != nil {
 		log.Errorf("Could not create a snoop channel for the external media. error: %v", err)
@@ -142,7 +142,7 @@ func (h *externalMediaHandler) startExternalMedia(ctx context.Context, asteriskI
 		channel.StasisDataTypeReferenceType, referenceType,
 		channel.StasisDataTypeReferenceID, referenceID,
 	)
-	extChannelID := h.utilHandler.CreateUUID().String()
+	extChannelID := h.utilHandler.UUIDCreate().String()
 	extCh, err := h.channelHandler.StartExternalMedia(ctx, asteriskID, extChannelID, externalHost, constEncapsulation, constTransport, constConnectionType, constFormat, constDirection, chData, nil)
 	if err != nil {
 		log.Errorf("Could not create a external media channel. err: %v", err)

@@ -88,7 +88,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime()).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
 
 			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channelID).Return(tt.responseAMD, nil)
 

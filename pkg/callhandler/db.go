@@ -52,7 +52,7 @@ func (h *callHandler) Create(
 
 	callID := id
 	if callID == uuid.Nil {
-		callID = h.utilHandler.CreateUUID()
+		callID = h.utilHandler.UUIDCreate()
 	}
 
 	c := &call.Call{

@@ -933,7 +933,7 @@ func Test_actionExecuteAMD(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(utilhandler.CreateUUID())
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
 			mockChannel.EXPECT().StartSnoop(ctx, tt.call.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirectionBoth, channel.SnoopDirectionBoth).Return(&channel.Channel{}, nil)
 			mockDB.EXPECT().CallApplicationAMDSet(ctx, gomock.Any(), tt.expectAMD).Return(nil)
 
@@ -1102,7 +1102,7 @@ func Test_ActionNext(t *testing.T) {
 
 			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, tt.call.ActiveFlowID, tt.call.Action.ID).Return(tt.responseAction, nil)
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().CallSetActionAndActionNextHold(ctx, tt.call.ID, tt.responseAction, false).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)

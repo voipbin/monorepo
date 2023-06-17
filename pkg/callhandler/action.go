@@ -184,7 +184,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	log.WithField("action", nextAction).Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
 
 	// set action and action next hold
-	nextAction.TMExecute = h.utilHandler.GetCurTime()
+	nextAction.TMExecute = h.utilHandler.TimeGetCurTime()
 	cc, err := h.updateActionAndActionNextHold(ctx, c.ID, nextAction)
 	if err != nil {
 		log.Errorf("Could not set the action for call. Move to the next action. err: %v", err)
@@ -748,7 +748,7 @@ func (h *callHandler) actionExecuteAMD(ctx context.Context, c *call.Call) error 
 		channel.StasisDataTypeApplicationName, applicationAMD,
 	)
 
-	snoopID := h.utilHandler.CreateUUID().String()
+	snoopID := h.utilHandler.UUIDCreate().String()
 	tmp, err := h.channelHandler.StartSnoop(ctx, c.ChannelID, snoopID, appArgs, channel.SnoopDirectionBoth, channel.SnoopDirectionBoth)
 	if err != nil {
 		log.Errorf("Could not create a snoop channel for the AMD. error: %v", err)
