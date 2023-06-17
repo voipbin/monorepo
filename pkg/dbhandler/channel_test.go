@@ -147,7 +147,7 @@ func Test_ChannelCreate(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), tt.expectChannel)
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -218,7 +218,7 @@ func Test_ChannelGet(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -292,13 +292,13 @@ func Test_ChannelEndAndDelete(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelEndAndDelete(context.Background(), tt.channel.ID, tt.hangup); err != nil {
 				t.Errorf("Wrong match. expect: ok , got: %v", err)
@@ -378,13 +378,13 @@ func Test_ChannelSetStateAnswer(t *testing.T) {
 			ctx := context.Background()
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(ctx, gomock.Any())
 			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(ctx, gomock.Any())
 			if err := h.ChannelSetStateAnswer(ctx, tt.channel.ID, tt.state); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -491,13 +491,13 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 			ctx := context.Background()
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(ctx, gomock.Any())
 			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(ctx, gomock.Any())
 			if err := h.ChannelSetStateRinging(ctx, tt.channel.ID, tt.state); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -575,13 +575,13 @@ func Test_ChannelSetStasis(t *testing.T) {
 			}
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetStasis(context.Background(), tt.channel.ID, tt.stasis); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -739,13 +739,13 @@ func Test_ChannelSetType(t *testing.T) {
 			}
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetType(context.Background(), tt.channel.ID, tt.cType); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -855,13 +855,13 @@ func Test_ChannelSetData(t *testing.T) {
 			}
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetData(context.Background(), tt.channel.ID, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -972,13 +972,13 @@ func Test_ChannelSetStasisInfo(t *testing.T) {
 			ctx := context.Background()
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetStasisInfo(
 				ctx,
@@ -1091,13 +1091,13 @@ func Test_ChannelSetBridgeID(t *testing.T) {
 			}
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetBridgeID(context.Background(), tt.channel.ID, tt.bridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1291,13 +1291,13 @@ func Test_ChannelSetSIPTransport(t *testing.T) {
 			ctx := context.Background()
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetSIPTransport(ctx, tt.channel.ID, tt.sipTransport); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1378,13 +1378,13 @@ func Test_ChannelSetSIPCallID(t *testing.T) {
 			ctx := context.Background()
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetSIPCallID(ctx, tt.channel.ID, tt.sipCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1520,13 +1520,13 @@ func Test_ChannelSetDirection(t *testing.T) {
 			ctx := context.Background()
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetDirection(ctx, tt.channel.ID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1603,13 +1603,13 @@ func Test_ChannelSetMuteDirection(t *testing.T) {
 			ctx := context.Background()
 
 			// prepare
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelCreate(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChannelSet(gomock.Any(), gomock.Any())
 			if err := h.ChannelSetMuteDirection(ctx, tt.channel.ID, tt.muteDirection); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

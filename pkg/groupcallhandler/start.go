@@ -45,7 +45,7 @@ func (h *groupcallHandler) Start(
 	}
 
 	if id == uuid.Nil {
-		id = h.utilHandler.CreateUUID()
+		id = h.utilHandler.UUIDCreate()
 		log.Debugf("The given groupcall start request has no id. Created a new id. id: %s", id)
 	}
 
@@ -98,7 +98,7 @@ func (h *groupcallHandler) startRingall(
 	callIDs := []uuid.UUID{}
 	callDialDestinations := []*commonaddress.Address{}
 	for _, destination := range destinations {
-		tmpID := h.utilHandler.CreateUUID()
+		tmpID := h.utilHandler.UUIDCreate()
 
 		if h.IsGroupcallTypeAddress(&destination) {
 			groupcallIDs = append(groupcallIDs, tmpID)
@@ -179,7 +179,7 @@ func (h *groupcallHandler) startLinear(
 	dialDestination := destinations[0]
 
 	// set groupcallIDs or callIDs
-	tmpID := h.utilHandler.CreateUUID()
+	tmpID := h.utilHandler.UUIDCreate()
 	groupcallIDs := []uuid.UUID{}
 	callIDs := []uuid.UUID{}
 

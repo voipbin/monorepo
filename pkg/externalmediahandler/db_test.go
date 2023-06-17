@@ -92,7 +92,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
 			res, err := h.Create(
 				ctx,

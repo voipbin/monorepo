@@ -42,7 +42,7 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 		return nil, fmt.Errorf("invalid status")
 	}
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	channelIDs := []string{}
 	filenames := []string{}
 
@@ -54,7 +54,7 @@ func (h *recordingHandler) recordingReferenceTypeCall(
 		filenames = append(filenames, filename)
 
 		// channel ids
-		channelID := h.utilHandler.CreateUUID().String()
+		channelID := h.utilHandler.UUIDCreate().String()
 		channelIDs = append(channelIDs, channelID)
 
 		// set app args
@@ -157,7 +157,7 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 	recordingName := h.createRecordingName(recording.ReferenceTypeConfbridge, cb.ID.String())
 	filename := fmt.Sprintf("%s_in", recordingName)
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	recordingFilename := fmt.Sprintf("%s.%s", filename, format)
 	filenames := []string{
 		recordingFilename,

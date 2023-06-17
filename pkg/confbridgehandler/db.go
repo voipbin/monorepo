@@ -19,7 +19,7 @@ func (h *confbridgeHandler) Create(ctx context.Context, customerID uuid.UUID, co
 		"customer_id": customerID,
 	})
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 
 	cb := &confbridge.Confbridge{
 		ID:         id,

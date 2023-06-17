@@ -31,7 +31,7 @@ func (h *externalMediaHandler) Create(
 		"reference_id":   referenceID,
 	})
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	extMedia := &externalmedia.ExternalMedia{
 		ID: id,
 

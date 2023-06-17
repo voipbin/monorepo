@@ -335,7 +335,7 @@ func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
 		c.DialrouteID.Bytes(),
 		tmpDialroutes,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 
@@ -442,7 +442,7 @@ func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID st
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, bridgeID, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, bridgeID, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. callSetBridgeID. err: %v", err)
 	}
@@ -467,7 +467,7 @@ func (h *handler) CallSetStatusRinging(ctx context.Context, id uuid.UUID) error 
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, call.StatusRinging, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetStatusRinging. err: %v", err)
@@ -493,7 +493,7 @@ func (h *handler) CallSetStatusProgressing(ctx context.Context, id uuid.UUID) er
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, call.StatusProgressing, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetStatusProgressing. err: %v", err)
@@ -518,7 +518,7 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetStatus. err: %v", err)
 	}
@@ -546,7 +546,7 @@ func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.H
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, string(call.StatusHangup), hangupBy, reason, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetHangup. err: %v", err)
@@ -572,7 +572,7 @@ func (h *handler) CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, flowID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, flowID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetFlowID. err: %v", err)
 	}
@@ -597,7 +597,7 @@ func (h *handler) CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, confbridgeID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, confbridgeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetConfbridgeID. err: %v", err)
 	}
@@ -628,7 +628,7 @@ func (h *handler) CallSetActionAndActionNextHold(ctx context.Context, id uuid.UU
 		return err
 	}
 
-	_, err = h.db.Exec(q, tmpAction, hold, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpAction, hold, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetActionAndActionNextHold. err: %v", err)
 	}
@@ -714,7 +714,7 @@ func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uu
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
 	}
@@ -746,7 +746,7 @@ func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
 	}
@@ -771,7 +771,7 @@ func (h *handler) CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, callID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, callID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetMasterCallID. err: %v", err)
 	}
@@ -793,7 +793,7 @@ func (h *handler) CallSetRecordingID(ctx context.Context, id uuid.UUID, recordID
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetRecordingID. err: %v", err)
 	}
@@ -818,7 +818,7 @@ func (h *handler) CallSetExternalMediaID(ctx context.Context, id uuid.UUID, exte
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, externalMediaID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, externalMediaID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetExternalMediaID. err: %v", err)
 	}
@@ -844,7 +844,7 @@ func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, cha
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, channelID, dialrouteID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, channelID, dialrouteID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetForRouteFailover. err: %v", err)
 	}
@@ -870,7 +870,7 @@ func (h *handler) CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddRecordingIDs. err: %v", err)
 	}
@@ -935,7 +935,7 @@ func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID
 		id = ?
 	`
 
-	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
 	}
@@ -967,7 +967,7 @@ func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.U
 		id = ?
 	`
 
-	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
 	}
@@ -989,7 +989,7 @@ func (h *handler) CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, hold, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, hold, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetActionNextHold. err: %v", err)
 	}
@@ -1011,7 +1011,7 @@ func (h *handler) CallDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallDelete. err: %v", err)
@@ -1041,7 +1041,7 @@ func (h *handler) CallSetData(ctx context.Context, id uuid.UUID, data map[call.D
 		return fmt.Errorf("could not marshal data. CallSetData. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetData. err: %v", err)
 	}
@@ -1055,7 +1055,7 @@ func (h *handler) CallSetData(ctx context.Context, id uuid.UUID, data map[call.D
 // CallSetMuteDirection sets the call mute direction
 func (h *handler) CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDirection call.MuteDirection) error {
 	// prepare
-	q := `	
+	q := `
 	update
 		calls
 	set
@@ -1065,7 +1065,7 @@ func (h *handler) CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDi
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, muteDirection, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, muteDirection, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallSetMuteDirection. err: %v", err)
 	}
