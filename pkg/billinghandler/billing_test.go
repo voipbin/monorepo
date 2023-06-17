@@ -70,6 +70,7 @@ func Test_BillingStart(t *testing.T) {
 				CostTotal:        0,
 				BillingUnitCount: 0,
 				TMBillingStart:   "2023-06-08 03:22:17.995000",
+				TMBillingEnd:     dbhandler.DefaultTimeStamp,
 			},
 		},
 	}

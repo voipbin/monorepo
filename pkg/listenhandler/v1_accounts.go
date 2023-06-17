@@ -135,7 +135,7 @@ func (h *listenHandler) processV1AccountsCustomerIDIDIsValidBalancePost(ctx cont
 
 	valid, err := h.accountHandler.IsValidBalanceByCustomerID(ctx, customerID)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
+		log.Errorf("Could not validate the account's balance info. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
