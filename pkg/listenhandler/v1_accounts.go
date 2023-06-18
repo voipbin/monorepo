@@ -158,10 +158,10 @@ func (h *listenHandler) processV1AccountsCustomerIDIDIsValidBalancePost(ctx cont
 	return res, nil
 }
 
-// processV1AccountsIDBalanceAddPost handles POST /v1/accounts/<account-id>/balance_add request
-func (h *listenHandler) processV1AccountsIDBalanceAddPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1AccountsIDBalanceAddForcePost handles POST /v1/accounts/<account-id>/balance_add_force request
+func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AccountsIDBalanceAddPost",
+		"func":    "processV1AccountsIDBalanceAddForcePost",
 		"request": m,
 	})
 
@@ -172,7 +172,7 @@ func (h *listenHandler) processV1AccountsIDBalanceAddPost(ctx context.Context, m
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	var req request.V1DataAccountsIDBalanceAddPOST
+	var req request.V1DataAccountsIDBalanceAddForcePOST
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
@@ -197,10 +197,10 @@ func (h *listenHandler) processV1AccountsIDBalanceAddPost(ctx context.Context, m
 	return res, nil
 }
 
-// processV1AccountsIDBalanceSubtractPost handles POST /v1/accounts/<account-id>/balance_subtract request
-func (h *listenHandler) processV1AccountsIDBalanceSubtractPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1AccountsIDBalanceSubtractForcePost handles POST /v1/accounts/<account-id>/balance_subtract_force request
+func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AccountsIDBalanceSubtractPost",
+		"func":    "processV1AccountsIDBalanceSubtractForcePost",
 		"request": m,
 	})
 
@@ -211,7 +211,7 @@ func (h *listenHandler) processV1AccountsIDBalanceSubtractPost(ctx context.Conte
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	var req request.V1DataAccountsIDBalanceSubtractPOST
+	var req request.V1DataAccountsIDBalanceSubtractForcePOST
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		return nil, err
 	}
