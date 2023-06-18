@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/response"
 )
 
@@ -144,6 +145,84 @@ func (h *listenHandler) processV1AccountsCustomerIDIDIsValidBalancePost(ctx cont
 	}
 
 	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsIDBalanceAddPost handles POST /v1/accounts/<account-id>/balance_add request
+func (h *listenHandler) processV1AccountsIDBalanceAddPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIDBalanceAddPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataAccountsIDBalanceAddPOST
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	c, err := h.accountHandler.AddBalance(ctx, id, req.Balance)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	data, err := json.Marshal(c)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsIDBalanceSubtractPost handles POST /v1/accounts/<account-id>/balance_subtract request
+func (h *listenHandler) processV1AccountsIDBalanceSubtractPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIDBalanceSubtractPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataAccountsIDBalanceSubtractPOST
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	c, err := h.accountHandler.SubtractBalance(ctx, id, req.Balance)
+	if err != nil {
+		log.Errorf("Could not get call info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	data, err := json.Marshal(c)
 	if err != nil {
 		return simpleResponse(404), nil
 	}

@@ -93,20 +93,20 @@ func (h *accountHandler) Gets(ctx context.Context, size uint64, token string) ([
 	return res, nil
 }
 
-// SubstractBalanceByCustomer substracts the balance of the given customer id.
-func (h *accountHandler) SubstractBalanceByCustomer(ctx context.Context, customerID uuid.UUID, balance float32) (*account.Account, error) {
+// SubtractBalance substracts the balance of the given customer id.
+func (h *accountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "SubstractBalanceByCustomer",
-		"customer_id": customerID,
+		"func":        "SubtractBalance",
+		"customer_id": accountID,
 		"balance":     balance,
 	})
 
-	if errSub := h.db.AccountSubstractBalanceByCustomerID(ctx, customerID, balance); errSub != nil {
+	if errSub := h.db.AccountSubtractBalance(ctx, accountID, balance); errSub != nil {
 		log.Errorf("Could not subsctract the balance. err: %v", errSub)
 		return nil, errors.Wrap(errSub, "could not subsctract the balance")
 	}
 
-	res, err := h.db.AccountGetByCustomerID(ctx, customerID)
+	res, err := h.db.AccountGet(ctx, accountID)
 	if err != nil {
 		log.Errorf("Could not get updated account. err: %v", err)
 		return nil, errors.Wrap(err, "could not get updated account info")
@@ -115,20 +115,20 @@ func (h *accountHandler) SubstractBalanceByCustomer(ctx context.Context, custome
 	return res, nil
 }
 
-// AddBalanceByCustomer adds the balance of the given customer id.
-func (h *accountHandler) AddBalanceByCustomer(ctx context.Context, customerID uuid.UUID, balance float32) (*account.Account, error) {
+// AddBalance adds the balance of the given customer id.
+func (h *accountHandler) AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "AddBalanceByCustomer",
-		"customer_id": customerID,
+		"func":        "AddBalance",
+		"customer_id": accountID,
 		"balance":     balance,
 	})
 
-	if errSub := h.db.AccountAddBalanceByCustomerID(ctx, customerID, balance); errSub != nil {
+	if errSub := h.db.AccountAddBalance(ctx, accountID, balance); errSub != nil {
 		log.Errorf("Could not add the balance. err: %v", errSub)
 		return nil, errors.Wrap(errSub, "could not add the balance")
 	}
 
-	res, err := h.db.AccountGetByCustomerID(ctx, customerID)
+	res, err := h.db.AccountGet(ctx, accountID)
 	if err != nil {
 		log.Errorf("Could not get updated account. err: %v", err)
 		return nil, errors.Wrap(err, "could not get updated account info")

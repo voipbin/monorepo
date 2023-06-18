@@ -121,7 +121,7 @@ func (h *billingHandler) BillingEnd(
 	log.WithField("billing", tmp).Debugf("Updated billing status end. billing_id: %s", tmp.ID)
 
 	// update account balance
-	ac, err := h.accountHandler.SubstractBalanceByCustomer(ctx, tmp.CustomerID, tmp.CostTotal)
+	ac, err := h.accountHandler.SubtractBalance(ctx, tmp.CustomerID, tmp.CostTotal)
 	if err != nil {
 		log.Errorf("Could not substract the balance from the account. err: %v", err)
 		return errors.Wrap(err, "could not substract the account balance from the account")

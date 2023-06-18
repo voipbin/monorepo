@@ -13,7 +13,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230605154253-5e94270b8e39
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230617073121-d3ecf98b22ec
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230615165424-1b9c9f38bc4d
 	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230604162846-9d4a40ced4cb
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf6b027

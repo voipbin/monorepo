@@ -22,8 +22,8 @@ type DBHandler interface {
 	AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
 	AccountGets(ctx context.Context, size uint64, token string) ([]*account.Account, error)
 	AccountSet(ctx context.Context, id uuid.UUID, name string, detail string) error
-	AccountAddBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, balance float32) error
-	AccountSubstractBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, balance float32) error
+	AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) error
+	AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) error
 	AccountSetPaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 

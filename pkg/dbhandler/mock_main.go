@@ -37,18 +37,18 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// AccountAddBalanceByCustomerID mocks base method.
-func (m *MockDBHandler) AccountAddBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, balance float32) error {
+// AccountAddBalance mocks base method.
+func (m *MockDBHandler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountAddBalanceByCustomerID", ctx, customerID, balance)
+	ret := m.ctrl.Call(m, "AccountAddBalance", ctx, accountID, balance)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AccountAddBalanceByCustomerID indicates an expected call of AccountAddBalanceByCustomerID.
-func (mr *MockDBHandlerMockRecorder) AccountAddBalanceByCustomerID(ctx, customerID, balance interface{}) *gomock.Call {
+// AccountAddBalance indicates an expected call of AccountAddBalance.
+func (mr *MockDBHandlerMockRecorder) AccountAddBalance(ctx, accountID, balance interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountAddBalanceByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).AccountAddBalanceByCustomerID), ctx, customerID, balance)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountAddBalance", reflect.TypeOf((*MockDBHandler)(nil).AccountAddBalance), ctx, accountID, balance)
 }
 
 // AccountCreate mocks base method.
@@ -152,18 +152,18 @@ func (mr *MockDBHandlerMockRecorder) AccountSetPaymentInfo(ctx, id, paymentType,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSetPaymentInfo", reflect.TypeOf((*MockDBHandler)(nil).AccountSetPaymentInfo), ctx, id, paymentType, paymentMethod)
 }
 
-// AccountSubstractBalanceByCustomerID mocks base method.
-func (m *MockDBHandler) AccountSubstractBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, balance float32) error {
+// AccountSubtractBalance mocks base method.
+func (m *MockDBHandler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountSubstractBalanceByCustomerID", ctx, customerID, balance)
+	ret := m.ctrl.Call(m, "AccountSubtractBalance", ctx, accountID, balance)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AccountSubstractBalanceByCustomerID indicates an expected call of AccountSubstractBalanceByCustomerID.
-func (mr *MockDBHandlerMockRecorder) AccountSubstractBalanceByCustomerID(ctx, customerID, balance interface{}) *gomock.Call {
+// AccountSubtractBalance indicates an expected call of AccountSubtractBalance.
+func (mr *MockDBHandlerMockRecorder) AccountSubtractBalance(ctx, accountID, balance interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubstractBalanceByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).AccountSubstractBalanceByCustomerID), ctx, customerID, balance)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractBalance", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractBalance), ctx, accountID, balance)
 }
 
 // BillingCreate mocks base method.
