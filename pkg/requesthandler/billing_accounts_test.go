@@ -256,3 +256,131 @@ func Test_BillingV1AccountGetByCustomerID(t *testing.T) {
 		})
 	}
 }
+
+func Test_BillingV1AccountAddBalance(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+		balance   float32
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *bmaccount.Account
+
+		response *rabbitmqhandler.Response
+	}{
+		{
+			name: "normal",
+
+			accountID: uuid.FromStringOrNil("79403360-0dbf-11ee-b1ad-c3eebc4a6196"),
+			balance:   20,
+
+			expectTarget: "bin-manager.billing-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/accounts/79403360-0dbf-11ee-b1ad-c3eebc4a6196/balance_add",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"balance":20}`),
+			},
+			expectRes: &bmaccount.Account{
+				ID: uuid.FromStringOrNil("79403360-0dbf-11ee-b1ad-c3eebc4a6196"),
+			},
+
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"79403360-0dbf-11ee-b1ad-c3eebc4a6196"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.BillingV1AccountAddBalance(ctx, tt.accountID, tt.balance)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingV1AccountSubtractBalance(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID uuid.UUID
+		balance   float32
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *bmaccount.Account
+
+		response *rabbitmqhandler.Response
+	}{
+		{
+			name: "normal",
+
+			accountID: uuid.FromStringOrNil("c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"),
+			balance:   20,
+
+			expectTarget: "bin-manager.billing-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/accounts/c7b00aa2-0dbf-11ee-ab39-b7ac15120be3/balance_subtract",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"balance":20}`),
+			},
+			expectRes: &bmaccount.Account{
+				ID: uuid.FromStringOrNil("c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"),
+			},
+
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c7b00aa2-0dbf-11ee-ab39-b7ac15120be3"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.BillingV1AccountSubtractBalance(ctx, tt.accountID, tt.balance)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
