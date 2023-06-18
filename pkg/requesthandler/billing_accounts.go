@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	bmrequest "gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/request"
 	bmresponse "gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/response"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -85,6 +86,64 @@ func (r *requestHandler) BillingV1AccountGetByCustomerID(ctx context.Context, cu
 	uri := fmt.Sprintf("/v1/accounts/customer_id/%s", customerID)
 
 	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodGet, "billing/accounts/customer_id/<customer-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("could not get response")
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	res := bmaccount.Account{}
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	}
+
+	return &res, nil
+}
+
+// BillingV1AccountAddBalance adds the balance to the account
+func (r *requestHandler) BillingV1AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/balance_add", accountID)
+
+	m, err := json.Marshal(bmrequest.V1DataAccountsIDBalanceAddPOST{
+		Balance: balance,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts/<account-id>/balance_add", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("could not get response")
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	res := bmaccount.Account{}
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	}
+
+	return &res, nil
+}
+
+// BillingV1AccountSubtractBalance subtracts the balance from the account
+func (r *requestHandler) BillingV1AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/balance_subtract", accountID)
+
+	m, err := json.Marshal(bmrequest.V1DataAccountsIDBalanceSubtractPOST{
+		Balance: balance,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts/<account-id>/balance_subtract", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err

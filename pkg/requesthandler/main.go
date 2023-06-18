@@ -379,6 +379,8 @@ type RequestHandler interface {
 	BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
 	BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error)
 	BillingV1AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*bmaccount.Account, error)
+	BillingV1AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
+	BillingV1AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 
 	// call-manager call
 	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error

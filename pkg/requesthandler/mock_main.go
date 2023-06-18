@@ -842,6 +842,21 @@ func (mr *MockRequestHandlerMockRecorder) AstRecordingUnpause(ctx, asteriskID, r
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstRecordingUnpause", reflect.TypeOf((*MockRequestHandler)(nil).AstRecordingUnpause), ctx, asteriskID, recordingName)
 }
 
+// BillingV1AccountAddBalance mocks base method.
+func (m *MockRequestHandler) BillingV1AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountAddBalance", ctx, accountID, balance)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountAddBalance indicates an expected call of BillingV1AccountAddBalance.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountAddBalance(ctx, accountID, balance interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountAddBalance", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountAddBalance), ctx, accountID, balance)
+}
+
 // BillingV1AccountGet mocks base method.
 func (m *MockRequestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
 	m.ctrl.T.Helper()
@@ -900,6 +915,21 @@ func (m *MockRequestHandler) BillingV1AccountIsValidBalanceByCustomerID(ctx cont
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalanceByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalanceByCustomerID), ctx, customerID)
+}
+
+// BillingV1AccountSubtractBalance mocks base method.
+func (m *MockRequestHandler) BillingV1AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountSubtractBalance", ctx, accountID, balance)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountSubtractBalance indicates an expected call of BillingV1AccountSubtractBalance.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountSubtractBalance(ctx, accountID, balance interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountSubtractBalance", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountSubtractBalance), ctx, accountID, balance)
 }
 
 // CallV1CallActionNext mocks base method.
