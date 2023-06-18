@@ -300,8 +300,8 @@ func (h *handler) AccountSet(ctx context.Context, id uuid.UUID, name string, det
 	return nil
 }
 
-// AccountAddBalanceByCustomerID add the value to the account balance
-func (h *handler) AccountAddBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, balance float32) error {
+// AccountAddBalance add the value to the account balance
+func (h *handler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
 	// prepare
 	q := `
 	update
@@ -310,22 +310,22 @@ func (h *handler) AccountAddBalanceByCustomerID(ctx context.Context, customerID 
 		balance = balance + ?,
 		tm_update = ?
 	where
-		customer_id = ?
+		id = ?
 	`
 
-	_, err := h.db.Exec(q, balance, h.utilHandler.TimeGetCurTime(), customerID.Bytes())
+	_, err := h.db.Exec(q, balance, h.utilHandler.TimeGetCurTime(), accountID.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. AccountAddBalanceByCustomerID. err: %v", err)
+		return fmt.Errorf("could not execute. AccountAddBalance. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.accountUpdateToCache(ctx, customerID)
+	_ = h.accountUpdateToCache(ctx, accountID)
 
 	return nil
 }
 
-// AccountSubstractBalanceByCustomerID substract the value to the account balance
-func (h *handler) AccountSubstractBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, balance float32) error {
+// AccountSubtractBalance substract the value from the account balance
+func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) error {
 	// prepare
 	q := `
 	update
@@ -334,16 +334,16 @@ func (h *handler) AccountSubstractBalanceByCustomerID(ctx context.Context, custo
 		balance = balance - ?,
 		tm_update = ?
 	where
-		customer_id = ?
+		id = ?
 	`
 
-	_, err := h.db.Exec(q, balance, h.utilHandler.TimeGetCurTime(), customerID.Bytes())
+	_, err := h.db.Exec(q, balance, h.utilHandler.TimeGetCurTime(), accountID.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not execute. AccountSubstractBalanceByCustomerID. err: %v", err)
+		return fmt.Errorf("could not execute. AccountSubtractBalance. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.accountUpdateToCache(ctx, customerID)
+	_ = h.accountUpdateToCache(ctx, accountID)
 
 	return nil
 }

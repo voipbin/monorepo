@@ -45,6 +45,8 @@ var (
 	// accounts
 	regV1AccountsGet                        = regexp.MustCompile(`/v1/accounts\?`)
 	regV1AccountsID                         = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
+	regV1AccountsIDBalanceAdd               = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_add$")
+	regV1AccountsIDBalanceSubtract          = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_subtract$")
 	regV1AccountsCustomerIDID               = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "$")
 	regV1AccountsCustomerIDIDIsValidBalance = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "/is_valid_balance$")
 )
@@ -172,6 +174,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1AccountsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1AccountsIDGet(ctx, m)
 		requestType = "/v1/accounts/<account-id>"
+
+	// POST /accounts/<account-id>/balance_add
+	case regV1AccountsIDBalanceAdd.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1AccountsIDBalanceAddPost(ctx, m)
+		requestType = "/v1/accounts/<account-id>/balance_add"
+
+	// POST /accounts/<account-id>/balance_subtract
+	case regV1AccountsIDBalanceSubtract.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1AccountsIDBalanceSubtractPost(ctx, m)
+		requestType = "/v1/accounts/<account-id>/balance_subtract"
 
 	// GET /accounts/customer_id/<customer-id>
 	case regV1AccountsCustomerIDID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:

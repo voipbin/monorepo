@@ -21,8 +21,8 @@ type AccountHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	Gets(ctx context.Context, size uint64, token string) ([]*account.Account, error)
 	GetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
-	SubstractBalanceByCustomer(ctx context.Context, customerID uuid.UUID, balance float32) (*account.Account, error)
-	AddBalanceByCustomer(ctx context.Context, customerID uuid.UUID, balance float32) (*account.Account, error)
+	SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
+	AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
 
 	IsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error)
 }

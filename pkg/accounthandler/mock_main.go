@@ -36,19 +36,19 @@ func (m *MockAccountHandler) EXPECT() *MockAccountHandlerMockRecorder {
 	return m.recorder
 }
 
-// AddBalanceByCustomer mocks base method.
-func (m *MockAccountHandler) AddBalanceByCustomer(ctx context.Context, customerID uuid.UUID, balance float32) (*account.Account, error) {
+// AddBalance mocks base method.
+func (m *MockAccountHandler) AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddBalanceByCustomer", ctx, customerID, balance)
+	ret := m.ctrl.Call(m, "AddBalance", ctx, accountID, balance)
 	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AddBalanceByCustomer indicates an expected call of AddBalanceByCustomer.
-func (mr *MockAccountHandlerMockRecorder) AddBalanceByCustomer(ctx, customerID, balance interface{}) *gomock.Call {
+// AddBalance indicates an expected call of AddBalance.
+func (mr *MockAccountHandlerMockRecorder) AddBalance(ctx, accountID, balance interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBalanceByCustomer", reflect.TypeOf((*MockAccountHandler)(nil).AddBalanceByCustomer), ctx, customerID, balance)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBalance", reflect.TypeOf((*MockAccountHandler)(nil).AddBalance), ctx, accountID, balance)
 }
 
 // Create mocks base method.
@@ -126,17 +126,17 @@ func (mr *MockAccountHandlerMockRecorder) IsValidBalanceByCustomerID(ctx, custom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalanceByCustomerID", reflect.TypeOf((*MockAccountHandler)(nil).IsValidBalanceByCustomerID), ctx, customerID)
 }
 
-// SubstractBalanceByCustomer mocks base method.
-func (m *MockAccountHandler) SubstractBalanceByCustomer(ctx context.Context, customerID uuid.UUID, balance float32) (*account.Account, error) {
+// SubtractBalance mocks base method.
+func (m *MockAccountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubstractBalanceByCustomer", ctx, customerID, balance)
+	ret := m.ctrl.Call(m, "SubtractBalance", ctx, accountID, balance)
 	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SubstractBalanceByCustomer indicates an expected call of SubstractBalanceByCustomer.
-func (mr *MockAccountHandlerMockRecorder) SubstractBalanceByCustomer(ctx, customerID, balance interface{}) *gomock.Call {
+// SubtractBalance indicates an expected call of SubtractBalance.
+func (mr *MockAccountHandlerMockRecorder) SubtractBalance(ctx, accountID, balance interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubstractBalanceByCustomer", reflect.TypeOf((*MockAccountHandler)(nil).SubstractBalanceByCustomer), ctx, customerID, balance)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubtractBalance", reflect.TypeOf((*MockAccountHandler)(nil).SubtractBalance), ctx, accountID, balance)
 }

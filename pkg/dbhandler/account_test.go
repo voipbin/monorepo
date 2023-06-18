@@ -263,8 +263,8 @@ func Test_AccountAddBalance(t *testing.T) {
 		name    string
 		account *account.Account
 
-		customerID uuid.UUID
-		balance    float32
+		accountID uuid.UUID
+		balance   float32
 
 		responseCurTime string
 		expectRes       *account.Account
@@ -279,8 +279,8 @@ func Test_AccountAddBalance(t *testing.T) {
 				Balance:    20.0,
 			},
 
-			customerID: uuid.FromStringOrNil("1a547210-06cd-11ee-bf06-abb9387009e2"),
-			balance:    888.88,
+			accountID: uuid.FromStringOrNil("c05e0eba-09bf-11ee-867c-13d325e0d976"),
+			balance:   888.88,
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
@@ -316,13 +316,14 @@ func Test_AccountAddBalance(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			if err := h.AccountAddBalanceByCustomerID(ctx, tt.customerID, tt.balance); err != nil {
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if err := h.AccountAddBalance(ctx, tt.accountID, tt.balance); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AccountGetByCustomerID(ctx, tt.customerID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountGet(ctx, tt.accountID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
-			res, err := h.AccountGetByCustomerID(ctx, tt.customerID)
+			res, err := h.AccountGet(ctx, tt.accountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -334,14 +335,14 @@ func Test_AccountAddBalance(t *testing.T) {
 	}
 }
 
-func Test_AccountSubstractBalance(t *testing.T) {
+func Test_AccountSubtractBalance(t *testing.T) {
 
 	type test struct {
 		name    string
 		account *account.Account
 
-		customerID uuid.UUID
-		balance    float32
+		accountID uuid.UUID
+		balance   float32
 
 		responseCurTime string
 		expectRes       *account.Account
@@ -356,8 +357,8 @@ func Test_AccountSubstractBalance(t *testing.T) {
 				Balance:    20.0,
 			},
 
-			customerID: uuid.FromStringOrNil("0d9c3274-09c0-11ee-a384-1f58f10e9a62"),
-			balance:    8.88,
+			accountID: uuid.FromStringOrNil("2788b4ce-07b7-11ee-acdb-07679240a451"),
+			balance:   8.88,
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
@@ -393,13 +394,14 @@ func Test_AccountSubstractBalance(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			if err := h.AccountSubstractBalanceByCustomerID(ctx, tt.customerID, tt.balance); err != nil {
+			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
+			if err := h.AccountSubtractBalance(ctx, tt.accountID, tt.balance); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AccountGetByCustomerID(ctx, tt.customerID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountGet(ctx, tt.accountID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
-			res, err := h.AccountGetByCustomerID(ctx, tt.customerID)
+			res, err := h.AccountGet(ctx, tt.accountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

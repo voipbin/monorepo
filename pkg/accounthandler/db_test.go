@@ -244,13 +244,13 @@ func Test_Gets(t *testing.T) {
 	}
 }
 
-func Test_SubstractBalanceByCustomer(t *testing.T) {
+func Test_SubtractBalance(t *testing.T) {
 
 	type test struct {
 		name string
 
-		customerID uuid.UUID
-		balance    float32
+		accountID uuid.UUID
+		balance   float32
 
 		responseAccount *account.Account
 	}
@@ -259,8 +259,8 @@ func Test_SubstractBalanceByCustomer(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("28c90ab4-09f6-11ee-97f3-6b2314b71a97"),
-			balance:    20.1,
+			accountID: uuid.FromStringOrNil("287f9762-09f6-11ee-a305-2f57be32e59c"),
+			balance:   20.1,
 
 			responseAccount: &account.Account{
 				ID: uuid.FromStringOrNil("287f9762-09f6-11ee-a305-2f57be32e59c"),
@@ -284,10 +284,10 @@ func Test_SubstractBalanceByCustomer(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountSubstractBalanceByCustomerID(ctx, tt.customerID, tt.balance).Return(nil)
-			mockDB.EXPECT().AccountGetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountSubtractBalance(ctx, tt.accountID, tt.balance).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
 
-			res, err := h.SubstractBalanceByCustomer(ctx, tt.customerID, tt.balance)
+			res, err := h.SubtractBalance(ctx, tt.accountID, tt.balance)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -299,13 +299,13 @@ func Test_SubstractBalanceByCustomer(t *testing.T) {
 	}
 }
 
-func Test_AddBalanceByCustomer(t *testing.T) {
+func Test_AddBalance(t *testing.T) {
 
 	type test struct {
 		name string
 
-		customerID uuid.UUID
-		balance    float32
+		accountID uuid.UUID
+		balance   float32
 
 		responseAccount *account.Account
 	}
@@ -314,8 +314,8 @@ func Test_AddBalanceByCustomer(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("28c90ab4-09f6-11ee-97f3-6b2314b71a97"),
-			balance:    20.1,
+			accountID: uuid.FromStringOrNil("28c90ab4-09f6-11ee-97f3-6b2314b71a97"),
+			balance:   20.1,
 
 			responseAccount: &account.Account{
 				ID: uuid.FromStringOrNil("f3f570d8-09f6-11ee-a665-fb550b87c0f6"),
@@ -339,10 +339,10 @@ func Test_AddBalanceByCustomer(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountAddBalanceByCustomerID(ctx, tt.customerID, tt.balance).Return(nil)
-			mockDB.EXPECT().AccountGetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountAddBalance(ctx, tt.accountID, tt.balance).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
 
-			res, err := h.AddBalanceByCustomer(ctx, tt.customerID, tt.balance)
+			res, err := h.AddBalance(ctx, tt.accountID, tt.balance)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

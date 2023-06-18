@@ -176,7 +176,7 @@ func Test_BillingEnd(t *testing.T) {
 			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingUnitCount, tt.tmBillingEnd).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
-			mockAccount.EXPECT().SubstractBalanceByCustomer(ctx, tt.responseBilling.CustomerID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
 
 			if err := h.BillingEnd(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingEnd, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
