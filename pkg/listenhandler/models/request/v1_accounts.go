@@ -5,12 +5,12 @@ type V1DataAccountsGET struct {
 	Pagination
 }
 
-// V1DataAccountsIDBalanceAddPOST is rquest param define for POST /accounts/<account-id>/balance_add
-type V1DataAccountsIDBalanceAddPOST struct {
+// V1DataAccountsIDBalanceAddForcePOST is rquest param define for POST /accounts/<account-id>/balance_add
+type V1DataAccountsIDBalanceAddForcePOST struct {
 	Balance float32 `json:"balance"`
 }
 
-// V1DataAccountsIDBalanceSubtractPOST is rquest param define for POST /accounts/<account-id>/balance_subtract
-type V1DataAccountsIDBalanceSubtractPOST struct {
+// V1DataAccountsIDBalanceSubtractForcePOST is rquest param define for POST /accounts/<account-id>/balance_subtract
+type V1DataAccountsIDBalanceSubtractForcePOST struct {
 	Balance float32 `json:"balance"`
 }

@@ -254,7 +254,7 @@ func Test_processV1AccountsCustomerIDIDIsValidBalancePost(t *testing.T) {
 	}
 }
 
-func Test_processV1AccountsIDBalanceAddPost(t *testing.T) {
+func Test_processV1AccountsIDBalanceAddForcePost(t *testing.T) {
 
 	type test struct {
 		name    string
@@ -271,7 +271,7 @@ func Test_processV1AccountsIDBalanceAddPost(t *testing.T) {
 		{
 			name: "normal",
 			request: &rabbitmqhandler.Request{
-				URI:      "/v1/accounts/42d34adc-0dbb-11ee-a41b-eb337ba453c8/balance_add",
+				URI:      "/v1/accounts/42d34adc-0dbb-11ee-a41b-eb337ba453c8/balance_add_force",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"balance":20}`),
@@ -317,7 +317,7 @@ func Test_processV1AccountsIDBalanceAddPost(t *testing.T) {
 	}
 }
 
-func Test_processV1AccountsIDBalanceSubtractPost(t *testing.T) {
+func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 
 	type test struct {
 		name    string
@@ -334,7 +334,7 @@ func Test_processV1AccountsIDBalanceSubtractPost(t *testing.T) {
 		{
 			name: "normal",
 			request: &rabbitmqhandler.Request{
-				URI:      "/v1/accounts/43180e06-0dbb-11ee-8124-17d122da2950/balance_subtract",
+				URI:      "/v1/accounts/43180e06-0dbb-11ee-8124-17d122da2950/balance_subtract_force",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"balance":20}`),
