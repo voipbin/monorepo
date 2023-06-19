@@ -16,8 +16,8 @@ import (
 )
 
 // BillingV1AccountGets returns list of billing accounts.
-func (r *requestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64) ([]bmaccount.Account, error) {
-	uri := fmt.Sprintf("/v1/accounts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+func (r *requestHandler) BillingV1AccountGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts?customer_id=%s&page_token=%s&page_size=%d", customerID, url.QueryEscape(pageToken), pageSize)
 
 	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodGet, "billing/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
@@ -35,6 +35,37 @@ func (r *requestHandler) BillingV1AccountGets(ctx context.Context, pageToken str
 	}
 
 	return res, nil
+}
+
+// BillingV1AccountCreate creates a new billing account.
+func (r *requestHandler) BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name string, detail string) (*bmaccount.Account, error) {
+	uri := "/v1/accounts"
+
+	m, err := json.Marshal(bmrequest.V1DataAccountsPOST{
+		CustomerID: custoerID,
+		Name:       name,
+		Detail:     detail,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("could not get response")
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res bmaccount.Account
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	}
+
+	return &res, nil
 }
 
 // BillingV1AccountGet returns a billing account.
@@ -79,28 +110,6 @@ func (r *requestHandler) BillingV1AccountIsValidBalanceByCustomerID(ctx context.
 	}
 
 	return res.Valid, nil
-}
-
-// BillingV1AccountGetByCustomerID returns given customer id's billing account
-func (r *requestHandler) BillingV1AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*bmaccount.Account, error) {
-	uri := fmt.Sprintf("/v1/accounts/customer_id/%s", customerID)
-
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodGet, "billing/accounts/customer_id/<customer-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	switch {
-	case err != nil:
-		return nil, err
-	case tmp == nil:
-		return nil, fmt.Errorf("could not get response")
-	case tmp.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	res := bmaccount.Account{}
-	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal the response data")
-	}
-
-	return &res, nil
 }
 
 // BillingV1AccountAddBalanceForce adds the balance to the account in forcedly
