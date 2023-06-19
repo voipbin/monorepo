@@ -10,10 +10,10 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
-// processEventCMCustomerCreated handles the customer-manager's customer_created event
-func (h *subscribeHandler) processEventCMCustomerCreated(ctx context.Context, m *rabbitmqhandler.Event) error {
+// processEventCMCustomerDeleted handles the customer-manager's customer_deleted event
+func (h *subscribeHandler) processEventCMCustomerDeleted(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventCMCustomerCreated",
+		"func":  "processEventCMCustomerDeleted",
 		"event": m,
 	})
 	log.Debugf("Received customer event. event: %s", m.Type)
@@ -24,12 +24,12 @@ func (h *subscribeHandler) processEventCMCustomerCreated(ctx context.Context, m 
 		return errors.Wrap(err, "could not unmarshal the data")
 	}
 
-	a, err := h.accountHandler.Create(ctx, c.ID)
+	accounts, err := h.accountHandler.DeletesByCustomerID(ctx, c.ID)
 	if err != nil {
 		log.Errorf("Could not craete a new account. err: %v", err)
 		return errors.Wrap(err, "could not create a new aacount")
 	}
-	log.WithField("account", a).Debugf("Created a new account. account_id: %s", a.ID)
+	log.WithField("accounts", accounts).WithField("account", accounts).Debugf("Deleted customer accounts. customer_id: %s", c.ID)
 
 	return nil
 }

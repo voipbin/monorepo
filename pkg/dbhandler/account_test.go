@@ -31,6 +31,8 @@ func Test_AccountCreate(t *testing.T) {
 			&account.Account{
 				ID:            uuid.FromStringOrNil("6ecdb856-0600-11ee-b746-d3ef5adc8ef7"),
 				CustomerID:    uuid.FromStringOrNil("6efc4a5e-0600-11ee-9aca-57553e6045e7"),
+				Name:          "test name",
+				Detail:        "test detail",
 				Type:          account.TypeNormal,
 				Balance:       99.99,
 				PaymentType:   account.PaymentTypeNone,
@@ -41,7 +43,9 @@ func Test_AccountCreate(t *testing.T) {
 			&account.Account{
 				ID:            uuid.FromStringOrNil("6ecdb856-0600-11ee-b746-d3ef5adc8ef7"),
 				CustomerID:    uuid.FromStringOrNil("6efc4a5e-0600-11ee-9aca-57553e6045e7"),
-				Type:          account.TypeNormal,
+				Name:          "test name",
+				Detail:        "test detail",
+ 				Type:          account.TypeNormal,
 				Balance:       99.99,
 				PaymentType:   account.PaymentTypeNone,
 				PaymentMethod: account.PaymentMethodNone,
@@ -102,13 +106,14 @@ func Test_AccountCreate(t *testing.T) {
 	}
 }
 
-func Test_AccountGets(t *testing.T) {
+func Test_AccountGetsByCustomerID(t *testing.T) {
 
 	type test struct {
 		name     string
 		accounts []*account.Account
 
-		size uint64
+		customerID uuid.UUID
+		size       uint64
 
 		responseCurTime string
 		expectRes       []*account.Account
@@ -119,28 +124,33 @@ func Test_AccountGets(t *testing.T) {
 			name: "normal",
 			accounts: []*account.Account{
 				{
-					ID: uuid.FromStringOrNil("1d6fcb5a-06ca-11ee-96c1-bb6797183957"),
+					ID:         uuid.FromStringOrNil("1d6fcb5a-06ca-11ee-96c1-bb6797183957"),
+					CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
 				},
 				{
-					ID: uuid.FromStringOrNil("21e3a2a6-06ca-11ee-a265-73b6edfdaf51"),
+					ID:         uuid.FromStringOrNil("21e3a2a6-06ca-11ee-a265-73b6edfdaf51"),
+					CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
 				},
 			},
 
-			size: 10,
+			customerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+			size:       10,
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: []*account.Account{
 				{
-					ID:       uuid.FromStringOrNil("21e3a2a6-06ca-11ee-a265-73b6edfdaf51"),
-					TMCreate: "2023-06-08 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("21e3a2a6-06ca-11ee-a265-73b6edfdaf51"),
+					CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+					TMCreate:   "2023-06-08 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				},
 				{
-					ID:       uuid.FromStringOrNil("1d6fcb5a-06ca-11ee-96c1-bb6797183957"),
-					TMCreate: "2023-06-08 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					ID:         uuid.FromStringOrNil("1d6fcb5a-06ca-11ee-96c1-bb6797183957"),
+					CustomerID: uuid.FromStringOrNil("53154680-0e5a-11ee-b558-fffd4cf00337"),
+					TMCreate:   "2023-06-08 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
 				},
 			},
 		},
@@ -167,7 +177,7 @@ func Test_AccountGets(t *testing.T) {
 				_ = h.AccountCreate(ctx, c)
 			}
 
-			res, err := h.AccountGets(ctx, tt.size, utilhandler.TimeGetCurTime())
+			res, err := h.AccountGetsByCustomerID(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

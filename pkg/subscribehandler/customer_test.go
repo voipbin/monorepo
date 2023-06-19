@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
 )
 
-func Test_processEventCMCustomerCreated(t *testing.T) {
+func Test_processEventCMCustomerDeleted(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -26,7 +26,7 @@ func Test_processEventCMCustomerCreated(t *testing.T) {
 
 			event: &rabbitmqhandler.Event{
 				Publisher: "customer-manager",
-				Type:      cscustomer.EventTypeCustomerCreated,
+				Type:      cscustomer.EventTypeCustomerDeleted,
 				DataType:  "application/json",
 				Data:      []byte(`{"id":"d5b4a056-0ad4-11ee-b813-bfb4ab48539d"}`),
 			},
@@ -50,7 +50,7 @@ func Test_processEventCMCustomerCreated(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockAccount.EXPECT().Create(gomock.Any(), tt.expectCustomerID).Return(&account.Account{}, nil)
+			mockAccount.EXPECT().DeletesByCustomerID(gomock.Any(), tt.expectCustomerID).Return([]*account.Account{}, nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

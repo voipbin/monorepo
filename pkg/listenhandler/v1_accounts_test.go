@@ -20,16 +20,17 @@ func Test_processV1AccountsGet(t *testing.T) {
 
 		responseAccounts []*account.Account
 
-		expectSize  uint64
-		expectToken string
-		expectRes   *rabbitmqhandler.Response
+		expectCustomerID uuid.UUID
+		expectSize       uint64
+		expectToken      string
+		expectRes        *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
 			name: "normal",
 			request: &rabbitmqhandler.Request{
-				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000",
+				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000&customer_id=bc8f9070-0e5a-11ee-b22e-97ef303987a3",
 				Method: rabbitmqhandler.RequestMethodGet,
 			},
 
@@ -42,9 +43,9 @@ func Test_processV1AccountsGet(t *testing.T) {
 				},
 			},
 
-			expectSize:  10,
-			expectToken: "2023-06-08 03:22:17.995000",
-
+			expectCustomerID: uuid.FromStringOrNil("bc8f9070-0e5a-11ee-b22e-97ef303987a3"),
+			expectSize:       10,
+			expectToken:      "2023-06-08 03:22:17.995000",
 			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -66,7 +67,72 @@ func Test_processV1AccountsGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectSize, tt.expectToken).Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectCustomerID, tt.expectSize, tt.expectToken).Return(tt.responseAccounts, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1AccountsPost(t *testing.T) {
+
+	type test struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseAccount *account.Account
+
+		expectCustomerID uuid.UUID
+		expectName       string
+		expectDetail     string
+		expectRes        *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
+				URI:      "/v1/accounts",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"c28443b6-0e75-11ee-90ec-1bb28081d375","name":"test name","detail":"test detail"}`),
+			},
+
+			responseAccount: &account.Account{
+				ID: uuid.FromStringOrNil("c28443b6-0e75-11ee-90ec-1bb28081d375"),
+			},
+
+			expectCustomerID: uuid.FromStringOrNil("c28443b6-0e75-11ee-90ec-1bb28081d375"),
+			expectName:       "test name",
+			expectDetail:     "test detail",
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c28443b6-0e75-11ee-90ec-1bb28081d375","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","type":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				accountHandler: mockAccount,
+			}
+
+			mockAccount.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectName, tt.expectDetail).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -32,13 +32,48 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *rabbitmqhan
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	as, err := h.accountHandler.Gets(ctx, pageSize, pageToken)
+	// get customer_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+
+	as, err := h.accountHandler.Gets(ctx, customerID, pageSize, pageToken)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
+		log.Errorf("Could not get accounts info. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
 	data, err := json.Marshal(as)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsPost handles POST /v1/accounts request
+func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsPost",
+		"request": m,
+	})
+
+	var req request.V1DataAccountsPOST
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	tmp, err := h.accountHandler.Create(ctx, req.CustomerID, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not create account info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		return simpleResponse(404), nil
 	}
@@ -68,7 +103,7 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqh
 
 	c, err := h.accountHandler.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
+		log.Errorf("Could not get account info. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
@@ -102,7 +137,7 @@ func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m 
 
 	c, err := h.accountHandler.GetByCustomerID(ctx, customerID)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
+		log.Errorf("Could not get account info. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
@@ -179,7 +214,7 @@ func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Conte
 
 	c, err := h.accountHandler.AddBalance(ctx, id, req.Balance)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
+		log.Errorf("Could not add the balance. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
