@@ -52,18 +52,48 @@ func (mr *MockAccountHandlerMockRecorder) AddBalance(ctx, accountID, balance int
 }
 
 // Create mocks base method.
-func (m *MockAccountHandler) Create(ctx context.Context, customerID uuid.UUID) (*account.Account, error) {
+func (m *MockAccountHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string) (*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail)
 	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockAccountHandlerMockRecorder) Create(ctx, customerID interface{}) *gomock.Call {
+func (mr *MockAccountHandlerMockRecorder) Create(ctx, customerID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAccountHandler)(nil).Create), ctx, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAccountHandler)(nil).Create), ctx, customerID, name, detail)
+}
+
+// Delete mocks base method.
+func (m *MockAccountHandler) Delete(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockAccountHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAccountHandler)(nil).Delete), ctx, id)
+}
+
+// DeletesByCustomerID mocks base method.
+func (m *MockAccountHandler) DeletesByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletesByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].([]*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeletesByCustomerID indicates an expected call of DeletesByCustomerID.
+func (mr *MockAccountHandlerMockRecorder) DeletesByCustomerID(ctx, customerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletesByCustomerID", reflect.TypeOf((*MockAccountHandler)(nil).DeletesByCustomerID), ctx, customerID)
 }
 
 // Get mocks base method.
@@ -97,18 +127,18 @@ func (mr *MockAccountHandlerMockRecorder) GetByCustomerID(ctx, customerID interf
 }
 
 // Gets mocks base method.
-func (m *MockAccountHandler) Gets(ctx context.Context, size uint64, token string) ([]*account.Account, error) {
+func (m *MockAccountHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token)
+	ret := m.ctrl.Call(m, "Gets", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockAccountHandlerMockRecorder) Gets(ctx, size, token interface{}) *gomock.Call {
+func (mr *MockAccountHandlerMockRecorder) Gets(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, customerID, size, token)
 }
 
 // IsValidBalanceByCustomerID mocks base method.

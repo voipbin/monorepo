@@ -20,7 +20,7 @@ type DBHandler interface {
 	AccountCreate(ctx context.Context, c *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
-	AccountGets(ctx context.Context, size uint64, token string) ([]*account.Account, error)
+	AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error)
 	AccountSet(ctx context.Context, id uuid.UUID, name string, detail string) error
 	AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) error
 	AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) error

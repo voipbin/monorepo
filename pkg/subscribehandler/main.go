@@ -169,8 +169,8 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 
 	//// customer-manager
 	// customer
-	case m.Publisher == publisherCustomerManager && m.Type == cscustomer.EventTypeCustomerCreated:
-		err = h.processEventCMCustomerCreated(ctx, m)
+	case m.Publisher == publisherCustomerManager && m.Type == cscustomer.EventTypeCustomerDeleted:
+		err = h.processEventCMCustomerDeleted(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

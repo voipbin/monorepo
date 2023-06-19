@@ -109,19 +109,19 @@ func (mr *MockDBHandlerMockRecorder) AccountGetByCustomerID(ctx, customerID inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGetByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).AccountGetByCustomerID), ctx, customerID)
 }
 
-// AccountGets mocks base method.
-func (m *MockDBHandler) AccountGets(ctx context.Context, size uint64, token string) ([]*account.Account, error) {
+// AccountGetsByCustomerID mocks base method.
+func (m *MockDBHandler) AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountGets", ctx, size, token)
+	ret := m.ctrl.Call(m, "AccountGetsByCustomerID", ctx, customerID, size, token)
 	ret0, _ := ret[0].([]*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AccountGets indicates an expected call of AccountGets.
-func (mr *MockDBHandlerMockRecorder) AccountGets(ctx, size, token interface{}) *gomock.Call {
+// AccountGetsByCustomerID indicates an expected call of AccountGetsByCustomerID.
+func (mr *MockDBHandlerMockRecorder) AccountGetsByCustomerID(ctx, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGets", reflect.TypeOf((*MockDBHandler)(nil).AccountGets), ctx, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).AccountGetsByCustomerID), ctx, customerID, size, token)
 }
 
 // AccountSet mocks base method.

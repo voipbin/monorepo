@@ -243,22 +243,23 @@ func (h *handler) AccountGetByCustomerID(ctx context.Context, customerID uuid.UU
 	return res, nil
 }
 
-// AccountGets returns a list of account.
-func (h *handler) AccountGets(ctx context.Context, size uint64, token string) ([]*account.Account, error) {
+// AccountGetsByCustomerID returns a list of account.
+func (h *handler) AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
 
 	// prepare
 	q := fmt.Sprintf(`%s
 		where
-			tm_create < ?
+			customer_id = ?
+			and tm_create < ?
 			and tm_delete >= ?
 		order by
 			tm_create desc
 		limit ?
 		`, accountSelect)
 
-	rows, err := h.db.Query(q, token, DefaultTimeStamp, size)
+	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AccountGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. AccountGetsByCustomerID. err: %v", err)
 	}
 	defer rows.Close()
 
@@ -266,7 +267,7 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string) ([
 	for rows.Next() {
 		u, err := h.accountGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. AccountGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. AccountGetsByCustomerID, err: %v", err)
 		}
 
 		res = append(res, u)

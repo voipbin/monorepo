@@ -17,12 +17,14 @@ import (
 
 // AccountHandler define
 type AccountHandler interface {
-	Create(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
+	Create(ctx context.Context, customerID uuid.UUID, name string, detail string) (*account.Account, error)
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	Gets(ctx context.Context, size uint64, token string) ([]*account.Account, error)
+	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error)
 	GetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
 	SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
 	AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
+	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
+	DeletesByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*account.Account, error)
 
 	IsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error)
 }
