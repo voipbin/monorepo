@@ -375,10 +375,10 @@ type RequestHandler interface {
 	AgentV1TagDelete(ctx context.Context, id uuid.UUID) (*amtag.Tag, error)
 
 	// billing-manager account
-	BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64) ([]bmaccount.Account, error)
+	BillingV1AccountGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]bmaccount.Account, error)
 	BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
+	BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error)
-	BillingV1AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*bmaccount.Account, error)
 	BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 	BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 
