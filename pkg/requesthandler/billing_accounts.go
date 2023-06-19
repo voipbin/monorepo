@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	bmrequest "gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/request"
-	bmresponse "gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/response"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -90,26 +89,26 @@ func (r *requestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid
 	return &res, nil
 }
 
-// BillingV1AccountIsValidBalanceByCustomerID returns true if the given customer's billing account has enough balance.
-func (r *requestHandler) BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error) {
-	uri := fmt.Sprintf("/v1/accounts/customer_id/%s/is_valid_balance", customerID)
+// BillingV1AccountDelete deletes a billing account.
+func (r *requestHandler) BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
-	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts/customer_id/<customer-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodDelete, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
-		return false, err
+		return nil, err
 	case tmp == nil:
-		return false, fmt.Errorf("could not get response")
+		return nil, fmt.Errorf("could not get response")
 	case tmp.StatusCode > 299:
-		return false, fmt.Errorf("response code: %d", tmp.StatusCode)
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	res := bmresponse.V1ResponseAccountsIDIsValidBalance{}
+	var res bmaccount.Account
 	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
-		return false, errors.Wrap(err, "could not unmarshal the response data")
+		return nil, errors.Wrap(err, "could not unmarshal the response data")
 	}
 
-	return res.Valid, nil
+	return &res, nil
 }
 
 // BillingV1AccountAddBalanceForce adds the balance to the account in forcedly

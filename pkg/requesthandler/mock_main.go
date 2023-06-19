@@ -872,6 +872,21 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountCreate(ctx, custoerID,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountCreate", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountCreate), ctx, custoerID, name, detail)
 }
 
+// BillingV1AccountDelete mocks base method.
+func (m *MockRequestHandler) BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountDelete", ctx, accountID)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountDelete indicates an expected call of BillingV1AccountDelete.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountDelete(ctx, accountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountDelete", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountDelete), ctx, accountID)
+}
+
 // BillingV1AccountGet mocks base method.
 func (m *MockRequestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*account.Account, error) {
 	m.ctrl.T.Helper()
@@ -900,21 +915,6 @@ func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, customerI
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGets), ctx, customerID, pageToken, pageSize)
-}
-
-// BillingV1AccountIsValidBalanceByCustomerID mocks base method.
-func (m *MockRequestHandler) BillingV1AccountIsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1AccountIsValidBalanceByCustomerID", ctx, customerID)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BillingV1AccountIsValidBalanceByCustomerID indicates an expected call of BillingV1AccountIsValidBalanceByCustomerID.
-func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalanceByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalanceByCustomerID), ctx, customerID)
 }
 
 // BillingV1AccountSubtractBalanceForce mocks base method.

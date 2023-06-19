@@ -207,34 +207,36 @@ func Test_BillingV1AccountGet(t *testing.T) {
 	}
 }
 
-func Test_BillingV1AccountIsValidBalanceByCustomerID(t *testing.T) {
+func Test_BillingV1AccountDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
+		accountID uuid.UUID
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
-		expectRes     bool
+		expectRes     *bmaccount.Account
 		response      *rabbitmqhandler.Response
 	}{
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("1fa789f8-0b93-11ee-95d8-2356e5d027fa"),
+			accountID: uuid.FromStringOrNil("9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"),
 
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
-				URI:    "/v1/accounts/customer_id/1fa789f8-0b93-11ee-95d8-2356e5d027fa/is_valid_balance",
-				Method: rabbitmqhandler.RequestMethodPost,
+				URI:    "/v1/accounts/9c2bd1f6-0e80-11ee-91d4-37bdb8051fad",
+				Method: rabbitmqhandler.RequestMethodDelete,
 			},
-			expectRes: true,
+			expectRes: &bmaccount.Account{
+				ID: uuid.FromStringOrNil("9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"),
+			},
 
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"valid":true}`),
+				Data:       []byte(`{"id":"9c2bd1f6-0e80-11ee-91d4-37bdb8051fad"}`),
 			},
 		},
 	}
@@ -252,12 +254,12 @@ func Test_BillingV1AccountIsValidBalanceByCustomerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID)
+			res, err := reqHandler.BillingV1AccountDelete(ctx, tt.accountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectRes {
+			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 
