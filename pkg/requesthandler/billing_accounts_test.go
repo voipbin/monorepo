@@ -257,7 +257,7 @@ func Test_BillingV1AccountGetByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_BillingV1AccountAddBalance(t *testing.T) {
+func Test_BillingV1AccountAddBalanceForce(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -279,7 +279,7 @@ func Test_BillingV1AccountAddBalance(t *testing.T) {
 
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
-				URI:      "/v1/accounts/79403360-0dbf-11ee-b1ad-c3eebc4a6196/balance_add",
+				URI:      "/v1/accounts/79403360-0dbf-11ee-b1ad-c3eebc4a6196/balance_add_force",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"balance":20}`),
@@ -309,7 +309,7 @@ func Test_BillingV1AccountAddBalance(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.BillingV1AccountAddBalance(ctx, tt.accountID, tt.balance)
+			res, err := reqHandler.BillingV1AccountAddBalanceForce(ctx, tt.accountID, tt.balance)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -321,7 +321,7 @@ func Test_BillingV1AccountAddBalance(t *testing.T) {
 	}
 }
 
-func Test_BillingV1AccountSubtractBalance(t *testing.T) {
+func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -343,7 +343,7 @@ func Test_BillingV1AccountSubtractBalance(t *testing.T) {
 
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
-				URI:      "/v1/accounts/c7b00aa2-0dbf-11ee-ab39-b7ac15120be3/balance_subtract",
+				URI:      "/v1/accounts/c7b00aa2-0dbf-11ee-ab39-b7ac15120be3/balance_subtract_force",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"balance":20}`),
@@ -373,7 +373,7 @@ func Test_BillingV1AccountSubtractBalance(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.BillingV1AccountSubtractBalance(ctx, tt.accountID, tt.balance)
+			res, err := reqHandler.BillingV1AccountSubtractBalanceForce(ctx, tt.accountID, tt.balance)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

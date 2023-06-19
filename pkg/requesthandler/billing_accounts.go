@@ -103,11 +103,11 @@ func (r *requestHandler) BillingV1AccountGetByCustomerID(ctx context.Context, cu
 	return &res, nil
 }
 
-// BillingV1AccountAddBalance adds the balance to the account
-func (r *requestHandler) BillingV1AccountAddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error) {
-	uri := fmt.Sprintf("/v1/accounts/%s/balance_add", accountID)
+// BillingV1AccountAddBalanceForce adds the balance to the account in forcedly
+func (r *requestHandler) BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/balance_add_force", accountID)
 
-	m, err := json.Marshal(bmrequest.V1DataAccountsIDBalanceAddPOST{
+	m, err := json.Marshal(bmrequest.V1DataAccountsIDBalanceAddForcePOST{
 		Balance: balance,
 	})
 	if err != nil {
@@ -132,11 +132,11 @@ func (r *requestHandler) BillingV1AccountAddBalance(ctx context.Context, account
 	return &res, nil
 }
 
-// BillingV1AccountSubtractBalance subtracts the balance from the account
-func (r *requestHandler) BillingV1AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error) {
-	uri := fmt.Sprintf("/v1/accounts/%s/balance_subtract", accountID)
+// BillingV1AccountSubtractBalanceForce subtracts the balance from the account in forcedly
+func (r *requestHandler) BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/balance_subtract_force", accountID)
 
-	m, err := json.Marshal(bmrequest.V1DataAccountsIDBalanceSubtractPOST{
+	m, err := json.Marshal(bmrequest.V1DataAccountsIDBalanceSubtractForcePOST{
 		Balance: balance,
 	})
 	if err != nil {
