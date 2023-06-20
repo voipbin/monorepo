@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/request"
+	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/response"
 )
 
 // processV1CustomersGet handles GET /v1/customers request
@@ -299,6 +300,44 @@ func (h *listenHandler) processV1CustomersIDPermissionIDsPut(ctx context.Context
 		return simpleResponse(500), nil
 	}
 	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CustomersIDIsValidBalance handles Put /v1/customers/<customer-id>/is_valid_balance request
+func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "processV1CustomersIDIsValidBalance",
+		"customer_id": id,
+	})
+	log.Debug("Executing processV1CustomersIDIsValidBalance.")
+
+	valid, err := h.customerHandler.IsValidBalance(ctx, id)
+	if err != nil {
+		log.Errorf("Could not update the customer's permission ids. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp := &response.V1ResponseCustomerIDIsValidBalance{
+		Valid: valid,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
 
 	res := &rabbitmqhandler.Response{
 		StatusCode: 200,

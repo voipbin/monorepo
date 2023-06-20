@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -25,7 +26,7 @@ func Test_Gets(t *testing.T) {
 		result []*customer.Customer
 	}{
 		{
-			"normal1",
+			"normal",
 			10,
 			"",
 			[]*customer.Customer{},
@@ -54,7 +55,6 @@ func Test_Gets(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
 		})
 	}
 }
@@ -72,7 +72,8 @@ func Test_Create(t *testing.T) {
 		webhookURI    string
 		permissionIDs []uuid.UUID
 
-		responseUUID uuid.UUID
+		responseUUID           uuid.UUID
+		responseBillingAccount *bmaccount.Account
 	}{
 		{
 			name: "normal",
@@ -88,6 +89,9 @@ func Test_Create(t *testing.T) {
 			},
 
 			responseUUID: uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
+			responseBillingAccount: &bmaccount.Account{
+				ID: uuid.FromStringOrNil("2d5d9a8c-0e87-11ee-aeaf-4b3b6fad0c9b"),
+			},
 		},
 	}
 
@@ -109,7 +113,8 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.responseUUID, gomock.Any(), gomock.Any()).Return(tt.responseBillingAccount, nil)
 			mockDB.EXPECT().CustomerGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
 			mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(&customer.Customer{}, nil)
@@ -119,38 +124,53 @@ func Test_Create(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
-
 		})
 	}
 }
 
-func TestDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &customerHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
-
+func Test_Delete(t *testing.T) {
 	tests := []struct {
-		name string
-		id   uuid.UUID
+		name                    string
+		id                      uuid.UUID
+		responseBillingAccounts []bmaccount.Account
 	}{
 		{
-			"normal1",
-			uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
+			name: "normal1",
+			id:   uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
+
+			responseBillingAccounts: []bmaccount.Account{
+				{
+					ID:       uuid.FromStringOrNil("9f795cf8-0e89-11ee-91c9-4b1ab8ec02e8"),
+					TMDelete: dbhandler.DefaultTimeStamp,
+				},
+				{
+					ID:       uuid.FromStringOrNil("9fc63fa0-0e89-11ee-ab57-37a53b33df1c"),
+					TMDelete: dbhandler.DefaultTimeStamp,
+				},
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
 			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountGets(ctx, tt.id, "", uint64(100)).Return(tt.responseBillingAccounts, nil)
+			for _, a := range tt.responseBillingAccounts {
+				mockReq.EXPECT().BillingV1AccountDelete(ctx, a.ID).Return(&a, nil)
+			}
 
 			mockDB.EXPECT().CustomerDelete(gomock.Any(), tt.id).Return(nil)
 			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
@@ -160,7 +180,6 @@ func TestDelete(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
 		})
 	}
 }
@@ -210,24 +229,11 @@ func TestUpdateBasicInfo(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
-
 		})
 	}
 }
 
 func TestUpdatePassword(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &customerHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
 
 	tests := []struct {
 		name string
@@ -244,6 +250,18 @@ func TestUpdatePassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerSetPasswordHash(gomock.Any(), tt.id, gomock.Any()).Return(nil)
@@ -254,24 +272,11 @@ func TestUpdatePassword(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
-
 		})
 	}
 }
 
 func TestUpdatePermissionIDs(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &customerHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
 
 	tests := []struct {
 		name string
@@ -303,6 +308,18 @@ func TestUpdatePermissionIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerSetPermissionIDs(gomock.Any(), tt.id, tt.permissionIDs)
@@ -313,22 +330,11 @@ func TestUpdatePermissionIDs(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
-
 		})
 	}
 }
 
 func TestLogin(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	h := &customerHandler{
-		reqHandler: mockReq,
-		db:         mockDB,
-	}
 
 	tests := []struct {
 		name string
@@ -353,6 +359,16 @@ func TestLogin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &customerHandler{
+				reqHandler: mockReq,
+				db:         mockDB,
+			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerGetByUsername(gomock.Any(), tt.username).Return(tt.responseGet, nil)
@@ -361,7 +377,6 @@ func TestLogin(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
 		})
 	}
 }

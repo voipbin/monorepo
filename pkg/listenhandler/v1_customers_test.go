@@ -49,7 +49,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","username":"test1"}]`),
+				Data:       []byte(`[{"id":"31b08066-7db2-11ec-8786-c7d9cf6c9b5f","username":"test1","billing_account_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 		{
@@ -77,7 +77,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","username":"test1"},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","username":"test2"}]`),
+				Data:       []byte(`[{"id":"9f8a7880-7db2-11ec-9602-930411a1581f","username":"test1","billing_account_id":"00000000-0000-0000-0000-000000000000"},{"id":"a032c710-7db2-11ec-bfe0-83fa85a82603","username":"test2","billing_account_id":"00000000-0000-0000-0000-000000000000"}]`),
 			},
 		},
 	}
@@ -118,15 +118,16 @@ func Test_processV1CustomersPost(t *testing.T) {
 		name    string
 		request *rabbitmqhandler.Request
 
-		username      string
-		password      string
-		userName      string
-		detail        string
-		webhookMethod customer.WebhookMethod
-		webhookURI    string
-		lineSecret    string
-		lineToken     string
-		permissionIDs []uuid.UUID
+		username         string
+		password         string
+		userName         string
+		detail           string
+		webhookMethod    customer.WebhookMethod
+		webhookURI       string
+		lineSecret       string
+		lineToken        string
+		permissionIDs    []uuid.UUID
+		billingAccountID uuid.UUID
 
 		customer  *customer.Customer
 		expectRes *rabbitmqhandler.Response
@@ -137,7 +138,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"username": "test", "password": "password", "name": "name test", "detail": "detail test", "webhook_method": "POST", "webhook_uri": "test.com", "line_secret": "335671d0-ed3f-11ec-95d5-bb7d97d73379", "line_token": "339c9ebc-ed3f-11ec-bb15-4f3b18e06796", "permission_ids": ["03796e14-7cb4-11ec-9dba-e72023efd1c6"]}`),
+				Data:     []byte(`{"username": "test", "password": "password", "name": "name test", "detail": "detail test", "webhook_method": "POST", "webhook_uri": "test.com", "line_secret": "335671d0-ed3f-11ec-95d5-bb7d97d73379", "line_token": "339c9ebc-ed3f-11ec-bb15-4f3b18e06796", "permission_ids": ["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
 			},
 
 			"test",
@@ -151,6 +152,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 			[]uuid.UUID{
 				permission.PermissionAdmin.ID,
 			},
+			uuid.FromStringOrNil("57e13956-0e84-11ee-886f-972ac028efa9"),
 
 			&customer.Customer{
 				ID:       uuid.FromStringOrNil("2043c49e-7db4-11ec-92b7-73af5ed663c9"),
@@ -164,11 +166,12 @@ func Test_processV1CustomersPost(t *testing.T) {
 				PermissionIDs: []uuid.UUID{
 					permission.PermissionAdmin.ID,
 				},
+				BillingAccountID: uuid.FromStringOrNil("57e13956-0e84-11ee-886f-972ac028efa9"),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","username":"test","name":"name test","detail":"detail test","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"]}`),
+				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","username":"test","name":"name test","detail":"detail test","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
 			},
 		},
 	}
@@ -232,7 +235,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","username":"test"}`),
+				Data:       []byte(`{"id":"2cfbb148-7dc7-11ec-85df-47cf2c8492f0","username":"test","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -294,7 +297,7 @@ func Test_processV1UsersIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5071b05e-7dc8-11ec-9746-5f318f662852"}`),
+				Data:       []byte(`{"id":"5071b05e-7dc8-11ec-9746-5f318f662852","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -365,7 +368,7 @@ func Test_processV1UsersIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5a8fac06-7dd4-11ec-b4e7-ab52242f6b29"}`),
+				Data:       []byte(`{"id":"5a8fac06-7dd4-11ec-b4e7-ab52242f6b29","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -429,7 +432,7 @@ func Test_processV1UsersIDPasswordPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1887f2d6-7dd5-11ec-9141-f7f46aaf294c"}`),
+				Data:       []byte(`{"id":"1887f2d6-7dd5-11ec-9141-f7f46aaf294c","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -495,7 +498,7 @@ func Test_processV1CustomersIDPermissionIDsPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e00b4e98-7dd5-11ec-82c1-8b583557f04d"}`),
+				Data:       []byte(`{"id":"e00b4e98-7dd5-11ec-82c1-8b583557f04d","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
@@ -516,6 +519,63 @@ func Test_processV1CustomersIDPermissionIDsPut(t *testing.T) {
 			}
 
 			mockCustomer.EXPECT().UpdatePermissionIDs(gomock.Any(), tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id uuid.UUID
+
+		responseValid bool
+		expectRes     *rabbitmqhandler.Response
+	}{
+		{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
+				URI:    "/v1/customers/dd74462c-0e88-11ee-a276-dbfe542e4ab0/is_valid_balance",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+
+			id: uuid.FromStringOrNil("dd74462c-0e88-11ee-a276-dbfe542e4ab0"),
+
+			responseValid: true,
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"valid":true}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
+
+			mockCustomer.EXPECT().IsValidBalance(gomock.Any(), tt.id).Return(tt.responseValid, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

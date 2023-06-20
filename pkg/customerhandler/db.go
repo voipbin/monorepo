@@ -5,9 +5,11 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
 )
 
 // Gets returns list of customers
@@ -58,11 +60,22 @@ func (h *customerHandler) Create(
 	})
 	log.Debug("Creating a new customer.")
 
+	// verify the username is unique
 	tmp, _ := h.db.CustomerGetByUsername(ctx, username)
 	if tmp != nil {
 		log.Errorf("The customer is already existing. username: %s", username)
 		return nil, fmt.Errorf("customer already exist")
 	}
+
+	id := h.utilHandler.UUIDCreate()
+
+	// create billingAccount billing account
+	billingAccount, err := h.reqHandler.BillingV1AccountCreate(ctx, id, "basic billing account", "billing account for default use")
+	if err != nil {
+		log.Errorf("Could not create a billing account info. err: %v", err)
+		return nil, errors.Wrap(err, "could not create a billing account info")
+	}
+	log.WithField("billing_account", billingAccount).Debugf("Created a billing account for new customer. customer_id: %s", id)
 
 	// generate hash password
 	hashPassword, err := generateHash(password)
@@ -72,7 +85,6 @@ func (h *customerHandler) Create(
 	}
 
 	// create customer
-	id := h.utilHandler.CreateUUID()
 	u := &customer.Customer{
 		ID:           id,
 		Username:     username,
@@ -84,7 +96,8 @@ func (h *customerHandler) Create(
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
 
-		PermissionIDs: permissionIDs,
+		PermissionIDs:    permissionIDs,
+		BillingAccountID: billingAccount.ID,
 	}
 
 	if err := h.db.CustomerCreate(ctx, u); err != nil {
@@ -111,6 +124,25 @@ func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) (*customer.C
 		"customer_id": id,
 	})
 	log.Debug("Deleteing the customer.")
+
+	// get billing accounts
+	as, err := h.reqHandler.BillingV1AccountGets(ctx, id, "", 100)
+	if err != nil {
+		log.Errorf("Could not get customer's billing accounts. err: %v", err)
+		return nil, errors.Wrap(err, "could not get customer's billing accounts")
+	}
+
+	for _, ac := range as {
+		if ac.TMDelete < dbhandler.DefaultTimeStamp {
+			// already deleted
+			continue
+		}
+		_, err := h.reqHandler.BillingV1AccountDelete(ctx, ac.ID)
+		if err != nil {
+			log.Errorf("Could not delete the billing account. err: %v", err)
+			// we've got an error here, but keep moving.
+		}
+	}
 
 	if err := h.db.CustomerDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the customer. err: %v", err)
