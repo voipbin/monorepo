@@ -21,6 +21,8 @@ type WebhookMessage struct {
 
 	PermissionIDs []uuid.UUID `json:"permission_ids"` // customer's permission ids
 
+	BillingAccountID uuid.UUID `json:"billing_account_id"` // default billing account id
+
 	TMCreate string `json:"tm_create"` // Created timestamp.
 	TMUpdate string `json:"tm_update"` // Updated timestamp.
 	TMDelete string `json:"tm_delete"` // Deleted timestamp.
@@ -39,6 +41,8 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 		WebhookURI:    h.WebhookURI,
 
 		PermissionIDs: h.PermissionIDs,
+
+		BillingAccountID: h.BillingAccountID,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

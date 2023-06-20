@@ -18,6 +18,8 @@ type Customer struct {
 
 	PermissionIDs []uuid.UUID `json:"permission_ids,omitempty"` // customer's permission ids
 
+	BillingAccountID uuid.UUID `json:"billing_account_id"` // default billing account id
+
 	TMCreate string `json:"tm_create,omitempty"` // Created timestamp.
 	TMUpdate string `json:"tm_update,omitempty"` // Updated timestamp.
 	TMDelete string `json:"tm_delete,omitempty"` // Deleted timestamp.

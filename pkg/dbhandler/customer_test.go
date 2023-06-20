@@ -37,6 +37,7 @@ func Test_CustomerCreate(t *testing.T) {
 				PermissionIDs: []uuid.UUID{
 					uuid.FromStringOrNil("6a6443a4-7c70-11ec-9635-abbaf773da29"),
 				},
+				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -51,9 +52,10 @@ func Test_CustomerCreate(t *testing.T) {
 				PermissionIDs: []uuid.UUID{
 					uuid.FromStringOrNil("6a6443a4-7c70-11ec-9635-abbaf773da29"),
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
+				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMUpdate:         DefaultTimeStamp,
+				TMDelete:         DefaultTimeStamp,
 			},
 		},
 	}
@@ -73,7 +75,7 @@ func Test_CustomerCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).AnyTimes()
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -136,14 +138,14 @@ func TestCustomerDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerGet(ctx, tt.customer.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil).AnyTimes()
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			if err := h.CustomerDelete(ctx, tt.customer.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -229,14 +231,14 @@ func Test_CustomerGets(t *testing.T) {
 			_ = cleanTestDBCustomers()
 
 			for _, u := range tt.customers {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().CustomerSet(ctx, gomock.Any())
 				if err := h.CustomerCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			res, err := h.CustomerGets(ctx, tt.size, utilhandler.GetCurTime())
+			res, err := h.CustomerGets(ctx, tt.size, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}
@@ -293,7 +295,7 @@ func Test_CustomerGetByUsername(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any())
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -397,13 +399,13 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerSetBasicInfo(ctx, tt.customer.ID, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -543,13 +545,13 @@ func Test_CustomerSetPermissionIDs(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerSetPermissionIDs(ctx, tt.customer.ID, tt.permissionIDs); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -622,13 +624,13 @@ func Test_CustomerSetPasswordHash(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerSetPasswordHash(ctx, tt.customer.ID, tt.passwordHash); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

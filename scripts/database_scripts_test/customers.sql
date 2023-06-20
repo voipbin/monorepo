@@ -14,6 +14,8 @@ create table customers(
 
   permission_ids json,
 
+  billing_account_id binary(16),
+
   tm_create datetime(6),
   tm_update datetime(6),
   tm_delete datetime(6)

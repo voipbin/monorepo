@@ -27,6 +27,8 @@ const (
 
 		permission_ids,
 
+		billing_account_id,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -52,6 +54,8 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 		&res.WebhookURI,
 
 		&permissionIDs,
+
+		&res.BillingAccountID,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -85,6 +89,8 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 
 		permission_ids,
 
+		billing_account_id,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -92,6 +98,7 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		?, ?, ?,
 		?, ?,
 		?, ?,
+		?,
 		?,
 		?, ?, ?
 		)
@@ -105,7 +112,7 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		return fmt.Errorf("could not marshal the permission_ids. CustomerCreate. err: %v", err)
 	}
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err = h.db.Exec(q,
 		c.ID.Bytes(),
 		c.Username,
@@ -118,6 +125,8 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		c.WebhookURI,
 
 		tmpPermissionIDs,
+
+		c.BillingAccountID.Bytes(),
 
 		ts,
 		DefaultTimeStamp,
@@ -247,7 +256,7 @@ func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerDelete. err: %v", err)
@@ -297,7 +306,7 @@ func (h *handler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, 
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, webhookMethod, webhookURI, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, webhookMethod, webhookURI, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerSetBasicInfo. err: %v", err)
 	}
@@ -326,7 +335,7 @@ func (h *handler) CustomerSetPermissionIDs(ctx context.Context, id uuid.UUID, pe
 		return err
 	}
 
-	_, err = h.db.Exec(q, tmpPermissionIDs, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpPermissionIDs, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerSetPermission. err: %v", err)
 	}
@@ -349,7 +358,7 @@ func (h *handler) CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, pas
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, passwordHash, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, passwordHash, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerSetPasswordHash. err: %v", err)
 	}
