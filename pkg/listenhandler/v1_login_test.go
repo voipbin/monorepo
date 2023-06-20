@@ -14,18 +14,6 @@ import (
 )
 
 func Test_ProcessV1LoginPost(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := rabbitmqhandler.NewMockRabbit(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-
-	h := &listenHandler{
-		rabbitSock:      mockSock,
-		reqHandler:      mockReq,
-		customerHandler: mockCustomer,
-	}
 
 	tests := []struct {
 		name     string
@@ -55,13 +43,25 @@ func Test_ProcessV1LoginPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e58a9424-7dc0-11ec-82b6-d387115f2157","username":"test"}`),
+				Data:       []byte(`{"id":"e58a9424-7dc0-11ec-82b6-d387115f2157","username":"test","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
 
 			mockCustomer.EXPECT().Login(gomock.Any(), tt.username, tt.password).Return(tt.customer, nil)
 
