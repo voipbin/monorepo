@@ -362,7 +362,7 @@ func (h *listenHandler) processV1CustomersIDBillingAccountIDPut(ctx context.Cont
 	})
 	log.Debug("Executing processV1CustomersIDBillingAccountIDPut.")
 
-	var req request.V1DataCustomersIDBillingAccountIDsPut
+	var req request.V1DataCustomersIDBillingAccountIDPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
