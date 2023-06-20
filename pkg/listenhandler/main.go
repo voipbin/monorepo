@@ -40,12 +40,13 @@ var (
 
 	// v1
 	// customers
-	regV1Customers                 = regexp.MustCompile("/v1/customers$")
-	regV1CustomersGet              = regexp.MustCompile(`/v1/customers\?(.*)$`)
-	regV1CustomersID               = regexp.MustCompile("/v1/customers/" + regUUID + "$")
-	regV1CustomersIDPassword       = regexp.MustCompile("/v1/customers/" + regUUID + "/password$")
-	regV1CustomersIDPermissionIDs  = regexp.MustCompile("/v1/customers/" + regUUID + "/permission_ids$")
-	regV1CustomersIDIsValidBalance = regexp.MustCompile("/v1/customers/" + regUUID + "/is_valid_balance$")
+	regV1Customers                     = regexp.MustCompile("/v1/customers$")
+	regV1CustomersGet                  = regexp.MustCompile(`/v1/customers\?(.*)$`)
+	regV1CustomersID                   = regexp.MustCompile("/v1/customers/" + regUUID + "$")
+	regV1CustomersIDPassword           = regexp.MustCompile("/v1/customers/" + regUUID + "/password$")
+	regV1CustomersIDPermissionIDs      = regexp.MustCompile("/v1/customers/" + regUUID + "/permission_ids$")
+	regV1CustomersIDIsValidBalance     = regexp.MustCompile("/v1/customers/" + regUUID + "/is_valid_balance$")
+	regV1CustomersIDIsBillingAccountID = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
 
 	// login
 	regV1Login = regexp.MustCompile("/v1/login$")
@@ -190,6 +191,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1CustomersIDPassword.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1CustomersIDPasswordPut(ctx, m)
 		requestType = "/v1/customers/<customer_id>/password"
+
+	// PUT /customers/<customer-id>/billing_account_id
+	case regV1CustomersIDIsBillingAccountID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1CustomersIDBillingAccountIDPut(ctx, m)
+		requestType = "/v1/customers/<customer_id>/billing_account_id"
 
 	// PUT /customers/<customer-id>/permission_ids
 	case regV1CustomersIDPermissionIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
