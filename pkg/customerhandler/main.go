@@ -34,6 +34,7 @@ type CustomerHandler interface {
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error)
 	UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*customer.Customer, error)
 	UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error)
+	UpdateBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) (*customer.Customer, error)
 
 	IsValidBalance(ctx context.Context, customerID uuid.UUID) (bool, error)
 }

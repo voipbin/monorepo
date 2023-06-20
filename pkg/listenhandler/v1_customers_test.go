@@ -587,3 +587,66 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id               uuid.UUID
+		billingAccountID uuid.UUID
+
+		responseCustomer *customer.Customer
+		expectRes        *rabbitmqhandler.Response
+	}{
+		{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
+				URI:      "/v1/customers/cc2cedde-0f90-11ee-a04e-1723e1a00731/billing_account_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"billing_account_id":"ccdb52d4-0f90-11ee-9ba9-ab40a2fc7434"}`),
+			},
+
+			id:               uuid.FromStringOrNil("cc2cedde-0f90-11ee-a04e-1723e1a00731"),
+			billingAccountID: uuid.FromStringOrNil("ccdb52d4-0f90-11ee-9ba9-ab40a2fc7434"),
+
+			responseCustomer: &customer.Customer{
+				ID: uuid.FromStringOrNil("cc2cedde-0f90-11ee-a04e-1723e1a00731"),
+			},
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"cc2cedde-0f90-11ee-a04e-1723e1a00731","billing_account_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:      mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
+
+			mockCustomer.EXPECT().UpdateBillingAccountID(gomock.Any(), tt.id, tt.billingAccountID).Return(tt.responseCustomer, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

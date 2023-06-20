@@ -269,3 +269,29 @@ func (h *customerHandler) Login(ctx context.Context, username, password string) 
 
 	return res, nil
 }
+
+// UpdateBillingAccountID updates the customer's billing accountid.
+func (h *customerHandler) UpdateBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) (*customer.Customer, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "UpdateBillingAccountID",
+		"user_id": id,
+	})
+	log.Debug("Updating the customer's billing account id.")
+
+	if err := h.db.CustomerSetBillingAccountID(ctx, id, billingAccountID); err != nil {
+		log.Errorf("Could not update the billing account id. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.db.CustomerGet(ctx, id)
+	if err != nil {
+		// we couldn't get updated item. but we've updated the customer already, just return here.
+		log.Errorf("Could not get updated customer. err: %v", err)
+		return nil, fmt.Errorf("could not get updated customer")
+	}
+
+	// notify
+	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
+
+	return res, nil
+}

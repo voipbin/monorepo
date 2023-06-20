@@ -380,3 +380,46 @@ func TestLogin(t *testing.T) {
 		})
 	}
 }
+
+func Test_UpdateBillingAccountID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id               uuid.UUID
+		billingAccountID uuid.UUID
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("f2eb3d1e-0f8f-11ee-b3bb-178ed8e3acb7"),
+			uuid.FromStringOrNil("f32c6dca-0f8f-11ee-8aca-cfcc26f6900e"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyhandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CustomerSetBillingAccountID(gomock.Any(), tt.id, tt.billingAccountID)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
+
+			_, err := h.UpdateBillingAccountID(ctx, tt.id, tt.billingAccountID)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}

@@ -347,3 +347,45 @@ func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, 
 
 	return res, nil
 }
+
+// processV1CustomersIDBillingAccountIDPut handles Put /v1/customers/<customer-id>/billing_account_id request
+func (h *listenHandler) processV1CustomersIDBillingAccountIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "processV1CustomersIDBillingAccountIDPut",
+		"customer_id": id,
+	})
+	log.Debug("Executing processV1CustomersIDBillingAccountIDPut.")
+
+	var req request.V1DataCustomersIDBillingAccountIDsPut
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.customerHandler.UpdateBillingAccountID(ctx, id, req.BillingAccountID)
+	if err != nil {
+		log.Errorf("Could not update the customer's permission ids. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

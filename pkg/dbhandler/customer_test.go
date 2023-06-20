@@ -649,3 +649,84 @@ func Test_CustomerSetPasswordHash(t *testing.T) {
 		})
 	}
 }
+
+func Test_CustomerSetBillingAccountID(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer *customer.Customer
+
+		billingAccountID uuid.UUID
+
+		responseCurTime string
+		expectRes       *customer.Customer
+	}{
+		{
+			"normal",
+			&customer.Customer{
+				ID:               uuid.FromStringOrNil("fb6946f8-0f8e-11ee-b6e8-0b5d7cba3ef2"),
+				Username:         "fb9baf3a-0f8e-11ee-8c61-b721b93cc040",
+				PasswordHash:     "sifD7dbCmUiBA4XqRMpWil7fwCcH8fhezEPwSNopzO",
+				Name:             "test7",
+				Detail:           "detail7",
+				PermissionIDs:    []uuid.UUID{},
+				BillingAccountID: uuid.FromStringOrNil("fbd77aba-0f8e-11ee-a59f-cb37ae45541e"),
+			},
+
+			uuid.FromStringOrNil("fc1bc1fc-0f8e-11ee-970b-b75ca3799e1f"),
+
+			"2020-04-18 03:22:17.995000",
+			&customer.Customer{
+				ID:               uuid.FromStringOrNil("fb6946f8-0f8e-11ee-b6e8-0b5d7cba3ef2"),
+				Username:         "fb9baf3a-0f8e-11ee-8c61-b721b93cc040",
+				PasswordHash:     "sifD7dbCmUiBA4XqRMpWil7fwCcH8fhezEPwSNopzO",
+				Name:             "test7",
+				Detail:           "detail7",
+				PermissionIDs:    []uuid.UUID{},
+				BillingAccountID: uuid.FromStringOrNil("fc1bc1fc-0f8e-11ee-970b-b75ca3799e1f"),
+				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMUpdate:         "2020-04-18 03:22:17.995000",
+				TMDelete:         DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
+			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
+			if err := h.CustomerSetBillingAccountID(ctx, tt.customer.ID, tt.billingAccountID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
+			res, err := h.CustomerGet(ctx, tt.customer.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
