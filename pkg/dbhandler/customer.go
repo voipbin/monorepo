@@ -368,3 +368,26 @@ func (h *handler) CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, pas
 
 	return nil
 }
+
+// CustomerSetBillingAccountID sets the customer's billing_account_id.
+func (h *handler) CustomerSetBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) error {
+	// prepare
+	q := `
+	update
+		customers
+	set
+		billing_account_id = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+	_, err := h.db.Exec(q, billingAccountID, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not execute. CustomerSetBillingAccountID. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.customerUpdateToCache(ctx, id)
+
+	return nil
+}
