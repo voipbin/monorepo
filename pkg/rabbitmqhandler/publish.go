@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // PublishMessage sends a message to rabbitmq
@@ -17,7 +17,8 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 	}
 	defer channel.Close()
 
-	err = channel.Publish(
+	err = channel.PublishWithContext(
+		context.Background(),
 		exchange, // exchange
 		key,      // routing key
 		false,    // mandatory
@@ -107,7 +108,8 @@ func (r *rabbit) PublishRPC(ctx context.Context, queueName string, req *Request)
 	}
 
 	// publish the message
-	err = channel.Publish(
+	err = channel.PublishWithContext(
+		context.Background(),
 		"",
 		queueName,
 		false,

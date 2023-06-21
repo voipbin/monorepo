@@ -858,18 +858,18 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountAddBalanceForce(ctx, a
 }
 
 // BillingV1AccountCreate mocks base method.
-func (m *MockRequestHandler) BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name, detail string) (*account.Account, error) {
+func (m *MockRequestHandler) BillingV1AccountCreate(ctx context.Context, customerID uuid.UUID, name, detail string) (*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1AccountCreate", ctx, custoerID, name, detail)
+	ret := m.ctrl.Call(m, "BillingV1AccountCreate", ctx, customerID, name, detail)
 	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BillingV1AccountCreate indicates an expected call of BillingV1AccountCreate.
-func (mr *MockRequestHandlerMockRecorder) BillingV1AccountCreate(ctx, custoerID, name, detail interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountCreate(ctx, customerID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountCreate", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountCreate), ctx, custoerID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountCreate", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountCreate), ctx, customerID, name, detail)
 }
 
 // BillingV1AccountDelete mocks base method.
@@ -2961,6 +2961,21 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGets(ctx, pageToken,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerGets", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerGets), ctx, pageToken, pageSize)
 }
 
+// CustomerV1CustomerIsValidBalance mocks base method.
+func (m *MockRequestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1CustomerIsValidBalance", ctx, customerID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1CustomerIsValidBalance indicates an expected call of CustomerV1CustomerIsValidBalance.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerIsValidBalance(ctx, customerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerIsValidBalance), ctx, customerID)
+}
+
 // CustomerV1CustomerUpdate mocks base method.
 func (m *MockRequestHandler) CustomerV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
@@ -2974,6 +2989,21 @@ func (m *MockRequestHandler) CustomerV1CustomerUpdate(ctx context.Context, id uu
 func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerUpdate(ctx, id, name, detail, webhookMethod, webhookURI interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerUpdate", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerUpdate), ctx, id, name, detail, webhookMethod, webhookURI)
+}
+
+// CustomerV1CustomerUpdateBillingAccountID mocks base method.
+func (m *MockRequestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID, biillingAccountID uuid.UUID) (*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1CustomerUpdateBillingAccountID", ctx, customerID, biillingAccountID)
+	ret0, _ := ret[0].(*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1CustomerUpdateBillingAccountID indicates an expected call of CustomerV1CustomerUpdateBillingAccountID.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerUpdateBillingAccountID(ctx, customerID, biillingAccountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerUpdateBillingAccountID", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerUpdateBillingAccountID), ctx, customerID, biillingAccountID)
 }
 
 // CustomerV1CustomerUpdatePassword mocks base method.

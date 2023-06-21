@@ -507,3 +507,125 @@ func Test_CustomerV1CustomerUpdatePermission(t *testing.T) {
 		})
 	}
 }
+
+func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     bool
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("57e0d56e-0f8e-11ee-a32d-4b65fba800d5"),
+
+			"bin-manager.customer-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/customers/57e0d56e-0f8e-11ee-a32d-4b65fba800d5/is_valid_balance",
+				Method: rabbitmqhandler.RequestMethodPost,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"valid":true}`),
+			},
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CustomerV1CustomerIsValidBalance(ctx, tt.customerID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func Test_CustomerV1CustomerUpdateBillingAccountID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id               uuid.UUID
+		billingAccountID uuid.UUID
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+		expectRes     *cscustomer.Customer
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("2935091e-0f94-11ee-a5e5-a34227ad44a6"),
+			uuid.FromStringOrNil("296b4aba-0f94-11ee-99c9-ab67bb9c534a"),
+
+			"bin-manager.customer-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/customers/2935091e-0f94-11ee-a5e5-a34227ad44a6/billing_account_id",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"billing_account_id":"296b4aba-0f94-11ee-99c9-ab67bb9c534a"}`),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2935091e-0f94-11ee-a5e5-a34227ad44a6"}`),
+			},
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2935091e-0f94-11ee-a5e5-a34227ad44a6"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, tt.id, tt.billingAccountID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+
+		})
+	}
+}

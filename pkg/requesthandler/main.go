@@ -377,7 +377,7 @@ type RequestHandler interface {
 	// billing-manager account
 	BillingV1AccountGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]bmaccount.Account, error)
 	BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
-	BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
+	BillingV1AccountCreate(ctx context.Context, customerID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
 	BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 	BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
@@ -656,6 +656,8 @@ type RequestHandler interface {
 	CustomerV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.Customer, error)
 	CustomerV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) (*cscustomer.Customer, error)
 	CustomerV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.Customer, error)
+	CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID) (bool, error)
+	CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error)
 
 	// customer-manager login
 	CustomerV1Login(ctx context.Context, timeout int, username, password string) (*cscustomer.Customer, error)

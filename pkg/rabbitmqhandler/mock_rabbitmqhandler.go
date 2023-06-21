@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	amqp "github.com/streadway/amqp"
+	amqp091_go "github.com/rabbitmq/amqp091-go"
 )
 
 // MockRabbit is a mock of Rabbit interface.
@@ -116,7 +116,7 @@ func (mr *MockRabbitMockRecorder) ConsumeRPCOpt(queueName, consumerName, exclusi
 }
 
 // ExchangeDeclare mocks base method.
-func (m *MockRabbit) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error {
+func (m *MockRabbit) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp091_go.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExchangeDeclare", name, kind, durable, autoDelete, internal, noWait, args)
 	ret0, _ := ret[0].(error)
@@ -257,7 +257,7 @@ func (mr *MockRabbitMockRecorder) PublishRequest(queueName, req interface{}) *go
 }
 
 // QueueBind mocks base method.
-func (m *MockRabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+func (m *MockRabbit) QueueBind(name, key, exchange string, noWait bool, args amqp091_go.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueBind", name, key, exchange, noWait, args)
 	ret0, _ := ret[0].(error)

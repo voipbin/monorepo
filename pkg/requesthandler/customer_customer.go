@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	csrequest "gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/request"
+	csresponse "gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/response"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -216,6 +217,61 @@ func (r *requestHandler) CustomerV1CustomerUpdatePermissionIDs(ctx context.Conte
 	}
 
 	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCustomerCustomers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData cscustomer.Customer
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return nil, err
+	}
+
+	return &resData, nil
+}
+
+// CustomerV1CustomerIsValidBalance sends a request to customer-manager
+// returns true if the customer has valid balance.
+func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID) (bool, error) {
+	uri := fmt.Sprintf("/v1/customers/%s/is_valid_balance", customerID)
+
+	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPost, "customer/customers/<customer-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return false, err
+	case res == nil:
+		return false, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return false, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var resData csresponse.V1ResponseCustomerIDIsValidBalance
+	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+		return false, err
+	}
+
+	return resData.Valid, nil
+}
+
+// CustomerV1CustomerUpdateBillingAccountID sends a request to customer-manager
+// to update the customer's billing account id.
+func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error) {
+	uri := fmt.Sprintf("/v1/customers/%s/billing_account_id", customerID)
+
+	data := &csrequest.V1DataCustomersIDBillingAccountIDPut{
+		BillingAccountID: biillingAccountID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPut, "customer/customers/<customer-id>/billing_account_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
