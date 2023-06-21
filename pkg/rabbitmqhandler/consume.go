@@ -1,11 +1,12 @@
 package rabbitmqhandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
 )
 
 // ConsumeMessage consumes message
@@ -161,7 +162,8 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume CbMsgRPC) er
 		return fmt.Errorf("could not marshal the response. res: %v, err: %v", res, err)
 	}
 
-	if err := channel.Publish(
+	if err := channel.PublishWithContext(
+		context.Background(),
 		"",              // exchange
 		message.ReplyTo, // routing key
 		false,           // mandatory

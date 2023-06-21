@@ -1,6 +1,6 @@
 package rabbitmqhandler
 
-import "github.com/streadway/amqp"
+import amqp "github.com/rabbitmq/amqp091-go"
 
 const (
 	exchangeKindDelay string = "x-delayed-message"
