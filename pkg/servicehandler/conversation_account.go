@@ -52,7 +52,7 @@ func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context
 	log.Debug("Getting a conversation accounts.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get tmp

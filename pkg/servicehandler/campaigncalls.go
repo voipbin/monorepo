@@ -52,7 +52,7 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *cs
 	log.Debug("Getting campaigncalls.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get campaign
