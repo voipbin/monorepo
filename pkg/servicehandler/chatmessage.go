@@ -89,7 +89,7 @@ func (h *serviceHandler) ChatmessageGetsByChatID(ctx context.Context, u *cscusto
 	log.Debug("Getting a messagechats.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	if size == 0 {

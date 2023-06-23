@@ -13,6 +13,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
+	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	recording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -29,7 +30,7 @@ import (
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
-	account "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
+	account0 "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/account"
 	conversation "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/conversation"
 	media0 "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/media"
 	message "gitlab.com/voipbin/bin-manager/conversation-manager.git/models/message"
@@ -299,6 +300,96 @@ func (m *MockServiceHandler) AvailableNumberGets(ctx context.Context, u *custome
 func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(ctx, u, size, countryCode interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailableNumberGets", reflect.TypeOf((*MockServiceHandler)(nil).AvailableNumberGets), ctx, u, size, countryCode)
+}
+
+// BillingAccountAddBalanceForce mocks base method.
+func (m *MockServiceHandler) BillingAccountAddBalanceForce(ctx context.Context, u *customer.Customer, billingAccountID uuid.UUID, balance float32) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountAddBalanceForce", ctx, u, billingAccountID, balance)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountAddBalanceForce indicates an expected call of BillingAccountAddBalanceForce.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountAddBalanceForce(ctx, u, billingAccountID, balance interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountAddBalanceForce", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountAddBalanceForce), ctx, u, billingAccountID, balance)
+}
+
+// BillingAccountCreate mocks base method.
+func (m *MockServiceHandler) BillingAccountCreate(ctx context.Context, u *customer.Customer, name, detail string) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountCreate", ctx, u, name, detail)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountCreate indicates an expected call of BillingAccountCreate.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountCreate(ctx, u, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountCreate", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountCreate), ctx, u, name, detail)
+}
+
+// BillingAccountDelete mocks base method.
+func (m *MockServiceHandler) BillingAccountDelete(ctx context.Context, u *customer.Customer, billingAccountID uuid.UUID) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountDelete", ctx, u, billingAccountID)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountDelete indicates an expected call of BillingAccountDelete.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountDelete(ctx, u, billingAccountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountDelete", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountDelete), ctx, u, billingAccountID)
+}
+
+// BillingAccountGet mocks base method.
+func (m *MockServiceHandler) BillingAccountGet(ctx context.Context, u *customer.Customer, billingAccountID uuid.UUID) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountGet", ctx, u, billingAccountID)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountGet indicates an expected call of BillingAccountGet.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountGet(ctx, u, billingAccountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountGet), ctx, u, billingAccountID)
+}
+
+// BillingAccountGets mocks base method.
+func (m *MockServiceHandler) BillingAccountGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountGets", ctx, u, size, token)
+	ret0, _ := ret[0].([]*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountGets indicates an expected call of BillingAccountGets.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountGets(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountGets", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountGets), ctx, u, size, token)
+}
+
+// BillingAccountSubtractBalanceForce mocks base method.
+func (m *MockServiceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, u *customer.Customer, billingAccountID uuid.UUID, balance float32) (*account.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingAccountSubtractBalanceForce", ctx, u, billingAccountID, balance)
+	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingAccountSubtractBalanceForce indicates an expected call of BillingAccountSubtractBalanceForce.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountSubtractBalanceForce(ctx, u, billingAccountID, balance interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountSubtractBalanceForce", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountSubtractBalanceForce), ctx, u, billingAccountID, balance)
 }
 
 // CallCreate mocks base method.
@@ -1254,10 +1345,10 @@ func (mr *MockServiceHandlerMockRecorder) ConferencecallKick(ctx, u, conferencec
 }
 
 // ConversationAccountCreate mocks base method.
-func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, u *customer.Customer, accountType account.Type, name, detail, secret, token string) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, u *customer.Customer, accountType account0.Type, name, detail, secret, token string) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountCreate", ctx, u, accountType, name, detail, secret, token)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1269,10 +1360,10 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountCreate(ctx, u, acco
 }
 
 // ConversationAccountDelete mocks base method.
-func (m *MockServiceHandler) ConversationAccountDelete(ctx context.Context, u *customer.Customer, accountID uuid.UUID) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountDelete(ctx context.Context, u *customer.Customer, accountID uuid.UUID) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountDelete", ctx, u, accountID)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1284,10 +1375,10 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountDelete(ctx, u, acco
 }
 
 // ConversationAccountGet mocks base method.
-func (m *MockServiceHandler) ConversationAccountGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountGet", ctx, u, id)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1299,10 +1390,10 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountGet(ctx, u, id inte
 }
 
 // ConversationAccountGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) ConversationAccountGetsByCustomerID(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*account.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountGetsByCustomerID(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountGetsByCustomerID", ctx, u, size, token)
-	ret0, _ := ret[0].([]*account.WebhookMessage)
+	ret0, _ := ret[0].([]*account0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1314,10 +1405,10 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountGetsByCustomerID(ct
 }
 
 // ConversationAccountUpdate mocks base method.
-func (m *MockServiceHandler) ConversationAccountUpdate(ctx context.Context, u *customer.Customer, accountID uuid.UUID, name, detail, secret, token string) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountUpdate(ctx context.Context, u *customer.Customer, accountID uuid.UUID, name, detail, secret, token string) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountUpdate", ctx, u, accountID, name, detail, secret, token)
-	ret0, _ := ret[0].(*account.WebhookMessage)
+	ret0, _ := ret[0].(*account0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

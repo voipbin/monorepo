@@ -113,7 +113,7 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, u *cs
 	log.Debug("Getting a outdials.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get outdial

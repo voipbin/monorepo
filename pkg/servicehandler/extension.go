@@ -117,7 +117,7 @@ func (h *serviceHandler) ExtensionGets(ctx context.Context, u *cscustomer.Custom
 	log.Debug("Getting a extensions.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get extensions

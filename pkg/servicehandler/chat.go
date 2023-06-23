@@ -87,7 +87,7 @@ func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, u *cscustomer
 	log.Debug("Getting a chats.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get chats

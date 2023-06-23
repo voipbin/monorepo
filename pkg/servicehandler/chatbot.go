@@ -82,7 +82,7 @@ func (h *serviceHandler) ChatbotGetsByCustomerID(ctx context.Context, u *cscusto
 	})
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get chatbots
