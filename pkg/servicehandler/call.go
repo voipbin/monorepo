@@ -16,7 +16,8 @@ import (
 
 // callGet validates the call's ownership and returns the call info.
 func (h *serviceHandler) callGet(ctx context.Context, u *cscustomer.Customer, callID uuid.UUID) (*cmcall.Call, error) {
-	log := logrus.WithFields(logrus.Fields{"func": "callGet",
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "callGet",
 		"customer_id": u.ID,
 		"call_id":     callID,
 	})
@@ -129,7 +130,7 @@ func (h *serviceHandler) CallGets(ctx context.Context, u *cscustomer.Customer, s
 	})
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get calls
@@ -171,7 +172,7 @@ func (h *serviceHandler) CallDelete(ctx context.Context, u *cscustomer.Customer,
 	tmp, err := h.reqHandler.CallV1CallDelete(ctx, callID)
 	if err != nil {
 		// no call info found
-		log.Infof("Could not get call info. err: %v", err)
+		log.Errorf("Could not delete call info. err: %v", err)
 		return nil, err
 	}
 

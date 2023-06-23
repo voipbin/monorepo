@@ -89,7 +89,7 @@ func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, u *cscusto
 	log.Debug("Getting a outplans.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get outplans

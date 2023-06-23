@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
+	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	cmrecording "gitlab.com/voipbin/bin-manager/call-manager.git/models/recording"
@@ -94,6 +95,14 @@ type ServiceHandler interface {
 
 	// available numbers
 	AvailableNumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
+
+	// billing accounts
+	BillingAccountCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string) (*bmaccount.WebhookMessage, error)
+	BillingAccountGet(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
+	BillingAccountGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*bmaccount.WebhookMessage, error)
+	BillingAccountDelete(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
+	BillingAccountAddBalanceForce(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error)
+	BillingAccountSubtractBalanceForce(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error)
 
 	// call handlers
 	CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error)

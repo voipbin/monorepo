@@ -105,7 +105,7 @@ func (h *serviceHandler) FlowGets(ctx context.Context, u *cscustomer.Customer, s
 	log.Debug("Getting a flow.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get flows

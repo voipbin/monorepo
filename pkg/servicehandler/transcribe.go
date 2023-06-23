@@ -70,7 +70,7 @@ func (h *serviceHandler) TranscribeGets(ctx context.Context, u *cscustomer.Custo
 	})
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	tmps, err := h.reqHandler.TranscribeV1TranscribeGets(ctx, u.ID, token, size)
