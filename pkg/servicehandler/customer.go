@@ -107,7 +107,7 @@ func (h *serviceHandler) CustomerGets(ctx context.Context, u *cscustomer.Custome
 		size = 10
 	}
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	tmp, err := h.reqHandler.CustomerV1CustomerGets(ctx, token, size)

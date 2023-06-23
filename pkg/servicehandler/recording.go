@@ -75,7 +75,7 @@ func (h *serviceHandler) RecordingGets(ctx context.Context, u *cscustomer.Custom
 	})
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	tmp, err := h.reqHandler.CallV1RecordingGets(ctx, u.ID, size, token)

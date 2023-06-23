@@ -115,7 +115,7 @@ func (h *serviceHandler) DomainGets(ctx context.Context, u *cscustomer.Customer,
 	log.Debug("Getting a domains.")
 
 	if token == "" {
-		token = h.utilHandler.GetCurTime()
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
 	// get tmps
