@@ -135,3 +135,53 @@ func Test_filenameHashGenerator(t *testing.T) {
 		})
 	}
 }
+
+func Test_normalizeSSML(t *testing.T) {
+
+	type test struct {
+		name string
+
+		text      string
+		expectRes string
+	}
+
+	tests := []test{
+		{
+			name: "have no <speak>",
+
+			text:      "Hello, welcome to the voipbin!",
+			expectRes: "<speak>Hello, welcome to the voipbin!</speak>",
+		},
+		{
+			name: "have <speak>",
+
+			text:      "<speak>Hello, welcome to the voipbin!</speak>",
+			expectRes: "<speak>Hello, welcome to the voipbin!</speak>",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAudio := audiohandler.NewMockAudioHandler(mc)
+			mockBucket := buckethandler.NewMockBucketHandler(mc)
+
+			h := &ttsHandler{
+				audioHandler:  mockAudio,
+				bucketHandler: mockBucket,
+			}
+			ctx := context.Background()
+
+			res, err := h.normalizeText(ctx, tt.text)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
+			}
+		})
+	}
+}
