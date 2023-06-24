@@ -3,11 +3,13 @@ package ttshandler
 import (
 	"context"
 	"crypto/sha1"
+	"encoding/xml"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
@@ -21,17 +23,28 @@ const (
 // Returns downloadable link string
 func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender) (*tts.TTS, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Create",
-		"call_id": callID,
+		"func":     "Create",
+		"call_id":  callID,
+		"text":     text,
+		"language": lang,
+		"gender":   gender,
 	})
 	log.Debugf("Creating TTS. lang: %s, gender: %s, text: %s", lang, gender, text)
 
+	// normalize text
+	normalizedText, err := h.normalizeText(ctx, text)
+	if err != nil {
+		log.Errorf("Could not normalize the text.")
+		return nil, errors.Wrap(err, "could not normalize the text")
+	}
+	log.WithField("normalized_text", normalizedText).Debugf("The text has normalized.")
+
 	// create hash/target/result
-	filename := h.filenameHashGenerator(text, lang, gender)
+	filename := h.filenameHashGenerator(normalizedText, lang, gender)
 	filepath := fmt.Sprintf("%s/%s", bucketDirectory, filename)
 	res := &tts.TTS{
 		Gender:          gender,
-		Text:            text,
+		Text:            normalizedText,
 		Language:        lang,
 		MediaBucketName: h.bucketHandler.GetBucketName(),
 		MediaFilepath:   filepath,
@@ -53,10 +66,9 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 	}
 
 	// create audio
-	err := h.audioHandler.AudioCreate(ctx, callID, text, lang, gender, filename)
-	if err != nil {
-		log.Errorf("Could not create audio. err: %v", err)
-		return nil, fmt.Errorf("could not create audio. err: %v", err)
+	if errCreate := h.audioHandler.AudioCreate(ctx, callID, normalizedText, lang, gender, filename); errCreate != nil {
+		log.Errorf("Could not create audio. err: %v", errCreate)
+		return nil, fmt.Errorf("could not create audio. err: %v", errCreate)
 	}
 	defer os.Remove(filename)
 
@@ -90,4 +102,32 @@ func (h *ttsHandler) filenameHashGenerator(text string, lang string, gender tts.
 	promHashProcessTime.WithLabelValues().Observe(float64(elapsed.Milliseconds()))
 
 	return res
+}
+
+// normalizeText returns normalized ssml
+func (h *ttsHandler) normalizeText(ctx context.Context, ssml string) (string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "normalizeSSML",
+		"ssml": ssml,
+	})
+
+	res := ssml
+	if valid := h.isValidSSML(res); !valid {
+		log.Debugf("The text is not valid ssml. adding the default ")
+		res = fmt.Sprintf("<speak>%s</speak>", res)
+
+		// validate again
+		if reValid := h.isValidSSML(res); !reValid {
+			log.Errorf("Could not pass the ssml validation.")
+			return "", fmt.Errorf("could not pass the ssml validation")
+		}
+	}
+
+	return res, nil
+}
+
+// isValidSSML returns true if the given text is valid ssml
+func (h *ttsHandler) isValidSSML(text string) bool {
+
+	return xml.Unmarshal([]byte(text), new(interface{})) == nil
 }
