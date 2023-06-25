@@ -68,7 +68,13 @@ func (h *accountHandler) GetByCustomerID(ctx context.Context, customerID uuid.UU
 		"customer_id": customerID,
 	})
 
-	res, err := h.db.AccountGetByCustomerID(ctx, customerID)
+	cs, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
+	if err != nil {
+		log.Errorf("Could not get customer info")
+		return nil, errors.Wrap(err, "could not get customer info")
+	}
+
+	res, err := h.db.AccountGet(ctx, cs.BillingAccountID)
 	if err != nil {
 		log.Errorf("Could not get account. err: %v", err)
 		return nil, errors.Wrap(err, "could not get account info")

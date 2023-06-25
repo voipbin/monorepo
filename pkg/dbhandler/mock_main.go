@@ -94,21 +94,6 @@ func (mr *MockDBHandlerMockRecorder) AccountGet(ctx, id interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGet", reflect.TypeOf((*MockDBHandler)(nil).AccountGet), ctx, id)
 }
 
-// AccountGetByCustomerID mocks base method.
-func (m *MockDBHandler) AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountGetByCustomerID", ctx, customerID)
-	ret0, _ := ret[0].(*account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AccountGetByCustomerID indicates an expected call of AccountGetByCustomerID.
-func (mr *MockDBHandlerMockRecorder) AccountGetByCustomerID(ctx, customerID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGetByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).AccountGetByCustomerID), ctx, customerID)
-}
-
 // AccountGetsByCustomerID mocks base method.
 func (m *MockDBHandler) AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
 	m.ctrl.T.Helper()

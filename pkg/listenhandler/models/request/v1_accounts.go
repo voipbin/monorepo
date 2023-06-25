@@ -23,3 +23,9 @@ type V1DataAccountsIDBalanceAddForcePOST struct {
 type V1DataAccountsIDBalanceSubtractForcePOST struct {
 	Balance float32 `json:"balance"`
 }
+
+// V1DataAccountsIDIsValidBalancePOST is rquest param define for POST /accounts/<account-id>/is_valid_balance
+type V1DataAccountsIDIsValidBalancePOST struct {
+	BillingType string `json:"billing_type"`
+	Country     string `json:"country"`
+}

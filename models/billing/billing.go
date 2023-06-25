@@ -50,3 +50,10 @@ const (
 	StatusPending     Status = "pending"
 	StatusFinished    Status = "finished"
 )
+
+// list of default billing info
+const (
+	DefaultCostPerUnitReferenceTypeCall   float32 = 0.020
+	DefaultCostPerUnitReferenceTypeSMS    float32 = 0.008
+	DefaultCostPerUnitReferenceTypeNumber float32 = 5
+)
