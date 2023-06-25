@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -384,6 +385,70 @@ func Test_BillingV1AccountSubtractBalanceForce(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.BillingV1AccountSubtractBalanceForce(ctx, tt.accountID, tt.balance)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingV1AccountIsValidBalance(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		accountID   uuid.UUID
+		billingType bmbilling.ReferenceType
+		country     string
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     bool
+
+		response *rabbitmqhandler.Response
+	}{
+		{
+			name: "normal",
+
+			accountID:   uuid.FromStringOrNil("6ec4c6cc-134f-11ee-acb1-83e6a5d0d5cf"),
+			billingType: bmbilling.ReferenceTypeCall,
+			country:     "us",
+
+			expectTarget: "bin-manager.billing-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/accounts/6ec4c6cc-134f-11ee-acb1-83e6a5d0d5cf/is_valid_balance",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"billing_type":"call","country":"us"}`),
+			},
+			expectRes: true,
+
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"valid":true}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.BillingV1AccountIsValidBalance(ctx, tt.accountID, tt.billingType, tt.country)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

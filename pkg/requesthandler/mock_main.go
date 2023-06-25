@@ -13,6 +13,7 @@ import (
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	ari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	bridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -915,6 +916,21 @@ func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, customerI
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGets), ctx, customerID, pageToken, pageSize)
+}
+
+// BillingV1AccountIsValidBalance mocks base method.
+func (m *MockRequestHandler) BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountIsValidBalance", ctx, accountID, billingType, country)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountIsValidBalance indicates an expected call of BillingV1AccountIsValidBalance.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalance(ctx, accountID, billingType, country interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalance), ctx, accountID, billingType, country)
 }
 
 // BillingV1AccountSubtractBalanceForce mocks base method.
