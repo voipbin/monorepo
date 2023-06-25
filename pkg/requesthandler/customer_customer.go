@@ -249,7 +249,7 @@ func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, c
 		return false, fmt.Errorf("response code: %d", res.StatusCode)
 	}
 
-	var resData csresponse.V1ResponseCustomerIDIsValidBalance
+	var resData csresponse.V1ResponseCustomersIDIsValidBalancePost
 	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
 		return false, err
 	}
