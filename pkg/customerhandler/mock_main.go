@@ -10,6 +10,7 @@ import (
 
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	billing "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	customer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
 
@@ -97,18 +98,18 @@ func (mr *MockCustomerHandlerMockRecorder) Gets(ctx, size, token interface{}) *g
 }
 
 // IsValidBalance mocks base method.
-func (m *MockCustomerHandler) IsValidBalance(ctx context.Context, customerID uuid.UUID) (bool, error) {
+func (m *MockCustomerHandler) IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsValidBalance", ctx, customerID)
+	ret := m.ctrl.Call(m, "IsValidBalance", ctx, customerID, billingType, country)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsValidBalance indicates an expected call of IsValidBalance.
-func (mr *MockCustomerHandlerMockRecorder) IsValidBalance(ctx, customerID interface{}) *gomock.Call {
+func (mr *MockCustomerHandlerMockRecorder) IsValidBalance(ctx, customerID, billingType, country interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalance", reflect.TypeOf((*MockCustomerHandler)(nil).IsValidBalance), ctx, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalance", reflect.TypeOf((*MockCustomerHandler)(nil).IsValidBalance), ctx, customerID, billingType, country)
 }
 
 // Login mocks base method.

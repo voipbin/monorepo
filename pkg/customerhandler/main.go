@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -36,7 +37,7 @@ type CustomerHandler interface {
 	UpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*customer.Customer, error)
 	UpdateBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) (*customer.Customer, error)
 
-	IsValidBalance(ctx context.Context, customerID uuid.UUID) (bool, error)
+	IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType bmbilling.ReferenceType, country string) (bool, error)
 }
 
 type customerHandler struct {

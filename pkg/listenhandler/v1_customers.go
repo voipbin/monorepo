@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/request"
@@ -57,10 +58,10 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, req *rabbitmq
 
 // processV1CustomersPost handles Post /v1/customers request
 func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "processV1CustomersPost",
-		})
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CustomersPost",
+		"request": m,
+	})
 	log.Debug("Executing processV1CustomersPost.")
 
 	var reqData request.V1DataCustomersPost
@@ -312,25 +313,32 @@ func (h *listenHandler) processV1CustomersIDPermissionIDsPut(ctx context.Context
 
 // processV1CustomersIDIsValidBalance handles Put /v1/customers/<customer-id>/is_valid_balance request
 func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CustomersIDIsValidBalance",
+		"request": m,
+	})
+
 	uriItems := strings.Split(m.URI, "/")
 	if len(uriItems) < 5 {
 		return simpleResponse(400), nil
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "processV1CustomersIDIsValidBalance",
-		"customer_id": id,
-	})
 	log.Debug("Executing processV1CustomersIDIsValidBalance.")
 
-	valid, err := h.customerHandler.IsValidBalance(ctx, id)
+	var req request.V1DataCustomerIDIsValidBalancePost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	valid, err := h.customerHandler.IsValidBalance(ctx, id, bmbilling.ReferenceType(req.BillingType), req.Country)
 	if err != nil {
 		log.Errorf("Could not update the customer's permission ids. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	tmp := &response.V1ResponseCustomerIDIsValidBalance{
+	tmp := &response.V1ResponseCustomersIDIsValidBalancePost{
 		Valid: valid,
 	}
 
