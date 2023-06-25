@@ -59,3 +59,9 @@ type V1DataCustomersIDPermissionIDsPut struct {
 type V1DataCustomersIDBillingAccountIDPut struct {
 	BillingAccountID uuid.UUID `json:"billing_account_id"`
 }
+
+// V1DataCustomerIDIsValidBalancePost is rquest param define for POST /customers/<customer-id>/is_valid_balance
+type V1DataCustomerIDIsValidBalancePost struct {
+	BillingType string `json:"billing_type"`
+	Country     string `json:"country"`
+}
