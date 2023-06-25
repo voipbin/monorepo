@@ -14,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
 	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230625104309-b4edd08e8cf4
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230625120643-904d6942cdff
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230625151458-93fa39367eed
 	golang.org/x/crypto v0.10.0
 )
 
