@@ -9,7 +9,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	bmrequest "gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/request"
+	bmresponse "gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/response"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
@@ -167,4 +169,34 @@ func (r *requestHandler) BillingV1AccountSubtractBalanceForce(ctx context.Contex
 	}
 
 	return &res, nil
+}
+
+// BillingV1AccountIsValidBalance returns true if the given account has valid balance for the given billing type
+func (r *requestHandler) BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string) (bool, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/is_valid_balance", accountID)
+
+	m, err := json.Marshal(bmrequest.V1DataAccountsIDIsValidBalancePOST{
+		BillingType: string(billingType),
+		Country:     country,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPost, "billing/accounts/<account-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return false, err
+	case tmp == nil:
+		return false, fmt.Errorf("could not get response")
+	case tmp.StatusCode > 299:
+		return false, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var resData bmresponse.V1ResponseAccountsIDIsValidBalance
+	if err := json.Unmarshal([]byte(tmp.Data), &resData); err != nil {
+		return false, err
+	}
+
+	return resData.Valid, nil
 }

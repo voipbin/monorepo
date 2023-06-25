@@ -11,6 +11,7 @@ import (
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	cmari "gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	cmbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/bridge"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
@@ -381,6 +382,7 @@ type RequestHandler interface {
 	BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
 	BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 	BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
+	BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string) (bool, error)
 
 	// call-manager call
 	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error
