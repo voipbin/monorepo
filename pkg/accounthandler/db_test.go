@@ -8,7 +8,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
+	cmcustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
@@ -147,7 +149,8 @@ func Test_GetByCustomerID(t *testing.T) {
 
 		customerID uuid.UUID
 
-		responseAccount *account.Account
+		responseCustomer *cmcustomer.Customer
+		responseAccount  *account.Account
 	}
 
 	tests := []test{
@@ -156,6 +159,10 @@ func Test_GetByCustomerID(t *testing.T) {
 
 			customerID: uuid.FromStringOrNil("b7211fa2-08f4-11ee-8f49-17448c4b2951"),
 
+			responseCustomer: &cmcustomer.Customer{
+				ID:               uuid.FromStringOrNil("b7211fa2-08f4-11ee-8f49-17448c4b2951"),
+				BillingAccountID: uuid.FromStringOrNil("b74fe472-08f4-11ee-8dbb-8bec316a131c"),
+			},
 			responseAccount: &account.Account{
 				ID: uuid.FromStringOrNil("b74fe472-08f4-11ee-8dbb-8bec316a131c"),
 			},
@@ -170,15 +177,18 @@ func Test_GetByCustomerID(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := accountHandler{
 				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
 
 			res, err := h.GetByCustomerID(ctx, tt.customerID)
 			if err != nil {

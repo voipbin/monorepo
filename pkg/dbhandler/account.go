@@ -132,18 +132,6 @@ func (h *handler) accountGetFromCache(ctx context.Context, id uuid.UUID) (*accou
 	return res, nil
 }
 
-// accountGetFromCache returns account from the cache.
-func (h *handler) accountGetByCustomerIDFromCache(ctx context.Context, customerID uuid.UUID) (*account.Account, error) {
-
-	// get from cache
-	res, err := h.cache.AccountGetByCustomerID(ctx, customerID)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // accountGetFromDB returns account from the DB.
 func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.Account, error) {
 
@@ -203,38 +191,6 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 	res, err = h.accountGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
-	}
-
-	// set to the cache
-	_ = h.accountSetToCache(ctx, res)
-
-	return res, nil
-}
-
-// AccountGetByCustomerID returns account of the given customer id.
-func (h *handler) AccountGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error) {
-
-	res, err := h.accountGetByCustomerIDFromCache(ctx, customerID)
-	if err == nil {
-		return res, nil
-	}
-
-	// f
-	q := fmt.Sprintf("%s where customer_id = ?", accountSelect)
-
-	row, err := h.db.Query(q, customerID.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("could not query. AccountGetByCustomerID. err: %v", err)
-	}
-	defer row.Close()
-
-	if !row.Next() {
-		return nil, ErrNotFound
-	}
-
-	res, err = h.accountGetFromRow(row)
-	if err != nil {
-		return nil, fmt.Errorf("could not get account. AccountGetByCustomerID, err: %v", err)
 	}
 
 	// set to the cache

@@ -12,6 +12,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
 )
 
@@ -26,7 +27,7 @@ type AccountHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	DeletesByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*account.Account, error)
 
-	IsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID) (bool, error)
+	IsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string) (bool, error)
 }
 
 // accountHandler define

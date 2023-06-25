@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/request"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/listenhandler/models/response"
 )
@@ -121,6 +122,40 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqh
 	return res, nil
 }
 
+// processV1AccountsIDDelete handles DELETE /v1/accounts/<account-id> request
+func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIDDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	c, err := h.accountHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get account info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	data, err := json.Marshal(c)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1AccountsCustomerIDIDGet handles GET /v1/accounts/customer_id/<cusotmer-id> request
 func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -155,7 +190,7 @@ func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m 
 	return res, nil
 }
 
-// processV1AccountsCustomerIDIDIsValidBalancePost handles GET /v1/accounts/customer_id/<customer-id>/is_valid_balance request
+// processV1AccountsCustomerIDIDIsValidBalancePost handles POST /v1/accounts/customer_id/<customer-id>/is_valid_balance request
 func (h *listenHandler) processV1AccountsCustomerIDIDIsValidBalancePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1AccountsCustomerIDIDIsValidBalancePost",
@@ -169,7 +204,7 @@ func (h *listenHandler) processV1AccountsCustomerIDIDIsValidBalancePost(ctx cont
 
 	customerID := uuid.FromStringOrNil(uriItems[4])
 
-	valid, err := h.accountHandler.IsValidBalanceByCustomerID(ctx, customerID)
+	valid, err := h.accountHandler.IsValidBalanceByCustomerID(ctx, customerID, billing.ReferenceTypeCall, "us")
 	if err != nil {
 		log.Errorf("Could not validate the account's balance info. err: %v", err)
 		return simpleResponse(404), nil
@@ -258,6 +293,49 @@ func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.
 	}
 
 	data, err := json.Marshal(c)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsIDIsValidBalancePost handles POST /v1/accounts/<account-id>/is_valid_balance request
+func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIDIsValidBalancePost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	accountID := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataAccountsIDIsValidBalancePOST
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	valid, err := h.accountHandler.IsValidBalanceByCustomerID(ctx, accountID, billing.ReferenceType(req.BillingType), req.Country)
+	if err != nil {
+		log.Errorf("Could not validate the account's balance info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	tmp := &response.V1ResponseAccountsIDIsValidBalance{
+		Valid: valid,
+	}
+
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		return simpleResponse(404), nil
 	}

@@ -7,8 +7,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
+	"gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
 )
 
@@ -307,7 +309,7 @@ func Test_processV1AccountsCustomerIDIDIsValidBalancePost(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().IsValidBalanceByCustomerID(gomock.Any(), tt.expectCustomerID).Return(tt.responseValid, nil)
+			mockAccount.EXPECT().IsValidBalanceByCustomerID(gomock.Any(), tt.expectCustomerID, gomock.Any(), gomock.Any()).Return(tt.responseValid, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -434,6 +436,69 @@ func Test_processV1AccountsIDBalanceSubtractForcePost(t *testing.T) {
 			}
 
 			mockAccount.EXPECT().SubtractBalance(gomock.Any(), tt.expectAccountID, tt.expectBalance).Return(tt.responseAccount, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1AccountsIDIsValidBalancePost(t *testing.T) {
+
+	type test struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		responseValid bool
+
+		expectAccountID   uuid.UUID
+		expectBillingType billing.ReferenceType
+		expectCountry     string
+		expectRes         *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
+				URI:      "/v1/accounts/5a687db0-133e-11ee-b2ff-2f0139f4ec84/is_valid_balance",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"billing_type":"call","country":"us"}`),
+			},
+
+			responseValid: true,
+
+			expectAccountID:   uuid.FromStringOrNil("5a687db0-133e-11ee-b2ff-2f0139f4ec84"),
+			expectBillingType: billing.ReferenceTypeCall,
+			expectCountry:     "us",
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"valid":true}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:     mockSock,
+				accountHandler: mockAccount,
+			}
+
+			mockAccount.EXPECT().IsValidBalanceByCustomerID(gomock.Any(), tt.expectAccountID, tt.expectBillingType, tt.expectCountry).Return(tt.responseValid, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
