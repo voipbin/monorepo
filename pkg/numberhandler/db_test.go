@@ -70,8 +70,9 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 				notifyHandler:       mockNotify,
 				numberHandlerTelnyx: mockTelnyx,
 			}
-
 			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID).Return(true, nil)
 
 			mockTelnyx.EXPECT().CreateNumber(tt.customerID, tt.number, tt.callFlowID, tt.numberName, tt.detail).Return(tt.expectRes, nil)
 			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)

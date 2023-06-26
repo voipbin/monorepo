@@ -5,22 +5,33 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
 
 // Create creates a new order numbers of given numbers
-func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":          "Create",
-			"customer_id":   customerID,
-			"flow_id":       callFlowID,
-			"target_number": num,
-		},
-	)
+func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*number.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "Create",
+		"customer_id":   customerID,
+		"flow_id":       callFlowID,
+		"target_number": num,
+	})
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
+
+	// check the customer has enough balance
+	valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, customerID)
+	if err != nil {
+		log.Errorf("Could not validate the customer's balance. err: %v", err)
+		return nil, errors.Wrap(err, "could not validate the customer's balance")
+	}
+
+	if !valid {
+		log.Errorf("The customer has not enough balance. valid: %v", valid)
+		return nil, fmt.Errorf("the customer has not enough balance")
+	}
 
 	// use telnyx as a default
 	tmp, err := h.numberHandlerTelnyx.CreateNumber(customerID, num, callFlowID, name, detail)
