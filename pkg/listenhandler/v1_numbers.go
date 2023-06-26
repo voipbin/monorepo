@@ -15,24 +15,21 @@ import (
 )
 
 // processV1NumbersPost handles POST /v1/numbers request
-func (h *listenHandler) processV1NumbersPost(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1NumbersPost(m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1NumbersPost",
+		"request": m,
+	})
+
 	ctx := context.Background()
 
-	var reqData request.V1DataNumbersPost
-	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
-		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", req.Data, err)
+	var req request.V1DataNumbersPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		logrus.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
-	log := logrus.WithFields(
-		logrus.Fields{
-			"user":   reqData.CustomerID,
-			"number": reqData.Number,
-			"name":   reqData.Name,
-			"detail": reqData.Detail,
-		},
-	)
 
-	numb, err := h.numberHandler.Create(ctx, reqData.CustomerID, reqData.Number, reqData.CallFlowID, reqData.MessageFlowID, reqData.Name, reqData.Detail)
+	numb, err := h.numberHandler.Create(ctx, req.CustomerID, req.Number, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil
