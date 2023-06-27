@@ -41,22 +41,22 @@ func (r *requestHandler) NumberV1NumberGetByNumber(ctx context.Context, num stri
 func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", numberID)
 
-	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resData nmnumber.Number
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	return &res, nil
 }
 
 // NumberV1NumberGets sends a request to number-manager
@@ -65,22 +65,22 @@ func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UU
 func (r *requestHandler) NumberV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resData []nmnumber.Number
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res []nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return resData, nil
+	return res, nil
 }
 
 // NumberV1NumberFlowDelete sends a request to number-manager
@@ -105,7 +105,7 @@ func (r *requestHandler) NumberV1NumberFlowDelete(ctx context.Context, flowID uu
 // NMNumberCreate sends a request to the number-manager
 // to create an number.
 // Returns created number
-func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error) {
 	uri := "/v1/numbers"
 
 	data := &nmrequest.V1DataNumbersPost{
@@ -122,22 +122,22 @@ func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uu
 		return nil, err
 	}
 
-	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceNumberNumbers, 15000, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPost, resourceNumberNumbers, 15000, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resData nmnumber.Number
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	return &res, nil
 }
 
 // NumberV1NumberDelete sends a request to number-manager
@@ -146,28 +146,28 @@ func (r *requestHandler) NumberV1NumberCreate(ctx context.Context, customerID uu
 func (r *requestHandler) NumberV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
-	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, 15000, 0, ContentTypeJSON, nil)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resData nmnumber.Number
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	return &res, nil
 }
 
 // NumberV1NumberUpdate sends a request to the number-manager
 // to update a number.
 // Returns updated number info
-func (r *requestHandler) NumberV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
 	data := &nmrequest.V1DataNumbersIDPut{
@@ -180,28 +180,28 @@ func (r *requestHandler) NumberV1NumberUpdateBasicInfo(ctx context.Context, id u
 		return nil, err
 	}
 
-	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resData nmnumber.Number
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	return &res, nil
 }
 
 // NumberV1NumberUpdate sends a request to the number-manager
 // to update a number.
 // Returns updated number info
-func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s/flow_ids", id)
 
 	data := &nmrequest.V1DataNumbersIDFlowIDPut{
@@ -214,20 +214,53 @@ func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id, cal
 		return nil, err
 	}
 
-	res, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
-	case res == nil:
+	case tmp == nil:
 		return nil, fmt.Errorf("response code: %d", 404)
-	case res.StatusCode > 299:
-		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
 	}
 
-	var resData nmnumber.Number
-	if err := json.Unmarshal([]byte(res.Data), &resData); err != nil {
+	var res nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
 		return nil, err
 	}
 
-	return &resData, nil
+	return &res, nil
+}
+
+// NumberV1NumberRenew sends a request to the number-manager
+// to renew the numbers.
+// Returns renewed number info
+func (r *requestHandler) NumberV1NumberRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error) {
+	uri := "/v1/numbers/renew"
+
+	data := &nmrequest.V1DataNumbersRenewPost{
+		TMRenew: tmRenew,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPost, "number/numbers/renew", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res []nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

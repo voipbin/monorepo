@@ -3526,6 +3526,21 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberGets(ctx, customerID, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberGets), ctx, customerID, pageToken, pageSize)
 }
 
+// NumberV1NumberRenew mocks base method.
+func (m *MockRequestHandler) NumberV1NumberRenew(ctx context.Context, tmRenew string) ([]number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberRenew", ctx, tmRenew)
+	ret0, _ := ret[0].([]number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberRenew indicates an expected call of NumberV1NumberRenew.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberRenew(ctx, tmRenew interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberRenew", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberRenew), ctx, tmRenew)
+}
+
 // NumberV1NumberUpdateBasicInfo mocks base method.
 func (m *MockRequestHandler) NumberV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
