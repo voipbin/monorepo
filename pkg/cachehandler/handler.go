@@ -96,8 +96,12 @@ func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, 
 // NumberSet sets the number info into the cache.
 func (h *handler) NumberSet(ctx context.Context, numb *number.Number) error {
 	key := fmt.Sprintf("number:%s", numb.ID)
-
 	if err := h.setSerialize(ctx, key, numb); err != nil {
+		return err
+	}
+
+	keyNumber := fmt.Sprintf("number-number:%s", numb.Number)
+	if err := h.setSerialize(ctx, keyNumber, numb); err != nil {
 		return err
 	}
 

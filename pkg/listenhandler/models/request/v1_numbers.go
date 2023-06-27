@@ -14,6 +14,13 @@ type V1DataNumbersPost struct {
 	Detail        string    `json:"detail"`
 }
 
+// V1DataNumbersRenewPost is
+// v1 data type request struct for
+// /v1/numbers/renew POST
+type V1DataNumbersRenewPost struct {
+	TMRenew string `json:"tm_renew"`
+}
+
 // V1DataNumbersIDPut is
 // v1 data type request struct for
 // /v1/numbers/<id> PUT

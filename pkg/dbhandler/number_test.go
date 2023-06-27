@@ -9,10 +9,10 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	_ "github.com/mattn/go-sqlite3"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/util"
 )
 
 func Test_NumberCreate(t *testing.T) {
@@ -37,7 +37,6 @@ func Test_NumberCreate(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
 
 			"2021-02-26 18:26:49.000",
@@ -51,6 +50,7 @@ func Test_NumberCreate(t *testing.T) {
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
+				TMRenew:             "2021-02-26 18:26:49.000",
 				TMCreate:            "2021-02-26 18:26:49.000",
 				TMUpdate:            DefaultTimeStamp,
 				TMDelete:            DefaultTimeStamp,
@@ -64,27 +64,25 @@ func Test_NumberCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().NumberSet(ctx, gomock.Any())
-			mockCache.EXPECT().NumberSetByNumber(ctx, gomock.Any())
 			if err := h.NumberCreate(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().NumberGet(ctx, tt.number.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(ctx, gomock.Any())
-			mockCache.EXPECT().NumberSetByNumber(ctx, gomock.Any())
 			res, err := h.NumberGet(ctx, tt.number.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -118,7 +116,6 @@ func Test_NumberGets(t *testing.T) {
 					ID:         uuid.FromStringOrNil("10f04e98-95bd-11eb-a2c3-1ba7aeb1cd61"),
 					CustomerID: uuid.FromStringOrNil("3b0bfcce-7ff3-11ec-b5cd-f3669cd35916"),
 					Number:     "+1234567890",
-					TMPurchase: "2021-01-01 00:00:00.000",
 				},
 			},
 
@@ -132,6 +129,7 @@ func Test_NumberGets(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("3b0bfcce-7ff3-11ec-b5cd-f3669cd35916"),
 					Number:     "+1234567890",
 					TMPurchase: "2021-01-01 00:00:00.000",
+					TMRenew:    "2021-01-01 00:00:00.000",
 					TMCreate:   "2021-01-01 00:00:00.000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
@@ -154,24 +152,23 @@ func Test_NumberGets(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			// creates numbers for test
 			for i := 0; i < len(tt.numbers); i++ {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-				mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 				_ = h.NumberCreate(context.Background(), tt.numbers[i])
 			}
 
-			res, err := h.NumberGets(context.Background(), tt.customerID, 10, util.GetCurTime())
+			res, err := h.NumberGets(context.Background(), tt.customerID, 10, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -247,26 +244,25 @@ func Test_NumberGetsByCallFlowID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 
 			ctx := context.Background()
 
 			// create numbers
 			for _, n := range tt.numbers {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-				mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 				_ = h.NumberCreate(ctx, n)
 			}
 
-			res, err := h.NumberGetsByCallFlowID(ctx, tt.flowID, 100, util.GetCurTime())
+			res, err := h.NumberGetsByCallFlowID(ctx, tt.flowID, 100, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -355,11 +351,10 @@ func Test_NumberGetsByMessageFlowID(t *testing.T) {
 			// create numbers
 			for _, n := range tt.numbers {
 				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-				mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 				_ = h.NumberCreate(ctx, n)
 			}
 
-			res, err := h.NumberGetsByMessageFlowID(ctx, tt.flowID, 100, util.GetCurTime())
+			res, err := h.NumberGetsByMessageFlowID(ctx, tt.flowID, 100, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -371,21 +366,18 @@ func Test_NumberGetsByMessageFlowID(t *testing.T) {
 	}
 }
 
-func TestNumberDelete(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_NumberDelete(t *testing.T) {
 
 	type test struct {
-		name         string
-		number       *number.Number
-		expectNumber *number.Number
+		name            string
+		number          *number.Number
+		responseCurTime string
+		expectNumber    *number.Number
 	}
 
 	tests := []test{
 		{
-			"test normal",
+			"normal",
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
 				Number:              "+821021656521",
@@ -395,9 +387,9 @@ func TestNumberDelete(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
 
+			"2021-02-26 18:26:49.000",
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
 				Number:              "+821021656521",
@@ -408,41 +400,48 @@ func TestNumberDelete(t *testing.T) {
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
+				TMRenew:             "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26 18:26:49.000",
+				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMDelete:            "2021-02-26 18:26:49.000",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				cache:       mockCache,
+				db:          dbTest,
+			}
+
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 			if err := h.NumberCreate(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 			if err := h.NumberDelete(ctx, tt.number.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 			res, err := h.NumberGet(context.Background(), tt.number.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
-			if res.TMDelete == "" || res.TMUpdate == "" {
-				t.Errorf("Wrong match. expect: not empty, got: empty")
-			}
-			res.TMCreate = ""
-			res.TMDelete = ""
-			res.TMUpdate = ""
 
 			if reflect.DeepEqual(tt.expectNumber, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectNumber, res)
@@ -451,11 +450,7 @@ func TestNumberDelete(t *testing.T) {
 	}
 }
 
-func TestNumberUpdateBasicInfo(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
+func Test_NumberUpdateBasicInfo(t *testing.T) {
 
 	type test struct {
 		name   string
@@ -464,7 +459,8 @@ func TestNumberUpdateBasicInfo(t *testing.T) {
 		numberName string
 		detail     string
 
-		expectNumber *number.Number
+		responseCurTime string
+		expectNumber    *number.Number
 	}
 
 	tests := []test{
@@ -482,12 +478,12 @@ func TestNumberUpdateBasicInfo(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
 
 			"update name",
 			"update detail",
 
+			"2021-02-26 18:26:49.000",
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 				Number:              "+821021656521",
@@ -501,17 +497,32 @@ func TestNumberUpdateBasicInfo(t *testing.T) {
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
+				TMRenew:             "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26 18:26:49.000",
+				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				cache:       mockCache,
+				db:          dbTest,
+			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any()).AnyTimes()
 			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.NumberCreate(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -526,13 +537,6 @@ func TestNumberUpdateBasicInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMUpdate == "" {
-				t.Errorf("Wrong match. expect: not empty, got: empty")
-			}
-			res.TMCreate = ""
-			res.TMDelete = ""
-			res.TMUpdate = ""
-
 			if reflect.DeepEqual(tt.expectNumber, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectNumber, res)
 			}
@@ -541,10 +545,6 @@ func TestNumberUpdateBasicInfo(t *testing.T) {
 }
 
 func Test_NumberUpdateFlowID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
 		name   string
@@ -553,7 +553,8 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 		callFlowID    uuid.UUID
 		messageFlowID uuid.UUID
 
-		expectNumber *number.Number
+		responseCurTime string
+		expectNumber    *number.Number
 	}
 
 	tests := []test{
@@ -570,12 +571,12 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
 
 			uuid.FromStringOrNil("4acedf84-a85f-11ec-bdc6-27902c5c6987"),
 			uuid.FromStringOrNil("4af49f4e-a85f-11ec-ad06-676681d45adb"),
 
+			"2021-02-26 18:26:49.000",
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("4a7c7d2a-a85f-11ec-8d15-9730036800e5"),
 				Number:              "+821021656521",
@@ -590,17 +591,31 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
+				TMRenew:             "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26 18:26:49.000",
+				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				cache:       mockCache,
+				db:          dbTest,
+			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any()).AnyTimes()
 			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.NumberCreate(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -615,13 +630,6 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMUpdate == "" {
-				t.Errorf("Wrong match. expect: not empty, got: empty")
-			}
-			res.TMCreate = ""
-			res.TMDelete = ""
-			res.TMUpdate = ""
-
 			if reflect.DeepEqual(tt.expectNumber, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectNumber, res)
 			}
@@ -630,10 +638,6 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 }
 
 func Test_NumberUpdateCallFlowID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
 		name   string
@@ -641,7 +645,8 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 
 		callFlowID uuid.UUID
 
-		expectNumber *number.Number
+		responseCurTime string
+		expectNumber    *number.Number
 	}
 
 	tests := []test{
@@ -658,11 +663,11 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
 
 			uuid.FromStringOrNil("535c0ca4-8801-11ec-accb-7bd692b1c078"),
 
+			"2021-02-26 18:26:49.000",
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("37357400-8817-11ec-9616-0f38be341833"),
 				Number:              "+821021656521",
@@ -677,17 +682,31 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
+				TMRenew:             "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26 18:26:49.000",
+				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				cache:       mockCache,
+				db:          dbTest,
+			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any()).AnyTimes()
 			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.NumberCreate(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -702,13 +721,6 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMUpdate == "" {
-				t.Errorf("Wrong match. expect: not empty, got: empty")
-			}
-			res.TMCreate = ""
-			res.TMDelete = ""
-			res.TMUpdate = ""
-
 			if reflect.DeepEqual(tt.expectNumber, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectNumber, res)
 			}
@@ -717,10 +729,6 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 }
 
 func Test_NumberUpdateMessageFlowID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
 
 	type test struct {
 		name   string
@@ -728,7 +736,8 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 
 		flowID uuid.UUID
 
-		expectNumber *number.Number
+		responseCurTime string
+		expectNumber    *number.Number
 	}
 
 	tests := []test{
@@ -745,11 +754,11 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
 			},
 
 			uuid.FromStringOrNil("b416b062-a85e-11ec-a230-7f3aae198503"),
 
+			"2021-02-26 18:26:49.000",
 			&number.Number{
 				ID:                  uuid.FromStringOrNil("b37a0bae-a85e-11ec-b666-7fce3ed0d0d5"),
 				Number:              "+821021656521",
@@ -763,17 +772,31 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
+				TMRenew:             "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26 18:26:49.000",
+				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMDelete:            DefaultTimeStamp,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				cache:       mockCache,
+				db:          dbTest,
+			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any()).AnyTimes()
 			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.NumberCreate(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -787,13 +810,6 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
-			if res.TMUpdate == "" {
-				t.Errorf("Wrong match. expect: not empty, got: empty")
-			}
-			res.TMCreate = ""
-			res.TMDelete = ""
-			res.TMUpdate = ""
 
 			if reflect.DeepEqual(tt.expectNumber, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectNumber, res)
@@ -827,7 +843,6 @@ func Test_NumberGetFromDBByNumber(t *testing.T) {
 					Status:              number.StatusActive,
 					T38Enabled:          true,
 					EmergencyEnabled:    false,
-					TMPurchase:          "2021-02-26 18:26:49.000",
 				},
 			},
 
@@ -842,6 +857,7 @@ func Test_NumberGetFromDBByNumber(t *testing.T) {
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
 				TMPurchase:          "2021-02-26 18:26:49.000",
+				TMRenew:             "2021-02-26 18:26:49.000",
 				TMCreate:            "2021-02-26 18:26:49.000",
 				TMUpdate:            DefaultTimeStamp,
 				TMDelete:            DefaultTimeStamp,
@@ -853,19 +869,18 @@ func Test_NumberGetFromDBByNumber(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
-				util:  mockUtil,
-				db:    dbTest,
-				cache: mockCache,
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
 			}
 			ctx := context.Background()
 
 			for _, num := range tt.numbers {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-				mockCache.EXPECT().NumberSetByNumber(gomock.Any(), gomock.Any())
 				if err := h.NumberCreate(ctx, num); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
@@ -878,6 +893,184 @@ func Test_NumberGetFromDBByNumber(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_NumberSetTMRenew(t *testing.T) {
+
+	type test struct {
+		name   string
+		number *number.Number
+
+		id uuid.UUID
+
+		responseCurTime      string
+		responseCurTimeRenew string
+		expectRes            *number.Number
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			number: &number.Number{
+				ID: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
+			},
+
+			id: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
+
+			responseCurTime:      "2021-02-26 18:26:49.000",
+			responseCurTimeRenew: "2021-02-27 18:26:49.000",
+			expectRes: &number.Number{
+				ID:         uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
+				TMPurchase: "2021-02-26 18:26:49.000",
+				TMRenew:    "2021-02-27 18:26:49.000",
+				TMCreate:   "2021-02-26 18:26:49.000",
+				TMUpdate:   "2021-02-27 18:26:49.000",
+				TMDelete:   DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				cache:       mockCache,
+				db:          dbTest,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+			if err := h.NumberCreate(ctx, tt.number); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTimeRenew)
+			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+			if err := h.NumberUpdateTMRenew(ctx, tt.id); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_NumberGetsByTMRenew(t *testing.T) {
+
+	type test struct {
+		name    string
+		numbers []number.Number
+
+		id      uuid.UUID
+		tmRenew string
+
+		responseCurTimes []string
+		expectRes        []*number.Number
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			numbers: []number.Number{
+				{
+					ID: uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
+				},
+				{
+					ID: uuid.FromStringOrNil("93884aa8-144c-11ee-a261-eb324d4a94ab"),
+				},
+				{
+					ID: uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
+				},
+				{
+					ID: uuid.FromStringOrNil("93ec6588-144c-11ee-ae23-cb2a64c0f80a"),
+				},
+			},
+
+			id:      uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
+			tmRenew: "2020-04-12 20:26:49.000",
+
+			responseCurTimes: []string{
+				"2020-04-10 18:26:49.000",
+				"2020-04-11 18:26:49.000",
+				"2020-04-12 18:26:49.000",
+				"2020-04-13 18:26:49.000",
+			},
+			expectRes: []*number.Number{
+				{
+					ID:         uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
+					TMPurchase: "2020-04-10 18:26:49.000",
+					TMRenew:    "2020-04-10 18:26:49.000",
+					TMCreate:   "2020-04-10 18:26:49.000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
+				},
+				{
+					ID:         uuid.FromStringOrNil("93884aa8-144c-11ee-a261-eb324d4a94ab"),
+					TMPurchase: "2020-04-11 18:26:49.000",
+					TMRenew:    "2020-04-11 18:26:49.000",
+					TMCreate:   "2020-04-11 18:26:49.000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
+				},
+				{
+					ID:         uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
+					TMPurchase: "2020-04-12 18:26:49.000",
+					TMRenew:    "2020-04-12 18:26:49.000",
+					TMCreate:   "2020-04-12 18:26:49.000",
+					TMUpdate:   DefaultTimeStamp,
+					TMDelete:   DefaultTimeStamp,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				utilHandler: mockUtil,
+				cache:       mockCache,
+				db:          dbTest,
+			}
+			ctx := context.Background()
+
+			for i, n := range tt.numbers {
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTimes[i])
+				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
+				if err := h.NumberCreate(ctx, &n); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			res, err := h.NumberGetsByTMRenew(ctx, tt.tmRenew)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v,\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}

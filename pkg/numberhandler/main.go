@@ -9,13 +9,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertwilio"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/util"
 )
 
 // NumberHandler is interface for service handle
@@ -33,11 +33,13 @@ type NumberHandler interface {
 
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*number.Number, error)
 	UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error)
+
+	RenewNumbers(ctx context.Context, tmRenew string) ([]*number.Number, error)
 }
 
 // numberHandler structure for service handle
 type numberHandler struct {
-	util          util.Util
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
@@ -72,7 +74,7 @@ func NewNumberHandler(r requesthandler.RequestHandler, db dbhandler.DBHandler, n
 	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(r, db)
 
 	h := &numberHandler{
-		util:          util.NewUtil(),
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    r,
 		db:            db,
 		notifyHandler: notifyHandler,

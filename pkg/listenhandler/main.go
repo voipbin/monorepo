@@ -3,6 +3,7 @@ package listenhandler
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -package listenhandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -51,6 +52,7 @@ var (
 	regV1NumbersID        = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
 	regV1NumbersNumber    = regexp.MustCompile("/v1/numbers/+" + regAny + "$")
 	regV1NumbersIDFlowIDs = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
+	regV1NumbersRenew     = regexp.MustCompile(`/v1/numbers/renew$`)
 
 	// numberflows
 	regV1NumberFlowsID = regexp.MustCompile("/v1/number_flows/" + regUUID)
@@ -148,13 +150,15 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	}
 	m.URI = uri
 
-	logrus.WithFields(
-		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		}).Debugf("Received request. method: %s, uri: %s", m.Method, uri)
+	ctx := context.Background()
+
+	logrus.WithFields(logrus.Fields{
+		"func":      "processRequest",
+		"uri":       m.URI,
+		"method":    m.Method,
+		"data_type": m.DataType,
+		"data":      m.Data,
+	}).Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
 	start := time.Now()
 	switch {
@@ -167,46 +171,51 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////////////
 	// GET /available_numbers
 	case regV1AvailableNumbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1AvailableNumbersGet(m)
+		response, err = h.processV1AvailableNumbersGet(ctx, m)
 		requestType = "/v1/available_numbers"
 
 	////////////////////
 	// numbers
 	////////////////////
 
-	// DELETE /numbers/<id>
+	// DELETE /numbers/<number-id>
 	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1NumbersIDDelete(m)
-		requestType = "/v1/numbers"
+		response, err = h.processV1NumbersIDDelete(ctx, m)
+		requestType = "/v1/numbers/<number-id>"
 
-	// GET /numbers/<id>
+	// GET /numbers/<number-id>
 	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1NumbersIDGet(m)
-		requestType = "/v1/numbers"
+		response, err = h.processV1NumbersIDGet(ctx, m)
+		requestType = "/v1/numbers/<number-id>"
 
-	// PUT /numbers/<id>
+	// PUT /numbers/<number-id>
 	case regV1NumbersID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1NumbersIDPut(m)
-		requestType = "/v1/numbers"
+		response, err = h.processV1NumbersIDPut(ctx, m)
+		requestType = "/v1/numbers/<number-id>"
 
 	// PUT /numbers/<id>/flow_id
 	case regV1NumbersIDFlowIDs.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
-		response, err = h.processV1NumbersIDFlowIDsPut(m)
-		requestType = "/v1/numbers"
+		response, err = h.processV1NumbersIDFlowIDsPut(ctx, m)
+		requestType = "/v1/numbers/<number-id>/flow_id"
 
 	// GET /numbers/<number>
 	case regV1NumbersNumber.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1NumbersNumberGet(m)
-		requestType = "/v1/numbers"
+		response, err = h.processV1NumbersNumberGet(ctx, m)
+		requestType = "/v1/numbers/<number>"
+
+	// POST /numbers/renew
+	case regV1NumbersRenew.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1NumbersRenewPost(ctx, m)
+		requestType = "/v1/numbers/renew"
 
 	// POST /numbers
 	case regV1Numbers.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1NumbersPost(m)
+		response, err = h.processV1NumbersPost(ctx, m)
 		requestType = "/v1/numbers"
 
 	// GET /numbers
 	case regV1NumbersGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1NumbersGet(m)
+		response, err = h.processV1NumbersGet(ctx, m)
 		requestType = "/v1/numbers"
 
 	////////////////////
@@ -215,18 +224,17 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// DELETE /number_flows/<flow_id>
 	case regV1NumberFlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1NumberFlowsDelete(m)
+		response, err = h.processV1NumberFlowsDelete(ctx, m)
 		requestType = "/v1/numbers_flows"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		logrus.WithFields(
-			logrus.Fields{
-				"uri":    m.URI,
-				"method": m.Method,
-			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+		logrus.WithFields(logrus.Fields{
+			"uri":    m.URI,
+			"method": m.Method,
+		}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"

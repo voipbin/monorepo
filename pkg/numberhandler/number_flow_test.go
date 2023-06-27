@@ -7,11 +7,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/util"
 )
 
 func Test_RemoveNumbersFlowID(t *testing.T) {
@@ -63,12 +63,12 @@ func Test_RemoveNumbersFlowID(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 			h := numberHandler{
-				util:                mockUtil,
+				utilHandler:         mockUtil,
 				reqHandler:          mockReq,
 				db:                  mockDB,
 				numberHandlerTelnyx: mockTelnyx,
@@ -76,13 +76,13 @@ func Test_RemoveNumbersFlowID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().NumberGetsByCallFlowID(gomock.Any(), tt.flowID, gomock.Any(), gomock.Any()).Return(tt.numbersCallFlow, nil)
 			for _, num := range tt.numbersCallFlow {
 				mockDB.EXPECT().NumberUpdateCallFlowID(gomock.Any(), num.ID, uuid.Nil)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().NumberGetsByMessageFlowID(gomock.Any(), tt.flowID, gomock.Any(), gomock.Any()).Return(tt.numbersMessageFlow, nil)
 			for _, num := range tt.numbersMessageFlow {
 				mockDB.EXPECT().NumberUpdateMessageFlowID(gomock.Any(), num.ID, uuid.Nil)

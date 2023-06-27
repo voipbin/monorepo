@@ -121,17 +121,3 @@ func (mr *MockCacheHandlerMockRecorder) NumberSet(ctx, numb interface{}) *gomock
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberSet", reflect.TypeOf((*MockCacheHandler)(nil).NumberSet), ctx, numb)
 }
-
-// NumberSetByNumber mocks base method.
-func (m *MockCacheHandler) NumberSetByNumber(ctx context.Context, numb *number.Number) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberSetByNumber", ctx, numb)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// NumberSetByNumber indicates an expected call of NumberSetByNumber.
-func (mr *MockCacheHandlerMockRecorder) NumberSetByNumber(ctx, numb interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberSetByNumber", reflect.TypeOf((*MockCacheHandler)(nil).NumberSetByNumber), ctx, numb)
-}
