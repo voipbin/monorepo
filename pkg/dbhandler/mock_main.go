@@ -151,6 +151,21 @@ func (mr *MockDBHandlerMockRecorder) NumberGetsByMessageFlowID(ctx, flowID, size
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByMessageFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByMessageFlowID), ctx, flowID, size, token)
 }
 
+// NumberGetsByTMRenew mocks base method.
+func (m *MockDBHandler) NumberGetsByTMRenew(ctx context.Context, tmRenew string) ([]*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberGetsByTMRenew", ctx, tmRenew)
+	ret0, _ := ret[0].([]*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberGetsByTMRenew indicates an expected call of NumberGetsByTMRenew.
+func (mr *MockDBHandlerMockRecorder) NumberGetsByTMRenew(ctx, tmRenew interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByTMRenew", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByTMRenew), ctx, tmRenew)
+}
+
 // NumberUpdateBasicInfo mocks base method.
 func (m *MockDBHandler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
 	m.ctrl.T.Helper()
@@ -205,4 +220,18 @@ func (m *MockDBHandler) NumberUpdateMessageFlowID(ctx context.Context, id, flowI
 func (mr *MockDBHandlerMockRecorder) NumberUpdateMessageFlowID(ctx, id, flowID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateMessageFlowID", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateMessageFlowID), ctx, id, flowID)
+}
+
+// NumberUpdateTMRenew mocks base method.
+func (m *MockDBHandler) NumberUpdateTMRenew(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberUpdateTMRenew", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NumberUpdateTMRenew indicates an expected call of NumberUpdateTMRenew.
+func (mr *MockDBHandlerMockRecorder) NumberUpdateTMRenew(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateTMRenew", reflect.TypeOf((*MockDBHandler)(nil).NumberUpdateTMRenew), ctx, id)
 }

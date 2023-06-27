@@ -32,6 +32,7 @@ const (
 		emergency_enabled,
 
 		tm_purchase,
+		tm_renew,
 
 		tm_create,
 		tm_update,
@@ -65,6 +66,7 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 		&res.EmergencyEnabled,
 
 		&res.TMPurchase,
+		&res.TMRenew,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -98,6 +100,7 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		emergency_enabled,
 
 		tm_purchase,
+		tm_renew,
 
 		tm_create,
 		tm_update,
@@ -109,10 +112,11 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		?, ?,
 		?,
 		?, ?,
-		?,
+		?, ?,
 		?, ?, ?
 		)`
 
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q,
 		n.ID.Bytes(),
 		n.Number,
@@ -132,9 +136,10 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 		n.T38Enabled,
 		n.EmergencyEnabled,
 
-		n.TMPurchase,
+		ts,
+		ts,
 
-		h.util.GetCurTime(),
+		ts,
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -160,15 +165,6 @@ func (h *handler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (
 	return res, nil
 }
 
-// numberSetToCacheByNumber sets the given number to the cache
-func (h *handler) numberSetToCacheByNumber(ctx context.Context, num *number.Number) error {
-	if err := h.cache.NumberSetByNumber(ctx, num); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // numberGetFromCache returns number from the cache.
 func (h *handler) numberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error) {
 
@@ -184,10 +180,6 @@ func (h *handler) numberGetFromCache(ctx context.Context, id uuid.UUID) (*number
 // numberSetToCache sets the given number to the cache
 func (h *handler) numberSetToCache(ctx context.Context, num *number.Number) error {
 	if err := h.cache.NumberSet(ctx, num); err != nil {
-		return err
-	}
-
-	if err := h.numberSetToCacheByNumber(ctx, num); err != nil {
 		return err
 	}
 
@@ -294,7 +286,7 @@ func (h *handler) NumberGetByNumber(ctx context.Context, numb string) (*number.N
 	}
 
 	// set to the cache
-	_ = h.numberSetToCacheByNumber(ctx, res)
+	_ = h.numberSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -414,7 +406,7 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 			id = ?
 		`
 
-	ts := h.util.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, string(number.StatusDeleted), ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. NumberDelete. err: %v", err)
@@ -427,7 +419,7 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // NumberUpdateBasicInfo updates basic number information.
-func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) error {
 	q := `
 	update numbers set
 		name = ?,
@@ -440,7 +432,7 @@ func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 	_, err := h.db.Exec(q,
 		name,
 		detail,
-		h.util.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -454,7 +446,7 @@ func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 }
 
 // NumberUpdateFlowID updates number's flow id.
-func (h *handler) NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) error {
+func (h *handler) NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) error {
 	q := `
 	update numbers set
 		call_flow_id = ?,
@@ -467,7 +459,7 @@ func (h *handler) NumberUpdateFlowID(ctx context.Context, id, callFlowID, messag
 	_, err := h.db.Exec(q,
 		callFlowID.Bytes(),
 		messageFlowID.Bytes(),
-		h.util.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -481,7 +473,7 @@ func (h *handler) NumberUpdateFlowID(ctx context.Context, id, callFlowID, messag
 }
 
 // NumberUpdateCallFlowID updates call_flow_id.
-func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UUID) error {
+func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id uuid.UUID, flowID uuid.UUID) error {
 	q := `
 	update numbers set
 		call_flow_id = ?,
@@ -492,7 +484,7 @@ func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UU
 
 	_, err := h.db.Exec(q,
 		flowID.Bytes(),
-		h.util.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -506,7 +498,7 @@ func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UU
 }
 
 // NumberUpdateMessageFlowID updates message_flow_id.
-func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid.UUID) error {
+func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id uuid.UUID, flowID uuid.UUID) error {
 	q := `
 	update numbers set
 		message_flow_id = ?,
@@ -517,7 +509,7 @@ func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid
 
 	_, err := h.db.Exec(q,
 		flowID.Bytes(),
-		h.util.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -528,4 +520,60 @@ func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid
 	_ = h.numberUpdateToCache(ctx, id)
 
 	return nil
+}
+
+// NumberUpdateTMRenew updates the tm_renew.
+func (h *handler) NumberUpdateTMRenew(ctx context.Context, id uuid.UUID) error {
+	q := `
+	update numbers set
+		tm_renew = ?,
+		tm_update = ?
+	where
+		id = ?
+	`
+
+	ts := h.utilHandler.TimeGetCurTime()
+	_, err := h.db.Exec(q,
+		ts,
+		ts,
+		id.Bytes(),
+	)
+	if err != nil {
+		return fmt.Errorf("could not execute. NumberUpdateTMRenew. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.numberUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// NumberGetsByTMRenew returns a list of numbers.
+func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string) ([]*number.Number, error) {
+	// prepare
+	q := fmt.Sprintf(`%s
+		where
+			tm_renew < ?
+			and tm_delete >= ?
+		order by
+			tm_create
+		`, numberSelect)
+
+	rows, err := h.db.Query(q, tmRenew, DefaultTimeStamp)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. NumberGetsByTMRenew. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*number.Number{}
+	for rows.Next() {
+		u, err := h.numberGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. NumberGetsByTMRenew, err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
 }

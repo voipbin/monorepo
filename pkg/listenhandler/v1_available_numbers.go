@@ -1,19 +1,23 @@
 package listenhandler
 
 import (
+	"context"
 	"encoding/json"
 	"net/url"
 	"strconv"
 
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // processV1AvailableNumbersGet handles GET /v1/avaliable_numbers request
-func (h *listenHandler) processV1AvailableNumbersGet(req *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AvailableNumbersGet",
+		"request": m,
+	})
 
-	u, err := url.Parse(req.URI)
+	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -21,25 +25,13 @@ func (h *listenHandler) processV1AvailableNumbersGet(req *rabbitmqhandler.Reques
 	// parse the pagination params
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint(tmpSize)
-	pageToken := u.Query().Get(PageToken)
 
 	if pageSize <= 0 {
 		pageSize = 10
 	}
 
-	// get user_id
-	tmpUserID, _ := strconv.Atoi(u.Query().Get("user_id"))
-	userID := uint64(tmpUserID)
-
 	// get country_code
 	countryCode := u.Query().Get("country_code")
-
-	log := logrus.WithFields(logrus.Fields{
-		"user":         userID,
-		"size":         pageSize,
-		"token":        pageToken,
-		"country_code": countryCode,
-	})
 
 	log.Debug("processV1AvailableNumbersGet. Getting available nubmers.")
 	numbers, err := h.numberHandler.GetAvailableNumbers(countryCode, pageSize)

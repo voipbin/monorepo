@@ -24,6 +24,7 @@ type Number struct {
 
 	// timestamp
 	TMPurchase string `json:"tm_purchase"`
+	TMRenew    string `json:"tm_renew"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

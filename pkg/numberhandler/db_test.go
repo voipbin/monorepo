@@ -9,11 +9,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/util"
 )
 
 func Test_Create_OrderNumberTelnyx(t *testing.T) {
@@ -57,14 +57,14 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 
 			h := numberHandler{
-				util:                mockUtil,
+				utilHandler:         mockUtil,
 				reqHandler:          mockReq,
 				db:                  mockDB,
 				notifyHandler:       mockNotify,
@@ -75,7 +75,7 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID).Return(true, nil)
 
 			mockTelnyx.EXPECT().CreateNumber(tt.customerID, tt.number, tt.callFlowID, tt.numberName, tt.detail).Return(tt.expectRes, nil)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), number.EventTypeNumberCreated, tt.expectRes)
@@ -125,14 +125,14 @@ func Test_Delete(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 
 			h := numberHandler{
-				util:                mockUtil,
+				utilHandler:         mockUtil,
 				reqHandler:          mockReq,
 				db:                  mockDB,
 				notifyHandler:       mockNotify,
@@ -319,13 +319,13 @@ func Test_GetNumbers(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := util.NewMockUtil(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
 
 			h := numberHandler{
-				util:                mockUtil,
+				utilHandler:         mockUtil,
 				reqHandler:          mockReq,
 				db:                  mockDB,
 				numberHandlerTelnyx: mockTelnyx,
@@ -334,7 +334,7 @@ func Test_GetNumbers(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.pageToken == "" {
-				mockUtil.EXPECT().GetCurTime().Return(util.GetCurTime())
+				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, gomock.Any()).Return(tt.responseNumbers, nil)
 			} else {
 				mockDB.EXPECT().NumberGets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.responseNumbers, nil)

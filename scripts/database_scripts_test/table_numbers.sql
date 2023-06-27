@@ -20,6 +20,7 @@ create table numbers(
 
   -- timestamps
   tm_purchase datetime(6),
+  tm_renew    datetime(6),
   tm_create   datetime(6),  --
   tm_update   datetime(6),  --
   tm_delete   datetime(6),  --
@@ -32,3 +33,4 @@ create index idx_numbers_customerid on numbers(customer_id);
 create index idx_numbers_call_flow_id on numbers(call_flow_id);
 create index idx_numbers_message_flow_id on numbers(message_flow_id);
 create index idx_numbers_provider_name on numbers(provider_name);
+create index idx_numbers_tm_renew on numbers(tm_renew);

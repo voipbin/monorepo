@@ -28,7 +28,6 @@ type CacheHandler interface {
 	NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	NumberGetByNumber(ctx context.Context, num string) (*number.Number, error)
 	NumberSet(ctx context.Context, numb *number.Number) error
-	NumberSetByNumber(ctx context.Context, numb *number.Number) error
 }
 
 // NewHandler creates DBHandler

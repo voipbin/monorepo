@@ -8,10 +8,10 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/cachehandler"
-	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/util"
 )
 
 // DBHandler interface for database handle
@@ -30,13 +30,15 @@ type DBHandler interface {
 	NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) error
 	NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid.UUID) error
+	NumberUpdateTMRenew(ctx context.Context, id uuid.UUID) error
+	NumberGetsByTMRenew(ctx context.Context, tmRenew string) ([]*number.Number, error)
 }
 
 // handler database handler
 type handler struct {
-	util  util.Util
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
 }
 
 // List of default values
@@ -46,15 +48,15 @@ const (
 
 // handler errors
 var (
-	ErrNotFound = errors.New("Record not found")
+	ErrNotFound = errors.New("record not found")
 )
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		util:  util.NewUtil(),
-		db:    db,
-		cache: cache,
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       cache,
 	}
 	return h
 }
