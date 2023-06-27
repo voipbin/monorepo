@@ -21,11 +21,11 @@ require (
 	gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230526095512-b24c67e40013
 	gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa
 	gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02
-	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230625145022-141200e72d89
+	gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230625153130-bd7cf26d50e1
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230527113322-22346c104c98
 	gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20230602163146-85b8850d4027
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf6b027
-	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9
+	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230627181829-46638f92784e
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230307162312-13dfc1050b1e
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230307174917-96d57438d2d8
@@ -46,5 +46,5 @@ require (
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.0 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 )

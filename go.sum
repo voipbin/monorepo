@@ -61,6 +61,8 @@ gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02/go.mod h1:jpa5pRnCqdQqbjb7+GJqnV25JGYSyHnFPE2c5I/YnKw=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230625145022-141200e72d89 h1:b9b9MmDwHjh4OWKWi03ylp0m47QL49h7ANCr0KbTK1s=
 gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230625145022-141200e72d89/go.mod h1:J/KyvzdYQ3mLVZt5aE7osnNlYCtOmjpLi83fKCxjBrM=
+gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230625153130-bd7cf26d50e1 h1:sVEA9yphNnQwr3ZzbUdhx6Ca03vNudD0LoZaTHEVkl8=
+gitlab.com/voipbin/bin-manager/customer-manager.git v0.0.0-20230625153130-bd7cf26d50e1/go.mod h1:vz4mG1bcaQtG1W0lef7ec4aW/en5ciSCl8a/knoMzhI=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230527113322-22346c104c98 h1:GL0xvj+BSRmCitH9t3rg2gXQ4Qokgnn/gqB65umjEUk=
 gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230527113322-22346c104c98/go.mod h1:eYDtSHR+ZAZhUHFkGc18hmq0x3mm/QHOviBrVl005+8=
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20230602163146-85b8850d4027 h1:uPLS7ZcihgbOPeLwKE2IlBw4SeErlreCKWW25XVfcJo=
@@ -69,6 +71,8 @@ gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf6b027/go.mod h1:HJJQD+Q+qm92CWNYtjvx1+YvfzzRy4VMBrNaAmbIXpU=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9 h1:Tz/kHv3u20HGYWkH9Pwc8Oy3db0Muwe8yHp4Blsk9wg=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9/go.mod h1:aWXZYs/A+6WLLKrrpKv3KUpEBEF5sCql6hEhPJhD4+I=
+gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230627181829-46638f92784e h1:0sX3jNTCftYVECoBmZDe2pu1lcOC27yR6rjkVtXz+fU=
+gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230627181829-46638f92784e/go.mod h1:XbUnBB1agY2eqmfasers+C02OwMim/Q5PmJClpTKXpo=
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901 h1:SCm0GihLmu4itJaZKLOAIBYB5TKakhdMpfEF6HCWOfk=
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901/go.mod h1:Cha5xWMeBJW4idXwvDSiME4BkOy38jgY0J3plyL5kbE=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230307162312-13dfc1050b1e h1:LUD/qnW9SPDgNh2K4J+o7pqsEHVu3x/1+hDvscW0DgE=
@@ -125,6 +129,8 @@ google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp0
 google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
 google.golang.org/protobuf v1.30.0 h1:kPPoIgf3TsEvrm0PFe15JQ+570QVxYzEvvHqChK+cng=
 google.golang.org/protobuf v1.30.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+google.golang.org/protobuf v1.31.0 h1:g0LDEJHgrBl9N9r17Ru3sqWhkIx2NB67okBHPwC7hs8=
+google.golang.org/protobuf v1.31.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
