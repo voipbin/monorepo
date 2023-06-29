@@ -13,13 +13,11 @@ import (
 
 // domainGet validates the domain's ownership and returns the domain info.
 func (h *serviceHandler) domainGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmdomain.Domain, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "domainGet",
-			"customer_id": u.ID,
-			"domain_id":   id,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "domainGet",
+		"customer_id": u.ID,
+		"domain_id":   id,
+	})
 
 	// send request
 	res, err := h.reqHandler.RegistrarV1DomainGet(ctx, id)

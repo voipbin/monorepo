@@ -2019,6 +2019,21 @@ func (mr *MockServiceHandlerMockRecorder) NumberGets(ctx, u, size, token interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGets", reflect.TypeOf((*MockServiceHandler)(nil).NumberGets), ctx, u, size, token)
 }
 
+// NumberRenew mocks base method.
+func (m *MockServiceHandler) NumberRenew(ctx context.Context, u *customer.Customer, tmRenew string) ([]*number.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberRenew", ctx, u, tmRenew)
+	ret0, _ := ret[0].([]*number.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberRenew indicates an expected call of NumberRenew.
+func (mr *MockServiceHandlerMockRecorder) NumberRenew(ctx, u, tmRenew interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberRenew", reflect.TypeOf((*MockServiceHandler)(nil).NumberRenew), ctx, u, tmRenew)
+}
+
 // NumberUpdate mocks base method.
 func (m *MockServiceHandler) NumberUpdate(ctx context.Context, u *customer.Customer, id uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
