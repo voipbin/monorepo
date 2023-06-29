@@ -315,3 +315,50 @@ func numbersIDFlowIDPUT(c *gin.Context) {
 
 	c.JSON(200, numb)
 }
+
+// numbersRenewPOST handles POST /numbers/renew request.
+// It renews the number's.
+// @Summary Renew the numbers.
+// @Description Renew the numbers.
+// @Produce json
+// @Param update_info body request.BodyNumbersIDFlowIDPUT true "Update info."
+// @Success 200 [{]object] number.Number
+// @Router /v1.0/numbers/renew [post]
+func numbersRenewPOST(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "numbersIDPUT",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	var req request.BodyNumbersRenewPOST
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+	log.WithField("request", req).Debug("Executing numbersRenewPOST.")
+
+	// renew a numbers
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.NumberRenew(c.Request.Context(), &u, req.TMRenew)
+	if err != nil {
+		log.Errorf("Could not renew the numbers. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}

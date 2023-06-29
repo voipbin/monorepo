@@ -65,6 +65,35 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, u *cscustomer.Custome
 	return res, nil
 }
 
+// numberGet validates the number's ownership and returns the number info.
+func (h *serviceHandler) numberGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.Number, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "numberGet",
+		"customer_id": u.ID,
+		"number_id":   id,
+	})
+
+	// get number info
+	res, err := h.reqHandler.NumberV1NumberGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get number info. err: %v", err)
+		return nil, err
+	}
+
+	// permission check
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != res.CustomerID {
+		log.Errorf("The user has no permission for this number. user: %s, number_user: %s", u.ID, res.CustomerID)
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	if res.TMDelete != defaultTimestamp {
+		log.WithField("number", res).Debugf("Deleted number.")
+		return nil, fmt.Errorf("not found")
+	}
+
+	return res, nil
+}
+
 // NumberGet handles number get request.
 // It sends a request to the number-manager to get a existed number.
 // it returns got number information if it succeed.
@@ -76,21 +105,10 @@ func (h *serviceHandler) NumberGet(ctx context.Context, u *cscustomer.Customer, 
 	})
 
 	// get number info
-	tmp, err := h.reqHandler.NumberV1NumberGet(ctx, id)
+	tmp, err := h.numberGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
-	}
-
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != tmp.CustomerID {
-		log.Errorf("The user has no permission for this number. user: %s, number_user: %s", u.ID, tmp.CustomerID)
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	if tmp.TMDelete != defaultTimestamp {
-		log.WithField("number", tmp).Debugf("Deleted number.")
-		return nil, fmt.Errorf("not found")
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -109,21 +127,10 @@ func (h *serviceHandler) NumberDelete(ctx context.Context, u *cscustomer.Custome
 	})
 
 	// get number info
-	num, err := h.reqHandler.NumberV1NumberGet(ctx, id)
+	_, err := h.numberGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
-	}
-
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != num.CustomerID {
-		log.Errorf("The user has no permission for this number. user: %s, number_user: %s", u.ID, num.CustomerID)
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	if num.TMDelete != defaultTimestamp {
-		log.WithField("number", num).Debugf("Deleted number.")
-		return nil, fmt.Errorf("not found")
 	}
 
 	// delete numbers
@@ -147,21 +154,10 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, u *cscustomer.Custome
 	})
 
 	// get number
-	num, err := h.reqHandler.NumberV1NumberGet(ctx, id)
+	_, err := h.numberGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
-	}
-
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != num.CustomerID {
-		log.Errorf("The user has no permission for this number. user: %s, number_user: %s", u.ID, num.CustomerID)
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	if num.TMDelete != defaultTimestamp {
-		log.WithField("number", num).Debugf("Deleted number.")
-		return nil, fmt.Errorf("not found")
 	}
 
 	// update number
@@ -178,28 +174,18 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, u *cscustomer.Custome
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, u *cscustomer.Customer, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "NumberUpdateFlowIDs",
 		"customer_id": u.ID,
 		"number_id":   id,
 	})
 
 	// get number
-	num, err := h.reqHandler.NumberV1NumberGet(ctx, id)
+	_, err := h.numberGet(ctx, u, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err
-	}
-
-	// permission check
-	if !u.HasPermission(cspermission.PermissionAdmin.ID) && u.ID != num.CustomerID {
-		log.Errorf("The user has no permission for this number. user: %s, number_user: %s", u.ID, num.CustomerID)
-		return nil, fmt.Errorf("user has no permission")
-	}
-
-	if num.TMDelete != defaultTimestamp {
-		log.WithField("number", num).Debugf("Deleted number.")
-		return nil, fmt.Errorf("not found")
 	}
 
 	// update number
@@ -210,5 +196,37 @@ func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, u *cscustomer.
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// NumberRenew handles number renew request.
+// It sends a request to the number-manager to renew the numbers.
+// it returns renewed numbers information if it succeed.
+func (h *serviceHandler) NumberRenew(ctx context.Context, u *cscustomer.Customer, tmRenew string) ([]*nmnumber.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "NumberRenew",
+		"customer_id": u.ID,
+		"tm_renew":    tmRenew,
+	})
+
+	// need a admin permission
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
+		log.Info("User has no permission.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// get number
+	tmps, err := h.reqHandler.NumberV1NumberRenew(ctx, tmRenew)
+	if err != nil {
+		log.Errorf("Could not get number info. err: %v", err)
+		return nil, err
+	}
+
+	res := []*nmnumber.WebhookMessage{}
+	for _, tmp := range tmps {
+		c := tmp.ConvertWebhookMessage()
+		res = append(res, c)
+	}
+
 	return res, nil
 }
