@@ -11,6 +11,8 @@ func ApplyRoutes(r *gin.RouterGroup) {
 	numbers.GET("", numbersGET)
 	numbers.POST("", numbersPOST)
 
+	numbers.POST("/renew", numbersRenewPOST)
+
 	numbers.GET("/:id", numbersIDGET)
 	numbers.DELETE("/:id", numbersIDDELETE)
 	numbers.PUT("/:id", numbersIDPUT)

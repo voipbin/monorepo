@@ -31,3 +31,9 @@ type BodyNumbersIDFlowIDPUT struct {
 	CallFlowID    uuid.UUID `json:"call_flow_id"`
 	MessageFlowID uuid.UUID `json:"message_flow_id"`
 }
+
+// BodyNumbersRenewPOST is rquest body define for
+// POST /v1.0/numbers/renew
+type BodyNumbersRenewPOST struct {
+	TMRenew string `json:"tm_renew"`
+}
