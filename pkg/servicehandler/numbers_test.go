@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
@@ -412,7 +413,7 @@ func TestNumberUpdate(t *testing.T) {
 	}
 }
 
-func TestNumberUpdateError(t *testing.T) {
+func Test_NumberUpdateError(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -469,6 +470,77 @@ func TestNumberUpdateError(t *testing.T) {
 			_, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.numberName, tt.detail)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
+			}
+		})
+	}
+}
+
+func Test_NumberRenew(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer *cscustomer.Customer
+
+		tmRenew string
+
+		responseNumbers []nmnumber.Number
+		expectRes       []*nmnumber.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+
+			tmRenew: "2021-03-02 01:00:00.995000",
+
+			responseNumbers: []nmnumber.Number{
+				{
+					ID: uuid.FromStringOrNil("92647ae8-161d-11ee-9746-6387778bd96f"),
+				},
+				{
+					ID: uuid.FromStringOrNil("92d0da8a-161d-11ee-924f-ab88344e1aa3"),
+				},
+			},
+			expectRes: []*nmnumber.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("92647ae8-161d-11ee-9746-6387778bd96f"),
+				},
+				{
+					ID: uuid.FromStringOrNil("92d0da8a-161d-11ee-924f-ab88344e1aa3"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().NumberV1NumberRenew(ctx, tt.tmRenew).Return(tt.responseNumbers, nil)
+
+			res, err := h.NumberRenew(ctx, tt.customer, tt.tmRenew)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
 			}
 		})
 	}

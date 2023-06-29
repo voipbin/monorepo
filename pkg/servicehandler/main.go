@@ -304,14 +304,14 @@ type ServiceHandler interface {
 	CustomerUpdatePermissionIDs(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)
 
 	// domain handlers
-	DomainCreate(ctx context.Context, u *cscustomer.Customer, domainName, name, detail string) (*rmdomain.WebhookMessage, error)
+	DomainCreate(ctx context.Context, u *cscustomer.Customer, domainName string, name string, detail string) (*rmdomain.WebhookMessage, error)
 	DomainDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error)
 	DomainGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmdomain.WebhookMessage, error)
 	DomainGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmdomain.WebhookMessage, error)
 	DomainUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*rmdomain.WebhookMessage, error)
 
 	// extension handlers
-	ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.WebhookMessage, error)
+	ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext string, password string, domainID uuid.UUID, name string, detail string) (*rmextension.WebhookMessage, error)
 	ExtensionDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGets(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
@@ -338,12 +338,13 @@ type ServiceHandler interface {
 	MessageSend(ctx context.Context, u *cscustomer.Customer, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.WebhookMessage, error)
 
 	// order numbers handler
-	NumberCreate(ctx context.Context, u *cscustomer.Customer, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
+	NumberCreate(ctx context.Context, u *cscustomer.Customer, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)
 	NumberGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*nmnumber.WebhookMessage, error)
 	NumberDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
-	NumberUpdateFlowIDs(ctx context.Context, u *cscustomer.Customer, id, callFlowID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberUpdateFlowIDs(ctx context.Context, u *cscustomer.Customer, id, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberRenew(ctx context.Context, u *cscustomer.Customer, tmRenew string) ([]*nmnumber.WebhookMessage, error)
 
 	// outdials
 	OutdialCreate(ctx context.Context, u *cscustomer.Customer, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error)

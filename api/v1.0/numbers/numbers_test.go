@@ -84,7 +84,7 @@ func TestNumbersGET(t *testing.T) {
 	}
 }
 
-func TestNumbersIDGET(t *testing.T) {
+func Test_NumbersIDGET(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -105,7 +105,7 @@ func TestNumbersIDGET(t *testing.T) {
 			&nmnumber.WebhookMessage{
 				ID: uuid.FromStringOrNil("3ab6711c-7be6-11eb-8da6-d31a9f3d45a6"),
 			},
-			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_create":"","tm_update":"","tm_delete":""}`),
+			[]byte(`{"id":"3ab6711c-7be6-11eb-8da6-d31a9f3d45a6","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}`),
 		},
 	}
 
@@ -381,6 +381,89 @@ func TestNumbersIDFlowIDPUT(t *testing.T) {
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
+		})
+	}
+}
+
+func Test_NumbersRenewPOST(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+		uri      string
+
+		requestBody     request.BodyNumbersRenewPOST
+		responseNumbers []*nmnumber.WebhookMessage
+
+		expectTMRenew string
+		expectRes     []byte
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			customer: cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			uri: "/v1.0/numbers/renew",
+
+			requestBody: request.BodyNumbersRenewPOST{
+				TMRenew: "2023-04-06 14:54:24.652558",
+			},
+
+			responseNumbers: []*nmnumber.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("c2998386-1634-11ee-993a-37ac8d7a675d"),
+				},
+				{
+					ID: uuid.FromStringOrNil("c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a"),
+				},
+			},
+
+			expectTMRenew: "2023-04-06 14:54:24.652558",
+			expectRes:     []byte(`[{"id":"c2998386-1634-11ee-993a-37ac8d7a675d","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Errorf("Could not marshal the request. err: %v", err)
+			}
+			req, _ := http.NewRequest("POST", tt.uri, bytes.NewBuffer(body))
+
+			mockSvc.EXPECT().NumberRenew(req.Context(), &tt.customer, tt.expectTMRenew).Return(tt.responseNumbers, nil)
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			resBytes, err := io.ReadAll(w.Body)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(resBytes, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, resBytes)
+			}
+
 		})
 	}
 }
