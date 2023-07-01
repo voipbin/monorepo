@@ -382,3 +382,54 @@ func customersIDPasswordPut(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// customersIDBillingAccountIDPut handles PUT /customers/{id}/billing_account_id request.
+// It updates a customer's billing account id.
+// @Summary Update a customer's billing account id.
+// @Description Update a customer's billing account id.
+// @Produce json
+// @Success 200 {object} customer.Customer
+// @Router /v1.0/customers/{id}/billing_account_id [put]
+func customersIDBillingAccountIDPut(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "customersIDBillingAccountIDPut",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(
+		logrus.Fields{
+			"customer_id":    u.ID,
+			"username":       u.Username,
+			"permission_ids": u.PermissionIDs,
+		},
+	)
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log = log.WithField("target_id", id)
+
+	var req request.BodyCustomersIDBillingAccountIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// update a customer
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.CustomerUpdateBillingAccountID(c.Request.Context(), &u, id, req.BillingAccountID)
+	if err != nil {
+		log.Errorf("Could not update the customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
