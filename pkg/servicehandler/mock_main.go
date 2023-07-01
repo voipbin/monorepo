@@ -1569,6 +1569,21 @@ func (mr *MockServiceHandlerMockRecorder) CustomerUpdate(ctx, u, id, name, detai
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdate", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdate), ctx, u, id, name, detail, webhookMethod, webhookURI)
 }
 
+// CustomerUpdateBillingAccountID mocks base method.
+func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context, u *customer.Customer, customerID, billingAccountID uuid.UUID) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerUpdateBillingAccountID", ctx, u, customerID, billingAccountID)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerUpdateBillingAccountID indicates an expected call of CustomerUpdateBillingAccountID.
+func (mr *MockServiceHandlerMockRecorder) CustomerUpdateBillingAccountID(ctx, u, customerID, billingAccountID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateBillingAccountID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateBillingAccountID), ctx, u, customerID, billingAccountID)
+}
+
 // CustomerUpdatePassword mocks base method.
 func (m *MockServiceHandler) CustomerUpdatePassword(ctx context.Context, u *customer.Customer, customerID uuid.UUID, password string) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()

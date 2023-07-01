@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	cspermission "gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
@@ -475,6 +476,78 @@ func TestCustomerUpdatePermissionIDs(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerUpdatePermissionIDs(ctx, tt.id, tt.permissionIDs).Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerUpdatePermissionIDs(ctx, tt.customer, tt.id, tt.permissionIDs)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CustomerUpdateBillingAccountID(t *testing.T) {
+
+	type test struct {
+		name string
+
+		customer *cscustomer.Customer
+
+		customerID       uuid.UUID
+		billingAccountID uuid.UUID
+
+		responseCustomer       *cscustomer.Customer
+		responseBillingAccount *bmaccount.Account
+		expectRes              *cscustomer.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+
+			customerID:       uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+			billingAccountID: uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
+
+			responseCustomer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+			},
+			responseBillingAccount: &bmaccount.Account{
+				ID:       uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
+				TMDelete: defaultTimestamp,
+			},
+			expectRes: &cscustomer.WebhookMessage{
+				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customerID, tt.billingAccountID).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerUpdateBillingAccountID(ctx, tt.customer, tt.customerID, tt.billingAccountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

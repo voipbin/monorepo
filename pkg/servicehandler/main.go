@@ -302,6 +302,7 @@ type ServiceHandler interface {
 	CustomerDelete(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerUpdatePassword(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, password string) (*cscustomer.WebhookMessage, error)
 	CustomerUpdatePermissionIDs(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerUpdateBillingAccountID(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
 
 	// domain handlers
 	DomainCreate(ctx context.Context, u *cscustomer.Customer, domainName string, name string, detail string) (*rmdomain.WebhookMessage, error)
