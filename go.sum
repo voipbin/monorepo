@@ -631,6 +631,8 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230625120643-904d6942
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230625120643-904d6942cdff/go.mod h1:gknt7cLvwTjeLcxbF36Qu/IgH2ePx1QKvXvaspr5jHk=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230625151458-93fa39367eed h1:+hvABUv6aVeqVmElnsDJN/N1mUPDODQgeEbY0671Qh4=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230625151458-93fa39367eed/go.mod h1:mkXw/dyekBf9gnDYabPRnpSrHeHdtFzpjk4uSWmJMuY=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230627184020-5d7fda67613d h1:mKvGVD7IR/T+jgbV/RScRBnScPmYM3A9NJEeN7SmrQo=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230627184020-5d7fda67613d/go.mod h1:e17FliOMOqnXOAP+DufdUPnnriR/obI0As9l2QZ1vIM=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa h1:PP+lN42xD4htGHyiwpzki5O9qhYqJQoO2vvbsjslr9g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa/go.mod h1:ZmH0dxGw24CBuZhNZO4JYFTFfY3Ti+aeQkMHG97Swas=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02 h1:w1vRshMX9V0FfH1nyJ16yOyXNDnNui4iVPsUFOoUgOo=
@@ -643,6 +645,8 @@ gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230223062801-4a4bfaf6b027/go.mod h1:HJJQD+Q+qm92CWNYtjvx1+YvfzzRy4VMBrNaAmbIXpU=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9 h1:Tz/kHv3u20HGYWkH9Pwc8Oy3db0Muwe8yHp4Blsk9wg=
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20221206165111-75edd8be2cb9/go.mod h1:aWXZYs/A+6WLLKrrpKv3KUpEBEF5sCql6hEhPJhD4+I=
+gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230627181829-46638f92784e h1:0sX3jNTCftYVECoBmZDe2pu1lcOC27yR6rjkVtXz+fU=
+gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230627181829-46638f92784e/go.mod h1:XbUnBB1agY2eqmfasers+C02OwMim/Q5PmJClpTKXpo=
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901 h1:SCm0GihLmu4itJaZKLOAIBYB5TKakhdMpfEF6HCWOfk=
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901/go.mod h1:Cha5xWMeBJW4idXwvDSiME4BkOy38jgY0J3plyL5kbE=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230307162312-13dfc1050b1e h1:LUD/qnW9SPDgNh2K4J+o7pqsEHVu3x/1+hDvscW0DgE=
@@ -1157,6 +1161,8 @@ google.golang.org/genproto v0.0.0-20230209215440-0dfe4f8abfcc/go.mod h1:RGgjbofJ
 google.golang.org/genproto v0.0.0-20230216225411-c8e22ba71e44/go.mod h1:8B0gmkoRebU8ukX6HP+4wrVQUY1+6PkQ44BSyIlflHA=
 google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc h1:8DyZCyvI8mE1IdLy/60bS+52xfymkE72wv1asokgtao=
 google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc/go.mod h1:xZnkP7mREFX5MORlOPEzLMr+90PPZQ2QWzrVTWfAq64=
+google.golang.org/genproto v0.0.0-20230629202037-9506855d4529 h1:9JucMWR7sPvCxUFd6UsOUNmA5kCcWOfORaT3tpAsKQs=
+google.golang.org/genproto v0.0.0-20230629202037-9506855d4529/go.mod h1:xZnkP7mREFX5MORlOPEzLMr+90PPZQ2QWzrVTWfAq64=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=
@@ -1213,6 +1219,8 @@ google.golang.org/protobuf v1.28.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqw
 google.golang.org/protobuf v1.28.1/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 google.golang.org/protobuf v1.30.0 h1:kPPoIgf3TsEvrm0PFe15JQ+570QVxYzEvvHqChK+cng=
 google.golang.org/protobuf v1.30.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+google.golang.org/protobuf v1.31.0 h1:g0LDEJHgrBl9N9r17Ru3sqWhkIx2NB67okBHPwC7hs8=
+google.golang.org/protobuf v1.31.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=
