@@ -520,3 +520,69 @@ func Test_customersIDPasswordPut(t *testing.T) {
 		})
 	}
 }
+
+func Test_customersIDBillingAccountIDPut(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		customer cscustomer.Customer
+		target   string
+
+		req request.BodyCustomersIDBillingAccountIDPUT
+
+		expectCustomerID       uuid.UUID
+		expectBillingAccountID uuid.UUID
+	}{
+		{
+			name: "normal",
+			customer: cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
+			},
+			target: "/v1.0/customers/cc876058-1773-11ee-9694-136fe246dd34/billing_account_id",
+
+			req: request.BodyCustomersIDBillingAccountIDPUT{
+				BillingAccountID: uuid.FromStringOrNil("ccc776b6-1773-11ee-bea5-d78345c015af"),
+			},
+
+			expectCustomerID:       uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+			expectBillingAccountID: uuid.FromStringOrNil("ccc776b6-1773-11ee-bea5-d78345c015af"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create request
+			body, err := json.Marshal(tt.req)
+			if err != nil {
+				t.Errorf("Wong match. expect: ok, got: %v", err)
+			}
+			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.customer, tt.expectCustomerID, tt.expectBillingAccountID).Return(&cscustomer.WebhookMessage{}, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+		})
+	}
+}
