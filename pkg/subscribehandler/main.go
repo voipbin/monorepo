@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	mmmessage "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/accounthandler"
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/billinghandler"
@@ -171,6 +172,14 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) error {
 	// customer
 	case m.Publisher == publisherCustomerManager && m.Type == cscustomer.EventTypeCustomerDeleted:
 		err = h.processEventCMCustomerDeleted(ctx, m)
+
+	//// number-manager
+	// number
+	case m.Publisher == publisherNumberManager && m.Type == nmnumber.EventTypeNumberCreated:
+		err = h.processEventNMNumberCreated(ctx, m)
+
+	case m.Publisher == publisherNumberManager && m.Type == nmnumber.EventTypeNumberRenewed:
+		err = h.processEventNMNumberRenewed(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

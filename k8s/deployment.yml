@@ -37,7 +37,7 @@ spec:
             - '-rabbit_exchange_delay'
             - 'bin-manager.delay'
             - '-rabbit_exchange_subscribes'
-            - 'bin-manager.call-manager.event,bin-manager.message-manager.event,bin-manager.customer-manager.event'
+            - 'bin-manager.call-manager.event,bin-manager.message-manager.event,bin-manager.customer-manager.event,bin-manager.number-manager.event'
             - '-rabbit_queue_listen'
             - 'bin-manager.billing-manager.request'
             - '-rabbit_queue_notify'

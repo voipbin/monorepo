@@ -37,18 +37,18 @@ func (m *MockBillingHandler) EXPECT() *MockBillingHandlerMockRecorder {
 	return m.recorder
 }
 
-// BillingEnd mocks base method.
-func (m *MockBillingHandler) BillingEnd(ctx context.Context, customerID uuid.UUID, referenceType billing.ReferenceType, referenceID uuid.UUID, tmBillingEnd string, source, destination *address.Address) error {
+// BillingEndByReferenceID mocks base method.
+func (m *MockBillingHandler) BillingEndByReferenceID(ctx context.Context, referenceID uuid.UUID, tmBillingEnd string, source, destination *address.Address) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingEnd", ctx, customerID, referenceType, referenceID, tmBillingEnd, source, destination)
+	ret := m.ctrl.Call(m, "BillingEndByReferenceID", ctx, referenceID, tmBillingEnd, source, destination)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// BillingEnd indicates an expected call of BillingEnd.
-func (mr *MockBillingHandlerMockRecorder) BillingEnd(ctx, customerID, referenceType, referenceID, tmBillingEnd, source, destination interface{}) *gomock.Call {
+// BillingEndByReferenceID indicates an expected call of BillingEndByReferenceID.
+func (mr *MockBillingHandlerMockRecorder) BillingEndByReferenceID(ctx, referenceID, tmBillingEnd, source, destination interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingEnd", reflect.TypeOf((*MockBillingHandler)(nil).BillingEnd), ctx, customerID, referenceType, referenceID, tmBillingEnd, source, destination)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingEndByReferenceID", reflect.TypeOf((*MockBillingHandler)(nil).BillingEndByReferenceID), ctx, referenceID, tmBillingEnd, source, destination)
 }
 
 // BillingStart mocks base method.
