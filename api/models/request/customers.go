@@ -43,3 +43,9 @@ type BodyCustomersIDPasswordPUT struct {
 type BodyCustomersIDPermissionIDsPUT struct {
 	PermissionIDs []uuid.UUID `json:"permission_ids"`
 }
+
+// BodyCustomersIDBillingAccountIDPUT is rquest body define for
+// PUT /v1.0/customers/<customer-id>/billing_account_id
+type BodyCustomersIDBillingAccountIDPUT struct {
+	BillingAccountID uuid.UUID `json:"billing_account_id"`
+}
