@@ -127,7 +127,7 @@ func Test_processEventCMCallHangup(t *testing.T) {
 			}
 
 			mockBilling.EXPECT().GetByReferenceID(gomock.Any(), tt.expectReferenceID).Return(tt.responseBilling, nil)
-			mockBilling.EXPECT().BillingEnd(gomock.Any(), tt.expectCustomerID, tt.expectReferenceType, tt.expectReferenceID, tt.expectTMHangup, tt.expectSource, tt.expectDestination).Return(nil)
+			mockBilling.EXPECT().BillingEndByReferenceID(gomock.Any(), tt.expectReferenceID, tt.expectTMHangup, tt.expectSource, tt.expectDestination).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

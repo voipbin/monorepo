@@ -54,7 +54,7 @@ func (h *subscribeHandler) processEventCMCallHangup(ctx context.Context, m *rabb
 		return nil
 	}
 
-	if errBilling := h.billingHandler.BillingEnd(ctx, c.CustomerID, billing.ReferenceTypeCall, c.ID, c.TMHangup, &c.Source, &c.Destination); errBilling != nil {
+	if errBilling := h.billingHandler.BillingEndByReferenceID(ctx, c.ID, c.TMHangup, &c.Source, &c.Destination); errBilling != nil {
 		log.Errorf("Could not end the billing. err: %v", errBilling)
 		return errors.Wrap(errBilling, "could not end the billing")
 	}

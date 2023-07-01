@@ -43,11 +43,15 @@ func (h *billingHandler) BillingStart(
 	var flagEnd bool
 	switch referenceType {
 	case billing.ReferenceTypeCall:
-		costPerUnit = defaultCostPerUnitReferenceTypeCall
+		costPerUnit = billing.DefaultCostPerUnitReferenceTypeCall
 		flagEnd = false
 
 	case billing.ReferenceTypeSMS:
-		costPerUnit = defaultCostPerUnitReferenceTypeSMS
+		costPerUnit = billing.DefaultCostPerUnitReferenceTypeSMS
+		flagEnd = true
+
+	case billing.ReferenceTypeNumber:
+		costPerUnit = billing.DefaultCostPerUnitReferenceTypeNumber
 		flagEnd = true
 
 	default:
@@ -65,26 +69,22 @@ func (h *billingHandler) BillingStart(
 	if flagEnd {
 		log.Debugf("The end flag has set. End the billing now. reference_id: %s", referenceID)
 		go func() {
-			_ = h.BillingEnd(ctx, customerID, referenceType, referenceID, tmBillingStart, source, destination)
+			_ = h.BillingEnd(context.Background(), tmp, tmBillingStart, source, destination)
 		}()
 	}
 
 	return nil
 }
 
-func (h *billingHandler) BillingEnd(
+func (h *billingHandler) BillingEndByReferenceID(
 	ctx context.Context,
-	customerID uuid.UUID,
-	referenceType billing.ReferenceType,
 	referenceID uuid.UUID,
 	tmBillingEnd string,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":           "BillingEnd",
-		"customer_id":    customerID,
-		"reference_type": referenceType,
+		"func":           "BillingEndByReferenceID",
 		"reference_id":   referenceID,
 		"tm_billing_end": tmBillingEnd,
 	})
@@ -101,19 +101,44 @@ func (h *billingHandler) BillingEnd(
 		return errors.Wrap(err, "could not get billing")
 	}
 
+	if errEnd := h.BillingEnd(ctx, b, tmBillingEnd, source, destination); errEnd != nil {
+		log.Errorf("Could not end the billing. err: %v", errEnd)
+		return errors.Wrap(errEnd, "could not end the billing")
+	}
+
+	return nil
+}
+
+func (h *billingHandler) BillingEnd(
+	ctx context.Context,
+	bill *billing.Billing,
+	tmBillingEnd string,
+	source *commonaddress.Address,
+	destination *commonaddress.Address,
+) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "BillingEnd",
+		"id":             bill.ID,
+		"tm_billing_end": tmBillingEnd,
+	})
+
 	// calculate billing unit count
 	var billingUnitCount time.Duration
-	switch referenceType {
+	switch bill.ReferenceType {
 	case billing.ReferenceTypeCall:
-		timeStart := h.utilHandler.TimeParse(b.TMBillingStart)
+		timeStart := h.utilHandler.TimeParse(bill.TMBillingStart)
 		timeEnd := h.utilHandler.TimeParse(tmBillingEnd)
 		billingUnitCount = time.Duration(timeEnd.Sub(timeStart))
 
-	case billing.ReferenceTypeSMS:
-		billingUnitCount = 1
+	case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber:
+		billingUnitCount = time.Duration(time.Second * 1)
+
+	default:
+		log.WithField("billing", bill).Errorf("Unsupported billing reference type. reference_type: %s", bill.ReferenceType)
+		return fmt.Errorf("unsupported billing reference type")
 	}
 
-	tmp, err := h.UpdateStatusEnd(ctx, b.ID, float32(billingUnitCount.Seconds()), tmBillingEnd)
+	tmp, err := h.UpdateStatusEnd(ctx, bill.ID, float32(billingUnitCount.Seconds()), tmBillingEnd)
 	if err != nil {
 		log.Errorf("Could not update billing status end. err: %v", err)
 		return errors.Wrap(err, "could not update billing status end")
@@ -121,7 +146,7 @@ func (h *billingHandler) BillingEnd(
 	log.WithField("billing", tmp).Debugf("Updated billing status end. billing_id: %s", tmp.ID)
 
 	// update account balance
-	ac, err := h.accountHandler.SubtractBalance(ctx, tmp.CustomerID, tmp.CostTotal)
+	ac, err := h.accountHandler.SubtractBalance(ctx, tmp.AccountID, tmp.CostTotal)
 	if err != nil {
 		log.Errorf("Could not substract the balance from the account. err: %v", err)
 		return errors.Wrap(err, "could not substract the account balance from the account")

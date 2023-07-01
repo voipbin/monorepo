@@ -76,7 +76,7 @@ func (h *billingHandler) CreateByCall(ctx context.Context, c *cmcall.Call) (*bil
 		return nil, errors.Wrap(err, "could not get account info")
 	}
 
-	res, err := h.Create(ctx, c.CustomerID, a.ID, billing.ReferenceTypeCall, c.ID, defaultCostPerUnitReferenceTypeCall, c.TMProgressing)
+	res, err := h.Create(ctx, c.CustomerID, a.ID, billing.ReferenceTypeCall, c.ID, billing.DefaultCostPerUnitReferenceTypeCall, c.TMProgressing)
 	if err != nil {
 		log.Errorf("Could not create a billing. err: %v", err)
 		return nil, errors.Wrap(err, "could not create a billing")

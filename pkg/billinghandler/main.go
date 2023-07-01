@@ -42,10 +42,8 @@ type BillingHandler interface {
 		source *commonaddress.Address,
 		destination *commonaddress.Address,
 	) error
-	BillingEnd(
+	BillingEndByReferenceID(
 		ctx context.Context,
-		customerID uuid.UUID,
-		referenceType billing.ReferenceType,
 		referenceID uuid.UUID,
 		tmBillingEnd string,
 		source *commonaddress.Address,
@@ -82,11 +80,6 @@ var (
 		},
 		[]string{"reference_type"},
 	)
-)
-
-var (
-	defaultCostPerUnitReferenceTypeCall float32 = 0.020
-	defaultCostPerUnitReferenceTypeSMS  float32 = 0.008
 )
 
 // NewBillingHandler create a new BillingHandler
