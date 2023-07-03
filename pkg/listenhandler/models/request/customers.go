@@ -61,8 +61,8 @@ type V1DataCustomersIDBillingAccountIDPut struct {
 	BillingAccountID uuid.UUID `json:"billing_account_id"`
 }
 
-// V1DataCustomerIDIsValidBalancePost is rquest param define for POST /customers/<customer-id>/is_valid_balance
-type V1DataCustomerIDIsValidBalancePost struct {
+// V1DataCustomersIDIsValidBalancePost is rquest param define for POST /customers/<customer-id>/is_valid_balance
+type V1DataCustomersIDIsValidBalancePost struct {
 	ReferenceType bmbilling.ReferenceType `json:"reference_type"`
 	Country       string                  `json:"country"`
 }

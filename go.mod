@@ -13,7 +13,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230625104309-b4edd08e8cf4
+	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230701140959-3e1bb4f11277
 	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230627184020-5d7fda67613d
 	golang.org/x/crypto v0.10.0
 )

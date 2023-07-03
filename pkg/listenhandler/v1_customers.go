@@ -326,7 +326,7 @@ func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, 
 	id := uuid.FromStringOrNil(uriItems[3])
 	log.Debug("Executing processV1CustomersIDIsValidBalance.")
 
-	var req request.V1DataCustomerIDIsValidBalancePost
+	var req request.V1DataCustomersIDIsValidBalancePost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil

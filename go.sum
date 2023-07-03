@@ -616,8 +616,8 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca h1:FRbWYFEBOFQgX7XpL/zmbalioUIKGVxQz2p/f9OYjDU=
 gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca/go.mod h1:xy0GgcAS3kt4TAOrucdTHMxDDmh4BEJ4E8KNl2bQVUI=
-gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230625104309-b4edd08e8cf4 h1:VOwUR4K5jvdp47qH5ujPp+LTK7RuL3SATzav8Kaz6H8=
-gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230625104309-b4edd08e8cf4/go.mod h1:RqMAxXZaJJLLoudKUaYJqglFdEeG4stvLUwRhiRiuYQ=
+gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230701140959-3e1bb4f11277 h1:WdcxtJZeahEMIw0xfq8Auc4UrwaSU7bK8tLXMc9BLXo=
+gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230701140959-3e1bb4f11277/go.mod h1:vC4KI/bXDTXlimgTqflJRLcA0M1mtx8hVTvPerr/4YE=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230617073121-d3ecf98b22ec h1:absgRYbXbFAnj5NzJOV4pDLaPrXGLoMNCyp9VijP7Wg=
 gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230617073121-d3ecf98b22ec/go.mod h1:ljSsVy0o/nCVcDWJ/CygHxcnYSCWPSF6hdPWnNBhJwI=
 gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206 h1:beC7nSy95iuweMe7quxqnfA87YkqSCmqYWUQECBC1eU=
