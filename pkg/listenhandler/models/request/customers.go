@@ -2,6 +2,7 @@ package request
 
 import (
 	"github.com/gofrs/uuid"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 )
@@ -62,6 +63,6 @@ type V1DataCustomersIDBillingAccountIDPut struct {
 
 // V1DataCustomerIDIsValidBalancePost is rquest param define for POST /customers/<customer-id>/is_valid_balance
 type V1DataCustomerIDIsValidBalancePost struct {
-	BillingType string `json:"billing_type"`
-	Country     string `json:"country"`
+	ReferenceType bmbilling.ReferenceType `json:"reference_type"`
+	Country       string                  `json:"country"`
 }
