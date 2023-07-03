@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	csrequest "gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/request"
 	csresponse "gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/listenhandler/models/response"
@@ -236,10 +237,20 @@ func (r *requestHandler) CustomerV1CustomerUpdatePermissionIDs(ctx context.Conte
 
 // CustomerV1CustomerIsValidBalance sends a request to customer-manager
 // returns true if the customer has valid balance.
-func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID) (bool, error) {
+func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType bmbilling.ReferenceType, country string) (bool, error) {
 	uri := fmt.Sprintf("/v1/customers/%s/is_valid_balance", customerID)
 
-	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPost, "customer/customers/<customer-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	data := &csrequest.V1DataCustomersIDIsValidBalancePost{
+		ReferenceType: referenceType,
+		Country:       country,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return false, err
+	}
+
+	res, err := r.sendRequestCustomer(ctx, uri, rabbitmqhandler.RequestMethodPost, "customer/customers/<customer-id>/is_valid_balance", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return false, err
