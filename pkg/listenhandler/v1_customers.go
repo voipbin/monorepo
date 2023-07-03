@@ -332,7 +332,7 @@ func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, 
 		return simpleResponse(400), nil
 	}
 
-	valid, err := h.customerHandler.IsValidBalance(ctx, id, bmbilling.ReferenceType(req.BillingType), req.Country)
+	valid, err := h.customerHandler.IsValidBalance(ctx, id, bmbilling.ReferenceType(req.ReferenceType), req.Country)
 	if err != nil {
 		log.Errorf("Could not update the customer's permission ids. err: %v", err)
 		return simpleResponse(400), nil
