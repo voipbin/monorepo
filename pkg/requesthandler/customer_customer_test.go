@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
@@ -513,7 +514,9 @@ func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
+		customerID    uuid.UUID
+		referenceType bmbilling.ReferenceType
+		country       string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -521,21 +524,25 @@ func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
 		expectRes     bool
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("57e0d56e-0f8e-11ee-a32d-4b65fba800d5"),
+			customerID:    uuid.FromStringOrNil("57e0d56e-0f8e-11ee-a32d-4b65fba800d5"),
+			referenceType: bmbilling.ReferenceTypeCall,
+			country:       "us",
 
-			"bin-manager.customer-manager.request",
-			&rabbitmqhandler.Request{
-				URI:    "/v1/customers/57e0d56e-0f8e-11ee-a32d-4b65fba800d5/is_valid_balance",
-				Method: rabbitmqhandler.RequestMethodPost,
+			expectTarget: "bin-manager.customer-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/customers/57e0d56e-0f8e-11ee-a32d-4b65fba800d5/is_valid_balance",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"reference_type":"call","country":"us"}`),
 			},
-			&rabbitmqhandler.Response{
+			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"valid":true}`),
 			},
-			true,
+			expectRes: true,
 		},
 	}
 
@@ -553,7 +560,7 @@ func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CustomerV1CustomerIsValidBalance(ctx, tt.customerID)
+			res, err := reqHandler.CustomerV1CustomerIsValidBalance(ctx, tt.customerID, tt.referenceType, tt.country)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
