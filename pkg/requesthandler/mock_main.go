@@ -2978,18 +2978,18 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGets(ctx, pageToken,
 }
 
 // CustomerV1CustomerIsValidBalance mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType billing.ReferenceType, country string) (bool, error) {
+func (m *MockRequestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerIsValidBalance", ctx, customerID, referenceType, country)
+	ret := m.ctrl.Call(m, "CustomerV1CustomerIsValidBalance", ctx, customerID, referenceType, country, count)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CustomerV1CustomerIsValidBalance indicates an expected call of CustomerV1CustomerIsValidBalance.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerIsValidBalance(ctx, customerID, referenceType, country interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerIsValidBalance(ctx, customerID, referenceType, country, count interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerIsValidBalance), ctx, customerID, referenceType, country)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerIsValidBalance), ctx, customerID, referenceType, country, count)
 }
 
 // CustomerV1CustomerUpdate mocks base method.

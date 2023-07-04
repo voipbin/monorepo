@@ -237,12 +237,13 @@ func (r *requestHandler) CustomerV1CustomerUpdatePermissionIDs(ctx context.Conte
 
 // CustomerV1CustomerIsValidBalance sends a request to customer-manager
 // returns true if the customer has valid balance.
-func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType bmbilling.ReferenceType, country string) (bool, error) {
+func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType bmbilling.ReferenceType, country string, count int) (bool, error) {
 	uri := fmt.Sprintf("/v1/customers/%s/is_valid_balance", customerID)
 
 	data := &csrequest.V1DataCustomersIDIsValidBalancePost{
 		ReferenceType: referenceType,
 		Country:       country,
+		Count:         count,
 	}
 
 	m, err := json.Marshal(data)
