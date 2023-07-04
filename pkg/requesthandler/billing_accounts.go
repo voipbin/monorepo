@@ -172,12 +172,13 @@ func (r *requestHandler) BillingV1AccountSubtractBalanceForce(ctx context.Contex
 }
 
 // BillingV1AccountIsValidBalance returns true if the given account has valid balance for the given billing type
-func (r *requestHandler) BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string) (bool, error) {
+func (r *requestHandler) BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error) {
 	uri := fmt.Sprintf("/v1/accounts/%s/is_valid_balance", accountID)
 
 	m, err := json.Marshal(bmrequest.V1DataAccountsIDIsValidBalancePOST{
 		BillingType: string(billingType),
 		Country:     country,
+		Count:       count,
 	})
 	if err != nil {
 		return false, err
