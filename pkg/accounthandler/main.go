@@ -27,7 +27,7 @@ type AccountHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	DeletesByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*account.Account, error)
 
-	IsValidBalanceByCustomerID(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string) (bool, error)
+	IsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error)
 }
 
 // accountHandler define

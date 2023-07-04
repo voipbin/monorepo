@@ -24,6 +24,7 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 		customerID  uuid.UUID
 		billingType billing.ReferenceType
 		country     string
+		count       int
 
 		responseCustomer *cmcustomer.Customer
 		responseAccount  *account.Account
@@ -36,6 +37,7 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 
 			customerID:  uuid.FromStringOrNil("87abc36a-09f5-11ee-9b1c-d3d80f26eacd"),
 			billingType: billing.ReferenceTypeCall,
+			count:       1,
 
 			responseCustomer: &cmcustomer.Customer{
 				ID:               uuid.FromStringOrNil("87abc36a-09f5-11ee-9b1c-d3d80f26eacd"),
@@ -53,6 +55,7 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 
 			customerID:  uuid.FromStringOrNil("a0c6f8c4-09f5-11ee-8ad8-4f77e9290706"),
 			billingType: billing.ReferenceTypeNumber,
+			count:       1,
 
 			responseCustomer: &cmcustomer.Customer{
 				ID:               uuid.FromStringOrNil("a0c6f8c4-09f5-11ee-8ad8-4f77e9290706"),
@@ -87,8 +90,8 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
-
-			res, err := h.IsValidBalanceByCustomerID(ctx, tt.customerID, tt.billingType, tt.country)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
+			res, err := h.IsValidBalanceByCustomerID(ctx, tt.customerID, tt.billingType, tt.country, tt.count)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -108,6 +111,7 @@ func Test_IsValidBalance(t *testing.T) {
 		accountID   uuid.UUID
 		billingType billing.ReferenceType
 		country     string
+		count       int
 
 		responseAccount *account.Account
 		expectRes       bool
@@ -119,6 +123,7 @@ func Test_IsValidBalance(t *testing.T) {
 
 			accountID:   uuid.FromStringOrNil("u53d1e596-1342-11ee-86c6-23afd019902d"),
 			billingType: billing.ReferenceTypeCall,
+			count:       1,
 
 			responseAccount: &account.Account{
 				ID:       uuid.FromStringOrNil("u53d1e596-1342-11ee-86c6-23afd019902d"),
@@ -132,6 +137,7 @@ func Test_IsValidBalance(t *testing.T) {
 
 			accountID:   uuid.FromStringOrNil("540fbd80-1342-11ee-bdfc-e3cff38ae489"),
 			billingType: billing.ReferenceTypeNumber,
+			count:       1,
 
 			responseAccount: &account.Account{
 				ID:       uuid.FromStringOrNil("540fbd80-1342-11ee-bdfc-e3cff38ae489"),
@@ -162,7 +168,7 @@ func Test_IsValidBalance(t *testing.T) {
 
 			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
 
-			res, err := h.IsValidBalance(ctx, tt.accountID, tt.billingType, tt.country)
+			res, err := h.IsValidBalance(ctx, tt.accountID, tt.billingType, tt.country, tt.count)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
