@@ -98,18 +98,18 @@ func (mr *MockCustomerHandlerMockRecorder) Gets(ctx, size, token interface{}) *g
 }
 
 // IsValidBalance mocks base method.
-func (m *MockCustomerHandler) IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string) (bool, error) {
+func (m *MockCustomerHandler) IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsValidBalance", ctx, customerID, billingType, country)
+	ret := m.ctrl.Call(m, "IsValidBalance", ctx, customerID, billingType, country, count)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsValidBalance indicates an expected call of IsValidBalance.
-func (mr *MockCustomerHandlerMockRecorder) IsValidBalance(ctx, customerID, billingType, country interface{}) *gomock.Call {
+func (mr *MockCustomerHandlerMockRecorder) IsValidBalance(ctx, customerID, billingType, country, count interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalance", reflect.TypeOf((*MockCustomerHandler)(nil).IsValidBalance), ctx, customerID, billingType, country)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalance", reflect.TypeOf((*MockCustomerHandler)(nil).IsValidBalance), ctx, customerID, billingType, country, count)
 }
 
 // Login mocks base method.

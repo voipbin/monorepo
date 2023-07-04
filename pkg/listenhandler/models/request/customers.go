@@ -65,4 +65,5 @@ type V1DataCustomersIDBillingAccountIDPut struct {
 type V1DataCustomersIDIsValidBalancePost struct {
 	ReferenceType bmbilling.ReferenceType `json:"reference_type"`
 	Country       string                  `json:"country"`
+	Count         int                     `json:"count"`
 }
