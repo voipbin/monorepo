@@ -28,4 +28,5 @@ type V1DataAccountsIDBalanceSubtractForcePOST struct {
 type V1DataAccountsIDIsValidBalancePOST struct {
 	BillingType string `json:"billing_type"`
 	Country     string `json:"country"`
+	Count       int    `json:"count"`
 }

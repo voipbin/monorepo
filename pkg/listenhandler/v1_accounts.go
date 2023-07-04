@@ -190,44 +190,6 @@ func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m 
 	return res, nil
 }
 
-// processV1AccountsCustomerIDIDIsValidBalancePost handles POST /v1/accounts/customer_id/<customer-id>/is_valid_balance request
-func (h *listenHandler) processV1AccountsCustomerIDIDIsValidBalancePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AccountsCustomerIDIDIsValidBalancePost",
-		"request": m,
-	})
-
-	uriItems := strings.Split(m.URI, "/")
-	if len(uriItems) < 5 {
-		return simpleResponse(400), nil
-	}
-
-	customerID := uuid.FromStringOrNil(uriItems[4])
-
-	valid, err := h.accountHandler.IsValidBalanceByCustomerID(ctx, customerID, billing.ReferenceTypeCall, "us")
-	if err != nil {
-		log.Errorf("Could not validate the account's balance info. err: %v", err)
-		return simpleResponse(404), nil
-	}
-
-	tmp := &response.V1ResponseAccountsIDIsValidBalance{
-		Valid: valid,
-	}
-
-	data, err := json.Marshal(tmp)
-	if err != nil {
-		return simpleResponse(404), nil
-	}
-
-	res := &rabbitmqhandler.Response{
-		StatusCode: 200,
-		DataType:   "application/json",
-		Data:       data,
-	}
-
-	return res, nil
-}
-
 // processV1AccountsIDBalanceAddForcePost handles POST /v1/accounts/<account-id>/balance_add_force request
 func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -325,7 +287,7 @@ func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Contex
 		return nil, err
 	}
 
-	valid, err := h.accountHandler.IsValidBalanceByCustomerID(ctx, accountID, billing.ReferenceType(req.BillingType), req.Country)
+	valid, err := h.accountHandler.IsValidBalance(ctx, accountID, billing.ReferenceType(req.BillingType), req.Country, req.Count)
 	if err != nil {
 		log.Errorf("Could not validate the account's balance info. err: %v", err)
 		return simpleResponse(404), nil

@@ -43,14 +43,13 @@ var (
 	// v1
 
 	// accounts
-	regV1Accounts                           = regexp.MustCompile("/v1/accounts$")
-	regV1AccountsGet                        = regexp.MustCompile(`/v1/accounts\?`)
-	regV1AccountsID                         = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
-	regV1AccountsIDBalanceAddForce          = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_add_force$")
-	regV1AccountsIDBalanceSubtractForce     = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_subtract_force$")
-	regV1AccountsIDIsValidBalance           = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_balance$")
-	regV1AccountsCustomerIDID               = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "$")
-	regV1AccountsCustomerIDIDIsValidBalance = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "/is_valid_balance$")
+	regV1Accounts                       = regexp.MustCompile("/v1/accounts$")
+	regV1AccountsGet                    = regexp.MustCompile(`/v1/accounts\?`)
+	regV1AccountsID                     = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
+	regV1AccountsIDBalanceAddForce      = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_add_force$")
+	regV1AccountsIDBalanceSubtractForce = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_subtract_force$")
+	regV1AccountsIDIsValidBalance       = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_balance$")
+	regV1AccountsCustomerIDID           = regexp.MustCompile("/v1/accounts/customer_id/" + regUUID + "$")
 )
 
 var (
@@ -206,11 +205,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1AccountsCustomerIDID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1AccountsCustomerIDIDGet(ctx, m)
 		requestType = "/v1/accounts/customer_id/<customer-id>"
-
-	// GET /accounts/customer_id/<customer-id>/is_valid_balance
-	case regV1AccountsCustomerIDIDIsValidBalance.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
-		response, err = h.processV1AccountsCustomerIDIDIsValidBalancePost(ctx, m)
-		requestType = "/v1/accounts/customer_id/<customer_id>/is_valid_balance"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
