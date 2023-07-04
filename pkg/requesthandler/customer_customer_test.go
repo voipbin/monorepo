@@ -517,6 +517,7 @@ func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
 		customerID    uuid.UUID
 		referenceType bmbilling.ReferenceType
 		country       string
+		count         int
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -529,13 +530,14 @@ func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
 			customerID:    uuid.FromStringOrNil("57e0d56e-0f8e-11ee-a32d-4b65fba800d5"),
 			referenceType: bmbilling.ReferenceTypeCall,
 			country:       "us",
+			count:         3,
 
 			expectTarget: "bin-manager.customer-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/customers/57e0d56e-0f8e-11ee-a32d-4b65fba800d5/is_valid_balance",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"reference_type":"call","country":"us"}`),
+				Data:     []byte(`{"reference_type":"call","country":"us","count":3}`),
 			},
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -560,7 +562,7 @@ func Test_CustomerV1CustomerIsValidBalance(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CustomerV1CustomerIsValidBalance(ctx, tt.customerID, tt.referenceType, tt.country)
+			res, err := reqHandler.CustomerV1CustomerIsValidBalance(ctx, tt.customerID, tt.referenceType, tt.country, tt.count)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
