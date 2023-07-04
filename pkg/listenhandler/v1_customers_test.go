@@ -541,6 +541,7 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 		id            uuid.UUID
 		referenceType bmbilling.ReferenceType
 		country       string
+		count         int
 
 		responseValid bool
 		expectRes     *rabbitmqhandler.Response
@@ -551,12 +552,13 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 				URI:      "/v1/customers/dd74462c-0e88-11ee-a276-dbfe542e4ab0/is_valid_balance",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: requesthandler.ContentTypeJSON,
-				Data:     []byte(`{"reference_type":"call","country":"us"}`),
+				Data:     []byte(`{"reference_type":"call","country":"us","count":3}`),
 			},
 
 			id:            uuid.FromStringOrNil("dd74462c-0e88-11ee-a276-dbfe542e4ab0"),
 			referenceType: bmbilling.ReferenceTypeCall,
 			country:       "us",
+			count:         3,
 
 			responseValid: true,
 			expectRes: &rabbitmqhandler.Response{
@@ -582,7 +584,7 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().IsValidBalance(gomock.Any(), tt.id, tt.referenceType, tt.country).Return(tt.responseValid, nil)
+			mockCustomer.EXPECT().IsValidBalance(gomock.Any(), tt.id, tt.referenceType, tt.country, tt.count).Return(tt.responseValid, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
