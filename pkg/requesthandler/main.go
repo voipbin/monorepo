@@ -382,7 +382,7 @@ type RequestHandler interface {
 	BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
 	BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 	BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
-	BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string) (bool, error)
+	BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
 
 	// call-manager call
 	CallV1CallHealth(ctx context.Context, id uuid.UUID, delay, retryCount int) error

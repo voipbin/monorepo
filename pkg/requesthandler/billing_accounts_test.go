@@ -404,6 +404,7 @@ func Test_BillingV1AccountIsValidBalance(t *testing.T) {
 		accountID   uuid.UUID
 		billingType bmbilling.ReferenceType
 		country     string
+		Count       int
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -417,13 +418,14 @@ func Test_BillingV1AccountIsValidBalance(t *testing.T) {
 			accountID:   uuid.FromStringOrNil("6ec4c6cc-134f-11ee-acb1-83e6a5d0d5cf"),
 			billingType: bmbilling.ReferenceTypeCall,
 			country:     "us",
+			Count:       3,
 
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
 				URI:      "/v1/accounts/6ec4c6cc-134f-11ee-acb1-83e6a5d0d5cf/is_valid_balance",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"billing_type":"call","country":"us"}`),
+				Data:     []byte(`{"billing_type":"call","country":"us","count":3}`),
 			},
 			expectRes: true,
 
@@ -448,7 +450,7 @@ func Test_BillingV1AccountIsValidBalance(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.BillingV1AccountIsValidBalance(ctx, tt.accountID, tt.billingType, tt.country)
+			res, err := reqHandler.BillingV1AccountIsValidBalance(ctx, tt.accountID, tt.billingType, tt.country, tt.Count)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -919,18 +919,18 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGets(ctx, customerID, 
 }
 
 // BillingV1AccountIsValidBalance mocks base method.
-func (m *MockRequestHandler) BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string) (bool, error) {
+func (m *MockRequestHandler) BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1AccountIsValidBalance", ctx, accountID, billingType, country)
+	ret := m.ctrl.Call(m, "BillingV1AccountIsValidBalance", ctx, accountID, billingType, country, count)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BillingV1AccountIsValidBalance indicates an expected call of BillingV1AccountIsValidBalance.
-func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalance(ctx, accountID, billingType, country interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalance(ctx, accountID, billingType, country, count interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalance), ctx, accountID, billingType, country)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalance), ctx, accountID, billingType, country, count)
 }
 
 // BillingV1AccountSubtractBalanceForce mocks base method.
