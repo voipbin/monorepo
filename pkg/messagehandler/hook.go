@@ -12,17 +12,17 @@ import (
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/hooktelnyx"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/message-manager.git/models/telnyx"
 )
 
 // Hook handles hook message
 func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) error {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "Hook",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "Hook",
+		"uri":  uri,
+		"data": data,
+	})
 
 	var m *message.Message
 	var num *nmnumber.Number
@@ -52,13 +52,12 @@ func (h *messageHandler) Hook(ctx context.Context, uri string, data []byte) erro
 
 // hookTelnyx telnyx type hook message.
 func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.Message, *nmnumber.Number, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "hookTelnyx",
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func": "hookTelnyx",
+		"data": data,
+	})
 
-	hm := hooktelnyx.Message{}
+	hm := telnyx.Message{}
 	if errUnmarshal := json.Unmarshal(data, &hm); errUnmarshal != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", errUnmarshal)
 		return nil, nil, errUnmarshal
@@ -80,19 +79,16 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	}
 	log.WithField("number", num).Debugf("Found number info. number_id: %s", num.ID)
 
-	// convert to Message.
-	id := uuid.Must(uuid.NewV4())
-	msg := hm.ConvertMessage(id, num.CustomerID)
-	log = log.WithFields(logrus.Fields{
-		"message_id":  id,
-		"customer_id": num.CustomerID,
-	})
-
-	res, err := h.Create(ctx, msg)
+	// get informations
+	source := hm.GetSource()
+	targets := hm.GetTargets()
+	text := hm.GetText()
+	res, err := h.Create(ctx, uuid.Nil, num.CustomerID, source, targets, message.ProviderNameTelnyx, text, message.DirectionInbound)
 	if err != nil {
 		log.Errorf("Could not create a message record. err: %v", err)
 		return nil, nil, err
 	}
+
 	log.WithField("message", res).Debugf("Created message. message_id: %s", res.ID)
 
 	return res, num, nil

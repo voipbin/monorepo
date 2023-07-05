@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
@@ -19,21 +20,66 @@ import (
 func Test_Create(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		message     *message.Message
-		responseGet *message.Message
-		expectRes   *message.Message
+		name string
+
+		id           uuid.UUID
+		customerID   uuid.UUID
+		source       *commonaddress.Address
+		targets      []target.Target
+		providerName message.ProviderName
+		text         string
+		direction    message.Direction
+
+		responseUUID    uuid.UUID
+		responseMessage *message.Message
+		expectMessage   *message.Message
 	}{
 		{
-			"normal",
-			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+			name: "normal",
+
+			id:         uuid.FromStringOrNil("6dd9d746-197d-11ee-a39d-0ffbf2a45563"),
+			customerID: uuid.FromStringOrNil("755c7b90-197d-11ee-9cb0-a3ddbcba0c6f"),
+			source: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
 			},
-			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+			targets: []target.Target{
+				{
+					Destination: commonaddress.Address{
+						Type:   commonaddress.TypeTel,
+						Target: "+821100000002",
+					},
+					Status: target.StatusReceived,
+				},
 			},
-			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
+			providerName: message.ProviderNameTelnyx,
+			text:         "test message",
+			direction:    message.DirectionInbound,
+
+			responseMessage: &message.Message{
+				ID: uuid.FromStringOrNil("6dd9d746-197d-11ee-a39d-0ffbf2a45563"),
+			},
+			expectMessage: &message.Message{
+				ID:         uuid.FromStringOrNil("6dd9d746-197d-11ee-a39d-0ffbf2a45563"),
+				CustomerID: uuid.FromStringOrNil("755c7b90-197d-11ee-9cb0-a3ddbcba0c6f"),
+				Type:       message.TypeSMS,
+				Source: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+				Targets: []target.Target{
+					{
+						Destination: commonaddress.Address{
+							Type:   commonaddress.TypeTel,
+							Target: "+821100000002",
+						},
+						Status: target.StatusReceived,
+					},
+				},
+				ProviderName: message.ProviderNameTelnyx,
+				Text:         "test message",
+				Medias:       []string{},
+				Direction:    message.DirectionInbound,
 			},
 		},
 	}
@@ -43,269 +89,35 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
 
 			h := &messageHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 
 				messageHandlerMessagebird: mockMessagebird,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageCreate(ctx, tt.message).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.message.ID).Return(tt.responseGet, nil)
+			if tt.id == uuid.Nil {
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			}
 
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, message.EventTypeMessageCreated, tt.responseGet)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.responseMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
 
-			res, err := h.Create(ctx, tt.message)
+			res, err := h.Create(ctx, tt.id, tt.customerID, tt.source, tt.targets, tt.providerName, tt.text, tt.direction)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_UpdateTargets(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id      uuid.UUID
-		targets []target.Target
-
-		responseGet *message.Message
-		expectRes   *message.Message
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("ca37640c-a225-11ec-8cbf-fbf3ceb420d5"),
-			[]target.Target{
-				{
-					Destination: commonaddress.Address{
-						Type:   commonaddress.TypeTel,
-						Target: "+821100000001",
-					},
-					Status: target.StatusSent,
-				},
-			},
-
-			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
-			},
-			&message.Message{
-				ID: uuid.FromStringOrNil("1703a4fe-a225-11ec-b393-f7ff27e9f57d"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-			h := &messageHandler{
-				db:                        mockDB,
-				notifyHandler:             mockNotify,
-				messageHandlerMessagebird: mockMessagebird,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, tt.targets).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, message.EventTypeMessageUpdated, tt.responseGet)
-
-			res, err := h.UpdateTargets(ctx, tt.id, tt.targets)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_Get(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id uuid.UUID
-
-		responseGet *message.Message
-		expectRes   *message.Message
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
-
-			&message.Message{
-				ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
-			},
-			&message.Message{
-				ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-			h := &messageHandler{
-				db:                        mockDB,
-				messageHandlerMessagebird: mockMessagebird,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
-
-			res, err := h.Get(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_Gets(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
-
-		responseGets []*message.Message
-		expectRes    []*message.Message
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("90c4eadc-a298-11ec-ab3a-8b21b05640ec"),
-			10,
-			"2021-02-26 18:26:49.000",
-
-			[]*message.Message{
-				{
-					ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
-				},
-			},
-			[]*message.Message{
-				{
-					ID: uuid.FromStringOrNil("ab6eef5a-a297-11ec-87f8-dbbd4c5d2ff4"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-			h := &messageHandler{
-				db:                        mockDB,
-				messageHandlerMessagebird: mockMessagebird,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().MessageGets(ctx, tt.customerID, tt.pageSize, tt.pageToken).Return(tt.responseGets, nil)
-
-			res, err := h.Gets(ctx, tt.customerID, tt.pageSize, tt.pageToken)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_Delete(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id uuid.UUID
-
-		responseGet *message.Message
-		expectRes   *message.Message
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
-
-			&message.Message{
-				ID: uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
-			},
-			&message.Message{
-				ID: uuid.FromStringOrNil("1568bbd0-a2c9-11ec-b6a2-a7205ff6e321"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
-
-			h := &messageHandler{
-				db:                        mockDB,
-				notifyHandler:             mockNotify,
-				messageHandlerMessagebird: mockMessagebird,
-			}
-
-			ctx := context.Background()
-
-			mockDB.EXPECT().MessageDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, message.EventTypeMessageDeleted, tt.responseGet)
-
-			res, err := h.Delete(ctx, tt.id)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.responseMessage, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseMessage, res)
 			}
 		})
 	}

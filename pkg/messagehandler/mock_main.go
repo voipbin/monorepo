@@ -12,7 +12,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	target "gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 )
 
 // MockMessageHandler is a mock of MessageHandler interface.
@@ -36,21 +35,6 @@ func NewMockMessageHandler(ctrl *gomock.Controller) *MockMessageHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 	return m.recorder
-}
-
-// Create mocks base method.
-func (m_2 *MockMessageHandler) Create(ctx context.Context, m *message.Message) (*message.Message, error) {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "Create", ctx, m)
-	ret0, _ := ret[0].(*message.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Create indicates an expected call of Create.
-func (mr *MockMessageHandlerMockRecorder) Create(ctx, m interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, m)
 }
 
 // Delete mocks base method.
@@ -125,19 +109,4 @@ func (m *MockMessageHandler) Send(ctx context.Context, id, customerID uuid.UUID,
 func (mr *MockMessageHandlerMockRecorder) Send(ctx, id, customerID, source, destinations, text interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMessageHandler)(nil).Send), ctx, id, customerID, source, destinations, text)
-}
-
-// UpdateTargets mocks base method.
-func (m *MockMessageHandler) UpdateTargets(ctx context.Context, id uuid.UUID, targets []target.Target) (*message.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateTargets", ctx, id, targets)
-	ret0, _ := ret[0].(*message.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateTargets indicates an expected call of UpdateTargets.
-func (mr *MockMessageHandlerMockRecorder) UpdateTargets(ctx, id, targets interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTargets", reflect.TypeOf((*MockMessageHandler)(nil).UpdateTargets), ctx, id, targets)
 }

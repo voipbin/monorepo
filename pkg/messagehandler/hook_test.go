@@ -10,6 +10,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmactiveflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	nmnumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 
@@ -29,14 +30,15 @@ func Test_Hook(t *testing.T) {
 
 		expectToNum string
 
+		responseUUID    uuid.UUID
 		responseNumber  *nmnumber.Number
 		responseMessage *message.Message
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			"https://hook.voipbin.net/v1.0/hooks/telnyx",
-			[]byte(`{
+			uri: "https://hook.voipbin.net/v1.0/hooks/telnyx",
+			data: []byte(`{
 				"data": {
 				  "event_type": "message.received",
 				  "id": "19539336-11ba-4792-abd8-26d4f8745c4c",
@@ -85,13 +87,14 @@ func Test_Hook(t *testing.T) {
 				}
 			  }`),
 
-			"+15734531118",
+			expectToNum: "+15734531118",
 
-			&nmnumber.Number{
+			responseUUID: uuid.FromStringOrNil("b256f22e-197c-11ee-aadb-2375ad35a2c2"),
+			responseNumber: &nmnumber.Number{
 				ID:     uuid.FromStringOrNil("67afdd50-a65d-11ec-84fa-8b61a2028c6a"),
 				Number: "+15734531118",
 			},
-			&message.Message{},
+			responseMessage: &message.Message{},
 		},
 	}
 
@@ -100,6 +103,7 @@ func Test_Hook(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
@@ -107,6 +111,7 @@ func Test_Hook(t *testing.T) {
 			mockMessagebird := messagehandlermessagebird.NewMockMessageHandlerMessagebird(mc)
 
 			h := &messageHandler{
+				utilHandler:   mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 				reqHandler:    mockReq,
@@ -118,6 +123,7 @@ func Test_Hook(t *testing.T) {
 
 			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.expectToNum).Return(tt.responseNumber, nil)
 
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), message.EventTypeMessageCreated, gomock.Any())

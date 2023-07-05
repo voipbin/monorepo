@@ -1,4 +1,4 @@
-package hooktelnyx
+package telnyx
 
 import (
 	"encoding/json"
