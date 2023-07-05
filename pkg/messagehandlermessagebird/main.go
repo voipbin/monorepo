@@ -8,14 +8,15 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/requestexternal"
 )
 
 // MessageHandlerMessagebird is interface for service handle
 type MessageHandlerMessagebird interface {
-	SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)
+	// SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)
+	SendMessage(messageID uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, text string) ([]target.Target, error)
 }
 
 // messageHandlerMessagebird structure for service handle

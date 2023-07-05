@@ -151,7 +151,7 @@ func (h *handler) MessageCreate(ctx context.Context, n *message.Message) error {
 		tmpMedias,
 		n.Direction,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -262,7 +262,7 @@ func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, target
 
 	_, err = h.db.Exec(q,
 		tmpTargets,
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -319,7 +319,7 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q,
 		ts,
 		ts,

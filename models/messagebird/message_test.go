@@ -5,107 +5,105 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gofrs/uuid"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 )
 
-func Test_ConvertMessage(t *testing.T) {
+// func Test_ConvertMessage(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		message    *Message
-		id         uuid.UUID
-		customerID uuid.UUID
+// 		message    *Message
+// 		id         uuid.UUID
+// 		customerID uuid.UUID
 
-		expectRes *message.Message
-	}{
-		{
-			"2 items",
+// 		expectRes *message.Message
+// 	}{
+// 		{
+// 			"2 items",
 
-			&Message{
-				ID:         "6b79e50e426c4d64ac45345bae84fe55",
-				Direction:  "mt",
-				Type:       "sms",
-				Originator: "+821021656521",
-				Body:       "This is a test message10",
+// 			&Message{
+// 				ID:         "6b79e50e426c4d64ac45345bae84fe55",
+// 				Direction:  "mt",
+// 				Type:       "sms",
+// 				Originator: "+821021656521",
+// 				Body:       "This is a test message10",
 
-				Recipients: RecipientStruct{
-					Items: []Recipient{
-						{
-							Recipient:        31616818985,
-							Status:           "sent",
-							StatusDatetime:   "2022-03-09T05:21:45+00:00",
-							MessagePartCount: 1,
-						},
-						{
-							Recipient:        821021656521,
-							Status:           "sent",
-							StatusDatetime:   "2022-03-09T05:21:45+00:00",
-							MessagePartCount: 1,
-						},
-					},
-				},
-			},
-			uuid.FromStringOrNil("82a1c5b4-a064-11ec-bad7-ebff9efa798e"),
-			uuid.FromStringOrNil("82d16b7a-a064-11ec-9ce8-777e6052475b"),
+// 				Recipients: RecipientStruct{
+// 					Items: []Recipient{
+// 						{
+// 							Recipient:        31616818985,
+// 							Status:           "sent",
+// 							StatusDatetime:   "2022-03-09T05:21:45+00:00",
+// 							MessagePartCount: 1,
+// 						},
+// 						{
+// 							Recipient:        821021656521,
+// 							Status:           "sent",
+// 							StatusDatetime:   "2022-03-09T05:21:45+00:00",
+// 							MessagePartCount: 1,
+// 						},
+// 					},
+// 				},
+// 			},
+// 			uuid.FromStringOrNil("82a1c5b4-a064-11ec-bad7-ebff9efa798e"),
+// 			uuid.FromStringOrNil("82d16b7a-a064-11ec-9ce8-777e6052475b"),
 
-			&message.Message{
-				ID:         uuid.FromStringOrNil("82a1c5b4-a064-11ec-bad7-ebff9efa798e"),
-				CustomerID: uuid.FromStringOrNil("82d16b7a-a064-11ec-9ce8-777e6052475b"),
-				Type:       message.TypeSMS,
-				Source: &commonaddress.Address{
-					Type:   commonaddress.TypeTel,
-					Target: "+821021656521",
-				},
-				Targets: []target.Target{
-					{
-						Destination: commonaddress.Address{
-							Type:   commonaddress.TypeTel,
-							Target: "+31616818985",
-						},
-						Status: target.StatusSent,
-						Parts:  1,
-					},
-					{
-						Destination: commonaddress.Address{
-							Type:   commonaddress.TypeTel,
-							Target: "+821021656521",
-						},
-						Status: target.StatusSent,
-						Parts:  1,
-					},
-				},
-				ProviderName:        message.ProviderNameMessagebird,
-				ProviderReferenceID: "6b79e50e426c4d64ac45345bae84fe55",
-				Text:                "This is a test message10",
-				Medias:              []string{},
-				Direction:           message.DirectionOutbound,
-				TMCreate:            "",
-				TMUpdate:            "",
-				TMDelete:            "",
-			},
-		},
-	}
+// 			&message.Message{
+// 				ID:         uuid.FromStringOrNil("82a1c5b4-a064-11ec-bad7-ebff9efa798e"),
+// 				CustomerID: uuid.FromStringOrNil("82d16b7a-a064-11ec-9ce8-777e6052475b"),
+// 				Type:       message.TypeSMS,
+// 				Source: &commonaddress.Address{
+// 					Type:   commonaddress.TypeTel,
+// 					Target: "+821021656521",
+// 				},
+// 				Targets: []target.Target{
+// 					{
+// 						Destination: commonaddress.Address{
+// 							Type:   commonaddress.TypeTel,
+// 							Target: "+31616818985",
+// 						},
+// 						Status: target.StatusSent,
+// 						Parts:  1,
+// 					},
+// 					{
+// 						Destination: commonaddress.Address{
+// 							Type:   commonaddress.TypeTel,
+// 							Target: "+821021656521",
+// 						},
+// 						Status: target.StatusSent,
+// 						Parts:  1,
+// 					},
+// 				},
+// 				ProviderName:        message.ProviderNameMessagebird,
+// 				ProviderReferenceID: "6b79e50e426c4d64ac45345bae84fe55",
+// 				Text:                "This is a test message10",
+// 				Medias:              []string{},
+// 				Direction:           message.DirectionOutbound,
+// 				TMCreate:            "",
+// 				TMUpdate:            "",
+// 				TMDelete:            "",
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
 
-			res := tt.message.ConvertMessage(tt.id, tt.customerID)
+// 			res := tt.message.ConvertMessage(tt.id, tt.customerID)
 
-			for i, target := range res.Targets {
-				tt.expectRes.Targets[i].TMUpdate = target.TMUpdate
-			}
+// 			for i, target := range res.Targets {
+// 				tt.expectRes.Targets[i].TMUpdate = target.TMUpdate
+// 			}
 
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
+// 			if !reflect.DeepEqual(res, tt.expectRes) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_marshal(t *testing.T) {
 
@@ -197,6 +195,182 @@ func Test_marshal(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(tt.expectRes, &res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_GetTargets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		message *Message
+
+		expectRes []target.Target
+	}{
+		{
+			name: "normal",
+
+			message: &Message{
+				ID:         "6b79e50e426c4d64ac45345bae84fe55",
+				Direction:  "mt",
+				Type:       "sms",
+				Originator: "+821021656521",
+				Body:       "This is a test message10",
+
+				Recipients: RecipientStruct{
+					Items: []Recipient{
+						{
+							Recipient:        31616818985,
+							Status:           "sent",
+							StatusDatetime:   "2022-03-09T05:21:45+00:00",
+							MessagePartCount: 1,
+						},
+						{
+							Recipient:        821021656521,
+							Status:           "sent",
+							StatusDatetime:   "2022-03-09T05:21:45+00:00",
+							MessagePartCount: 1,
+						},
+					},
+				},
+			},
+			expectRes: []target.Target{
+				{
+					Destination: commonaddress.Address{
+						Type:   commonaddress.TypeTel,
+						Target: "+31616818985",
+					},
+					Status: target.StatusSent,
+					Parts:  1,
+				},
+				{
+					Destination: commonaddress.Address{
+						Type:   commonaddress.TypeTel,
+						Target: "+821021656521",
+					},
+					Status: target.StatusSent,
+					Parts:  1,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := tt.message.GetTargets()
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_GetSource(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		message *Message
+
+		expectRes *commonaddress.Address
+	}{
+		{
+			name: "normal",
+
+			message: &Message{
+				ID:         "6b79e50e426c4d64ac45345bae84fe55",
+				Direction:  "mt",
+				Type:       "sms",
+				Originator: "+821021656521",
+				Body:       "This is a test message10",
+
+				Recipients: RecipientStruct{
+					Items: []Recipient{
+						{
+							Recipient:        31616818985,
+							Status:           "sent",
+							StatusDatetime:   "2022-03-09T05:21:45+00:00",
+							MessagePartCount: 1,
+						},
+						{
+							Recipient:        821021656521,
+							Status:           "sent",
+							StatusDatetime:   "2022-03-09T05:21:45+00:00",
+							MessagePartCount: 1,
+						},
+					},
+				},
+			},
+			expectRes: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821021656521",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := tt.message.GetSource()
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_GetText(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		message *Message
+
+		expectRes string
+	}{
+		{
+			name: "normal",
+
+			message: &Message{
+				ID:         "6b79e50e426c4d64ac45345bae84fe55",
+				Direction:  "mt",
+				Type:       "sms",
+				Originator: "+821021656521",
+				Body:       "This is a test message10",
+
+				Recipients: RecipientStruct{
+					Items: []Recipient{
+						{
+							Recipient:        31616818985,
+							Status:           "sent",
+							StatusDatetime:   "2022-03-09T05:21:45+00:00",
+							MessagePartCount: 1,
+						},
+						{
+							Recipient:        821021656521,
+							Status:           "sent",
+							StatusDatetime:   "2022-03-09T05:21:45+00:00",
+							MessagePartCount: 1,
+						},
+					},
+				},
+			},
+			expectRes: "This is a test message10",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := tt.message.GetText()
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})

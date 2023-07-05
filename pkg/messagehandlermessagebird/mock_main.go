@@ -10,7 +10,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
-	message "gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
+	target "gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 )
 
 // MockMessageHandlerMessagebird is a mock of MessageHandlerMessagebird interface.
@@ -37,16 +37,16 @@ func (m *MockMessageHandlerMessagebird) EXPECT() *MockMessageHandlerMessagebirdM
 }
 
 // SendMessage mocks base method.
-func (m *MockMessageHandlerMessagebird) SendMessage(messageID, customerID uuid.UUID, source *address.Address, destinations []address.Address, text string) (*message.Message, error) {
+func (m *MockMessageHandlerMessagebird) SendMessage(messageID, customerID uuid.UUID, source *address.Address, targets []target.Target, text string) ([]target.Target, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendMessage", messageID, customerID, source, destinations, text)
-	ret0, _ := ret[0].(*message.Message)
+	ret := m.ctrl.Call(m, "SendMessage", messageID, customerID, source, targets, text)
+	ret0, _ := ret[0].([]target.Target)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SendMessage indicates an expected call of SendMessage.
-func (mr *MockMessageHandlerMessagebirdMockRecorder) SendMessage(messageID, customerID, source, destinations, text interface{}) *gomock.Call {
+func (mr *MockMessageHandlerMessagebirdMockRecorder) SendMessage(messageID, customerID, source, targets, text interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockMessageHandlerMessagebird)(nil).SendMessage), messageID, customerID, source, destinations, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockMessageHandlerMessagebird)(nil).SendMessage), messageID, customerID, source, targets, text)
 }

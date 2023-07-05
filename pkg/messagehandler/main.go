@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/message-manager.git/models/message"
-	"gitlab.com/voipbin/bin-manager/message-manager.git/models/target"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/message-manager.git/pkg/messagehandlermessagebird"
 )
@@ -24,11 +23,9 @@ const (
 
 // MessageHandler defines
 type MessageHandler interface {
-	Create(ctx context.Context, m *message.Message) (*message.Message, error)
-	Delete(ctx context.Context, id uuid.UUID) (*message.Message, error)
-	UpdateTargets(ctx context.Context, id uuid.UUID, targets []target.Target) (*message.Message, error)
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	Gets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error)
+	Delete(ctx context.Context, id uuid.UUID) (*message.Message, error)
 
 	Send(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)
 

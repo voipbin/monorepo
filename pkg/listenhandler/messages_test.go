@@ -230,7 +230,6 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			if reflect.DeepEqual(tt.response, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
 			}
-
 		})
 	}
 }
