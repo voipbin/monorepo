@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -72,7 +73,7 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID).Return(true, nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
 
 			mockTelnyx.EXPECT().CreateNumber(tt.customerID, tt.number, tt.callFlowID, tt.numberName, tt.detail).Return(tt.expectRes, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
