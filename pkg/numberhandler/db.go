@@ -7,6 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
@@ -22,7 +23,7 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	log.Debugf("Creating a new number. customer_id: %s, number: %v", customerID, num)
 
 	// check the customer has enough balance
-	valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, customerID)
+	valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, customerID, bmbilling.ReferenceTypeNumber, "", 1)
 	if err != nil {
 		log.Errorf("Could not validate the customer's balance. err: %v", err)
 		return nil, errors.Wrap(err, "could not validate the customer's balance")

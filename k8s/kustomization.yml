@@ -11,6 +11,6 @@ resources:
 
 images:
 - name: number-manager-image
-  newName: call-manager
+  newName: number-manager
   newTag: latest
 
