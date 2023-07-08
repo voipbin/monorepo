@@ -4515,18 +4515,18 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, provi
 }
 
 // SendRequest mocks base method.
-func (m *MockRequestHandler) SendRequest(ctx context.Context, queue, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+func (m *MockRequestHandler) SendRequest(ctx context.Context, queue, uri string, method rabbitmqhandler.RequestMethod, timeout, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendRequest", ctx, queue, uri, method, resource, timeout, delayed, dataType, data)
+	ret := m.ctrl.Call(m, "SendRequest", ctx, queue, uri, method, timeout, delay, dataType, data)
 	ret0, _ := ret[0].(*rabbitmqhandler.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SendRequest indicates an expected call of SendRequest.
-func (mr *MockRequestHandlerMockRecorder) SendRequest(ctx, queue, uri, method, resource, timeout, delayed, dataType, data interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) SendRequest(ctx, queue, uri, method, timeout, delay, dataType, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRequest", reflect.TypeOf((*MockRequestHandler)(nil).SendRequest), ctx, queue, uri, method, resource, timeout, delayed, dataType, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRequest", reflect.TypeOf((*MockRequestHandler)(nil).SendRequest), ctx, queue, uri, method, timeout, delay, dataType, data)
 }
 
 // StorageV1RecordingDelete mocks base method.
