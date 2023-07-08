@@ -6,6 +6,7 @@ package requesthandler
 
 import (
 	context "context"
+	json "encoding/json"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -34,6 +35,7 @@ import (
 	chatbotcall "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/chatbotcall"
 	service "gitlab.com/voipbin/bin-manager/chatbot-manager.git/models/service"
 	address "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
+	rabbitmqhandler "gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	conference "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conference"
 	conferencecall "gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 	service0 "gitlab.com/voipbin/bin-manager/conference-manager.git/models/service"
@@ -4510,6 +4512,21 @@ func (m *MockRequestHandler) RouteV1RouteUpdate(ctx context.Context, routeID, pr
 func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteUpdate), ctx, routeID, providerID, priority, target)
+}
+
+// SendRequest mocks base method.
+func (m *MockRequestHandler) SendRequest(ctx context.Context, queue, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendRequest", ctx, queue, uri, method, resource, timeout, delayed, dataType, data)
+	ret0, _ := ret[0].(*rabbitmqhandler.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendRequest indicates an expected call of SendRequest.
+func (mr *MockRequestHandlerMockRecorder) SendRequest(ctx, queue, uri, method, resource, timeout, delayed, dataType, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRequest", reflect.TypeOf((*MockRequestHandler)(nil).SendRequest), ctx, queue, uri, method, resource, timeout, delayed, dataType, data)
 }
 
 // StorageV1RecordingDelete mocks base method.

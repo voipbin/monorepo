@@ -4,6 +4,7 @@ package requesthandler
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	uuid "github.com/gofrs/uuid"
@@ -291,6 +292,9 @@ func initPrometheus(namespace string) {
 
 // RequestHandler intreface for ARI request handler
 type RequestHandler interface {
+
+	// send
+	SendRequest(ctx context.Context, queue string, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error

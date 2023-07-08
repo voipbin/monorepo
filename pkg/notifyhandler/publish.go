@@ -15,14 +15,12 @@ import (
 
 // PublishWebhookEvent publishs the given event type of notification to the webhook and event queue.
 func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "PublishWebhookEvent",
-			"evnet_type":  eventType,
-			"event":       data,
-			"customer_id": customerID,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "PublishWebhookEvent",
+		"evnet_type":  eventType,
+		"event":       data,
+		"customer_id": customerID,
+	})
 	log.Debugf("publishing the event to the webhook and event queue.. event_type: %s", eventType)
 
 	go h.PublishEvent(ctx, eventType, data)
@@ -31,13 +29,11 @@ func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid
 
 // PublishWebhook publishes the webhook to the given customer.
 func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "PublishWebhook",
-			"call":       data,
-			"evnet_type": eventType,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "PublishWebhook",
+		"call":       data,
+		"evnet_type": eventType,
+	})
 	log.Debugf("Sending webhook event. event_type: %s, message: %s", eventType, data)
 
 	if customerID == uuid.Nil {
@@ -60,13 +56,11 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 
 // PublishEventRaw publishes the raw event to the event queue.
 func (h *notifyHandler) PublishEventRaw(ctx context.Context, eventType string, dataType string, data []byte) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "PublishEventRaw",
-			"evnet_type": eventType,
-			"data_type":  dataType,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "PublishEventRaw",
+		"evnet_type": eventType,
+		"data_type":  dataType,
+	})
 
 	if err := h.publishEvent(eventType, dataType, data, requestTimeoutDefault, 0); err != nil {
 		log.Errorf("Could not publish the call event. err: %v", err)
@@ -76,12 +70,10 @@ func (h *notifyHandler) PublishEventRaw(ctx context.Context, eventType string, d
 
 // PublishEvent publishes event to the event queue.
 func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data interface{}) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "PublishEvent",
-			"evnet_type": eventType,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "PublishEvent",
+		"evnet_type": eventType,
+	})
 
 	// create event
 	m, err := json.Marshal(data)
@@ -99,16 +91,14 @@ func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data
 // publishEvent publishes a event to the event queue.
 func (h *notifyHandler) publishEvent(eventType string, dataType string, data json.RawMessage, timeout int, delay int) error {
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":      "publishEvent",
-			"type":      eventType,
-			"data_type": dataType,
-			"data":      data,
-			"timeout":   timeout,
-			"delay":     delay,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "publishEvent",
+		"type":      eventType,
+		"data_type": dataType,
+		"data":      data,
+		"timeout":   timeout,
+		"delay":     delay,
+	})
 	log.Debugf("Publishing the event. type: %s", eventType)
 
 	// create a event
