@@ -294,7 +294,7 @@ func initPrometheus(namespace string) {
 type RequestHandler interface {
 
 	// send
-	SendRequest(ctx context.Context, queue string, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout int, delayed int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error)
+	SendRequest(ctx context.Context, queue string, uri string, method rabbitmqhandler.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*rabbitmqhandler.Response, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error
