@@ -294,7 +294,7 @@ func (h *listenHandler) processV1NumbersRenewPost(ctx context.Context, m *rabbit
 		return simpleResponse(400), nil
 	}
 
-	numb, err := h.numberHandler.RenewNumbers(ctx, req.TMRenew)
+	numb, err := h.numberHandler.RenewNumbers(ctx, req.Days, req.Hours, req.TMRenew)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
 		return simpleResponse(500), nil

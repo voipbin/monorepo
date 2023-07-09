@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
@@ -16,7 +17,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandlertelnyx"
 )
 
-func Test_RenewNumbers(t *testing.T) {
+func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {
 
 	type test struct {
 		name string
@@ -73,7 +74,157 @@ func Test_RenewNumbers(t *testing.T) {
 				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)
 			}
 
-			res, err := h.RenewNumbers(ctx, tt.tmRenew)
+			res, err := h.RenewNumbers(ctx, 0, 0, tt.tmRenew)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseNumbers, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseNumbers, res)
+			}
+		})
+	}
+}
+
+func Test_RenewNumbers_renewNumbersByDays(t *testing.T) {
+
+	type test struct {
+		name string
+
+		days int
+
+		responseCurTime string
+		responseNumbers []*number.Number
+
+		expectTimeAdd time.Duration
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			days: 3,
+
+			responseCurTime: "2021-02-26 18:26:49.000",
+			responseNumbers: []*number.Number{
+				{
+					ID: uuid.FromStringOrNil("e51723ae-1e28-11ee-bdaa-83544a71ef96"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e54b6cfe-1e28-11ee-bb15-0f79849df0a6"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e571504a-1e28-11ee-b2c8-6fd277f0b78a"),
+				},
+			},
+
+			expectTimeAdd: -(time.Hour * 24 * 3),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := numberHandler{
+				utilHandler:         mockUtil,
+				reqHandler:          mockReq,
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				numberHandlerTelnyx: mockTelnyx,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
+			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime).Return(tt.responseNumbers, nil)
+			for _, n := range tt.responseNumbers {
+				mockDB.EXPECT().NumberUpdateTMRenew(ctx, n.ID).Return(nil)
+				mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)
+			}
+
+			res, err := h.RenewNumbers(ctx, tt.days, 0, "")
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseNumbers, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseNumbers, res)
+			}
+		})
+	}
+}
+
+func Test_RenewNumbers_renewNumbersByHours(t *testing.T) {
+
+	type test struct {
+		name string
+
+		hours int
+
+		responseCurTime string
+		responseNumbers []*number.Number
+
+		expectTimeAdd time.Duration
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			hours: 10,
+
+			responseCurTime: "2021-02-26 18:26:49.000",
+			responseNumbers: []*number.Number{
+				{
+					ID: uuid.FromStringOrNil("e51723ae-1e28-11ee-bdaa-83544a71ef96"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e54b6cfe-1e28-11ee-bb15-0f79849df0a6"),
+				},
+				{
+					ID: uuid.FromStringOrNil("e571504a-1e28-11ee-b2c8-6fd277f0b78a"),
+				},
+			},
+
+			expectTimeAdd: -(time.Hour * 10),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockTelnyx := numberhandlertelnyx.NewMockNumberHandlerTelnyx(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := numberHandler{
+				utilHandler:         mockUtil,
+				reqHandler:          mockReq,
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				numberHandlerTelnyx: mockTelnyx,
+			}
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
+			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime).Return(tt.responseNumbers, nil)
+			for _, n := range tt.responseNumbers {
+				mockDB.EXPECT().NumberUpdateTMRenew(ctx, n.ID).Return(nil)
+				mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)
+			}
+
+			res, err := h.RenewNumbers(ctx, 0, tt.hours, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
