@@ -232,14 +232,80 @@ func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id uuid
 	return &res, nil
 }
 
-// NumberV1NumberRenew sends a request to the number-manager
-// to renew the numbers.
+// NumberV1NumberRenewByTmRenew sends a request to the number-manager
+// to renew the numbers by tm_renew.
 // Returns renewed number info
-func (r *requestHandler) NumberV1NumberRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberRenewByTmRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error) {
 	uri := "/v1/numbers/renew"
 
 	data := &nmrequest.V1DataNumbersRenewPost{
 		TMRenew: tmRenew,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPost, "number/numbers/renew", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res []nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// NumberV1NumberRenewByTmRenew sends a request to the number-manager
+// to renew the numbers by days.
+// Returns renewed number info
+func (r *requestHandler) NumberV1NumberRenewByDays(ctx context.Context, days int) ([]nmnumber.Number, error) {
+	uri := "/v1/numbers/renew"
+
+	data := &nmrequest.V1DataNumbersRenewPost{
+		Days: days,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodPost, "number/numbers/renew", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res []nmnumber.Number
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// NumberV1NumberRenewByHours sends a request to the number-manager
+// to renew the numbers by hours.
+// Returns renewed number info
+func (r *requestHandler) NumberV1NumberRenewByHours(ctx context.Context, hours int) ([]nmnumber.Number, error) {
+	uri := "/v1/numbers/renew"
+
+	data := &nmrequest.V1DataNumbersRenewPost{
+		Hours: hours,
 	}
 
 	m, err := json.Marshal(data)

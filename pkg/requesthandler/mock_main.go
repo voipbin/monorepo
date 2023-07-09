@@ -3528,19 +3528,49 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberGets(ctx, customerID, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberGets), ctx, customerID, pageToken, pageSize)
 }
 
-// NumberV1NumberRenew mocks base method.
-func (m *MockRequestHandler) NumberV1NumberRenew(ctx context.Context, tmRenew string) ([]number.Number, error) {
+// NumberV1NumberRenewByDays mocks base method.
+func (m *MockRequestHandler) NumberV1NumberRenewByDays(ctx context.Context, days int) ([]number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberV1NumberRenew", ctx, tmRenew)
+	ret := m.ctrl.Call(m, "NumberV1NumberRenewByDays", ctx, days)
 	ret0, _ := ret[0].([]number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NumberV1NumberRenew indicates an expected call of NumberV1NumberRenew.
-func (mr *MockRequestHandlerMockRecorder) NumberV1NumberRenew(ctx, tmRenew interface{}) *gomock.Call {
+// NumberV1NumberRenewByDays indicates an expected call of NumberV1NumberRenewByDays.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberRenewByDays(ctx, days interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberRenew", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberRenew), ctx, tmRenew)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberRenewByDays", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberRenewByDays), ctx, days)
+}
+
+// NumberV1NumberRenewByHours mocks base method.
+func (m *MockRequestHandler) NumberV1NumberRenewByHours(ctx context.Context, hours int) ([]number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberRenewByHours", ctx, hours)
+	ret0, _ := ret[0].([]number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberRenewByHours indicates an expected call of NumberV1NumberRenewByHours.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberRenewByHours(ctx, hours interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberRenewByHours", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberRenewByHours), ctx, hours)
+}
+
+// NumberV1NumberRenewByTmRenew mocks base method.
+func (m *MockRequestHandler) NumberV1NumberRenewByTmRenew(ctx context.Context, tmRenew string) ([]number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberV1NumberRenewByTmRenew", ctx, tmRenew)
+	ret0, _ := ret[0].([]number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberV1NumberRenewByTmRenew indicates an expected call of NumberV1NumberRenewByTmRenew.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberRenewByTmRenew(ctx, tmRenew interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberRenewByTmRenew", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberRenewByTmRenew), ctx, tmRenew)
 }
 
 // NumberV1NumberUpdateBasicInfo mocks base method.
