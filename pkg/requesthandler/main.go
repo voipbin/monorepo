@@ -765,7 +765,9 @@ type RequestHandler interface {
 	NumberV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
 	NumberV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*nmnumber.Number, error)
 	NumberV1NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.Number, error)
-	NumberV1NumberRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error)
+	NumberV1NumberRenewByTmRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error)
+	NumberV1NumberRenewByDays(ctx context.Context, days int) ([]nmnumber.Number, error)
+	NumberV1NumberRenewByHours(ctx context.Context, hours int) ([]nmnumber.Number, error)
 
 	// outdial-manager outdial
 	OutdialV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error)

@@ -498,7 +498,7 @@ func Test_NumberV1NumberUpdateFlowID(t *testing.T) {
 	}
 }
 
-func Test_NumberV1NumberRenew(t *testing.T) {
+func Test_NumberV1NumberRenewByTmRenew(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -552,7 +552,139 @@ func Test_NumberV1NumberRenew(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NumberV1NumberRenew(ctx, tt.tmRenew)
+			res, err := reqHandler.NumberV1NumberRenewByTmRenew(ctx, tt.tmRenew)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectResult, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			}
+		})
+	}
+}
+
+func Test_NumberV1NumberRenewByDays(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		days int
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectResult []nmnumber.Number
+	}{
+		{
+			name: "normal",
+
+			days: 3,
+
+			expectTarget: "bin-manager.number-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/numbers/renew",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"days":3}`),
+			},
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"26790cc8-1e3c-11ee-acde-4f8cd0d02ae0"},{"id":"26eca39a-1e3c-11ee-a66a-1b46f3425926"}]`),
+			},
+			expectResult: []nmnumber.Number{
+				{
+					ID: uuid.FromStringOrNil("26790cc8-1e3c-11ee-acde-4f8cd0d02ae0"),
+				},
+				{
+					ID: uuid.FromStringOrNil("26eca39a-1e3c-11ee-a66a-1b46f3425926"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.NumberV1NumberRenewByDays(ctx, tt.days)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectResult, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectResult, res)
+			}
+		})
+	}
+}
+
+func Test_NumberV1NumberRenewByHours(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		hours int
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectResult []nmnumber.Number
+	}{
+		{
+			name: "normal",
+
+			hours: 30,
+
+			expectTarget: "bin-manager.number-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/numbers/renew",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"hours":30}`),
+			},
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"45ebe9cc-1e3c-11ee-9fbd-3f228b2366aa"},{"id":"4610db9c-1e3c-11ee-9596-c3e05288283d"}]`),
+			},
+			expectResult: []nmnumber.Number{
+				{
+					ID: uuid.FromStringOrNil("45ebe9cc-1e3c-11ee-9fbd-3f228b2366aa"),
+				},
+				{
+					ID: uuid.FromStringOrNil("4610db9c-1e3c-11ee-9596-c3e05288283d"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.NumberV1NumberRenewByHours(ctx, tt.hours)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
