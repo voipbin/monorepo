@@ -34,7 +34,7 @@ type NumberHandler interface {
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*number.Number, error)
 	UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error)
 
-	RenewNumbers(ctx context.Context, tmRenew string) ([]*number.Number, error)
+	RenewNumbers(ctx context.Context, days int, hours int, tmRenew string) ([]*number.Number, error)
 }
 
 // numberHandler structure for service handle

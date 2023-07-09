@@ -8,6 +8,7 @@ resources:
   - secret.yml
   - deployment.yml
   - service.yml
+  - cronjob.yml
 
 images:
 - name: number-manager-image

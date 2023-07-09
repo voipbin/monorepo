@@ -18,7 +18,9 @@ type V1DataNumbersPost struct {
 // v1 data type request struct for
 // /v1/numbers/renew POST
 type V1DataNumbersRenewPost struct {
-	TMRenew string `json:"tm_renew"`
+	TMRenew string `json:"tm_renew,omitempty"`
+	Days    int    `json:"days,omitempty"`
+	Hours   int    `json:"hours,omitempty"`
 }
 
 // V1DataNumbersIDPut is

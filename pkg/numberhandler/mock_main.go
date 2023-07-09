@@ -142,18 +142,18 @@ func (mr *MockNumberHandlerMockRecorder) RemoveNumbersFlowID(ctx, flowID interfa
 }
 
 // RenewNumbers mocks base method.
-func (m *MockNumberHandler) RenewNumbers(ctx context.Context, tmRenew string) ([]*number.Number, error) {
+func (m *MockNumberHandler) RenewNumbers(ctx context.Context, days, hours int, tmRenew string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RenewNumbers", ctx, tmRenew)
+	ret := m.ctrl.Call(m, "RenewNumbers", ctx, days, hours, tmRenew)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RenewNumbers indicates an expected call of RenewNumbers.
-func (mr *MockNumberHandlerMockRecorder) RenewNumbers(ctx, tmRenew interface{}) *gomock.Call {
+func (mr *MockNumberHandlerMockRecorder) RenewNumbers(ctx, days, hours, tmRenew interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewNumbers", reflect.TypeOf((*MockNumberHandler)(nil).RenewNumbers), ctx, tmRenew)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewNumbers", reflect.TypeOf((*MockNumberHandler)(nil).RenewNumbers), ctx, days, hours, tmRenew)
 }
 
 // UpdateBasicInfo mocks base method.

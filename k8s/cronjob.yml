@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: number-renew
+spec:
+  schedule: "* 1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+          - name: gitlab-auth
+          containers:
+          - name: request-sender
+            image: registry.gitlab.com/voipbin/bin-manager/request-sender:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /app/request-sender
+            - -rabbit_addr
+            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - -queue
+            - 'bin-manager.number-manager.request'
+            - -uri
+            - '/v1/numbers/renew'
+            - -method
+            - 'POST'
+            - -data_type
+            - 'application/json'
+            - -data
+            - '{"days":28}'
+            - -timeout
+            - '3000'
+            - -delay
+            - '0'
+          restartPolicy: OnFailure

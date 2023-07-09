@@ -566,6 +566,8 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 	type test struct {
 		name string
 
+		days    int
+		hours   int
 		tmRenew string
 
 		request  *rabbitmqhandler.Request
@@ -578,13 +580,15 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 		{
 			name: "normal",
 
+			days:    3,
+			hours:   10,
 			tmRenew: "2023-06-26 18:26:49.000",
 
 			request: &rabbitmqhandler.Request{
 				URI:      "/v1/numbers/renew",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"tm_renew":"2023-06-26 18:26:49.000"}`),
+				Data:     []byte(`{"days":3,"hours":10,"tm_renew":"2023-06-26 18:26:49.000"}`),
 			},
 			response: &rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -616,7 +620,7 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().RenewNumbers(gomock.Any(), tt.tmRenew).Return(tt.responseNumbers, nil)
+			mockNumber.EXPECT().RenewNumbers(gomock.Any(), tt.days, tt.hours, tt.tmRenew).Return(tt.responseNumbers, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
