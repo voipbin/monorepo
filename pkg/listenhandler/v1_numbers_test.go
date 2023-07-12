@@ -414,9 +414,11 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 	type test struct {
 		name string
 
-		id         uuid.UUID
-		numberName string
-		detail     string
+		id            uuid.UUID
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
+		numberName    string
+		detail        string
 
 		resultData *number.Number
 
@@ -429,6 +431,8 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+			uuid.FromStringOrNil("848dd8e8-20a3-11ee-bfaa-73da44e5a15c"),
+			uuid.FromStringOrNil("84cbd580-20a3-11ee-81cd-b34190bda150"),
 			"update name",
 			"update detail",
 
@@ -449,7 +453,7 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6", "name": "update name", "detail": "update detail"}`),
+				Data:     []byte(`{"call_flow_id":"848dd8e8-20a3-11ee-bfaa-73da44e5a15c", "message_flow_id":"84cbd580-20a3-11ee-81cd-b34190bda150","name": "update name", "detail": "update detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -472,7 +476,7 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.numberName, tt.detail).Return(tt.resultData, nil)
+			mockNumber.EXPECT().UpdateInfo(gomock.Any(), tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
 )
@@ -50,7 +51,7 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 	})
 
 	// get list of numbers
-	numbers, err := h.GetsByTMRenew(ctx, tmRenew)
+	numbers, err := h.dbGetsByTMRenew(ctx, tmRenew)
 	if err != nil {
 		log.Errorf("Could not get list of numbers. err: %v", err)
 		return nil, errors.Wrap(err, "could not get list of numbers")
@@ -59,8 +60,25 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 	// renew the numbers
 	var res []*number.Number
 	for _, n := range numbers {
+
+		valid, err := h.reqHandler.CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1)
+		if err != nil {
+			log.Errorf("Could not validate the customer balance. err: %v", err)
+			continue
+		}
+
+		if !valid {
+			log.WithField("number", n).Errorf("The customer has not enough balance for number renew.")
+			tmp, err := h.Delete(ctx, n.ID)
+			if err != nil {
+				log.Errorf("Could not release the number. err: %v", err)
+				continue
+			}
+			log.WithField("number", tmp).Debugf("Deleted number.")
+		}
+
 		log.WithField("number", n).Debugf("Renewing the number. number_id: %s, number: %s", n.ID, n.Number)
-		tmp, err := h.UpdateRenew(ctx, n.ID)
+		tmp, err := h.dbUpdateRenew(ctx, n.ID)
 		if err != nil {
 			log.Errorf("Could not update the number's renew info. err: %v", err)
 			continue
