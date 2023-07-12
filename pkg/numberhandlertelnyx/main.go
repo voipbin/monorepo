@@ -5,27 +5,29 @@ package numberhandlertelnyx
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/providernumber"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/requestexternal"
 )
 
 // telnyx
 const (
-	token              string = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
-	connectionID       string = "1943381594949551263"
-	messagingProfileID string = "40017f8e-49bd-4f16-9e3d-ef103f916228"
+	defaultToken              string = "KEY017B6ED1E90D8FC5DB6ED95F1ACFE4F5_WzTaTxsXJCdwOviG4t1xMM"
+	defaultConnectionID       string = "1943381594949551263"
+	defaultMessagingProfileID string = "40017f8e-49bd-4f16-9e3d-ef103f916228"
 )
 
 // NumberHandlerTelnyx is interface for service handle
 type NumberHandlerTelnyx interface {
 	GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error)
-	CreateNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error)
+	// PurchaseNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error)
+	PurchaseNumber(num string) (*providernumber.ProviderNumber, error)
+
 	ReleaseNumber(ctx context.Context, num *number.Number) error
 }
 

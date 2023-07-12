@@ -15,7 +15,7 @@ func (h *numberHandlerTelnyx) GetAvailableNumbers(countyCode string, limit uint)
 	})
 
 	// send a request number providers
-	tmpNumbers, err := h.requestExternal.TelnyxAvailableNumberGets(token, countyCode, "", "", limit)
+	tmpNumbers, err := h.requestExternal.TelnyxAvailableNumberGets(defaultToken, countyCode, "", "", limit)
 	if err != nil {
 		log.Errorf("Could not get available numbers from the telnyx. err: %v", err)
 		return nil, err

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
@@ -69,6 +70,7 @@ func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {
 
 			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
+				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockDB.EXPECT().NumberUpdateTMRenew(ctx, n.ID).Return(nil)
 				mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)
@@ -144,6 +146,7 @@ func Test_RenewNumbers_renewNumbersByDays(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
 			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
+				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockDB.EXPECT().NumberUpdateTMRenew(ctx, n.ID).Return(nil)
 				mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)
@@ -219,6 +222,7 @@ func Test_RenewNumbers_renewNumbersByHours(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
 			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
+				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
 				mockDB.EXPECT().NumberUpdateTMRenew(ctx, n.ID).Return(nil)
 				mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)

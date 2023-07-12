@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/models/providernumber"
 )
 
 // PhoneNumber struct struct
@@ -103,6 +104,19 @@ func (t *PhoneNumber) ConvertNumber() *number.Number {
 		TMCreate:   "",
 		TMUpdate:   "",
 		TMDelete:   "",
+	}
+
+	return res
+}
+
+// ConvertProviderNumber returns converted ProviderNumber
+func (t *PhoneNumber) ConvertProviderNumber() *providernumber.ProviderNumber {
+
+	res := &providernumber.ProviderNumber{
+		ID:               t.ID,
+		Status:           number.Status(t.Status),
+		T38Enabled:       t.T38FaxGatewayEnabled,
+		EmergencyEnabled: t.EmergencyEnabled,
 	}
 
 	return res

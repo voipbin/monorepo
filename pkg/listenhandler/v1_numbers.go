@@ -141,7 +141,7 @@ func (h *listenHandler) processV1NumbersIDPut(ctx context.Context, m *rabbitmqha
 
 	log.Debugf("Executing processV1NumbersIDPut. number: %s", id)
 
-	number, err := h.numberHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
+	number, err := h.numberHandler.UpdateInfo(ctx, id, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Debugf("Could not update the number. number: %s, err: %v", id, err)
 		return simpleResponse(500), nil

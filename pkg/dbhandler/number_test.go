@@ -450,14 +450,16 @@ func Test_NumberDelete(t *testing.T) {
 	}
 }
 
-func Test_NumberUpdateBasicInfo(t *testing.T) {
+func Test_NumberUpdateInfo(t *testing.T) {
 
 	type test struct {
 		name   string
 		number *number.Number
 
-		numberName string
-		detail     string
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
+		numberName    string
+		detail        string
 
 		responseCurTime string
 		expectNumber    *number.Number
@@ -465,12 +467,13 @@ func Test_NumberUpdateBasicInfo(t *testing.T) {
 
 	tests := []test{
 		{
-			"test normal",
-			&number.Number{
+			name: "normal",
+			number: &number.Number{
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
-				Number:              "+821021656521",
-				CallFlowID:          uuid.FromStringOrNil("5293ec2e-881a-11ec-a3bd-bbda5d0724de"),
 				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
+				CallFlowID:          uuid.FromStringOrNil("5293ec2e-881a-11ec-a3bd-bbda5d0724de"),
+				MessageFlowID:       uuid.FromStringOrNil("734faf76-20a2-11ee-914a-7bd4f24e615d"),
+				Number:              "+821021656521",
 				Name:                "test name",
 				Detail:              "test detail",
 				ProviderName:        "telnyx",
@@ -480,15 +483,18 @@ func Test_NumberUpdateBasicInfo(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 
-			"update name",
-			"update detail",
+			callFlowID:    uuid.FromStringOrNil("23ff7078-20a2-11ee-934c-8371c4d02f71"),
+			messageFlowID: uuid.FromStringOrNil("24477634-20a2-11ee-b62f-4f341e77043b"),
+			numberName:    "update name",
+			detail:        "update detail",
 
-			"2021-02-26 18:26:49.000",
-			&number.Number{
+			responseCurTime: "2021-02-26 18:26:49.000",
+			expectNumber: &number.Number{
 				ID:                  uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
-				Number:              "+821021656521",
-				CallFlowID:          uuid.FromStringOrNil("5293ec2e-881a-11ec-a3bd-bbda5d0724de"),
 				CustomerID:          uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
+				CallFlowID:          uuid.FromStringOrNil("23ff7078-20a2-11ee-934c-8371c4d02f71"),
+				MessageFlowID:       uuid.FromStringOrNil("24477634-20a2-11ee-b62f-4f341e77043b"),
+				Number:              "+821021656521",
 				Name:                "update name",
 				Detail:              "update detail",
 				ProviderName:        "telnyx",
@@ -528,7 +534,7 @@ func Test_NumberUpdateBasicInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.NumberUpdateBasicInfo(ctx, tt.number.ID, tt.numberName, tt.detail); err != nil {
+			if err := h.NumberUpdateInfo(ctx, tt.number.ID, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

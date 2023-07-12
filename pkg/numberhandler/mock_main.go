@@ -156,21 +156,6 @@ func (mr *MockNumberHandlerMockRecorder) RenewNumbers(ctx, days, hours, tmRenew 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewNumbers", reflect.TypeOf((*MockNumberHandler)(nil).RenewNumbers), ctx, days, hours, tmRenew)
 }
 
-// UpdateBasicInfo mocks base method.
-func (m *MockNumberHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
-func (mr *MockNumberHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockNumberHandler)(nil).UpdateBasicInfo), ctx, id, name, detail)
-}
-
 // UpdateFlowID mocks base method.
 func (m *MockNumberHandler) UpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
@@ -184,4 +169,19 @@ func (m *MockNumberHandler) UpdateFlowID(ctx context.Context, id, callFlowID, me
 func (mr *MockNumberHandlerMockRecorder) UpdateFlowID(ctx, id, callFlowID, messageFlowID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFlowID", reflect.TypeOf((*MockNumberHandler)(nil).UpdateFlowID), ctx, id, callFlowID, messageFlowID)
+}
+
+// UpdateInfo mocks base method.
+func (m *MockNumberHandler) UpdateInfo(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateInfo", ctx, id, callFlowID, messageFlowID, name, detail)
+	ret0, _ := ret[0].(*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateInfo indicates an expected call of UpdateInfo.
+func (mr *MockNumberHandlerMockRecorder) UpdateInfo(ctx, id, callFlowID, messageFlowID, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateInfo", reflect.TypeOf((*MockNumberHandler)(nil).UpdateInfo), ctx, id, callFlowID, messageFlowID, name, detail)
 }

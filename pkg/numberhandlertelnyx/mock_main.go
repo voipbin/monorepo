@@ -8,10 +8,10 @@ import (
 	context "context"
 	reflect "reflect"
 
-	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	availablenumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/availablenumber"
 	number "gitlab.com/voipbin/bin-manager/number-manager.git/models/number"
+	providernumber "gitlab.com/voipbin/bin-manager/number-manager.git/models/providernumber"
 )
 
 // MockNumberHandlerTelnyx is a mock of NumberHandlerTelnyx interface.
@@ -37,21 +37,6 @@ func (m *MockNumberHandlerTelnyx) EXPECT() *MockNumberHandlerTelnyxMockRecorder 
 	return m.recorder
 }
 
-// CreateNumber mocks base method.
-func (m *MockNumberHandlerTelnyx) CreateNumber(customerID uuid.UUID, num string, flowID uuid.UUID, name, detail string) (*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNumber", customerID, num, flowID, name, detail)
-	ret0, _ := ret[0].(*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateNumber indicates an expected call of CreateNumber.
-func (mr *MockNumberHandlerTelnyxMockRecorder) CreateNumber(customerID, num, flowID, name, detail interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNumber", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).CreateNumber), customerID, num, flowID, name, detail)
-}
-
 // GetAvailableNumbers mocks base method.
 func (m *MockNumberHandlerTelnyx) GetAvailableNumbers(countyCode string, limit uint) ([]*availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
@@ -65,6 +50,21 @@ func (m *MockNumberHandlerTelnyx) GetAvailableNumbers(countyCode string, limit u
 func (mr *MockNumberHandlerTelnyxMockRecorder) GetAvailableNumbers(countyCode, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).GetAvailableNumbers), countyCode, limit)
+}
+
+// PurchaseNumber mocks base method.
+func (m *MockNumberHandlerTelnyx) PurchaseNumber(num string) (*providernumber.ProviderNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PurchaseNumber", num)
+	ret0, _ := ret[0].(*providernumber.ProviderNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PurchaseNumber indicates an expected call of PurchaseNumber.
+func (mr *MockNumberHandlerTelnyxMockRecorder) PurchaseNumber(num interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PurchaseNumber", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).PurchaseNumber), num)
 }
 
 // ReleaseNumber mocks base method.

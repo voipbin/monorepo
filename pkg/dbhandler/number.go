@@ -418,10 +418,12 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// NumberUpdateBasicInfo updates basic number information.
-func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) error {
+// NumberUpdateInfo updates basic number information.
+func (h *handler) NumberUpdateInfo(ctx context.Context, id uuid.UUID, callflowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) error {
 	q := `
 	update numbers set
+		call_flow_id = ?,
+		message_flow_id = ?,
 		name = ?,
 		detail = ?,
 		tm_update = ?
@@ -430,6 +432,8 @@ func (h *handler) NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name 
 	`
 
 	_, err := h.db.Exec(q,
+		callflowID.Bytes(),
+		messageFlowID.Bytes(),
 		name,
 		detail,
 		h.utilHandler.TimeGetCurTime(),

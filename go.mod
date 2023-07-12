@@ -13,7 +13,8 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smotes/purse v1.0.1
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230704183433-77662091546c
+	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230704172755-d15a213de4e3
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230709115540-503f39faf1ce
 )
 
 require (
@@ -27,7 +28,6 @@ require (
 	github.com/prometheus/procfs v0.11.0 // indirect
 	github.com/rabbitmq/amqp091-go v1.8.1 // indirect
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230306012236-f2470b06b6ca // indirect
-	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230704172755-d15a213de4e3 // indirect
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230617073121-d3ecf98b22ec // indirect
 	gitlab.com/voipbin/bin-manager/campaign-manager.git v0.0.0-20230321074036-1fa273ce1206 // indirect
 	gitlab.com/voipbin/bin-manager/chat-manager.git v0.0.0-20220926023600-ef42f2bac093 // indirect
@@ -49,6 +49,6 @@ require (
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
 	golang.org/x/sys v0.10.0 // indirect
-	google.golang.org/genproto v0.0.0-20230629202037-9506855d4529 // indirect
+	google.golang.org/genproto v0.0.0-20230711160842-782d3b101e98 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )

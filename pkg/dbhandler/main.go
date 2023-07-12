@@ -26,7 +26,7 @@ type DBHandler interface {
 	NumberGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*number.Number, error)
 	NumberGetsByCallFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error)
 	NumberGetsByMessageFlowID(ctx context.Context, flowID uuid.UUID, size uint64, token string) ([]*number.Number, error)
-	NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
+	NumberUpdateInfo(ctx context.Context, id uuid.UUID, callflowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) error
 	NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) error
 	NumberUpdateCallFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	NumberUpdateMessageFlowID(ctx context.Context, id, flowID uuid.UUID) error

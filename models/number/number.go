@@ -46,6 +46,7 @@ type Status string
 
 // List of NumberStatus types
 const (
+	StatusNone    Status = ""
 	StatusActive  Status = "active"
 	StatusDeleted Status = "deleted"
 )
