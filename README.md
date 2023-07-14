@@ -1,7 +1,6 @@
 # api-manager
 API manager for Restful APIs to access from the public internet.
 
-
 # Usage
 ```
 Usage of ./api-manager:
@@ -79,7 +78,6 @@ https://api.voipbin.net/swagger/index.html
 ```
 
 # Build
-
 Update git config
 ```
 $ git config --global url.git@gitlab.com:.insteadOf https://gitlab.com/
