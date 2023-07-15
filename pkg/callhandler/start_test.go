@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
+	bmbilling "gitlab.com/voipbin/bin-manager/billing-manager.git/models/billing"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -208,7 +209,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.responseConference, nil)
 
 			// addCallBridge
-			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseConference.CustomerID).Return(true, nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseConference.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
 			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
@@ -381,7 +382,8 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockReq.EXPECT().NumberV1NumberGetByNumber(ctx, tt.responseDestination.Target).Return(tt.responseNumber, nil)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumber.CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any()).Return(tt.responseActiveflow, nil)
 
-			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumber.CustomerID).Return(true, nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseNumber.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
 			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)

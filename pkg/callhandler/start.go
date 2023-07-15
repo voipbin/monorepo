@@ -399,7 +399,7 @@ func (h *callHandler) startIncomingDomainTypeConference(ctx context.Context, cn 
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, cf.CustomerID, cf.FlowID, source, destination, ari.ChannelCauseNormalClearing)
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, cf.FlowID, source, destination)
 
 	return nil
 }
@@ -429,17 +429,19 @@ func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *chann
 	log.WithField("number", numb).Debugf("Found number info. number_id: %s", numb.ID)
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination, ari.ChannelCauseNormalClearing)
+	h.startCallTypeFlow(ctx, cn, numb.CustomerID, numb.CallFlowID, source, destination)
 	return nil
 }
 
 // startCallTypeFlow handles flow calltype start.
-func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel, customerID uuid.UUID, flowID uuid.UUID, source *commonaddress.Address, destination *commonaddress.Address, causeActionFail ari.ChannelCause) {
+func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel, customerID uuid.UUID, flowID uuid.UUID, source *commonaddress.Address, destination *commonaddress.Address) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "startCallTypeFlow",
-		"channel_id":  cn.ID,
+		"channel":     cn,
 		"customer_id": customerID,
 		"flow_id":     flowID,
+		"source":      source,
+		"destination": destination,
 	})
 
 	// create call id

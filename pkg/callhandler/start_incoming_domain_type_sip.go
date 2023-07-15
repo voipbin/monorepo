@@ -141,7 +141,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination, ari.ChannelCauseUserBusy)
+	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination)
 
 	return nil
 }
@@ -214,7 +214,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeConference(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, cf.CustomerID, f.ID, source, destination, ari.ChannelCauseUserBusy)
+	h.startCallTypeFlow(ctx, cn, cf.CustomerID, f.ID, source, destination)
 
 	return nil
 }
@@ -275,7 +275,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeTel(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination, ari.ChannelCauseNormalClearing)
+	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination)
 
 	return nil
 }
@@ -336,7 +336,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeEndpoint(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination, ari.ChannelCauseNormalClearing)
+	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination)
 
 	return nil
 }
