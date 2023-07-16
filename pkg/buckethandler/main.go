@@ -4,7 +4,9 @@ package buckethandler
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -22,6 +24,10 @@ type BucketHandler interface {
 	FileUpload(ctx context.Context, src string, dest string) error
 
 	GetBucketName() string
+
+	OSFileExist(ctx context.Context, target string) bool
+	OSGetFilepath(ctx context.Context, target string) string
+	OSGetMediaFilepath(ctx context.Context, target string) string
 }
 
 type bucketHandler struct {
@@ -31,6 +37,9 @@ type bucketHandler struct {
 	bucketName string
 	accessID   string
 	privateKey []byte
+
+	osBucketDirectory string
+	osLocalAddress    string // os local address
 }
 
 var (
@@ -67,7 +76,16 @@ func init() {
 }
 
 // NewBucketHandler create bucket handler
-func NewBucketHandler(credentialPath string, projectID string, bucketName string) BucketHandler {
+func NewBucketHandler(credentialPath string, projectID string, bucketName string, osMediaBucketDirectory string, osAddress string) BucketHandler {
+	log := logrus.WithFields(logrus.Fields{
+		"func":                      "NewBucketHandler",
+		"credential_path":           credentialPath,
+		"project_id":                projectID,
+		"bucket_name":               bucketName,
+		"os_media_bucket_directory": osMediaBucketDirectory,
+		"os_address":                osAddress,
+	})
+	log.Debugf("Creating a new bucket handler.")
 
 	ctx := context.Background()
 
@@ -91,6 +109,10 @@ func NewBucketHandler(credentialPath string, projectID string, bucketName string
 		return nil
 	}
 
+	tmpAddress := strings.ReplaceAll(osAddress, ".", "-")
+	osLocalAddress := fmt.Sprintf("%s.bin-manager.pod.cluster.local", tmpAddress)
+	log.Debugf("Generated os local address. os_local_address: %s", osLocalAddress)
+
 	h := &bucketHandler{
 		client: client,
 
@@ -98,6 +120,9 @@ func NewBucketHandler(credentialPath string, projectID string, bucketName string
 		bucketName: bucketName,
 		accessID:   conf.Email,
 		privateKey: conf.PrivateKey,
+
+		osBucketDirectory: osMediaBucketDirectory,
+		osLocalAddress:    osLocalAddress,
 	}
 
 	return h
