@@ -3,7 +3,7 @@ package audiohandler
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/gofrs/uuid"
@@ -13,12 +13,12 @@ import (
 )
 
 // AudioCreate Creates tts audio
-func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender, filename string) error {
+func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, gender tts.Gender, filepath string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "AudioCreate",
 		"call_id": callID,
 	})
-	log.WithField("text", text).Debugf("Creating a new audio. lang: %s, gender: %s, filename: %s", lang, gender, filename)
+	log.WithField("text", text).Debugf("Creating a new audio. lang: %s, gender: %s, filepath: %s", lang, gender, filepath)
 
 	voiceName := h.getVoiceName(lang, gender)
 	ssmlGender := texttospeechpb.SsmlVoiceGender_NEUTRAL
@@ -65,11 +65,11 @@ func (h *audioHandler) AudioCreate(ctx context.Context, callID uuid.UUID, text s
 	}
 
 	// create audio
-	if err := ioutil.WriteFile(filename, resp.AudioContent, defaultFileMode); err != nil {
-		log.Errorf("Could not create a result audio file. err: %v", err)
-		return err
+	if errWrite := os.WriteFile(filepath, resp.AudioContent, defaultFileMode); errWrite != nil {
+		log.Errorf("Could not create a result audio file. err: %v", errWrite)
+		return errWrite
 	}
-	log.Debugf("Created a new audio. filename: %s", filename)
+	log.Debugf("Created a new audio. filename: %s", filepath)
 
 	return nil
 }
