@@ -49,16 +49,25 @@ func init() {
 }
 
 // NewTTSHandler create TTSHandler
-func NewTTSHandler(credentialPath string, projectID, bucketName string) TTSHandler {
+func NewTTSHandler(credentialPath string, projectID string, bucketName string, mediaBucketDirectory string, localAddress string) TTSHandler {
+	log := logrus.WithFields(logrus.Fields{
+		"func":                   "NewTTSHandler",
+		"project_id":             projectID,
+		"bucket_name":            bucketName,
+		"media_bucket_directory": mediaBucketDirectory,
+		"local_address":          localAddress,
+	})
+	log.Debugf("Creating a new TTSHandler.")
+
 	audioHandler := audiohandler.NewAudioHandler(credentialPath)
 	if audioHandler == nil {
-		logrus.Errorf("Could not create audio handler.")
+		log.Errorf("Could not create audio handler.")
 		return nil
 	}
 
-	bucketHandler := buckethandler.NewBucketHandler(credentialPath, projectID, bucketName)
+	bucketHandler := buckethandler.NewBucketHandler(credentialPath, projectID, bucketName, mediaBucketDirectory, localAddress)
 	if bucketHandler == nil {
-		logrus.Errorf("Could not create bucket handler.")
+		log.Errorf("Could not create bucket handler.")
 		return nil
 	}
 

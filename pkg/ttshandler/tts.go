@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/xml"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -13,10 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/tts-manager.git/models/tts"
-)
-
-const (
-	bucketDirectory = "tts"
 )
 
 // Create creates audio and upload it to the bucket.
@@ -41,43 +36,34 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 
 	// create hash/target/result
 	filename := h.filenameHashGenerator(normalizedText, lang, gender)
-	filepath := fmt.Sprintf("%s/%s", bucketDirectory, filename)
+	osFilepath := h.bucketHandler.OSGetFilepath(ctx, filename)
+	mediaFilepath := h.bucketHandler.OSGetMediaFilepath(ctx, filename)
 	res := &tts.TTS{
-		Gender:          gender,
-		Text:            normalizedText,
-		Language:        lang,
-		MediaBucketName: h.bucketHandler.GetBucketName(),
-		MediaFilepath:   filepath,
+		Gender:        gender,
+		Text:          normalizedText,
+		Language:      lang,
+		MediaFilepath: mediaFilepath,
 	}
 
-	log = log.WithFields(
-		logrus.Fields{
-			"filename": filename,
-			"filepath": filepath,
-			"tts":      res,
-		},
-	)
-	log.Debugf("Creating a new tts target. target: %s", filepath)
+	log = log.WithFields(logrus.Fields{
+		"filename": filename,
+		"filepath": osFilepath,
+		"tts":      res,
+	})
+	log.Debugf("Creating a new tts target. target: %s", osFilepath)
 
 	// check exists
-	if h.bucketHandler.FileExist(ctx, filepath) {
-		log.Infof("The target file is already exsits. target: %s", filepath)
+	if h.bucketHandler.OSFileExist(ctx, osFilepath) {
+		log.Infof("The target file is already exsits. target: %s", osFilepath)
 		return res, nil
 	}
 
 	// create audio
-	if errCreate := h.audioHandler.AudioCreate(ctx, callID, normalizedText, lang, gender, filename); errCreate != nil {
+	if errCreate := h.audioHandler.AudioCreate(ctx, callID, normalizedText, lang, gender, osFilepath); errCreate != nil {
 		log.Errorf("Could not create audio. err: %v", errCreate)
 		return nil, fmt.Errorf("could not create audio. err: %v", errCreate)
 	}
-	defer os.Remove(filename)
-
-	// upload to bucket
-	if err := h.bucketHandler.FileUpload(ctx, filename, filepath); err != nil {
-		log.Errorf("Could not upload the file to the bucket. err: %v", err)
-		return nil, fmt.Errorf("could not upload the file to the bucket. err: %v", err)
-	}
-	log.Debugf("Created and uploaded tts wav file to the bucket correctly. target: %s", filepath)
+	log.Debugf("Created tts wav file to the bucket correctly. target: %s", osFilepath)
 
 	return res, nil
 }

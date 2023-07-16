@@ -126,8 +126,11 @@ func run() error {
 // runListen run the listener
 func runListen(rabbitSock rabbitmqhandler.Rabbit, notifyHandler notifyhandler.NotifyHandler) error {
 
+	// get pod ip
+	localAddress := os.Getenv("POD_IP")
+
 	// create tts handler
-	ttsHandler := ttshandler.NewTTSHandler(*gcpCredential, *gcpProjectID, *gcpBucketName)
+	ttsHandler := ttshandler.NewTTSHandler(*gcpCredential, *gcpProjectID, *gcpBucketName, "/shared-data", localAddress)
 	if ttsHandler == nil {
 		logrus.Errorf("Could not create tts handler.")
 		return fmt.Errorf("could not create tts handler")
