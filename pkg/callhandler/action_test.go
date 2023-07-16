@@ -242,7 +242,6 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 		expectSSML     string
 		expectGender   string
 		expectLanguage string
-		filename       string
 
 		responseTTS *tmtts.TTS
 		expectURI   []string
@@ -263,15 +262,14 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 			`hello world`,
 			"male",
 			"en-US",
-			"tts/tmp_filename.wav",
 
 			&tmtts.TTS{
 				Gender:        tmtts.GenderMale,
 				Text:          "hello world",
 				Language:      "en-US",
-				MediaFilepath: "tts/tmp_filename.wav",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
-			[]string{"sound:http://localhost:8000/temp/tts/tmp_filename.wav"},
+			[]string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
 		},
 	}
 

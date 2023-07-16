@@ -26,7 +26,6 @@ func Test_Talk(t *testing.T) {
 		text     string
 		gender   string
 		language string
-		filename string
 
 		responseCall *call.Call
 		responseTTS  *tmtts.TTS
@@ -42,7 +41,6 @@ func Test_Talk(t *testing.T) {
 			`hello world`,
 			"male",
 			"en-US",
-			"tts/tmp_filename.wav",
 
 			&call.Call{
 				ID:        uuid.FromStringOrNil("27bf2d84-a49c-11ed-aafc-e3364f827dc8"),
@@ -59,10 +57,10 @@ func Test_Talk(t *testing.T) {
 				Text:            "hello world",
 				Language:        "en-US",
 				MediaBucketName: "test_bucket",
-				MediaFilepath:   "tts/tmp_filename.wav",
+				MediaFilepath:   "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
 
-			[]string{"sound:http://localhost:8000/temp/tts/tmp_filename.wav"},
+			[]string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
 			uuid.FromStringOrNil("285a1c22-a49c-11ed-b48e-6f39f4fd59ff"),
 		},
 		{
@@ -73,7 +71,6 @@ func Test_Talk(t *testing.T) {
 			`hello world`,
 			"male",
 			"en-US",
-			"tts/tmp_filename.wav",
 
 			&call.Call{
 				ID:        uuid.FromStringOrNil("71e7f32c-a49d-11ed-8cc4-a300fe8c4c9d"),
@@ -90,10 +87,10 @@ func Test_Talk(t *testing.T) {
 				Text:            "hello world",
 				Language:        "en-US",
 				MediaBucketName: "test_bucket",
-				MediaFilepath:   "tts/tmp_filename.wav",
+				MediaFilepath:   "http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav",
 			},
 
-			[]string{"sound:http://localhost:8000/temp/tts/tmp_filename.wav"},
+			[]string{"sound:http://10-96-0-112.bin-manager.pod.cluster.local/tmp_filename.wav"},
 			uuid.Nil,
 		},
 	}
