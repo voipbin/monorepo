@@ -132,11 +132,6 @@ const (
 	contextTypeCall       contextType = "call"
 )
 
-// asterisk related variables
-const (
-	constTempBucketMount = "temp" // asterisk's tmp bucket mount path.
-)
-
 // List of default variables
 const (
 	defaultDialTimeout         = 60      // default outgoing dial timeout

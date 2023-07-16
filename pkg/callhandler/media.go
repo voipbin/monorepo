@@ -44,7 +44,7 @@ func (h *callHandler) Talk(ctx context.Context, callID uuid.UUID, runNext bool, 
 	log.WithField("tts", tts).Debugf("Received tts speech result. medial_filepath: %s", tts.MediaFilepath)
 
 	// generate url for file play
-	url := fmt.Sprintf("sound:http://localhost:8000/%s/%s", constTempBucketMount, tts.MediaFilepath)
+	url := fmt.Sprintf("sound:%s", tts.MediaFilepath)
 
 	// create a media urls
 	medias := []string{
