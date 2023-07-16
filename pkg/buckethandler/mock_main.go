@@ -106,3 +106,45 @@ func (mr *MockBucketHandlerMockRecorder) GetBucketName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBucketName", reflect.TypeOf((*MockBucketHandler)(nil).GetBucketName))
 }
+
+// OSFileExist mocks base method.
+func (m *MockBucketHandler) OSFileExist(ctx context.Context, target string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OSFileExist", ctx, target)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// OSFileExist indicates an expected call of OSFileExist.
+func (mr *MockBucketHandlerMockRecorder) OSFileExist(ctx, target interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OSFileExist", reflect.TypeOf((*MockBucketHandler)(nil).OSFileExist), ctx, target)
+}
+
+// OSGetFilepath mocks base method.
+func (m *MockBucketHandler) OSGetFilepath(ctx context.Context, target string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OSGetFilepath", ctx, target)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// OSGetFilepath indicates an expected call of OSGetFilepath.
+func (mr *MockBucketHandlerMockRecorder) OSGetFilepath(ctx, target interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OSGetFilepath", reflect.TypeOf((*MockBucketHandler)(nil).OSGetFilepath), ctx, target)
+}
+
+// OSGetMediaFilepath mocks base method.
+func (m *MockBucketHandler) OSGetMediaFilepath(ctx context.Context, target string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OSGetMediaFilepath", ctx, target)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// OSGetMediaFilepath indicates an expected call of OSGetMediaFilepath.
+func (mr *MockBucketHandlerMockRecorder) OSGetMediaFilepath(ctx, target interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OSGetMediaFilepath", reflect.TypeOf((*MockBucketHandler)(nil).OSGetMediaFilepath), ctx, target)
+}

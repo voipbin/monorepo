@@ -2,7 +2,6 @@ package ttshandler
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -24,34 +23,31 @@ func Test_Create(t *testing.T) {
 		gender   tts.Gender
 		language string
 
-		responseBucketName string
+		responseFilePath      string
+		responseMediaFilepath string
 
 		expectFilename string
-		expectFilepath string
-
-		expectRes *tts.TTS
+		expectRes      *tts.TTS
 	}
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("c1a8bfe6-9214-11ec-a013-1bbdbd87fc23"),
-			"<speak>Hello world</speak>",
-			tts.GenderFemale,
-			"en-US",
+			callID:   uuid.FromStringOrNil("c1a8bfe6-9214-11ec-a013-1bbdbd87fc23"),
+			text:     "<speak>Hello world</speak>",
+			gender:   tts.GenderFemale,
+			language: "en-US",
 
-			"voipbin-tmp-bucket-europe-west4",
+			responseFilePath:      "/shared-data/766e587168455d862b8ef2a931341e7adaa106e1.wav",
+			responseMediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/766e587168455d862b8ef2a931341e7adaa106e1.wav",
 
-			"766e587168455d862b8ef2a931341e7adaa106e1.wav",
-			"tts/766e587168455d862b8ef2a931341e7adaa106e1.wav",
-
-			&tts.TTS{
-				Gender:          tts.GenderFemale,
-				Text:            "<speak>Hello world</speak>",
-				Language:        "en-US",
-				MediaBucketName: "voipbin-tmp-bucket-europe-west4",
-				MediaFilepath:   "tts/766e587168455d862b8ef2a931341e7adaa106e1.wav",
+			expectFilename: "766e587168455d862b8ef2a931341e7adaa106e1.wav",
+			expectRes: &tts.TTS{
+				Gender:        tts.GenderFemale,
+				Text:          "<speak>Hello world</speak>",
+				Language:      "en-US",
+				MediaFilepath: "http://10-96-0-112.bin-manager.pod.cluster.local/766e587168455d862b8ef2a931341e7adaa106e1.wav",
 			},
 		},
 	}
@@ -68,15 +64,12 @@ func Test_Create(t *testing.T) {
 				audioHandler:  mockAudio,
 				bucketHandler: mockBucket,
 			}
-
 			ctx := context.Background()
 
-			target := fmt.Sprintf("%s/%s", bucketDirectory, tt.expectFilename)
-
-			mockBucket.EXPECT().GetBucketName().Return(tt.responseBucketName)
-			mockBucket.EXPECT().FileExist(ctx, target).Return(false)
-			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.expectFilename).Return(nil)
-			mockBucket.EXPECT().FileUpload(ctx, tt.expectFilename, target).Return(nil)
+			mockBucket.EXPECT().OSGetFilepath(ctx, tt.expectFilename).Return(tt.responseFilePath)
+			mockBucket.EXPECT().OSGetMediaFilepath(ctx, tt.expectFilename).Return(tt.responseMediaFilepath)
+			mockBucket.EXPECT().OSFileExist(ctx, tt.responseFilePath).Return(false)
+			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.responseFilePath).Return(nil)
 
 			res, err := h.Create(ctx, tt.callID, tt.text, tt.language, tt.gender)
 			if err != nil {
