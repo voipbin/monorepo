@@ -216,7 +216,7 @@ func (h *serviceHandler) NumberRenew(ctx context.Context, u *cscustomer.Customer
 	}
 
 	// get number
-	tmps, err := h.reqHandler.NumberV1NumberRenew(ctx, tmRenew)
+	tmps, err := h.reqHandler.NumberV1NumberRenewByTmRenew(ctx, tmRenew)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
 		return nil, err

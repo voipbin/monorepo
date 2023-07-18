@@ -61,8 +61,11 @@
 <li class="toctree-l1"><a class="reference internal" href="chatbot.html">Chatbot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Route</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#route-failover">Route failover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#route-failover">Route Failover</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dynamic-routing-decisions">Dynamic Routing Decisions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#route-struct-route">Route</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#route-struct-route-route">Route</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#example">example</a></li>
@@ -115,16 +118,21 @@
 <span id="route-main"></span><h1>Route<a class="headerlink" href="#route" title="Permalink to this headline"></a></h1>
 <section id="overview">
 <span id="route-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
-<p>Route is the</p>
-</section>
+<p>The Route API in VoIPBIN provides a powerful mechanism for defining SIP routing strategies, ensuring reliable call delivery, and enabling failover to different service providers in case of call failures. By configuring routes, users can make dynamic decisions on which service provider to use for outbound calls, optimizing call success rates and ensuring robust call delivery.</p>
 <section id="route-failover">
-<h2>Route failover<a class="headerlink" href="#route-failover" title="Permalink to this headline"></a></h2>
-<p>Retryable sip fail code.</p>
-<ul class="simple">
-<li><p>404</p></li>
-<li><p>5XX</p></li>
-<li><p>6XX</p></li>
-</ul>
+<span id="route-overview-route-failover"></span><h3>Route Failover<a class="headerlink" href="#route-failover" title="Permalink to this headline"></a></h3>
+<p>Route failover is a crucial feature of the Route API that allows the system to handle call failures gracefully. When a call request encounters a failure, such as encountering a 404, 5XX, or 6XX SIP fail code, the system can automatically trigger a retry with a different service provider.</p>
+<p>By specifying the conditions under which the system should attempt a retry with an alternative provider, users can implement an effective failover strategy to ensure call continuity and minimize disruptions in communication. This failover mechanism enhances call reliability and mitigates potential issues that may arise from service provider outages or temporary connectivity problems.</p>
+</section>
+<section id="dynamic-routing-decisions">
+<span id="route-overview-dynamic-routing-decisions"></span><h3>Dynamic Routing Decisions<a class="headerlink" href="#dynamic-routing-decisions" title="Permalink to this headline"></a></h3>
+<p>One of the primary advantages of the Route API is its ability to make dynamic routing decisions based on various factors. Users can define routing rules and conditions to determine which service provider should be used for specific outbound calls. These routing decisions can be based on factors such as call destination, customer preferences, time of day, cost considerations, or the quality of service offered by different providers.</p>
+<p>Additionally, users can configure default routes for all customers or set specific routes per customer, tailoring the routing strategy to suit their unique requirements. This flexibility allows businesses to optimize call routing and choose the most appropriate service provider for each call, resulting in improved call success rates and enhanced call quality.</p>
+<p>Seamless Integration with Service Providers
+The Route API seamlessly integrates with multiple service providers, enabling users to take advantage of a diverse range of network resources. Users can easily configure the API to interact with different service providers and leverage their capabilities to deliver reliable and high-quality call connections.</p>
+<p>By leveraging the dynamic routing capabilities of the Route API and its integration with various service providers, businesses can ensure efficient call delivery, minimize call failures, and enhance the overall communication experience for their customers and users.</p>
+<p>In summary, the Route API in VoIPBIN plays a critical role in SIP routing strategy, ensuring effective call delivery, and providing a robust failover mechanism. By making dynamic routing decisions and seamlessly integrating with service providers, the Route API empowers businesses with the tools they need to optimize call routing and provide reliable and seamless communication services.</p>
+</section>
 </section>
 <section id="route-struct-route">
 <span id="id1"></span><h2>Route<a class="headerlink" href="#route-struct-route" title="Permalink to this headline"></a></h2>

@@ -93,8 +93,8 @@
   <section id="call">
 <span id="quickstart-call"></span><h1>Call<a class="headerlink" href="#call" title="Permalink to this headline"></a></h1>
 <p>In this Quickstart, you’ll learn how to make an outbound voice call.</p>
-<section id="make-your-first-voice-call">
-<h2>Make your first voice call<a class="headerlink" href="#make-your-first-voice-call" title="Permalink to this headline"></a></h2>
+<section id="make-your-first-voice-call-with-manual-actions">
+<h2>Make your first voice call with manual actions<a class="headerlink" href="#make-your-first-voice-call-with-manual-actions" title="Permalink to this headline"></a></h2>
 <p>Use the Voipbin API to initiate an outbound telephone call from your Voipbin account.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=your-voipbin-token&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -126,6 +126,69 @@
         &quot;id&quot;: &quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;,
         &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
         &quot;flow_id&quot;: &quot;6cbaa351-b112-452d-84c2-01488671013d&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
+        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;chained_call_ids&quot;: [],
+        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;recording_ids&quot;: [],
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;destination&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;action&quot;: {
+            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
+            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;type&quot;: &quot;&quot;
+        },
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;hangup_by&quot;: &quot;&quot;,
+        &quot;hangup_reason&quot;: &quot;&quot;,
+        &quot;tm_progressing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_ringing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_hangup&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_create&quot;: &quot;2023-03-28 12:00:05.248732&quot;,
+        &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+        &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    }
+]
+</pre></div>
+</div>
+</section>
+<section id="make-your-first-voice-call-with-existed-flow">
+<h2>Make your first voice call with existed flow<a class="headerlink" href="#make-your-first-voice-call-with-existed-flow" title="Permalink to this headline"></a></h2>
+<p>Use the Voipbin API to initiate an outbound telephone call with existed flow.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=your-voipbin-token&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;&lt;your source number&gt;&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;&lt;your destination number&gt;&quot;
+            }
+        ],
+        &quot;flow_id&quot;: &quot;ed95a3c4-22d4-11ee-add7-8742a741581e&quot;,
+    }&#39;
+
+[
+    {
+        &quot;id&quot;: &quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+        &quot;flow_id&quot;: &quot;ed95a3c4-22d4-11ee-add7-8742a741581e&quot;,
         &quot;type&quot;: &quot;flow&quot;,
         &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;chained_call_ids&quot;: [],
