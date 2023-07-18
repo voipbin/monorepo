@@ -138,7 +138,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#call">Call</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="quickstart.html#make-your-first-voice-call">Make your first voice call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#make-your-first-voice-call-with-manual-actions">Make your first voice call with manual actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#make-your-first-voice-call-with-existed-flow">Make your first voice call with existed flow</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#queue">Queue</a><ul>
@@ -403,10 +404,13 @@
 <li class="toctree-l1"><a class="reference internal" href="call.html">Call</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="call.html#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="call.html#protocol">Protocol</a></li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#pstn-phone-number-format">PSTN/Phone number format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#extension-number-format">Extension number format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#pstn-phone-number-format">PSTN/Phone Number Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#extension-number-format">Extension Number Format</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#incoming-call">Incoming call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#execution-of-call-flow-for-incoming-call">Execution of Call Flow for incoming call</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#outgoing-call">Outgoing call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#execution-of-call-flow-for-outgoing-call">Execution of Call Flow for outgoing call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#error-handling-and-termination">Error handling and Termination</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="call.html#transfer">Transfer</a><ul>
@@ -635,7 +639,7 @@
 <li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="queue.html#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="queue.html#the-purpose-of-call-queueing">The purpose of call queueing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="queue.html#waiting-actions">Waiting actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#flow-execution">Flow Execution</a></li>
 <li class="toctree-l3"><a class="reference internal" href="queue.html#agent-searching">Agent searching</a></li>
 </ul>
 </li>
@@ -661,7 +665,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="recording.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#list-call-recording-metadata">List Call Recording Metadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#get-single-call-recording-metadata">Get Single Call Recording Metadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#delete-call-recordings">Delete Call Recordings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#download-call-recording-audio-files">Download Call Recording Audio Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#asynchronously-export-call-recording-in-bulk">Asynchronously Export Call Recording in Bulk</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="recording.html#recording-struct-recording">Recording</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="recording.html#recording-struct-recording-recording">Recording</a></li>
 <li class="toctree-l3"><a class="reference internal" href="recording.html#type">Type</a></li>
@@ -678,7 +689,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tag.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tag.html#key-features-and-use-cases">Key Features and Use Cases</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tag.html#tag-struct-tag">Tag</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tag.html#tag-struct-tag-tag">Tag</a></li>
 </ul>
@@ -766,7 +780,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="outplan.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#key-features">Key features</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="outplan.html#outplan-struct-outplan">Outplan</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#outplan-struct-outplan-outplan">Outplan</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="outplan.html#example">example</a></li>
@@ -789,8 +806,9 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="webhook.html#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="webhook.html#notification">Notification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="webhook.html#types-of-webhooks">Types of webhooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#notification-mechanism">Notification Mechanism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#custom-endpoints">Custom Endpoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#benefits-of-webhooks">Benefits of Webhooks</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="webhook.html#webhook-struct-webhook">Webhook</a><ul>
@@ -880,9 +898,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="chat.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chat.html#chat-and-chatroom">Chat and Chatroom</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chat.html#chatmessage-and-charoommessage">Chatmessage and Charoommessage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chat.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-and-chatroom">Chat and Chatroom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chatmessage-and-charoommessage">Chatmessage and Charoommessage</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="chat.html#chat-struct-chat">Chat</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="chat.html#chat-struct-chat-chat">Chat</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="chat.html#example">Example</a></li>
@@ -975,8 +995,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="route.html">Route</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="route.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="route.html#route-failover">Route failover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="route.html#route-failover">Route Failover</a></li>
+<li class="toctree-l3"><a class="reference internal" href="route.html#dynamic-routing-decisions">Dynamic Routing Decisions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="route.html#route-struct-route">Route</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="route.html#route-struct-route-route">Route</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="route.html#example">example</a></li>
@@ -997,6 +1020,8 @@
 <li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="variable.html#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="variable.html#variable-use">Variable use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#dynamic-values">Dynamic Values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#integration-with-applications">Integration with Applications</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="variable.html#variable-variable">Variable</a><ul>
@@ -1017,7 +1042,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="websocket.html#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="websocket.html#topic">Topic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#topic-subscription">Topic Subscription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#pattern-matching-subscription">Pattern Matching Subscription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#real-time-event-updates">Real-Time Event Updates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#benefits-of-websocket">Benefits of WebSocket</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="websocket.html#struct">Struct</a><ul>

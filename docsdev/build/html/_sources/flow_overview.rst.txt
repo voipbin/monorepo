@@ -2,44 +2,43 @@
 
 Overview
 ========
-The flow is a set of instructions you can use to tell VoIPBIN what to do when you receive an incoming call.
+The Flow in VoIPBIN is a powerful set of instructions that guides the platform on how to handle incoming calls. When someone calls one of your VoIPBIN numbers or destinations, the platform looks up the associated URL and sends a request. The Flow instructions are then read to determine the appropriate actions to be taken, such as recording the call, playing a message, or prompting the caller to press digits on their keypad.
+
+At its core, the Flow is an array of JSON objects with special tags defined by VoIPBIN, enabling users to build their own Programmable Voice applications.
 
 .. _flow-overview-actions:
 
 
 How the flow works
 ------------------
-When someone makes a call to one of your VoIPBIN numbers or destinations, VoIPBIN looks up the URL associated with that phone number and sends it a request.
-VoIPBIN then reads the Flow instructions to determine what to do, whether it's recording the call, playing a message for the caller, or prompting the caller to press digits on their keypad.
+When an incoming call is received on one of your VoIPBIN numbers or destinations, the platform identifies the associated URL and sends a request.
 
-At its core, Flow is an array of json objects with special tags defined by VoIPBIN to help you build your Programmable Voice application.
+The Flow instructions are then processed, providing a step-by-step guide on how to handle the call. This might involve greeting the caller, presenting options, gathering input, or executing various actions based on the caller's response.
 
 Unified flow
 ------------
-VoIPBin's unified flow feature allows users to create and attach a single flow to multiple communication channels, including voice and video calls, SMS, and RESTful API triggers. With unified flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received, and VoIPBin will execute this flow automatically upon incoming requests.
+VoIPBIN's Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice and video calls, SMS, and RESTful API triggers.
 
-Currently, the unified flow feature supports the channels of voice and video calls, SMS, and RESTful API triggers. In the future, VoIPBin plans to add support for more channel handlers, enabling users to design even more complex communication flows that cover a wider range of channels.
-
-Despite the current limited set of channels, users can still define their own logic and actions based on specific criteria, such as caller ID, time of day, or message content, and can incorporate third-party APIs and services into their flows to extend their functionality and integrate with external systems.
-
-Overall, VoIPBin's unified flow feature simplifies the process of designing and managing communication flows across multiple channels, while providing a powerful and customizable tool for delivering a seamless omnichannel experience to customers.
+With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBIN then automatically executes this flow, ensuring a consistent experience for customers across various channels.
 
 Non-linear action execution
 ---------------------------
-The VoIPBIN's flow provides Non-linear type of action execution. The user can customize their own actions in linear or non-linear way.
+VoIPBIN's Flow provides the flexibility of Non-Linear action execution.
+
+Users can customize their actions in both linear and non-linear ways, allowing them to define complex logic and decision trees to handle various call scenarios.
 
 .. image:: _static/images/flow_overview_non_linear.png
 
-
 Flow fork
 ------------
-Some flow actions(fetch, fetch_flow, queue_join, …) fork the flow.
+Certain flow actions, such as fetch, fetch_flow, queue_join, and more, enable flow forking.
 
-The execution cursor moves to the forked flow once the flow is forked. And starts to execute the actions. Then when it reaches the end of the forked flow, the execution cursor moves back to the following action of the forking action.
+When the flow is forked, the execution cursor moves to the forked flow and starts executing the actions within it. Once the forked flow reaches its end, the execution cursor moves back to the following action of the forking action, continuing the flow execution.
 
 .. image:: _static/images/flow_overview_fork.png
 
-
 Actions
 -------
-In the VoIPBIN, the users. The action tells VoIPBIN what should take on a given flow such as making a call or speaking sound or talk etc...
+Actions in VoIPBIN tell the platform what actions to take on a given flow, such as making a call, playing sounds or prompts, or initiating text-to-speech. These actions are fundamental building blocks in constructing custom voice applications and creating personalized call experiences for users.
+
+VoIPBIN's Flow offers a versatile and powerful toolset for developers to create dynamic voice applications, handle incoming calls efficiently, and deliver tailored call experiences. With its non-linear execution, unified flow capabilities, and various actions, VoIPBIN's Flow opens up endless possibilities for building sophisticated and interactive voice applications tailored to specific business needs.

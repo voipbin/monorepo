@@ -2,23 +2,24 @@
 
 Overview
 ========
-The billing account feature in Voipbin allows customers to have better control over their account balance. With this feature, customers can programmatically verify their account balance before initiating calls. By checking the balance beforehand, customers can ensure that they have sufficient funds to successfully complete their calls.
+The billing account feature in Voipbin empowers customers with better control over their account balance, enhancing the user experience and ensuring smooth communication. By programmatically verifying their account balance before initiating calls, customers can effectively manage their funds and ensure successful call completions.
 
 Balance add
 -----------
-Please note that the balance add feature is restricted to users with admin permissions only. Regular users do not have the ability to add balance to their accounts programmatically. This limitation ensures that the account balance remains secure and under the control of authorized personnel.
+It's important to note that the balance add feature is exclusive to users with admin permissions. Regular users do not have the capability to add balance to their accounts programmatically. This safeguard ensures that the account balance remains secure and under the control of authorized personnel, reducing the risk of unauthorized access and potential misuse.
 
 Rate
 ----
-Voipbin currently operates on a fixed rate system. The table below outlines the costs associated with various services:
+Currently, Voipbin operates on a fixed-rate system, offering transparent and predictable pricing for various services. The table below outlines the costs associated with different services:
 
 =================== ======================
 type                cost(USD)
 =================== ======================
-Number buying       5
-Calling per second  0.020
-SMS per message     0.008
+Number buying       $5
+Calling per second  $0.020
+SMS per message     $0.008
 =================== ======================
 
-These rates reflect the current pricing structure and are subject to change.
+Please note that these rates are subject to change and are applicable to the current pricing structure. Voipbin strives to provide competitive rates while delivering high-quality services to its customers.
 
+With the billing account feature and clear rate structure, customers can make informed decisions about their communication expenses, effectively managing their accounts and optimizing their communication needs.

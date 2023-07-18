@@ -64,6 +64,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Variable</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#variable-use">Variable use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dynamic-values">Dynamic Values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integration-with-applications">Integration with Applications</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#variable-variable">Variable</a><ul>
@@ -116,12 +118,24 @@
 <span id="variable-main"></span><h1>Variable<a class="headerlink" href="#variable" title="Permalink to this headline"></a></h1>
 <section id="overview">
 <span id="variable-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
-<p>The VoIPBIN sets various variables during the flow execution. This variables can be used in many places in the flow’s actions.</p>
+<p>The VoIPBIN provides a powerful feature called “Variables” that allows users to set and use dynamic values throughout the flow execution. These variables are set by various applications and can be utilized in different actions within the flow. Variables enable users to create dynamic and context-aware flows that adapt to specific situations during execution.</p>
 <section id="variable-use">
-<h3>Variable use<a class="headerlink" href="#variable-use" title="Permalink to this headline"></a></h3>
+<span id="variable-overview-variable-use"></span><h3>Variable use<a class="headerlink" href="#variable-use" title="Permalink to this headline"></a></h3>
+<p>To use a variable in the flow, users can simply include the variable in the desired action by using the following format:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>${voipbin.call.source.name}
 </pre></div>
 </div>
+<p>When the voipbin executes the action, it evaluates the variable at that moment, during the execution time, and replaces the variable placeholder with the actual value. This enables the flow to make decisions and perform actions based on real-time information, allowing for greater flexibility and adaptability.</p>
+</section>
+<section id="dynamic-values">
+<span id="variable-overview-dynamic-values"></span><h3>Dynamic Values<a class="headerlink" href="#dynamic-values" title="Permalink to this headline"></a></h3>
+<p>Variables can be used to capture and store various dynamic values during the flow execution. For example, the active flow that executes the call flow can set variables such as the call’s source address and destination address. These values can then be used in subsequent actions, such as sending messages, updating records, or making routing decisions.</p>
+</section>
+<section id="integration-with-applications">
+<span id="variable-overview-integration-with-applications"></span><h3>Integration with Applications<a class="headerlink" href="#integration-with-applications" title="Permalink to this headline"></a></h3>
+<p>Applications within the VoIPBIN ecosystem play a crucial role in setting and using variables. Each application is responsible for managing and providing access to specific variables that are relevant to its functionality. For example, the call application sets variables related to the call, while other applications may set variables based on user interactions, external data sources, or business logic.</p>
+<p>By integrating with applications and utilizing variables, users can create more intelligent and responsive flows that adapt to changing conditions and user interactions.</p>
+<p>Overall, the Variable feature in VoIPBIN adds a layer of dynamism and interactivity to the flow execution. It empowers users to build sophisticated communication workflows that can leverage real-time data and context to provide a seamless and personalized experience for callers and users alike.</p>
 </section>
 </section>
 <section id="variable-variable">

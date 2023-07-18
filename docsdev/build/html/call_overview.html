@@ -92,7 +92,7 @@
              
   <section id="overview">
 <span id="call-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
-<p>The VoIPBIN call API is the easiest way to build high-quality call application in the Cloud.</p>
+<p>The VoIPBIN call API provides a straightforward and convenient way to develop high-quality call applications in the Cloud. With the VoIPBIN API, developers can leverage familiar web technologies to build scalable and feature-rich call applications, giving them the power to control inbound and outbound call flows using JSON-based VoIPBIN actions. Additionally, the API offers capabilities to record and store inbound or outbound calls, create conference calls, and send text-to-speech messages in multiple languages with different gender and accents.</p>
 <p>With the VoIPBIN API you can:</p>
 <ul class="simple">
 <li><p>Build apps that scale with the web technologies you are already using.</p></li>
@@ -103,36 +103,68 @@
 </ul>
 <section id="protocol">
 <h2>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline"></a></h2>
-<p>VoIPBIN supports various call/video protocols. They can join to the same conference room in the VoIPBIN and can communicate each other.</p>
+<p>VoIPBIN offers support for various call/video protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.</p>
 <img alt="_images/call_overview_protocol.png" src="_images/call_overview_protocol.png" />
 </section>
 <section id="pstn-phone-number-format">
-<h2>PSTN/Phone number format<a class="headerlink" href="#pstn-phone-number-format" title="Permalink to this headline"></a></h2>
-<p>Within the VoIPBIN APIs, all PSTN/Phone numbers are in <a class="reference external" href="https://en.wikipedia.org/wiki/E.164">+E164</a> format. This means that numbers:</p>
+<h2>PSTN/Phone Number Format<a class="headerlink" href="#pstn-phone-number-format" title="Permalink to this headline"></a></h2>
+<p>In the VoIPBIN APIs, all PSTN/Phone numbers must adhere to the <a class="reference external" href="https://en.wikipedia.org/wiki/E.164">+E164</a> format. This format standardizes the representation of phone numbers to facilitate smooth communication and interoperability across different systems.</p>
+<p>Key requirements for phone numbers within the VoIPBIN APIs:</p>
 <ul class="simple">
-<li><p>The number has to set the ‘+’ at the front.</p></li>
-<li><p>Contain no special characters, such as space, () or -.</p></li>
+<li><p>The phone number must have the ‘+’ symbol at the beginning.</p></li>
+<li><p>The number should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
 </ul>
-<p>For example, a US number would have the format <em>+16062067563</em>. A Korea number would have the format <em>+821021656521</em>.</p>
+<p>For example, a US phone number should be represented as +16062067563, and a Korea phone number should be represented as +821021656521.</p>
 </section>
 <section id="extension-number-format">
-<h2>Extension number format<a class="headerlink" href="#extension-number-format" title="Permalink to this headline"></a></h2>
-<p>Extension numbers can be anything with the below limitation.</p>
+<h2>Extension Number Format<a class="headerlink" href="#extension-number-format" title="Permalink to this headline"></a></h2>
+<p>The extension numbers used in the VoIPBIN system can be customized according to specific requirements. However, they must adhere to the following limitation:</p>
 <ul class="simple">
-<li><p>Contain no special characters, such as space, () or -.</p></li>
+<li><p>Extension numbers should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
 </ul>
+<p>The absence of special characters ensures consistent and reliable processing of extension numbers within the VoIPBIN system, promoting smooth communication and interaction.</p>
+<p>With the VoIPBIN call API’s robust features and support for various protocols, developers can create versatile and efficient call applications, enabling seamless communication and collaboration for end-users.</p>
 </section>
 <section id="incoming-call">
 <h2>Incoming call<a class="headerlink" href="#incoming-call" title="Permalink to this headline"></a></h2>
-<p>The voipbin provides incoming call handle.
-If the call came to the voipbin, the voipbin execute the flow of the given destination.</p>
+<p>The VoIPBin system provides the functionality to receive incoming calls from external parties. This feature allows users to accept and handle incoming calls through their VoIP services. Incoming calls are crucial for various communication applications and call center setups as they enable users to receive inquiries, provide support, and engage with customers, clients, or other users.
+When an incoming call is received, the VoIPBin system processes the call request and prepares for call handling based on the specified parameters and configurations.</p>
+</section>
+<section id="execution-of-call-flow-for-incoming-call">
+<h2>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Permalink to this headline"></a></h2>
+<p>The execution of the call flow for incoming calls involves a simple yet effective sequence of actions:</p>
+<ul class="simple">
+<li><p>Call Verification: When an incoming call is received, the VoIPBin system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
+<li><p>Determine Call Flow: After successful verification, the system determines the appropriate call flow based on the destination of the incoming call. The call flow includes a set of predefined actions and configurations tailored to handle calls directed to a specific user, department, or interactive voice response (IVR) system.</p></li>
+<li><p>Execute Call Flow: Once the call flow is determined, the system proceeds to execute it without delay. The call flow actions are triggered in accordance with the predefined configuration for the call destination.</p></li>
+<li><p>End the Call: After executing the call flow actions, the system initiates the process of ending the call. The call is terminated, and the connection with the external party is disconnected.</p></li>
+</ul>
+<p>By following this streamlined call flow process, the VoIPBin system efficiently handles incoming calls, ensures their secure and verified handling, and executes the appropriate flow actions based on the call destination. After executing the call flow, the system promptly ends the call, completing the call handling process for the incoming call. Customizable flow actions allow users to tailor the call handling process according to their application’s needs, optimizing user experience and call management efficiency.</p>
 <img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
 </section>
 <section id="outgoing-call">
 <h2>Outgoing call<a class="headerlink" href="#outgoing-call" title="Permalink to this headline"></a></h2>
-<p>The voipbin provides outgoing call handle.
-Waiting for call’s answer, then execute the flow actions.</p>
+<p>The VoIPBin system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
+To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBin system, which then processes the request and attempts to establish a connection with the specified destination.</p>
+</section>
+<section id="execution-of-call-flow-for-outgoing-call">
+<h2>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Permalink to this headline"></a></h2>
+<p>Once the outgoing call request is initiated, the VoIPBin system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
+<p>The call flow execution occurs as follows:</p>
+<ul class="simple">
+<li><p>Initiation: The user triggers the outgoing call request, providing the necessary call parameters.</p></li>
+<li><p>Call Setup: The VoIPBin system processes the request and establishes a connection with the destination phone number.</p></li>
+<li><p>Wait for Call Answer: After the call setup, the system waits for the called party to answer the call. This waiting period involves ringing the called party’s phone and monitoring the call status.</p></li>
+<li><p>Call Answered: Once the called party answers the outgoing call, the system proceeds to execute the predefined call flow actions.</p></li>
+<li><p>Flow Actions Execution: The call flow actions are a set of customizable operations that are executed upon call answer. These actions can include call recording, call routing, call analytics, notifications, and post-call actions, among others.</p></li>
+</ul>
+<p>The call flow execution is critical for ensuring a smooth and efficient communication experience. By customizing the flow actions, users can tailor the call handling process to meet the specific requirements of their application or service, enhancing user engagement and overall call management.</p>
 <img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
+</section>
+<section id="error-handling-and-termination">
+<h2>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Permalink to this headline"></a></h2>
+<p>During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
+The VoIPBin system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
 </section>
 </section>
 
