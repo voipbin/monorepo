@@ -532,7 +532,7 @@ func Test_NumberRenew(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberRenew(ctx, tt.tmRenew).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().NumberV1NumberRenewByTmRenew(ctx, tt.tmRenew).Return(tt.responseNumbers, nil)
 
 			res, err := h.NumberRenew(ctx, tt.customer, tt.tmRenew)
 			if err != nil {

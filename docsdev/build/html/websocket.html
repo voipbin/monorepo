@@ -64,7 +64,10 @@
 <li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Websocket</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#topic">Topic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topic-subscription">Topic Subscription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pattern-matching-subscription">Pattern Matching Subscription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#real-time-event-updates">Real-Time Event Updates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#benefits-of-websocket">Benefits of WebSocket</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#struct">Struct</a><ul>
@@ -113,16 +116,17 @@
 <span id="websocket-main"></span><h1>Websocket<a class="headerlink" href="#websocket" title="Permalink to this headline"></a></h1>
 <section id="overview">
 <span id="websocket-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
-<p>The VoIPBin provides the event topic subscription via websocket.
-This allows the web-application can subscribe the specific events that makes help to build the dynamic data change in a run-time.</p>
-<section id="topic">
-<h3>Topic<a class="headerlink" href="#topic" title="Permalink to this headline"></a></h3>
-<p>The user can subscribe specific topic events. The topic subscription allows pattern matching subscription.</p>
-<p>The topic looks like this.</p>
+<p>WebSocket is a powerful feature provided by VoIPBin that allows web applications to subscribe to specific event topics and receive real-time updates for dynamic data changes during runtime.</p>
+<p>With WebSocket, users can establish a persistent and bi-directional connection with the VoIPBin server, enabling seamless communication and event notification.</p>
+<p>Overall, WebSocket empowers web applications with real-time capabilities, making it an essential tool for building dynamic and interactive communication applications with VoIPBin.</p>
+<section id="topic-subscription">
+<h3>Topic Subscription<a class="headerlink" href="#topic-subscription" title="Permalink to this headline"></a></h3>
+<p>WebSocket allows users to subscribe to specific event topics. Each event topic corresponds to a particular resource in the VoIPBin system. Users can subscribe to topics that are relevant to their application’s requirements, enabling them to receive updates for specific resources of interest.</p>
+<p>The topic format is as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>For example, the below event’s topic will be like this <cite>activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f</cite>.</p>
+<p>For example, if the user subscribes to the topic <cite>activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f</cite>, they will receive events related to the specific activeflow resource with the ID 74ac5405-7c70-4184-9388-1c9f8f8ce25f. Additionally, if the user subscribes to the broader topic activeflow, they will receive events for all activeflow resources in the system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;activeflow_created&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -132,8 +136,26 @@ This allows the web-application can subscribe the specific events that makes hel
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>If the subscriber subscribes topic <cite>activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f</cite>, they will receive this event.
-Also the <cite>activeflow</cite> topic subscriber will receive the same event.</p>
+</section>
+<section id="pattern-matching-subscription">
+<h3>Pattern Matching Subscription<a class="headerlink" href="#pattern-matching-subscription" title="Permalink to this headline"></a></h3>
+<p>WebSocket supports pattern matching subscription, allowing users to subscribe to multiple topics based on a pattern. For example, a user can subscribe to all events related to a specific resource type by subscribing to the &lt;resource&gt; topic.</p>
+<p>This pattern matching approach enables more flexible and efficient topic subscription, as users can receive updates for multiple resources without the need to subscribe to each resource individually.</p>
+</section>
+<section id="real-time-event-updates">
+<h3>Real-Time Event Updates<a class="headerlink" href="#real-time-event-updates" title="Permalink to this headline"></a></h3>
+<p>When an event occurs for a subscribed topic, VoIPBin sends the corresponding event data to the WebSocket connection. The web application receives this data in real-time, allowing for immediate updates and dynamic data changes within the application.</p>
+<p>Web applications can process these event updates to trigger actions, update UI elements, or reflect changes to the user interface without the need for manual page refreshes. WebSocket provides a seamless and interactive experience for users, ensuring that they are always up-to-date with the latest information.</p>
+</section>
+<section id="benefits-of-websocket">
+<h3>Benefits of WebSocket<a class="headerlink" href="#benefits-of-websocket" title="Permalink to this headline"></a></h3>
+<p>WebSocket offers several benefits for web applications using VoIPBin:</p>
+<ul class="simple">
+<li><p>Real-Time Communication: WebSocket provides instant updates and event notifications, enabling real-time communication between the web application and the VoIPBin server.</p></li>
+<li><p>Dynamic Data Updates: With WebSocket, web applications can easily handle dynamic data changes, allowing for dynamic and interactive user interfaces.</p></li>
+<li><p>Efficient Subscription: Pattern matching subscription makes it efficient to subscribe to multiple resources without the need for individual subscriptions.</p></li>
+<li><p>Reduced Latency: WebSocket reduces latency by eliminating the need for repeated HTTP requests, improving the overall responsiveness of the application.</p></li>
+</ul>
 </section>
 </section>
 <section id="struct">
