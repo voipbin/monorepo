@@ -2,12 +2,12 @@
 
 Overview
 ========
-
-The agent, or more accurately the call centre agent or phone agent, works for a company and takes calls with private or business customers on their behalf.
-In general, the place of work is a call centre, where a number of agents are employed. The operator of the call centre may be the company itself or an external service provider. Independent service providers often serve a whole range of different customers from a single site.
+The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.
 
 Call to agent
 -------------
-The agent can have multiple addresses. So, when the VoIPBIN makes a call to agents, it will generate calls to every agent's address. And if the agent answers one of the calls, then the other calls will hang up immediately.
+To reach an agent, VoIPBIN employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBIN generates calls to every agent's address simultaneously. If an agent answers one of the calls, VoIPBIN automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.
 
 .. image:: _static/images/agent_call.png
+
+This approach enables efficient call handling, minimizing the time customers spend waiting for an available agent. The call distribution mechanism ensures that agents are optimally utilized, enhancing customer service and overall call center productivity.

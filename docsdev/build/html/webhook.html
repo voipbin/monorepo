@@ -57,8 +57,9 @@
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Webhook</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#notification">Notification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#types-of-webhooks">Types of webhooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notification-mechanism">Notification Mechanism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-endpoints">Custom Endpoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#benefits-of-webhooks">Benefits of Webhooks</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#webhook-struct-webhook">Webhook</a><ul>
@@ -169,15 +170,30 @@
 <span id="webhook-main"></span><h1>Webhook<a class="headerlink" href="#webhook" title="Permalink to this headline"></a></h1>
 <section id="overview">
 <span id="webhook-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
-<p>Webhooks are a way of receiving event data for your calls and associated resources by your own servers.</p>
-<section id="notification">
-<h3>Notification<a class="headerlink" href="#notification" title="Permalink to this headline"></a></h3>
-<p>The VoIPBIN sends the webhook event for event notification.</p>
+<p>Webhooks are a powerful feature provided by VoIPBIN that allows users to receive event data for their calls and associated resources directly on their own servers. With webhooks, users can set up custom endpoints on their server to receive real-time notifications and data updates related to their VoIPBIN resources.</p>
+<p>Overall, webhooks empower users with greater control, customization, and real-time visibility into their VoIPBIN resources, making it an essential tool for building sophisticated communication workflows and integrations.</p>
+<section id="notification-mechanism">
+<h3>Notification Mechanism<a class="headerlink" href="#notification-mechanism" title="Permalink to this headline"></a></h3>
+<p>VoIPBIN sends webhook events as a form of event notification. When specific events or actions occur in the VoIPBIN system, such as call events, message events, or changes to resources like queues or agents, the system generates webhook events and sends them to the user’s configured webhook endpoint.</p>
 <img alt="_images/webhook_overview_notification.png" src="_images/webhook_overview_notification.png" />
+<p>Types of Webhooks
+—————–0
+Every resource in the VoIPBIN generates its own set of webhooks to provide progress and updates for different events. This ensures that users can receive notifications and data specific to each resource type, allowing for granular control and monitoring of their VoIPBIN resources.</p>
+<p>For example, when a call is placed or received, VoIPBIN can generate call-specific webhook events that provide information such as the call status, call duration, and caller ID. Similarly, message-specific webhook events can provide details about SMS or MMS messages sent or received, such as message content, sender ID, and delivery status.</p>
 </section>
-<section id="types-of-webhooks">
-<h3>Types of webhooks<a class="headerlink" href="#types-of-webhooks" title="Permalink to this headline"></a></h3>
-<p>Each resources in the voipbin generates its own webhooks to provide the progress.</p>
+<section id="custom-endpoints">
+<h3>Custom Endpoints<a class="headerlink" href="#custom-endpoints" title="Permalink to this headline"></a></h3>
+<p>To utilize webhooks, users must configure their own custom webhook endpoints on their server. This endpoint is the URL to which VoIPBIN will send the webhook events. When an event occurs, VoIPBIN makes an HTTP request to the configured endpoint, including relevant data in the request payload, allowing users to process and respond to the event as needed.</p>
+</section>
+<section id="benefits-of-webhooks">
+<h3>Benefits of Webhooks<a class="headerlink" href="#benefits-of-webhooks" title="Permalink to this headline"></a></h3>
+<p>Webhooks offer several benefits for users of VoIPBIN:</p>
+<ul class="simple">
+<li><p>Real-Time Updates: Webhooks provide real-time event notifications, allowing users to receive immediate updates about their VoIPBIN resources.</p></li>
+<li><p>Customization: Users can configure their own webhook endpoints and process data according to their specific needs, enabling custom workflows and integrations.</p></li>
+<li><p>Automated Actions: With webhooks, users can automate actions based on event data, such as updating records, sending notifications, or triggering additional processes.</p></li>
+<li><p>Enhanced Monitoring: Webhooks provide a proactive way to monitor and track changes in the VoIPBIN system, allowing users to stay informed and take timely actions.</p></li>
+</ul>
 </section>
 </section>
 <section id="webhook-struct-webhook">
