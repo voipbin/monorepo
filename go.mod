@@ -23,7 +23,7 @@ require (
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230712161740-5a6ad6f99ba8
 	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230307174917-96d57438d2d8
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097
-	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230624183045-e86e1dd49177
+	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230716174942-b6a22e86ff12
 )
 
 require (
@@ -52,6 +52,6 @@ require (
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61 // indirect
 	golang.org/x/sys v0.10.0 // indirect
-	google.golang.org/genproto v0.0.0-20230711160842-782d3b101e98 // indirect
+	google.golang.org/genproto v0.0.0-20230717213848-3f92550aa753 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )

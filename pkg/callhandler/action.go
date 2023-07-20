@@ -62,8 +62,8 @@ func (h *callHandler) cleanCurrentAction(ctx context.Context, c *call.Call) (boo
 	return true, nil
 }
 
-// ActionExecute execute the action withe the call
-func (h *callHandler) ActionExecute(ctx context.Context, c *call.Call) error {
+// actionExecute execute the action withe the call
+func (h *callHandler) actionExecute(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "ActionExecute",
 		"call_id": c.ID,
@@ -156,13 +156,18 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	log.Debug("Getting a next action for the call.")
 
 	if c.Status == call.StatusHangup {
-		log.WithField("call", c).Debug("The call has hungup already.")
+		log.Debug("The call has hungup already.")
 		return nil
 	}
 
 	if c.ActiveFlowID == uuid.Nil {
-		log.WithField("call", c).Info("No activeflow id found. Hangup the call.")
+		log.Info("No activeflow id found. Hangup the call.")
 		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
+		return nil
+	}
+
+	if c.ActionNextHold {
+		log.Debug("The action next is on hold. Nothing to do.")
 		return nil
 	}
 
@@ -191,7 +196,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 		return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
 	}
 
-	if err := h.ActionExecute(ctx, cc); err != nil {
+	if err := h.actionExecute(ctx, cc); err != nil {
 		log.Errorf("Could not execute the next action correctly. Hanging up the call. err: %v", err)
 		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
 		return nil
@@ -207,6 +212,13 @@ func (h *callHandler) ActionNextForce(ctx context.Context, c *call.Call) error {
 		"call": c,
 	})
 	log.Debug("Getting a next action for the call.")
+
+	// set action next unhold
+	if errHold := h.updateActionNextHold(ctx, c.ID, false); errHold != nil {
+		log.Errorf("Could not set the action next hold. err: %v", errHold)
+		_, _ = h.HangingUp(ctx, c.ID, call.HangupReasonNormal)
+		return nil
+	}
 
 	// cleanup the call's current action
 	needNext, err := h.cleanCurrentAction(ctx, c)
