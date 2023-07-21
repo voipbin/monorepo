@@ -500,9 +500,9 @@ func Test_actionHandleConnect(t *testing.T) {
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, false).Return(tt.responseFlow, nil)
 			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDConfbridgeJoin)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDConfbridgeJoin)
 			if tt.responseUUIDHangup != uuid.Nil {
-				mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDHangup)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDHangup)
 			}
 			mockStack.EXPECT().Push(ctx, tt.af.StackMap, tt.expectPushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(tt.responsePushStackID, tt.responsePushAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.expectUpdateActiveflow).Return(nil)

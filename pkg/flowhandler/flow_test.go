@@ -100,7 +100,7 @@ func Test_Create(t *testing.T) {
 
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			if tt.persist == true {
 				mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)
