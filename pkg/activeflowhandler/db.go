@@ -32,7 +32,7 @@ func (h *activeflowHandler) Create(ctx context.Context, activeflowID uuid.UUID, 
 
 	// check id is valid
 	if activeflowID == uuid.Nil {
-		activeflowID = h.utilHandler.CreateUUID()
+		activeflowID = h.utilHandler.UUIDCreate()
 		log.Infof("The id is not given. Created a new id. id: %s", activeflowID)
 		log = log.WithField("id", activeflowID)
 	}

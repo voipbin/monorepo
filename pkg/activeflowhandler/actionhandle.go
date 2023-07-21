@@ -528,7 +528,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	// put original call into the created conference
 	pushActions := []action.Action{
 		{
-			ID:     h.utilHandler.CreateUUID(),
+			ID:     h.utilHandler.UUIDCreate(),
 			Type:   action.TypeConfbridgeJoin,
 			Option: tmpOptString,
 		},
@@ -550,7 +550,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 		}
 
 		actionHangupRelay := action.Action{
-			ID:     h.utilHandler.CreateUUID(),
+			ID:     h.utilHandler.UUIDCreate(),
 			Type:   action.TypeHangup,
 			Option: optStringHangup,
 		}

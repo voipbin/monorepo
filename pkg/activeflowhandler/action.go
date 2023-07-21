@@ -39,9 +39,9 @@ func (h *activeflowHandler) getActionsFromFlow(ctx context.Context, flowID uuid.
 // It sets next action to current action.
 func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "updateNextAction",
-		"activeflow_id":     activeflowID,
-		"current_action_id": caID,
+		"func":                      "updateNextAction",
+		"activeflow_id":             activeflowID,
+		"request_current_action_id": caID,
 	})
 	log.Debug("Getting next action.")
 
@@ -67,7 +67,7 @@ func (h *activeflowHandler) updateNextAction(ctx context.Context, activeflowID u
 	}
 
 	if af.CurrentAction.ID != action.IDEmpty && af.CurrentAction.ID != caID {
-		log.Error("The current action info does not match.")
+		log.WithField("activeflow.current_action_id", af.CurrentAction.ID).Error("The current action info does not match.")
 		return nil, fmt.Errorf("current action does not match")
 	}
 

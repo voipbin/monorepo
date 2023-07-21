@@ -60,7 +60,7 @@ func (h *flowHandler) Create(
 
 		Actions: a,
 
-		TMCreate: h.util.GetCurTime(),
+		TMCreate: h.util.TimeGetCurTime(),
 		TMUpdate: dbhandler.DefaultTimeStamp,
 		TMDelete: dbhandler.DefaultTimeStamp,
 	}

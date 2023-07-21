@@ -149,7 +149,7 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 		return fmt.Errorf("could not marshal stack_map. ActiveflowCreate. err: %v", err)
 	}
 
-	// ts := h.util.GetCurTime()
+	// ts := h.util.TimeGetCurTime()
 	_, err = stmt.ExecContext(ctx,
 		f.ID.Bytes(),
 		f.CustomerID.Bytes(),
@@ -171,7 +171,7 @@ func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow
 		f.ExecuteCount,
 		tmpExecutedActions,
 
-		h.util.GetCurTime(),
+		h.util.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -363,7 +363,7 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, af *activeflow.Activeflo
 		return fmt.Errorf("could not marshal executed_actions. ActiveflowUpdateActionInfo. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(q, af.CurrentStackID.Bytes(), tmpCurrentAction, af.ForwardStackID.Bytes(), af.ForwardActionID.Bytes(), tmpStackMap, af.ExecuteCount, tmpExecutedActions, h.util.GetCurTime(), af.ID.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, af.CurrentStackID.Bytes(), tmpCurrentAction, af.ForwardStackID.Bytes(), af.ForwardActionID.Bytes(), tmpStackMap, af.ExecuteCount, tmpExecutedActions, h.util.TimeGetCurTime(), af.ID.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ActiveflowUpdateActionInfo. err: %v", err)
 	}
 
@@ -384,7 +384,7 @@ func (h *handler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.util.GetCurTime()
+	ts := h.util.TimeGetCurTime()
 	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ActiveflowDelete. err: %v", err)
 	}
@@ -406,7 +406,7 @@ func (h *handler) ActiveflowSetStatus(ctx context.Context, id uuid.UUID, status 
 		id = ?
 	`
 
-	ts := h.util.GetCurTime()
+	ts := h.util.TimeGetCurTime()
 	if _, err := h.db.Exec(q, status, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ActiveflowSetStatus. err: %v", err)
 	}
