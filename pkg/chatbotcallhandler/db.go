@@ -30,7 +30,7 @@ func (h *chatbotcallHandler) Create(
 		"chatbotcall_id": chatbotID,
 	})
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	tmp := &chatbotcall.Chatbotcall{
 		ID:                id,
 		CustomerID:        customerID,

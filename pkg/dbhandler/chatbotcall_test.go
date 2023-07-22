@@ -96,7 +96,7 @@ func Test_ChatbotcallCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if err := h.ChatbotcallCreate(ctx, tt.chatbot); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -168,7 +168,7 @@ func Test_ChatbotcallGetByReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if err := h.ChatbotcallCreate(ctx, tt.chatbot); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -238,7 +238,7 @@ func Test_ChatbotcallGetByTranscribeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if err := h.ChatbotcallCreate(ctx, tt.chatbot); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -310,13 +310,13 @@ func Test_ChatbotcallUpdateStatusProgressing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if err := h.ChatbotcallCreate(ctx, tt.chatbot); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if err := h.ChatbotcallUpdateStatusProgressing(ctx, tt.id, tt.transcribeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -386,13 +386,13 @@ func Test_ChatbotcallUpdateStatusEnd(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if err := h.ChatbotcallCreate(ctx, tt.chatbot); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if err := h.ChatbotcallUpdateStatusEnd(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -458,13 +458,13 @@ func Test_ChatbotcallDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if err := h.ChatbotcallCreate(ctx, tt.chatbotcall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if errDel := h.ChatbotcallDelete(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
@@ -561,14 +561,14 @@ func Test_ChatbotcallGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cc := range tt.chatbotcalls {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 				if errCreate := h.ChatbotcallCreate(ctx, cc); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 				}
 			}
 
-			res, err := h.ChatbotcallGets(ctx, tt.customerID, 10, utilhandler.GetCurTime())
+			res, err := h.ChatbotcallGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -642,13 +642,13 @@ func Test_ChatbotcallSetMessages(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if errCreate := h.ChatbotcallCreate(ctx, tt.chatbotcall); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatbotcallSet(ctx, gomock.Any())
 			if errSet := h.ChatbotcallSetMessages(ctx, tt.id, tt.messages); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)

@@ -77,7 +77,7 @@ func (h *chatbotcallHandler) ServiceStart(
 	}
 	actions := []fmaction.Action{
 		{
-			ID:     h.utilHandler.CreateUUID(),
+			ID:     h.utilHandler.UUIDCreate(),
 			Type:   fmaction.TypeConfbridgeJoin,
 			Option: optString,
 		},
