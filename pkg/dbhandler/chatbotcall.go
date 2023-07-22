@@ -155,7 +155,7 @@ func (h *handler) ChatbotcallCreate(ctx context.Context, cb *chatbotcall.Chatbot
 		tmpMessages,
 
 		DefaultTimeStamp,
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -322,7 +322,7 @@ func (h *handler) ChatbotcallUpdateStatusProgressing(ctx context.Context, id uui
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, chatbotcall.StatusProgressing, transcribeID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, chatbotcall.StatusProgressing, transcribeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotcallUpdateStatusProgressing. err: %v", err)
 	}
@@ -346,7 +346,7 @@ func (h *handler) ChatbotcallUpdateStatusEnd(ctx context.Context, id uuid.UUID) 
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, chatbotcall.StatusEnd, uuid.Nil, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotcallUpdateStatusEnd. err: %v", err)
@@ -369,7 +369,7 @@ func (h *handler) ChatbotcallDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotcallDelete. err: %v", err)
@@ -432,7 +432,7 @@ func (h *handler) ChatbotcallSetMessages(ctx context.Context, id uuid.UUID, mess
 		return fmt.Errorf("could not marshal calls. ChatbotcallSetMessages. err: %v", err)
 	}
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err = h.db.Exec(q, tmpMessages, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotcallSetMessages. err: %v", err)

@@ -27,7 +27,7 @@ func (h *chatbotHandler) Create(
 		"init_prompt": initPrompt,
 	})
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	c := &chatbot.Chatbot{
 		ID:         id,
 		CustomerID: customerID,

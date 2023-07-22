@@ -88,7 +88,7 @@ func (h *handler) ChatbotCreate(ctx context.Context, c *chatbot.Chatbot) error {
 		c.EngineType,
 		c.InitPrompt,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -192,7 +192,7 @@ func (h *handler) ChatbotDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotDelete. err: %v", err)
@@ -252,7 +252,7 @@ func (h *handler) ChatbotSetInfo(ctx context.Context, id uuid.UUID, name string,
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, name, detail, engineType, initPrompt, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ChatbotSetInfo. err: %v", err)

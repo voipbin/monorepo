@@ -133,7 +133,7 @@ func Test_ServiceStart(t *testing.T) {
 
 			mockChatbot.EXPECT().Get(ctx, tt.chatbotID).Return(tt.responseChatbot, nil)
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.customerID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDChatbotcall)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChatbotcall)
 			mockDB.EXPECT().ChatbotcallCreate(ctx, tt.expectChatbotcall).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChatbotcall.CustomerID, chatbotcall.EventTypeChatbotcallInitializing, tt.responseChatbotcall)
@@ -142,7 +142,7 @@ func Test_ServiceStart(t *testing.T) {
 			mockDB.EXPECT().ChatbotcallSetMessages(ctx, tt.responseChatbotcall.ID, tt.responseChatbotcallMessages).Return(nil)
 			mockDB.EXPECT().ChatbotcallGet(ctx, tt.responseUUIDChatbotcall).Return(tt.responseChatbotcall, nil)
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDAction)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAction)
 
 			res, err := h.ServiceStart(ctx, tt.customerID, tt.chatbotID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
