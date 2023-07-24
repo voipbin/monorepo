@@ -4,21 +4,15 @@ package taghandler
 
 import (
 	"context"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
-)
-
-// List of default values
-const (
-	defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
 )
 
 // TagHandler interfaces
@@ -31,6 +25,7 @@ type TagHandler interface {
 }
 
 type tagHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyhandler notifyhandler.NotifyHandler
@@ -41,18 +36,11 @@ type tagHandler struct {
 // NewTagHandler return TagHandler interface
 func NewTagHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, agentHandler agenthandler.AgentHandler) TagHandler {
 	return &tagHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyhandler: notifyHandler,
 
 		agentHandler: agentHandler,
 	}
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }

@@ -195,34 +195,6 @@ func (mr *MockDBHandlerMockRecorder) AgentSetTagIDs(ctx, id, tags interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentSetTagIDs", reflect.TypeOf((*MockDBHandler)(nil).AgentSetTagIDs), ctx, id, tags)
 }
 
-// AgentSetToCache mocks base method.
-func (m *MockDBHandler) AgentSetToCache(ctx context.Context, u *agent.Agent) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentSetToCache", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AgentSetToCache indicates an expected call of AgentSetToCache.
-func (mr *MockDBHandlerMockRecorder) AgentSetToCache(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentSetToCache", reflect.TypeOf((*MockDBHandler)(nil).AgentSetToCache), ctx, u)
-}
-
-// AgentUpdateToCache mocks base method.
-func (m *MockDBHandler) AgentUpdateToCache(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentUpdateToCache", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AgentUpdateToCache indicates an expected call of AgentUpdateToCache.
-func (mr *MockDBHandlerMockRecorder) AgentUpdateToCache(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).AgentUpdateToCache), ctx, id)
-}
-
 // TagCreate mocks base method.
 func (m *MockDBHandler) TagCreate(ctx context.Context, a *tag.Tag) error {
 	m.ctrl.T.Helper()
@@ -266,36 +238,6 @@ func (mr *MockDBHandlerMockRecorder) TagGet(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagGet", reflect.TypeOf((*MockDBHandler)(nil).TagGet), ctx, id)
 }
 
-// TagGetFromCache mocks base method.
-func (m *MockDBHandler) TagGetFromCache(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagGetFromCache", ctx, id)
-	ret0, _ := ret[0].(*tag.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TagGetFromCache indicates an expected call of TagGetFromCache.
-func (mr *MockDBHandlerMockRecorder) TagGetFromCache(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagGetFromCache", reflect.TypeOf((*MockDBHandler)(nil).TagGetFromCache), ctx, id)
-}
-
-// TagGetFromDB mocks base method.
-func (m *MockDBHandler) TagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagGetFromDB", ctx, id)
-	ret0, _ := ret[0].(*tag.Tag)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TagGetFromDB indicates an expected call of TagGetFromDB.
-func (mr *MockDBHandlerMockRecorder) TagGetFromDB(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).TagGetFromDB), ctx, id)
-}
-
 // TagGets mocks base method.
 func (m *MockDBHandler) TagGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error) {
 	m.ctrl.T.Helper()
@@ -323,32 +265,4 @@ func (m *MockDBHandler) TagSetBasicInfo(ctx context.Context, id uuid.UUID, name,
 func (mr *MockDBHandlerMockRecorder) TagSetBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagSetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).TagSetBasicInfo), ctx, id, name, detail)
-}
-
-// TagSetToCache mocks base method.
-func (m *MockDBHandler) TagSetToCache(ctx context.Context, u *tag.Tag) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagSetToCache", ctx, u)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TagSetToCache indicates an expected call of TagSetToCache.
-func (mr *MockDBHandlerMockRecorder) TagSetToCache(ctx, u interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagSetToCache", reflect.TypeOf((*MockDBHandler)(nil).TagSetToCache), ctx, u)
-}
-
-// TagUpdateToCache mocks base method.
-func (m *MockDBHandler) TagUpdateToCache(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagUpdateToCache", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TagUpdateToCache indicates an expected call of TagUpdateToCache.
-func (mr *MockDBHandlerMockRecorder) TagUpdateToCache(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagUpdateToCache", reflect.TypeOf((*MockDBHandler)(nil).TagUpdateToCache), ctx, id)
 }

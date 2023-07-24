@@ -133,8 +133,8 @@ func (h *subscribeHandler) processEvent(m *rabbitmqhandler.Event) {
 	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallCreated)):
 		err = h.processEventCMGroupcallCreated(ctx, m)
 
-	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallAnswered)):
-		err = h.processEventCMGroupcallAnswered(ctx, m)
+	case m.Publisher == publisherCallManager && (m.Type == string(cmgroupcall.EventTypeGroupcallProgressing)):
+		err = h.processEventCMGroupcallProgressing(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

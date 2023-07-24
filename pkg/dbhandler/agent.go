@@ -141,7 +141,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 		tagIDs,
 		addresses,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -158,20 +158,20 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 // AgentUpdateToCache gets the agent from the DB and update the cache.
 func (h *handler) AgentUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.AgentGetFromDB(ctx, id)
+	res, err := h.agentGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.AgentSetToCache(ctx, res); err != nil {
+	if err := h.agentSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// AgentSetToCache sets the given agent to the cache
-func (h *handler) AgentSetToCache(ctx context.Context, u *agent.Agent) error {
+// agentSetToCache sets the given agent to the cache
+func (h *handler) agentSetToCache(ctx context.Context, u *agent.Agent) error {
 	if err := h.cache.AgentSet(ctx, u); err != nil {
 		return err
 	}
@@ -179,8 +179,8 @@ func (h *handler) AgentSetToCache(ctx context.Context, u *agent.Agent) error {
 	return nil
 }
 
-// AgentGetFromCache returns agent from the cache.
-func (h *handler) AgentGetFromCache(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+// agentGetFromCache returns agent from the cache.
+func (h *handler) agentGetFromCache(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 
 	// get from cache
 	res, err := h.cache.AgentGet(ctx, id)
@@ -191,8 +191,8 @@ func (h *handler) AgentGetFromCache(ctx context.Context, id uuid.UUID) (*agent.A
 	return res, nil
 }
 
-// AgentGetFromDB returns agent from the DB.
-func (h *handler) AgentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
+// agentGetFromDB returns agent from the DB.
+func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", agentSelect)
@@ -217,18 +217,18 @@ func (h *handler) AgentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 
 // AgentGet returns agent.
 func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
-	res, err := h.AgentGetFromCache(ctx, id)
+	res, err := h.agentGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.AgentGetFromDB(ctx, id)
+	res, err = h.agentGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	_ = h.AgentSetToCache(ctx, res)
+	_ = h.agentSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -293,7 +293,7 @@ func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentDelete. err: %v", err)
@@ -319,7 +319,7 @@ func (h *handler) AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, det
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, ringMethod, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, ringMethod, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetBasicInfo. err: %v", err)
 	}
@@ -342,7 +342,7 @@ func (h *handler) AgentSetPasswordHash(ctx context.Context, id uuid.UUID, passwo
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, passwordHash, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, passwordHash, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPasswordHash. err: %v", err)
 	}
@@ -365,7 +365,7 @@ func (h *handler) AgentSetStatus(ctx context.Context, id uuid.UUID, status agent
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetStatus. err: %v", err)
 	}
@@ -388,7 +388,7 @@ func (h *handler) AgentSetPermission(ctx context.Context, id uuid.UUID, permissi
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, permission, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, permission, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPermission. err: %v", err)
 	}
@@ -417,7 +417,7 @@ func (h *handler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, t, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, t, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetPermission. err: %v", err)
 	}
@@ -446,7 +446,7 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 		return fmt.Errorf("could not marshal the addresses. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, t, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, t, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AgentSetAddresses. err: %v", err)
 	}

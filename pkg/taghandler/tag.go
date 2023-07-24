@@ -9,9 +9,14 @@ import (
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 )
 
-// Get returns tags
+// Gets returns tags
 func (h *tagHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*tag.Tag, error) {
-	log := logrus.WithField("func", "Gets")
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Gets",
+		"customer_id": customerID,
+		"size":        size,
+		"token":       token,
+	})
 
 	res, err := h.db.TagGets(ctx, customerID, size, token)
 	if err != nil {
@@ -24,7 +29,10 @@ func (h *tagHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64
 
 // Get returns tag info.
 func (h *tagHandler) Get(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
-	log := logrus.WithField("func", "Get")
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "Get",
+		"tag_id": id,
+	})
 
 	res, err := h.db.TagGet(ctx, id)
 	if err != nil {
@@ -36,12 +44,13 @@ func (h *tagHandler) Get(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 }
 
 // UpdateBasicInfo updates tag's basic info.
-func (h *tagHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*tag.Tag, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":   "UpdateBasicInfo",
-			"tag_id": id,
-		})
+func (h *tagHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*tag.Tag, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "UpdateBasicInfo",
+		"tag_id": id,
+		"name":   name,
+		"detail": detail,
+	})
 
 	if err := h.db.TagSetBasicInfo(ctx, id, name, detail); err != nil {
 		log.Errorf("Could not update the tag basic info. err: %v", err)
@@ -59,22 +68,21 @@ func (h *tagHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, de
 }
 
 // Create creates a new tag.
-func (h *tagHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag.Tag, error) {
+func (h *tagHandler) Create(ctx context.Context, customerID uuid.UUID, name string, detail string) (*tag.Tag, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
 		"customer_id": customerID,
+		"name":        name,
+		"detail":      detail,
 	})
 	log.Debug("Creating a new tag.")
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.utilHandler.UUIDCreate()
 	a := &tag.Tag{
 		ID:         id,
 		CustomerID: customerID,
 		Name:       name,
 		Detail:     detail,
-		TMCreate:   getCurTime(),
-		TMUpdate:   defaultTimeStamp,
-		TMDelete:   defaultTimeStamp,
 	}
 	log = log.WithField("tag_id", id)
 
@@ -101,7 +109,7 @@ func (h *tagHandler) Delete(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
 		"func":   "Delete",
 		"tag_id": id,
 	})
-	log.Debug("Deleting the agent info.")
+	log.Debug("Deleting the tag info.")
 
 	// get tag
 	t, err := h.Get(ctx, id)

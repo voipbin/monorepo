@@ -125,7 +125,7 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
 			}
 
-			if err := h.EventGroupcallAnswered(ctx, tt.groupcall); err != nil {
+			if err := h.EventGroupcallProgressing(ctx, tt.groupcall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

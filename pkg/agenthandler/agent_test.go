@@ -11,6 +11,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/dbhandler"
@@ -202,17 +203,20 @@ func Test_GetsByTags(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &agentHandler{
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyhandler: mockNotify,
 			}
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
 			res, err := h.GetsByTagIDs(ctx, tt.customerID, tt.tags)
 			if err != nil {
@@ -410,18 +414,20 @@ func Test_GetsByTagIDsAndStatus(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &agentHandler{
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyhandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockDB.EXPECT().AgentGets(gomock.Any(), tt.customerID, uint64(maxAgentCount), gomock.Any()).Return(tt.result, nil)
 			res, err := h.GetsByTagIDsAndStatus(ctx, tt.customerID, tt.tags, tt.status)
 			if err != nil {
@@ -435,7 +441,7 @@ func Test_GetsByTagIDsAndStatus(t *testing.T) {
 	}
 }
 
-func Test_AgentCreate(t *testing.T) {
+func Test_Create(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -450,22 +456,24 @@ func Test_AgentCreate(t *testing.T) {
 		tags       []uuid.UUID
 		addresses  []commonaddress.Address
 
-		expectRes *agent.Agent
+		responseUUID uuid.UUID
+		expectRes    *agent.Agent
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
-			"test1",
-			"test1password",
-			"test1 name",
-			"test1 detail",
-			agent.RingMethodRingAll,
-			agent.PermissionNone,
-			[]uuid.UUID{},
-			[]commonaddress.Address{},
+			customerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+			username:   "test1",
+			password:   "test1password",
+			agentName:  "test1 name",
+			detail:     "test1 detail",
+			ringMethod: agent.RingMethodRingAll,
+			permission: agent.PermissionNone,
+			tags:       []uuid.UUID{},
+			addresses:  []commonaddress.Address{},
 
-			&agent.Agent{
+			responseUUID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+			expectRes: &agent.Agent{
 				ID:         uuid.FromStringOrNil("89a42670-4c4c-11ec-86ed-9b96390f7668"),
 				CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				Username:   "test1",
@@ -483,33 +491,29 @@ func Test_AgentCreate(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &agentHandler{
+				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyhandler: mockNotify,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGetByUsername(gomock.Any(), tt.customerID, tt.username).Return(nil, fmt.Errorf("not found"))
-			mockDB.EXPECT().AgentCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().AgentGet(gomock.Any(), gomock.Any()).Return(tt.expectRes, nil)
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customerID, tt.username).Return(nil, fmt.Errorf("not found"))
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectRes.CustomerID, agent.EventTypeAgentCreated, tt.expectRes)
 
 			res, err := h.Create(ctx, tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
-
-			res.ID = uuid.Nil
-			res.PasswordHash = ""
-			res.TMCreate = ""
-			res.TMUpdate = ""
-			res.TMDelete = ""
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
