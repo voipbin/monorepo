@@ -4,14 +4,13 @@ package agenthandler
 
 import (
 	"context"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"golang.org/x/crypto/bcrypt"
 
 	"gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
@@ -39,10 +38,11 @@ type AgentHandler interface {
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
 
 	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
-	EventGroupcallAnswered(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
+	EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 }
 
 type agentHandler struct {
+	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyhandler notifyhandler.NotifyHandler
@@ -51,6 +51,7 @@ type agentHandler struct {
 // NewAgentHandler return AgentHandler interface
 func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) AgentHandler {
 	return &agentHandler{
+		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyhandler: notifyHandler,
@@ -70,14 +71,6 @@ func checkHash(password, hashString string) bool {
 func generateHash(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	return string(bytes), err
-}
-
-// getCurTime return current utc time string
-func getCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
 
 func contains(s []uuid.UUID, x uuid.UUID) bool {

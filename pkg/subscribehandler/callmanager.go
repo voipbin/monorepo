@@ -31,8 +31,8 @@ func (h *subscribeHandler) processEventCMGroupcallCreated(ctx context.Context, m
 	return nil
 }
 
-// processEventCMGroupcallAnswered handles the call-manager's groupcall_answered event.
-func (h *subscribeHandler) processEventCMGroupcallAnswered(ctx context.Context, m *rabbitmqhandler.Event) error {
+// processEventCMGroupcallProgressing handles the call-manager's groupcall_answered event.
+func (h *subscribeHandler) processEventCMGroupcallProgressing(ctx context.Context, m *rabbitmqhandler.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMGroupcallAnswered",
 		"event": m,
@@ -44,7 +44,7 @@ func (h *subscribeHandler) processEventCMGroupcallAnswered(ctx context.Context, 
 		return err
 	}
 
-	if errEvent := h.agentHandler.EventGroupcallAnswered(ctx, groupcall); errEvent != nil {
+	if errEvent := h.agentHandler.EventGroupcallProgressing(ctx, groupcall); errEvent != nil {
 		log.Errorf("Could not handle the groupcall answered event. err: %v", errEvent)
 		return errors.Wrap(errEvent, "Could not handle the groupcall answered event.")
 	}

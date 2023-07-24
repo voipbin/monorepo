@@ -75,37 +75,37 @@ func (h *handler) TagCreate(ctx context.Context, a *tag.Tag) error {
 		a.Name,
 		a.Detail,
 
-		a.TMCreate,
-		a.TMUpdate,
-		a.TMDelete,
+		h.utilHandler.TimeGetCurTime(),
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. TagCreate. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.TagUpdateToCache(ctx, a.ID)
+	_ = h.tagUpdateToCache(ctx, a.ID)
 
 	return nil
 }
 
-// TagUpdateToCache gets the tag from the DB and update the cache.
-func (h *handler) TagUpdateToCache(ctx context.Context, id uuid.UUID) error {
+// tagUpdateToCache gets the tag from the DB and update the cache.
+func (h *handler) tagUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
-	res, err := h.TagGetFromDB(ctx, id)
+	res, err := h.tagGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if err := h.TagSetToCache(ctx, res); err != nil {
+	if err := h.tagSetToCache(ctx, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// TagSetToCache sets the given tag to the cache
-func (h *handler) TagSetToCache(ctx context.Context, u *tag.Tag) error {
+// tagSetToCache sets the given tag to the cache
+func (h *handler) tagSetToCache(ctx context.Context, u *tag.Tag) error {
 	if err := h.cache.TagSet(ctx, u); err != nil {
 		return err
 	}
@@ -113,8 +113,8 @@ func (h *handler) TagSetToCache(ctx context.Context, u *tag.Tag) error {
 	return nil
 }
 
-// TagGetFromCache returns tag from the cache.
-func (h *handler) TagGetFromCache(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
+// tagGetFromCache returns tag from the cache.
+func (h *handler) tagGetFromCache(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 
 	// get from cache
 	res, err := h.cache.TagGet(ctx, id)
@@ -125,8 +125,8 @@ func (h *handler) TagGetFromCache(ctx context.Context, id uuid.UUID) (*tag.Tag, 
 	return res, nil
 }
 
-// TagGetFromDB returns tag from the DB.
-func (h *handler) TagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
+// tagGetFromDB returns tag from the DB.
+func (h *handler) tagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 
 	// prepare
 	q := fmt.Sprintf("%s where id = ?", tagSelect)
@@ -151,18 +151,18 @@ func (h *handler) TagGetFromDB(ctx context.Context, id uuid.UUID) (*tag.Tag, err
 
 // TagGet returns tag.
 func (h *handler) TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
-	res, err := h.TagGetFromCache(ctx, id)
+	res, err := h.tagGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.TagGetFromDB(ctx, id)
+	res, err = h.tagGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// set to the cache
-	_ = h.TagSetToCache(ctx, res)
+	_ = h.tagSetToCache(ctx, res)
 
 	return res, nil
 }
@@ -204,13 +204,13 @@ func (h *handler) TagSetBasicInfo(ctx context.Context, id uuid.UUID, name, detai
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. TagSetBasicInfo. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.TagUpdateToCache(ctx, id)
+	_ = h.tagUpdateToCache(ctx, id)
 
 	return nil
 }
@@ -228,14 +228,14 @@ func (h *handler) TagDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. TagDelete. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.TagUpdateToCache(ctx, id)
+	_ = h.tagUpdateToCache(ctx, id)
 
 	return nil
 }

@@ -5,9 +5,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/agent-manager.git/pkg/agenthandler"
 )
 
 func Test_processEvent_processEventCMGroupcallCreated(t *testing.T) {
@@ -67,7 +68,7 @@ func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 
 			event: &rabbitmqhandler.Event{
 				Publisher: "call-manager",
-				Type:      cmgroupcall.EventTypeGroupcallAnswered,
+				Type:      cmgroupcall.EventTypeGroupcallProgressing,
 				DataType:  "application/json",
 				Data:      []byte(`{"id":"1a0d744a-c0c2-4a05-8a72-a508a62ce410"}`),
 			},
@@ -91,7 +92,7 @@ func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().EventGroupcallAnswered(gomock.Any(), tt.expectGroupcall).Return(nil)
+			mockAgent.EXPECT().EventGroupcallProgressing(gomock.Any(), tt.expectGroupcall).Return(nil)
 
 			h.processEvent(tt.event)
 		})
