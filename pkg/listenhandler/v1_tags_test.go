@@ -1,0 +1,389 @@
+package listenhandler
+
+import (
+	reflect "reflect"
+	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
+	"gitlab.com/voipbin/bin-manager/tag-manager.git/pkg/taghandler"
+)
+
+func TestProcessV1TagsGet(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
+
+		tags      []*tag.Tag
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+			10,
+			"2021-11-23 17:55:39.712000",
+
+			[]*tag.Tag{
+				{
+					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					Name:       "test tag 1",
+					Detail:     "test tag 1 detail",
+					TMCreate:   "2021-11-23 17:55:39.712000",
+					TMUpdate:   "9999-01-01 00:00:00.000000",
+					TMDelete:   "9999-01-01 00:00:00.000000",
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+			},
+		},
+		{
+			"have 2 results",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+			10,
+			"2021-11-23 17:55:39.712000",
+
+			[]*tag.Tag{
+				{
+					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					Name:       "test tag 1",
+					Detail:     "test tag 1 detail",
+					TMCreate:   "2021-11-23 17:55:39.712000",
+					TMUpdate:   "9999-01-01 00:00:00.000000",
+					TMDelete:   "9999-01-01 00:00:00.000000",
+				},
+				{
+					ID:         uuid.FromStringOrNil("7379c73c-4e69-11ec-b667-4313a9abe846"),
+					CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+					Name:       "test tag 2",
+					Detail:     "test tag 2 detail",
+					TMCreate:   "2021-11-23 17:55:39.712000",
+					TMUpdate:   "9999-01-01 00:00:00.000000",
+					TMDelete:   "9999-01-01 00:00:00.000000",
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"},{"id":"7379c73c-4e69-11ec-b667-4313a9abe846","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 2","detail":"test tag 2 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				tagHandler: mockTag,
+			}
+
+			mockTag.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.tags, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func TestProcessV1TagsPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		customerID uuid.UUID
+		tagName    string
+		detail     string
+
+		tag       *tag.Tag
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/tags",
+				Method:   rabbitmqhandler.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name": "test tag1", "detail": "test tag1 detail"}`),
+			},
+
+			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+			"test tag1",
+			"test tag1 detail",
+
+			&tag.Tag{
+				ID:         uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+				CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+				Name:       "test tag1",
+				Detail:     "test tag1 detail",
+				TMCreate:   "2021-11-23 17:55:39.712000",
+				TMUpdate:   "9999-01-01 00:00:00.000000",
+				TMDelete:   "9999-01-01 00:00:00.000000",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				tagHandler: mockTag,
+			}
+
+			mockTag.EXPECT().Create(gomock.Any(), tt.customerID, tt.tagName, tt.detail).Return(tt.tag, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func TestProcessV1TagsIDGet(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id uuid.UUID
+
+		tag       *tag.Tag
+		expectRes *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/tags/c31676f0-4e69-11ec-afe3-77ba49fae527",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+
+			&tag.Tag{
+				ID:         uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+				CustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+				Name:       "test tag1",
+				Detail:     "test tag1 detail",
+				TMCreate:   "2021-11-23 17:55:39.712000",
+				TMUpdate:   "9999-01-01 00:00:00.000000",
+				TMDelete:   "9999-01-01 00:00:00.000000",
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+
+				tagHandler: mockTag,
+			}
+
+			mockTag.EXPECT().Get(gomock.Any(), tt.id).Return(tt.tag, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func TestProcessV1TagsIDPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id      uuid.UUID
+		tagName string
+		detail  string
+
+		resonseTag *tag.Tag
+		expectRes  *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/tags/c31676f0-4e69-11ec-afe3-77ba49fae527",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"update name", "detail": "update detail"}`),
+			},
+
+			uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+			"update name",
+			"update detail",
+
+			&tag.Tag{
+				ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+				tagHandler: mockTag,
+			}
+
+			mockTag.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.tagName, tt.detail).Return(tt.resonseTag, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
+func TestProcessV1TagsIDDelete(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *rabbitmqhandler.Request
+
+		id uuid.UUID
+
+		responseTag *tag.Tag
+		expectRes   *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:      "/v1/tags/c31676f0-4e69-11ec-afe3-77ba49fae527",
+				Method:   rabbitmqhandler.RequestMethodDelete,
+				DataType: "application/json",
+			},
+
+			uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+
+			&tag.Tag{
+				ID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockTag := taghandler.NewMockTagHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock: mockSock,
+				tagHandler: mockTag,
+			}
+
+			mockTag.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTag, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
