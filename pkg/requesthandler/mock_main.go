@@ -63,6 +63,7 @@ import (
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	bucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
+	tag0 "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	transfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
@@ -4601,6 +4602,81 @@ func (m *MockRequestHandler) TTSV1SpeecheCreate(ctx context.Context, callID uuid
 func (mr *MockRequestHandlerMockRecorder) TTSV1SpeecheCreate(ctx, callID, text, gender, language, timeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1SpeecheCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1SpeecheCreate), ctx, callID, text, gender, language, timeout)
+}
+
+// TagV1TagCreate mocks base method.
+func (m *MockRequestHandler) TagV1TagCreate(ctx context.Context, customerID uuid.UUID, name, detail string) (*tag0.Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TagV1TagCreate", ctx, customerID, name, detail)
+	ret0, _ := ret[0].(*tag0.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TagV1TagCreate indicates an expected call of TagV1TagCreate.
+func (mr *MockRequestHandlerMockRecorder) TagV1TagCreate(ctx, customerID, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagCreate", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagCreate), ctx, customerID, name, detail)
+}
+
+// TagV1TagDelete mocks base method.
+func (m *MockRequestHandler) TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*tag0.Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TagV1TagDelete", ctx, tagID)
+	ret0, _ := ret[0].(*tag0.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TagV1TagDelete indicates an expected call of TagV1TagDelete.
+func (mr *MockRequestHandlerMockRecorder) TagV1TagDelete(ctx, tagID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagDelete", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagDelete), ctx, tagID)
+}
+
+// TagV1TagGet mocks base method.
+func (m *MockRequestHandler) TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tag0.Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TagV1TagGet", ctx, tagID)
+	ret0, _ := ret[0].(*tag0.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TagV1TagGet indicates an expected call of TagV1TagGet.
+func (mr *MockRequestHandlerMockRecorder) TagV1TagGet(ctx, tagID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagGet", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagGet), ctx, tagID)
+}
+
+// TagV1TagGets mocks base method.
+func (m *MockRequestHandler) TagV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tag0.Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TagV1TagGets", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]tag0.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TagV1TagGets indicates an expected call of TagV1TagGets.
+func (mr *MockRequestHandlerMockRecorder) TagV1TagGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagGets", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagGets), ctx, customerID, pageToken, pageSize)
+}
+
+// TagV1TagUpdate mocks base method.
+func (m *MockRequestHandler) TagV1TagUpdate(ctx context.Context, tagID uuid.UUID, name, detail string) (*tag0.Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TagV1TagUpdate", ctx, tagID, name, detail)
+	ret0, _ := ret[0].(*tag0.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TagV1TagUpdate indicates an expected call of TagV1TagUpdate.
+func (mr *MockRequestHandlerMockRecorder) TagV1TagUpdate(ctx, tagID, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagUpdate", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagUpdate), ctx, tagID, name, detail)
 }
 
 // TranscribeV1TranscribeDelete mocks base method.

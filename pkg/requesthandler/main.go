@@ -59,6 +59,7 @@ import (
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
+	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
@@ -890,6 +891,13 @@ type RequestHandler interface {
 	// storage-manager: recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)
 	StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error
+
+	// tag-manager
+	TagV1TagCreate(ctx context.Context, customerID uuid.UUID, name string, detail string) (*tmtag.Tag, error)
+	TagV1TagUpdate(ctx context.Context, tagID uuid.UUID, name string, detail string) (*tmtag.Tag, error)
+	TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
+	TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
+	TagV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tmtag.Tag, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)
