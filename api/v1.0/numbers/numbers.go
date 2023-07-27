@@ -255,7 +255,7 @@ func numbersIDPUT(c *gin.Context) {
 
 	// update a number
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	numb, err := serviceHandler.NumberUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
+	numb, err := serviceHandler.NumberUpdate(c.Request.Context(), &u, id, req.CallFlowID, req.MessageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)

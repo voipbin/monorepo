@@ -279,8 +279,10 @@ func TestNumbersIDPUT(t *testing.T) {
 
 			uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
 			request.BodyNumbersIDPUT{
-				Name:   "test name",
-				Detail: "test detail",
+				CallFlowID:    uuid.FromStringOrNil("e2263f7a-2ca3-11ee-82b7-97de2fb4a790"),
+				MessageFlowID: uuid.FromStringOrNil("e26b0eb6-2ca3-11ee-b7ce-d36a5a962472"),
+				Name:          "test name",
+				Detail:        "test detail",
 			},
 			&nmnumber.WebhookMessage{
 				ID: uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
@@ -312,7 +314,7 @@ func TestNumbersIDPUT(t *testing.T) {
 			}
 			req, _ := http.NewRequest("PUT", tt.uri, bytes.NewBuffer(body))
 
-			mockSvc.EXPECT().NumberUpdate(req.Context(), &tt.customer, tt.id, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.resNumber, nil)
+			mockSvc.EXPECT().NumberUpdate(req.Context(), &tt.customer, tt.id, tt.requestBody.CallFlowID, tt.requestBody.MessageFlowID, tt.requestBody.Name, tt.requestBody.Detail).Return(tt.resNumber, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

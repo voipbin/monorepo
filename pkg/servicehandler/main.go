@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	bmaccount "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
@@ -47,6 +46,7 @@ import (
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 	tmtranscribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	tmtranscript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	tmtransfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
@@ -343,7 +343,7 @@ type ServiceHandler interface {
 	NumberGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*nmnumber.WebhookMessage, error)
 	NumberDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*nmnumber.WebhookMessage, error)
-	NumberUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error)
+	NumberUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)
 	NumberUpdateFlowIDs(ctx context.Context, u *cscustomer.Customer, id, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberRenew(ctx context.Context, u *cscustomer.Customer, tmRenew string) ([]*nmnumber.WebhookMessage, error)
 
@@ -484,11 +484,11 @@ type ServiceHandler interface {
 	RouteUpdate(ctx context.Context, u *cscustomer.Customer, routeID, providerID uuid.UUID, priority int, target string) (*rmroute.WebhookMessage, error)
 
 	// tag handlers
-	TagCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string) (*amtag.WebhookMessage, error)
-	TagDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
-	TagGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*amtag.WebhookMessage, error)
-	TagGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*amtag.WebhookMessage, error)
-	TagUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*amtag.WebhookMessage, error)
+	TagCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string) (*tmtag.WebhookMessage, error)
+	TagDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*tmtag.WebhookMessage, error)
+	TagGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*tmtag.WebhookMessage, error)
+	TagGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*tmtag.WebhookMessage, error)
+	TagUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*tmtag.WebhookMessage, error)
 
 	// transcribe handlers
 	TranscribeGet(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
