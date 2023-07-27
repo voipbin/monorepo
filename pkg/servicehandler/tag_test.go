@@ -7,14 +7,14 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	amtag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestTagCreate(t *testing.T) {
+func Test_TagCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -23,8 +23,8 @@ func TestTagCreate(t *testing.T) {
 		tagName  string
 		detail   string
 
-		response  *amtag.Tag
-		expectRes *amtag.WebhookMessage
+		response  *tmtag.Tag
+		expectRes *tmtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -34,10 +34,10 @@ func TestTagCreate(t *testing.T) {
 			"test1 name",
 			"test1 detail",
 
-			&amtag.Tag{
+			&tmtag.Tag{
 				ID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			},
-			&amtag.WebhookMessage{
+			&tmtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			},
 		},
@@ -56,7 +56,7 @@ func TestTagCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagCreate(ctx, tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagCreate(ctx, tt.customer.ID, tt.tagName, tt.detail).Return(tt.response, nil)
 
 			res, err := h.TagCreate(ctx, tt.customer, tt.tagName, tt.detail)
 			if err != nil {
@@ -70,7 +70,7 @@ func TestTagCreate(t *testing.T) {
 	}
 }
 
-func TestTagGets(t *testing.T) {
+func Test_TagGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -79,8 +79,8 @@ func TestTagGets(t *testing.T) {
 		size     uint64
 		token    string
 
-		response  []amtag.Tag
-		expectRes []*amtag.WebhookMessage
+		response  []tmtag.Tag
+		expectRes []*tmtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -90,12 +90,12 @@ func TestTagGets(t *testing.T) {
 			10,
 			"2020-09-20 03:23:20.995000",
 
-			[]amtag.Tag{
+			[]tmtag.Tag{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
 			},
-			[]*amtag.WebhookMessage{
+			[]*tmtag.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
@@ -109,7 +109,7 @@ func TestTagGets(t *testing.T) {
 			10,
 			"2020-09-20 03:23:20.995000",
 
-			[]amtag.Tag{
+			[]tmtag.Tag{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
@@ -117,7 +117,7 @@ func TestTagGets(t *testing.T) {
 					ID: uuid.FromStringOrNil("c0f620ee-4fbf-11ec-87b2-7372cbac1bb0"),
 				},
 			},
-			[]*amtag.WebhookMessage{
+			[]*tmtag.WebhookMessage{
 				{
 					ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				},
@@ -141,7 +141,7 @@ func TestTagGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagGets(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagGets(ctx, tt.customer.ID, tt.token, tt.size).Return(tt.response, nil)
 
 			res, err := h.TagGets(ctx, tt.customer, tt.size, tt.token)
 			if err != nil {
@@ -155,7 +155,7 @@ func TestTagGets(t *testing.T) {
 	}
 }
 
-func TestTagGet(t *testing.T) {
+func Test_TagGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -163,8 +163,8 @@ func TestTagGet(t *testing.T) {
 		customer *cscustomer.Customer
 		tagID    uuid.UUID
 
-		response  *amtag.Tag
-		expectRes *amtag.WebhookMessage
+		response  *tmtag.Tag
+		expectRes *tmtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -173,11 +173,11 @@ func TestTagGet(t *testing.T) {
 			},
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 
-			&amtag.Tag{
+			&tmtag.Tag{
 				ID:         uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&amtag.WebhookMessage{
+			&tmtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("b3216dac-4fba-11ec-8551-5b4f1596d5f9"),
 			},
 		},
@@ -196,7 +196,7 @@ func TestTagGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagGet(ctx, tt.tagID).Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID).Return(tt.response, nil)
 
 			res, err := h.TagGet(ctx, tt.customer, tt.tagID)
 			if err != nil {
@@ -210,7 +210,7 @@ func TestTagGet(t *testing.T) {
 	}
 }
 
-func TestTagDelete(t *testing.T) {
+func Test_TagDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -218,8 +218,8 @@ func TestTagDelete(t *testing.T) {
 		customer *cscustomer.Customer
 		tagID    uuid.UUID
 
-		resTagGet *amtag.Tag
-		expectRes *amtag.WebhookMessage
+		resTagGet *tmtag.Tag
+		expectRes *tmtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -228,11 +228,11 @@ func TestTagDelete(t *testing.T) {
 			},
 			uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 
-			&amtag.Tag{
+			&tmtag.Tag{
 				ID:         uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&amtag.WebhookMessage{
+			&tmtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			},
 		},
@@ -251,8 +251,8 @@ func TestTagDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
-			mockReq.EXPECT().AgentV1TagDelete(ctx, tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().TagV1TagDelete(ctx, tt.tagID).Return(tt.resTagGet, nil)
 
 			res, err := h.TagDelete(ctx, tt.customer, tt.tagID)
 			if err != nil {
@@ -266,7 +266,7 @@ func TestTagDelete(t *testing.T) {
 	}
 }
 
-func TestTagUpdate(t *testing.T) {
+func Test_TagUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -276,8 +276,8 @@ func TestTagUpdate(t *testing.T) {
 		tagName  string
 		detail   string
 
-		resTagGet *amtag.Tag
-		expectRes *amtag.WebhookMessage
+		resTagGet *tmtag.Tag
+		expectRes *tmtag.WebhookMessage
 	}{
 		{
 			"normal",
@@ -288,11 +288,11 @@ func TestTagUpdate(t *testing.T) {
 			"test1",
 			"detail",
 
-			&amtag.Tag{
+			&tmtag.Tag{
 				ID:         uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 			},
-			&amtag.WebhookMessage{
+			&tmtag.WebhookMessage{
 				ID: uuid.FromStringOrNil("f829d800-5067-11ec-8370-1b4ec1437594"),
 			},
 		},
@@ -311,8 +311,8 @@ func TestTagUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
-			mockReq.EXPECT().AgentV1TagUpdate(ctx, tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().TagV1TagUpdate(ctx, tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
 
 			res, err := h.TagUpdate(ctx, tt.customer, tt.tagID, tt.tagName, tt.detail)
 			if err != nil {

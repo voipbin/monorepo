@@ -21,8 +21,10 @@ type BodyNumbersPOST struct {
 // BodyNumbersIDPUT is request param define for
 // PUT /v1.0/numbers/<number-id>
 type BodyNumbersIDPUT struct {
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	CallFlowID    uuid.UUID `json:"call_flow_id"`
+	MessageFlowID uuid.UUID `json:"message_flow_id"`
+	Name          string    `json:"name"`
+	Detail        string    `json:"detail"`
 }
 
 // BodyNumbersIDFlowIDPUT is request param define for
