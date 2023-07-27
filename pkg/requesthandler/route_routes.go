@@ -7,9 +7,10 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	rmrequest "gitlab.com/voipbin/bin-manager/route-manager.git/pkg/listenhandler/models/request"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // RouteV1RouteCreate sends a request to route-manager
