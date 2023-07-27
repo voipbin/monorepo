@@ -3573,19 +3573,19 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberRenewByTmRenew(ctx, tmRe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberRenewByTmRenew", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberRenewByTmRenew), ctx, tmRenew)
 }
 
-// NumberV1NumberUpdateBasicInfo mocks base method.
-func (m *MockRequestHandler) NumberV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*number.Number, error) {
+// NumberV1NumberUpdate mocks base method.
+func (m *MockRequestHandler) NumberV1NumberUpdate(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberV1NumberUpdateBasicInfo", ctx, id, name, detail)
+	ret := m.ctrl.Call(m, "NumberV1NumberUpdate", ctx, id, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NumberV1NumberUpdateBasicInfo indicates an expected call of NumberV1NumberUpdateBasicInfo.
-func (mr *MockRequestHandlerMockRecorder) NumberV1NumberUpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
+// NumberV1NumberUpdate indicates an expected call of NumberV1NumberUpdate.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberUpdate(ctx, id, callFlowID, messageFlowID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberUpdateBasicInfo", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberUpdateBasicInfo), ctx, id, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberUpdate", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberUpdate), ctx, id, callFlowID, messageFlowID, name, detail)
 }
 
 // NumberV1NumberUpdateFlowID mocks base method.

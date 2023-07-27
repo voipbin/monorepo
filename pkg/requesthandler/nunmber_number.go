@@ -167,12 +167,14 @@ func (r *requestHandler) NumberV1NumberDelete(ctx context.Context, id uuid.UUID)
 // NumberV1NumberUpdate sends a request to the number-manager
 // to update a number.
 // Returns updated number info
-func (r *requestHandler) NumberV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberUpdate(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
 	data := &nmrequest.V1DataNumbersIDPut{
-		Name:   name,
-		Detail: detail,
+		CallFlowID:    callFlowID,
+		MessageFlowID: messageFlowID,
+		Name:          name,
+		Detail:        detail,
 	}
 
 	m, err := json.Marshal(data)

@@ -271,3 +271,11 @@ func (r *requestHandler) sendRequestBilling(ctx context.Context, uri string, met
 
 	return r.sendRequest(ctx, queueBilling, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestTag send a request to the tag-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestTag(ctx context.Context, uri string, method rabbitmqhandler.RequestMethod, resource resource, timeout, delayed int, dataType string, data []byte) (*rabbitmqhandler.Response, error) {
+
+	return r.sendRequest(ctx, queueTag, uri, method, resource, timeout, delayed, dataType, data)
+}

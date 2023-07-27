@@ -117,6 +117,7 @@ const (
 	queueRegistrar    = "bin-manager.registrar-manager.request"
 	queueRoute        = "bin-manager.route-manager.request"
 	queueStorage      = "bin-manager.storage-manager.request"
+	queueTag          = "bin-manager.tag-manager.request"
 	queueTranscribe   = "bin-manager.transcribe-manager.request"
 	queueTransfer     = "bin-manager.transfer-manager.request"
 	queueTTS          = "bin-manager.tts-manager.request"
@@ -258,6 +259,8 @@ const (
 	resourceRouteProviders resource = "route/providers"
 
 	resourceStorageRecording resource = "storage/recording"
+
+	resourceTagTags resource = "tag/tags"
 
 	resourceTranscribeTranscribes              resource = "transcribe/transcribes"
 	resourceTranscribeTranscribesID            resource = "transcribe/transcribes/<transcribe-id>"
@@ -763,7 +766,7 @@ type RequestHandler interface {
 	NumberV1NumberGetByNumber(ctx context.Context, num string) (*nmnumber.Number, error)
 	NumberV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error)
 	NumberV1NumberGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]nmnumber.Number, error)
-	NumberV1NumberUpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*nmnumber.Number, error)
+	NumberV1NumberUpdate(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error)
 	NumberV1NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.Number, error)
 	NumberV1NumberRenewByTmRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error)
 	NumberV1NumberRenewByDays(ctx context.Context, days int) ([]nmnumber.Number, error)
