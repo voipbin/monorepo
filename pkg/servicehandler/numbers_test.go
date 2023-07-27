@@ -339,9 +339,11 @@ func TestNumberUpdate(t *testing.T) {
 		name     string
 		customer *cscustomer.Customer
 
-		id         uuid.UUID
-		numberName string
-		detail     string
+		id            uuid.UUID
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
+		numberName    string
+		detail        string
 
 		responseGet    *nmnumber.Number
 		responseUpdate *nmnumber.Number
@@ -355,6 +357,8 @@ func TestNumberUpdate(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+			uuid.FromStringOrNil("72001c3a-2ca2-11ee-96c3-4730286893af"),
+			uuid.FromStringOrNil("7240534a-2ca2-11ee-bb9a-8f1c5dafa508"),
 			"update name",
 			"update detail",
 
@@ -399,9 +403,9 @@ func TestNumberUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NumberV1NumberUpdateBasicInfo(ctx, tt.id, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
+			mockReq.EXPECT().NumberV1NumberUpdate(ctx, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
 
-			res, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.numberName, tt.detail)
+			res, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -419,9 +423,11 @@ func Test_NumberUpdateError(t *testing.T) {
 		name     string
 		customer *cscustomer.Customer
 
-		id         uuid.UUID
-		numberName string
-		detail     string
+		id            uuid.UUID
+		callFlowID    uuid.UUID
+		messageFlowID uuid.UUID
+		numberName    string
+		detail        string
 
 		responseGet *nmnumber.Number
 	}
@@ -434,6 +440,8 @@ func Test_NumberUpdateError(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
+			uuid.FromStringOrNil("bfa09172-2ca2-11ee-88a7-775c33dab2a6"),
+			uuid.FromStringOrNil("bfd41d3a-2ca2-11ee-8663-1713f43b6555"),
 			"update name",
 			"update detail",
 
@@ -467,7 +475,7 @@ func Test_NumberUpdateError(t *testing.T) {
 
 			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
 
-			_, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.numberName, tt.detail)
+			_, err := h.NumberUpdate(ctx, tt.customer, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
