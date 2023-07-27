@@ -12,7 +12,6 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	agent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	tag "gitlab.com/voipbin/bin-manager/agent-manager.git/models/tag"
 	account "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account"
 	call "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
 	groupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
@@ -49,6 +48,7 @@ import (
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+	tag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
 	transcribe "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcribe"
 	transcript "gitlab.com/voipbin/bin-manager/transcribe-manager.git/models/transcript"
 	transfer "gitlab.com/voipbin/bin-manager/transfer-manager.git/models/transfer"
@@ -2050,18 +2050,18 @@ func (mr *MockServiceHandlerMockRecorder) NumberRenew(ctx, u, tmRenew interface{
 }
 
 // NumberUpdate mocks base method.
-func (m *MockServiceHandler) NumberUpdate(ctx context.Context, u *customer.Customer, id uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberUpdate(ctx context.Context, u *customer.Customer, id, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberUpdate", ctx, u, id, name, detail)
+	ret := m.ctrl.Call(m, "NumberUpdate", ctx, u, id, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NumberUpdate indicates an expected call of NumberUpdate.
-func (mr *MockServiceHandlerMockRecorder) NumberUpdate(ctx, u, id, name, detail interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) NumberUpdate(ctx, u, id, callFlowID, messageFlowID, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdate", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdate), ctx, u, id, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdate", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdate), ctx, u, id, callFlowID, messageFlowID, name, detail)
 }
 
 // NumberUpdateFlowIDs mocks base method.

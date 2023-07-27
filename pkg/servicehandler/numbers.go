@@ -147,7 +147,7 @@ func (h *serviceHandler) NumberDelete(ctx context.Context, u *cscustomer.Custome
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": u.ID,
 		"number_id":   id,
@@ -161,7 +161,7 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, u *cscustomer.Custome
 	}
 
 	// update number
-	tmp, err := h.reqHandler.NumberV1NumberUpdateBasicInfo(ctx, id, name, detail)
+	tmp, err := h.reqHandler.NumberV1NumberUpdate(ctx, id, callFlowID, messageFlowID, name, detail)
 	if err != nil {
 		log.Errorf("Could not update the number info. err: %v", err)
 		return nil, err
