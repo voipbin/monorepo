@@ -67,8 +67,8 @@ gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20230602163146-85b8850d40
 gitlab.com/voipbin/bin-manager/hook-manager.git v0.0.0-20230602163146-85b8850d4027/go.mod h1:GJYu7jBVZSP4nt7txLZm5zahdKFhI417861zukf2CDE=
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230705154830-1dd19ba6e804 h1:YcSMgz59fjGvJ91PBSToFvklhoi/Awog10DNc5/dJbQ=
 gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230705154830-1dd19ba6e804/go.mod h1:/lSSdoZsbejO5LNqUz3lD450btrkEn8kFPxKYtBgroQ=
-gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230712161740-5a6ad6f99ba8 h1:iIEyvAnhvusXjIxfgOEFyjbIEtEXwVzz0C9KNIj+mSQ=
-gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230712161740-5a6ad6f99ba8/go.mod h1:8v+HMNZeW2emk6PEsCoXjimFniUwLxT6xjff7EKxizA=
+gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230728171820-cdbeafa2cf1c h1:6+wRbxA8sdx4t2hPtWTQxcyh1bpokMdGeCuBYbnEzUI=
+gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230728171820-cdbeafa2cf1c/go.mod h1:AvTWBpu9dz/w1tDfdquO28emrtiD4S12ScYKzrLvTDA=
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901 h1:SCm0GihLmu4itJaZKLOAIBYB5TKakhdMpfEF6HCWOfk=
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901/go.mod h1:Cha5xWMeBJW4idXwvDSiME4BkOy38jgY0J3plyL5kbE=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230307162312-13dfc1050b1e h1:LUD/qnW9SPDgNh2K4J+o7pqsEHVu3x/1+hDvscW0DgE=

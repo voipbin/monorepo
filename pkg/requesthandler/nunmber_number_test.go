@@ -14,57 +14,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
-func Test_NumberV1NumberFlowDelete(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		flowID uuid.UUID
-
-		response *rabbitmqhandler.Response
-
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("19d3cb88-7d72-11eb-84a7-d3b58b91c0d9"),
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-			},
-
-			"bin-manager.number-manager.request",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/number_flows/19d3cb88-7d72-11eb-84a7-d3b58b91c0d9",
-				Method:   rabbitmqhandler.RequestMethodDelete,
-				DataType: ContentTypeJSON,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
-
-			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			if err := reqHandler.NumberV1NumberFlowDelete(ctx, tt.flowID); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-		})
-	}
-}
-
 func Test_NumberV1NumberCreate(t *testing.T) {
 
 	tests := []struct {

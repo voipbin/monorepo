@@ -83,25 +83,6 @@ func (r *requestHandler) NumberV1NumberGets(ctx context.Context, customerID uuid
 	return res, nil
 }
 
-// NumberV1NumberFlowDelete sends a request to number-manager
-// to delete a flow from the number.
-func (r *requestHandler) NumberV1NumberFlowDelete(ctx context.Context, flowID uuid.UUID) error {
-	uri := fmt.Sprintf("/v1/number_flows/%s", flowID)
-
-	tmp, err := r.sendRequestNumber(ctx, uri, rabbitmqhandler.RequestMethodDelete, resourceNumberNumbers, requestTimeoutDefault, 0, ContentTypeJSON, nil)
-	switch {
-	case err != nil:
-		return err
-	case tmp == nil:
-		// not found
-		return fmt.Errorf("response code: %d", 404)
-	case tmp.StatusCode > 299:
-		return fmt.Errorf("response code: %d", tmp.StatusCode)
-	}
-
-	return nil
-}
-
 // NMNumberCreate sends a request to the number-manager
 // to create an number.
 // Returns created number
