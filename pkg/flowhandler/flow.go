@@ -183,14 +183,6 @@ func (h *flowHandler) Delete(ctx context.Context, id uuid.UUID) (*flow.Flow, err
 		return nil, err
 	}
 
-	// send related flow-id clean up request to the number-manager
-	if err := h.reqHandler.NumberV1NumberFlowDelete(ctx, id); err != nil {
-		log.Errorf("Could not clean up the flow_id from the number-manager. err: %v", err)
-		// we don't return the err here, because the flow has been removed already.
-		// and the numbers which have the removed flow-id are OK too, because
-		// when the call-manager request the flow, that request will be failed too.
-	}
-
 	res, err := h.db.FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get deleted flow. err: %v", err)

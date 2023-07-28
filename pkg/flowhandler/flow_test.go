@@ -189,8 +189,6 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowDeleted, gomock.Any())
 
-			mockReq.EXPECT().NumberV1NumberFlowDelete(ctx, tt.flowID).Return(nil)
-
 			res, err := h.Delete(ctx, tt.flowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
