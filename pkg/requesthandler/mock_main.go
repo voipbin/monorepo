@@ -3470,20 +3470,6 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberDelete(ctx, id interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberDelete", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberDelete), ctx, id)
 }
 
-// NumberV1NumberFlowDelete mocks base method.
-func (m *MockRequestHandler) NumberV1NumberFlowDelete(ctx context.Context, flowID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberV1NumberFlowDelete", ctx, flowID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// NumberV1NumberFlowDelete indicates an expected call of NumberV1NumberFlowDelete.
-func (mr *MockRequestHandlerMockRecorder) NumberV1NumberFlowDelete(ctx, flowID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberFlowDelete", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberFlowDelete), ctx, flowID)
-}
-
 // NumberV1NumberGet mocks base method.
 func (m *MockRequestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
