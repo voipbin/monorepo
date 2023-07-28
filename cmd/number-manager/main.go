@@ -21,6 +21,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/listenhandler"
 	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/numberhandler"
+	"gitlab.com/voipbin/bin-manager/number-manager.git/pkg/subscribehandler"
 )
 
 const serviceName = "number-manager"
@@ -34,6 +35,8 @@ var argRabbitAddr = flag.String("rabbit_addr", "amqp://guest:guest@localhost:567
 var argRabbitQueueListen = flag.String("rabbit_queue_listen", "bin-manager.number-manager.request", "rabbitmq queue name for request listen")
 var argRabbitExchangeNotify = flag.String("rabbit_queue_event", "bin-manager.number-manager.event", "rabbitmq queue name for event notify")
 var argRabbitExchangeDelay = flag.String("rabbit_exchange_delay", "bin-manager.delay", "rabbitmq exchange name for delayed messaging.")
+var argRabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.flow-manager.event", "comma separated rabbitmq exchange name for subscribe")
+var argRabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.number-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 
 // args for prometheus
 var argPromEndpoint = flag.String("prom_endpoint", "/metrics", "endpoint for prometheus metric collecting.")
@@ -59,17 +62,14 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	// create db handler
-	db, err := createDBHandler(sqlDB, *argRedisAddr, *argRedisPassword, *argRedisDB)
-	if err != nil {
-		log.Errorf("Could not create dbhandler. err: %v", err)
+	// connect to cache
+	cache := cachehandler.NewHandler(*argRedisAddr, *argRedisPassword, *argRedisDB)
+	if err := cache.Connect(); err != nil {
+		log.Errorf("Could not connect to cache server. err: %v", err)
 		return
 	}
 
-	// create rabbit sock
-	sock := createRabbitSock(*argRabbitAddr)
-
-	if errRun := run(db, sock); errRun != nil {
+	if errRun := run(sqlDB, cache); errRun != nil {
 		log.Errorf("The run returned error. err: %v", errRun)
 	}
 	<-chDone
@@ -126,36 +126,24 @@ func initProm(endpoint, listen string) {
 	}()
 }
 
-// createDBHandler create the dbhandler and returns created dbhandler.
-// it connects to the database and cache.
-func createDBHandler(sqlDB *sql.DB, redisAddr, redisPassword string, redisDB int) (dbhandler.DBHandler, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "createDBHandler",
-	})
+// run runs the listen
+func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
-	// connect to cache
-	cache := cachehandler.NewHandler(redisAddr, redisPassword, redisDB)
-	if err := cache.Connect(); err != nil {
-		log.Errorf("Could not connect to cache server. err: %v", err)
-		return nil, err
+	// rabbitmq sock connect
+	rabbitSock := rabbitmqhandler.NewRabbit(*argRabbitAddr)
+	rabbitSock.Connect()
+
+	// create handlers
+	db := dbhandler.NewHandler(sqlDB, cache)
+	reqHandler := requesthandler.NewRequestHandler(rabbitSock, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *argRabbitExchangeDelay, *argRabbitExchangeNotify, serviceName)
+	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler)
+
+	if err := runListen(rabbitSock, numberHandler); err != nil {
+		return err
 	}
 
-	// create dbhandler
-	res := dbhandler.NewHandler(sqlDB, cache)
-	return res, nil
-}
-
-// createRabbitSock create rabbitmq socket
-func createRabbitSock(rabbitAddr string) rabbitmqhandler.Rabbit {
-	res := rabbitmqhandler.NewRabbit(rabbitAddr)
-	res.Connect()
-
-	return res
-}
-
-// run runs the service
-func run(db dbhandler.DBHandler, sock rabbitmqhandler.Rabbit) error {
-	if err := runListen(db, sock); err != nil {
+	if err := runSubscribe(rabbitSock, *argRabbitQueueSubscribe, *argRabbitListenSubscribes, numberHandler); err != nil {
 		return err
 	}
 
@@ -163,17 +151,24 @@ func run(db dbhandler.DBHandler, sock rabbitmqhandler.Rabbit) error {
 }
 
 // runListen runs the listen service
-func runListen(db dbhandler.DBHandler, sock rabbitmqhandler.Rabbit) error {
-
-	// create handlers
-	reqHandler := requesthandler.NewRequestHandler(sock, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sock, reqHandler, *argRabbitExchangeDelay, *argRabbitExchangeNotify, serviceName)
-	numberHandler := numberhandler.NewNumberHandler(reqHandler, db, notifyHandler)
-	listenHandler := listenhandler.NewListenHandler(sock, numberHandler)
+func runListen(rabbitSock rabbitmqhandler.Rabbit, numberHandler numberhandler.NumberHandler) error {
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, numberHandler)
 
 	// run
 	if err := listenHandler.Run(*argRabbitQueueListen, *argRabbitExchangeDelay); err != nil {
 		logrus.Errorf("Could not run the listenhandler correctly. err: %v", err)
+	}
+
+	return nil
+}
+
+// runSubscribe runs the subscribed event handler
+func runSubscribe(rabbitSock rabbitmqhandler.Rabbit, subscribeQueue string, subscribeTargets string, numberHandler numberhandler.NumberHandler) error {
+	subHandler := subscribehandler.NewSubscribeHandler(rabbitSock, subscribeQueue, subscribeTargets, numberHandler)
+
+	// run
+	if err := subHandler.Run(); err != nil {
+		return err
 	}
 
 	return nil

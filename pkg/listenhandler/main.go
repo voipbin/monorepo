@@ -53,9 +53,6 @@ var (
 	regV1NumbersNumber    = regexp.MustCompile("/v1/numbers/+" + regAny + "$")
 	regV1NumbersIDFlowIDs = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
 	regV1NumbersRenew     = regexp.MustCompile(`/v1/numbers/renew$`)
-
-	// numberflows
-	regV1NumberFlowsID = regexp.MustCompile("/v1/number_flows/" + regUUID)
 )
 
 var (
@@ -217,15 +214,6 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	case regV1NumbersGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1NumbersGet(ctx, m)
 		requestType = "/v1/numbers"
-
-	////////////////////
-	// number_flows
-	////////////////////
-
-	// DELETE /number_flows/<flow_id>
-	case regV1NumberFlowsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
-		response, err = h.processV1NumberFlowsDelete(ctx, m)
-		requestType = "/v1/numbers_flows"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
