@@ -14,12 +14,12 @@ import (
 
 // callsPOST handles POST /calls request.
 // It creates a temp flow and create a call with temp flow.
-// @Summary Make an outbound call
+// @Summary     Make an outbound call
 // @Description dialing to destination
-// @Produce  json
-// @Param call body request.BodyCallsPOST true "The call detail"
-// @Success 200 {object} call.Call
-// @Router /v1.0/calls [post]
+// @Produce     json
+// @Param       call body     request.BodyCallsPOST true "The call detail"
+// @Success     200  {object} call.Call
+// @Router      /v1.0/calls [post]
 func callsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsPOST",
@@ -67,12 +67,12 @@ func callsPOST(c *gin.Context) {
 
 // callsIDDelete handles DELETE /calls/<call-id> request.
 // It deletes the call.
-// @Summary Hangup the call
+// @Summary     Hangup the call
 // @Description Hangup the call of the given id
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200 {object} call.Call
-// @Router /v1.0/calls/{id} [delete]
+// @Produce     json
+// @Param       id  path     string true "The ID of the call"
+// @Success     200 {object} call.Call
+// @Router      /v1.0/calls/{id} [delete]
 func callsIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDDelete",
@@ -113,13 +113,13 @@ func callsIDDelete(c *gin.Context) {
 // callsGET handles GET /calls request.
 // It returns list of calls of the given customer.
 
-// @Summary Get list of calls
+// @Summary     Get list of calls
 // @Description get calls of the customer
-// @Produce  json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyCallsGET
-// @Router /v1.0/calls [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyCallsGET
+// @Router      /v1.0/calls [get]
 func callsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsGET",
@@ -181,12 +181,12 @@ func callsGET(c *gin.Context) {
 
 // callsIDGET handles GET /calls/{id} request.
 // It returns detail call info.
-// @Summary Get detail call info.
+// @Summary     Get detail call info.
 // @Description Returns detail call info of the given call id.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200 {object} call.Call
-// @Router /v1.0/calls/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the call"
+// @Success     200 {object} call.Call
+// @Router      /v1.0/calls/{id} [get]
 func callsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDGET",
@@ -224,12 +224,12 @@ func callsIDGET(c *gin.Context) {
 
 // callsIDHangupPOST handles GET /calls/{id}/hangup request.
 // It returns detail call info.
-// @Summary Hangup the call.
+// @Summary     Hangup the call.
 // @Description Returns detail call info of the given call id.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200 {object} call.Call
-// @Router /v1.0/calls/{id}/hangup [post]
+// @Produce     json
+// @Param       id  path     string true "The ID of the call"
+// @Success     200 {object} call.Call
+// @Router      /v1.0/calls/{id}/hangup [post]
 func callsIDHangupPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDHangupPOST",
@@ -267,12 +267,12 @@ func callsIDHangupPOST(c *gin.Context) {
 
 // callsIDTalkPOST handles GET /calls/{id}/talk request.
 // It talks to the call.
-// @Summary Talk to the call.
+// @Summary     Talk to the call.
 // @Description Talks to the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/talk [post]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/talk [post]
 func callsIDTalkPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDTalkPOST",
@@ -316,12 +316,12 @@ func callsIDTalkPOST(c *gin.Context) {
 
 // callsIDHoldPOST handles GET /calls/{id}/hold request.
 // It holds the call.
-// @Summary Hold the call.
+// @Summary     Hold the call.
 // @Description Hold the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/hold [post]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/hold [post]
 func callsIDHoldPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDHoldPOST",
@@ -358,12 +358,12 @@ func callsIDHoldPOST(c *gin.Context) {
 
 // callsIDHoldDELETE handles DELETE /calls/{id}/hold request.
 // It unholds the call.
-// @Summary Unhold the call.
+// @Summary     Unhold the call.
 // @Description Unhold the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/hold [delete]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/hold [delete]
 func callsIDHoldDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDHoldDELETE",
@@ -400,12 +400,12 @@ func callsIDHoldDELETE(c *gin.Context) {
 
 // callsIDMutePOST handles POST /calls/{id}/mute request.
 // It mutes the call.
-// @Summary Mute the call.
+// @Summary     Mute the call.
 // @Description Mute the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/mute [post]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/mute [post]
 func callsIDMutePOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDMutePOST",
@@ -450,12 +450,12 @@ func callsIDMutePOST(c *gin.Context) {
 
 // callsIDMuteDELETE handles DELETE /calls/{id}/mute request.
 // It unmutes the call.
-// @Summary Unmute the call.
+// @Summary     Unmute the call.
 // @Description Unmute the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/mute [delete]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/mute [delete]
 func callsIDMuteDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDMuteDELETE",
@@ -500,12 +500,12 @@ func callsIDMuteDELETE(c *gin.Context) {
 
 // callsIDMOHPOST handles POST /calls/{id}/moh request.
 // It moh the call.
-// @Summary MOH the call.
+// @Summary     MOH the call.
 // @Description MOH the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/moh [post]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/moh [post]
 func callsIDMOHPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDMOHPOST",
@@ -542,12 +542,12 @@ func callsIDMOHPOST(c *gin.Context) {
 
 // callsIDMOHDELETE handles DELETE /calls/{id}/moh request.
 // It moh the call.
-// @Summary MOH off the call.
+// @Summary     MOH off the call.
 // @Description MOH off the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/moh [delete]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/moh [delete]
 func callsIDMOHDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDMOHDELETE",
@@ -584,12 +584,12 @@ func callsIDMOHDELETE(c *gin.Context) {
 
 // callsIDSilencePOST handles POST /calls/{id}/silence request.
 // It silence the call.
-// @Summary Silence the call.
+// @Summary     Silence the call.
 // @Description Silence the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/silence [post]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/silence [post]
 func callsIDSilencePOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDSilencePOST",
@@ -626,12 +626,12 @@ func callsIDSilencePOST(c *gin.Context) {
 
 // callsIDSilenceDELETE handles DELETE /calls/{id}/silence request.
 // It silence off the call.
-// @Summary Silence off the call.
+// @Summary     Silence off the call.
 // @Description Silence off the call.
-// @Produce json
-// @Param id path string true "The ID of the call"
-// @Success 200
-// @Router /v1.0/calls/{id}/silence [delete]
+// @Produce     json
+// @Param       id path string true "The ID of the call"
+// @Success     200
+// @Router      /v1.0/calls/{id}/silence [delete]
 func callsIDSilenceDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "callsIDSilenceDELETE",

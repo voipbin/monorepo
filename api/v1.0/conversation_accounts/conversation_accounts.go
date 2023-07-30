@@ -15,13 +15,13 @@ import (
 
 // conversationAccountsGet handles GET /conversation_accounts request.
 // It gets a list of conversation accounts with the given info.
-// @Summary Gets a list of conversation accounts.
+// @Summary     Gets a list of conversation accounts.
 // @Description Gets a list of conversation accounts
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyConversationsGET
-// @Router /v1.0/conversation_accounts [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyConversationsGET
+// @Router      /v1.0/conversation_accounts [get]
 func conversationAccountsGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationAccountsGet",
@@ -84,12 +84,12 @@ func conversationAccountsGet(c *gin.Context) {
 
 // conversationAccountsPost handles POST /conversation_accounts request.
 // It creates a new conversation account with the given info and returns created conversation account info.
-// @Summary Create a new conversation account and returns detail created conversation account info.
+// @Summary     Create a new conversation account and returns detail created conversation account info.
 // @Description Create a new conversation account and returns detail created conversation account info.
-// @Produce json
-// @Param customer body request.BodyConversationAccountsPOST true "customer info."
-// @Success 200 {object} account.WebhookMessage
-// @Router /v1.0/conversation_accounts [post]
+// @Produce     json
+// @Param       customer body     request.BodyConversationAccountsPOST true "customer info."
+// @Success     200      {object} account.WebhookMessage
+// @Router      /v1.0/conversation_accounts [post]
 func conversationAccountsPost(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationAccountsPost",
@@ -139,12 +139,12 @@ func conversationAccountsPost(c *gin.Context) {
 
 // conversationAccountsIDGet handles GET /conversation_accounts/{id} request.
 // It returns detail conversation account info.
-// @Summary Returns detail conversation account info.
+// @Summary     Returns detail conversation account info.
 // @Description Returns detail conversation account info of the given conversation account id.
-// @Produce json
-// @Param id path string true "The ID of the conversation account"
-// @Success 200 {object} account.WebhookMessage
-// @Router /v1.0/conversation_accounts/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the conversation account"
+// @Success     200 {object} account.WebhookMessage
+// @Router      /v1.0/conversation_accounts/{id} [get]
 func conversationAccountsIDGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationAccountsIDGet",
@@ -182,12 +182,12 @@ func conversationAccountsIDGet(c *gin.Context) {
 
 // conversationAccountsIDPut handles PUT /conversation_accounts/{id} request.
 // It returns detail conversation account info.
-// @Summary Returns detail conversation account info.
+// @Summary     Returns detail conversation account info.
 // @Description Returns detail conversation account info of the given conversation account id.
-// @Produce json
-// @Param id path string true "The ID of the conversation account"
-// @Success 200 {object} account.WebhookMessage
-// @Router /v1.0/conversation_accounts/{id} [put]
+// @Produce     json
+// @Param       id  path     string true "The ID of the conversation account"
+// @Success     200 {object} account.WebhookMessage
+// @Router      /v1.0/conversation_accounts/{id} [put]
 func conversationAccountsIDPut(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationAccountsIDGet",
@@ -234,12 +234,12 @@ func conversationAccountsIDPut(c *gin.Context) {
 
 // conversationAccountsIDDelete handles DELETE /conversation_accounts/{id} request.
 // It returns detail conversation account info.
-// @Summary Returns detail conversation account info.
+// @Summary     Returns detail conversation account info.
 // @Description Returns detail conversation account info of the given conversation account id.
-// @Produce json
-// @Param id path string true "The ID of the conversation account"
-// @Success 200 {object} account.WebhookMessage
-// @Router /v1.0/conversation_accounts/{id} [put]
+// @Produce     json
+// @Param       id  path     string true "The ID of the conversation account"
+// @Success     200 {object} account.WebhookMessage
+// @Router      /v1.0/conversation_accounts/{id} [put]
 func conversationAccountsIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationAccountsIDDelete",

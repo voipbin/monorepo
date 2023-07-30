@@ -440,6 +440,139 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1.0/billing_accounts": {
+            "get": {
+                "description": "get list of the customer's billing accounts",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get list of billing accounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyBillingAccountsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new billing account",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new billing account",
+                "parameters": [
+                    {
+                        "description": "The call detail",
+                        "name": "call",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyCallsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/account.Account"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/billing_accounts/{id}": {
+            "get": {
+                "description": "Returns detail billing account info of the given call id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get detail billing account info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the billing account",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/account.Account"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete billing account of the given id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "delete billing account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the billing_account",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/account.Account"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/billing_accounts/{id}/balance_add_force": {
+            "post": {
+                "description": "Adds the given balance to the billing account.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Adds the given balance to the billing account.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the billing account",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/account.Account"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/calls": {
             "get": {
                 "description": "get calls of the customer",
@@ -1322,6 +1455,32 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "description": "Update the chatbot and returns updated chatbot info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update the chatbot and returns updated chatbot info.",
+                "parameters": [
+                    {
+                        "description": "chatbot info.",
+                        "name": "chatbot",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyChatbotsIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/chatbot.WebhookMessage"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete a existing chatbot.",
                 "produces": [
@@ -2145,6 +2304,113 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1.0/conversation_accounts": {
+            "get": {
+                "description": "Gets a list of conversation accounts",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a list of conversation accounts.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The size of results. Max 100",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The token. tm_create",
+                        "name": "page_token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BodyConversationsGET"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new conversation account and returns detail created conversation account info.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new conversation account and returns detail created conversation account info.",
+                "parameters": [
+                    {
+                        "description": "customer info.",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyConversationAccountsPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_account.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/conversation_accounts/{id}": {
+            "get": {
+                "description": "Returns detail conversation account info of the given conversation account id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail conversation account info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conversation account",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_account.WebhookMessage"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Returns detail conversation account info of the given conversation account id.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns detail conversation account info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the conversation account",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_account.WebhookMessage"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/conversations": {
             "get": {
                 "description": "Gets a list of conversations",
@@ -2176,41 +2442,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1.0/conversations/setup": {
-            "post": {
-                "description": "Send a message and returns a sent message info.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Send a message and returns detail sent message info.",
-                "parameters": [
-                    {
-                        "description": "message info.",
-                        "name": "message",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.ParamConversationsSetupPOST"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_conversation-manager.git_models_message.WebhookMessage"
-                        }
-                    }
-                }
-            }
-        },
         "/v1.0/conversations/{id}": {
             "get": {
-                "description": "Returns detail conversation info of the given conversation id.",
+                "description": "Update the conversation info of the given conversation id.",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Returns detail conversation info.",
+                "summary": "Update the conversation info.",
                 "parameters": [
                     {
                         "type": "string",
@@ -2273,7 +2511,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.ParamConversationsIDMessagesPOST"
+                            "$ref": "#/definitions/request.BodyConversationsIDMessagesPOST"
                         }
                     }
                 ],
@@ -2397,13 +2635,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1.0/customers/{id}/line_info": {
+        "/v1.0/customers/{id}/billing_account_id": {
             "put": {
-                "description": "Update a customer's line info.",
+                "description": "Update a customer's billing account id.",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Update a customer's line info.",
+                "summary": "Update a customer's billing account id.",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3125,6 +3363,37 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/number.Number"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1.0/numbers/renew": {
+            "post": {
+                "description": "Renew the numbers.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Renew the numbers.",
+                "parameters": [
+                    {
+                        "description": "Update info.",
+                        "name": "update_info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyNumbersIDFlowIDPUT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/number.Number"
+                            }
                         }
                     }
                 }
@@ -4680,6 +4949,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1.0/transfers": {
+            "post": {
+                "description": "Transfer the call",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Start a transfer",
+                "parameters": [
+                    {
+                        "description": "Transfer info.",
+                        "name": "transcribe",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BodyTransfersPOST"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/transfer.Transfer"
+                        }
+                    }
+                }
+            }
+        },
         "/v1.0/ws": {
             "get": {
                 "description": "create a new queue",
@@ -4699,6 +4996,46 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "account.Account": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "description": "USD",
+                    "type": "number"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "payment_type": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "action.Action": {
             "type": "object",
             "properties": {
@@ -5144,6 +5481,9 @@ const docTemplate = `{
                 "action": {
                     "$ref": "#/definitions/action.Action"
                 },
+                "activeflow_id": {
+                    "type": "string"
+                },
                 "chained_call_ids": {
                     "description": "chained call ids",
                     "type": "array",
@@ -5163,6 +5503,10 @@ const docTemplate = `{
                 },
                 "flow_id": {
                     "description": "flow id",
+                    "type": "string"
+                },
+                "groupcall_id": {
+                    "description": "groupcall id, if this set, that means this call is part of given groupcall.",
                     "type": "string"
                 },
                 "hangup_by": {
@@ -5508,6 +5852,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "init_prompt": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -5538,6 +5885,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "init_prompt": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -5556,6 +5906,12 @@ const docTemplate = `{
         "chatbotcall.Chatbotcall": {
             "type": "object",
             "properties": {
+                "activeflow_id": {
+                    "type": "string"
+                },
+                "chatbot_engine_type": {
+                    "type": "string"
+                },
                 "chatbot_id": {
                     "type": "string"
                 },
@@ -5573,6 +5929,12 @@ const docTemplate = `{
                 },
                 "language": {
                     "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/chatbotcall.Message"
+                    }
                 },
                 "reference_id": {
                     "type": "string"
@@ -5600,9 +5962,23 @@ const docTemplate = `{
                 }
             }
         },
+        "chatbotcall.Message": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
         "chatbotcall.WebhookMessage": {
             "type": "object",
             "properties": {
+                "activeflow_id": {
+                    "type": "string"
+                },
                 "chatbot_id": {
                     "type": "string"
                 },
@@ -5816,6 +6192,9 @@ const docTemplate = `{
         "conversation.WebhookMessage": {
             "type": "object",
             "properties": {
+                "account_id": {
+                    "type": "string"
+                },
                 "customer_id": {
                     "type": "string"
                 },
@@ -5857,20 +6236,16 @@ const docTemplate = `{
         "customer.Customer": {
             "type": "object",
             "properties": {
+                "billing_account_id": {
+                    "description": "default billing account id",
+                    "type": "string"
+                },
                 "detail": {
                     "description": "detail",
                     "type": "string"
                 },
                 "id": {
                     "description": "Customer's ID",
-                    "type": "string"
-                },
-                "line_secret": {
-                    "description": "line info",
-                    "type": "string"
-                },
-                "line_token": {
-                    "description": "line's token",
                     "type": "string"
                 },
                 "name": {
@@ -5913,20 +6288,16 @@ const docTemplate = `{
         "customer.WebhookMessage": {
             "type": "object",
             "properties": {
+                "billing_account_id": {
+                    "description": "default billing account id",
+                    "type": "string"
+                },
                 "detail": {
                     "description": "detail",
                     "type": "string"
                 },
                 "id": {
                     "description": "Customer's ID",
-                    "type": "string"
-                },
-                "line_secret": {
-                    "description": "line info",
-                    "type": "string"
-                },
-                "line_token": {
-                    "description": "line's token",
                     "type": "string"
                 },
                 "name": {
@@ -6142,8 +6513,84 @@ const docTemplate = `{
                 }
             }
         },
+        "gitlab.com_voipbin_bin-manager_billing-manager.git_models_account.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "description": "USD",
+                    "type": "number"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "payment_type": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "description": "timestamp",
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                }
+            }
+        },
         "gitlab.com_voipbin_bin-manager_chat-manager.git_models_media.Media": {
             "type": "object"
+        },
+        "gitlab.com_voipbin_bin-manager_conversation-manager.git_models_account.WebhookMessage": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "description": "customer",
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "customer id",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "secret": {
+                    "description": "secret",
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "token": {
+                    "description": "usually api token",
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
         },
         "gitlab.com_voipbin_bin-manager_conversation-manager.git_models_media.Media": {
             "type": "object",
@@ -6263,11 +6710,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "answer_call_id": {
-                    "description": "valid only when the answered_method  is hangup others",
+                    "description": "represents answered call id.",
+                    "type": "string"
+                },
+                "answer_groupcall_id": {
+                    "description": "represents answered groupcall id",
                     "type": "string"
                 },
                 "answer_method": {
                     "type": "string"
+                },
+                "call_count": {
+                    "description": "represent left number of calls for current dial",
+                    "type": "integer"
                 },
                 "call_ids": {
                     "type": "array",
@@ -6284,7 +6739,30 @@ const docTemplate = `{
                         "$ref": "#/definitions/address.Address"
                     }
                 },
+                "dial_index": {
+                    "description": "represent current dial index. valid only ringmethod is ringall",
+                    "type": "integer"
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "groupcall_count": {
+                    "description": "represent left number of groupcalls for current dial",
+                    "type": "integer"
+                },
+                "groupcall_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "id": {
+                    "type": "string"
+                },
+                "master_call_id": {
+                    "type": "string"
+                },
+                "master_groupcall_id": {
                     "type": "string"
                 },
                 "ring_method": {
@@ -6292,6 +6770,9 @@ const docTemplate = `{
                 },
                 "source": {
                     "$ref": "#/definitions/address.Address"
+                },
+                "status": {
+                    "type": "string"
                 },
                 "tm_create": {
                     "description": "timestamp",
@@ -6309,11 +6790,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "answer_call_id": {
-                    "description": "valid only when the answered_method  is hangup others",
+                    "description": "represents answered call id.",
+                    "type": "string"
+                },
+                "answer_groupcall_id": {
+                    "description": "represents answered groupcall id",
                     "type": "string"
                 },
                 "answer_method": {
                     "type": "string"
+                },
+                "call_count": {
+                    "description": "represent left number of calls for current dial",
+                    "type": "integer"
                 },
                 "call_ids": {
                     "type": "array",
@@ -6330,7 +6819,30 @@ const docTemplate = `{
                         "$ref": "#/definitions/address.Address"
                     }
                 },
+                "dial_index": {
+                    "description": "represent current dial index. valid only ringmethod is ringall",
+                    "type": "integer"
+                },
+                "flow_id": {
+                    "type": "string"
+                },
+                "groupcall_count": {
+                    "description": "represent left number of groupcalls for current dial",
+                    "type": "integer"
+                },
+                "groupcall_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "id": {
+                    "type": "string"
+                },
+                "master_call_id": {
+                    "type": "string"
+                },
+                "master_groupcall_id": {
                     "type": "string"
                 },
                 "ring_method": {
@@ -6338,6 +6850,9 @@ const docTemplate = `{
                 },
                 "source": {
                     "$ref": "#/definitions/address.Address"
+                },
+                "status": {
+                    "type": "string"
                 },
                 "tm_create": {
                     "description": "timestamp",
@@ -6572,6 +7087,9 @@ const docTemplate = `{
                     "description": "timestamp",
                     "type": "string"
                 },
+                "tm_renew": {
+                    "type": "string"
+                },
                 "tm_update": {
                     "type": "string"
                 }
@@ -6614,6 +7132,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tm_delete": {
+                    "type": "string"
+                },
+                "tm_purchase": {
+                    "type": "string"
+                },
+                "tm_renew": {
                     "type": "string"
                 },
                 "tm_update": {
@@ -7310,6 +7834,23 @@ const docTemplate = `{
                 }
             }
         },
+        "request.BodyChatbotsIDPUT": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "engine_type": {
+                    "type": "string"
+                },
+                "init_prompt": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "request.BodyChatbotsPOST": {
             "type": "object",
             "properties": {
@@ -7317,6 +7858,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "engine_type": {
+                    "type": "string"
+                },
+                "init_prompt": {
                     "type": "string"
                 },
                 "name": {
@@ -7418,16 +7962,38 @@ const docTemplate = `{
                 }
             }
         },
-        "request.BodyCustomersPOST": {
+        "request.BodyConversationAccountsPOST": {
             "type": "object",
             "properties": {
                 "detail": {
                     "type": "string"
                 },
-                "line_secret": {
+                "name": {
                     "type": "string"
                 },
-                "line_token": {
+                "secret": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyConversationsIDMessagesPOST": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.BodyCustomersPOST": {
+            "type": "object",
+            "properties": {
+                "detail": {
                     "type": "string"
                 },
                 "name": {
@@ -7600,7 +8166,13 @@ const docTemplate = `{
         "request.BodyNumbersIDPUT": {
             "type": "object",
             "properties": {
+                "call_flow_id": {
+                    "type": "string"
+                },
                 "detail": {
+                    "type": "string"
+                },
+                "message_flow_id": {
                     "type": "string"
                 },
                 "name": {
@@ -7881,18 +8453,19 @@ const docTemplate = `{
                 }
             }
         },
-        "request.ParamConversationsIDMessagesPOST": {
+        "request.BodyTransfersPOST": {
             "type": "object",
             "properties": {
-                "text": {
+                "transferee_addresses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "transferer_call_id": {
                     "type": "string"
-                }
-            }
-        },
-        "request.ParamConversationsSetupPOST": {
-            "type": "object",
-            "properties": {
-                "reference_type": {
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -7932,6 +8505,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/availablenumber.WebhookMessage"
+                    }
+                }
+            }
+        },
+        "response.BodyBillingAccountsGET": {
+            "type": "object",
+            "properties": {
+                "next_page_token": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/gitlab.com_voipbin_bin-manager_billing-manager.git_models_account.WebhookMessage"
                     }
                 }
             }
@@ -8494,13 +9081,56 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "transfer.Transfer": {
+            "type": "object",
+            "properties": {
+                "confbridge_id": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "string"
+                },
+                "groupcall_id": {
+                    "description": "created groupcall id",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "tm_create": {
+                    "type": "string"
+                },
+                "tm_delete": {
+                    "type": "string"
+                },
+                "tm_update": {
+                    "type": "string"
+                },
+                "transferee_addresses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/address.Address"
+                    }
+                },
+                "transferee_call_id": {
+                    "type": "string"
+                },
+                "transferer_call_id": {
+                    "description": "transferer/transferee info",
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "3.1.0",
 	Host:             "api.voipbin.net",
 	BasePath:         "",
 	Schemes:          []string{},
