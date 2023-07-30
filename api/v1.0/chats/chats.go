@@ -15,12 +15,12 @@ import (
 
 // chatsPOST handles POST /chats request.
 // It creates a new chat with the given info and returns created chat info.
-// @Summary Create a new chat and returns detail created chat info.
+// @Summary     Create a new chat and returns detail created chat info.
 // @Description Create a new chat and returns detail created chat info.
-// @Produce json
-// @Param chat body request.BodyChatsPOST true "chat info."
-// @Success 200 {object} chat.WebhookMessage
-// @Router /v1.0/chats [post]
+// @Produce     json
+// @Param       chat body     request.BodyChatsPOST true "chat info."
+// @Success     200  {object} chat.WebhookMessage
+// @Router      /v1.0/chats [post]
 func chatsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsPOST",
@@ -64,13 +64,13 @@ func chatsPOST(c *gin.Context) {
 
 // chatsGET handles GET /chats request.
 // It gets a list of chats with the given info.
-// @Summary Gets a list of chats.
+// @Summary     Gets a list of chats.
 // @Description Gets a list of chats
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyChatsGET
-// @Router /v1.0/chats [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyChatsGET
+// @Router      /v1.0/chats [get]
 func chatsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsGET",
@@ -134,12 +134,12 @@ func chatsGET(c *gin.Context) {
 
 // chatsIDGET handles GET /chats/{id} request.
 // It returns detail chat info.
-// @Summary Returns detail chat info.
+// @Summary     Returns detail chat info.
 // @Description Returns detail chat info of the given chat id.
-// @Produce json
-// @Param id path string true "The ID of the chat"
-// @Success 200 {object} chat.Chat
-// @Router /v1.0/chats/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the chat"
+// @Success     200 {object} chat.Chat
+// @Router      /v1.0/chats/{id} [get]
 func chatsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsIDGET",
@@ -179,12 +179,12 @@ func chatsIDGET(c *gin.Context) {
 
 // chatsIDDELETE handles DELETE /chats/{id} request.
 // It deletes a exist chat info.
-// @Summary Delete a existing chat.
+// @Summary     Delete a existing chat.
 // @Description Delete a existing chat.
-// @Produce json
-// @Param id query string true "The chat's id"
-// @Success 200
-// @Router /v1.0/chats/{id} [delete]
+// @Produce     json
+// @Param       id query string true "The chat's id"
+// @Success     200
+// @Router      /v1.0/chats/{id} [delete]
 func chatsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsIDDELETE",
@@ -226,13 +226,13 @@ func chatsIDDELETE(c *gin.Context) {
 // chatsIDPUT handles PUT /chats/{id} request.
 // It updates a exist chat info with the given info.
 // And returns updated chat info if it succeed.
-// @Summary Update a chat and reuturns updated info.
+// @Summary     Update a chat and reuturns updated info.
 // @Description Update a chat and returns detail updated info.
-// @Produce json
-// @Param id query string true "The chat's id"
-// @Param update_info body request.BodyChatsIDPUT true "The update info"
-// @Success 200 {object} chat.Chat
-// @Router /v1.0/chats/{id} [put]
+// @Produce     json
+// @Param       id          query    string                 true "The chat's id"
+// @Param       update_info body     request.BodyChatsIDPUT true "The update info"
+// @Success     200         {object} chat.Chat
+// @Router      /v1.0/chats/{id} [put]
 func chatsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsIDPUT",
@@ -281,13 +281,13 @@ func chatsIDPUT(c *gin.Context) {
 // chatsIDOwnerIDPUT handles PUT /chats/{id}/owner_id request.
 // It updates a exist chat info with the given chat info.
 // And returns updated chat info if it succeed.
-// @Summary Update a chat and reuturns updated info.
+// @Summary     Update a chat and reuturns updated info.
 // @Description Update a chat and returns detail updated info.
-// @Produce json
-// @Param id query string true "The chat's id"
-// @Param update_info body request.BodyChatsIDOwnerIDPUT true "The update info"
-// @Success 200 {object} chat.Chat
-// @Router /v1.0/chats/{id}/owner_id [put]
+// @Produce     json
+// @Param       id          query    string                        true "The chat's id"
+// @Param       update_info body     request.BodyChatsIDOwnerIDPUT true "The update info"
+// @Success     200         {object} chat.Chat
+// @Router      /v1.0/chats/{id}/owner_id [put]
 func chatsIDOwnerIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsIDOwnerIDPUT",
@@ -335,12 +335,12 @@ func chatsIDOwnerIDPUT(c *gin.Context) {
 
 // chatsIDParticipantIDsPOST handles POST /chats/{id}/participant_ids request.
 // It adds a given participant id to the chat and returns updated chat info.
-// @Summary Add a new participant id to the chat and returns detail updated chat info.
+// @Summary     Add a new participant id to the chat and returns detail updated chat info.
 // @Description Add a new participant id to the cat and returns detail updated chat info.
-// @Produce json
-// @Param chat body request.BodyChatsPOST true "chat info."
-// @Success 200 {object} chat.WebhookMessage
-// @Router /v1.0/chats/{id}/participant_ids [post]
+// @Produce     json
+// @Param       chat body     request.BodyChatsPOST true "chat info."
+// @Success     200  {object} chat.WebhookMessage
+// @Router      /v1.0/chats/{id}/participant_ids [post]
 func chatsIDParticipantIDsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsPOST",
@@ -388,13 +388,13 @@ func chatsIDParticipantIDsPOST(c *gin.Context) {
 
 // chatsIDParticipantIDsIDDELETE handles DELETE /chats/{id}/participant_ids/{participant_id} request.
 // It removes a gieven participant id from the chat.
-// @Summary Remove participant id.
+// @Summary     Remove participant id.
 // @Description Remove participant id.
-// @Produce json
-// @Param id query string true "The chat's id"
-// @Param participant_id query string true "The chat's participant id"
-// @Success 200
-// @Router /v1.0/chats/{id}/participant_ids/{participant_id} [delete]
+// @Produce     json
+// @Param       id             query string true "The chat's id"
+// @Param       participant_id query string true "The chat's participant id"
+// @Success     200
+// @Router      /v1.0/chats/{id}/participant_ids/{participant_id} [delete]
 func chatsIDParticipantIDsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatsIDParticipantIDsIDDELETE",

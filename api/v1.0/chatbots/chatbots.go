@@ -15,12 +15,12 @@ import (
 
 // chatbotsPOST handles POST /chatbots request.
 // It creates a new chatbot with the given info and returns created chatbot info.
-// @Summary Create a new chatbot and returns detail created chatbot info.
+// @Summary     Create a new chatbot and returns detail created chatbot info.
 // @Description Create a new chatbot and returns detail created chatbot info.
-// @Produce json
-// @Param chatbot body request.BodyChatbotsPOST true "chatbot info."
-// @Success 200 {object} chatbot.WebhookMessage
-// @Router /v1.0/chatbots [post]
+// @Produce     json
+// @Param       chatbot body     request.BodyChatbotsPOST true "chatbot info."
+// @Success     200     {object} chatbot.WebhookMessage
+// @Router      /v1.0/chatbots [post]
 func chatbotsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatbotsPOST",
@@ -62,13 +62,13 @@ func chatbotsPOST(c *gin.Context) {
 
 // chatbotsGET handles GET /chatbots request.
 // It gets a list of chatbot with the given info.
-// @Summary Gets a list of chatbots.
+// @Summary     Gets a list of chatbots.
 // @Description Gets a list of chatbots
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyChatbotsGET
-// @Router /v1.0/chatbots [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyChatbotsGET
+// @Router      /v1.0/chatbots [get]
 func chatbotsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatbotsGET",
@@ -130,12 +130,12 @@ func chatbotsGET(c *gin.Context) {
 
 // chatbotsIDGET handles GET /chatbots/{id} request.
 // It returns detail chatbot info.
-// @Summary Returns detail chatbot info.
+// @Summary     Returns detail chatbot info.
 // @Description Returns detail chatbot info of the given chatbot id.
-// @Produce json
-// @Param id path string true "The ID of the chatbot"
-// @Success 200 {object} chatbot.Chatbot
-// @Router /v1.0/chatbots/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the chatbot"
+// @Success     200 {object} chatbot.Chatbot
+// @Router      /v1.0/chatbots/{id} [get]
 func chatbotsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatbotsIDGET",
@@ -173,12 +173,12 @@ func chatbotsIDGET(c *gin.Context) {
 
 // chatbotsIDDELETE handles DELETE /chatbots/{id} request.
 // It deletes a exist chatbot info.
-// @Summary Delete a existing chatbot.
+// @Summary     Delete a existing chatbot.
 // @Description Delete a existing chatbot.
-// @Produce json
-// @Param id query string true "The chatbot's id"
-// @Success 200
-// @Router /v1.0/chatbots/{id} [delete]
+// @Produce     json
+// @Param       id query string true "The chatbot's id"
+// @Success     200
+// @Router      /v1.0/chatbots/{id} [delete]
 func chatbotsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatbotsIDDELETE",
@@ -217,12 +217,12 @@ func chatbotsIDDELETE(c *gin.Context) {
 
 // chatbotsIDPUT handles PUT /chatbots/<chatbot-id> request.
 // It updates the existed chatbot with the given info and returns updated chatbot info.
-// @Summary Update the chatbot and returns updated chatbot info.
+// @Summary     Update the chatbot and returns updated chatbot info.
 // @Description Update the chatbot and returns updated chatbot info.
-// @Produce json
-// @Param chatbot body request.BodyChatbotsIDPUT true "chatbot info."
-// @Success 200 {object} chatbot.WebhookMessage
-// @Router /v1.0/chatbots/{id} [put]
+// @Produce     json
+// @Param       chatbot body     request.BodyChatbotsIDPUT true "chatbot info."
+// @Success     200     {object} chatbot.WebhookMessage
+// @Router      /v1.0/chatbots/{id} [put]
 func chatbotsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "chatbotsIDPUT",
