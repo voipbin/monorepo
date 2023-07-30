@@ -5,6 +5,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	_ "gitlab.com/voipbin/bin-manager/number-manager.git/models/number" // for swag use
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -14,13 +15,13 @@ import (
 
 // numbersGET handles GET /numbers request.
 // It returns list of order numbers of the given customer.
-// @Summary List order numbers
+// @Summary     List order numbers
 // @Description get order numbers of the country
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyNumbersGET
-// @Router /v1.0/numbers [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyNumbersGET
+// @Router      /v1.0/numbers [get]
 func numbersGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "numbersGET",
@@ -82,12 +83,12 @@ func numbersGET(c *gin.Context) {
 
 // numbersIDGET handles GET /numbers/<id> request.
 // It returns order numbers of the given id.
-// @Summary Get order number
+// @Summary     Get order number
 // @Description get order number of the given id
-// @Produce  json
-// @Param id path string true "The ID of the order number"
-// @Success 200 {object} number.Number
-// @Router /v1.0/numbers/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the order number"
+// @Success     200 {object} number.Number
+// @Router      /v1.0/numbers/{id} [get]
 func numbersIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "numbersIDGET",
@@ -126,12 +127,12 @@ func numbersIDGET(c *gin.Context) {
 
 // numbersPOST handles POST /numbers request.
 // It creates a new order number with the given info and returns created order number.
-// @Summary Create a new number and returns detail created number info.
+// @Summary     Create a new number and returns detail created number info.
 // @Description Create a new number and returns detail created number info.
-// @Produce json
-// @Param number body request.BodyNumbersPOST true "Creating number info."
-// @Success 200 {object} number.Number
-// @Router /v1.0/numbers [post]
+// @Produce     json
+// @Param       number body     request.BodyNumbersPOST true "Creating number info."
+// @Success     200    {object} number.Number
+// @Router      /v1.0/numbers [post]
 func numbersPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "numbersPOST",
@@ -172,12 +173,12 @@ func numbersPOST(c *gin.Context) {
 
 // numbersIDDELETE handles DELETE /numbers/<id> request.
 // It deletes the given id of order number and returns the deleted order number.
-// @Summary Delete order number
+// @Summary     Delete order number
 // @Description delete order number of the given id and returns deleted item.
-// @Produce  json
-// @Param id path string true "The number's id"
-// @Success 200 {object} number.Number
-// @Router /v1.0/numbers/{id} [delete]
+// @Produce     json
+// @Param       id  path     string true "The number's id"
+// @Success     200 {object} number.Number
+// @Router      /v1.0/numbers/{id} [delete]
 func numbersIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "numbersIDDELETE",
@@ -216,12 +217,12 @@ func numbersIDDELETE(c *gin.Context) {
 
 // numbersIDPUT handles PUT /numbers/<id> request.
 // It creates a new order number with the given info and returns created order number.
-// @Summary Update the number's basic information.
+// @Summary     Update the number's basic information.
 // @Description Update the number's basic information.
-// @Produce json
-// @Param update_info body request.BodyNumbersIDPUT true "Update info."
-// @Success 200 {object} number.Number
-// @Router /v1.0/numbers/{id} [put]
+// @Produce     json
+// @Param       update_info body     request.BodyNumbersIDPUT true "Update info."
+// @Success     200         {object} number.Number
+// @Router      /v1.0/numbers/{id} [put]
 func numbersIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "numbersIDPUT",
@@ -267,12 +268,12 @@ func numbersIDPUT(c *gin.Context) {
 
 // numbersIDFlowIDPUT handles PUT /numbers/<id>/flow_id request.
 // It updates the number's flow_id.
-// @Summary Update the number's flow_id.
+// @Summary     Update the number's flow_id.
 // @Description Update the number's flow_id.
-// @Produce json
-// @Param update_info body request.BodyNumbersIDFlowIDPUT true "Update info."
-// @Success 200 {object} number.Number
-// @Router /v1.0/numbers/{id}/flow_id [put]
+// @Produce     json
+// @Param       update_info body     request.BodyNumbersIDFlowIDPUT true "Update info."
+// @Success     200         {object} number.Number
+// @Router      /v1.0/numbers/{id}/flow_id [put]
 func numbersIDFlowIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "numbersIDPUT",
@@ -318,12 +319,12 @@ func numbersIDFlowIDPUT(c *gin.Context) {
 
 // numbersRenewPOST handles POST /numbers/renew request.
 // It renews the number's.
-// @Summary Renew the numbers.
+// @Summary     Renew the numbers.
 // @Description Renew the numbers.
-// @Produce json
-// @Param update_info body request.BodyNumbersIDFlowIDPUT true "Update info."
-// @Success 200 [{]object] number.Number
-// @Router /v1.0/numbers/renew [post]
+// @Produce     json
+// @Param       update_info body    request.BodyNumbersIDFlowIDPUT true "Update info."
+// @Success     200         {array} number.Number
+// @Router      /v1.0/numbers/renew [post]
 func numbersRenewPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "numbersIDPUT",

@@ -13,12 +13,12 @@ import (
 
 // loginPost handles POST /loginPost request.
 // It generates and return the JWT token for api use.
-// @Summary Generate the JWT token and return it.
+// @Summary     Generate the JWT token and return it.
 // @Description Generate the JWT token and return it.
-// @Produce  json
-// @Param login_info body request.BodyLoginPOST true "login info"
-// @Success 200 {object} response.BodyLoginPOST
-// @Router /auth/login [post]
+// @Produce     json
+// @Param       login_info body     request.BodyLoginPOST true "login info"
+// @Success     200        {object} response.BodyLoginPOST
+// @Router      /auth/login [post]
 func loginPost(c *gin.Context) {
 	log := logrus.WithFields(
 		logrus.Fields{

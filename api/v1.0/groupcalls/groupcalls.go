@@ -14,12 +14,12 @@ import (
 
 // groupcallsPOST handles POST /groupcalls request.
 // It creates a new groupcall with the given info and returns created groupcall info.
-// @Summary Create a new groupcall and returns detail created groupcall info.
+// @Summary     Create a new groupcall and returns detail created groupcall info.
 // @Description Create a new groupcall and returns detail created groupcall info.
-// @Produce json
-// @Param flow body request.BodyGroupcallsPOST true "groupcall info."
-// @Success 200 {object} groupcall.Groupcall
-// @Router /v1.0/groupcalls [post]
+// @Produce     json
+// @Param       flow body     request.BodyGroupcallsPOST true "groupcall info."
+// @Success     200  {object} groupcall.Groupcall
+// @Router      /v1.0/groupcalls [post]
 func groupcallsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "groupcallsPOST",
@@ -60,13 +60,13 @@ func groupcallsPOST(c *gin.Context) {
 
 // groupcallsGET handles GET /groupcalls request.
 // It gets a list of groupcalls with the given info.
-// @Summary Gets a list of groupcalls.
+// @Summary     Gets a list of groupcalls.
 // @Description Gets a list of groupcalls
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyGroupcallsGET
-// @Router /v1.0/groupcalls [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyGroupcallsGET
+// @Router      /v1.0/groupcalls [get]
 func groupcallsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "groupcallsGET",
@@ -129,12 +129,12 @@ func groupcallsGET(c *gin.Context) {
 
 // groupcallsIDGET handles GET /groupcalls/{id} request.
 // It returns detail groupcall info.
-// @Summary Returns detail groupcall info.
+// @Summary     Returns detail groupcall info.
 // @Description Returns detail groupcall info of the given groupcall id.
-// @Produce json
-// @Param id path string true "The ID of the groupcall"
-// @Success 200 {object} groupcall.Groupcall
-// @Router /v1.0/groupcalls/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the groupcall"
+// @Success     200 {object} groupcall.Groupcall
+// @Router      /v1.0/groupcalls/{id} [get]
 func groupcallsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "groupcallsIDGET",
@@ -171,12 +171,12 @@ func groupcallsIDGET(c *gin.Context) {
 
 // groupcallsIDHangupPOST handles POST /groupcalls/{id}/hangup request.
 // It hangup the groupcall.
-// @Summary Hangup the groupcall.
+// @Summary     Hangup the groupcall.
 // @Description Hangup the groupcall of the given groupcall id.
-// @Produce json
-// @Param id path string true "The ID of the groupcall"
-// @Success 200 {object} groupcall.Groupcall
-// @Router /v1.0/groupcalls/{id}/hangup [post]
+// @Produce     json
+// @Param       id  path     string true "The ID of the groupcall"
+// @Success     200 {object} groupcall.Groupcall
+// @Router      /v1.0/groupcalls/{id}/hangup [post]
 func groupcallsIDHangupPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "groupcallsIDHangupPOST",
@@ -213,12 +213,12 @@ func groupcallsIDHangupPOST(c *gin.Context) {
 
 // groupcallsIDDELETE handles DELETE /groupcalls/{id} request.
 // It deletes the groupcall.
-// @Summary Delete the groupcall.
+// @Summary     Delete the groupcall.
 // @Description Delete the groupcall of the given groupcall id.
-// @Produce json
-// @Param id path string true "The ID of the groupcall"
-// @Success 200 {object} groupcall.Groupcall
-// @Router /v1.0/groupcalls/{id} [delete]
+// @Produce     json
+// @Param       id  path     string true "The ID of the groupcall"
+// @Success     200 {object} groupcall.Groupcall
+// @Router      /v1.0/groupcalls/{id} [delete]
 func groupcallsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "groupcallsIDDELETE",

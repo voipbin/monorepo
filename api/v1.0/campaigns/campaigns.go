@@ -15,12 +15,12 @@ import (
 
 // campaignsPOST handles POST /campaigns request.
 // It creates a new campaign with the given info and returns created campaign info.
-// @Summary Create a new campaign and returns detail created campaign info.
+// @Summary     Create a new campaign and returns detail created campaign info.
 // @Description Create a new campaign and returns detail created campaign info.
-// @Produce json
-// @Param campaign body request.BodyCampaignsPOST true "campaign info."
-// @Success 200 {object} campaign.WebhookMessage
-// @Router /v1.0/campaigns [post]
+// @Produce     json
+// @Param       campaign body     request.BodyCampaignsPOST true "campaign info."
+// @Success     200      {object} campaign.WebhookMessage
+// @Router      /v1.0/campaigns [post]
 func campaignsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsPOST",
@@ -64,13 +64,13 @@ func campaignsPOST(c *gin.Context) {
 
 // campaignsGET handles GET /campaigns request.
 // It gets a list of campaigns with the given info.
-// @Summary Gets a list of campaigns.
+// @Summary     Gets a list of campaigns.
 // @Description Gets a list of campaigns
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyCampaignsGET
-// @Router /v1.0/campaigns [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyCampaignsGET
+// @Router      /v1.0/campaigns [get]
 func campaignsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsGET",
@@ -134,12 +134,12 @@ func campaignsGET(c *gin.Context) {
 
 // campaignsIDGET handles GET /campaigns/{id} request.
 // It returns detail campaigns info.
-// @Summary Returns detail campaigns info.
+// @Summary     Returns detail campaigns info.
 // @Description Returns detail campaigns info of the given campaigns id.
-// @Produce json
-// @Param id path string true "The ID of the campaigns"
-// @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the campaigns"
+// @Success     200 {object} campaign.Campaign
+// @Router      /v1.0/campaigns/{id} [get]
 func campaignsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDGET",
@@ -179,12 +179,12 @@ func campaignsIDGET(c *gin.Context) {
 
 // campaignsIDDELETE handles DELETE /campaigns/{id} request.
 // It deletes a exist campaign info.
-// @Summary Delete a existing campaign.
+// @Summary     Delete a existing campaign.
 // @Description Delete a existing campaign.
-// @Produce json
-// @Param id query string true "The campaign's id"
-// @Success 200
-// @Router /v1.0/campaigns/{id} [delete]
+// @Produce     json
+// @Param       id query string true "The campaign's id"
+// @Success     200
+// @Router      /v1.0/campaigns/{id} [delete]
 func campaignsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDDELETE",
@@ -226,13 +226,13 @@ func campaignsIDDELETE(c *gin.Context) {
 // campaignsIDPUT handles PUT /campaigns/{id} request.
 // It updates a exist campaign info with the given campaign info.
 // And returns updated campaign info if it succeed.
-// @Summary Update a campaign and reuturns updated campaign info.
+// @Summary     Update a campaign and reuturns updated campaign info.
 // @Description Update a campaign and returns detail updated campaign info.
-// @Produce json
-// @Param id query string true "The campaign's id"
-// @Param update_info body request.BodyCampaignsIDPUT true "The update info"
-// @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id} [put]
+// @Produce     json
+// @Param       id          query    string                     true "The campaign's id"
+// @Param       update_info body     request.BodyCampaignsIDPUT true "The update info"
+// @Success     200         {object} campaign.Campaign
+// @Router      /v1.0/campaigns/{id} [put]
 func campaignsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDPUT",
@@ -281,13 +281,13 @@ func campaignsIDPUT(c *gin.Context) {
 // campaignsIDStatusPUT handles PUT /campaigns/{id}/dial_info request.
 // It updates a exist campaign info with the given campaign info.
 // And returns updated campaign info if it succeed.
-// @Summary Update a campaign and reuturns updated campaign info.
+// @Summary     Update a campaign and reuturns updated campaign info.
 // @Description Update a campaign and returns detail updated campaign info.
-// @Produce json
-// @Param id query string true "The campaign's id"
-// @Param update_info body request.BodyCampaignsIDStatusPUT true "The update info"
-// @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id}/status [put]
+// @Produce     json
+// @Param       id          query    string                           true "The campaign's id"
+// @Param       update_info body     request.BodyCampaignsIDStatusPUT true "The update info"
+// @Success     200         {object} campaign.Campaign
+// @Router      /v1.0/campaigns/{id}/status [put]
 func campaignsIDStatusPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDStatusPUT",
@@ -336,13 +336,13 @@ func campaignsIDStatusPUT(c *gin.Context) {
 // campaignsIDServiceLevelPUT handles PUT /campaigns/{id}/service_level request.
 // It updates a exist campaign info with the given campaign info.
 // And returns updated campaign info if it succeed.
-// @Summary Update a campaign and reuturns updated campaign info.
+// @Summary     Update a campaign and reuturns updated campaign info.
 // @Description Update a campaign and returns detail updated campaign info.
-// @Produce json
-// @Param id query string true "The campaign's id"
-// @Param update_info body request.BodyCampaignsIDStatusPUT true "The update info"
-// @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id}/service_level [put]
+// @Produce     json
+// @Param       id          query    string                           true "The campaign's id"
+// @Param       update_info body     request.BodyCampaignsIDStatusPUT true "The update info"
+// @Success     200         {object} campaign.Campaign
+// @Router      /v1.0/campaigns/{id}/service_level [put]
 func campaignsIDServiceLevelPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDServiceLevelPUT",
@@ -391,13 +391,13 @@ func campaignsIDServiceLevelPUT(c *gin.Context) {
 // campaignsIDActionsPUT handles PUT /campaigns/{id}/service_level request.
 // It updates a exist campaign info with the given campaign info.
 // And returns updated campaign info if it succeed.
-// @Summary Update a campaign and reuturns updated campaign info.
+// @Summary     Update a campaign and reuturns updated campaign info.
 // @Description Update a campaign and returns detail updated campaign info.
-// @Produce json
-// @Param id query string true "The campaign's id"
-// @Param update_info body request.BodyCampaignsIDStatusPUT true "The update info"
-// @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id}/actions [put]
+// @Produce     json
+// @Param       id          query    string                           true "The campaign's id"
+// @Param       update_info body     request.BodyCampaignsIDStatusPUT true "The update info"
+// @Success     200         {object} campaign.Campaign
+// @Router      /v1.0/campaigns/{id}/actions [put]
 func campaignsIDActionsPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDActionsPUT",
@@ -446,13 +446,13 @@ func campaignsIDActionsPUT(c *gin.Context) {
 // campaignsIDResourceInfoPUT handles PUT /campaigns/{id}/resource_info request.
 // It updates a exist campaign info with the given campaign info.
 // And returns updated campaign info if it succeed.
-// @Summary Update a campaign and reuturns updated campaign info.
+// @Summary     Update a campaign and reuturns updated campaign info.
 // @Description Update a campaign and returns detail updated campaign info.
-// @Produce json
-// @Param id query string true "The campaign's id"
-// @Param update_info body request.BodyCampaignsIDResourceInfoPUT true "The update info"
-// @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id}/resource_info [put]
+// @Produce     json
+// @Param       id          query    string                                 true "The campaign's id"
+// @Param       update_info body     request.BodyCampaignsIDResourceInfoPUT true "The update info"
+// @Success     200         {object} campaign.Campaign
+// @Router      /v1.0/campaigns/{id}/resource_info [put]
 func campaignsIDResourceInfoPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDActionsPUT",
@@ -501,13 +501,13 @@ func campaignsIDResourceInfoPUT(c *gin.Context) {
 // campaignsIDResourceInfoPUT handles PUT /campaigns/{id}/resource_info request.
 // It updates a exist campaign info with the given campaign info.
 // And returns updated campaign info if it succeed.
-// @Summary Update a campaign and reuturns updated campaign info.
+// @Summary     Update a campaign and reuturns updated campaign info.
 // @Description Update a campaign and returns detail updated campaign info.
-// @Produce json
-// @Param id query string true "The campaign's id"
-// @Param update_info body request.BodyCampaignsIDResourceInfoPUT true "The update info"
-// @Success 200 {object} campaign.Campaign
-// @Router /v1.0/campaigns/{id}/next_campaign_id [put]
+// @Produce     json
+// @Param       id          query    string                                 true "The campaign's id"
+// @Param       update_info body     request.BodyCampaignsIDResourceInfoPUT true "The update info"
+// @Success     200         {object} campaign.Campaign
+// @Router      /v1.0/campaigns/{id}/next_campaign_id [put]
 func campaignsIDNextCampaignIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDNextCampaignIDPUT",
@@ -555,13 +555,13 @@ func campaignsIDNextCampaignIDPUT(c *gin.Context) {
 
 // campaignsIDCampaigncallsGET handles GET /campaigns/{id}/campaigncalls request.
 // It gets a list of campaigncalls with the given info.
-// @Summary Gets a list of campaigns.
+// @Summary     Gets a list of campaigns.
 // @Description Gets a list of campaigns
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyCampaignsIDCampaigncallsGET
-// @Router /v1.0/campaigns/{id}/campaigncalls [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyCampaignsIDCampaigncallsGET
+// @Router      /v1.0/campaigns/{id}/campaigncalls [get]
 func campaignsIDCampaigncallsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "campaignsIDCampaigncallsGET",

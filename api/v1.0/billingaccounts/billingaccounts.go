@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	_ "gitlab.com/voipbin/bin-manager/billing-manager.git/models/account" // for swag use
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
@@ -14,12 +15,12 @@ import (
 
 // billingAccountsPOST handles POST /billing_accounts request.
 // It creates a new billing account and returns created billing account.
-// @Summary Create a new billing account
+// @Summary     Create a new billing account
 // @Description create a new billing account
-// @Produce json
-// @Param call body request.BodyCallsPOST true "The call detail"
-// @Success 200 {object} call.Call
-// @Router /v1.0/calls [post]
+// @Produce     json
+// @Param       call body     request.BodyCallsPOST true "The call detail"
+// @Success     200  {object} account.Account
+// @Router      /v1.0/billing_accounts [post]
 func billingAccountsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "billingAccountsPOST",
@@ -63,13 +64,13 @@ func billingAccountsPOST(c *gin.Context) {
 // billingaccountsGET handles GET /billingaccounts request.
 // It returns list of billing accounts of the given customer.
 
-// @Summary Get list of billing accounts
+// @Summary     Get list of billing accounts
 // @Description get list of the customer's billing accounts
-// @Produce  json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.ParamBillingAccountsGET
-// @Router /v1.0/billing_accounts [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyBillingAccountsGET
+// @Router      /v1.0/billing_accounts [get]
 func billingaccountsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "billingaccountsGET",
@@ -130,12 +131,12 @@ func billingaccountsGET(c *gin.Context) {
 
 // billingAccountsIDDelete handles DELETE /billing_accounts/<billing_account-id> request.
 // It deletes the billing_account.
-// @Summary delete billing account
+// @Summary     delete billing account
 // @Description Delete billing account of the given id
-// @Produce json
-// @Param id path string true "The ID of the billing_account"
-// @Success 200 {object} bmaccount.Account
-// @Router /v1.0/billing_accounts/{id} [delete]
+// @Produce     json
+// @Param       id  path     string true "The ID of the billing_account"
+// @Success     200 {object} account.Account
+// @Router      /v1.0/billing_accounts/{id} [delete]
 func billingAccountsIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "billingAccountsIDDelete",
@@ -174,12 +175,12 @@ func billingAccountsIDDelete(c *gin.Context) {
 
 // billingAccountsIDGET handles GET /billing_accounts/{id} request.
 // It returns detail billing account info.
-// @Summary Get detail billing account info.
+// @Summary     Get detail billing account info.
 // @Description Returns detail billing account info of the given call id.
-// @Produce json
-// @Param id path string true "The ID of the billing account"
-// @Success 200 {object} bmaccount.Account
-// @Router /v1.0/billing_accounts/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the billing account"
+// @Success     200 {object} account.Account
+// @Router      /v1.0/billing_accounts/{id} [get]
 func billingAccountsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "billingAccountsIDGET",
@@ -217,12 +218,12 @@ func billingAccountsIDGET(c *gin.Context) {
 
 // billingAccountsIDGET handles POST /billing_accounts/{id}/balance_add_force request.
 // Adds the given balance to the billing account.
-// @Summary Adds the given balance to the billing account.
+// @Summary     Adds the given balance to the billing account.
 // @Description Adds the given balance to the billing account.
-// @Produce json
-// @Param id path string true "The ID of the billing account"
-// @Success 200 {object} bmaccount.Account
-// @Router /v1.0/billing_accounts/{id}/balance_add_force [post]
+// @Produce     json
+// @Param       id  path     string true "The ID of the billing account"
+// @Success     200 {object} account.Account
+// @Router      /v1.0/billing_accounts/{id}/balance_add_force [post]
 func billingAccountsIDBalanceAddForcePOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "billingAccountsIDBalanceAddForcePOST",
@@ -267,12 +268,12 @@ func billingAccountsIDBalanceAddForcePOST(c *gin.Context) {
 
 // billingAccountsIDGET handles POST /billing_accounts/{id}/balance_add_force request.
 // Adds the given balance to the billing account.
-// @Summary Adds the given balance to the billing account.
+// @Summary     Adds the given balance to the billing account.
 // @Description Adds the given balance to the billing account.
-// @Produce json
-// @Param id path string true "The ID of the billing account"
-// @Success 200 {object} bmaccount.Account
-// @Router /v1.0/billing_accounts/{id}/balance_add_force [post]
+// @Produce     json
+// @Param       id  path     string true "The ID of the billing account"
+// @Success     200 {object} account.Account
+// @Router      /v1.0/billing_accounts/{id}/balance_add_force [post]
 func billingAccountsIDBalanceSubtractForcePOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "billingAccountsIDBalanceSubtractForcePOST",
