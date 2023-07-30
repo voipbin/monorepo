@@ -11,11 +11,11 @@ import (
 
 // wsGET handles POST /queues request.
 // It creates a new queue.
-// @Summary Create a new queue.
+// @Summary     Create a new queue.
 // @Description create a new queue
-// @Produce  json
-// @Success 200 {object} queue.WebhookMessage
-// @Router /v1.0/ws [get]
+// @Produce     json
+// @Success     200 {object} queue.WebhookMessage
+// @Router      /v1.0/ws [get]
 func wsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "wsGET",

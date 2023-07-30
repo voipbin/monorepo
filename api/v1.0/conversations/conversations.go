@@ -16,13 +16,13 @@ import (
 
 // conversationsGet handles GET /conversations request.
 // It gets a list of conversations with the given info.
-// @Summary Gets a list of conversations.
+// @Summary     Gets a list of conversations.
 // @Description Gets a list of conversations
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyConversationsGET
-// @Router /v1.0/conversations [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyConversationsGET
+// @Router      /v1.0/conversations [get]
 func conversationsGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationsGet",
@@ -86,12 +86,12 @@ func conversationsGet(c *gin.Context) {
 
 // conversationsIDGet handles GET /conversations/{id} request.
 // It returns detail conversation info.
-// @Summary Returns detail conversation info.
+// @Summary     Returns detail conversation info.
 // @Description Returns detail conversation info of the given conversation id.
-// @Produce json
-// @Param id path string true "The ID of the conversation"
-// @Success 200 {object} conversation.WebhookMessage
-// @Router /v1.0/conversations/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the conversation"
+// @Success     200 {object} conversation.WebhookMessage
+// @Router      /v1.0/conversations/{id} [get]
 func conversationsIDGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationsIDGet",
@@ -131,12 +131,12 @@ func conversationsIDGet(c *gin.Context) {
 
 // conversationsIDPut handles PUT /conversations/{id} request.
 // It updates the  conversation info.
-// @Summary Update the conversation info.
+// @Summary     Update the conversation info.
 // @Description Update the conversation info of the given conversation id.
-// @Produce json
-// @Param id path string true "The ID of the conversation"
-// @Success 200 {object} conversation.WebhookMessage
-// @Router /v1.0/conversations/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the conversation"
+// @Success     200 {object} conversation.WebhookMessage
+// @Router      /v1.0/conversations/{id} [get]
 func conversationsIDPut(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationsIDPut",
@@ -180,13 +180,13 @@ func conversationsIDPut(c *gin.Context) {
 
 // conversationsIDMessagesGet handles GET /conversations/{id}/messages request.
 // It gets a list of conversation messages with the given info.
-// @Summary Gets a list of conversation messages.
+// @Summary     Gets a list of conversation messages.
 // @Description Gets a list of conversation messages
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyConversationsIDMessagesGET
-// @Router /v1.0/conversations/{id}/messages [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyConversationsIDMessagesGET
+// @Router      /v1.0/conversations/{id}/messages [get]
 func conversationsIDMessagesGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationsIDMessagesGet",
@@ -253,12 +253,12 @@ func conversationsIDMessagesGet(c *gin.Context) {
 
 // conversationsIDMessagesPost handles POST /conversations/<conversation-id>/messages request.
 // It sends a message with the given info and returns sent message info.
-// @Summary Send a message and returns detail sent message info.
+// @Summary     Send a message and returns detail sent message info.
 // @Description Send a message and returns a sent message info.
-// @Produce json
-// @Param message body request.ParamConversationsIDMessagesPOST true "message info."
-// @Success 200 {object} message.WebhookMessage
-// @Router /v1.0/conversations/{id}/messages [post]
+// @Produce     json
+// @Param       message body     request.BodyConversationsIDMessagesPOST true "message info."
+// @Success     200     {object} message.WebhookMessage
+// @Router      /v1.0/conversations/{id}/messages [post]
 func conversationsIDMessagesPost(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "conversationsIDMessagesPost",

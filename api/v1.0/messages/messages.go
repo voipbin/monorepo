@@ -15,13 +15,13 @@ import (
 
 // messagesGET handles GET /messages request.
 // It returns list of messages of the given customer.
-// @Summary List order messages
+// @Summary     List order messages
 // @Description get messages
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyMessagesGET
-// @Router /v1.0/messages [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyMessagesGET
+// @Router      /v1.0/messages [get]
 func messagesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "messagesGET",
@@ -83,12 +83,12 @@ func messagesGET(c *gin.Context) {
 
 // messagesPOST handles POST /messages request.
 // It sends a message with the given info and returns message.
-// @Summary Send a message and returns a sent message.
+// @Summary     Send a message and returns a sent message.
 // @Description Send a message and returns a sent message.
-// @Produce json
-// @Param message body request.BodyMessagesPOST true "Sending message info."
-// @Success 200 {object} message.Message
-// @Router /v1.0/messages [post]
+// @Produce     json
+// @Param       message body     request.BodyMessagesPOST true "Sending message info."
+// @Success     200     {object} message.Message
+// @Router      /v1.0/messages [post]
 func messagesPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "messagesPOST",
@@ -129,12 +129,12 @@ func messagesPOST(c *gin.Context) {
 
 // messagesIDDELETE handles DELETE /messages/<id> request.
 // It deletes the given id of message and returns the deleted message.
-// @Summary Delete message
+// @Summary     Delete message
 // @Description delete message of the given id and returns deleted item.
-// @Produce  json
-// @Param id path string true "The message's id"
-// @Success 200 {object} message.Message
-// @Router /v1.0/messages/{id} [delete]
+// @Produce     json
+// @Param       id  path     string true "The message's id"
+// @Success     200 {object} message.Message
+// @Router      /v1.0/messages/{id} [delete]
 func messagesIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "messagesIDDELETE",
@@ -173,12 +173,12 @@ func messagesIDDELETE(c *gin.Context) {
 
 // messagesIDGET handles GET /messages/<id> request.
 // It returns message of the given id.
-// @Summary Get message
+// @Summary     Get message
 // @Description get message of the given id
-// @Produce  json
-// @Param id path string true "The ID of the message"
-// @Success 200 {object} message.Message
-// @Router /v1.0/messages/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the message"
+// @Success     200 {object} message.Message
+// @Router      /v1.0/messages/{id} [get]
 func messagesIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "messagesIDGET",

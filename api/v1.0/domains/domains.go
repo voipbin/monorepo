@@ -14,11 +14,11 @@ import (
 
 // domainsPOST handles POST /domains request.
 // It creates a new domain with the given info and returns created domain info.
-// @Summary Create a new domain and returns detail created domain info.
+// @Summary     Create a new domain and returns detail created domain info.
 // @Description Create a new domain and returns detail created domain info.
-// @Produce json
-// @Success 200 {object} domain.Domain
-// @Router /v1.0/domains [post]
+// @Produce     json
+// @Success     200 {object} domain.Domain
+// @Router      /v1.0/domains [post]
 func domainsPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "domainsPOST",
@@ -59,13 +59,13 @@ func domainsPOST(c *gin.Context) {
 
 // domainsPOST handles GET /domains request.
 // It gets a list of domains with the given info.
-// @Summary Gets a list of domains.
+// @Summary     Gets a list of domains.
 // @Description Gets a list of domains
-// @Produce json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} response.BodyDomainsGET
-// @Router /v1.0/domains [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyDomainsGET
+// @Router      /v1.0/domains [get]
 func domainsGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "domainsGET",
@@ -127,12 +127,12 @@ func domainsGET(c *gin.Context) {
 
 // domainsIDGET handles GET /domains/{id} request.
 // It returns detail domain info.
-// @Summary Returns detail domain info.
+// @Summary     Returns detail domain info.
 // @Description Returns detail domain info of the given domain id.
-// @Produce json
-// @Param id path string true "The ID of the domain"
-// @Success 200 {object} domain.Domain
-// @Router /v1.0/domains/{id} [get]
+// @Produce     json
+// @Param       id  path     string true "The ID of the domain"
+// @Success     200 {object} domain.Domain
+// @Router      /v1.0/domains/{id} [get]
 func domainsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "domainsIDGET",
@@ -171,11 +171,11 @@ func domainsIDGET(c *gin.Context) {
 // domainsIDPUT handles PUT /domains/{id} request.
 // It updates a exist domain info with the given domain info.
 // And returns updated domain info if it succeed.
-// @Summary Update a domain and reuturns updated domain info.
+// @Summary     Update a domain and reuturns updated domain info.
 // @Description Update a domain and returns detail updated domain info.
-// @Produce json
-// @Success 200 {object} domain.Domain
-// @Router /v1.0/domains/{id} [put]
+// @Produce     json
+// @Success     200 {object} domain.Domain
+// @Router      /v1.0/domains/{id} [put]
 func domainsIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "domainsIDPUT",
@@ -220,11 +220,11 @@ func domainsIDPUT(c *gin.Context) {
 
 // domainsIDDELETE handles DELETE /domains/{id} request.
 // It deletes a exist domain info.
-// @Summary Delete a existing domain.
+// @Summary     Delete a existing domain.
 // @Description Delete a existing domain.
-// @Produce json
-// @Success 200
-// @Router /v1.0/domains/{id} [delete]
+// @Produce     json
+// @Success     200
+// @Router      /v1.0/domains/{id} [delete]
 func domainsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "domainsIDDELETE",

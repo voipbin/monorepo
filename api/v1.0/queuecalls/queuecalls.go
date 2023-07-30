@@ -12,13 +12,13 @@ import (
 
 // queuecallsIDGET handles GET /queuecalls/{id} request.
 // It returns detail queuecall info.
-// @Summary Returns detail queuecall info.
+// @Summary     Returns detail queuecall info.
 // @Description Returns detail conferencecall info of the given queuecall id.
-// @Produce json
-// @Param id path string true "The ID of the queuecall"
-// @Param token query string true "JWT token"
-// @Success 200 {object} queuecall.Queuecall
-// @Router /v1.0/queuecall/{id} [get]
+// @Produce     json
+// @Param       id    path     string true "The ID of the queuecall"
+// @Param       token query    string true "JWT token"
+// @Success     200   {object} queuecall.Queuecall
+// @Router      /v1.0/queuecall/{id} [get]
 func queuecallsIDGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuecallsIDGET",
@@ -56,12 +56,12 @@ func queuecallsIDGET(c *gin.Context) {
 
 // queuecallsIDDELETE handles DELETE /queuecalls/{id} request.
 // It deletes the queuecall.
-// @Summary Deletes the queuecall.
+// @Summary     Deletes the queuecall.
 // @Description Deletes the queuecall.
-// @Produce json
-// @Param id path string true "The ID of the queuecall"
-// @Success 200
-// @Router /v1.0/queuecalls/{id} [delete]
+// @Produce     json
+// @Param       id path string true "The ID of the queuecall"
+// @Success     200
+// @Router      /v1.0/queuecalls/{id} [delete]
 func queuecallsIDDELETE(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuecallsIDDELETE",
@@ -98,12 +98,12 @@ func queuecallsIDDELETE(c *gin.Context) {
 
 // queuecallsIDKickPOST handles POST /queuecalls/{id}/kick request.
 // It kicks the queuecall from the queue.
-// @Summary Kicks the queuecall from the queue.
+// @Summary     Kicks the queuecall from the queue.
 // @Description Kicks the queuecall.
-// @Produce json
-// @Param id path string true "The ID of the queuecall"
-// @Success 200
-// @Router /v1.0/queuecalls/{id}/kick [post]
+// @Produce     json
+// @Param       id path string true "The ID of the queuecall"
+// @Success     200
+// @Router      /v1.0/queuecalls/{id}/kick [post]
 func queuecallsIDKickPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuecallsIDKickPOST",
@@ -140,12 +140,12 @@ func queuecallsIDKickPOST(c *gin.Context) {
 
 // queuecallsReferenceIDIDKickPOST handles POST /queuecalls/reference_id/{id}/kick request.
 // It kicks the queuecall of the given reference id from the queue.
-// @Summary Kicks the queuecall of the given reference id from the queue.
+// @Summary     Kicks the queuecall of the given reference id from the queue.
 // @Description Kicks the queuecall of the given reference id.
-// @Produce json
-// @Param id path string true "The ID of the queuecall"
-// @Success 200
-// @Router /v1.0/queuecalls/reference_id/{id}/kick [post]
+// @Produce     json
+// @Param       id path string true "The ID of the queuecall"
+// @Success     200
+// @Router      /v1.0/queuecalls/reference_id/{id}/kick [post]
 func queuecallsReferenceIDIDKickPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "queuecallsReferenceIDIDKickPOST",

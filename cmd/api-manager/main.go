@@ -46,12 +46,12 @@ var redisDB = flag.Int("redis_db", 1, "redis database.")
 var rabbitListenSubscribes = flag.String("rabbit_exchange_subscribes", "bin-manager.webhook-manager.event", "comma separated rabbitmq exchange name for subscribe")
 var rabbitQueueSubscribe = flag.String("rabbit_queue_susbscribe", "bin-manager.api-manager.subscribe", "rabbitmq queue name for message subscribe queue.")
 
-// @title VoIPBIN project API
-// @version 1.0
-// @description RESTful API documents for VoIPBIN project.
+// @title          VoIPBIN project API
+// @version        3.1.0
+// @description    RESTful API documents for VoIPBIN project.
 // @termsOfService http://swagger.io/terms/
 
-// @contact.name VoIPBIN Project
+// @contact.name  VoIPBIN Project
 // @contact.email pchero21@gmail.com
 
 // @host api.voipbin.net

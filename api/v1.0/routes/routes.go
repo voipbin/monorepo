@@ -14,13 +14,13 @@ import (
 
 // routesGET handles GET /routes request.
 // It returns list of routes of the given customer.
-// @Summary List routes
+// @Summary     List routes
 // @Description get routes of the customer
-// @Produce  json
-// @Param page_size query int false "The size of results. Max 100"
-// @Param page_token query string false "The token. tm_create"
-// @Success 200 {object} route.WebhookMessage
-// @Router /v1.0/routes [get]
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} route.WebhookMessage
+// @Router      /v1.0/routes [get]
 func routesGET(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "routesGET",
@@ -87,12 +87,12 @@ func routesGET(c *gin.Context) {
 
 // routesPOST handles POST /routes request.
 // It creates a new route.
-// @Summary Create a new route.
+// @Summary     Create a new route.
 // @Description create a new route
-// @Produce  json
-// @Param route body request.BodyRoutesPOST true "The route detail"
-// @Success 200 {object} route.WebhookMessage
-// @Router /v1.0/routes [post]
+// @Produce     json
+// @Param       route body     request.BodyRoutesPOST true "The route detail"
+// @Success     200   {object} route.WebhookMessage
+// @Router      /v1.0/routes [post]
 func routesPOST(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "routesPOST",
@@ -142,12 +142,12 @@ func routesPOST(c *gin.Context) {
 
 // routesIDDelete handles DELETE /routes/<route-id> request.
 // It deletes the route.
-// @Summary Delete the route
+// @Summary     Delete the route
 // @Description Delete the route of the given id
-// @Produce json
-// @Param id path string true "The ID of the route"
-// @Success 200
-// @Router /v1.0/routes/{id} [delete]
+// @Produce     json
+// @Param       id path string true "The ID of the route"
+// @Success     200
+// @Router      /v1.0/routes/{id} [delete]
 func routesIDDelete(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "routesIDDelete",
@@ -191,12 +191,12 @@ func routesIDDelete(c *gin.Context) {
 
 // routesIDGet handles GET /routes/<route-id> request.
 // It gets the route.
-// @Summary Get the route
+// @Summary     Get the route
 // @Description Get the route of the given id
-// @Produce json
-// @Param id path string true "The ID of the route"
-// @Success 200
-// @Router /v1.0/routes/{id} [get]
+// @Produce     json
+// @Param       id path string true "The ID of the route"
+// @Success     200
+// @Router      /v1.0/routes/{id} [get]
 func routesIDGet(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "routesIDGet",
@@ -236,13 +236,13 @@ func routesIDGet(c *gin.Context) {
 // routesIDPUT handles PUT /routes/{id} request.
 // It updates a route basic info with the given info.
 // And returns updated route info if it succeed.
-// @Summary Update an route and reuturns updated route info.
+// @Summary     Update an route and reuturns updated route info.
 // @Description Update an route and returns detail updated route info.
-// @Produce json
-// @Param id path string true "The ID of the route"
-// @Param update_info body request.BodyQueuesIDPUT true "Queue's update info"
-// @Success 200
-// @Router /v1.0/routes/{id} [put]
+// @Produce     json
+// @Param       id          path string                  true "The ID of the route"
+// @Param       update_info body request.BodyQueuesIDPUT true "Queue's update info"
+// @Success     200
+// @Router      /v1.0/routes/{id} [put]
 func routesIDPUT(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "routesIDPUT",
