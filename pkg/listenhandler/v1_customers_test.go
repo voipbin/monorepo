@@ -121,46 +121,51 @@ func Test_processV1CustomersPost(t *testing.T) {
 
 		username         string
 		password         string
-		userName         string
+		customerName     string
 		detail           string
+		email            string
+		phoneNumber      string
+		address          string
 		webhookMethod    customer.WebhookMethod
 		webhookURI       string
-		lineSecret       string
-		lineToken        string
 		permissionIDs    []uuid.UUID
 		billingAccountID uuid.UUID
 
-		customer  *customer.Customer
-		expectRes *rabbitmqhandler.Response
+		responseCustomer *customer.Customer
+		expectRes        *rabbitmqhandler.Response
 	}{
 		{
-			"normal",
-			&rabbitmqhandler.Request{
+			name: "normal",
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"username": "test", "password": "password", "name": "name test", "detail": "detail test", "webhook_method": "POST", "webhook_uri": "test.com", "line_secret": "335671d0-ed3f-11ec-95d5-bb7d97d73379", "line_token": "339c9ebc-ed3f-11ec-bb15-4f3b18e06796", "permission_ids": ["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
+				Data:     []byte(`{"username": "test", "password": "password", "name": "name test", "detail": "detail test", "email": "test@test.com", "phone_number": "+821100000001", "address": "somewhere", "webhook_method": "POST", "webhook_uri": "test.com", "line_secret": "335671d0-ed3f-11ec-95d5-bb7d97d73379", "line_token": "339c9ebc-ed3f-11ec-bb15-4f3b18e06796", "permission_ids": ["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
 			},
 
-			"test",
-			"password",
-			"name test",
-			"detail test",
-			customer.WebhookMethodPost,
-			"test.com",
-			"335671d0-ed3f-11ec-95d5-bb7d97d73379",
-			"339c9ebc-ed3f-11ec-bb15-4f3b18e06796",
-			[]uuid.UUID{
+			username:      "test",
+			password:      "password",
+			customerName:  "name test",
+			detail:        "detail test",
+			email:         "test@test.com",
+			phoneNumber:   "+821100000001",
+			address:       "somewhere",
+			webhookMethod: customer.WebhookMethodPost,
+			webhookURI:    "test.com",
+			permissionIDs: []uuid.UUID{
 				permission.PermissionAdmin.ID,
 			},
-			uuid.FromStringOrNil("57e13956-0e84-11ee-886f-972ac028efa9"),
+			billingAccountID: uuid.FromStringOrNil("57e13956-0e84-11ee-886f-972ac028efa9"),
 
-			&customer.Customer{
+			responseCustomer: &customer.Customer{
 				ID:       uuid.FromStringOrNil("2043c49e-7db4-11ec-92b7-73af5ed663c9"),
 				Username: "test",
 
 				Name:          "name test",
 				Detail:        "detail test",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "somewhere",
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 
@@ -169,10 +174,10 @@ func Test_processV1CustomersPost(t *testing.T) {
 				},
 				BillingAccountID: uuid.FromStringOrNil("57e13956-0e84-11ee-886f-972ac028efa9"),
 			},
-			&rabbitmqhandler.Response{
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","username":"test","name":"name test","detail":"detail test","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
+				Data:       []byte(`{"id":"2043c49e-7db4-11ec-92b7-73af5ed663c9","username":"test","name":"name test","detail":"detail test","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["03796e14-7cb4-11ec-9dba-e72023efd1c6"],"billing_account_id":"57e13956-0e84-11ee-886f-972ac028efa9"}`),
 			},
 		},
 	}
@@ -192,7 +197,19 @@ func Test_processV1CustomersPost(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().Create(gomock.Any(), tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.customer, nil)
+			mockCustomer.EXPECT().Create(
+				gomock.Any(),
+				tt.username,
+				tt.password,
+				tt.customerName,
+				tt.detail,
+				tt.email,
+				tt.phoneNumber,
+				tt.address,
+				tt.webhookMethod,
+				tt.webhookURI,
+				tt.permissionIDs,
+			).Return(tt.responseCustomer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -341,6 +358,9 @@ func Test_processV1UsersIDPut(t *testing.T) {
 		id            uuid.UUID
 		userName      string
 		detail        string
+		email         string
+		phoneNumber   string
+		address       string
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
 
@@ -354,12 +374,15 @@ func Test_processV1UsersIDPut(t *testing.T) {
 				URI:      "/v1/customers/5a8fac06-7dd4-11ec-b4e7-ab52242f6b29",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"test2", "detail": "detail2", "webhook_method": "POST", "webhook_uri": "test.com"}`),
+				Data:     []byte(`{"name":"test2", "detail": "detail2", "email": "update@test.com", "phone_number": "+821100000001", "address": "update address", "webhook_method": "POST", "webhook_uri": "test.com"}`),
 			},
 
 			uuid.FromStringOrNil("5a8fac06-7dd4-11ec-b4e7-ab52242f6b29"),
 			"test2",
 			"detail2",
+			"update@test.com",
+			"+821100000001",
+			"update address",
 			customer.WebhookMethodPost,
 			"test.com",
 
@@ -389,7 +412,7 @@ func Test_processV1UsersIDPut(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
+			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

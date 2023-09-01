@@ -21,7 +21,17 @@ type DBHandler interface {
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	CustomerGetByUsername(ctx context.Context, username string) (*customer.Customer, error)
 	CustomerGets(ctx context.Context, size uint64, token string) ([]*customer.Customer, error)
-	CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error
+	CustomerSetBasicInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		email string,
+		phoneNumber string,
+		address string,
+		webhookMethod customer.WebhookMethod,
+		webhookURI string,
+	) error
 	CustomerSetPermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error
 	CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error
 	CustomerSetBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) error

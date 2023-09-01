@@ -17,6 +17,10 @@ type V1DataCustomersPost struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
+	Email       string `json:"email,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	Address     string `json:"address"`
+
 	WebhookMethod customer.WebhookMethod `json:"webhook_method,omitempty"`
 	WebhookURI    string                 `json:"webhook_uri,omitempty"`
 
@@ -36,6 +40,9 @@ type V1DataCustomersUsernameLoginPost struct {
 type V1DataCustomersIDPut struct {
 	Name          string                 `json:"name,omitempty"`
 	Detail        string                 `json:"detail,omitempty"`
+	Email         string                 `json:"email,omitempty"`
+	PhoneNumber   string                 `json:"phone_number,omitempty"`
+	Address       string                 `json:"address,omitempty"`
 	WebhookMethod customer.WebhookMethod `json:"webhook_method,omitempty"`
 	WebhookURI    string                 `json:"webhook_uri,omitempty"`
 }
