@@ -18,8 +18,13 @@ depends_on = None
 
 def upgrade():
     op.execute("""alter table customers add column email varchar(255) after detail;""")
+    op.execute("""update customers set email = "";""")
+
     op.execute("""alter table customers add column phone_number varchar(255) after email;""")
+    op.execute("""update customers set phone_number = "";""")
+
     op.execute("""alter table customers add column address varchar(1024) after phone_number;""")
+    op.execute("""update customers set address = "";""")
 
 
 def downgrade():
