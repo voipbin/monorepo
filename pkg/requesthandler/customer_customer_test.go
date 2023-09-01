@@ -226,6 +226,9 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 		password      string
 		userName      string
 		detail        string
+		email         string
+		phoneNumber   string
+		address       string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
 		permissionIDs []uuid.UUID
@@ -243,6 +246,9 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 			"testpassword",
 			"test1",
 			"detail1",
+			"test@test.com",
+			"+821100000001",
+			"somewhere",
 			cscustomer.WebhookMethodPost,
 			"test.com",
 			[]uuid.UUID{
@@ -254,18 +260,21 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				URI:      "/v1/customers",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
+				Data:     []byte(`{"username":"test1","password":"testpassword","name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e46cbfd4-7e44-11ec-b7de-a7cfacf1121f","username":"test1","name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
+				Data:       []byte(`{"id":"e46cbfd4-7e44-11ec-b7de-a7cfacf1121f","username":"test1","name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","permission_ids":["db0e2c52-7e44-11ec-811d-ab2fbb79302a"]}`),
 			},
 			&cscustomer.Customer{
 				ID:            uuid.FromStringOrNil("e46cbfd4-7e44-11ec-b7de-a7cfacf1121f"),
 				Username:      "test1",
 				Name:          "test1",
 				Detail:        "detail1",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "somewhere",
 				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
 				PermissionIDs: []uuid.UUID{
@@ -296,6 +305,9 @@ func Test_CustomerV1CustomerCreate(t *testing.T) {
 				tt.password,
 				tt.userName,
 				tt.detail,
+				tt.email,
+				tt.phoneNumber,
+				tt.address,
 				tt.webhookMethod,
 				tt.webhookURI,
 				tt.permissionIDs,
@@ -319,6 +331,9 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 		id            uuid.UUID
 		userName      string
 		detail        string
+		email         string
+		phoneNumber   string
+		address       string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
 
@@ -333,6 +348,9 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 			uuid.FromStringOrNil("eed8e316-7e45-11ec-bcac-97541487f2c1"),
 			"test1",
 			"detail1",
+			"test@test.com",
+			"+821100000001",
+			"somewhere",
 			cscustomer.WebhookMethodPost,
 			"test.com",
 
@@ -341,7 +359,7 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 				URI:      "/v1/customers/eed8e316-7e45-11ec-bcac-97541487f2c1",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"name":"test1","detail":"detail1","webhook_method":"POST","webhook_uri":"test.com"}`),
+				Data:     []byte(`{"name":"test1","detail":"detail1","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -368,7 +386,7 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CustomerV1CustomerUpdate(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI)
+			res, err := reqHandler.CustomerV1CustomerUpdate(ctx, tt.id, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
