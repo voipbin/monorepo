@@ -1,8 +1,8 @@
-package customerhandler
+package helphandler
 
 import "testing"
 
-func TestGenerateHash(t *testing.T) {
+func Test_HashGenerate(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -17,12 +17,15 @@ func TestGenerateHash(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := generateHash(tt.password)
+
+			h := helpHandler{}
+
+			res, err := h.HashGenerate(tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !checkHash(tt.password, res) {
+			if !h.HashCheck(tt.password, res) {
 				t.Errorf("Wrong match. expect: true, got: false")
 			}
 		})
