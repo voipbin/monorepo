@@ -12,6 +12,14 @@ $ cd bin-manager
 $ alembic -c alembic.ini revision -m "<your change title>"
 ```
 
+Title rule.
+```
+<table name>_<verb: create/remove/add/update>_<type: column/table>_<items: ...>
+
+ex) customers_add_column_email_phone_number_address
+```
+
+
 # Run
 Need a connection to the VPN.
 
