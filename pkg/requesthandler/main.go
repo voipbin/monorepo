@@ -656,6 +656,9 @@ type RequestHandler interface {
 		password string,
 		name string,
 		detail string,
+		email string,
+		phoneNumber string,
+		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
 		permissionIDs []uuid.UUID,
@@ -663,7 +666,17 @@ type RequestHandler interface {
 	CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64) ([]cscustomer.Customer, error)
-	CustomerV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.Customer, error)
+	CustomerV1CustomerUpdate(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		email string,
+		phoneNumber string,
+		address string,
+		webhookMethod cscustomer.WebhookMethod,
+		webhookURI string,
+	) (*cscustomer.Customer, error)
 	CustomerV1CustomerUpdatePassword(ctx context.Context, requestTimeout int, id uuid.UUID, password string) (*cscustomer.Customer, error)
 	CustomerV1CustomerUpdatePermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType bmbilling.ReferenceType, country string, count int) (bool, error)
