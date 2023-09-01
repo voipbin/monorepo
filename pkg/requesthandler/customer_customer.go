@@ -74,6 +74,9 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 	password string,
 	name string,
 	detail string,
+	email string,
+	phoneNumber string,
+	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
 	permissionIDs []uuid.UUID,
@@ -85,6 +88,9 @@ func (r *requestHandler) CustomerV1CustomerCreate(
 		Password:      password,
 		Name:          name,
 		Detail:        detail,
+		Email:         email,
+		PhoneNumber:   phoneNumber,
+		Address:       address,
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
 		PermissionIDs: permissionIDs,
@@ -137,12 +143,25 @@ func (r *requestHandler) CustomerV1CustomerDelete(ctx context.Context, id uuid.U
 
 // CustomerV1CustomerUpdate sends a request to customer-manager
 // to update the detail customer info.
-func (r *requestHandler) CustomerV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.Customer, error) {
+func (r *requestHandler) CustomerV1CustomerUpdate(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	email string,
+	phoneNumber string,
+	address string,
+	webhookMethod cscustomer.WebhookMethod,
+	webhookURI string,
+) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 
 	data := &csrequest.V1DataCustomersIDPut{
 		Name:          name,
 		Detail:        detail,
+		Email:         email,
+		PhoneNumber:   phoneNumber,
+		Address:       address,
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
 	}
