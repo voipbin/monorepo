@@ -16,20 +16,26 @@ type ParamCustomersGET struct {
 type BodyCustomersPOST struct {
 	Username      string                   `json:"username"`
 	Password      string                   `json:"password"`
-	Name          string                   `json:"name"`
-	Detail        string                   `json:"detail"`
-	WebhookMethod cscustomer.WebhookMethod `json:"webhook_method"`
-	WebhookURI    string                   `json:"webhook_uri"`
-	PermissionIDs []uuid.UUID              `json:"permission_ids"`
+	Name          string                   `json:"name,omitempty"`
+	Detail        string                   `json:"detail,omitempty"`
+	Email         string                   `json:"email,omitempty"`
+	PhoneNumber   string                   `json:"phone_number,omitempty"`
+	Address       string                   `json:"address,omitempty"`
+	WebhookMethod cscustomer.WebhookMethod `json:"webhook_method,omitempty"`
+	WebhookURI    string                   `json:"webhook_uri,omitempty"`
+	PermissionIDs []uuid.UUID              `json:"permission_ids,omitempty"`
 }
 
 // BodyCustomersIDPUT is rquest body define for
 // PUT /v1.0/customers/<customer-id>
 type BodyCustomersIDPUT struct {
-	Name          string                   `json:"name"`
-	Detail        string                   `json:"detail"`
-	WebhookMethod cscustomer.WebhookMethod `json:"webhook_method"`
-	WebhookURI    string                   `json:"webhook_uri"`
+	Name          string                   `json:"name,omitempty"`
+	Detail        string                   `json:"detail,omitempty"`
+	Email         string                   `json:"email,omitempty"`
+	PhoneNumber   string                   `json:"phone_number,omitempty"`
+	Address       string                   `json:"address,omitempty"`
+	WebhookMethod cscustomer.WebhookMethod `json:"webhook_method,omitempty"`
+	WebhookURI    string                   `json:"webhook_uri,omitempty"`
 }
 
 // BodyCustomersIDPasswordPUT is rquest body define for

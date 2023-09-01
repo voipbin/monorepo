@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestCustomerCreate(t *testing.T) {
+func Test_CustomerCreate(t *testing.T) {
 
 	type test struct {
 		name string
@@ -25,6 +25,9 @@ func TestCustomerCreate(t *testing.T) {
 		password      string
 		customerName  string
 		detail        string
+		email         string
+		phoneNumber   string
+		address       string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
 		permissionIDs []uuid.UUID
@@ -47,6 +50,9 @@ func TestCustomerCreate(t *testing.T) {
 			"testpassword",
 			"test",
 			"test detail",
+			"test@test.com",
+			"+821100000001",
+			"somewhere",
 			cscustomer.WebhookMethodPost,
 			"test.com",
 			[]uuid.UUID{
@@ -77,9 +83,9 @@ func TestCustomerCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.permissionIDs).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerCreate(ctx, tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
+			res, err := h.CustomerCreate(ctx, tt.customer, tt.username, tt.password, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -225,12 +231,15 @@ func TestCustomerGets(t *testing.T) {
 func TestCustomerUpdate(t *testing.T) {
 
 	type test struct {
-		name string
+		name     string
+		customer *cscustomer.Customer
 
-		customer      *cscustomer.Customer
 		id            uuid.UUID
 		customerName  string
 		detail        string
+		email         string
+		phoneNumber   string
+		address       string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
 
@@ -251,6 +260,9 @@ func TestCustomerUpdate(t *testing.T) {
 			uuid.FromStringOrNil("d83b9e02-837f-11ec-af3d-b75e44476e6b"),
 			"name new",
 			"detail new",
+			"test@test.com",
+			"+821100000001",
+			"somewhere",
 			cscustomer.WebhookMethodPost,
 			"test.com",
 
@@ -279,9 +291,9 @@ func TestCustomerUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
 
-			res, err := h.CustomerUpdate(ctx, tt.customer, tt.id, tt.customerName, tt.detail, tt.webhookMethod, tt.webhookURI)
+			res, err := h.CustomerUpdate(ctx, tt.customer, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

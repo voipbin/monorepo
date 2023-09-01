@@ -38,6 +38,9 @@ func Test_customersPOST(t *testing.T) {
 		password      string
 		customerName  string
 		detail        string
+		email         string
+		phoneNumber   string
+		address       string
 		webhookMethod cscustomer.WebhookMethod
 		webhookURI    string
 		permissionIDs []uuid.UUID
@@ -56,6 +59,9 @@ func Test_customersPOST(t *testing.T) {
 				Password:      "test password",
 				Name:          "test name",
 				Detail:        "test detail",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "somewhere",
 				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
 				PermissionIDs: []uuid.UUID{
@@ -66,6 +72,9 @@ func Test_customersPOST(t *testing.T) {
 			"test password",
 			"test name",
 			"test detail",
+			"test@test.com",
+			"+821100000001",
+			"somewhere",
 			cscustomer.WebhookMethodPost,
 			"test.com",
 			[]uuid.UUID{
@@ -110,6 +119,9 @@ func Test_customersPOST(t *testing.T) {
 				tt.password,
 				tt.customerName,
 				tt.detail,
+				tt.email,
+				tt.phoneNumber,
+				tt.address,
 				tt.webhookMethod,
 				tt.webhookURI,
 				tt.permissionIDs,
@@ -296,6 +308,9 @@ func Test_customersIDPut(t *testing.T) {
 			request.BodyCustomersIDPUT{
 				Name:          "new name",
 				Detail:        "new detail",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "somewhere",
 				WebhookMethod: cscustomer.WebhookMethodPost,
 				WebhookURI:    "test.com",
 			},
@@ -327,7 +342,7 @@ func Test_customersIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.customer, tt.id, tt.req.Name, tt.req.Detail, tt.req.WebhookMethod, tt.req.WebhookURI).Return(&cscustomer.WebhookMessage{}, nil)
+			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.customer, tt.id, tt.req.Name, tt.req.Detail, tt.req.Email, tt.req.PhoneNumber, tt.req.Address, tt.req.WebhookMethod, tt.req.WebhookURI).Return(&cscustomer.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
