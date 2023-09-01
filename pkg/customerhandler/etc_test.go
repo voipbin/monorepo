@@ -59,7 +59,7 @@ func Test_IsValidBalance(t *testing.T) {
 			h := &customerHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 

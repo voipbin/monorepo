@@ -45,6 +45,9 @@ func (h *customerHandler) Create(
 	password string,
 	name string,
 	detail string,
+	email string,
+	phoneNumber string,
+	address string,
 	webhookMethod customer.WebhookMethod,
 	webhookURI string,
 	permissionIDs []uuid.UUID,
@@ -54,6 +57,9 @@ func (h *customerHandler) Create(
 		"username":       username,
 		"name":           name,
 		"detail":         detail,
+		"email":          email,
+		"phoneNumber":    phoneNumber,
+		"address":        address,
 		"webhook_method": webhookMethod,
 		"webhook_uri":    webhookURI,
 		"permission_ids": permissionIDs,
@@ -69,7 +75,7 @@ func (h *customerHandler) Create(
 
 	id := h.utilHandler.UUIDCreate()
 
-	// create billingAccount billing account
+	// create billingAccount
 	billingAccount, err := h.reqHandler.BillingV1AccountCreate(ctx, id, "basic billing account", "billing account for default use")
 	if err != nil {
 		log.Errorf("Could not create a billing account info. err: %v", err)
@@ -78,7 +84,7 @@ func (h *customerHandler) Create(
 	log.WithField("billing_account", billingAccount).Debugf("Created a billing account for new customer. customer_id: %s", id)
 
 	// generate hash password
-	hashPassword, err := generateHash(password)
+	hashPassword, err := h.helpHandler.HashGenerate(password)
 	if err != nil {
 		log.Errorf("Could not generate hash. err: %v", err)
 		return nil, err
@@ -92,6 +98,10 @@ func (h *customerHandler) Create(
 
 		Name:   name,
 		Detail: detail,
+
+		Email:       email,
+		PhoneNumber: phoneNumber,
+		Address:     address,
 
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
@@ -112,7 +122,7 @@ func (h *customerHandler) Create(
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, res)
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerCreated, res)
 
 	return res, nil
 }
@@ -158,20 +168,40 @@ func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) (*customer.C
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerDeleted, res)
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerDeleted, res)
 
 	return res, nil
 }
 
 // UpdateBasicInfo updates the customer's basic info.
-func (h *customerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
+func (h *customerHandler) UpdateBasicInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	email string,
+	phoneNumber string,
+	address string,
+	webhookMethod customer.WebhookMethod,
+	webhookURI string,
+) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "UpdateBasicInfo",
 		"customer_id": id,
 	})
 	log.Debug("Updating the customer's basic info.")
 
-	if err := h.db.CustomerSetBasicInfo(ctx, id, name, detail, webhookMethod, webhookURI); err != nil {
+	if err := h.db.CustomerSetBasicInfo(
+		ctx,
+		id,
+		name,
+		detail,
+		email,
+		phoneNumber,
+		address,
+		webhookMethod,
+		webhookURI,
+	); err != nil {
 		log.Errorf("Could not update the basic info. err: %v", err)
 		return nil, err
 	}
@@ -185,7 +215,7 @@ func (h *customerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, nam
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
 
 	return res, nil
 }
@@ -199,7 +229,7 @@ func (h *customerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, pass
 	log.Debug("Updating the customer's password.")
 
 	// generate hash password
-	hashPassword, err := generateHash(password)
+	hashPassword, err := h.helpHandler.HashGenerate(password)
 	if err != nil {
 		log.Errorf("Could not generate hash. err: %v", err)
 		return nil, err
@@ -218,7 +248,7 @@ func (h *customerHandler) UpdatePassword(ctx context.Context, id uuid.UUID, pass
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
 
 	return res, nil
 }
@@ -244,28 +274,7 @@ func (h *customerHandler) UpdatePermissionIDs(ctx context.Context, id uuid.UUID,
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
-
-	return res, nil
-}
-
-// Login validate the customer's username and password.
-func (h *customerHandler) Login(ctx context.Context, username, password string) (*customer.Customer, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "Login",
-		"username": username,
-	})
-	log.Debug("Customer login.")
-
-	res, err := h.db.CustomerGetByUsername(ctx, username)
-	if err != nil {
-		log.Errorf("Could not get customer info. err: %v", err)
-		return nil, fmt.Errorf("no user info")
-	}
-
-	if !checkHash(password, res.PasswordHash) {
-		return nil, fmt.Errorf("wrong password")
-	}
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
 
 	return res, nil
 }
@@ -291,7 +300,7 @@ func (h *customerHandler) UpdateBillingAccountID(ctx context.Context, id uuid.UU
 	}
 
 	// notify
-	h.notifyhandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
+	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
 
 	return res, nil
 }

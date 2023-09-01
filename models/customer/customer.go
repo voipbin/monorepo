@@ -12,13 +12,17 @@ type Customer struct {
 	Name   string `json:"name,omitempty"`   //  name
 	Detail string `json:"detail,omitempty"` //  detail
 
+	Email       string `json:"email,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	Address     string `json:"address,omitempty"`
+
 	// webhook info
 	WebhookMethod WebhookMethod `json:"webhook_method,omitempty"` // webhook method
 	WebhookURI    string        `json:"webhook_uri,omitempty"`    // webhook uri
 
 	PermissionIDs []uuid.UUID `json:"permission_ids,omitempty"` // customer's permission ids
 
-	BillingAccountID uuid.UUID `json:"billing_account_id"` // default billing account id
+	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty"` // default billing account id
 
 	TMCreate string `json:"tm_create,omitempty"` // Created timestamp.
 	TMUpdate string `json:"tm_update,omitempty"` // Updated timestamp.
