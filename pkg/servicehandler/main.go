@@ -292,13 +292,27 @@ type ServiceHandler interface {
 		password string,
 		name string,
 		detail string,
+		email string,
+		phoneNumber string,
+		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
 		permissionIDs []uuid.UUID,
 	) (*cscustomer.WebhookMessage, error)
 	CustomerGet(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cscustomer.WebhookMessage, error)
-	CustomerUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.WebhookMessage, error)
+	CustomerUpdate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		id uuid.UUID,
+		name string,
+		detail string,
+		email string,
+		phoneNumber string,
+		address string,
+		webhookMethod cscustomer.WebhookMethod,
+		webhookURI string,
+	) (*cscustomer.WebhookMessage, error)
 	CustomerDelete(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerUpdatePassword(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, password string) (*cscustomer.WebhookMessage, error)
 	CustomerUpdatePermissionIDs(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, permissionIDs []uuid.UUID) (*cscustomer.WebhookMessage, error)

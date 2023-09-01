@@ -33,13 +33,11 @@ func customersPost(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	var req request.BodyCustomersPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -58,6 +56,9 @@ func customersPost(c *gin.Context) {
 		req.Password,
 		req.Name,
 		req.Detail,
+		req.Email,
+		req.PhoneNumber,
+		req.Address,
 		req.WebhookMethod,
 		req.WebhookURI,
 		req.PermissionIDs,
@@ -205,13 +206,11 @@ func customersIDPut(c *gin.Context) {
 		return
 	}
 	u := tmp.(cscustomer.Customer)
-	log = log.WithFields(
-		logrus.Fields{
-			"customer_id":    u.ID,
-			"username":       u.Username,
-			"permission_ids": u.PermissionIDs,
-		},
-	)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
 
 	// get id
 	id := uuid.FromStringOrNil(c.Params.ByName("id"))
@@ -226,7 +225,7 @@ func customersIDPut(c *gin.Context) {
 
 	// update a customer
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.CustomerUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.WebhookMethod, req.WebhookURI)
+	res, err := serviceHandler.CustomerUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, req.WebhookMethod, req.WebhookURI)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
