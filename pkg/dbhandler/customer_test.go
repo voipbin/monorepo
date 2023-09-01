@@ -24,7 +24,7 @@ func Test_CustomerCreate(t *testing.T) {
 		expectRes       *customer.Customer
 	}{
 		{
-			name: "normal",
+			name: "all",
 
 			customer: &customer.Customer{
 				ID:            uuid.FromStringOrNil("0bc5b900-7c65-11ec-a205-3b81594c7376"),
@@ -32,6 +32,9 @@ func Test_CustomerCreate(t *testing.T) {
 				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:          "test name",
 				Detail:        "test detail",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "somewhere",
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 				PermissionIDs: []uuid.UUID{
@@ -47,6 +50,9 @@ func Test_CustomerCreate(t *testing.T) {
 				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:          "test name",
 				Detail:        "test detail",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "somewhere",
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 				PermissionIDs: []uuid.UUID{
@@ -319,8 +325,11 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 		name     string
 		customer *customer.Customer
 
-		userName      string
+		customerName  string
 		detail        string
+		email         string
+		phoneNumber   string
+		address       string
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
 
@@ -328,26 +337,40 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 		expectRes       *customer.Customer
 	}{
 		{
-			"normal",
-			&customer.Customer{
-				ID:           uuid.FromStringOrNil("a3697e6a-7c72-11ec-8fdf-dbda7d8fab3e"),
-				Username:     "abc0df18-7c72-11ec-8b18-5f22d10c7abd",
-				Name:         "test4",
-				Detail:       "detail4",
-				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-			},
-			"test4 new",
-			"detail4 new",
-			"",
-			"",
-
-			"2020-04-18 03:22:17.995000",
-			&customer.Customer{
+			name: "all",
+			customer: &customer.Customer{
 				ID:            uuid.FromStringOrNil("a3697e6a-7c72-11ec-8fdf-dbda7d8fab3e"),
 				Username:      "abc0df18-7c72-11ec-8b18-5f22d10c7abd",
+				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				Name:          "test4",
+				Detail:        "detail4",
+				Email:         "default@test.com",
+				PhoneNumber:   "+821100000000",
+				Address:       "somewhere",
+				WebhookMethod: customer.WebhookMethodGet,
+				WebhookURI:    "localhost.com",
+			},
+
+			customerName:  "test4 new",
+			detail:        "detail4 new",
+			email:         "test@test.com",
+			phoneNumber:   "+821100000001",
+			address:       "middle of nowhere",
+			webhookMethod: customer.WebhookMethodPost,
+			webhookURI:    "test.com",
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: &customer.Customer{
+				ID:            uuid.FromStringOrNil("a3697e6a-7c72-11ec-8fdf-dbda7d8fab3e"),
+				Username:      "abc0df18-7c72-11ec-8b18-5f22d10c7abd",
+				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Name:          "test4 new",
 				Detail:        "detail4 new",
-				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "middle of nowhere",
+				WebhookMethod: customer.WebhookMethodPost,
+				WebhookURI:    "test.com",
 				PermissionIDs: []uuid.UUID{},
 				TMCreate:      "2020-04-18 03:22:17.995000",
 				TMUpdate:      "2020-04-18 03:22:17.995000",
@@ -355,28 +378,37 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 			},
 		},
 		{
-			"have webhook",
-			&customer.Customer{
-				ID:           uuid.FromStringOrNil("e778f8b0-7c72-11ec-8605-9f86a3f3debe"),
-				Username:     "e778f8b0-7c72-11ec-8605-9f86a3f3debe",
-				Name:         "name",
-				Detail:       "defail",
-				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-			},
-			"name new",
-			"detail new",
-			"POST",
-			"test.com",
-
-			"2020-04-18 03:22:17.995000",
-			&customer.Customer{
+			name: "empty",
+			customer: &customer.Customer{
 				ID:            uuid.FromStringOrNil("e778f8b0-7c72-11ec-8605-9f86a3f3debe"),
 				Username:      "e778f8b0-7c72-11ec-8605-9f86a3f3debe",
 				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
-				Name:          "name new",
-				Detail:        "detail new",
-				WebhookMethod: "POST",
-				WebhookURI:    "test.com",
+				Name:          "test4",
+				Detail:        "detail4",
+				Email:         "default@test.com",
+				PhoneNumber:   "+821100000000",
+				Address:       "somewhere",
+				WebhookMethod: customer.WebhookMethodGet,
+				WebhookURI:    "localhost.com",
+			},
+
+			customerName:  "",
+			detail:        "",
+			email:         "",
+			phoneNumber:   "",
+			address:       "",
+			webhookMethod: customer.WebhookMethodNone,
+			webhookURI:    "",
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: &customer.Customer{
+				ID:            uuid.FromStringOrNil("e778f8b0-7c72-11ec-8605-9f86a3f3debe"),
+				Username:      "e778f8b0-7c72-11ec-8605-9f86a3f3debe",
+				PasswordHash:  "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
+				Name:          "",
+				Detail:        "",
+				WebhookMethod: "",
+				WebhookURI:    "",
 				PermissionIDs: []uuid.UUID{},
 				TMCreate:      "2020-04-18 03:22:17.995000",
 				TMUpdate:      "2020-04-18 03:22:17.995000",
@@ -400,19 +432,29 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
+			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.CustomerSetBasicInfo(ctx, tt.customer.ID, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI); err != nil {
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
+			if err := h.CustomerSetBasicInfo(
+				ctx,
+				tt.customer.ID,
+				tt.customerName,
+				tt.detail,
+				tt.email,
+				tt.phoneNumber,
+				tt.address,
+				tt.webhookMethod,
+				tt.webhookURI,
+			); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockCache.EXPECT().CustomerGet(ctx, gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
 			res, err := h.CustomerGet(ctx, tt.customer.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -22,6 +22,10 @@ const (
 		name,
 		detail,
 
+		email,
+		phone_number,
+		address,
+
 		webhook_method,
 		webhook_uri,
 
@@ -49,6 +53,10 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 
 		&res.Name,
 		&res.Detail,
+
+		&res.Email,
+		&res.PhoneNumber,
+		&res.Address,
 
 		&res.WebhookMethod,
 		&res.WebhookURI,
@@ -84,6 +92,10 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 		name,
 		detail,
 
+		email,
+		phone_number,
+		address,
+
 		webhook_method,
 		webhook_uri,
 
@@ -97,6 +109,7 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 	) values(
 		?, ?, ?,
 		?, ?,
+		?, ?, ?,
 		?, ?,
 		?,
 		?,
@@ -120,6 +133,10 @@ func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) erro
 
 		c.Name,
 		c.Detail,
+
+		c.Email,
+		c.PhoneNumber,
+		c.Address,
 
 		c.WebhookMethod,
 		c.WebhookURI,
@@ -292,7 +309,17 @@ func (h *handler) CustomerGetByUsername(ctx context.Context, username string) (*
 }
 
 // CustomerSetBasicInfo sets the customer's basic info.
-func (h *handler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, webhookMethod customer.WebhookMethod, webhookURI string) error {
+func (h *handler) CustomerSetBasicInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	email string,
+	phoneNumber string,
+	address string,
+	webhookMethod customer.WebhookMethod,
+	webhookURI string,
+) error {
 	// prepare
 	q := `
 	update
@@ -300,13 +327,16 @@ func (h *handler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, 
 	set
 		name = ?,
 		detail = ?,
+		email = ?,
+		phone_number = ?,
+		address = ?,
 		webhook_method = ?,
 		webhook_uri = ?,
 		tm_update = ?
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, name, detail, webhookMethod, webhookURI, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CustomerSetBasicInfo. err: %v", err)
 	}

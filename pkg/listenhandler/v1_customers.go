@@ -81,6 +81,9 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *rabbitmqh
 		reqData.Password,
 		reqData.Name,
 		reqData.Detail,
+		reqData.Email,
+		reqData.PhoneNumber,
+		reqData.Address,
 		reqData.WebhookMethod,
 		reqData.WebhookURI,
 		reqData.PermissionIDs,
@@ -203,7 +206,17 @@ func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *rabbitmq
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.customerHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, reqData.WebhookMethod, reqData.WebhookURI)
+	tmp, err := h.customerHandler.UpdateBasicInfo(
+		ctx,
+		id,
+		reqData.Name,
+		reqData.Detail,
+		reqData.Email,
+		reqData.PhoneNumber,
+		reqData.Address,
+		reqData.WebhookMethod,
+		reqData.WebhookURI,
+	)
 	if err != nil {
 		log.Errorf("Could not update the user info. err: %v", err)
 		return simpleResponse(400), nil

@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/models/permission"
 	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/customer-manager.git/pkg/helphandler"
 )
 
 func Test_Gets(t *testing.T) {
@@ -45,7 +46,7 @@ func Test_Gets(t *testing.T) {
 			h := &customerHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
@@ -68,12 +69,18 @@ func Test_Create(t *testing.T) {
 		password      string
 		userName      string
 		detail        string
+		email         string
+		phoneNumber   string
+		address       string
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
 		permissionIDs []uuid.UUID
 
 		responseUUID           uuid.UUID
 		responseBillingAccount *bmaccount.Account
+		responseHash           string
+
+		expectCustomer *customer.Customer
 	}{
 		{
 			name: "normal",
@@ -82,6 +89,9 @@ func Test_Create(t *testing.T) {
 			password:      "test userpass",
 			userName:      "test1",
 			detail:        "detail1",
+			email:         "test@test.com",
+			phoneNumber:   "+821100000001",
+			address:       "somewhere",
 			webhookMethod: customer.WebhookMethodPost,
 			webhookURI:    "test.com",
 			permissionIDs: []uuid.UUID{
@@ -91,6 +101,24 @@ func Test_Create(t *testing.T) {
 			responseUUID: uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
 			responseBillingAccount: &bmaccount.Account{
 				ID: uuid.FromStringOrNil("2d5d9a8c-0e87-11ee-aeaf-4b3b6fad0c9b"),
+			},
+			responseHash: "$2a$12$KEqTmfExiTmQ0HBspD6x7.XBkG1mVVAKidWG6J.zUeTtdgb0NXppq",
+
+			expectCustomer: &customer.Customer{
+				ID:            uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
+				Username:      "test username",
+				PasswordHash:  "$2a$12$KEqTmfExiTmQ0HBspD6x7.XBkG1mVVAKidWG6J.zUeTtdgb0NXppq",
+				Name:          "test1",
+				Detail:        "detail1",
+				Email:         "test@test.com",
+				PhoneNumber:   "+821100000001",
+				Address:       "somewhere",
+				WebhookMethod: customer.WebhookMethodPost,
+				WebhookURI:    "test.com",
+				PermissionIDs: []uuid.UUID{
+					permission.PermissionAdmin.ID,
+				},
+				BillingAccountID: uuid.FromStringOrNil("2d5d9a8c-0e87-11ee-aeaf-4b3b6fad0c9b"),
 			},
 		},
 	}
@@ -104,23 +132,26 @@ func Test_Create(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockHelp := helphandler.NewMockHelpHandler(mc)
 
 			h := &customerHandler{
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
+				helpHandler:   mockHelp,
 			}
 			ctx := context.Background()
 
+			mockDB.EXPECT().CustomerGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.responseUUID, gomock.Any(), gomock.Any()).Return(tt.responseBillingAccount, nil)
-			mockDB.EXPECT().CustomerGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
-			mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
+			mockHelp.EXPECT().HashGenerate(tt.password).Return(tt.responseHash, nil)
+			mockDB.EXPECT().CustomerCreate(ctx, tt.expectCustomer).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
-			_, err := h.Create(ctx, tt.username, tt.password, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
+			_, err := h.Create(ctx, tt.username, tt.password, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
@@ -163,7 +194,7 @@ func Test_Delete(t *testing.T) {
 			h := &customerHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -184,67 +215,32 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
-func TestUpdateBasicInfo(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-
-	h := &customerHandler{
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyhandler: mockNotify,
-	}
+func Test_UpdateBasicInfo(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id            uuid.UUID
-		userName      string
-		detail        string
+		id           uuid.UUID
+		customerName string
+		detail       string
+		email        string
+		phoneNumber  string
+		address      string
+
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
 	}{
 		{
-			"normal",
-			uuid.FromStringOrNil("c106fa66-7cb7-11ec-b438-1320d9493dee"),
-			"name new",
-			"detail new",
-			customer.WebhookMethodPost,
-			"test.com",
-		},
-	}
+			name: "normal",
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-
-			mockDB.EXPECT().CustomerSetBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI).Return(nil)
-			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
-
-			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.userName, tt.detail, tt.webhookMethod, tt.webhookURI)
-			if err != nil {
-				t.Errorf("Wrong match. expect:ok, got:%v", err)
-			}
-		})
-	}
-}
-
-func TestUpdatePassword(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		id       uuid.UUID
-		password string
-	}{
-		{
-			"normal",
-			uuid.FromStringOrNil("9d96af3a-7cb8-11ec-bada-e76b739ab5b9"),
-			"password new",
+			id:            uuid.FromStringOrNil("c106fa66-7cb7-11ec-b438-1320d9493dee"),
+			customerName:  "name new",
+			detail:        "detail new",
+			email:         "update@email",
+			phoneNumber:   "+821100000001",
+			address:       "update address",
+			webhookMethod: customer.WebhookMethodPost,
+			webhookURI:    "test.com",
 		},
 	}
 
@@ -260,11 +256,62 @@ func TestUpdatePassword(t *testing.T) {
 			h := &customerHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CustomerSetBasicInfo(gomock.Any(), tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(nil)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
+
+			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}
+
+func Test_UpdatePassword(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id       uuid.UUID
+		password string
+
+		responseHash string
+	}{
+		{
+			"normal",
+			uuid.FromStringOrNil("9d96af3a-7cb8-11ec-bada-e76b739ab5b9"),
+			"password new",
+
+			"1d642d2e-48ea-11ee-85b2-2bd9bf2a8973",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockHelp := helphandler.NewMockHelpHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				helpHandler:   mockHelp,
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerSetPasswordHash(gomock.Any(), tt.id, gomock.Any()).Return(nil)
+			mockHelp.EXPECT().HashGenerate(tt.password).Return(tt.responseHash, nil)
+			mockDB.EXPECT().CustomerSetPasswordHash(gomock.Any(), tt.id, tt.responseHash).Return(nil)
 			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 
@@ -318,7 +365,7 @@ func TestUpdatePermissionIDs(t *testing.T) {
 			h := &customerHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
@@ -329,53 +376,6 @@ func TestUpdatePermissionIDs(t *testing.T) {
 			_, err := h.UpdatePermissionIDs(ctx, tt.id, tt.permissionIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
-			}
-		})
-	}
-}
-
-func TestLogin(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		username string
-		password string
-
-		responseGet *customer.Customer
-	}{
-		{
-			"normal",
-			"a13c6c24-7ccc-11ec-86c7-133d05b8ea4e",
-			"password1",
-
-			&customer.Customer{
-				ID:           uuid.FromStringOrNil("a13c6c24-7ccc-11ec-86c7-133d05b8ea4e"),
-				Username:     "a13c6c24-7ccc-11ec-86c7-133d05b8ea4e",
-				PasswordHash: "$2a$12$z6fM.TRL7XdYJc7Ea.GGHOCIDe46vWl.h485o5hiid454ASroCOga",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &customerHandler{
-				reqHandler: mockReq,
-				db:         mockDB,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().CustomerGetByUsername(gomock.Any(), tt.username).Return(tt.responseGet, nil)
-
-			_, err := h.Login(ctx, tt.username, tt.password)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}
@@ -408,7 +408,7 @@ func Test_UpdateBillingAccountID(t *testing.T) {
 			h := &customerHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
-				notifyhandler: mockNotify,
+				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
 
