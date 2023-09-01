@@ -41,6 +41,9 @@ func (h *serviceHandler) CustomerCreate(
 	password string,
 	name string,
 	detail string,
+	email string,
+	phoneNumber string,
+	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
 	permissionIDs []uuid.UUID,
@@ -58,7 +61,7 @@ func (h *serviceHandler) CustomerCreate(
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.CustomerV1CustomerCreate(ctx, 30000, username, password, name, detail, webhookMethod, webhookURI, permissionIDs)
+	tmp, err := h.reqHandler.CustomerV1CustomerCreate(ctx, 30000, username, password, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, permissionIDs)
 	if err != nil {
 		log.Errorf("Could not create a new customer. err: %v", err)
 		return nil, err
@@ -125,13 +128,27 @@ func (h *serviceHandler) CustomerGets(ctx context.Context, u *cscustomer.Custome
 
 // CustomerUpdate sends a request to customer-manager
 // to update the customer's basic info.
-func (h *serviceHandler) CustomerUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name string, detail string, webhookMethod cscustomer.WebhookMethod, webhookURI string) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerUpdate(
+	ctx context.Context,
+	u *cscustomer.Customer,
+	id uuid.UUID,
+	name string,
+	detail string,
+	email string,
+	phoneNumber string,
+	address string,
+	webhookMethod cscustomer.WebhookMethod,
+	webhookURI string,
+) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "CustomerUpdate",
 		"customer_id":    u.ID,
 		"username":       u.Username,
 		"name":           name,
 		"detail":         detail,
+		"email":          email,
+		"phone_number":   phoneNumber,
+		"address":        address,
 		"webhook_method": webhookMethod,
 		"webhook_uri":    webhookURI,
 	})
@@ -143,7 +160,7 @@ func (h *serviceHandler) CustomerUpdate(ctx context.Context, u *cscustomer.Custo
 	}
 
 	// send request
-	res, err := h.reqHandler.CustomerV1CustomerUpdate(ctx, id, name, detail, webhookMethod, webhookURI)
+	res, err := h.reqHandler.CustomerV1CustomerUpdate(ctx, id, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	if err != nil {
 		log.Errorf("Could not update the customer's basic info. err: %v", err)
 		return nil, err
