@@ -76,7 +76,7 @@ func (r *requestHandler) QueueV1QueueCreate(ctx context.Context, customerID uuid
 		RoutingMethod:  string(routingMethod),
 		TagIDs:         tagIDs,
 		WaitActions:    waitActions,
-		WaitTimout:     timeoutWait,
+		WaitTimeout:    timeoutWait,
 		ServiceTimeout: timeoutService,
 	}
 
@@ -128,12 +128,27 @@ func (r *requestHandler) QueueV1QueueDelete(ctx context.Context, queueID uuid.UU
 }
 
 // QueueV1QueueUpdate sends the request to update the queue.
-func (r *requestHandler) QueueV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail string) (*qmqueue.Queue, error) {
+func (r *requestHandler) QueueV1QueueUpdate(
+	ctx context.Context,
+	queueID uuid.UUID,
+	name string,
+	detail string,
+	routingMethod qmqueue.RoutingMethod,
+	tagIDs []uuid.UUID,
+	waitActions []fmaction.Action,
+	waitTimeout int,
+	serviceTimeout int,
+) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 
 	data := &qmrequest.V1DataQueuesIDPut{
-		Name:   name,
-		Detail: detail,
+		Name:           name,
+		Detail:         detail,
+		RoutingMethod:  routingMethod,
+		TagIDs:         tagIDs,
+		WaitActions:    waitActions,
+		WaitTimeout:    waitTimeout,
+		ServiceTimeout: serviceTimeout,
 	}
 
 	m, err := json.Marshal(data)
