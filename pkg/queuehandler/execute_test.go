@@ -76,7 +76,7 @@ func Test_Execute(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockReq.EXPECT().QueueV1QueuecallGetsByQueueIDAndStatus(ctx, tt.responseQueue.ID, queuecall.StatusWaiting, tt.responseCurTime, uint64(1)).Return(tt.responseQueuecall, nil)
 
 			// GetAgents

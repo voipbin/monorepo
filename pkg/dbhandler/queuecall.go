@@ -187,7 +187,7 @@ func (h *handler) QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) e
 		a.DurationWaiting,
 		a.DurationService,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 		DefaultTimeStamp,
@@ -396,7 +396,7 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallDelete. err: %v", err)
@@ -422,7 +422,7 @@ func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queuecall.StatusConnecting, serviceAgentID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queuecall.StatusConnecting, serviceAgentID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetStatusConnecting. err: %v", err)
 	}
@@ -523,7 +523,7 @@ func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) e
 	where
 		id = ?
 	`
-	_, err := h.db.Exec(q, queuecall.StatusKicking, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queuecall.StatusKicking, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetStatusKicking. err: %v", err)
 	}
@@ -547,7 +547,7 @@ func (h *handler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) e
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queuecall.StatusWaiting, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queuecall.StatusWaiting, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueuecallSetStatusWaiting. err: %v", err)
 	}

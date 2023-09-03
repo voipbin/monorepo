@@ -186,18 +186,18 @@ func (mr *MockQueueHandlerMockRecorder) RemoveServiceQueuecallID(ctx, id, queuec
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockQueueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*queue.Queue, error) {
+func (m *MockQueueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitActions []action.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail)
+	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
 	ret0, _ := ret[0].(*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
-func (mr *MockQueueHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
+func (mr *MockQueueHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockQueueHandler)(nil).UpdateBasicInfo), ctx, id, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockQueueHandler)(nil).UpdateBasicInfo), ctx, id, name, detail, routingMethod, tagIDs, waitActions, waitTimeout, serviceTimeout)
 }
 
 // UpdateExecute mocks base method.

@@ -88,7 +88,7 @@ func (h *queuecallHandler) Create(
 	log.Debug("Creating a new queuecall.")
 
 	// generate queue id
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	log = log.WithField("id", id)
 
 	qc := &queuecall.Queuecall{
@@ -200,7 +200,7 @@ func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecal
 	})
 	log.Debug("Updating queuecall status to service.")
 
-	curTime := h.utilHandler.GetCurTime()
+	curTime := h.utilHandler.TimeGetCurTime()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
 	if errService := h.db.QueuecallSetStatusService(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
@@ -238,7 +238,7 @@ func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuec
 	})
 	log.Debug("Updating queuecall status to waiting.")
 
-	curTime := h.utilHandler.GetCurTime()
+	curTime := h.utilHandler.TimeGetCurTime()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
 	if errService := h.db.QueuecallSetStatusAbandoned(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
@@ -260,9 +260,12 @@ func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuec
 	}
 
 	// delete confbridge
-	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, res.ConfbridgeID); errDelete != nil {
+	log.Debugf("Deleting confbridge. confbridge_id: %s", res.ConfbridgeID)
+	cb, errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, res.ConfbridgeID)
+	if errDelete != nil {
 		log.Errorf("Could not delete the confbridge. err: %v", errDelete)
 	}
+	log.WithField("confbridge", cb).Debugf("Deleted confbridge.")
 
 	// delete variables
 	if errVariables := h.deleteVariables(ctx, res); errVariables != nil {
@@ -280,7 +283,7 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 	})
 	log.Debug("Updating queuecall status to waiting.")
 
-	curTime := h.utilHandler.GetCurTime()
+	curTime := h.utilHandler.TimeGetCurTime()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
 	if errService := h.db.QueuecallSetStatusDone(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
@@ -302,9 +305,12 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 	}
 
 	// delete confbridge
-	if errDelete := h.reqHandler.CallV1ConfbridgeDelete(ctx, res.ConfbridgeID); errDelete != nil {
-		log.Errorf("Could not delete the confbridge. err: %v", errDelete)
+	log.Debugf("Deleting confbridge. confbridge_id: %s", res.ConfbridgeID)
+	cb, err := h.reqHandler.CallV1ConfbridgeDelete(ctx, res.ConfbridgeID)
+	if err != nil {
+		log.Errorf("Could not delete the confbridge. err: %v", err)
 	}
+	log.WithField("confbridge", cb).Debugf("Deleted confbridge.")
 
 	// delete variables
 	if errVariables := h.deleteVariables(ctx, res); errVariables != nil {

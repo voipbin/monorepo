@@ -44,12 +44,15 @@ func (h *queuecallHandler) Execute(ctx context.Context, id uuid.UUID, agentID uu
 		},
 	}
 
-	calls, err := h.reqHandler.CallV1CallsCreate(ctx, qc.CustomerID, f.ID, qc.ReferenceID, &qc.Source, destinations, false, false)
+	calls, groupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, qc.CustomerID, f.ID, qc.ReferenceID, &qc.Source, destinations, false, false)
 	if err != nil {
 		log.Errorf("Could not create a call to the agent. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create a call to the agent.")
 	}
-	log.WithField("calls", calls).Debugf("Created call to the agent. agent_id: %s", agentID)
+	log.WithFields(logrus.Fields{
+		"calls":      calls,
+		"groupcalls": groupcalls,
+	}).Debugf("Created call to the agent. agent_id: %s", agentID)
 
 	// update the queuecall status to connecting
 	res, err := h.UpdateStatusConnecting(ctx, qc.ID, agentID)
