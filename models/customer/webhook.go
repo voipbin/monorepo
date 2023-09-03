@@ -15,6 +15,10 @@ type WebhookMessage struct {
 	Name   string `json:"name"`   // name
 	Detail string `json:"detail"` // detail
 
+	Email       string `json:"email,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	Address     string `json:"address,omitempty"`
+
 	// webhook info
 	WebhookMethod WebhookMethod `json:"webhook_method"` // webhook method
 	WebhookURI    string        `json:"webhook_uri"`    // webhook uri
@@ -36,6 +40,10 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 		Username: h.Username,
 		Name:     h.Name,
 		Detail:   h.Detail,
+
+		Email:       h.Email,
+		PhoneNumber: h.PhoneNumber,
+		Address:     h.Address,
 
 		WebhookMethod: h.WebhookMethod,
 		WebhookURI:    h.WebhookURI,
