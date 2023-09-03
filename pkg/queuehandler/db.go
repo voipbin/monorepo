@@ -66,7 +66,17 @@ func (h *queueHandler) Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, 
 }
 
 // UpdateBasicInfo updates the queue's basic info.
-func (h *queueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*queue.Queue, error) {
+func (h *queueHandler) UpdateBasicInfo(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	routingMethod queue.RoutingMethod,
+	tagIDs []uuid.UUID,
+	waitActions []fmaction.Action,
+	waitTimeout int,
+	serviceTimeout int,
+) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "UpdateBasicInfo",
 		"queue_id":     id,
@@ -75,7 +85,17 @@ func (h *queueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, 
 	})
 	log.Debug("Updating the queue's basic info.")
 
-	err := h.db.QueueSetBasicInfo(ctx, id, name, detail)
+	err := h.db.QueueSetBasicInfo(
+		ctx,
+		id,
+		name,
+		detail,
+		routingMethod,
+		tagIDs,
+		waitActions,
+		waitTimeout,
+		serviceTimeout,
+	)
 	if err != nil {
 		log.Errorf("Could not update the basic info. err: %v", err)
 		return nil, err

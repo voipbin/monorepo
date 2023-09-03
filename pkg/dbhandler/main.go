@@ -31,7 +31,17 @@ type DBHandler interface {
 	QueueIncreaseTotalServicedCount(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queueCallID uuid.UUID) error
 	QueueRemoveServiceQueueCall(ctx context.Context, id, queueCallID uuid.UUID) error
-	QueueSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
+	QueueSetBasicInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		routingMethod queue.RoutingMethod,
+		tagIDs []uuid.UUID,
+		waitActions []fmaction.Action,
+		waitTimeout int,
+		serviceTimeout int,
+	) error
 	QueueSetRoutingMethod(ctx context.Context, id uuid.UUID, routingMethod queue.RoutingMethod) error
 	QueueSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error
 	QueueSetExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) error

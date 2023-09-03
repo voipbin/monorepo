@@ -39,7 +39,17 @@ type QueueHandler interface {
 	Execute(ctx context.Context, id uuid.UUID)
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*queue.Queue, error)
-	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*queue.Queue, error)
+	UpdateBasicInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		routingMethod queue.RoutingMethod,
+		tagIDs []uuid.UUID,
+		waitActions []fmaction.Action,
+		waitTimeout int,
+		serviceTimeout int,
+	) (*queue.Queue, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error)
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error)
 	UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	cmconfbridge "gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -365,7 +366,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().QueuecallCreate(ctx, tt.expectQueuecall).Return(nil)
 			mockDB.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.responseQueuecall)
@@ -563,7 +564,7 @@ func Test_UpdateStatusService(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockDB.EXPECT().QueuecallSetStatusService(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallServiced, tt.responseQueuecall)
@@ -636,12 +637,12 @@ func Test_UpdateStatusAbandoned(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
 			mockQueue.EXPECT().AddAbandonedQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
-			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, tt.responseQueuecall.ReferenceActiveflowID, gomock.Any()).Return(nil).AnyTimes()
 
 			res, err := h.UpdateStatusAbandoned(ctx, tt.queuecall)
@@ -708,12 +709,12 @@ func Test_UpdateStatusDone(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)
 			mockQueue.EXPECT().RemoveServiceQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
-			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, tt.responseQueuecall.ReferenceActiveflowID, gomock.Any()).Return(nil).AnyTimes()
 
 			res, err := h.UpdateStatusDone(ctx, tt.queuecall)
