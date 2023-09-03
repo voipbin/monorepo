@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	cmcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	cmgroupcall "gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -97,7 +98,7 @@ func Test_Execute(t *testing.T) {
 			// generateFlowForAgentCall
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expcetFlowActions, false).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, tt.expectDestinations, false, false).Return([]cmcall.Call{}, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, tt.expectDestinations, false, false).Return([]*cmcall.Call{}, []*cmgroupcall.Groupcall{}, nil)
 
 			//UpdateStatusConnecting
 			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID).Return(nil)

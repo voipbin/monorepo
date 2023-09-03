@@ -32,7 +32,7 @@ func (h *queueHandler) Create(
 	log.Debug("Creating a new queue.")
 
 	// generate queue id
-	id := h.utilhandler.CreateUUID()
+	id := h.utilhandler.UUIDCreate()
 	log = log.WithField("queue_id", id)
 
 	if routingMethod != queue.RoutingMethodRandom {

@@ -354,9 +354,14 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 
 		request *rabbitmqhandler.Request
 
-		id        uuid.UUID
-		queueName string
-		detail    string
+		id             uuid.UUID
+		queueName      string
+		detail         string
+		routingMethod  queue.RoutingMethod
+		tagIDs         []uuid.UUID
+		waitActions    []fmaction.Action
+		waitTimeout    int
+		serviceTimeout int
 
 		responseQueue *queue.Queue
 		expectRes     *rabbitmqhandler.Response
@@ -367,12 +372,24 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 				URI:      "/v1/queues/66f7d436-5f6c-11ec-9298-677df04a59c2",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"name":"name","detail":"detail"}`),
+				Data:     []byte(`{"name":"name","detail":"detail","routing_method":"random","tag_ids":["1988fb8c-4a7d-11ee-8019-77954c15f154","19f6fcf4-4a7d-11ee-8632-b7cc10cd1d20"],"wait_actions":[{"type":"answer"}],"wait_timeout":60000,"service_timeout":6000000}`),
 			},
 
 			uuid.FromStringOrNil("66f7d436-5f6c-11ec-9298-677df04a59c2"),
 			"name",
 			"detail",
+			queue.RoutingMethodRandom,
+			[]uuid.UUID{
+				uuid.FromStringOrNil("1988fb8c-4a7d-11ee-8019-77954c15f154"),
+				uuid.FromStringOrNil("19f6fcf4-4a7d-11ee-8632-b7cc10cd1d20"),
+			},
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			60000,
+			6000000,
 
 			&queue.Queue{
 				ID: uuid.FromStringOrNil("66f7d436-5f6c-11ec-9298-677df04a59c2"),
@@ -398,7 +415,17 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.queueName, tt.detail).Return(tt.responseQueue, nil)
+			mockQueue.EXPECT().UpdateBasicInfo(
+				gomock.Any(),
+				tt.id,
+				tt.queueName,
+				tt.detail,
+				tt.routingMethod,
+				tt.tagIDs,
+				tt.waitActions,
+				tt.waitTimeout,
+				tt.serviceTimeout,
+			).Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

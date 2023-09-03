@@ -182,20 +182,37 @@ func Test_UpdateBasicInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		queueID   uuid.UUID
-		queueName string
-		detail    string
+		queueID        uuid.UUID
+		queueName      string
+		detail         string
+		routingMethod  queue.RoutingMethod
+		tagIDs         []uuid.UUID
+		waitActions    []fmaction.Action
+		waitTimeout    int
+		serviceTimeout int
 
 		responseQueue *queue.Queue
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
-			"test name",
-			"test detail",
+			queueID:       uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+			queueName:     "test name",
+			detail:        "test detail",
+			routingMethod: queue.RoutingMethodRandom,
+			tagIDs: []uuid.UUID{
+				uuid.FromStringOrNil("7fe4d988-4a77-11ee-a4b5-b36894ae13e5"),
+				uuid.FromStringOrNil("803c38ae-4a77-11ee-927d-cf749540055f"),
+			},
+			waitActions: []fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			waitTimeout:    60000,
+			serviceTimeout: 6000000,
 
-			&queue.Queue{
+			responseQueue: &queue.Queue{
 				ID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
 			},
 		},
@@ -218,11 +235,31 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueSetBasicInfo(ctx, tt.queueID, tt.queueName, tt.detail).Return(nil)
+			mockDB.EXPECT().QueueSetBasicInfo(
+				ctx,
+				tt.queueID,
+				tt.queueName,
+				tt.detail,
+				tt.routingMethod,
+				tt.tagIDs,
+				tt.waitActions,
+				tt.waitTimeout,
+				tt.serviceTimeout,
+			).Return(nil)
 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
-			res, err := h.UpdateBasicInfo(ctx, tt.queueID, tt.queueName, tt.detail)
+			res, err := h.UpdateBasicInfo(
+				ctx,
+				tt.queueID,
+				tt.queueName,
+				tt.detail,
+				tt.routingMethod,
+				tt.tagIDs,
+				tt.waitActions,
+				tt.waitTimeout,
+				tt.serviceTimeout,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

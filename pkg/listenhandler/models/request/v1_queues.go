@@ -20,7 +20,7 @@ type V1DataQueuesPost struct {
 	TagIDs        []uuid.UUID `json:"tag_ids"`
 
 	WaitActions    []fmaction.Action `json:"wait_actions"`
-	WaitTimout     int               `json:"wait_timeout"`    // wait timeout(ms)
+	WaitTimeout    int               `json:"wait_timeout"`    // wait timeout(ms)
 	ServiceTimeout int               `json:"service_timeout"` // service timeout(ms)
 }
 
@@ -28,8 +28,13 @@ type V1DataQueuesPost struct {
 // v1 data type request struct for
 // /v1/queues/<queue-id> PUT
 type V1DataQueuesIDPut struct {
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name           string              `json:"name"`
+	Detail         string              `json:"detail"`
+	RoutingMethod  queue.RoutingMethod `json:"routing_method,omitempty"`
+	TagIDs         []uuid.UUID         `json:"tag_ids,omitempty"`
+	WaitActions    []fmaction.Action   `json:"wait_actions,omitempty"`
+	WaitTimeout    int                 `json:"wait_timeout,omitempty"`
+	ServiceTimeout int                 `json:"service_timeout,omitempty"`
 }
 
 // V1DataQueuesIDQueuecallsPost is

@@ -38,7 +38,7 @@ func (h *listenHandler) processV1QueuesPost(ctx context.Context, m *rabbitmqhand
 		queue.RoutingMethod(req.RoutingMethod),
 		req.TagIDs,
 		req.WaitActions,
-		req.WaitTimout,
+		req.WaitTimeout,
 		req.ServiceTimeout,
 	)
 	if err != nil {
@@ -194,7 +194,17 @@ func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *rabbitmqhan
 	}
 
 	// join to the queue
-	tmp, err := h.queueHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
+	tmp, err := h.queueHandler.UpdateBasicInfo(
+		ctx,
+		id,
+		req.Name,
+		req.Detail,
+		req.RoutingMethod,
+		req.TagIDs,
+		req.WaitActions,
+		req.WaitTimeout,
+		req.ServiceTimeout,
+	)
 	if err != nil {
 		log.Errorf("Could not update the queue info. err: %v", err)
 		return simpleResponse(500), nil

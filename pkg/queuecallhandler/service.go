@@ -129,7 +129,7 @@ func (h *queuecallHandler) createActions(ctx context.Context, q *queue.Queue, co
 	if len(q.WaitActions) == 0 {
 		// append the default wait actions for empty wait actions
 		act := fmaction.Action{
-			ID:     h.utilHandler.CreateUUID(),
+			ID:     h.utilHandler.UUIDCreate(),
 			Type:   fmaction.TypeSleep,
 			Option: []byte(`{"duration": 10000}`),
 		}
@@ -137,7 +137,7 @@ func (h *queuecallHandler) createActions(ctx context.Context, q *queue.Queue, co
 	} else {
 		for _, act := range q.WaitActions {
 			if act.ID == uuid.Nil {
-				act.ID = h.utilHandler.CreateUUID()
+				act.ID = h.utilHandler.UUIDCreate()
 			}
 			res = append(res, act)
 		}
@@ -147,7 +147,7 @@ func (h *queuecallHandler) createActions(ctx context.Context, q *queue.Queue, co
 	res[len(res)-1].NextID = res[0].ID
 
 	// append the action confbridge_join
-	forwardActionID := h.utilHandler.CreateUUID()
+	forwardActionID := h.utilHandler.UUIDCreate()
 	option := fmaction.OptionConfbridgeJoin{
 		ConfbridgeID: confbridgeID,
 	}
