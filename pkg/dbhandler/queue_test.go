@@ -199,7 +199,7 @@ func Test_QueueCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			mockCache.EXPECT().QueueGet(gomock.Any(), tt.queue.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueueCreate(ctx, tt.queue); err != nil {
@@ -308,7 +308,7 @@ func TestQueueGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.data {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurtime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
 				mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 				if err := h.QueueCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -369,13 +369,13 @@ func Test_QueueDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			if err := h.QueueDelete(ctx, tt.data.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -401,30 +401,58 @@ func Test_QueueSetBasicInfo(t *testing.T) {
 
 		data *queue.Queue
 
-		id        uuid.UUID
-		queueName string
-		detail    string
+		id             uuid.UUID
+		queueName      string
+		detail         string
+		routingMethod  queue.RoutingMethod
+		tagIDs         []uuid.UUID
+		waitActions    []fmaction.Action
+		waitTimeout    int
+		serviceTimeout int
 
 		responseCurTime string
 		expectRes       *queue.Queue
 	}{
 		{
-			"test normal",
+			name: "normal",
 
-			&queue.Queue{
+			data: &queue.Queue{
 				ID: uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
 			},
-			uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
-			"new name",
-			"new detail",
 
-			"2020-04-18T03:22:17.995000",
-			&queue.Queue{
-				ID:                  uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
-				Name:                "new name",
-				Detail:              "new detail",
-				TagIDs:              []uuid.UUID{},
-				WaitActions:         []fmaction.Action{},
+			id:            uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
+			queueName:     "new name",
+			detail:        "new detail",
+			routingMethod: queue.RoutingMethodRandom,
+			tagIDs: []uuid.UUID{
+				uuid.FromStringOrNil("ae89cfb2-4a79-11ee-bb42-afff4d0fb8b0"),
+				uuid.FromStringOrNil("af7d6078-4a79-11ee-91d3-cfebfe71419e"),
+			},
+			waitActions: []fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			waitTimeout:    60000,
+			serviceTimeout: 6000000,
+
+			responseCurTime: "2020-04-18T03:22:17.995000",
+			expectRes: &queue.Queue{
+				ID:            uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
+				Name:          "new name",
+				Detail:        "new detail",
+				RoutingMethod: queue.RoutingMethodRandom,
+				TagIDs: []uuid.UUID{
+					uuid.FromStringOrNil("ae89cfb2-4a79-11ee-bb42-afff4d0fb8b0"),
+					uuid.FromStringOrNil("af7d6078-4a79-11ee-91d3-cfebfe71419e"),
+				},
+				WaitActions: []fmaction.Action{
+					{
+						Type: fmaction.TypeAnswer,
+					},
+				},
+				WaitTimeout:         60000,
+				ServiceTimeout:      6000000,
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
 				TMCreate:            "2020-04-18T03:22:17.995000",
@@ -448,15 +476,25 @@ func Test_QueueSetBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
-			if err := h.QueueSetBasicInfo(ctx, tt.id, tt.queueName, tt.detail); err != nil {
+			if err := h.QueueSetBasicInfo(
+				ctx,
+				tt.id,
+				tt.queueName,
+				tt.detail,
+				tt.routingMethod,
+				tt.tagIDs,
+				tt.waitActions,
+				tt.waitTimeout,
+				tt.serviceTimeout,
+			); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -524,13 +562,13 @@ func Test_QueueSetRoutingMethod(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueSetRoutingMethod(ctx, tt.id, tt.routingMethod); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -605,13 +643,13 @@ func Test_QueueSetTagIDs(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueSetTagIDs(ctx, tt.id, tt.tagIDs); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -697,13 +735,13 @@ func Test_QueueSetWaitActions(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueSetWaitActionsAndTimeouts(ctx, tt.id, tt.waitActions, tt.waitTimeout, tt.serviceTimeout); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -148,8 +148,8 @@ func Test_ServiceStart(t *testing.T) {
 			mockQueue.EXPECT().Get(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.responseQueue.CustomerID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDActionID)
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUIDQueuecall)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDQueuecall)
 			mockDB.EXPECT().QueuecallCreate(ctx, tt.expectQueuecall).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseUUIDQueuecall).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.responseQueuecall)
@@ -237,7 +237,7 @@ func Test_createActions(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
 			res, resForward, err := h.createActions(ctx, tt.queue, tt.confbridgeID)
 			if err != nil {
