@@ -11,10 +11,10 @@ import (
 	"gitlab.com/voipbin/bin-manager/billing-manager.git/pkg/dbhandler"
 )
 
-// Create creates a new account and return the created account.
-func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, name string, detail string) (*account.Account, error) {
+// dbCreate creates a new account and return the created account.
+func (h *accountHandler) dbCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, paymentType account.PaymentType, payemntMethod account.PaymentMethod) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Create",
+		"func":        "dbCreate",
 		"customer_id": customerID,
 	})
 
@@ -26,8 +26,8 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, name 
 		Detail:        detail,
 		Type:          account.TypeNormal,
 		Balance:       0,
-		PaymentType:   account.PaymentTypeNone,
-		PaymentMethod: account.PaymentMethodNone,
+		PaymentType:   paymentType,
+		PaymentMethod: payemntMethod,
 	}
 
 	if errCreate := h.db.AccountCreate(ctx, a); errCreate != nil {
@@ -190,6 +190,52 @@ func (h *accountHandler) DeletesByCustomerID(ctx context.Context, customerID uui
 			continue
 		}
 		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
+// dbUpdateBasicInfo updates the account's basic info
+func (h *accountHandler) dbUpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":   "UpdateBasicInfo",
+		"id":     id,
+		"name":   name,
+		"detail": detail,
+	})
+
+	if errSet := h.db.AccountSet(ctx, id, name, detail); errSet != nil {
+		log.Errorf("Could not update the account. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not update the account")
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated account")
+	}
+
+	return res, nil
+}
+
+// dbUpdatePaymentInfo updates the account's payment info
+func (h *accountHandler) dbUpdatePaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "dbUpdatePaymentInfo",
+		"id":             id,
+		"payment_type":   paymentType,
+		"payment_method": paymentMethod,
+	})
+
+	if errSet := h.db.AccountSetPaymentInfo(ctx, id, paymentType, paymentMethod); errSet != nil {
+		log.Errorf("Could not update the account. err: %v", errSet)
+		return nil, errors.Wrap(errSet, "could not update the account")
+	}
+
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get updated account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated account")
 	}
 
 	return res, nil

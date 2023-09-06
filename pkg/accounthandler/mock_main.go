@@ -53,18 +53,18 @@ func (mr *MockAccountHandlerMockRecorder) AddBalance(ctx, accountID, balance int
 }
 
 // Create mocks base method.
-func (m *MockAccountHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string) (*account.Account, error) {
+func (m *MockAccountHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, paymentType account.PaymentType, payemntMethod account.PaymentMethod) (*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, paymentType, payemntMethod)
 	ret0, _ := ret[0].(*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockAccountHandlerMockRecorder) Create(ctx, customerID, name, detail interface{}) *gomock.Call {
+func (mr *MockAccountHandlerMockRecorder) Create(ctx, customerID, name, detail, paymentType, payemntMethod interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAccountHandler)(nil).Create), ctx, customerID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAccountHandler)(nil).Create), ctx, customerID, name, detail, paymentType, payemntMethod)
 }
 
 // Delete mocks base method.
@@ -170,4 +170,34 @@ func (m *MockAccountHandler) SubtractBalance(ctx context.Context, accountID uuid
 func (mr *MockAccountHandlerMockRecorder) SubtractBalance(ctx, accountID, balance interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubtractBalance", reflect.TypeOf((*MockAccountHandler)(nil).SubtractBalance), ctx, accountID, balance)
+}
+
+// UpdateBasicInfo mocks base method.
+func (m *MockAccountHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
+func (mr *MockAccountHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockAccountHandler)(nil).UpdateBasicInfo), ctx, id, name, detail)
+}
+
+// UpdatePaymentInfo mocks base method.
+func (m *MockAccountHandler) UpdatePaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePaymentInfo", ctx, id, paymentType, paymentMethod)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdatePaymentInfo indicates an expected call of UpdatePaymentInfo.
+func (mr *MockAccountHandlerMockRecorder) UpdatePaymentInfo(ctx, id, paymentType, paymentMethod interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePaymentInfo", reflect.TypeOf((*MockAccountHandler)(nil).UpdatePaymentInfo), ctx, id, paymentType, paymentMethod)
 }
