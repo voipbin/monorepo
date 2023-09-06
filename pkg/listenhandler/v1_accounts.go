@@ -68,7 +68,7 @@ func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *rabbitmqha
 		return nil, err
 	}
 
-	tmp, err := h.accountHandler.Create(ctx, req.CustomerID, req.Name, req.Detail)
+	tmp, err := h.accountHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.PaymentType, req.PaymentMethod)
 	if err != nil {
 		log.Errorf("Could not create account info. err: %v", err)
 		return simpleResponse(404), nil
@@ -103,6 +103,45 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *rabbitmqh
 	id := uuid.FromStringOrNil(uriItems[3])
 
 	c, err := h.accountHandler.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get account info. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	data, err := json.Marshal(c)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsIDPut handles PUT /v1/accounts/<account-id> request
+func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIDPut",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataAccountsIDPUT
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	c, err := h.accountHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not get account info. err: %v", err)
 		return simpleResponse(404), nil
@@ -295,6 +334,45 @@ func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Contex
 
 	tmp := &response.V1ResponseAccountsIDIsValidBalance{
 		Valid: valid,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &rabbitmqhandler.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsIDPaymentInfoPut handles PUT /v1/accounts/<account-id>/payment_info request
+func (h *listenHandler) processV1AccountsIDPaymentInfoPut(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIDPaymentInfoPut",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	accountID := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataAccountsIDPaymentInfoPUT
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	tmp, err := h.accountHandler.UpdatePaymentInfo(ctx, accountID, req.PaymentType, req.PaymentMethod)
+	if err != nil {
+		log.Errorf("Could not update the account's payment info. err: %v", err)
+		return simpleResponse(404), nil
 	}
 
 	data, err := json.Marshal(tmp)
