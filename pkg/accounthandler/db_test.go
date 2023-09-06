@@ -21,9 +21,11 @@ func Test_Create(t *testing.T) {
 	type test struct {
 		name string
 
-		customerID  uuid.UUID
-		accountName string
-		detail      string
+		customerID    uuid.UUID
+		accountName   string
+		detail        string
+		paymentType   account.PaymentType
+		paymentMethod account.PaymentMethod
 
 		responseUUID    uuid.UUID
 		responseAccount *account.Account
@@ -35,9 +37,11 @@ func Test_Create(t *testing.T) {
 		{
 			name: "normal",
 
-			customerID:  uuid.FromStringOrNil("06011a02-08f3-11ee-b4c1-73257fafcdb3"),
-			accountName: "test name",
-			detail:      "test detail",
+			customerID:    uuid.FromStringOrNil("06011a02-08f3-11ee-b4c1-73257fafcdb3"),
+			accountName:   "test name",
+			detail:        "test detail",
+			paymentType:   account.PaymentTypePrepaid,
+			paymentMethod: account.PaymentMethodNone,
 
 			responseUUID: uuid.FromStringOrNil("3972c20e-08f4-11ee-893b-032e633ef73a"),
 			responseAccount: &account.Account{
@@ -51,7 +55,7 @@ func Test_Create(t *testing.T) {
 				Detail:        "test detail",
 				Type:          account.TypeNormal,
 				Balance:       0,
-				PaymentType:   account.PaymentTypeNone,
+				PaymentType:   account.PaymentTypePrepaid,
 				PaymentMethod: account.PaymentMethodNone,
 			},
 		},
@@ -78,7 +82,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
 
-			res, err := h.Create(ctx, tt.customerID, tt.accountName, tt.detail)
+			res, err := h.Create(ctx, tt.customerID, tt.accountName, tt.detail, tt.paymentType, tt.paymentMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -497,6 +501,63 @@ func Test_DeletesByCustomerID(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_dbUpdateBasicInfo(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id          uuid.UUID
+		accountName string
+		detail      string
+
+		responseAccounts *account.Account
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+
+			id:          uuid.FromStringOrNil("5fc8b882-4cce-11ee-a6be-2b19227e7197"),
+			accountName: "update name",
+			detail:      "update detail",
+
+			responseAccounts: &account.Account{
+				ID: uuid.FromStringOrNil("5fc8b882-4cce-11ee-a6be-2b19227e7197"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := accountHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().AccountSet(ctx, tt.id, tt.accountName, tt.detail).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccounts, nil)
+
+			res, err := h.dbUpdateBasicInfo(ctx, tt.id, tt.accountName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.responseAccounts, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAccounts, res)
 			}
 		})
 	}
