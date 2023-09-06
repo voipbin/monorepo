@@ -39,13 +39,15 @@ func (r *requestHandler) BillingV1AccountGets(ctx context.Context, customerID uu
 }
 
 // BillingV1AccountCreate creates a new billing account.
-func (r *requestHandler) BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name string, detail string) (*bmaccount.Account, error) {
+func (r *requestHandler) BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error) {
 	uri := "/v1/accounts"
 
 	m, err := json.Marshal(bmrequest.V1DataAccountsPOST{
-		CustomerID: custoerID,
-		Name:       name,
-		Detail:     detail,
+		CustomerID:    custoerID,
+		Name:          name,
+		Detail:        detail,
+		PaymentType:   paymentType,
+		PaymentMethod: paymentMethod,
 	})
 	if err != nil {
 		return nil, err
@@ -74,6 +76,66 @@ func (r *requestHandler) BillingV1AccountGet(ctx context.Context, accountID uuid
 	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
 
 	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodGet, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("could not get response")
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res bmaccount.Account
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	}
+
+	return &res, nil
+}
+
+// BillingV1AccountUpdateBasicInfo updates a billing account's basic info.
+func (r *requestHandler) BillingV1AccountUpdateBasicInfo(ctx context.Context, accountID uuid.UUID, name string, detail string) (*bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s", accountID)
+
+	m, err := json.Marshal(bmrequest.V1DataAccountsIDPUT{
+		Name:   name,
+		Detail: detail,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPut, "billing/accounts/<account-id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		return nil, fmt.Errorf("could not get response")
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res bmaccount.Account
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal the response data")
+	}
+
+	return &res, nil
+}
+
+// BillingV1AccountUpdatePaymentInfo updates a billing account's payment info.
+func (r *requestHandler) BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/payment_info", accountID)
+
+	m, err := json.Marshal(bmrequest.V1DataAccountsIDPaymentInfoPUT{
+		PaymentType:   paymentType,
+		PaymentMethod: paymentMethod,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestBilling(ctx, uri, rabbitmqhandler.RequestMethodPut, "billing/accounts/<account-id>/payment_info", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	switch {
 	case err != nil:
 		return nil, err
