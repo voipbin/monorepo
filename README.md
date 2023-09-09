@@ -1,6 +1,6 @@
 # billing-manager
 
-Billing-manager for webhook event notification.
+Billing-manager for billing related process and webhook event notification.
 
 # RUN
 ```
