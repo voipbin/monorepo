@@ -162,11 +162,36 @@ func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid
 	return &res, nil
 }
 
-// RegistrarV1ExtensionGets sends a request to registrar-manager
+// RegistrarV1ExtensionGetsByDomainID sends a request to registrar-manager
 // to getting a list of extension info.
 // it returns detail list of extension info if it succeed.
-func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions?page_token=%s&page_size=%d&domain_id=%s", url.QueryEscape(pageToken), pageSize, domainID)
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case tmp == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case tmp.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", tmp.StatusCode)
+	}
+
+	var res []rmextension.Extension
+	if err := json.Unmarshal([]byte(tmp.Data), &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// RegistrarV1ExtensionGetsByCustomerID sends a request to registrar-manager
+// to getting a list of extension info.
+// it returns detail list of extension info if it succeed.
+func (r *requestHandler) RegistrarV1ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error) {
+	uri := fmt.Sprintf("/v1/extensions?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRegistrarExtensions, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

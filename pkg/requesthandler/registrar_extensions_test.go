@@ -352,7 +352,7 @@ func Test_RegistrarExtensionDelete(t *testing.T) {
 	}
 }
 
-func Test_RegistrarExtensionsGets(t *testing.T) {
+func Test_RegistrarV1ExtensionGetsByDomainID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -416,7 +416,74 @@ func Test_RegistrarExtensionsGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1ExtensionGets(ctx, tt.domainID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RegistrarV1ExtensionGetsByDomainID(ctx, tt.domainID, tt.pageToken, tt.pageSize)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_RegistrarV1ExtensionGetsByCustomerID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     []rmextension.Extension
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("f18dcabe-4ff3-11ee-80be-875a8c6041d4"),
+			"2020-09-20 03:23:20.995000",
+			10,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"f1d6686e-4ff3-11ee-a1cc-cbb904dc2d7e"}]`),
+			},
+
+			"bin-manager.registrar-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      fmt.Sprintf("/v1/extensions?page_token=%s&page_size=10&customer_id=f18dcabe-4ff3-11ee-80be-875a8c6041d4", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: ContentTypeJSON,
+			},
+			[]rmextension.Extension{
+				{
+					ID: uuid.FromStringOrNil("f1d6686e-4ff3-11ee-a1cc-cbb904dc2d7e"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.RegistrarV1ExtensionGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
