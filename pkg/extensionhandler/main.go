@@ -31,6 +31,7 @@ type ExtensionHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	GetByEndpoint(ctx context.Context, endpoint string) (*extension.Extension, error)
 	GetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
+	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
 	Update(ctx context.Context, e *extension.Extension) (*extension.Extension, error)
 }
 
