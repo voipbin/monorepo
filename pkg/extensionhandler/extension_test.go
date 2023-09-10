@@ -112,7 +112,7 @@ func Test_Create(t *testing.T) {
 		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR).Return(nil)
 		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
 		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint).Return(nil)
-		mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+		mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 		mockDBBin.EXPECT().ExtensionCreate(ctx, tt.expectExtension).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.expectExtension.ID).Return(tt.responseExtension, nil)
 		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionCreated, tt.responseExtension)
@@ -471,6 +471,54 @@ func Test_ExtensionGetsByDomainID(t *testing.T) {
 
 		mockDBBin.EXPECT().ExtensionGetsByDomainID(gomock.Any(), tt.domainID, tt.token, uint64(10)).Return(tt.exts, nil)
 		res, err := h.GetsByDomainID(ctx, tt.domainID, tt.token, uint64(10))
+		if err != nil {
+			t.Errorf("Wrong match. expect: ok, got: %v", err)
+		}
+
+		if reflect.DeepEqual(tt.exts, res) == false {
+			t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.exts, res)
+		}
+
+	}
+}
+
+func Test_ExtensionGetsByCustomerID(t *testing.T) {
+
+	type test struct {
+		name       string
+		customerID uuid.UUID
+		token      string
+		exts       []*extension.Extension
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("f415f9b8-4fef-11ee-a071-0f13ee41a35d"),
+			"2021-02-15 17:31:59.519672",
+			[]*extension.Extension{
+				{
+					ID: uuid.FromStringOrNil("f449ace0-4fef-11ee-a0f8-c71aa984ea34"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockDBAst := dbhandler.NewMockDBHandler(mc)
+		mockDBBin := dbhandler.NewMockDBHandler(mc)
+		h := &extensionHandler{
+			dbAst: mockDBAst,
+			dbBin: mockDBBin,
+		}
+
+		ctx := context.Background()
+
+		mockDBBin.EXPECT().ExtensionGetsByCustomerID(gomock.Any(), tt.customerID, tt.token, uint64(10)).Return(tt.exts, nil)
+		res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, uint64(10))
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
 		}

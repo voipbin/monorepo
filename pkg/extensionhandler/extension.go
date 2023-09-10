@@ -86,7 +86,7 @@ func (h *extensionHandler) Create(
 	}
 
 	// create a new extension
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	e := &extension.Extension{
 		ID:         id,
 		CustomerID: customerID,
@@ -128,6 +128,22 @@ func (h *extensionHandler) GetByEndpoint(ctx context.Context, endpoint string) (
 	endpointID := fmt.Sprintf("%s.%s", endpoint, common.BaseDomainName)
 
 	return h.dbBin.ExtensionGetByEndpointID(ctx, endpointID)
+}
+
+// GetsByCustomerID returns list of extensions
+func (h *extensionHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"customer_id": customerID,
+	})
+
+	res, err := h.dbBin.ExtensionGetsByCustomerID(ctx, customerID, token, limit)
+	if err != nil {
+		log.Errorf("Could not get extensions. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // Update updates a exists extension
@@ -236,7 +252,7 @@ func (h *extensionHandler) DeleteByDomainID(ctx context.Context, domainID uuid.U
 	})
 
 	// get extensions
-	exts, err := h.GetsByDomainID(ctx, domainID, h.utilHandler.GetCurTime(), 1000)
+	exts, err := h.GetsByDomainID(ctx, domainID, h.utilHandler.TimeGetCurTime(), 1000)
 	if err != nil {
 		log.Errorf("Could not get delete extensions. err: %v", err)
 		return nil, err

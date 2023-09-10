@@ -77,7 +77,7 @@ func (h *handler) DomainCreate(ctx context.Context, b *domain.Domain) error {
 		b.Detail,
 		b.DomainName,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -189,7 +189,7 @@ func (h *handler) DomainUpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 	_, err := h.db.Exec(q,
 		name,
 		detail,
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		id.Bytes(),
 	)
 	if err != nil {
@@ -301,7 +301,7 @@ func (h *handler) DomainDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. DomainDelete. err: %v", err)
 	}

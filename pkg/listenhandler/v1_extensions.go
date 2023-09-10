@@ -205,12 +205,22 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *rabbitmqh
 	pageToken := u.Query().Get(PageToken)
 
 	// get domain_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 	domainID := uuid.FromStringOrNil(u.Query().Get("domain_id"))
 
-	resExts, err := h.extensionHandler.GetsByDomainID(ctx, domainID, pageToken, pageSize)
-	if err != nil {
-		log.Errorf("Could not get extensions. err: %v", err)
-		return nil, err
+	var resExts []*extension.Extension
+	if domainID != uuid.Nil {
+		resExts, err = h.extensionHandler.GetsByDomainID(ctx, domainID, pageToken, pageSize)
+		if err != nil {
+			log.Errorf("Could not get extensions. err: %v", err)
+			return nil, err
+		}
+	} else {
+		resExts, err = h.extensionHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+		if err != nil {
+			log.Errorf("Could not get extensions. err: %v", err)
+			return nil, err
+		}
 	}
 
 	data, err := json.Marshal(resExts)
