@@ -108,31 +108,32 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 	}
 }
 
-func Test_processV1ExtensionsGet(t *testing.T) {
+func Test_processV1ExtensionsGet_domain_id(t *testing.T) {
 
 	type test struct {
-		name      string
-		domainID  uuid.UUID
-		pageToken string
-		pageSize  uint64
-		request   *rabbitmqhandler.Request
-		exts      []*extension.Extension
+		name       string
+		customerID uuid.UUID
+		domainID   uuid.UUID
+		pageToken  string
+		pageSize   uint64
+		request    *rabbitmqhandler.Request
+		exts       []*extension.Extension
 
 		expectRes *rabbitmqhandler.Response
 	}
 
 	tests := []test{
 		{
-			"normal",
-			uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
-			"2020-10-10T03:30:17.000000",
-			10,
-			&rabbitmqhandler.Request{
+			name:      "normal",
+			domainID:  uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
+			pageToken: "2020-10-10T03:30:17.000000",
+			pageSize:  10,
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&domain_id=a4b2db1e-6f4d-11eb-9df6-5793191d903c",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			[]*extension.Extension{
+			exts: []*extension.Extension{
 				{
 					ID:         uuid.FromStringOrNil("c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec"),
 					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
@@ -143,24 +144,24 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
 					DomainID:   uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
 				}},
-			&rabbitmqhandler.Response{
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[{"id":"c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","domain_id":"a4b2db1e-6f4d-11eb-9df6-5793191d903c","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"c4fb2336-6f4d-11eb-b51d-b318fdb3e042","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","domain_id":"a4b2db1e-6f4d-11eb-9df6-5793191d903c","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
-			"empty",
-			uuid.FromStringOrNil("c5231cce-6f4d-11eb-8a7f-3f6cf1546343"),
-			"2020-10-10T03:30:17.000000",
-			10,
-			&rabbitmqhandler.Request{
+			name:      "empty",
+			domainID:  uuid.FromStringOrNil("c5231cce-6f4d-11eb-8a7f-3f6cf1546343"),
+			pageToken: "2020-10-10T03:30:17.000000",
+			pageSize:  10,
+			request: &rabbitmqhandler.Request{
 				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&domain_id=c5231cce-6f4d-11eb-8a7f-3f6cf1546343",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: "application/json",
 			},
-			[]*extension.Extension{},
-			&rabbitmqhandler.Response{
+			exts: []*extension.Extension{},
+			expectRes: &rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
@@ -186,6 +187,97 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			}
 
 			mockExtension.EXPECT().GetsByDomainID(gomock.Any(), tt.domainID, tt.pageToken, tt.pageSize).Return(tt.exts, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ExtensionsGet_customer_id(t *testing.T) {
+
+	type test struct {
+		name       string
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+		request    *rabbitmqhandler.Request
+		exts       []*extension.Extension
+
+		expectRes *rabbitmqhandler.Response
+	}
+
+	tests := []test{
+		{
+			name:       "normal customer id",
+			customerID: uuid.FromStringOrNil("1b642fde-4ff1-11ee-8b2f-2f40ea091b7d"),
+			pageToken:  "2020-10-10T03:30:17.000000",
+			pageSize:   10,
+			request: &rabbitmqhandler.Request{
+				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=1b642fde-4ff1-11ee-8b2f-2f40ea091b7d",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+			exts: []*extension.Extension{
+				{
+					ID:         uuid.FromStringOrNil("c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec"),
+					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+					DomainID:   uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("c4fb2336-6f4d-11eb-b51d-b318fdb3e042"),
+					CustomerID: uuid.FromStringOrNil("2e341ffa-7fed-11ec-9667-1357b91d745d"),
+					DomainID:   uuid.FromStringOrNil("a4b2db1e-6f4d-11eb-9df6-5793191d903c"),
+				}},
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"c3bb89e8-6f4d-11eb-b0dc-2f9c1d06a8ec","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","domain_id":"a4b2db1e-6f4d-11eb-9df6-5793191d903c","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"c4fb2336-6f4d-11eb-b51d-b318fdb3e042","customer_id":"2e341ffa-7fed-11ec-9667-1357b91d745d","name":"","detail":"","domain_id":"a4b2db1e-6f4d-11eb-9df6-5793191d903c","endpoint_id":"","aor_id":"","auth_id":"","extension":"","password":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+		{
+			name:       "empty",
+			customerID: uuid.FromStringOrNil("1b991686-4ff1-11ee-89fd-2f283e362ada"),
+			pageToken:  "2020-10-10T03:30:17.000000",
+			pageSize:   10,
+			request: &rabbitmqhandler.Request{
+				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=1b991686-4ff1-11ee-89fd-2f283e362ada",
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: "application/json",
+			},
+			exts: []*extension.Extension{},
+			expectRes: &rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDomain := domainhandler.NewMockDomainHandler(mc)
+			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:       mockSock,
+				reqHandler:       mockReq,
+				domainHandler:    mockDomain,
+				extensionHandler: mockExtension,
+			}
+
+			mockExtension.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.exts, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

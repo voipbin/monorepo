@@ -38,7 +38,7 @@ func (h *domainHandler) Create(ctx context.Context, customerID uuid.UUID, domain
 	}
 
 	// create new domain
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	d := &domain.Domain{
 		ID:         id,
 		CustomerID: customerID,

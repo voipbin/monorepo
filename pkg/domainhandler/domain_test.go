@@ -77,7 +77,7 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			mockDBBin.EXPECT().DomainGetByDomainName(ctx, tt.expectDomain.DomainName).Return(nil, fmt.Errorf(""))
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDBBin.EXPECT().DomainCreate(ctx, tt.expectDomain)
 			mockDBBin.EXPECT().DomainGet(ctx, tt.expectDomain.ID).Return(tt.responseDomain, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, domain.EventTypeDomainCreated, tt.responseDomain)

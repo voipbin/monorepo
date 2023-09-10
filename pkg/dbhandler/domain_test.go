@@ -84,7 +84,7 @@ func Test_DomainCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().DomainSet(ctx, gomock.Any())
 			if err := h.DomainCreate(ctx, tt.domain); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -152,7 +152,7 @@ func Test_DomainGetByDomainName(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
 			if errCreate := h.DomainCreate(ctx, tt.domain); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
@@ -246,14 +246,14 @@ func Test_DomainGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, d := range tt.domains {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().DomainSet(gomock.Any(), gomock.Any())
 				if err := h.DomainCreate(ctx, &d); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			domains, err := h.DomainGetsByCustomerID(ctx, tt.customerID, utilhandler.GetCurTime(), tt.limit)
+			domains, err := h.DomainGetsByCustomerID(ctx, tt.customerID, utilhandler.TimeGetCurTime(), tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -333,13 +333,13 @@ func Test_DomainUpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().DomainSet(ctx, gomock.Any())
 			if err := h.DomainCreate(ctx, tt.domain); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().DomainSet(ctx, gomock.Any())
 			if err := h.DomainUpdateBasicInfo(ctx, tt.id, tt.domainN, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

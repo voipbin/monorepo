@@ -107,7 +107,7 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		b.Extension,
 		b.Password,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -259,7 +259,7 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ExtensionDelete. err: %v", err)
 	}
@@ -286,7 +286,7 @@ func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) e
 		b.Name,
 		b.Detail,
 		b.Password,
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		b.ID.Bytes(),
 	)
 	if err != nil {
@@ -325,6 +325,40 @@ func (h *handler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUI
 		u, err := h.extensionGetFromRow(rows)
 		if err != nil {
 			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGetsByDomainID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
+// ExtensionGetsByCustomerID returns list of extensions.
+func (h *handler) ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			customer_id = ?
+			and tm_create < ?
+			and tm_delete >= ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, extensionSelect)
+
+	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ExtensionGetsByCustomerID. err: %v", err)
+	}
+	defer rows.Close()
+
+	res := []*extension.Extension{}
+	for rows.Next() {
+		u, err := h.extensionGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGetsByCustomerID. err: %v", err)
 		}
 
 		res = append(res, u)
