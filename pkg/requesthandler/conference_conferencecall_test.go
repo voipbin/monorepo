@@ -12,6 +12,75 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
+func Test_ConferenceV1ConferencecallGets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectRes []cfconferencecall.Conferencecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("99a1f5de-50c8-11ee-9ce3-231aafe363bf"),
+			"2021-03-02 03:23:20.995000",
+			10,
+
+			"bin-manager.conference-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&customer_id=99a1f5de-50c8-11ee-9ce3-231aafe363bf",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"99d4af42-50c8-11ee-8240-d360bb85c265"},{"id":"9a0b7f2c-50c8-11ee-a3e8-b7c427a82ef8"}]`),
+			},
+
+			[]cfconferencecall.Conferencecall{
+				{
+					ID: uuid.FromStringOrNil("99d4af42-50c8-11ee-8240-d360bb85c265"),
+				},
+				{
+					ID: uuid.FromStringOrNil("9a0b7f2c-50c8-11ee-a3e8-b7c427a82ef8"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ConferenceV1ConferencecallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_ConferenceV1ConferencecallGet(t *testing.T) {
 
 	type test struct {
