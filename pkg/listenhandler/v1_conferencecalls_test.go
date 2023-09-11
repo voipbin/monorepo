@@ -14,6 +14,66 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 )
 
+func Test_processV1ConferencecallsGet(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		request    *rabbitmqhandler.Request
+		customerID uuid.UUID
+		pageSize   uint64
+		pageToken  string
+		confs      []*conferencecall.Conferencecall
+		expectRes  *rabbitmqhandler.Response
+	}{
+		{
+			"normal",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/conferencecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=54197ee2-50c3-11ee-ba48-af437ce87cbf",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			uuid.FromStringOrNil("54197ee2-50c3-11ee-ba48-af437ce87cbf"),
+			10,
+			"2020-05-03 21:35:02.809",
+			[]*conferencecall.Conferencecall{
+				{
+					ID: uuid.FromStringOrNil("544b3fea-50c3-11ee-86bb-6fe1c82ac8b3"),
+				},
+			},
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"544b3fea-50c3-11ee-86bb-6fe1c82ac8b3","customer_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			mockConf := conferencecallhandler.NewMockConferencecallHandler(mc)
+
+			h := &listenHandler{
+				rabbitSock:            mockSock,
+				conferencecallHandler: mockConf,
+			}
+
+			mockConf.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.confs, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+		})
+	}
+}
+
 func Test_processV1ConferencecallsIDGet(t *testing.T) {
 
 	tests := []struct {

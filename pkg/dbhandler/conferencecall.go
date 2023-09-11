@@ -88,7 +88,7 @@ func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.C
 
 		cf.Status,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -162,7 +162,7 @@ func (h *handler) conferencecallSetToCache(ctx context.Context, data *conference
 	return nil
 }
 
-// ConferencecallGet gets conferencecall.
+// ConferencecallGet get conferencecall.
 func (h *handler) ConferencecallGet(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
 
 	res, err := h.conferencecallGetFromCache(ctx, id)
@@ -291,7 +291,7 @@ func (h *handler) ConferencecallDelete(ctx context.Context, id uuid.UUID) error 
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferencecallDelete. err: %v", err)
@@ -314,7 +314,7 @@ func (h *handler) ConferencecallUpdateStatus(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferencecallUpdateStatus. err: %v", err)
 	}

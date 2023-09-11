@@ -27,7 +27,7 @@ func (h *conferencecallHandler) Create(
 		"reference_id":   referenceID,
 	})
 
-	id := h.utilHandler.CreateUUID()
+	id := h.utilHandler.UUIDCreate()
 	tmp := &conferencecall.Conferencecall{
 		ID:           id,
 		CustomerID:   customerID,
@@ -58,6 +58,16 @@ func (h *conferencecallHandler) Create(
 	go func() {
 		_ = h.reqHandler.ConferenceV1ConferencecallHealthCheck(ctx, id, 0, defaultHealthCheckDelay)
 	}()
+
+	return res, nil
+}
+
+// Gets returns list of conferencecalls.
+func (h *conferencecallHandler) Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conferencecall.Conferencecall, error) {
+	res, err := h.db.ConferencecallGetsByCustomerID(ctx, customerID, size, token)
+	if err != nil {
+		return nil, err
+	}
 
 	return res, nil
 }

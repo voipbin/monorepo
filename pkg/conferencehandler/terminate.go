@@ -62,9 +62,11 @@ func (h *conferenceHandler) Destroy(ctx context.Context, cf *conference.Conferen
 	}
 
 	// delete confbridge
-	if err := h.reqHandler.CallV1ConfbridgeDelete(ctx, cf.ConfbridgeID); err != nil {
+	tmp, err := h.reqHandler.CallV1ConfbridgeDelete(ctx, cf.ConfbridgeID)
+	if err != nil {
 		log.WithField("confbridge_id", cf.ConfbridgeID).Errorf("Could not delete the confbridge. But keep moving on. err: %v", err)
 	}
+	log.WithField("confbridge", tmp).Debug("Deleted the confbridge.")
 
 	// update conference status to terminated
 	if err := h.db.ConferenceEnd(ctx, cf.ID); err != nil {

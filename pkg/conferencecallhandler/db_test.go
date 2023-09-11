@@ -63,7 +63,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().CreateUUID().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().ConferencecallCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, gomock.Any()).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallJoining, tt.responseConferencecall)
@@ -74,6 +74,62 @@ func Test_Create(t *testing.T) {
 			}
 
 			time.Sleep(time.Millisecond * 100)
+
+			if !reflect.DeepEqual(res, tt.responseConferencecall) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConferencecall, res)
+			}
+		})
+	}
+}
+
+func Test_Gets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		size       uint64
+		token      string
+
+		responseConferencecall []*conferencecall.Conferencecall
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("9689bcf2-50c2-11ee-81cc-f366bc5c12c3"),
+			10,
+			"2023-01-03 21:35:02.809",
+
+			[]*conferencecall.Conferencecall{
+				{
+					ID: uuid.FromStringOrNil("ae267468-50c2-11ee-9ddb-0f6ca6c40243"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := conferencecallHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().ConferencecallGetsByCustomerID(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseConferencecall, nil)
+			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 
 			if !reflect.DeepEqual(res, tt.responseConferencecall) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseConferencecall, res)

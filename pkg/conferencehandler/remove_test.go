@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/confbridge"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
@@ -126,7 +127,7 @@ func Test_removeConferencecallIDTypeConference(t *testing.T) {
 
 			if tt.conference.Status == conference.StatusTerminating && len(tt.conference.ConferencecallIDs) == 0 {
 				mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.conference.FlowID).Return(&fmflow.Flow{}, nil)
-				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(&confbridge.Confbridge{}, nil)
 				mockDB.EXPECT().ConferenceEnd(ctx, tt.conference.ID).Return(nil)
 				mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)

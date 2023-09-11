@@ -13,7 +13,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/pkg/conferencehandler"
 )
 
-func Test_processV1ConferencesGets(t *testing.T) {
+func Test_processV1ConferencesGet(t *testing.T) {
 
 	tests := []struct {
 		name           string
