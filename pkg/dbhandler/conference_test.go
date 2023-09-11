@@ -152,7 +152,7 @@ func Test_ConferenceCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -230,7 +230,7 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -299,13 +299,13 @@ func Test_ConferenceSetRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceSetRecordingID(ctx, tt.conference.ID, tt.recordingID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -437,13 +437,13 @@ func Test_ConferenceSetData(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceSetData(ctx, tt.conference.ID, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -561,14 +561,14 @@ func Test_ConferenceGetsWithType(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cf := range tt.conferences {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 				if errCreate := h.ConferenceCreate(ctx, cf); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 				}
 			}
 
-			res, err := h.ConferenceGetsWithType(ctx, tt.customerID, tt.conferenceType, 10, utilhandler.GetCurTime())
+			res, err := h.ConferenceGetsWithType(ctx, tt.customerID, tt.conferenceType, 10, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -666,14 +666,14 @@ func Test_ConferenceGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cf := range tt.conferences {
-				mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 				if errCreate := h.ConferenceCreate(ctx, cf); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 				}
 			}
 
-			res, err := h.ConferenceGets(ctx, tt.customerID, 10, utilhandler.GetCurTime())
+			res, err := h.ConferenceGets(ctx, tt.customerID, 10, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -738,13 +738,13 @@ func Test_ConferenceEnd(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if errDel := h.ConferenceEnd(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
@@ -816,13 +816,13 @@ func Test_ConferenceDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if errDel := h.ConferenceDelete(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
@@ -894,13 +894,13 @@ func Test_ConferenceSetTranscribeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().GetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceSetTranscribeID(ctx, tt.conference.ID, tt.transcribeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -27,6 +27,7 @@ type ConferencecallHandler interface {
 		referenceType conferencecall.ReferenceType,
 		referenceID uuid.UUID,
 	) (*conferencecall.Conferencecall, error)
+	Gets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*conferencecall.Conferencecall, error)
 	Get(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
 

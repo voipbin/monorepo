@@ -78,7 +78,7 @@ func Test_HealthCheck(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-			mockUtil.EXPECT().GetCurTimeAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
 
@@ -301,7 +301,7 @@ func Test_HealthCheck_error(t *testing.T) {
 				if tt.responseConferencecallError != nil {
 					mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 				} else {
-					mockUtil.EXPECT().GetCurTimeAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
+					mockUtil.EXPECT().TimeGetCurTimeAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
 					if tt.responseConferencecall.TMCreate < tt.responseCurTimeAdd {
 						mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 					} else {

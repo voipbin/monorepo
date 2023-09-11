@@ -55,6 +55,7 @@ var (
 	regV1ConferencesIDTranscribeStop  = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_stop$")
 
 	// conferencecalls
+	regV1ConferencecallsGet           = regexp.MustCompile(`/v1/conferencecalls\?`)
 	regV1ConferencecallsID            = regexp.MustCompile("/v1/conferencecalls/" + regUUID + "$")
 	regV1ConferencecallsIDHealthCheck = regexp.MustCompile("/v1/conferencecalls/" + regUUID + "/health-check$")
 
@@ -241,6 +242,12 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	//////////////////
 	// conferencecalls
 	////////////////////
+
+	// GET /conferencecalls
+	case regV1ConferencecallsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ConferencecallsGet(ctx, m)
+		requestType = "/v1/conferencecalls"
+
 	// GET /conferencecalls/<conferencecall-id>
 	case regV1ConferencecallsID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ConferencecallsIDGet(ctx, m)

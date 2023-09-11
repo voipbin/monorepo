@@ -245,7 +245,7 @@ func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conferenc
 
 		DefaultTimeStamp,
 
-		h.utilHandler.GetCurTime(),
+		h.utilHandler.TimeGetCurTime(),
 		DefaultTimeStamp,
 		DefaultTimeStamp,
 	)
@@ -446,7 +446,7 @@ func (h *handler) ConferenceAddConferencecallID(ctx context.Context, id, confere
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddConferencecallID. err: %v", err)
 	}
@@ -478,7 +478,7 @@ func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, conf
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceRemoveConferencecallID. err: %v", err)
 	}
@@ -500,7 +500,7 @@ func (h *handler) ConferenceDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceDelete. err: %v", err)
@@ -537,7 +537,7 @@ func (h *handler) ConferenceSet(ctx context.Context, id uuid.UUID, name, detail 
 		return fmt.Errorf("could not marshal the postActions. ConferenceSet. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, name, detail, timeout, tmpPreActions, tmpPostActions, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, name, detail, timeout, tmpPreActions, tmpPostActions, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSet. err: %v", err)
 	}
@@ -559,7 +559,7 @@ func (h *handler) ConferenceSetStatus(ctx context.Context, id uuid.UUID, status 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, status, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetStatus. err: %v", err)
 	}
@@ -586,7 +586,7 @@ func (h *handler) ConferenceSetData(ctx context.Context, id uuid.UUID, data map[
 		return fmt.Errorf("dbhandler: Could not marshal. ConferenceSetData. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, h.utilHandler.GetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetData. err: %v", err)
 	}
@@ -609,7 +609,7 @@ func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.GetCurTime()
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err := h.db.Exec(q, conference.StatusTerminated, ts, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceEnd. err: %v", err)
@@ -632,7 +632,7 @@ func (h *handler) ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, re
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetRecordingID. err: %v", err)
 	}
@@ -658,7 +658,7 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordingID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %v", err)
 	}
@@ -680,7 +680,7 @@ func (h *handler) ConferenceSetTranscribeID(ctx context.Context, id uuid.UUID, t
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, transcribeID.Bytes(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, transcribeID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceSetTranscribeID. err: %v", err)
 	}
@@ -706,7 +706,7 @@ func (h *handler) ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, transcribeID.String(), h.utilHandler.GetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, transcribeID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddTranscribeIDs. err: %v", err)
 	}
