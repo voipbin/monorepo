@@ -2742,6 +2742,21 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallGet(ctx, con
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallGet", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallGet), ctx, conferencecallID)
 }
 
+// ConferenceV1ConferencecallGets mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferencecallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallGets", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ConferencecallGets indicates an expected call of ConferenceV1ConferencecallGets.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallGets", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallGets), ctx, customerID, pageToken, pageSize)
+}
+
 // ConferenceV1ConferencecallHealthCheck mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount, delay int) error {
 	m.ctrl.T.Helper()
