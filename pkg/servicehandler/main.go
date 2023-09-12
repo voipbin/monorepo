@@ -97,12 +97,14 @@ type ServiceHandler interface {
 	AvailableNumberGets(ctx context.Context, u *cscustomer.Customer, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)
 
 	// billing accounts
-	BillingAccountCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string) (*bmaccount.WebhookMessage, error)
+	BillingAccountCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
 	BillingAccountGet(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
 	BillingAccountGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*bmaccount.WebhookMessage, error)
 	BillingAccountDelete(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID) (*bmaccount.WebhookMessage, error)
 	BillingAccountAddBalanceForce(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error)
 	BillingAccountSubtractBalanceForce(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, balance float32) (*bmaccount.WebhookMessage, error)
+	BillingAccountUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error)
+	BillingAccountUpdatePaymentInfo(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error)
 
 	// call handlers
 	CallCreate(ctx context.Context, u *cscustomer.Customer, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error)
@@ -220,7 +222,17 @@ type ServiceHandler interface {
 	ChatroommessageDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
 
 	// conference handlers
-	ConferenceCreate(ctx context.Context, u *cscustomer.Customer, confType cfconference.Type, name, detail string, preActions, postActions []fmaction.Action) (*cfconference.WebhookMessage, error)
+	ConferenceCreate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		confType cfconference.Type,
+		name string,
+		detail string,
+		timeout int,
+		data map[string]interface{},
+		preActions []fmaction.Action,
+		postActions []fmaction.Action,
+	) (*cfconference.WebhookMessage, error)
 	ConferenceDelete(ctx context.Context, u *cscustomer.Customer, confID uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconference.WebhookMessage, error)
 	ConferenceGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconference.WebhookMessage, error)
@@ -241,6 +253,7 @@ type ServiceHandler interface {
 
 	// conferencecall handlers
 	ConferencecallGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*cfconferencecall.WebhookMessage, error)
+	ConferencecallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconferencecall.WebhookMessage, error)
 	ConferencecallKick(ctx context.Context, u *cscustomer.Customer, conferencecallID uuid.UUID) (*cfconferencecall.WebhookMessage, error)
 
 	// conversation handlers
@@ -329,7 +342,8 @@ type ServiceHandler interface {
 	ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext string, password string, domainID uuid.UUID, name string, detail string) (*rmextension.WebhookMessage, error)
 	ExtensionDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
-	ExtensionGets(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
+	ExtensionGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
+	ExtensionGetsByDomainID(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
 	ExtensionUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
 
 	// flow handlers
@@ -456,14 +470,25 @@ type ServiceHandler interface {
 		u *cscustomer.Customer,
 		name string,
 		detail string,
-		routingMethod string,
+		routingMethod qmqueue.RoutingMethod,
 		tagIDs []uuid.UUID,
 		waitActions []fmaction.Action,
 		timeoutWait int,
 		timeoutService int,
 	) (*qmqueue.WebhookMessage, error)
 	QueueDelete(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
-	QueueUpdate(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, name, detail string) (*qmqueue.WebhookMessage, error)
+	QueueUpdate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		queueID uuid.UUID,
+		name string,
+		detail string,
+		routingMethod qmqueue.RoutingMethod,
+		tagIDs []uuid.UUID,
+		waitActions []fmaction.Action,
+		timeoutWait int,
+		timeoutService int,
+	) (*qmqueue.WebhookMessage, error)
 	QueueUpdateTagIDs(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error)
 	QueueUpdateRoutingMethod(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error)
 	QueueUpdateActions(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, waitActions []fmaction.Action, timeoutWait, timeoutService int) (*qmqueue.WebhookMessage, error)

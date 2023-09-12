@@ -7,8 +7,79 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
+
+// conferencecallsGET handles GET /conferencecalls request.
+// It returns list of conferencecalls of the given customer.
+// @Summary     Get list of conferencecalls
+// @Description get conferences of the customer
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyCallsGET
+// @Router      /v1.0/conferencecalls [get]
+func conferencecallsGET(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "conferencecallsGET",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	var requestParam request.ParamConferencecallsGET
+	if err := c.BindQuery(&requestParam); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// set max page size
+	pageSize := requestParam.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+	log.Debugf("conferencecallsGET. Received request detail. page_size: %d, page_token: %s", requestParam.PageSize, requestParam.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// get conferences
+	confs, err := serviceHandler.ConferencecallGets(c.Request.Context(), &u, pageSize, requestParam.PageToken)
+	if err != nil {
+		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(confs) > 0 {
+		nextToken = confs[len(confs)-1].TMCreate
+	}
+
+	res := response.BodyConferencecallsGET{
+		Result: confs,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
+	}
+
+	c.JSON(200, res)
+}
 
 // conferencecallsIDGET handles GET /conferencecalls/{id} request.
 // It returns detail conferencecall info.

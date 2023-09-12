@@ -16,7 +16,7 @@ type BodyExtensionsPOST struct {
 // ParamExtensionsGET is rquest param define for
 // GET /v1.0/extensions
 type ParamExtensionsGET struct {
-	DomainID string `form:"domain_id" binding:"required,uuid"`
+	DomainID string `form:"domain_id"`
 	Pagination
 }
 
