@@ -14,7 +14,6 @@ import (
 
 // conferencesGET handles GET /conferences request.
 // It returns list of conferences of the given customer.
-
 // @Summary     Get list of conferences
 // @Description get conferences of the customer
 // @Produce     json
@@ -113,15 +112,25 @@ func conferencesPOST(c *gin.Context) {
 		},
 	)
 
-	var requestBody request.BodyConferencesPOST
-	if err := c.BindJSON(&requestBody); err != nil {
+	var req request.BodyConferencesPOST
+	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}
 
 	servicehandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := servicehandler.ConferenceCreate(c.Request.Context(), &u, requestBody.Type, requestBody.Name, requestBody.Detail, requestBody.PreActions, requestBody.PostActions)
+	res, err := servicehandler.ConferenceCreate(
+		c.Request.Context(),
+		&u,
+		req.Type,
+		req.Name,
+		req.Detail,
+		req.Timeout,
+		req.Data,
+		req.PreActions,
+		req.PostActions,
+	)
 	if err != nil || res == nil {
 		log.Errorf("Could not create the conference. err: %v", err)
 		c.AbortWithStatus(400)

@@ -51,7 +51,7 @@ func billingAccountsPOST(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// create billing account
-	res, err := serviceHandler.BillingAccountCreate(c.Request.Context(), &u, req.Name, req.Detail)
+	res, err := serviceHandler.BillingAccountCreate(c.Request.Context(), &u, req.Name, req.Detail, req.PaymentType, req.PaymentMethod)
 	if err != nil {
 		log.Errorf("Could not create a billing account. err; %v", err)
 		c.AbortWithStatus(400)
@@ -209,6 +209,107 @@ func billingAccountsIDGET(c *gin.Context) {
 	res, err := serviceHandler.BillingAccountGet(c.Request.Context(), &u, id)
 	if err != nil {
 		log.Errorf("Could not get a billing account. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// billingAccountsIDPut handles PUT /billing_accounts/<billing_account-id> request.
+// It updates the billing_account.
+// @Summary     Update billing account
+// @Description Update billing account of the given id
+// @Produce     json
+// @Param       id  path     string true "The ID of the billing_account"
+// @Success     200 {object} account.Account
+// @Router      /v1.0/billing_accounts/{id} [put]
+func billingAccountsIDPut(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "billingAccountsIDPut",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log.Debug("Executing callsIDDelete.")
+
+	var req request.BodyBillingAccountsIDPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the reqeust. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.BillingAccountUpdateBasicInfo(c.Request.Context(), &u, id, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not hangup the call. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// billingAccountsIDPaymentInfoPut handles PUT /billing_accounts/<billing_account-id>/payment_info request.
+// It updates the billing_account.
+// @Summary     Update billing account's payment info
+// @Description Update billing account's payment info of the given id
+// @Produce     json
+// @Param       id  path     string true "The ID of the billing_account"
+// @Success     200 {object} account.Account
+// @Router      /v1.0/billing_accounts/{id}/payment_info [put]
+func billingAccountsIDPaymentInfoPut(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "billingAccountsIDPaymentInfoPut",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	// get id
+	id := uuid.FromStringOrNil(c.Params.ByName("id"))
+	log.Debug("Executing callsIDDelete.")
+
+	var req request.BodyBillingAccountsIDPaymentInfoPUT
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the reqeust. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	res, err := serviceHandler.BillingAccountUpdatePaymentInfo(c.Request.Context(), &u, id, req.PaymentType, req.PaymentMethod)
+	if err != nil {
+		log.Errorf("Could not update the payment. info err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

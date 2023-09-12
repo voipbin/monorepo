@@ -117,7 +117,17 @@ func Test_conferencesPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", "/v1.0/conferences", bytes.NewBuffer(tt.request))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().ConferenceCreate(req.Context(), &tt.customer, tt.conference.Type, tt.conference.Name, tt.conference.Detail, tt.conference.PreActions, tt.conference.PostActions).Return(tt.conference, nil)
+			mockSvc.EXPECT().ConferenceCreate(
+				req.Context(),
+				&tt.customer,
+				tt.conference.Type,
+				tt.conference.Name,
+				tt.conference.Detail,
+				tt.conference.Timeout,
+				tt.conference.Data,
+				tt.conference.PreActions,
+				tt.conference.PostActions,
+			).Return(tt.conference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

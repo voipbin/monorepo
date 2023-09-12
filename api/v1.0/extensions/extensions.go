@@ -5,6 +5,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -107,7 +108,13 @@ func extensionsGET(c *gin.Context) {
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get extensions
-	exts, err := serviceHandler.ExtensionGets(c.Request.Context(), &u, domainID, pageSize, req.PageToken)
+	var exts []*extension.WebhookMessage
+	var err error
+	if domainID != uuid.Nil {
+		exts, err = serviceHandler.ExtensionGetsByDomainID(c.Request.Context(), &u, domainID, pageSize, req.PageToken)
+	} else {
+		exts, err = serviceHandler.ExtensionGetsByCustomerID(c.Request.Context(), &u, u.ID, pageSize, req.PageToken)
+	}
 	if err != nil {
 		log.Errorf("Could not get a extensions list. err: %v", err)
 		c.AbortWithStatus(400)

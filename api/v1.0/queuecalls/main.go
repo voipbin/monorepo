@@ -6,6 +6,7 @@ import "github.com/gin-gonic/gin"
 func ApplyRoutes(r *gin.RouterGroup) {
 	queuecalls := r.Group("/queuecalls")
 
+	queuecalls.GET("", queuecallsGET)
 	queuecalls.GET("/:id", queuecallsIDGET)
 	queuecalls.DELETE("/:id", queuecallsIDDELETE)
 	queuecalls.POST("/:id/kick", queuecallsIDKickPOST)

@@ -98,24 +98,26 @@ func (h *serviceHandler) ConferenceCreate(
 	confType cfconference.Type,
 	name string,
 	detail string,
+	timeout int,
+	data map[string]interface{},
 	preActions []fmaction.Action,
 	postActions []fmaction.Action,
 ) (*cfconference.WebhookMessage, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":         "ConferenceCreate",
-			"customer_id":  u.ID,
-			"username":     u.Username,
-			"type":         confType,
-			"name":         name,
-			"detail":       detail,
-			"pre_actions":  preActions,
-			"post_actions": postActions,
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "ConferenceCreate",
+		"customer_id":  u.ID,
+		"username":     u.Username,
+		"type":         confType,
+		"name":         name,
+		"detail":       detail,
+		"timeout":      timeout,
+		"data":         data,
+		"pre_actions":  preActions,
+		"post_actions": postActions,
+	})
 	log.Debugf("Creating a conference.")
 
-	tmp, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, u.ID, confType, name, detail, 0, map[string]interface{}{}, preActions, postActions)
+	tmp, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, u.ID, confType, name, detail, timeout, data, preActions, postActions)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
 		return nil, err

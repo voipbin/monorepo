@@ -13,6 +13,7 @@ import (
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/lib/middleware"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
@@ -20,6 +21,99 @@ import (
 func setupServer(app *gin.Engine) {
 	v1 := app.RouterGroup.Group("/v1.0", middleware.Authorized)
 	ApplyRoutes(v1)
+}
+
+func Test_queuecallsGet(t *testing.T) {
+
+	type test struct {
+		name      string
+		customer  cscustomer.Customer
+		req       request.ParamQueuecallsGET
+		resCalls  []*qmqueuecall.WebhookMessage
+		expectRes string
+	}
+
+	tests := []test{
+		{
+			"1 item",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			request.ParamQueuecallsGET{
+				Pagination: request.Pagination{
+					PageSize:  10,
+					PageToken: "2020-09-20T03:23:20.995000",
+				},
+			},
+			[]*qmqueuecall.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("63b75166-4b2e-11ee-9664-e3e0b9c5de8e"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+			},
+			`{"result":[{"id":"63b75166-4b2e-11ee-9664-e3e0b9c5de8e","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","duration_waiting":0,"duration_service":0,"tm_create":"2020-09-20T03:23:21.995000","tm_service":"","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+		},
+		{
+			"more than 2 items",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			request.ParamQueuecallsGET{
+				Pagination: request.Pagination{
+					PageSize:  10,
+					PageToken: "2020-09-20T03:23:20.995000",
+				},
+			},
+			[]*qmqueuecall.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("0e6061a8-4b2e-11ee-85d4-b366dd061d10"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("f1d22dd6-6476-11ec-84e0-676f11515eed"),
+					TMCreate: "2020-09-20T03:23:22.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("f1fd30c6-6476-11ec-8b55-7f9c5b9550b7"),
+					TMCreate: "2020-09-20T03:23:23.995000",
+				},
+			},
+			`{"result":[{"id":"0e6061a8-4b2e-11ee-85d4-b366dd061d10","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","duration_waiting":0,"duration_service":0,"tm_create":"2020-09-20T03:23:21.995000","tm_service":"","tm_update":"","tm_delete":""},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","duration_waiting":0,"duration_service":0,"tm_create":"2020-09-20T03:23:22.995000","tm_service":"","tm_update":"","tm_delete":""},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","customer_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","service_agent_id":"00000000-0000-0000-0000-000000000000","duration_waiting":0,"duration_service":0,"tm_create":"2020-09-20T03:23:23.995000","tm_service":"","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			reqQuery := fmt.Sprintf("/v1.0/queuecalls?page_size=%d&page_token=%s", tt.req.PageSize, tt.req.PageToken)
+			req, _ := http.NewRequest("GET", reqQuery, nil)
+
+			mockSvc.EXPECT().QueuecallGets(req.Context(), &tt.customer, tt.req.PageSize, tt.req.PageToken).Return(tt.resCalls, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
 }
 
 func Test_queuecallsIDGet(t *testing.T) {

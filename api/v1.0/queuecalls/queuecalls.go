@@ -7,8 +7,80 @@ import (
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
+	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/response"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/servicehandler"
 )
+
+// queuecallsGET handles GET /queuecalls request.
+// It returns list of queuecalls of the given customer.
+// @Summary     List qeueucalls
+// @Description get queuecalls of the customer
+// @Produce     json
+// @Param       page_size  query    int    false "The size of results. Max 100"
+// @Param       page_token query    string false "The token. tm_create"
+// @Success     200        {object} response.BodyQueuecallsGET
+// @Router      /v1.0/queues [get]
+func queuecallsGET(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "queuecallsGET",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("customer")
+	if !exists {
+		log.Errorf("Could not find customer info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	u := tmp.(cscustomer.Customer)
+	log = log.WithFields(logrus.Fields{
+		"customer_id":    u.ID,
+		"username":       u.Username,
+		"permission_ids": u.PermissionIDs,
+	})
+
+	var req request.ParamQueuecallsGET
+	if err := c.BindQuery(&req); err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+	log.Debugf("Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
+
+	// get service
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+
+	// set max page size
+	pageSize := req.PageSize
+	if pageSize <= 0 {
+		pageSize = 10
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	} else if pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to max. page_size: %d", pageSize)
+	}
+
+	// get tmps
+	tmps, err := serviceHandler.QueuecallGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	if err != nil {
+		logrus.Errorf("Could not get queuecalls info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(tmps) > 0 {
+		nextToken = tmps[len(tmps)-1].TMCreate
+	}
+	res := response.BodyQueuecallsGET{
+		Result: tmps,
+		Pagination: response.Pagination{
+			NextPageToken: nextToken,
+		},
+	}
+
+	c.JSON(200, res)
+}
 
 // queuecallsIDGET handles GET /queuecalls/{id} request.
 // It returns detail queuecall info.

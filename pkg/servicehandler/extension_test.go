@@ -297,7 +297,7 @@ func TestExtensionGet(t *testing.T) {
 	}
 }
 
-func TestExtensionGets(t *testing.T) {
+func Test_ExtensionGetsByDomainID(t *testing.T) {
 
 	type test struct {
 		name      string
@@ -369,9 +369,79 @@ func TestExtensionGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGetsByDomainID(ctx, tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
 
-			res, err := h.ExtensionGets(ctx, tt.customer, tt.domainID, tt.pageSize, tt.pageToken)
+			res, err := h.ExtensionGetsByDomainID(ctx, tt.customer, tt.domainID, tt.pageSize, tt.pageToken)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ExtensionGetsByCustomerID(t *testing.T) {
+
+	type test struct {
+		name       string
+		customer   *cscustomer.Customer
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
+
+		response  []rmextension.Extension
+		expectRes []*rmextension.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			"normal",
+			&cscustomer.Customer{
+				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			},
+			uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+			"2020-10-20T01:00:00.995000",
+			10,
+
+			[]rmextension.Extension{
+				{
+					ID: uuid.FromStringOrNil("cd569cb4-4ff5-11ee-931b-177bc147dd69"),
+				},
+				{
+					ID: uuid.FromStringOrNil("cda81aa8-4ff5-11ee-a7c5-ab71c50d7ed0"),
+				},
+			},
+			[]*rmextension.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("cd569cb4-4ff5-11ee-931b-177bc147dd69"),
+				},
+				{
+					ID: uuid.FromStringOrNil("cda81aa8-4ff5-11ee-a7c5-ab71c50d7ed0"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().RegistrarV1ExtensionGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+
+			res, err := h.ExtensionGetsByCustomerID(ctx, tt.customer, tt.customerID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

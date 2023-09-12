@@ -58,6 +58,38 @@ func (h *serviceHandler) ConferencecallGet(ctx context.Context, u *cscustomer.Cu
 	return res, nil
 }
 
+// ConferencecallGets gets the list of conferencecall.
+// It returns list of conferencecalls if it succeed.
+func (h *serviceHandler) ConferencecallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cfconferencecall.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ConferencecallGets",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
+	})
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// get conferences
+	tmps, err := h.reqHandler.ConferenceV1ConferencecallGets(ctx, u.ID, token, size)
+	if err != nil {
+		log.Infof("Could not get conferences info. err: %v", err)
+		return nil, err
+	}
+
+	// create result
+	res := []*cfconferencecall.WebhookMessage{}
+	for _, tmp := range tmps {
+		c := tmp.ConvertWebhookMessage()
+		res = append(res, c)
+	}
+
+	return res, nil
+}
+
 // ConferencecallKick is a service handler for kick the conferencecall from the conference.
 func (h *serviceHandler) ConferencecallKick(ctx context.Context, u *cscustomer.Customer, conferencecallID uuid.UUID) (*cfconferencecall.WebhookMessage, error) {
 	log := logrus.WithFields(
