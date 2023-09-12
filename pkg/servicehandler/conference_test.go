@@ -15,7 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/api-manager.git/pkg/dbhandler"
 )
 
-func TestConferenceCreate(t *testing.T) {
+func Test_ConferenceCreate(t *testing.T) {
 
 	tests := []struct {
 		name             string
@@ -23,7 +23,8 @@ func TestConferenceCreate(t *testing.T) {
 		confType         cfconference.Type
 		confName         string
 		confDetail       string
-		webhookURI       string
+		timeout          int
+		data             map[string]interface{}
 		preActions       []fmaction.Action
 		postActions      []fmaction.Action
 		cfConference     *cfconference.Conference
@@ -37,9 +38,21 @@ func TestConferenceCreate(t *testing.T) {
 			cfconference.TypeConference,
 			"test name",
 			"test detail",
-			"",
-			[]fmaction.Action{},
-			[]fmaction.Action{},
+			100,
+			map[string]interface{}{
+				"key1": "hello",
+				"kwy2": 300,
+			},
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeHangup,
+				},
+			},
 			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("cea799a4-efce-11ea-9115-03d321ec6ff8"),
 				Type:   cfconference.TypeConference,
@@ -59,53 +72,17 @@ func TestConferenceCreate(t *testing.T) {
 			},
 		},
 		{
-			"have webhook",
+			"empty",
 			&cscustomer.Customer{
 				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 			},
 			cfconference.TypeConference,
-			"test name",
-			"test detail",
-			"test.com/webhook",
+			"",
+			"",
+			0,
+			map[string]interface{}{},
 			[]fmaction.Action{},
 			[]fmaction.Action{},
-			&cfconference.Conference{
-				ID:     uuid.FromStringOrNil("57916d8a-2089-11ec-98bb-9fcde2f6e0ff"),
-				Type:   cfconference.TypeConference,
-				FlowID: uuid.FromStringOrNil("257ba252-3fec-11ec-8a6a-f758019d5b2e"),
-
-				Status: cfconference.StatusProgressing,
-				Name:   "test name",
-				Detail: "test detail",
-			},
-			&cfconference.WebhookMessage{
-				ID:   uuid.FromStringOrNil("57916d8a-2089-11ec-98bb-9fcde2f6e0ff"),
-				Type: cfconference.TypeConference,
-
-				Status: cfconference.StatusProgressing,
-				Name:   "test name",
-				Detail: "test detail",
-			},
-		},
-		{
-			"have pre/post actions",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-			},
-			cfconference.TypeConference,
-			"test name",
-			"test detail",
-			"test.com/webhook",
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeAnswer,
-				},
-			},
-			[]fmaction.Action{
-				{
-					Type: fmaction.TypeHangup,
-				},
-			},
 			&cfconference.Conference{
 				ID:     uuid.FromStringOrNil("f63e863e-3fe7-11ec-9713-33d614df6067"),
 				Type:   cfconference.TypeConference,
@@ -162,8 +139,28 @@ func TestConferenceCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceCreate(ctx, tt.customer.ID, tt.confType, tt.confName, tt.confDetail, 0, map[string]interface{}{}, tt.preActions, tt.postActions).Return(tt.cfConference, nil)
-			res, err := h.ConferenceCreate(ctx, tt.customer, tt.confType, tt.confName, tt.confDetail, tt.preActions, tt.postActions)
+			mockReq.EXPECT().ConferenceV1ConferenceCreate(
+				ctx,
+				tt.customer.ID,
+				tt.confType,
+				tt.confName,
+				tt.confDetail,
+				tt.timeout,
+				tt.data,
+				tt.preActions,
+				tt.postActions,
+			).Return(tt.cfConference, nil)
+			res, err := h.ConferenceCreate(
+				ctx,
+				tt.customer,
+				tt.confType,
+				tt.confName,
+				tt.confDetail,
+				tt.timeout,
+				tt.data,
+				tt.preActions,
+				tt.postActions,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -232,7 +229,7 @@ func Test_ConferenceDelete(t *testing.T) {
 	}
 }
 
-func TestConferenceGets(t *testing.T) {
+func Test_ConferenceGets(t *testing.T) {
 
 	tests := []struct {
 		name      string

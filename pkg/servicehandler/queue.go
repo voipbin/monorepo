@@ -98,7 +98,7 @@ func (h *serviceHandler) QueueCreate(
 	u *cscustomer.Customer,
 	name string,
 	detail string,
-	routingMethod string,
+	routingMethod qmqueue.RoutingMethod,
 	tagIDs []uuid.UUID,
 	waitActions []fmaction.Action,
 	timeoutWait int,
@@ -161,11 +161,28 @@ func (h *serviceHandler) QueueDelete(ctx context.Context, u *cscustomer.Customer
 // QueueUpdate sends a request to queue-manager
 // to updating the queue.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdate(ctx context.Context, u *cscustomer.Customer, queueID uuid.UUID, name, detail string) (*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueUpdate(
+	ctx context.Context,
+	u *cscustomer.Customer,
+	queueID uuid.UUID,
+	name string,
+	detail string,
+	routingMethod qmqueue.RoutingMethod,
+	tagIDs []uuid.UUID,
+	waitActions []fmaction.Action,
+	timeoutWait int,
+	serviceTimeout int,
+) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "QueueUpdate",
-		"customer_id": u.ID,
-		"username":    u.Username,
+		"func":            "QueueUpdate",
+		"customer_id":     u.ID,
+		"username":        u.Username,
+		"name":            name,
+		"detail":          detail,
+		"routing_method":  routingMethod,
+		"wait_actions":    waitActions,
+		"wait_timeout":    timeoutWait,
+		"service_timeout": serviceTimeout,
 	})
 
 	_, err := h.queueGet(ctx, u, queueID)
@@ -174,7 +191,7 @@ func (h *serviceHandler) QueueUpdate(ctx context.Context, u *cscustomer.Customer
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.QueueV1QueueUpdate(ctx, queueID, name, detail)
+	tmp, err := h.reqHandler.QueueV1QueueUpdate(ctx, queueID, name, detail, routingMethod, tagIDs, waitActions, timeoutWait, serviceTimeout)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		return nil, err

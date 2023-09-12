@@ -128,7 +128,7 @@ func (h *serviceHandler) BillingAccountGets(ctx context.Context, u *cscustomer.C
 // BillingAccountCreate sends a request to billing-manager
 // to create a new billing accounts.
 // it returns created billing account if it succeed.
-func (h *serviceHandler) BillingAccountCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountCreate",
 		"customer_id": u.ID,
@@ -136,9 +136,65 @@ func (h *serviceHandler) BillingAccountCreate(ctx context.Context, u *cscustomer
 	})
 
 	// get billing accounts
-	tmp, err := h.reqHandler.BillingV1AccountCreate(ctx, u.ID, name, detail)
+	tmp, err := h.reqHandler.BillingV1AccountCreate(ctx, u.ID, name, detail, paymentType, paymentMethod)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// BillingAccountUpdateBasicInfo sends a request to billing-manager
+// to update the billing account's basic info.
+// it returns updated billing account if it succeed.
+func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "BillingAccountUpdateBasicInfo",
+		"customer_id": u.ID,
+		"username":    u.Username,
+	})
+
+	// get billing account
+	_, err := h.billingAccountGet(ctx, u, billingAccountID)
+	if err != nil {
+		log.Infof("Could not get billing account info. err: %v", err)
+		return nil, err
+	}
+
+	// get billing accounts
+	tmp, err := h.reqHandler.BillingV1AccountUpdateBasicInfo(ctx, billingAccountID, name, detail)
+	if err != nil {
+		log.Infof("Could not get update account info. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// BillingAccountUpdateBasicInfo sends a request to billing-manager
+// to update the billing account's basic info.
+// it returns updated billing account if it succeed.
+func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, u *cscustomer.Customer, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "BillingAccountUpdatePaymentInfo",
+		"customer_id": u.ID,
+		"username":    u.Username,
+	})
+
+	// get billing account
+	_, err := h.billingAccountGet(ctx, u, billingAccountID)
+	if err != nil {
+		log.Infof("Could not get billing account info. err: %v", err)
+		return nil, err
+	}
+
+	// get billing accounts
+	tmp, err := h.reqHandler.BillingV1AccountUpdatePaymentInfo(ctx, billingAccountID, paymentType, paymentMethod)
+	if err != nil {
+		log.Infof("Could not get update account info. err: %v", err)
 		return nil, err
 	}
 

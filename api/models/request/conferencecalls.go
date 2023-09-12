@@ -5,6 +5,12 @@ import (
 	"gitlab.com/voipbin/bin-manager/conference-manager.git/models/conferencecall"
 )
 
+// ParamConferencecallsGET is rquest param define for
+// GET /v1.0/conferencecalls
+type ParamConferencecallsGET struct {
+	Pagination
+}
+
 // BodyConferencecallsPOST is rquest body define for
 // POST /v1.0/conferencecalls
 type BodyConferencecallsPOST struct {

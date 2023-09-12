@@ -43,8 +43,10 @@ func Test_billingAccountsPOST(t *testing.T) {
 				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 			},
 			req: request.BodyBillingAccountsPOST{
-				Name:   "test name",
-				Detail: "test detail",
+				Name:          "test name",
+				Detail:        "test detail",
+				PaymentType:   bmaccount.PaymentTypePrepaid,
+				PaymentMethod: bmaccount.PaymentMethodCreditCard,
 			},
 
 			responsBillingAccount: &bmaccount.WebhookMessage{
@@ -81,7 +83,7 @@ func Test_billingAccountsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/v1.0/billing_accounts", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountCreate(req.Context(), &tt.customer, tt.req.Name, tt.req.Detail).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountCreate(req.Context(), &tt.customer, tt.req.Name, tt.req.Detail, tt.req.PaymentType, tt.req.PaymentMethod).Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -310,6 +312,160 @@ func Test_billingAccountsIDGET(t *testing.T) {
 			if w.Body.String() != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
+		})
+	}
+}
+
+func Test_billingAccountsIDPUT(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery         string
+		reqBody          request.BodyBillingAccountsIDPUT
+		billingAccountID uuid.UUID
+
+		responsBillingAccount *bmaccount.WebhookMessage
+		expectRes             string
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			customer: cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			reqQuery: "/v1.0/billing_accounts/8d1d01bc-4cdd-11ee-a22f-03714037d3db",
+			reqBody: request.BodyBillingAccountsIDPUT{
+				Name:   "update name",
+				Detail: "update detail",
+			},
+			billingAccountID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
+
+			responsBillingAccount: &bmaccount.WebhookMessage{
+				ID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
+			},
+
+			expectRes: `{"id":"8d1d01bc-4cdd-11ee-a22f-03714037d3db","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.reqBody)
+			if err != nil {
+				t.Errorf("Wong match. expect: ok, got: %v", err)
+			}
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), &tt.customer, tt.billingAccountID, tt.reqBody.Name, tt.reqBody.Detail).Return(tt.responsBillingAccount, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+
+		})
+	}
+}
+
+func Test_billingAccountsIDPaymentInfoPut(t *testing.T) {
+
+	type test struct {
+		name     string
+		customer cscustomer.Customer
+
+		reqQuery         string
+		reqBody          request.BodyBillingAccountsIDPaymentInfoPUT
+		billingAccountID uuid.UUID
+
+		responsBillingAccount *bmaccount.WebhookMessage
+		expectRes             string
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			customer: cscustomer.Customer{
+				ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+			},
+
+			reqQuery: "/v1.0/billing_accounts/64461024-4cdf-11ee-be1f-e7111eb57d28/payment_info",
+			reqBody: request.BodyBillingAccountsIDPaymentInfoPUT{
+				PaymentType:   bmaccount.PaymentTypePrepaid,
+				PaymentMethod: bmaccount.PaymentMethodNone,
+			},
+			billingAccountID: uuid.FromStringOrNil("64461024-4cdf-11ee-be1f-e7111eb57d28"),
+
+			responsBillingAccount: &bmaccount.WebhookMessage{
+				ID: uuid.FromStringOrNil("64461024-4cdf-11ee-be1f-e7111eb57d28"),
+			},
+
+			expectRes: `{"id":"64461024-4cdf-11ee-be1f-e7111eb57d28","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			// create body
+			body, err := json.Marshal(tt.reqBody)
+			if err != nil {
+				t.Errorf("Wong match. expect: ok, got: %v", err)
+			}
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().BillingAccountUpdatePaymentInfo(req.Context(), &tt.customer, tt.billingAccountID, tt.reqBody.PaymentType, tt.reqBody.PaymentMethod).Return(tt.responsBillingAccount, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+
 		})
 	}
 }
