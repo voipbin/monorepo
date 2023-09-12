@@ -166,8 +166,8 @@ func Test_queuesPost(t *testing.T) {
 						Type: fmaction.TypeAnswer,
 					},
 				},
-				TimeoutWait:    10000,
-				TimeoutService: 100000,
+				WaitTimeout:    10000,
+				ServiceTimeout: 100000,
 			},
 			&qmqueue.WebhookMessage{
 				ID: uuid.FromStringOrNil("72fe03fa-6475-11ec-b559-0fdf19201178"),
@@ -210,8 +210,8 @@ func Test_queuesPost(t *testing.T) {
 				tt.req.RoutingMethod,
 				tt.req.TagIDs,
 				tt.req.WaitActions,
-				tt.req.TimeoutWait,
-				tt.req.TimeoutService,
+				tt.req.WaitTimeout,
+				tt.req.ServiceTimeout,
 			).Return(tt.resQueue, nil)
 
 			r.ServeHTTP(w, req)
@@ -356,9 +356,14 @@ func Test_queuesIDPut(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		queueID   uuid.UUID
-		queueName string
-		detail    string
+		queueID        uuid.UUID
+		queueName      string
+		detail         string
+		routingMethod  qmqueue.RoutingMethod
+		tagIDs         []uuid.UUID
+		waitActions    []fmaction.Action
+		timeoutWait    int
+		timeoutService int
 	}
 
 	tests := []test{
@@ -368,11 +373,23 @@ func Test_queuesIDPut(t *testing.T) {
 				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 			},
 			"/v1.0/queues/39a61292-6479-11ec-8cee-d7ba44bf24ac",
-			[]byte(`{"name":"new name","detail":"new detail"}`),
+			[]byte(`{"name":"new name","detail":"new detail","routing_method":"random","tag_ids":["7e1be274-4a89-11ee-84ec-5b122e282794","7e762acc-4a89-11ee-9c08-43e00aea3bd6"],"wait_actions":[{"type":"answer"}],"wait_timeout":60000,"service_timeout":6000000}`),
 
 			uuid.FromStringOrNil("39a61292-6479-11ec-8cee-d7ba44bf24ac"),
 			"new name",
 			"new detail",
+			qmqueue.RoutingMethodRandom,
+			[]uuid.UUID{
+				uuid.FromStringOrNil("7e1be274-4a89-11ee-84ec-5b122e282794"),
+				uuid.FromStringOrNil("7e762acc-4a89-11ee-9c08-43e00aea3bd6"),
+			},
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			60000,
+			6000000,
 		},
 	}
 
@@ -394,7 +411,7 @@ func Test_queuesIDPut(t *testing.T) {
 			setupServer(r)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().QueueUpdate(req.Context(), &tt.customer, tt.queueID, tt.queueName, tt.detail).Return(&qmqueue.WebhookMessage{}, nil)
+			mockSvc.EXPECT().QueueUpdate(req.Context(), &tt.customer, tt.queueID, tt.queueName, tt.detail, tt.routingMethod, tt.tagIDs, tt.waitActions, tt.timeoutWait, tt.timeoutService).Return(&qmqueue.WebhookMessage{}, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

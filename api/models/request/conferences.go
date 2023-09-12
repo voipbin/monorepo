@@ -14,11 +14,13 @@ type ParamConferencesGET struct {
 // BodyConferencesPOST is rquest body define for
 // POST /v1.0/conferences
 type BodyConferencesPOST struct {
-	Type        cfconference.Type `json:"type" binding:"required"`
-	Name        string            `json:"name"`
-	Detail      string            `json:"detail"`
-	PreActions  []fmaction.Action `json:"pre_actions"`
-	PostActions []fmaction.Action `json:"post_actions"`
+	Type        cfconference.Type      `json:"type" binding:"required"`
+	Name        string                 `json:"name,omitempty"`
+	Detail      string                 `json:"detail,omitempty"`
+	Timeout     int                    `json:"timeout,omitempty"` // timeout. second
+	Data        map[string]interface{} `json:"data,omitempty"`
+	PreActions  []fmaction.Action      `json:"pre_actions,omitempty"`
+	PostActions []fmaction.Action      `json:"post_actions,omitempty"`
 }
 
 // BodyConferencesIDPUT is rquest body define for

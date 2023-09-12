@@ -129,8 +129,8 @@ func queuesPOST(c *gin.Context) {
 		req.RoutingMethod,
 		req.TagIDs,
 		req.WaitActions,
-		req.TimeoutWait,
-		req.TimeoutService,
+		req.WaitTimeout,
+		req.ServiceTimeout,
 	)
 	if err != nil {
 		log.Errorf("Could not create a queue. err: %v", err)
@@ -277,7 +277,7 @@ func queuesIDPUT(c *gin.Context) {
 
 	// update the agent
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	res, err := serviceHandler.QueueUpdate(c.Request.Context(), &u, id, req.Name, req.Detail)
+	res, err := serviceHandler.QueueUpdate(c.Request.Context(), &u, id, req.Name, req.Detail, req.RoutingMethod, req.TagIDs, req.WaitActions, req.WaitTimeout, req.ServiceTimeout)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		c.AbortWithStatus(400)

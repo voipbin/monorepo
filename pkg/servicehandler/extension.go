@@ -104,11 +104,11 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, u *cscustomer.Custome
 	return res, nil
 }
 
-// ExtensionGets gets the list of extensions of the given customer id.
+// ExtensionGetsByDomainID gets the list of extensions of the given domain id.
 // It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionGets(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionGetsByDomainID(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ExtensionGets",
+		"func":        "ExtensionGetsByDomainID",
 		"customer_id": u.ID,
 		"username":    u.Username,
 		"size":        size,
@@ -121,7 +121,39 @@ func (h *serviceHandler) ExtensionGets(ctx context.Context, u *cscustomer.Custom
 	}
 
 	// get extensions
-	exts, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, domainID, token, size)
+	exts, err := h.reqHandler.RegistrarV1ExtensionGetsByDomainID(ctx, domainID, token, size)
+	if err != nil {
+		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find extensions info. err: %v", err)
+	}
+
+	res := []*rmextension.WebhookMessage{}
+	for _, ext := range exts {
+		tmp := ext.ConvertWebhookMessage()
+		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
+// ExtensionGetsByCustomerID gets the list of extensions of the given customer id.
+// It returns list of extensions if it succeed.
+func (h *serviceHandler) ExtensionGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ExtensionGetsByCustomerID",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
+	})
+	log.Debug("Getting a extensions.")
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// get extensions
+	exts, err := h.reqHandler.RegistrarV1ExtensionGetsByCustomerID(ctx, customerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extensions info. err: %v", err)

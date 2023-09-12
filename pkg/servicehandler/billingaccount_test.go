@@ -204,6 +204,8 @@ func Test_BillingAccountCreate(t *testing.T) {
 		customer           *cscustomer.Customer
 		billingAccountName string
 		detail             string
+		paymentType        bmaccount.PaymentType
+		paymentMethod      bmaccount.PaymentMethod
 
 		responseBillingAccount *bmaccount.Account
 		expectRes              *bmaccount.WebhookMessage
@@ -216,6 +218,8 @@ func Test_BillingAccountCreate(t *testing.T) {
 			},
 			billingAccountName: "test name",
 			detail:             "test detail",
+			paymentType:        bmaccount.PaymentTypePrepaid,
+			paymentMethod:      bmaccount.PaymentMethodCreditCard,
 
 			responseBillingAccount: &bmaccount.Account{
 				ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
@@ -240,9 +244,139 @@ func Test_BillingAccountCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.customer.ID, tt.billingAccountName, tt.detail).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.customer.ID, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.BillingAccountCreate(ctx, tt.customer, tt.billingAccountName, tt.detail)
+			res, err := h.BillingAccountCreate(ctx, tt.customer, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer           *cscustomer.Customer
+		billingAccountID   uuid.UUID
+		billingAccountName string
+		detail             string
+
+		responseBillingAccount *bmaccount.Account
+		expectRes              *bmaccount.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("8bee3b82-4cdb-11ee-811d-2ba7c3dd1800"),
+			},
+			billingAccountID:   uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+			billingAccountName: "test name",
+			detail:             "test detail",
+
+			responseBillingAccount: &bmaccount.Account{
+				ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+				CustomerID: uuid.FromStringOrNil("8bee3b82-4cdb-11ee-811d-2ba7c3dd1800"),
+				TMDelete:   defaultTimestamp,
+			},
+			expectRes: &bmaccount.WebhookMessage{
+				ID:         uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
+				CustomerID: uuid.FromStringOrNil("8bee3b82-4cdb-11ee-811d-2ba7c3dd1800"),
+				TMDelete:   defaultTimestamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountUpdateBasicInfo(ctx, tt.billingAccountID, tt.billingAccountName, tt.detail).Return(tt.responseBillingAccount, nil)
+
+			res, err := h.BillingAccountUpdateBasicInfo(ctx, tt.customer, tt.billingAccountID, tt.billingAccountName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer         *cscustomer.Customer
+		billingAccountID uuid.UUID
+		paymentType      bmaccount.PaymentType
+		paymentMethod    bmaccount.PaymentMethod
+
+		responseBillingAccount *bmaccount.Account
+		expectRes              *bmaccount.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			customer: &cscustomer.Customer{
+				ID: uuid.FromStringOrNil("09e36eb8-4cdc-11ee-a84e-3f5f663dd1a3"),
+			},
+			billingAccountID: uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+			paymentType:      bmaccount.PaymentTypePrepaid,
+			paymentMethod:    bmaccount.PaymentMethodCreditCard,
+
+			responseBillingAccount: &bmaccount.Account{
+				ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+				CustomerID: uuid.FromStringOrNil("09e36eb8-4cdc-11ee-a84e-3f5f663dd1a3"),
+				TMDelete:   defaultTimestamp,
+			},
+			expectRes: &bmaccount.WebhookMessage{
+				ID:         uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
+				CustomerID: uuid.FromStringOrNil("09e36eb8-4cdc-11ee-a84e-3f5f663dd1a3"),
+				TMDelete:   defaultTimestamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountUpdatePaymentInfo(ctx, tt.billingAccountID, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
+
+			res, err := h.BillingAccountUpdatePaymentInfo(ctx, tt.customer, tt.billingAccountID, tt.paymentType, tt.paymentMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -259,9 +393,9 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer           *cscustomer.Customer
-		billingAccountName string
-		detail             string
+		customer  *cscustomer.Customer
+		accountID uuid.UUID
+		balance   float32
 
 		responseBillingAccount *bmaccount.Account
 		expectRes              *bmaccount.WebhookMessage
@@ -270,10 +404,13 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 			name: "normal",
 
 			customer: &cscustomer.Customer{
-				ID: cspermission.PermissionAdmin.ID,
+				ID: uuid.FromStringOrNil("45b20ace-4cd9-11ee-a7d9-1b34ef4752f9"),
+				PermissionIDs: []uuid.UUID{
+					cspermission.PermissionAdmin.ID,
+				},
 			},
-			billingAccountName: "test name",
-			detail:             "test detail",
+			accountID: uuid.FromStringOrNil("55867314-4cd8-11ee-b465-73c0486f35ff"),
+			balance:   32.21,
 
 			responseBillingAccount: &bmaccount.Account{
 				ID: uuid.FromStringOrNil("650daee2-1060-11ee-aac3-a3c291ad39f5"),
@@ -298,9 +435,9 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.customer.ID, tt.billingAccountName, tt.detail).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountAddBalanceForce(ctx, tt.accountID, tt.balance).Return(tt.responseBillingAccount, nil)
 
-			res, err := h.BillingAccountCreate(ctx, tt.customer, tt.billingAccountName, tt.detail)
+			res, err := h.BillingAccountAddBalanceForce(ctx, tt.customer, tt.accountID, tt.balance)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

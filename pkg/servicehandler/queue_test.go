@@ -222,7 +222,7 @@ func Test_QueueCreate(t *testing.T) {
 				tt.customer,
 				tt.queueName,
 				tt.detail,
-				string(tt.routingMethod),
+				tt.routingMethod,
 				tt.tagIDs,
 				tt.waitActions,
 				tt.timeoutWait,
@@ -306,10 +306,15 @@ func Test_QueueUpdate(t *testing.T) {
 	type test struct {
 		name string
 
-		customer  *cscustomer.Customer
-		queueID   uuid.UUID
-		queueName string
-		detail    string
+		customer       *cscustomer.Customer
+		queueID        uuid.UUID
+		queueName      string
+		detail         string
+		routingMethod  qmqueue.RoutingMethod
+		tagIDs         []uuid.UUID
+		waitActions    []fmaction.Action
+		timeoutWait    int
+		timeoutService int
 
 		response  *qmqueue.Queue
 		expectRes *qmqueue.WebhookMessage
@@ -325,6 +330,18 @@ func Test_QueueUpdate(t *testing.T) {
 			uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
 			"name",
 			"detail",
+			qmqueue.RoutingMethodRandom,
+			[]uuid.UUID{
+				uuid.FromStringOrNil("4927aacc-4a88-11ee-bc5c-2f5cbe9c7d73"),
+				uuid.FromStringOrNil("497d6b06-4a88-11ee-acb4-4b2f731fa7bb"),
+			},
+			[]fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+			60000,
+			6000000,
 
 			&qmqueue.Queue{
 				ID:         uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
@@ -352,9 +369,30 @@ func Test_QueueUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueUpdate(ctx, tt.queueID, tt.queueName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueUpdate(
+				ctx,
+				tt.queueID,
+				tt.queueName,
+				tt.detail,
+				tt.routingMethod,
+				tt.tagIDs,
+				tt.waitActions,
+				tt.timeoutWait,
+				tt.timeoutService,
+			).Return(tt.response, nil)
 
-			res, err := h.QueueUpdate(ctx, tt.customer, tt.queueID, tt.queueName, tt.detail)
+			res, err := h.QueueUpdate(
+				ctx,
+				tt.customer,
+				tt.queueID,
+				tt.queueName,
+				tt.detail,
+				tt.routingMethod,
+				tt.tagIDs,
+				tt.waitActions,
+				tt.timeoutWait,
+				tt.timeoutService,
+			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
