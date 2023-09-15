@@ -25,15 +25,13 @@ func (h *extensionHandler) Create(
 	ext string,
 	password string,
 ) (*extension.Extension, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":        "Create",
-			"customer_id": customerID,
-			"domain_id":   domainID,
-			"extension":   ext,
-			"password":    len(password),
-		},
-	)
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "Create",
+		"customer_id": customerID,
+		"domain_id":   domainID,
+		"extension":   ext,
+		"password":    len(password),
+	})
 
 	// get domain
 	d, err := h.dbBin.DomainGet(ctx, domainID)
@@ -100,7 +98,10 @@ func (h *extensionHandler) Create(
 		AuthID:     *auth.ID,
 
 		Extension: ext,
-		Password:  password,
+
+		// DomainName: customerID.String(),
+		// Username:   ext,
+		Password: password,
 	}
 	if errCreate := h.dbBin.ExtensionCreate(ctx, e); errCreate != nil {
 		log.Errorf("Could not create extension. err: %v", errCreate)

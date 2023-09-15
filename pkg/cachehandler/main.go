@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
 type handler struct {
@@ -52,6 +53,11 @@ type CacheHandler interface {
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	ExtensionGetByEndpointID(ctx context.Context, endpointID string) (*extension.Extension, error)
 	ExtensionSet(ctx context.Context, e *extension.Extension) error
+
+	TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
+	TrunkSet(ctx context.Context, e *trunk.Trunk) error
+	TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error)
+	TrunkDel(ctx context.Context, id uuid.UUID, name string) error
 }
 
 // NewHandler creates DBHandler
