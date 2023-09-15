@@ -16,7 +16,9 @@ Title rule.
 ```
 <table name>_<verb: create/remove/add/update>_<type: column/table>_<items: ...>
 
-ex) customers_add_column_email_phone_number_address
+ex)
+alembic -c alembic.ini revision -m "customers add column email phone_number address"
+alembic -c alembic.ini revision -m "registrar_trunks create table"
 ```
 
 
