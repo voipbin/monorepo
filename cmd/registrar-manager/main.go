@@ -24,6 +24,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/trunkhandler"
 )
 
 const serviceName = "registrar-manager"
@@ -153,8 +154,9 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 	notifyHandler := notifyhandler.NewNotifyHandler(rabbitSock, reqHandler, *rabbitExchangeDelay, *rabbitQueueNotify, serviceName)
 	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler)
 	domainHandler := domainhandler.NewDomainHandler(reqHandler, dbAst, dbBin, notifyHandler, extensionHandler)
+	trunkHandler := trunkhandler.NewTrunkHandler(reqHandler, dbAst, dbBin, notifyHandler)
 	contactHandler := contacthandler.NewContactHandler(reqHandler, dbAst, dbBin)
-	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, domainHandler, extensionHandler, contactHandler)
+	listenHandler := listenhandler.NewListenHandler(rabbitSock, reqHandler, domainHandler, trunkHandler, extensionHandler, contactHandler)
 
 	// run
 	if err := listenHandler.Run(*rabbitQueueListen, *rabbitExchangeDelay); err != nil {

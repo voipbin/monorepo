@@ -16,6 +16,7 @@ import (
 	astendpoint "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
 // MockDBHandler is a mock of DBHandler interface.
@@ -429,4 +430,91 @@ func (m *MockDBHandler) ExtensionUpdate(ctx context.Context, b *extension.Extens
 func (mr *MockDBHandlerMockRecorder) ExtensionUpdate(ctx, b interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockDBHandler)(nil).ExtensionUpdate), ctx, b)
+}
+
+// TrunkCreate mocks base method.
+func (m *MockDBHandler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkCreate", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TrunkCreate indicates an expected call of TrunkCreate.
+func (mr *MockDBHandlerMockRecorder) TrunkCreate(ctx, t interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkCreate", reflect.TypeOf((*MockDBHandler)(nil).TrunkCreate), ctx, t)
+}
+
+// TrunkDelete mocks base method.
+func (m *MockDBHandler) TrunkDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TrunkDelete indicates an expected call of TrunkDelete.
+func (mr *MockDBHandlerMockRecorder) TrunkDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkDelete", reflect.TypeOf((*MockDBHandler)(nil).TrunkDelete), ctx, id)
+}
+
+// TrunkGet mocks base method.
+func (m *MockDBHandler) TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkGet", ctx, id)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkGet indicates an expected call of TrunkGet.
+func (mr *MockDBHandlerMockRecorder) TrunkGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGet", reflect.TypeOf((*MockDBHandler)(nil).TrunkGet), ctx, id)
+}
+
+// TrunkGetByDomainName mocks base method.
+func (m *MockDBHandler) TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkGetByDomainName", ctx, domainName)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkGetByDomainName indicates an expected call of TrunkGetByDomainName.
+func (mr *MockDBHandlerMockRecorder) TrunkGetByDomainName(ctx, domainName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGetByDomainName", reflect.TypeOf((*MockDBHandler)(nil).TrunkGetByDomainName), ctx, domainName)
+}
+
+// TrunkGetsByCustomerID mocks base method.
+func (m *MockDBHandler) TrunkGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkGetsByCustomerID", ctx, customerID, token, limit)
+	ret0, _ := ret[0].([]*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkGetsByCustomerID indicates an expected call of TrunkGetsByCustomerID.
+func (mr *MockDBHandlerMockRecorder) TrunkGetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).TrunkGetsByCustomerID), ctx, customerID, token, limit)
+}
+
+// TrunkUpdateBasicInfo mocks base method.
+func (m *MockDBHandler) TrunkUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkUpdateBasicInfo", ctx, id, name, detail, authTypes, username, password, allowedIPs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TrunkUpdateBasicInfo indicates an expected call of TrunkUpdateBasicInfo.
+func (mr *MockDBHandlerMockRecorder) TrunkUpdateBasicInfo(ctx, id, name, detail, authTypes, username, password, allowedIPs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).TrunkUpdateBasicInfo), ctx, id, name, detail, authTypes, username, password, allowedIPs)
 }

@@ -138,8 +138,8 @@ func (h *handler) domainSetToCache(ctx context.Context, e *domain.Domain) error 
 	return nil
 }
 
-// dDomainGetFromCache returns Domain from the cache.
-func (h *handler) dDomainGetFromCache(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
+// domainGetFromCache returns Domain from the cache.
+func (h *handler) domainGetFromCache(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
 	// get from cache
 	res, err := h.cache.DomainGet(ctx, id)
@@ -205,7 +205,7 @@ func (h *handler) DomainUpdateBasicInfo(ctx context.Context, id uuid.UUID, name,
 // DomainGet returns Domain.
 func (h *handler) DomainGet(ctx context.Context, id uuid.UUID) (*domain.Domain, error) {
 
-	res, err := h.dDomainGetFromCache(ctx, id)
+	res, err := h.domainGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}

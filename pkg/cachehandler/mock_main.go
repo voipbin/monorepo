@@ -16,6 +16,7 @@ import (
 	astendpoint "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
 // MockCacheHandler is a mock of CacheHandler interface.
@@ -327,4 +328,62 @@ func (m *MockCacheHandler) ExtensionSet(ctx context.Context, e *extension.Extens
 func (mr *MockCacheHandlerMockRecorder) ExtensionSet(ctx, e interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionSet", reflect.TypeOf((*MockCacheHandler)(nil).ExtensionSet), ctx, e)
+}
+
+// TrunkDel mocks base method.
+func (m *MockCacheHandler) TrunkDel(ctx context.Context, id uuid.UUID, name string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkDel", ctx, id, name)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TrunkDel indicates an expected call of TrunkDel.
+func (mr *MockCacheHandlerMockRecorder) TrunkDel(ctx, id, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkDel", reflect.TypeOf((*MockCacheHandler)(nil).TrunkDel), ctx, id, name)
+}
+
+// TrunkGet mocks base method.
+func (m *MockCacheHandler) TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkGet", ctx, id)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkGet indicates an expected call of TrunkGet.
+func (mr *MockCacheHandlerMockRecorder) TrunkGet(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGet", reflect.TypeOf((*MockCacheHandler)(nil).TrunkGet), ctx, id)
+}
+
+// TrunkGetByDomainName mocks base method.
+func (m *MockCacheHandler) TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkGetByDomainName", ctx, domainName)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkGetByDomainName indicates an expected call of TrunkGetByDomainName.
+func (mr *MockCacheHandlerMockRecorder) TrunkGetByDomainName(ctx, domainName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGetByDomainName", reflect.TypeOf((*MockCacheHandler)(nil).TrunkGetByDomainName), ctx, domainName)
+}
+
+// TrunkSet mocks base method.
+func (m *MockCacheHandler) TrunkSet(ctx context.Context, e *trunk.Trunk) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkSet", ctx, e)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TrunkSet indicates an expected call of TrunkSet.
+func (mr *MockCacheHandlerMockRecorder) TrunkSet(ctx, e interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkSet", reflect.TypeOf((*MockCacheHandler)(nil).TrunkSet), ctx, e)
 }

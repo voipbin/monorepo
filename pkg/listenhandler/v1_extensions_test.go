@@ -111,13 +111,12 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 func Test_processV1ExtensionsGet_domain_id(t *testing.T) {
 
 	type test struct {
-		name       string
-		customerID uuid.UUID
-		domainID   uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		request    *rabbitmqhandler.Request
-		exts       []*extension.Extension
+		name      string
+		domainID  uuid.UUID
+		pageToken string
+		pageSize  uint64
+		request   *rabbitmqhandler.Request
+		exts      []*extension.Extension
 
 		expectRes *rabbitmqhandler.Response
 	}

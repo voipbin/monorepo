@@ -14,6 +14,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 )
 
 // getSerialize returns cached serialized info.
@@ -272,4 +273,58 @@ func (h *handler) AstContactsDel(ctx context.Context, endpoint string) error {
 	key := fmt.Sprintf("ast_contacts:%s", endpoint)
 
 	return h.delKey(ctx, key)
+}
+
+// TrunkSet sets the Trunk info into the cache.
+func (h *handler) TrunkSet(ctx context.Context, e *trunk.Trunk) error {
+	key := fmt.Sprintf("registrar:trunk:%s", e.ID)
+	if err := h.setSerialize(ctx, key, e); err != nil {
+		return err
+	}
+
+	keyName := fmt.Sprintf("registrar:trunk_domain_name:%s", e.DomainName)
+	if err := h.setSerialize(ctx, keyName, e); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TrunkGet returns cached Trunk info
+func (h *handler) TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error) {
+	key := fmt.Sprintf("registrar:trunk:%s", id)
+
+	var res trunk.Trunk
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// TrunkGetByDomainName returns cached Trunk info
+func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
+	key := fmt.Sprintf("registrar:trunk_domain_name:%s", domainName)
+
+	var res trunk.Trunk
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// TrunkDel deletes the trunk info from the cache.
+func (h *handler) TrunkDel(ctx context.Context, id uuid.UUID, name string) error {
+	key := fmt.Sprintf("registrar:trunk:%s", id)
+	if errDel := h.delKey(ctx, key); errDel != nil {
+		return errDel
+	}
+
+	keyName := fmt.Sprintf("registrar:trunk_domain_name:%s", name)
+	if errDel := h.delKey(ctx, keyName); errDel != nil {
+		return errDel
+	}
+
+	return nil
 }
