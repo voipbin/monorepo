@@ -16,6 +16,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astendpoint"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/cachehandler"
 )
 
@@ -64,6 +65,23 @@ type DBHandler interface {
 	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
 	ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
 	ExtensionUpdate(ctx context.Context, b *extension.Extension) error
+
+	// Trunk
+	TrunkCreate(ctx context.Context, t *trunk.Trunk) error
+	TrunkUpdateBasicInfo(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		authTypes []trunk.AuthType,
+		username string,
+		password string,
+		allowedIPs []string,
+	) error
+	TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
+	TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error)
+	TrunkGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*trunk.Trunk, error)
+	TrunkDelete(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler

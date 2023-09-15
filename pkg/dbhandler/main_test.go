@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			log.Errorf("Could not execute the sql. err: %v", err)
 		}
-		log.Infof("executed sql file. ret: %v", ret)
+		log.Infof("executed sql file. filename: %s, ret: %v", file, ret)
 
 	}
 

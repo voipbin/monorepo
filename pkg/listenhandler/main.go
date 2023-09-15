@@ -15,6 +15,7 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/contacthandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/domainhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
+	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/trunkhandler"
 )
 
 // pagination parameters
@@ -33,6 +34,7 @@ type listenHandler struct {
 
 	reqHandler       requesthandler.RequestHandler
 	domainHandler    domainhandler.DomainHandler
+	trunkHandler     trunkhandler.TrunkHandler
 	extensionHandler extensionhandler.ExtensionHandler
 	contactHandler   contacthandler.ContactHandler
 }
@@ -56,6 +58,12 @@ var (
 	regV1ExtensionsGet               = regexp.MustCompile(`/v1/extensions\?`)
 	regV1ExtensionsID                = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
 	regV1ExtensionsExtensionEndpoint = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
+
+	// trunks
+	regV1Trunks           = regexp.MustCompile("/v1/trunks$")
+	regV1TrunksGet        = regexp.MustCompile(`/v1/trunks\?`)
+	regV1TrunksID         = regexp.MustCompile("/v1/trunks/" + regUUID + "$")
+	regV1TrunksDomainName = regexp.MustCompile("/v1/trunks/domain_name/" + regAny)
 )
 
 var (
@@ -92,6 +100,7 @@ func NewListenHandler(
 	rabbitSock rabbitmqhandler.Rabbit,
 	reqHandler requesthandler.RequestHandler,
 	domainHandler domainhandler.DomainHandler,
+	trunkHandler trunkhandler.TrunkHandler,
 	extensionHandler extensionhandler.ExtensionHandler,
 	contactHandler contacthandler.ContactHandler,
 ) ListenHandler {
@@ -239,6 +248,33 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ExtensionsExtensionEndpointGet(ctx, m)
 		requestType = "/v1/extensions/endpoint/<endpoint>"
 
+	/////////////
+	// trunks
+	/////////////
+	case regV1TrunksGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1TrunksGet(ctx, m)
+		requestType = "/v1/trunks"
+
+	case regV1Trunks.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPost:
+		response, err = h.processV1TrunksPost(ctx, m)
+		requestType = "/v1/trunks"
+
+	case regV1TrunksID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1TrunksIDGet(ctx, m)
+		requestType = "/v1/trunks/<trunk-id>"
+
+	case regV1TrunksID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+		response, err = h.processV1TrunksIDPut(ctx, m)
+		requestType = "/v1/trunks/<trunk-id>"
+
+	case regV1TrunksID.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodDelete:
+		response, err = h.processV1TrunksIDDelete(ctx, m)
+		requestType = "/v1/trunks/<trunk-id>"
+
+	case regV1TrunksDomainName.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1TrunksDomainNameDomainNameGet(ctx, m)
+		requestType = "/v1/trunks/domain_name/<domain-name>"
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -253,20 +289,16 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 
 	// default error handler
 	if err != nil {
-		log.WithFields(
-			logrus.Fields{
-				"error": err,
-			},
-		).Errorf("Could not process the request correctly. method: %s, uri: %s", m.Method, m.URI)
+		log.WithFields(logrus.Fields{
+			"error": err,
+		}).Errorf("Could not process the request correctly. method: %s, uri: %s", m.Method, m.URI)
 		response = simpleResponse(400)
 		err = nil
 	}
 
-	log.WithFields(
-		logrus.Fields{
-			"response": response,
-		},
-	).Debugf("Sending back the resulut. method: %s, uri: %s", m.Method, m.URI)
+	log.WithFields(logrus.Fields{
+		"response": response,
+	}).Debugf("Sending back the resulut. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }
