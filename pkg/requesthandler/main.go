@@ -56,6 +56,7 @@ import (
 	rmastcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	smbucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
@@ -886,6 +887,14 @@ type RequestHandler interface {
 	RegistrarV1ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
+
+	// registrar-manager trunk
+	RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, domainName string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
+	RegistrarV1TrunkGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmtrunk.Trunk, error)
+	RegistrarV1TrunkGet(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error)
+	RegistrarV1TrunkGetByDomainName(ctx context.Context, domainName string) (*rmtrunk.Trunk, error)
+	RegistrarV1TrunkDelete(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error)
+	RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name string, detail string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
 
 	// route-manager dialroutes
 	RouteV1DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]rmroute.Route, error)

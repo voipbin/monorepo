@@ -60,6 +60,7 @@ import (
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	bucketfile "gitlab.com/voipbin/bin-manager/storage-manager.git/models/bucketfile"
@@ -4424,6 +4425,96 @@ func (m *MockRequestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id 
 func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionUpdate(ctx, id, name, detail, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionUpdate), ctx, id, name, detail, password)
+}
+
+// RegistrarV1TrunkCreate mocks base method.
+func (m *MockRequestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name, detail, domainName string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1TrunkCreate", ctx, customerID, name, detail, domainName, authTypes, username, password, allowedIPs)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1TrunkCreate indicates an expected call of RegistrarV1TrunkCreate.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkCreate(ctx, customerID, name, detail, domainName, authTypes, username, password, allowedIPs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkCreate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkCreate), ctx, customerID, name, detail, domainName, authTypes, username, password, allowedIPs)
+}
+
+// RegistrarV1TrunkDelete mocks base method.
+func (m *MockRequestHandler) RegistrarV1TrunkDelete(ctx context.Context, trunkID uuid.UUID) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1TrunkDelete", ctx, trunkID)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1TrunkDelete indicates an expected call of RegistrarV1TrunkDelete.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkDelete(ctx, trunkID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkDelete", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkDelete), ctx, trunkID)
+}
+
+// RegistrarV1TrunkGet mocks base method.
+func (m *MockRequestHandler) RegistrarV1TrunkGet(ctx context.Context, trunkID uuid.UUID) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1TrunkGet", ctx, trunkID)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1TrunkGet indicates an expected call of RegistrarV1TrunkGet.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkGet(ctx, trunkID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkGet", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkGet), ctx, trunkID)
+}
+
+// RegistrarV1TrunkGetByDomainName mocks base method.
+func (m *MockRequestHandler) RegistrarV1TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1TrunkGetByDomainName", ctx, domainName)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1TrunkGetByDomainName indicates an expected call of RegistrarV1TrunkGetByDomainName.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkGetByDomainName(ctx, domainName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkGetByDomainName", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkGetByDomainName), ctx, domainName)
+}
+
+// RegistrarV1TrunkGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) RegistrarV1TrunkGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1TrunkGetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1TrunkGetsByCustomerID indicates an expected call of RegistrarV1TrunkGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkGetsByCustomerID), ctx, customerID, pageToken, pageSize)
+}
+
+// RegistrarV1TrunkUpdateBasicInfo mocks base method.
+func (m *MockRequestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name, detail string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1TrunkUpdateBasicInfo", ctx, trunkID, name, detail, authTypes, username, password, allowedIPs)
+	ret0, _ := ret[0].(*trunk.Trunk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1TrunkUpdateBasicInfo indicates an expected call of RegistrarV1TrunkUpdateBasicInfo.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkUpdateBasicInfo(ctx, trunkID, name, detail, authTypes, username, password, allowedIPs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkUpdateBasicInfo", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkUpdateBasicInfo), ctx, trunkID, name, detail, authTypes, username, password, allowedIPs)
 }
 
 // RouteV1DialrouteGets mocks base method.
