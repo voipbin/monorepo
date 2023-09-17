@@ -108,6 +108,7 @@ func NewListenHandler(
 		rabbitSock:       rabbitSock,
 		reqHandler:       reqHandler,
 		domainHandler:    domainHandler,
+		trunkHandler:     trunkHandler,
 		extensionHandler: extensionHandler,
 		contactHandler:   contactHandler,
 	}
@@ -167,13 +168,13 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		uri = "could not unescape uri"
 	}
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"uri":       m.URI,
-			"method":    m.Method,
-			"data_type": m.DataType,
-			"data":      m.Data,
-		},
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "processRequest",
+		"uri":       m.URI,
+		"method":    m.Method,
+		"data_type": m.DataType,
+		"data":      m.Data,
+	},
 	)
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, uri)
 
