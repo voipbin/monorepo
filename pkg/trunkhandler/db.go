@@ -62,7 +62,7 @@ func (h *trunkHandler) Create(
 		AllowedIPs: allowedIPs,
 	}
 
-	if err := h.dbBin.TrunkCreate(ctx, t); err != nil {
+	if err := h.db.TrunkCreate(ctx, t); err != nil {
 		log.Errorf("Could not create a trunk info. err: %v", err)
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (h *trunkHandler) Create(
 
 // Get returns trunk
 func (h *trunkHandler) Get(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error) {
-	res, err := h.dbBin.TrunkGet(ctx, id)
+	res, err := h.db.TrunkGet(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (h *trunkHandler) Get(ctx context.Context, id uuid.UUID) (*trunk.Trunk, err
 
 // GetByDomainName returns trunk of the given domain name
 func (h *trunkHandler) GetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error) {
-	res, err := h.dbBin.TrunkGetByDomainName(ctx, domainName)
+	res, err := h.db.TrunkGetByDomainName(ctx, domainName)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (h *trunkHandler) Gets(ctx context.Context, customerID uuid.UUID, token str
 		"customer_id": customerID,
 	})
 
-	res, err := h.dbBin.TrunkGetsByCustomerID(ctx, customerID, token, limit)
+	res, err := h.db.TrunkGetsByCustomerID(ctx, customerID, token, limit)
 	if err != nil {
 		log.Errorf("Could not get trunks. err: %v", err)
 		return nil, err
@@ -129,7 +129,7 @@ func (h *trunkHandler) Update(ctx context.Context, id uuid.UUID, name string, de
 	})
 
 	// update
-	if errUpdate := h.dbBin.TrunkUpdateBasicInfo(ctx, id, name, detail, authTypes, username, password, allowedIPs); errUpdate != nil {
+	if errUpdate := h.db.TrunkUpdateBasicInfo(ctx, id, name, detail, authTypes, username, password, allowedIPs); errUpdate != nil {
 		log.Errorf("Could not update the trunk. err: %v", errUpdate)
 		return nil, errUpdate
 	}
@@ -151,12 +151,12 @@ func (h *trunkHandler) Delete(ctx context.Context, id uuid.UUID) (*trunk.Trunk, 
 	})
 
 	// delete trunk
-	if err := h.dbBin.TrunkDelete(ctx, id); err != nil {
+	if err := h.db.TrunkDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete the trunk. err: %v", err)
 		return nil, err
 	}
 
-	res, err := h.dbBin.TrunkGet(ctx, id)
+	res, err := h.db.TrunkGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get deleted trunk. err: %v", err)
 		return nil, err

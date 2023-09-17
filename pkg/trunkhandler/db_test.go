@@ -79,13 +79,11 @@ func Test_Create(t *testing.T) {
 			defer mc.Finish()
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDBAst := dbhandler.NewMockDBHandler(mc)
 			mockDBBin := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			h := &trunkHandler{
 				utilHandler:   mockUtil,
-				dbAst:         mockDBAst,
-				dbBin:         mockDBBin,
+				db:            mockDBBin,
 				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
@@ -133,12 +131,10 @@ func Test_Get(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
-		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 		h := &trunkHandler{
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
+			db:            mockDBBin,
 			notifyHandler: mockNotify,
 		}
 		ctx := context.Background()
@@ -198,7 +194,7 @@ func Test_Gets(t *testing.T) {
 
 			h := &trunkHandler{
 				reqHandler:    mockReq,
-				dbBin:         mockDB,
+				db:            mockDB,
 				notifyHandler: mockNotify,
 			}
 
@@ -245,12 +241,10 @@ func Test_GetByDomainName(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
-		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 		h := &trunkHandler{
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
+			db:            mockDBBin,
 			notifyHandler: mockNotify,
 		}
 		ctx := context.Background()
@@ -307,12 +301,10 @@ func Test_Update(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
-		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 		h := &trunkHandler{
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
+			db:            mockDBBin,
 			notifyHandler: mockNotify,
 		}
 
@@ -358,12 +350,10 @@ func Test_Delete(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
-		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 		h := &trunkHandler{
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
+			db:            mockDBBin,
 			notifyHandler: mockNotify,
 		}
 		ctx := context.Background()

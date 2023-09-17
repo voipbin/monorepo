@@ -40,8 +40,7 @@ type TrunkHandler interface {
 type trunkHandler struct {
 	utilHandler utilhandler.UtilHandler
 	reqHandler  requesthandler.RequestHandler
-	dbAst       dbhandler.DBHandler
-	dbBin       dbhandler.DBHandler
+	db          dbhandler.DBHandler
 
 	notifyHandler notifyhandler.NotifyHandler
 }
@@ -74,13 +73,12 @@ func init() {
 }
 
 // NewTrunkHandler returns new service handler
-func NewTrunkHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) TrunkHandler {
+func NewTrunkHandler(r requesthandler.RequestHandler, dbBin dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) TrunkHandler {
 
 	h := &trunkHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    r,
-		dbAst:         dbAst,
-		dbBin:         dbBin,
+		db:            dbBin,
 		notifyHandler: notifyHandler,
 	}
 
