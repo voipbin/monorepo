@@ -28,12 +28,6 @@ func setupServer(app *gin.Engine) {
 
 func TestDomainsPOST(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name        string
 		customer    cscustomer.Customer
@@ -59,6 +53,11 @@ func TestDomainsPOST(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -88,12 +87,6 @@ func TestDomainsPOST(t *testing.T) {
 }
 
 func TestDomainsIDGET(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name     string
@@ -127,6 +120,11 @@ func TestDomainsIDGET(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -149,12 +147,6 @@ func TestDomainsIDGET(t *testing.T) {
 }
 
 func TestDomainsIDPUT(t *testing.T) {
-
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 	type test struct {
 		name     string
@@ -190,6 +182,11 @@ func TestDomainsIDPUT(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
@@ -220,12 +217,6 @@ func TestDomainsIDPUT(t *testing.T) {
 
 func TestDomainsIDDELETE(t *testing.T) {
 
-	// create mock
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-
 	type test struct {
 		name     string
 		customer cscustomer.Customer
@@ -244,6 +235,11 @@ func TestDomainsIDDELETE(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)

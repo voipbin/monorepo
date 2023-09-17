@@ -46,6 +46,7 @@ import (
 	queuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	domain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	extension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	trunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	provider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	route "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	tag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
@@ -2977,6 +2978,81 @@ func (m *MockServiceHandler) TransferStart(ctx context.Context, u *customer.Cust
 func (mr *MockServiceHandlerMockRecorder) TransferStart(ctx, u, transferType, transfererCallID, transfereeAddresses interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferStart", reflect.TypeOf((*MockServiceHandler)(nil).TransferStart), ctx, u, transferType, transfererCallID, transfereeAddresses)
+}
+
+// TrunkCreate mocks base method.
+func (m *MockServiceHandler) TrunkCreate(ctx context.Context, u *customer.Customer, name, detail, domainName string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkCreate", ctx, u, name, detail, domainName, authTypes, username, password, allowedIPs)
+	ret0, _ := ret[0].(*trunk.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkCreate indicates an expected call of TrunkCreate.
+func (mr *MockServiceHandlerMockRecorder) TrunkCreate(ctx, u, name, detail, domainName, authTypes, username, password, allowedIPs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkCreate", reflect.TypeOf((*MockServiceHandler)(nil).TrunkCreate), ctx, u, name, detail, domainName, authTypes, username, password, allowedIPs)
+}
+
+// TrunkDelete mocks base method.
+func (m *MockServiceHandler) TrunkDelete(ctx context.Context, u *customer.Customer, id uuid.UUID) (*trunk.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkDelete", ctx, u, id)
+	ret0, _ := ret[0].(*trunk.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkDelete indicates an expected call of TrunkDelete.
+func (mr *MockServiceHandlerMockRecorder) TrunkDelete(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkDelete", reflect.TypeOf((*MockServiceHandler)(nil).TrunkDelete), ctx, u, id)
+}
+
+// TrunkGet mocks base method.
+func (m *MockServiceHandler) TrunkGet(ctx context.Context, u *customer.Customer, id uuid.UUID) (*trunk.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkGet", ctx, u, id)
+	ret0, _ := ret[0].(*trunk.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkGet indicates an expected call of TrunkGet.
+func (mr *MockServiceHandlerMockRecorder) TrunkGet(ctx, u, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGet", reflect.TypeOf((*MockServiceHandler)(nil).TrunkGet), ctx, u, id)
+}
+
+// TrunkGets mocks base method.
+func (m *MockServiceHandler) TrunkGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*trunk.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkGets", ctx, u, size, token)
+	ret0, _ := ret[0].([]*trunk.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkGets indicates an expected call of TrunkGets.
+func (mr *MockServiceHandlerMockRecorder) TrunkGets(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGets", reflect.TypeOf((*MockServiceHandler)(nil).TrunkGets), ctx, u, size, token)
+}
+
+// TrunkUpdateBasicInfo mocks base method.
+func (m *MockServiceHandler) TrunkUpdateBasicInfo(ctx context.Context, u *customer.Customer, id uuid.UUID, name, detail string, authTypes []trunk.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TrunkUpdateBasicInfo", ctx, u, id, name, detail, authTypes, username, password, allowedIPs)
+	ret0, _ := ret[0].(*trunk.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TrunkUpdateBasicInfo indicates an expected call of TrunkUpdateBasicInfo.
+func (mr *MockServiceHandlerMockRecorder) TrunkUpdateBasicInfo(ctx, u, id, name, detail, authTypes, username, password, allowedIPs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkUpdateBasicInfo", reflect.TypeOf((*MockServiceHandler)(nil).TrunkUpdateBasicInfo), ctx, u, id, name, detail, authTypes, username, password, allowedIPs)
 }
 
 // WebsockCreate mocks base method.

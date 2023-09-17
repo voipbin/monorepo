@@ -501,6 +501,8 @@ github.com/go-playground/validator/v10 v10.14.1 h1:9c50NUPC30zyuKprjL3vNZ0m5oG+j
 github.com/go-playground/validator/v10 v10.14.1/go.mod h1:9iXMNT7sEkjXb0I+enO7QXmzG6QCsPWY4zveKFVRSyU=
 github.com/go-playground/validator/v10 v10.15.3 h1:S+sSpunYjNPDuXkWbK+x+bA7iXiW296KG4dL3X7xUZo=
 github.com/go-playground/validator/v10 v10.15.3/go.mod h1:9iXMNT7sEkjXb0I+enO7QXmzG6QCsPWY4zveKFVRSyU=
+github.com/go-playground/validator/v10 v10.15.4 h1:zMXza4EpOdooxPel5xDqXEdXG5r+WggpvnAKMsalBjs=
+github.com/go-playground/validator/v10 v10.15.4/go.mod h1:9iXMNT7sEkjXb0I+enO7QXmzG6QCsPWY4zveKFVRSyU=
 github.com/go-redis/redis/v8 v8.11.5 h1:AcZZR7igkdvfVmQTPnu9WE37LRrO/YrBH5zWyjDC0oI=
 github.com/go-redis/redis/v8 v8.11.5/go.mod h1:gREzHqY1hg6oD9ngVRbLStwAWKhA0FEgq8Jd4h5lpwo=
 github.com/go-sql-driver/mysql v1.7.1 h1:lUIinVbN1DY0xBg0eMOzmmtGoHwWBbvnWubQUrtU8EI=
@@ -761,6 +763,8 @@ gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230910161346-cd740bb7
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230910161346-cd740bb702f5/go.mod h1:CdMNoyhOjpcUEH0/IKLmPHaMlHe/Op/q4qV2PuBpEhk=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230911173614-89639cf47591 h1:7owuDLl+1bHjqNkXPzGqaehPt3vJhWT70ZxxBA4Imww=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230911173614-89639cf47591/go.mod h1:XdJWH16JUaAeSJ/iw/I4Ew9MC3OjTdvkV43PDuJQh9g=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230916150629-46e207743088 h1:E6Q2j3I3jHV1CN/xReVCaUsiXJD1eTxxkqCoa+fhPqg=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20230916150629-46e207743088/go.mod h1:JscnzHSlMKUjnYKloWcBy994bfByUsyf/nkHEXNy51g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa h1:PP+lN42xD4htGHyiwpzki5O9qhYqJQoO2vvbsjslr9g=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230314123101-da8d55451daa/go.mod h1:ZmH0dxGw24CBuZhNZO4JYFTFfY3Ti+aeQkMHG97Swas=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578 h1:PzDD+gHw68YoW21NhfxyA9DHaqqcAJ2UkCCq3TkEcCo=
@@ -785,6 +789,8 @@ gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230728171820-cdbeafa2
 gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230728171820-cdbeafa2cf1c/go.mod h1:AvTWBpu9dz/w1tDfdquO28emrtiD4S12ScYKzrLvTDA=
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901 h1:SCm0GihLmu4itJaZKLOAIBYB5TKakhdMpfEF6HCWOfk=
 gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20220722164233-2ec431be7901/go.mod h1:Cha5xWMeBJW4idXwvDSiME4BkOy38jgY0J3plyL5kbE=
+gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519 h1:uR5RPDzEF5S6ZlHqJGKBUKJMr/G7mkHBjbeEuVXzu3E=
+gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519/go.mod h1:9iIQJAV4RU/qdrG82xYUUrEUcQ/9H+b5ihYE4JBr1hA=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230307162312-13dfc1050b1e h1:LUD/qnW9SPDgNh2K4J+o7pqsEHVu3x/1+hDvscW0DgE=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230307162312-13dfc1050b1e/go.mod h1:PIr8m2MwAUbKoXf5t7RdxeRvxvFxfS/YZP8oY41JK9M=
 gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230903182459-1d2f626b38fd h1:eq4xghzaeWcgMTaE3AcrV2OxXpXv0ZY4FQdDadlZ4v0=
@@ -793,6 +799,8 @@ gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230307174917-96d57
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230307174917-96d57438d2d8/go.mod h1:ayq3fTZcpAFk4gzFhURuqw1PQG+kTMHVJK/LhsPaKzc=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230910155832-c00e3dd0cc86 h1:heTZrdbKy31JxVi+RDMF+/25MrDYPW9Dqibl3GfeCFM=
 gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230910155832-c00e3dd0cc86/go.mod h1:cVK+ZKpHb8iwTEkjvzCf3yoqVEiTvr7yIfcEHgvA6a8=
+gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230915151250-11e9ec6f1859 h1:+YhksreDQ3GpgOe0nGWxUtoqdHVl6PMIwyiYY/OzbN0=
+gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230915151250-11e9ec6f1859/go.mod h1:BZ3RF3oucJk3SEi5yzFWbR3RieD4tFbQn8VKlV8tMQY=
 gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097 h1:5Bvn+WLVuAP7gfL25wlrhmeEcA4s9BM38IBf9Vcyvt4=
 gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097/go.mod h1:hGuam1F4uWvvbHpwzOLVztS/mNEtd35VNkyJX1WpIzY=
 gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9 h1:s0jTC7u5ONsjynyVV24vzgLncWZ1cHD3vITbSG2z3EQ=
@@ -1339,6 +1347,8 @@ google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5 h1:L6iMMGrtzgHsWof
 google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5/go.mod h1:oH/ZOT02u4kWEp7oYBGYFFkCdKS/uYR9Z7+0/xuuFp8=
 google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d h1:VBu5YqKPv6XiJ199exd8Br+Aetz+o08F+PLMnwJQHAY=
 google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d/go.mod h1:yZTlhN0tQnXo3h00fuXNCxJdLdIdnVFVBaRJ5LWBbw4=
+google.golang.org/genproto v0.0.0-20230913181813-007df8e322eb h1:XFBgcDwm7irdHTbz4Zk2h7Mh+eis4nfJEFQFYzJzuIA=
+google.golang.org/genproto v0.0.0-20230913181813-007df8e322eb/go.mod h1:yZTlhN0tQnXo3h00fuXNCxJdLdIdnVFVBaRJ5LWBbw4=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=
