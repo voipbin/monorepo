@@ -44,6 +44,7 @@ import (
 	qmqueuecall "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queuecall"
 	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+	rmtrunk "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/trunk"
 	rmprovider "gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 	tmtag "gitlab.com/voipbin/bin-manager/tag-manager.git/models/tag"
@@ -541,6 +542,13 @@ type ServiceHandler interface {
 
 	// transfer handler
 	TransferStart(ctx context.Context, u *cscustomer.Customer, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.WebhookMessage, error)
+
+	// trunk
+	TrunkCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string, domainName string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error)
+	TrunkDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmtrunk.WebhookMessage, error)
+	TrunkGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmtrunk.WebhookMessage, error)
+	TrunkGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmtrunk.WebhookMessage, error)
+	TrunkUpdateBasicInfo(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name string, detail string, authTypes []rmtrunk.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error)
 
 	WebsockCreate(ctx context.Context, u *cscustomer.Customer, w http.ResponseWriter, r *http.Request) error
 }
