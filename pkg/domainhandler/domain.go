@@ -135,11 +135,11 @@ func (h *domainHandler) Delete(ctx context.Context, id uuid.UUID) (*domain.Domai
 	)
 
 	// delete extensions
-	tmp, err := h.extHandler.DeleteByDomainID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	log.WithField("extensions", tmp).Debugf("Deleted extensions. count: %d", len(tmp))
+	// tmp, err := h.extHandler.DeleteByDomainID(ctx, id)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// log.WithField("extensions", tmp).Debugf("Deleted extensions. count: %d", len(tmp))
 
 	// delete domain
 	if err := h.dbBin.DomainDelete(ctx, id); err != nil {

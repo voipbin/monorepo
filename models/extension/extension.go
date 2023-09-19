@@ -7,9 +7,8 @@ type Extension struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
-	Name     string    `json:"name"`
-	Detail   string    `json:"detail"`
-	DomainID uuid.UUID `json:"domain_id"`
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
 
 	// asterisk resources
 	EndpointID string `json:"endpoint_id"`
@@ -18,9 +17,9 @@ type Extension struct {
 
 	Extension string `json:"extension"`
 
-	// DomainName string `json:"domain_name"` // same as the CustomerID. This used by the kamailio's INVITE validation
-	// Username   string `json:"username"`    // same as the Extension. This used by the kamailio's INVITE validation
-	Password string `json:"password"`
+	DomainName string `json:"domain_name"` // same as the CustomerID. This used by the kamailio's INVITE validation
+	Username   string `json:"username"`    // same as the Extension. This used by the kamailio's INVITE validation
+	Password   string `json:"password"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`

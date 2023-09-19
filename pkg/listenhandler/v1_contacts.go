@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"net/url"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
@@ -21,14 +21,15 @@ func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *rabbitmqh
 		return nil, err
 	}
 
-	// get endpoint
-	endpoint, err := url.QueryUnescape(u.Query().Get("endpoint"))
+	// get customer_id, ext
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	ext, err := url.QueryUnescape(u.Query().Get("extension"))
 	if err != nil {
 		log.Errorf("Could not unescape the parameter. err: %v", err)
 		return nil, err
 	}
 
-	resContacts, err := h.contactHandler.ContactGetsByEndpoint(ctx, endpoint)
+	resContacts, err := h.contactHandler.ContactGetsByExtension(ctx, customerID, ext)
 	if err != nil {
 		log.Errorf("Could not get contacts. err: %v", err)
 		return nil, err
@@ -60,15 +61,16 @@ func (h *listenHandler) processV1ContactsPut(ctx context.Context, req *rabbitmqh
 		return nil, err
 	}
 
-	// get endpoint
-	endpoint, err := url.QueryUnescape(u.Query().Get("endpoint"))
+	// get customer_id, ext
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	ext, err := url.QueryUnescape(u.Query().Get("extension"))
 	if err != nil {
 		log.Errorf("Could not unescape the parameter. err: %v", err)
 		return nil, err
 	}
 
-	if err := h.contactHandler.ContactRefreshByEndpoint(ctx, endpoint); err != nil {
-		log.Errorf("Could not refresh the contact info. endpoint: %s, err: %v", endpoint, err)
+	if err := h.contactHandler.ContactRefreshByEndpoint(ctx, customerID, ext); err != nil {
+		log.Errorf("Could not refresh the contact info. customer_id: %s, extension: %s, err: %v", customerID, ext, err)
 		return nil, err
 	}
 

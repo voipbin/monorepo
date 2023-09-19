@@ -12,7 +12,6 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/dbhandler"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/extensionhandler"
 )
@@ -289,7 +288,7 @@ func Test_Delete(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockExt.EXPECT().DeleteByDomainID(gomock.Any(), tt.domainID).Return([]*extension.Extension{}, nil)
+		// mockExt.EXPECT().DeleteByDomainID(gomock.Any(), tt.domainID).Return([]*extension.Extension{}, nil)
 		mockDBBin.EXPECT().DomainDelete(gomock.Any(), tt.domainID).Return(nil)
 		mockDBBin.EXPECT().DomainGet(gomock.Any(), tt.domainID).Return(tt.responseDomain, nil)
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), domain.EventTypeDomainDeleted, tt.responseDomain)

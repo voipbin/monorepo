@@ -27,19 +27,23 @@ func Test_ExtensionCreate(t *testing.T) {
 
 	tests := []test{
 		{
-			"test normal",
+			"normal",
 			&extension.Extension{
 				ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
 				CustomerID: uuid.FromStringOrNil("83db3318-7fec-11ec-a205-736ad70c9180"),
 
-				DomainID: uuid.FromStringOrNil("4dc1e430-6ebc-11eb-b355-b35fc1cfc5a1"),
+				Name:   "test name",
+				Detail: "test detail",
 
 				EndpointID: "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 				AORID:      "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 				AuthID:     "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 
 				Extension: "608cbfae-6ebc-11eb-a74b-671d17dda173",
-				Password:  "7818abce-6ebc-11eb-b4fe-e748480c228a",
+
+				DomainName: "83db3318-7fec-11ec-a205-736ad70c9180",
+				Username:   "608cbfae-6ebc-11eb-a74b-671d17dda173",
+				Password:   "7818abce-6ebc-11eb-b4fe-e748480c228a",
 			},
 
 			"2021-02-26 18:26:49.000",
@@ -47,14 +51,18 @@ func Test_ExtensionCreate(t *testing.T) {
 				ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
 				CustomerID: uuid.FromStringOrNil("83db3318-7fec-11ec-a205-736ad70c9180"),
 
-				DomainID: uuid.FromStringOrNil("4dc1e430-6ebc-11eb-b355-b35fc1cfc5a1"),
+				Name:   "test name",
+				Detail: "test detail",
 
 				EndpointID: "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 				AORID:      "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 				AuthID:     "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 
 				Extension: "608cbfae-6ebc-11eb-a74b-671d17dda173",
-				Password:  "7818abce-6ebc-11eb-b4fe-e748480c228a",
+
+				DomainName: "83db3318-7fec-11ec-a205-736ad70c9180",
+				Username:   "608cbfae-6ebc-11eb-a74b-671d17dda173",
+				Password:   "7818abce-6ebc-11eb-b4fe-e748480c228a",
 
 				TMCreate: "2021-02-26 18:26:49.000",
 				TMUpdate: DefaultTimeStamp,
@@ -109,6 +117,103 @@ func Test_ExtensionCreate(t *testing.T) {
 	}
 }
 
+func Test_ExtensionGetByExtension(t *testing.T) {
+
+	type test struct {
+		name string
+		ext  *extension.Extension
+
+		customerID uuid.UUID
+		exten      string
+
+		responseCurTime string
+		expectRes       *extension.Extension
+	}
+
+	tests := []test{
+		{
+			"test normal",
+			&extension.Extension{
+				ID:         uuid.FromStringOrNil("569711e0-564d-11ee-97bc-e73899c004b9"),
+				CustomerID: uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
+
+				Name:   "test name",
+				Detail: "test detail",
+
+				EndpointID: "56f79dda-564d-11ee-9b02-2ff26b372f36@test.sip.voipbin.net",
+				AORID:      "56f79dda-564d-11ee-9b02-2ff26b372f36@test.sip.voipbin.net",
+				AuthID:     "56f79dda-564d-11ee-9b02-2ff26b372f36@test.sip.voipbin.net",
+
+				Extension: "56f79dda-564d-11ee-9b02-2ff26b372f36",
+
+				DomainName: "8cadaf5c-7fec-11ec-b004-53f79c2b8387",
+				Username:   "56f79dda-564d-11ee-9b02-2ff26b372f36",
+				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
+			},
+
+			uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
+			"56f79dda-564d-11ee-9b02-2ff26b372f36",
+
+			"2021-02-26 18:26:49.000",
+			&extension.Extension{
+				ID:         uuid.FromStringOrNil("569711e0-564d-11ee-97bc-e73899c004b9"),
+				CustomerID: uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
+
+				Name:   "test name",
+				Detail: "test detail",
+
+				EndpointID: "56f79dda-564d-11ee-9b02-2ff26b372f36@test.sip.voipbin.net",
+				AORID:      "56f79dda-564d-11ee-9b02-2ff26b372f36@test.sip.voipbin.net",
+				AuthID:     "56f79dda-564d-11ee-9b02-2ff26b372f36@test.sip.voipbin.net",
+
+				Extension: "56f79dda-564d-11ee-9b02-2ff26b372f36",
+
+				DomainName: "8cadaf5c-7fec-11ec-b004-53f79c2b8387",
+				Username:   "56f79dda-564d-11ee-9b02-2ff26b372f36",
+				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
+
+				TMCreate: "2021-02-26 18:26:49.000",
+				TMUpdate: DefaultTimeStamp,
+				TMDelete: DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
+			if err := h.ExtensionCreate(ctx, tt.ext); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
+			res, err := h.ExtensionGetByExtension(ctx, tt.customerID, tt.exten)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_ExtensionDelete(t *testing.T) {
 
 	type test struct {
@@ -126,14 +231,18 @@ func Test_ExtensionDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
 				CustomerID: uuid.FromStringOrNil("8cadaf5c-7fec-11ec-b004-53f79c2b8387"),
 
-				DomainID: uuid.FromStringOrNil("e22acb78-6ebc-11eb-848e-bfb26fcad363"),
+				Name:   "test name",
+				Detail: "test detail",
 
 				EndpointID: "e56c33b2-6ebc-11eb-bada-4f15e459e32f@test.sip.voipbin.net",
 				AORID:      "e56c33b2-6ebc-11eb-bada-4f15e459e32f@test.sip.voipbin.net",
 				AuthID:     "e56c33b2-6ebc-11eb-bada-4f15e459e32f@test.sip.voipbin.net",
 
 				Extension: "e56c33b2-6ebc-11eb-bada-4f15e459e32f",
-				Password:  "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
+
+				DomainName: "8cadaf5c-7fec-11ec-b004-53f79c2b8387",
+				Username:   "e56c33b2-6ebc-11eb-bada-4f15e459e32f",
+				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 			},
 
 			"2021-02-26 18:26:49.000",
@@ -141,14 +250,18 @@ func Test_ExtensionDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
 				CustomerID: uuid.FromStringOrNil("8cadaf5c-7fec-11ec-b004-53f79c2b8387"),
 
-				DomainID: uuid.FromStringOrNil("e22acb78-6ebc-11eb-848e-bfb26fcad363"),
+				Name:   "test name",
+				Detail: "test detail",
 
 				EndpointID: "e56c33b2-6ebc-11eb-bada-4f15e459e32f@test.sip.voipbin.net",
 				AORID:      "e56c33b2-6ebc-11eb-bada-4f15e459e32f@test.sip.voipbin.net",
 				AuthID:     "e56c33b2-6ebc-11eb-bada-4f15e459e32f@test.sip.voipbin.net",
 
 				Extension: "e56c33b2-6ebc-11eb-bada-4f15e459e32f",
-				Password:  "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
+
+				DomainName: "8cadaf5c-7fec-11ec-b004-53f79c2b8387",
+				Username:   "e56c33b2-6ebc-11eb-bada-4f15e459e32f",
+				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 
 				TMCreate: "2021-02-26 18:26:49.000",
 				TMUpdate: DefaultTimeStamp,
@@ -199,104 +312,16 @@ func Test_ExtensionDelete(t *testing.T) {
 	}
 }
 
-func Test_ExtensionGetsByDomainID(t *testing.T) {
-
-	type test struct {
-		name       string
-		domainID   uuid.UUID
-		limit      uint64
-		extensions []extension.Extension
-
-		responseCurTime string
-		expectRes       []*extension.Extension
-	}
-
-	tests := []test{
-		{
-			"normal",
-			uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
-			10,
-			[]extension.Extension{
-				{
-					ID:         uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
-					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
-					Name:       "test1",
-					DomainID:   uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
-				},
-				{
-					ID:         uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
-					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
-					Name:       "test2",
-					DomainID:   uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
-				},
-			},
-
-			"2021-02-26 18:26:49.000",
-			[]*extension.Extension{
-				{
-					ID:         uuid.FromStringOrNil("1d792bb6-6f49-11eb-be2e-0ff2f1c87d93"),
-					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
-					Name:       "test2",
-					DomainID:   uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
-					TMCreate:   "2021-02-26 18:26:49.000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
-				},
-				{
-					ID:         uuid.FromStringOrNil("1d2cb402-6f49-11eb-a22c-5f2f23cba3a2"),
-					CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
-					Name:       "test1",
-					DomainID:   uuid.FromStringOrNil("3802a548-6f49-11eb-9362-3b77d3873657"),
-					TMCreate:   "2021-02-26 18:26:49.000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-
-			ctx := context.Background()
-
-			for _, d := range tt.extensions {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-				mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
-				if err := h.ExtensionCreate(ctx, &d); err != nil {
-					t.Errorf("Wrong match. expect: ok, got: %v", err)
-				}
-			}
-
-			exts, err := h.ExtensionGetsByDomainID(ctx, tt.domainID, utilhandler.TimeGetCurTime(), tt.limit)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(exts, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, exts)
-			}
-		})
-	}
-}
-
 func Test_ExtensionUpdate(t *testing.T) {
 
 	type test struct {
-		name            string
-		extension       *extension.Extension
-		updateExtension *extension.Extension
+		name      string
+		extension *extension.Extension
+
+		id            uuid.UUID
+		extensionName string
+		detail        string
+		password      string
 
 		responseCurTime string
 		expectRes       *extension.Extension
@@ -309,21 +334,20 @@ func Test_ExtensionUpdate(t *testing.T) {
 				ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
 				CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
 
-				Name:     "test",
-				Detail:   "detail",
-				DomainID: uuid.FromStringOrNil("b2277afa-711b-11eb-a695-f71fad093e64"),
+				Name:   "test",
+				Detail: "detail",
 
 				Extension: "test",
-				Password:  "password",
-			},
-			&extension.Extension{
-				ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
-				CustomerID: uuid.FromStringOrNil("935e91e0-7fec-11ec-a93e-a3c37f19587c"),
-				Name:       "update name",
-				Detail:     "update detail",
 
-				Password: "update password",
+				DomainName: "935e91e0-7fec-11ec-a93e-a3c37f19587c",
+				Username:   "test",
+				Password:   "password",
 			},
+
+			uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
+			"update name",
+			"update detail",
+			"update password",
 
 			"2021-02-26 18:26:49.000",
 			&extension.Extension{
@@ -333,10 +357,11 @@ func Test_ExtensionUpdate(t *testing.T) {
 				Name:   "update name",
 				Detail: "update detail",
 
-				DomainID: uuid.FromStringOrNil("b2277afa-711b-11eb-a695-f71fad093e64"),
-
 				Extension: "test",
-				Password:  "update password",
+
+				DomainName: "935e91e0-7fec-11ec-a93e-a3c37f19587c",
+				Username:   "test",
+				Password:   "update password",
 
 				TMCreate: "2021-02-26 18:26:49.000",
 				TMUpdate: "2021-02-26 18:26:49.000",
@@ -369,7 +394,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
-			if err := h.ExtensionUpdate(ctx, tt.updateExtension); err != nil {
+			if err := h.ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -409,13 +434,11 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("60774088-4fed-11ee-9650-1f8bc913315f"),
 					CustomerID: uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
 					Name:       "test1",
-					DomainID:   uuid.FromStringOrNil("4f8b8310-4fed-11ee-a168-ab3a0482d88d"),
 				},
 				{
 					ID:         uuid.FromStringOrNil("60a529da-4fed-11ee-aad8-b72b9a8b3741"),
 					CustomerID: uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
 					Name:       "test2",
-					DomainID:   uuid.FromStringOrNil("4fc0ef32-4fed-11ee-93f6-b7a62b6b70d0"),
 				},
 			},
 
@@ -425,7 +448,6 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("60a529da-4fed-11ee-aad8-b72b9a8b3741"),
 					CustomerID: uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
 					Name:       "test2",
-					DomainID:   uuid.FromStringOrNil("4fc0ef32-4fed-11ee-93f6-b7a62b6b70d0"),
 					TMCreate:   "2021-02-26 18:26:49.000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
@@ -434,7 +456,6 @@ func Test_ExtensionGetsByCustomerID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("60774088-4fed-11ee-9650-1f8bc913315f"),
 					CustomerID: uuid.FromStringOrNil("4c814358-4fed-11ee-8587-d376d10e2f46"),
 					Name:       "test1",
-					DomainID:   uuid.FromStringOrNil("4f8b8310-4fed-11ee-a168-ab3a0482d88d"),
 					TMCreate:   "2021-02-26 18:26:49.000",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
