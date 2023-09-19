@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 )
@@ -35,31 +36,31 @@ func (m *MockContactHandler) EXPECT() *MockContactHandlerMockRecorder {
 	return m.recorder
 }
 
-// ContactGetsByEndpoint mocks base method.
-func (m *MockContactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
+// ContactGetsByExtension mocks base method.
+func (m *MockContactHandler) ContactGetsByExtension(ctx context.Context, customerID uuid.UUID, ext string) ([]*astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactGetsByEndpoint", ctx, endpoint)
+	ret := m.ctrl.Call(m, "ContactGetsByExtension", ctx, customerID, ext)
 	ret0, _ := ret[0].([]*astcontact.AstContact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ContactGetsByEndpoint indicates an expected call of ContactGetsByEndpoint.
-func (mr *MockContactHandlerMockRecorder) ContactGetsByEndpoint(ctx, endpoint interface{}) *gomock.Call {
+// ContactGetsByExtension indicates an expected call of ContactGetsByExtension.
+func (mr *MockContactHandlerMockRecorder) ContactGetsByExtension(ctx, customerID, ext interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactGetsByEndpoint", reflect.TypeOf((*MockContactHandler)(nil).ContactGetsByEndpoint), ctx, endpoint)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactGetsByExtension", reflect.TypeOf((*MockContactHandler)(nil).ContactGetsByExtension), ctx, customerID, ext)
 }
 
 // ContactRefreshByEndpoint mocks base method.
-func (m *MockContactHandler) ContactRefreshByEndpoint(ctx context.Context, endpoint string) error {
+func (m *MockContactHandler) ContactRefreshByEndpoint(ctx context.Context, customerID uuid.UUID, ext string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactRefreshByEndpoint", ctx, endpoint)
+	ret := m.ctrl.Call(m, "ContactRefreshByEndpoint", ctx, customerID, ext)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ContactRefreshByEndpoint indicates an expected call of ContactRefreshByEndpoint.
-func (mr *MockContactHandlerMockRecorder) ContactRefreshByEndpoint(ctx, endpoint interface{}) *gomock.Call {
+func (mr *MockContactHandlerMockRecorder) ContactRefreshByEndpoint(ctx, customerID, ext interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactRefreshByEndpoint", reflect.TypeOf((*MockContactHandler)(nil).ContactRefreshByEndpoint), ctx, endpoint)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactRefreshByEndpoint", reflect.TypeOf((*MockContactHandler)(nil).ContactRefreshByEndpoint), ctx, customerID, ext)
 }

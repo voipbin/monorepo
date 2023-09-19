@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
@@ -14,8 +15,10 @@ import (
 func Test_ContactGetsByDomainID(t *testing.T) {
 
 	type test struct {
-		name     string
-		endpoint string
+		name string
+
+		customerID uuid.UUID
+		ext        string
 
 		responseContacts []*astcontact.AstContact
 		expectEndpoint   string
@@ -24,7 +27,9 @@ func Test_ContactGetsByDomainID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			"testexten@testdomain",
+
+			uuid.FromStringOrNil("8815c2c0-5652-11ee-b3a1-0b960b5e92e8"),
+			"testexten",
 			[]*astcontact.AstContact{
 				{
 					ID:                  "test11@test.sip.voipbin.net^3B@c21de7824c22185a665983170d7028b0",
@@ -40,11 +45,11 @@ func Test_ContactGetsByDomainID(t *testing.T) {
 					ViaAddr:             "192.168.0.20",
 					ViaPort:             35551,
 					CallID:              "mX4vXXxJZ_gS4QpMapYfwA..",
-					Endpoint:            "testexten@testdomain.sip.voipbin.net",
+					Endpoint:            "testexten@8815c2c0-5652-11ee-b3a1-0b960b5e92e8.registrar.voipbin.net",
 					PruneOnBoot:         "no",
 				},
 			},
-			"testexten@testdomain.sip.voipbin.net",
+			"testexten@8815c2c0-5652-11ee-b3a1-0b960b5e92e8.registrar.voipbin.net",
 		},
 	}
 
@@ -62,7 +67,7 @@ func Test_ContactGetsByDomainID(t *testing.T) {
 			ctx := context.Background()
 
 			mockDBAst.EXPECT().AstContactGetsByEndpoint(ctx, tt.expectEndpoint).Return(tt.responseContacts, nil)
-			res, err := h.ContactGetsByEndpoint(ctx, tt.endpoint)
+			res, err := h.ContactGetsByExtension(ctx, tt.customerID, tt.ext)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -78,16 +83,20 @@ func Test_ContactGetsByDomainID(t *testing.T) {
 func Test_ContactRefreshByEndpoint(t *testing.T) {
 
 	type test struct {
-		name           string
-		endpoint       string
+		name string
+
+		customerID     uuid.UUID
+		extension      string
 		expectEndpoint string
 	}
 
 	tests := []test{
 		{
-			"test normal",
-			"test@test",
-			"test@test.sip.voipbin.net",
+			"normal",
+
+			uuid.FromStringOrNil("dc16be1a-5706-11ee-8481-23541c418477"),
+			"test-extension",
+			"test-extension@dc16be1a-5706-11ee-8481-23541c418477.registrar.voipbin.net",
 		},
 	}
 
@@ -105,7 +114,7 @@ func Test_ContactRefreshByEndpoint(t *testing.T) {
 			ctx := context.Background()
 
 			mockDBAst.EXPECT().AstContactDeleteFromCache(ctx, tt.expectEndpoint).Return(nil)
-			if err := h.ContactRefreshByEndpoint(ctx, tt.endpoint); err != nil {
+			if err := h.ContactRefreshByEndpoint(ctx, tt.customerID, tt.extension); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})

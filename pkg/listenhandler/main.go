@@ -45,7 +45,7 @@ var (
 
 	// v1
 	// contacts
-	regV1Contacts = regexp.MustCompile("/v1/contacts")
+	regV1ContactsGet = regexp.MustCompile(`/v1/contacts\?`)
 
 	// domains
 	regV1Domains           = regexp.MustCompile("/v1/domains$")
@@ -54,10 +54,11 @@ var (
 	regV1DomainsDomainName = regexp.MustCompile("/v1/domains/domain_name/" + regAny)
 
 	// extensions
-	regV1Extensions                  = regexp.MustCompile("/v1/extensions$")
-	regV1ExtensionsGet               = regexp.MustCompile(`/v1/extensions\?`)
-	regV1ExtensionsID                = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
-	regV1ExtensionsExtensionEndpoint = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
+	regV1Extensions    = regexp.MustCompile("/v1/extensions$")
+	regV1ExtensionsGet = regexp.MustCompile(`/v1/extensions\?`)
+	regV1ExtensionsID  = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
+	// regV1ExtensionsExtensionEndpoint     = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
+	regV1ExtensionsExtensionExtensionGet = regexp.MustCompile("/v1/extensions/extension/" + regAny + `\?`)
 
 	// trunks
 	regV1Trunks           = regexp.MustCompile("/v1/trunks$")
@@ -187,11 +188,11 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 	////////////
 	// contacts
 	////////////
-	case regV1Contacts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	case regV1ContactsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
 		response, err = h.processV1ContactsGet(ctx, m)
 		requestType = "/v1/contacts"
 
-	case regV1Contacts.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
+	case regV1ContactsGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodPut:
 		response, err = h.processV1ContactsPut(ctx, m)
 		requestType = "/v1/contacts"
 
@@ -245,9 +246,13 @@ func (h *listenHandler) processRequest(m *rabbitmqhandler.Request) (*rabbitmqhan
 		response, err = h.processV1ExtensionsGet(ctx, m)
 		requestType = "/v1/extensions"
 
-	case regV1ExtensionsExtensionEndpoint.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
-		response, err = h.processV1ExtensionsExtensionEndpointGet(ctx, m)
-		requestType = "/v1/extensions/endpoint/<endpoint>"
+	// case regV1ExtensionsExtensionEndpoint.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+	// 	response, err = h.processV1ExtensionsExtensionEndpointGet(ctx, m)
+	// 	requestType = "/v1/extensions/endpoint/<endpoint>"
+
+	case regV1ExtensionsExtensionExtensionGet.MatchString(m.URI) && m.Method == rabbitmqhandler.RequestMethodGet:
+		response, err = h.processV1ExtensionsExtensionExtensionGet(ctx, m)
+		requestType = "/v1/extensions/extension/<extension>"
 
 	/////////////
 	// trunks

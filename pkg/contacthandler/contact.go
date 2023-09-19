@@ -2,8 +2,8 @@ package contacthandler
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -11,31 +11,32 @@ import (
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/common"
 )
 
-// ContactGetsByEndpoint returns list of contacts
-func (h *contactHandler) ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
-	logrus.Debugf("Getting a contact info. endpoint: %s", endpoint)
+// ContactGetsByExtension returns list of contacts
+func (h *contactHandler) ContactGetsByExtension(ctx context.Context, customerID uuid.UUID, ext string) ([]*astcontact.AstContact, error) {
+	logrus.Debugf("Getting a contact info. endpoint: %s", ext)
 
-	target := fmt.Sprintf("%s.%s", endpoint, common.BaseDomainName)
-	contacts, err := h.dbAst.AstContactGetsByEndpoint(ctx, target)
+	endpoint := common.GenerateEndpoint(customerID, ext)
+	contacts, err := h.dbAst.AstContactGetsByEndpoint(ctx, endpoint)
 	if err != nil {
-		logrus.Errorf("Could not get contacts info. endpoint: %s, target_endpoint: %s, err: %v", endpoint, target, err)
+		logrus.Errorf("Could not get contacts info. endpoint: %s, target_endpoint: %s, err: %v", ext, endpoint, err)
 		return nil, err
 	}
+	
 	return contacts, err
 }
 
 // ContactRefreshByEndpoint refresh the list of contacts
-func (h *contactHandler) ContactRefreshByEndpoint(ctx context.Context, endpoint string) error {
+func (h *contactHandler) ContactRefreshByEndpoint(ctx context.Context, customerID uuid.UUID, ext string) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "ContactRefreshByEndpoint",
-		"endpoint": endpoint,
+		"func":        "ContactRefreshByEndpoint",
+		"customer_id": customerID,
+		"extension":   ext,
 	})
 
-	contact := fmt.Sprintf("%s.%s", endpoint, common.BaseDomainName)
+	endpoint := common.GenerateEndpoint(customerID, ext)
+	log.Debugf("Refreshing the contacts of the endpoint. endpoint: %s", endpoint)
 
-	log.Debugf("Refreshing the contacts of the endpoint. endpoint: %s, contact: %s", endpoint, contact)
-
-	if err := h.dbAst.AstContactDeleteFromCache(ctx, contact); err != nil {
+	if err := h.dbAst.AstContactDeleteFromCache(ctx, endpoint); err != nil {
 		log.Errorf("Could not delete the cache. err: %v", err)
 		return errors.Wrap(err, "Could not delete the cache.")
 	}
