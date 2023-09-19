@@ -8,10 +8,10 @@ import "github.com/gofrs/uuid"
 type V1DataExtensionsPost struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 
-	DomainID uuid.UUID `json:"domain_id"`
-
 	Extension string `json:"extension"`
 	Password  string `json:"password"`
+
+	DomainID uuid.UUID `json:"domain_id"` // will ge removed
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`

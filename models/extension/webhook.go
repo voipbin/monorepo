@@ -8,14 +8,17 @@ import (
 
 // WebhookMessage defines
 type WebhookMessage struct {
-	ID uuid.UUID `json:"id"`
+	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
-	Name     string    `json:"name"`
-	Detail   string    `json:"detail"`
-	DomainID uuid.UUID `json:"domain_id"`
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
 
 	Extension string `json:"extension"`
+
+	DomainName string `json:"domain_name"` // same as the CustomerID. This used by the kamailio's INVITE validation
+	Username   string `json:"username"`    // same as the Extension. This used by the kamailio's INVITE validation
+	Password   string `json:"password"`
 
 	TMCreate string `json:"tm_create"`
 	TMUpdate string `json:"tm_update"`
@@ -25,14 +28,17 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts to the event
 func (h *Extension) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
-		ID: h.ID,
+		ID:         h.ID,
 		CustomerID: h.CustomerID,
 
-		Name:     h.Name,
-		Detail:   h.Detail,
-		DomainID: h.DomainID,
+		Name:   h.Name,
+		Detail: h.Detail,
 
 		Extension: h.Extension,
+
+		DomainName: h.DomainName,
+		Username:   h.Username,
+		Password:   h.Password,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

@@ -18,13 +18,15 @@ const (
 
 		name,
 		detail,
-		domain_id,
 
 		endpoint_id,
 		aor_id,
 		auth_id,
 
 		extension,
+
+		domain_name,
+		username,
 		password,
 
 		coalesce(tm_create, '') as tm_create,
@@ -44,13 +46,15 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 
 		&res.Name,
 		&res.Detail,
-		&res.DomainID,
 
 		&res.EndpointID,
 		&res.AORID,
 		&res.AuthID,
 
 		&res.Extension,
+
+		&res.DomainName,
+		&res.Username,
 		&res.Password,
 
 		&res.TMCreate,
@@ -71,13 +75,15 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 
 		name,
 		detail,
-		domain_id,
 
 		endpoint_id,
 		aor_id,
 		auth_id,
 
 		extension,
+
+		domain_name,
+		username,
 		password,
 
 		tm_create,
@@ -85,9 +91,10 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 		tm_delete
 	) values(
 		?, ?,
-		?, ?, ?,
-		?, ?, ?,
 		?, ?,
+		?, ?, ?,
+		?,
+		?, ?, ?,
 		?, ?, ?
 	)
 	`
@@ -98,13 +105,15 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 
 		b.Name,
 		b.Detail,
-		b.DomainID.Bytes(),
 
 		b.EndpointID,
 		b.AORID,
 		b.AuthID,
 
 		b.Extension,
+
+		b.DomainName,
+		b.Username,
 		b.Password,
 
 		h.utilHandler.TimeGetCurTime(),
@@ -250,6 +259,41 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 	return res, nil
 }
 
+// ExtensionGetByExtension returns extension of the given extension.
+func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			customer_id = ?
+			and extension = ?
+		order by
+			tm_create desc
+		limit 1
+	`, extensionSelect)
+
+	row, err := h.db.Query(q, customerID.Bytes(), ext)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. ExtensionGetByExtension. err: %v", err)
+	}
+	defer row.Close()
+
+	if !row.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.extensionGetFromRow(row)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan the row. ExtensionGetByExtension. err: %v", err)
+	}
+
+	// set to the cache
+	_ = h.extensionSetToCache(ctx, res)
+
+	return res, nil
+}
+
 // ExtensionDelete deletes given extension
 func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 	q := `
@@ -271,7 +315,7 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // ExtensionUpdate updates extension record.
-func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) error {
+func (h *handler) ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) error {
 	q := `
 	update extensions set
 		name = ?,
@@ -283,54 +327,20 @@ func (h *handler) ExtensionUpdate(ctx context.Context, b *extension.Extension) e
 	`
 
 	_, err := h.db.Exec(q,
-		b.Name,
-		b.Detail,
-		b.Password,
+		name,
+		detail,
+		password,
 		h.utilHandler.TimeGetCurTime(),
-		b.ID.Bytes(),
+		id.Bytes(),
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. ExtensionUpdate. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.extensionUpdateToCache(ctx, b.ID)
+	_ = h.extensionUpdateToCache(ctx, id)
 
 	return nil
-}
-
-// ExtensionGetsByDomainID returns list of extensions.
-func (h *handler) ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
-
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			domain_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, extensionSelect)
-
-	rows, err := h.db.Query(q, domainID.Bytes(), token, DefaultTimeStamp, limit)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ExtensionGetsByDomainID. err: %v", err)
-	}
-	defer rows.Close()
-
-	res := []*extension.Extension{}
-	for rows.Next() {
-		u, err := h.extensionGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGetsByDomainID. err: %v", err)
-		}
-
-		res = append(res, u)
-	}
-
-	return res, nil
 }
 
 // ExtensionGetsByCustomerID returns list of extensions.

@@ -6,12 +6,14 @@ create table extensions (
   name    varchar(255),
   detail  varchar(255),
 
-  domain_id     binary(16),
   endpoint_id   varchar(255),
   aor_id        varchar(255),
   auth_id       varchar(255),
 
   extension     varchar(255),
+
+  domain_name   varchar(255),
+  username      varchar(255),
   password      varchar(255),
 
   -- timestamps
@@ -24,5 +26,6 @@ create table extensions (
 );
 
 create index idx_extensions_customerid on extensions(customer_id);
-create index idx_extensions_domain_id on extensions(domain_id);
 create index idx_extensions_extension on extensions(extension);
+create index idx_extensions_domain_name on extensions(domain_name);
+create index idx_extensions_username on extensions(username);
