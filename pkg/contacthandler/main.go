@@ -5,6 +5,7 @@ package contacthandler
 import (
 	"context"
 
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 
@@ -14,8 +15,8 @@ import (
 
 // ContactHandler is interface for service handle
 type ContactHandler interface {
-	ContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error)
-	ContactRefreshByEndpoint(ctx context.Context, endpoint string) error
+	ContactGetsByExtension(ctx context.Context, customerID uuid.UUID, ext string) ([]*astcontact.AstContact, error)
+	ContactRefreshByEndpoint(ctx context.Context, customerID uuid.UUID, ext string) error
 }
 
 // contactHandler structure for service handle

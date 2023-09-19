@@ -37,18 +37,18 @@ func (m *MockExtensionHandler) EXPECT() *MockExtensionHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockExtensionHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, domainID uuid.UUID, ext, password string) (*extension.Extension, error) {
+func (m *MockExtensionHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail, ext, password string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, domainID, ext, password)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, ext, password)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockExtensionHandlerMockRecorder) Create(ctx, customerID, name, detail, domainID, ext, password interface{}) *gomock.Call {
+func (mr *MockExtensionHandlerMockRecorder) Create(ctx, customerID, name, detail, ext, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockExtensionHandler)(nil).Create), ctx, customerID, name, detail, domainID, ext, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockExtensionHandler)(nil).Create), ctx, customerID, name, detail, ext, password)
 }
 
 // Delete mocks base method.
@@ -66,21 +66,6 @@ func (mr *MockExtensionHandlerMockRecorder) Delete(ctx, id interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockExtensionHandler)(nil).Delete), ctx, id)
 }
 
-// DeleteByDomainID mocks base method.
-func (m *MockExtensionHandler) DeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteByDomainID", ctx, domainID)
-	ret0, _ := ret[0].([]*extension.Extension)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DeleteByDomainID indicates an expected call of DeleteByDomainID.
-func (mr *MockExtensionHandlerMockRecorder) DeleteByDomainID(ctx, domainID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByDomainID", reflect.TypeOf((*MockExtensionHandler)(nil).DeleteByDomainID), ctx, domainID)
-}
-
 // Get mocks base method.
 func (m *MockExtensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
@@ -96,19 +81,19 @@ func (mr *MockExtensionHandlerMockRecorder) Get(ctx, id interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockExtensionHandler)(nil).Get), ctx, id)
 }
 
-// GetByEndpoint mocks base method.
-func (m *MockExtensionHandler) GetByEndpoint(ctx context.Context, endpoint string) (*extension.Extension, error) {
+// GetByExtension mocks base method.
+func (m *MockExtensionHandler) GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByEndpoint", ctx, endpoint)
+	ret := m.ctrl.Call(m, "GetByExtension", ctx, customerID, ext)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetByEndpoint indicates an expected call of GetByEndpoint.
-func (mr *MockExtensionHandlerMockRecorder) GetByEndpoint(ctx, endpoint interface{}) *gomock.Call {
+// GetByExtension indicates an expected call of GetByExtension.
+func (mr *MockExtensionHandlerMockRecorder) GetByExtension(ctx, customerID, ext interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEndpoint", reflect.TypeOf((*MockExtensionHandler)(nil).GetByEndpoint), ctx, endpoint)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByExtension", reflect.TypeOf((*MockExtensionHandler)(nil).GetByExtension), ctx, customerID, ext)
 }
 
 // GetsByCustomerID mocks base method.
@@ -126,32 +111,17 @@ func (mr *MockExtensionHandlerMockRecorder) GetsByCustomerID(ctx, customerID, to
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockExtensionHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
 }
 
-// GetsByDomainID mocks base method.
-func (m *MockExtensionHandler) GetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByDomainID", ctx, domainID, token, limit)
-	ret0, _ := ret[0].([]*extension.Extension)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetsByDomainID indicates an expected call of GetsByDomainID.
-func (mr *MockExtensionHandlerMockRecorder) GetsByDomainID(ctx, domainID, token, limit interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByDomainID", reflect.TypeOf((*MockExtensionHandler)(nil).GetsByDomainID), ctx, domainID, token, limit)
-}
-
 // Update mocks base method.
-func (m *MockExtensionHandler) Update(ctx context.Context, e *extension.Extension) (*extension.Extension, error) {
+func (m *MockExtensionHandler) Update(ctx context.Context, id uuid.UUID, name, detail, password string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, e)
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, password)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockExtensionHandlerMockRecorder) Update(ctx, e interface{}) *gomock.Call {
+func (mr *MockExtensionHandlerMockRecorder) Update(ctx, id, name, detail, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockExtensionHandler)(nil).Update), ctx, e)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockExtensionHandler)(nil).Update), ctx, id, name, detail, password)
 }

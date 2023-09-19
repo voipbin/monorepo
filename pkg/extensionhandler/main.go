@@ -22,17 +22,14 @@ type ExtensionHandler interface {
 		customerID uuid.UUID,
 		name string,
 		detail string,
-		domainID uuid.UUID,
 		ext string,
 		password string,
 	) (*extension.Extension, error)
 	Delete(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	DeleteByDomainID(ctx context.Context, domainID uuid.UUID) ([]*extension.Extension, error)
 	Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	GetByEndpoint(ctx context.Context, endpoint string) (*extension.Extension, error)
-	GetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
+	GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
-	Update(ctx context.Context, e *extension.Extension) (*extension.Extension, error)
+	Update(ctx context.Context, id uuid.UUID, name string, detail string, password string) (*extension.Extension, error)
 }
 
 // extensionHandler structure for service handle

@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/pkg/listenhandler/models/request"
 )
 
@@ -38,7 +37,6 @@ func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *rabbitmq
 		req.CustomerID,
 		req.Name,
 		req.Detail,
-		req.DomainID,
 		req.Extension,
 		req.Password,
 	)
@@ -113,7 +111,7 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *rabbitm
 
 	// "/v1/extensions/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
-	extID := uuid.FromStringOrNil(tmpVals[3])
+	extensionID := uuid.FromStringOrNil(tmpVals[3])
 
 	var req request.V1DataExtensionsIDPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
@@ -121,15 +119,7 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *rabbitm
 		return simpleResponse(400), nil
 	}
 
-	// create a update domain info
-	tmpExt := &extension.Extension{
-		ID:       extID,
-		Name:     req.Name,
-		Detail:   req.Detail,
-		Password: req.Password,
-	}
-
-	tmp, err := h.extensionHandler.Update(ctx, tmpExt)
+	tmp, err := h.extensionHandler.Update(ctx, extensionID, req.Name, req.Detail, req.Password)
 	if err != nil {
 		log.Errorf("Could not update the extension info. err: %v", err)
 		return nil, err
@@ -204,23 +194,13 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *rabbitmqh
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get domain_id
+	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-	domainID := uuid.FromStringOrNil(u.Query().Get("domain_id"))
 
-	var resExts []*extension.Extension
-	if domainID != uuid.Nil {
-		resExts, err = h.extensionHandler.GetsByDomainID(ctx, domainID, pageToken, pageSize)
-		if err != nil {
-			log.Errorf("Could not get extensions. err: %v", err)
-			return nil, err
-		}
-	} else {
-		resExts, err = h.extensionHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
-		if err != nil {
-			log.Errorf("Could not get extensions. err: %v", err)
-			return nil, err
-		}
+	resExts, err := h.extensionHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	if err != nil {
+		log.Errorf("Could not get extensions. err: %v", err)
+		return nil, err
 	}
 
 	data, err := json.Marshal(resExts)
@@ -238,10 +218,10 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *rabbitmqh
 	return res, nil
 }
 
-// processV1ExtensionsExtensionEndpointGet handles /v1/extensions/endpoint/{endpoint} GET request
-func (h *listenHandler) processV1ExtensionsExtensionEndpointGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
+// processV1ExtensionsExtensionExtensionGet handles /v1/extensions/extension/{extension} GET request
+func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Context, m *rabbitmqhandler.Request) (*rabbitmqhandler.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1ExtensionsExtensionEndpointGet",
+		"func":    "processV1ExtensionsExtensionExtensionGet",
 		"request": m,
 	})
 
@@ -250,11 +230,14 @@ func (h *listenHandler) processV1ExtensionsExtensionEndpointGet(ctx context.Cont
 		return nil, err
 	}
 
-	// "/v1/extensions/endpoint/test_ext@test_domain"
-	tmpVals := strings.Split(u.Path, "/")
-	endpoint := tmpVals[4]
+	// get customer_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	tmp, err := h.extensionHandler.GetByEndpoint(ctx, endpoint)
+	// "/v1/extensions/extension/test_ext"
+	tmpVals := strings.Split(u.Path, "/")
+	ext := tmpVals[4]
+
+	tmp, err := h.extensionHandler.GetByExtension(ctx, customerID, ext)
 	if err != nil {
 		log.Errorf("Could not get extension info. err: %v", err)
 		return nil, err

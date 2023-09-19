@@ -62,9 +62,9 @@ type DBHandler interface {
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	ExtensionGetByEndpointID(ctx context.Context, endpoint string) (*extension.Extension, error)
-	ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
 	ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*extension.Extension, error)
-	ExtensionUpdate(ctx context.Context, b *extension.Extension) error
+	ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
+	ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) error
 
 	// Trunk
 	TrunkCreate(ctx context.Context, t *trunk.Trunk) error
