@@ -4323,18 +4323,18 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1DomainUpdate(ctx, id, name,
 }
 
 // RegistrarV1ExtensionCreate mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password string, domainID uuid.UUID, name, detail string) (*extension.Extension, error) {
+func (m *MockRequestHandler) RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext, password, name, detail string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ExtensionCreate", ctx, customerID, ext, password, domainID, name, detail)
+	ret := m.ctrl.Call(m, "RegistrarV1ExtensionCreate", ctx, customerID, ext, password, name, detail)
 	ret0, _ := ret[0].(*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RegistrarV1ExtensionCreate indicates an expected call of RegistrarV1ExtensionCreate.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionCreate(ctx, customerID, ext, password, domainID, name, detail interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionCreate(ctx, customerID, ext, password, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionCreate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionCreate), ctx, customerID, ext, password, domainID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionCreate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionCreate), ctx, customerID, ext, password, name, detail)
 }
 
 // RegistrarV1ExtensionDelete mocks base method.
@@ -4367,21 +4367,6 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGet(ctx, extension
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGet", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGet), ctx, extensionID)
 }
 
-// RegistrarV1ExtensionGetByEndpoint mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionGetByEndpoint(ctx context.Context, endpoint string) (*extension.Extension, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ExtensionGetByEndpoint", ctx, endpoint)
-	ret0, _ := ret[0].(*extension.Extension)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1ExtensionGetByEndpoint indicates an expected call of RegistrarV1ExtensionGetByEndpoint.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGetByEndpoint(ctx, endpoint interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGetByEndpoint", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGetByEndpoint), ctx, endpoint)
-}
-
 // RegistrarV1ExtensionGetsByCustomerID mocks base method.
 func (m *MockRequestHandler) RegistrarV1ExtensionGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]extension.Extension, error) {
 	m.ctrl.T.Helper()
@@ -4395,21 +4380,6 @@ func (m *MockRequestHandler) RegistrarV1ExtensionGetsByCustomerID(ctx context.Co
 func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGetsByCustomerID), ctx, customerID, pageToken, pageSize)
-}
-
-// RegistrarV1ExtensionGetsByDomainID mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionGetsByDomainID(ctx context.Context, domainID uuid.UUID, pageToken string, pageSize uint64) ([]extension.Extension, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ExtensionGetsByDomainID", ctx, domainID, pageToken, pageSize)
-	ret0, _ := ret[0].([]extension.Extension)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegistrarV1ExtensionGetsByDomainID indicates an expected call of RegistrarV1ExtensionGetsByDomainID.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGetsByDomainID(ctx, domainID, pageToken, pageSize interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGetsByDomainID", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGetsByDomainID), ctx, domainID, pageToken, pageSize)
 }
 
 // RegistrarV1ExtensionUpdate mocks base method.
