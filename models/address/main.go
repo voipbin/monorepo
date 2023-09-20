@@ -17,7 +17,6 @@ const (
 	TypeNone       Type = ""           // no type specified
 	TypeAgent      Type = "agent"      // target is agent's id.
 	TypeConference Type = "conference" // target is conference's id
-	TypeEndpoint   Type = "endpoint"   // target is registered endpoint.
 	TypeExtension  Type = "extension"  // target is extension
 	TypeLine       Type = "line"       // target is naver line's id
 	TypeSIP        Type = "sip"        // target is sip destination

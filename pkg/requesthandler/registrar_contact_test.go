@@ -5,9 +5,11 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	astcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func Test_RegistrarV1ContactGets(t *testing.T) {
@@ -15,7 +17,8 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		endpoint string
+		customerID uuid.UUID
+		extension  string
 
 		expectTarget  string
 		expectRequest *rabbitmqhandler.Request
@@ -26,11 +29,12 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 		{
 			name: "normal",
 
-			endpoint: "test_exten@test_domain",
+			customerID: uuid.FromStringOrNil("390f34ba-57a4-11ee-a22c-d3dbf1f5af19"),
+			extension:  "test_exten",
 
 			expectTarget: "bin-manager.registrar-manager.request",
 			expectRequest: &rabbitmqhandler.Request{
-				URI:      "/v1/contacts?endpoint=test_exten%40test_domain",
+				URI:      "/v1/contacts?customer_id=390f34ba-57a4-11ee-a22c-d3dbf1f5af19&extension=test_exten",
 				Method:   rabbitmqhandler.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -66,7 +70,7 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1ContactGets(ctx, tt.endpoint)
+			res, err := reqHandler.RegistrarV1ContactGets(ctx, tt.customerID, tt.extension)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -74,6 +78,59 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
+		})
+	}
+}
+
+func Test_RegistrarV1ContactRefresh(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		extension  string
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		response      *rabbitmqhandler.Response
+
+		expectRes []astcontact.AstContact
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("e168826a-57a4-11ee-818c-73dfee4986c0"),
+			extension:  "test_exten",
+
+			expectTarget: "bin-manager.registrar-manager.request",
+			expectRequest: &rabbitmqhandler.Request{
+				URI:      "/v1/contacts?customer_id=e168826a-57a4-11ee-818c-73dfee4986c0&extension=test_exten",
+				Method:   rabbitmqhandler.RequestMethodPut,
+				DataType: ContentTypeNone,
+			},
+			response: &rabbitmqhandler.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.RegistrarV1ContactRefresh(ctx, tt.customerID, tt.extension); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
 		})
 	}
 }
