@@ -4204,32 +4204,32 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1ServiceTypeQueuecallStart(ctx, 
 }
 
 // RegistrarV1ContactGets mocks base method.
-func (m *MockRequestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]astcontact.AstContact, error) {
+func (m *MockRequestHandler) RegistrarV1ContactGets(ctx context.Context, customerID uuid.UUID, extension string) ([]astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ContactGets", ctx, endpoint)
+	ret := m.ctrl.Call(m, "RegistrarV1ContactGets", ctx, customerID, extension)
 	ret0, _ := ret[0].([]astcontact.AstContact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RegistrarV1ContactGets indicates an expected call of RegistrarV1ContactGets.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactGets(ctx, endpoint interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactGets(ctx, customerID, extension interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactGets", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactGets), ctx, endpoint)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactGets", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactGets), ctx, customerID, extension)
 }
 
-// RegistrarV1ContactUpdate mocks base method.
-func (m *MockRequestHandler) RegistrarV1ContactUpdate(ctx context.Context, endpoint string) error {
+// RegistrarV1ContactRefresh mocks base method.
+func (m *MockRequestHandler) RegistrarV1ContactRefresh(ctx context.Context, customerID uuid.UUID, extension string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ContactUpdate", ctx, endpoint)
+	ret := m.ctrl.Call(m, "RegistrarV1ContactRefresh", ctx, customerID, extension)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RegistrarV1ContactUpdate indicates an expected call of RegistrarV1ContactUpdate.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactUpdate(ctx, endpoint interface{}) *gomock.Call {
+// RegistrarV1ContactRefresh indicates an expected call of RegistrarV1ContactRefresh.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactRefresh(ctx, customerID, extension interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactUpdate), ctx, endpoint)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactRefresh", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactRefresh), ctx, customerID, extension)
 }
 
 // RegistrarV1DomainCreate mocks base method.
