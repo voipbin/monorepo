@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/gofrs/uuid"
 	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
 
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 // RegistrarV1ContactGets sends the /v1/contacts GET request to registrar-manager
-func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]astcontact.AstContact, error) {
+func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, customerID uuid.UUID, extension string) ([]astcontact.AstContact, error) {
 
-	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
+	uri := fmt.Sprintf("/v1/contacts?customer_id=%s&extension=%s", customerID, url.QueryEscape(extension))
 
 	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceFlowActions, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	if err != nil {
@@ -33,12 +34,12 @@ func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, endpoint st
 	return res, nil
 }
 
-// RegistrarV1ContactUpdate sends the /v1/contacts PUT request to registrar-manager
-func (r *requestHandler) RegistrarV1ContactUpdate(ctx context.Context, endpoint string) error {
+// RegistrarV1ContactRefresh refreshes the /v1/contacts by sending the PUT request to registrar-manager
+func (r *requestHandler) RegistrarV1ContactRefresh(ctx context.Context, customerID uuid.UUID, extension string) error {
 
-	uri := fmt.Sprintf("/v1/contacts?endpoint=%s", url.QueryEscape(endpoint))
+	uri := fmt.Sprintf("/v1/contacts?customer_id=%s&extension=%s", customerID, url.QueryEscape(extension))
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCallChannelsHealth, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestRegistrar(ctx, uri, rabbitmqhandler.RequestMethodPut, resourceCallChannelsHealth, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return err

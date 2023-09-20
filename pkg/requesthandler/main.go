@@ -868,8 +868,8 @@ type RequestHandler interface {
 	QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID, exitActionID uuid.UUID) (*qmservice.Service, error)
 
 	// registrar-manager contact
-	RegistrarV1ContactGets(ctx context.Context, endpoint string) ([]rmastcontact.AstContact, error)
-	RegistrarV1ContactUpdate(ctx context.Context, endpoint string) error
+	RegistrarV1ContactGets(ctx context.Context, customerID uuid.UUID, extension string) ([]rmastcontact.AstContact, error)
+	RegistrarV1ContactRefresh(ctx context.Context, customerID uuid.UUID, extension string) error
 
 	// registrar-manager domain
 	RegistrarV1DomainCreate(ctx context.Context, customerID uuid.UUID, domainName, name, detail string) (*rmdomain.Domain, error)
