@@ -22,7 +22,6 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 		customerID    uuid.UUID
 		ext           string
 		password      string
-		domainID      uuid.UUID
 		extensionName string
 		detail        string
 
@@ -38,7 +37,6 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 			uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
 			"4c98b74a-6f9e-11eb-a82f-37575ab16881",
 			"53710356-6f9e-11eb-8a91-43345d98682a",
-			uuid.FromStringOrNil("22de2e58-6f9e-11eb-8fee-ef16005005d7"),
 			"test name",
 			"test detail",
 
@@ -47,22 +45,20 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 				URI:      "/v1/extensions",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_id":"22de2e58-6f9e-11eb-8fee-ef16005005d7","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a","name":"test name","detail":"test detail"}`),
+				Data:     []byte(`{"customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a","domain_id":"00000000-0000-0000-0000-000000000000","name":"test name","detail":"test detail"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"68040bf2-6ed5-11eb-9924-9febe8425cbe","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_id":"22de2e58-6f9e-11eb-8fee-ef16005005d7","name":"test name","detail":"test detail","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"121dd178-5712-11ee-b6b3-4b0ab7784e17","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_id":"","extension":"4c98b74a-6f9e-11eb-a82f-37575ab16881","password":"53710356-6f9e-11eb-8a91-43345d98682a","name":"test name","detail":"test detail"}`),
 			},
 			&rmextension.Extension{
-				ID:         uuid.FromStringOrNil("68040bf2-6ed5-11eb-9924-9febe8425cbe"),
+				ID:         uuid.FromStringOrNil("121dd178-5712-11ee-b6b3-4b0ab7784e17"),
 				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
 				Name:       "test name",
 				Detail:     "test detail",
-				DomainID:   uuid.FromStringOrNil("22de2e58-6f9e-11eb-8fee-ef16005005d7"),
 				Extension:  "4c98b74a-6f9e-11eb-a82f-37575ab16881",
 				Password:   "53710356-6f9e-11eb-8a91-43345d98682a",
-				TMCreate:   "2020-09-20 03:23:20.995000",
 			},
 		},
 	}
@@ -80,7 +76,7 @@ func Test_RegistrarExtensionCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1ExtensionCreate(ctx, tt.customerID, tt.ext, tt.password, tt.domainID, tt.extensionName, tt.detail)
+			res, err := reqHandler.RegistrarV1ExtensionCreate(ctx, tt.customerID, tt.ext, tt.password, tt.extensionName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -195,7 +191,6 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 			&rmextension.Extension{
 				ID:         uuid.FromStringOrNil("342f9734-6fa1-11eb-a937-17d537105d6a"),
 				CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
-				DomainID:   uuid.FromStringOrNil("4351e596-6fa1-11eb-b086-db7f03792b30"),
 				Extension:  "test",
 				Password:   "password",
 				Name:       "test domain",
@@ -232,65 +227,65 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 	}
 }
 
-func Test_RegistrarV1ExtensionGetByEndpoint(t *testing.T) {
+// func Test_RegistrarV1ExtensionGetByEndpoint(t *testing.T) {
 
-	tests := []struct {
-		name string
+// 	tests := []struct {
+// 		name string
 
-		endpoint string
+// 		endpoint string
 
-		response *rabbitmqhandler.Response
+// 		response *rabbitmqhandler.Response
 
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		expectRes     *rmextension.Extension
-	}{
-		{
-			"normal",
+// 		expectTarget  string
+// 		expectRequest *rabbitmqhandler.Request
+// 		expectRes     *rmextension.Extension
+// 	}{
+// 		{
+// 			"normal",
 
-			"test_exten@test_domain",
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"c9522a85-a7a0-4917-93bd-017368f65dde"}`),
-			},
+// 			"test_exten@test_domain",
+// 			&rabbitmqhandler.Response{
+// 				StatusCode: 200,
+// 				DataType:   "application/json",
+// 				Data:       []byte(`{"id":"c9522a85-a7a0-4917-93bd-017368f65dde"}`),
+// 			},
 
-			"bin-manager.registrar-manager.request",
-			&rabbitmqhandler.Request{
-				URI:      "/v1/extensions/endpoint/test_exten@test_domain",
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
-			},
-			&rmextension.Extension{
-				ID: uuid.FromStringOrNil("c9522a85-a7a0-4917-93bd-017368f65dde"),
-			},
-		},
-	}
+// 			"bin-manager.registrar-manager.request",
+// 			&rabbitmqhandler.Request{
+// 				URI:      "/v1/extensions/endpoint/test_exten@test_domain",
+// 				Method:   rabbitmqhandler.RequestMethodGet,
+// 				DataType: ContentTypeJSON,
+// 			},
+// 			&rmextension.Extension{
+// 				ID: uuid.FromStringOrNil("c9522a85-a7a0-4917-93bd-017368f65dde"),
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
 
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
+// 			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+// 			reqHandler := requestHandler{
+// 				sock: mockSock,
+// 			}
 
-			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+// 			ctx := context.Background()
+// 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1ExtensionGetByEndpoint(ctx, tt.endpoint)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+// 			res, err := reqHandler.RegistrarV1ExtensionGetByEndpoint(ctx, tt.endpoint)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
 
-			if reflect.DeepEqual(*tt.expectRes, *res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectRes, *res)
-			}
-		})
-	}
-}
+// 			if reflect.DeepEqual(*tt.expectRes, *res) == false {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", *tt.expectRes, *res)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_RegistrarExtensionDelete(t *testing.T) {
 
@@ -352,82 +347,6 @@ func Test_RegistrarExtensionDelete(t *testing.T) {
 	}
 }
 
-func Test_RegistrarV1ExtensionGetsByDomainID(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		domainID  uuid.UUID
-		pageToken string
-		pageSize  uint64
-
-		response *rabbitmqhandler.Response
-
-		expectTarget  string
-		expectRequest *rabbitmqhandler.Request
-		expectRes     []rmextension.Extension
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0"),
-			"2020-09-20 03:23:20.995000",
-			10,
-
-			&rabbitmqhandler.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`[{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_id":"e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0","name":"test","detail":"test detail","extension":"test","password":"password","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}]`),
-			},
-
-			"bin-manager.registrar-manager.request",
-			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/extensions?page_token=%s&page_size=10&domain_id=e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
-			},
-			[]rmextension.Extension{
-				{
-					ID:         uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),
-					CustomerID: uuid.FromStringOrNil("324cf776-7ff0-11ec-a0ea-e30825a4224f"),
-					DomainID:   uuid.FromStringOrNil("e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0"),
-					Name:       "test",
-					Detail:     "test detail",
-					Extension:  "test",
-					Password:   "password",
-					TMCreate:   "2020-09-20 03:23:20.995000",
-					TMUpdate:   "",
-					TMDelete:   "",
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := rabbitmqhandler.NewMockRabbit(mc)
-			reqHandler := requestHandler{
-				sock: mockSock,
-			}
-
-			ctx := context.Background()
-			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.RegistrarV1ExtensionGetsByDomainID(ctx, tt.domainID, tt.pageToken, tt.pageSize)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
 func Test_RegistrarV1ExtensionGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
@@ -484,6 +403,76 @@ func Test_RegistrarV1ExtensionGetsByCustomerID(t *testing.T) {
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		extension  string
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     *rmextension.Extension
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("5703f08a-5710-11ee-9295-77eb098ad269"),
+			"test-exten",
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","customer_id":"5703f08a-5710-11ee-9295-77eb098ad269","domain_id":"e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0","name":"test","detail":"test detail","extension":"test","password":"password","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+			},
+
+			"bin-manager.registrar-manager.request",
+			&rabbitmqhandler.Request{
+				URI:    "/v1/extensions/extension/test-exten?customer_id=5703f08a-5710-11ee-9295-77eb098ad269",
+				Method: rabbitmqhandler.RequestMethodGet,
+			},
+			&rmextension.Extension{
+				ID:         uuid.FromStringOrNil("d19c3956-6ed8-11eb-b971-fb12bc338aeb"),
+				CustomerID: uuid.FromStringOrNil("5703f08a-5710-11ee-9295-77eb098ad269"),
+				Name:       "test",
+				Detail:     "test detail",
+				Extension:  "test",
+				Password:   "password",
+				TMCreate:   "2020-09-20 03:23:20.995000",
+				TMUpdate:   "",
+				TMDelete:   "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.RegistrarV1ExtensionGetByExtension(ctx, tt.customerID, tt.extension)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
