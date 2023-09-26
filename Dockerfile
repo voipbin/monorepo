@@ -1,6 +1,8 @@
 FROM debian:stable-slim
 
-ARG ASTERISK_VERSION=20.3.0
+# ARG ASTERISK_GIT=https://github.com/asterisk/asterisk.git
+ARG ASTERISK_GIT=https://github.com/pchero/asterisk.git
+ARG ASTERISK_VERSION=5865060c5540007f3d00d13338d6dbc197f03700
 ARG ASTERISK_SOURCE_DIRECTORY=/asterisk
 ARG CGSFUSE_VERSION=0.42.3
 
@@ -64,7 +66,7 @@ RUN curl -L -O https://github.com/GoogleCloudPlatform/gcsfuse/releases/download/
 RUN dpkg --install gcsfuse_${CGSFUSE_VERSION}_amd64.deb
 
 # Download Asterisk source
-RUN git clone https://github.com/asterisk/asterisk.git ${ASTERISK_SOURCE_DIRECTORY}
+RUN git clone ${ASTERISK_GIT} ${ASTERISK_SOURCE_DIRECTORY}
 COPY patches/ /tmp/patches
 
 # Asterisk compilation & installation
@@ -74,6 +76,6 @@ RUN for i in /tmp/patches/*; do patch -p0 < $i; echo "patch applied: " $i > /var
 RUN ./contrib/scripts/get_mp3_source.sh
 RUN ./configure --with-jansson-bundled
 RUN make menuselect.makeopts
-RUN ./menuselect/menuselect --enable FORMAT_MP3 --enable DONT_OPTIMIZE --enable BETTER_BACKTRACES --enable CODEC_OPUS --enable RES_CONFIG_MYSQL --disable COMPILE_DOUBLE --disable CHAN_SIP menuselect.makeopts
+RUN ./menuselect/menuselect --enable FORMAT_MP3 --enable DONT_OPTIMIZE --enable BETTER_BACKTRACES --enable CODEC_OPUS --enable RES_CONFIG_MYSQL --disable COMPILE_DOUBLE menuselect.makeopts
 RUN make
 RUN make install
