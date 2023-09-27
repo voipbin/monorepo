@@ -29,9 +29,9 @@ func Test_Create(t *testing.T) {
 		ext        string
 		password   string
 
-		responseDomain    *domain.Domain
-		responseUUID      uuid.UUID
-		responseExtension *extension.Extension
+		responseDomain          *domain.Domain
+		responseUUIDExtensionID uuid.UUID
+		responseExtension       *extension.Extension
 
 		expectAOR       *astaor.AstAOR
 		expectAuth      *astauth.AstAuth
@@ -41,41 +41,42 @@ func Test_Create(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
-			"test name",
-			"test detail",
-			"ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
-			"cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
+			customerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
+			extName:    "test name",
+			detail:     "test detail",
+			ext:        "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
+			password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
 
-			&domain.Domain{
+			responseDomain: &domain.Domain{
 				ID:         uuid.FromStringOrNil("ce060aae-6ec1-11eb-a550-cb46a3229b89"),
 				DomainName: "test",
 			},
-			uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
-			&extension.Extension{
+			responseUUIDExtensionID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
+			responseExtension: &extension.Extension{
 				ID: uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
 			},
 
-			&astaor.AstAOR{
+			expectAOR: &astaor.AstAOR{
+				// ID:             getStringPointer("7515a10e-5959-11ee-a4f2-3f55a7e37970"),
 				ID:             getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
 				MaxContacts:    getIntegerPointer(defaultMaxContacts),
 				RemoveExisting: getStringPointer("yes"),
 			},
-			&astauth.AstAuth{
+			expectAuth: &astauth.AstAuth{
 				ID:       getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
 				AuthType: getStringPointer("userpass"),
 				Username: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4"),
 				Password: getStringPointer("cf6917ba-6ec1-11eb-8810-e3829c2dfab8"),
-				Realm:    getStringPointer("0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
+				Realm:    getStringPointer("0040713e-7fed-11ec-954b-ff6d17e2a264"),
 			},
-			&astendpoint.AstEndpoint{
+			expectEndpoint: &astendpoint.AstEndpoint{
 				ID:   getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
 				AORs: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
 				Auth: getStringPointer("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net"),
 			},
-			&extension.Extension{
+			expectExtension: &extension.Extension{
 				ID:         uuid.FromStringOrNil("b2fce137-6ece-4259-8480-473b6c1f2dee"),
 				CustomerID: uuid.FromStringOrNil("0040713e-7fed-11ec-954b-ff6d17e2a264"),
 				Name:       "test name",
@@ -110,7 +111,7 @@ func Test_Create(t *testing.T) {
 		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR).Return(nil)
 		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
 		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint).Return(nil)
-		mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+		mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExtensionID)
 		mockDBBin.EXPECT().ExtensionCreate(ctx, tt.expectExtension).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.expectExtension.ID).Return(tt.responseExtension, nil)
 		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionCreated, tt.responseExtension)
