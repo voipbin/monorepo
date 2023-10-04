@@ -39,17 +39,17 @@ func (h *serviceHandler) extensionGet(ctx context.Context, u *cscustomer.Custome
 }
 
 // ExtensionCreate is a service handler for flow creation.
-func (h *serviceHandler) ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext string, password string, name string, detail string) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
+		"func":        "ExtensionCreate",
 		"customer_id": u.ID,
-		"domain_id":   domainID,
 		"extension":   ext,
 		"name":        name,
 		"detail":      detail,
 	})
 	log.Debug("Creating a new extension.")
 
-	tmp, err := h.reqHandler.RegistrarV1ExtensionCreate(ctx, u.ID, ext, password, domainID, name, detail)
+	tmp, err := h.reqHandler.RegistrarV1ExtensionCreate(ctx, u.ID, ext, password, name, detail)
 	if err != nil {
 		log.Errorf("Could not create a new domain. err: %v", err)
 		return nil, err
@@ -101,38 +101,6 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, u *cscustomer.Custome
 	}
 
 	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
-// ExtensionGetsByDomainID gets the list of extensions of the given domain id.
-// It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionGetsByDomainID(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "ExtensionGetsByDomainID",
-		"customer_id": u.ID,
-		"username":    u.Username,
-		"size":        size,
-		"token":       token,
-	})
-	log.Debug("Getting a extensions.")
-
-	if token == "" {
-		token = h.utilHandler.TimeGetCurTime()
-	}
-
-	// get extensions
-	exts, err := h.reqHandler.RegistrarV1ExtensionGetsByDomainID(ctx, domainID, token, size)
-	if err != nil {
-		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find extensions info. err: %v", err)
-	}
-
-	res := []*rmextension.WebhookMessage{}
-	for _, ext := range exts {
-		tmp := ext.ConvertWebhookMessage()
-		res = append(res, tmp)
-	}
-
 	return res, nil
 }
 

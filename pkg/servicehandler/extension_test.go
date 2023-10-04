@@ -22,7 +22,6 @@ func TestExtensionCreate(t *testing.T) {
 
 		ext      string
 		password string
-		domainID uuid.UUID
 		extName  string
 		detail   string
 
@@ -39,7 +38,6 @@ func TestExtensionCreate(t *testing.T) {
 
 			"test",
 			"password",
-			uuid.FromStringOrNil("19835af8-6fa4-11eb-b553-0317e16bca16"),
 			"test",
 			"test detail",
 
@@ -68,9 +66,9 @@ func TestExtensionCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionCreate(ctx, tt.customer.ID, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionCreate(ctx, tt.customer.ID, tt.ext, tt.password, tt.extName, tt.detail).Return(tt.response, nil)
 
-			res, err := h.ExtensionCreate(ctx, tt.customer, tt.ext, tt.password, tt.domainID, tt.extName, tt.detail)
+			res, err := h.ExtensionCreate(ctx, tt.customer, tt.ext, tt.password, tt.extName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -82,7 +80,7 @@ func TestExtensionCreate(t *testing.T) {
 	}
 }
 
-func TestExtensionUpdate(t *testing.T) {
+func Test_ExtensionUpdate(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -114,7 +112,6 @@ func TestExtensionUpdate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Name:       "update name",
 				Detail:     "update detail",
-				DomainID:   uuid.FromStringOrNil("94b2c8b6-6fa5-11eb-8416-779aeb05f3ef"),
 				Extension:  "test",
 				Password:   "update password",
 				TMCreate:   "2020-09-20 03:23:20.995000",
@@ -125,8 +122,8 @@ func TestExtensionUpdate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 				Name:       "update name",
 				Detail:     "update detail",
-				DomainID:   uuid.FromStringOrNil("94b2c8b6-6fa5-11eb-8416-779aeb05f3ef"),
 				Extension:  "test",
+				Password:   "update password",
 				TMCreate:   "2020-09-20 03:23:20.995000",
 				TMUpdate:   "2020-09-20 03:23:23.995000"},
 		},
@@ -160,7 +157,7 @@ func TestExtensionUpdate(t *testing.T) {
 	}
 }
 
-func TestExtensionDelete(t *testing.T) {
+func Test_ExtensionDelete(t *testing.T) {
 
 	type test struct {
 		name        string
@@ -183,9 +180,8 @@ func TestExtensionDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 
-				Name:     "test",
-				Detail:   "test detail",
-				DomainID: uuid.FromStringOrNil("c1412796-6fa6-11eb-a7d0-576218199a69"),
+				Name:   "test",
+				Detail: "test detail",
 
 				Extension: "test",
 				Password:  "password",
@@ -194,11 +190,11 @@ func TestExtensionDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 
-				Name:     "test",
-				Detail:   "test detail",
-				DomainID: uuid.FromStringOrNil("c1412796-6fa6-11eb-a7d0-576218199a69"),
+				Name:   "test",
+				Detail: "test detail",
 
 				Extension: "test",
+				Password:  "password",
 			},
 		},
 	}
@@ -255,17 +251,15 @@ func TestExtensionGet(t *testing.T) {
 				ID:         uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 
-				Name:     "test",
-				Detail:   "test detail",
-				DomainID: uuid.FromStringOrNil("4537748e-6fab-11eb-85b1-7faa1af90353"),
+				Name:   "test",
+				Detail: "test detail",
 			},
 			&rmextension.WebhookMessage{
 				ID:         uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
 				CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
 
-				Name:     "test",
-				Detail:   "test detail",
-				DomainID: uuid.FromStringOrNil("4537748e-6fab-11eb-85b1-7faa1af90353"),
+				Name:   "test",
+				Detail: "test detail",
 			},
 		},
 	}
@@ -292,92 +286,6 @@ func TestExtensionGet(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_ExtensionGetsByDomainID(t *testing.T) {
-
-	type test struct {
-		name      string
-		customer  *cscustomer.Customer
-		domainID  uuid.UUID
-		pageToken string
-		pageSize  uint64
-
-		response  []rmextension.Extension
-		expectRes []*rmextension.WebhookMessage
-	}
-
-	tests := []test{
-		{
-			"normal",
-			&cscustomer.Customer{
-				ID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-			},
-			uuid.FromStringOrNil("6def6d14-6fab-11eb-9d25-eb0e5ebe6fdc"),
-			"2020-10-20T01:00:00.995000",
-			10,
-
-			[]rmextension.Extension{
-				{
-					ID:         uuid.FromStringOrNil("7f88a068-6fab-11eb-916e-f3b27367df79"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Name:       "test1",
-					Detail:     "test detail1",
-					DomainID:   uuid.FromStringOrNil("6def6d14-6fab-11eb-9d25-eb0e5ebe6fdc"),
-				},
-				{
-					ID:         uuid.FromStringOrNil("7f003a16-6fab-11eb-9b0b-9fe0fc962219"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Name:       "test2",
-					Detail:     "test detail2",
-					DomainID:   uuid.FromStringOrNil("6def6d14-6fab-11eb-9d25-eb0e5ebe6fdc"),
-				},
-			},
-			[]*rmextension.WebhookMessage{
-				{
-					ID:         uuid.FromStringOrNil("7f88a068-6fab-11eb-916e-f3b27367df79"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Name:       "test1",
-					Detail:     "test detail1",
-					DomainID:   uuid.FromStringOrNil("6def6d14-6fab-11eb-9d25-eb0e5ebe6fdc"),
-				},
-				{
-					ID:         uuid.FromStringOrNil("7f003a16-6fab-11eb-9b0b-9fe0fc962219"),
-					CustomerID: uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
-					Name:       "test2",
-					Detail:     "test detail2",
-					DomainID:   uuid.FromStringOrNil("6def6d14-6fab-11eb-9d25-eb0e5ebe6fdc"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().RegistrarV1ExtensionGetsByDomainID(ctx, tt.domainID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
-
-			res, err := h.ExtensionGetsByDomainID(ctx, tt.customer, tt.domainID, tt.pageSize, tt.pageToken)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
 	}
