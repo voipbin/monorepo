@@ -340,11 +340,10 @@ type ServiceHandler interface {
 	DomainUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail string) (*rmdomain.WebhookMessage, error)
 
 	// extension handlers
-	ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext string, password string, domainID uuid.UUID, name string, detail string) (*rmextension.WebhookMessage, error)
+	ExtensionCreate(ctx context.Context, u *cscustomer.Customer, ext string, password string, name string, detail string) (*rmextension.WebhookMessage, error)
 	ExtensionDelete(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGet(ctx context.Context, u *cscustomer.Customer, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
-	ExtensionGetsByDomainID(ctx context.Context, u *cscustomer.Customer, domainID uuid.UUID, size uint64, token string) ([]*rmextension.WebhookMessage, error)
 	ExtensionUpdate(ctx context.Context, u *cscustomer.Customer, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
 
 	// flow handlers

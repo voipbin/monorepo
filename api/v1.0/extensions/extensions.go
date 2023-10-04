@@ -5,7 +5,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
-	"gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -49,7 +48,7 @@ func extensionsPOST(c *gin.Context) {
 
 	// create a extension
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	ext, err := serviceHandler.ExtensionCreate(c.Request.Context(), &u, req.Extension, req.Password, req.DomainID, req.Name, req.Detail)
+	ext, err := serviceHandler.ExtensionCreate(c.Request.Context(), &u, req.Extension, req.Password,  req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a extension. err: %v", err)
 		c.AbortWithStatus(400)
@@ -101,20 +100,13 @@ func extensionsGET(c *gin.Context) {
 		pageSize = 10
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
-	domainID := uuid.FromStringOrNil(req.DomainID)
-	log.Debugf("extensionsGET. Received request detail. domain_id: %s, page_size: %d, page_token: %s", req.DomainID, req.PageSize, req.PageToken)
+	log.Debugf("extensionsGET. Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
 	// get extensions
-	var exts []*extension.WebhookMessage
-	var err error
-	if domainID != uuid.Nil {
-		exts, err = serviceHandler.ExtensionGetsByDomainID(c.Request.Context(), &u, domainID, pageSize, req.PageToken)
-	} else {
-		exts, err = serviceHandler.ExtensionGetsByCustomerID(c.Request.Context(), &u, u.ID, pageSize, req.PageToken)
-	}
+	exts, err := serviceHandler.ExtensionGetsByCustomerID(c.Request.Context(), &u, u.ID, pageSize, req.PageToken)
 	if err != nil {
 		log.Errorf("Could not get a extensions list. err: %v", err)
 		c.AbortWithStatus(400)
