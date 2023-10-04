@@ -23,7 +23,7 @@ func (r *requestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID 
 		CustomerID: customerID,
 		Name:       name,
 		Detail:     detail,
-		DomainName: name,
+		DomainName: domainName,
 		Authtypes:  authTypes,
 		Username:   username,
 		Password:   password,
