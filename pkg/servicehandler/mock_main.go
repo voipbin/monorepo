@@ -1736,18 +1736,18 @@ func (mr *MockServiceHandlerMockRecorder) DomainUpdate(ctx, u, id, name, detail 
 }
 
 // ExtensionCreate mocks base method.
-func (m *MockServiceHandler) ExtensionCreate(ctx context.Context, u *customer.Customer, ext, password string, domainID uuid.UUID, name, detail string) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionCreate(ctx context.Context, u *customer.Customer, ext, password, name, detail string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionCreate", ctx, u, ext, password, domainID, name, detail)
+	ret := m.ctrl.Call(m, "ExtensionCreate", ctx, u, ext, password, name, detail)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExtensionCreate indicates an expected call of ExtensionCreate.
-func (mr *MockServiceHandlerMockRecorder) ExtensionCreate(ctx, u, ext, password, domainID, name, detail interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ExtensionCreate(ctx, u, ext, password, name, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCreate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionCreate), ctx, u, ext, password, domainID, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionCreate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionCreate), ctx, u, ext, password, name, detail)
 }
 
 // ExtensionDelete mocks base method.
@@ -1793,21 +1793,6 @@ func (m *MockServiceHandler) ExtensionGetsByCustomerID(ctx context.Context, u *c
 func (mr *MockServiceHandlerMockRecorder) ExtensionGetsByCustomerID(ctx, u, customerID, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGetsByCustomerID), ctx, u, customerID, size, token)
-}
-
-// ExtensionGetsByDomainID mocks base method.
-func (m *MockServiceHandler) ExtensionGetsByDomainID(ctx context.Context, u *customer.Customer, domainID uuid.UUID, size uint64, token string) ([]*extension.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionGetsByDomainID", ctx, u, domainID, size, token)
-	ret0, _ := ret[0].([]*extension.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ExtensionGetsByDomainID indicates an expected call of ExtensionGetsByDomainID.
-func (mr *MockServiceHandlerMockRecorder) ExtensionGetsByDomainID(ctx, u, domainID, size, token interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGetsByDomainID", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGetsByDomainID), ctx, u, domainID, size, token)
 }
 
 // ExtensionUpdate mocks base method.
