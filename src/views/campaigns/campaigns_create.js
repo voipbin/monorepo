@@ -1,0 +1,223 @@
+import React, { useRef } from 'react'
+import { useParams } from "react-router-dom";
+import {
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CCol,
+  CFormInput,
+  CFormLabel,
+  CRow,
+  CFormTextarea,
+  CButton,
+  CFormSelect,
+  } from '@coreui/react'
+import store from '../../store'
+import {
+  Get as ProviderGet,
+  Post as ProviderPost,
+  Put as ProviderPut,
+  Delete as ProviderDelete,
+  ParseData,
+} from '../../provider';
+
+const FlowsCreate = () => {
+  console.log("FlowsCreate");
+
+  const ref_name = useRef(null);
+  const ref_detail = useRef(null);
+  const ref_service_level = useRef(null);
+  const ref_type = useRef(null);
+  const ref_end_handle = useRef(null);
+  const ref_next_campaign_id = useRef(null);
+  const ref_outdial_id = useRef(null);
+  const ref_outplan_id = useRef(null);
+  const ref_queue_id = useRef(null);
+  const ref_actions = useRef(null);
+
+  const routeParams = useParams();
+  const Create = () => {
+    const id = routeParams.id;
+
+    return (
+      <>
+        <CRow>
+          <CCol xs={12}>
+            <CCard className="mb-4">
+              <CCardHeader>
+                <strong>Create</strong> <small>Creating resource</small>
+              </CCardHeader>
+
+              <CCardBody>
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_name}
+                      type="text"
+                      id="colFormLabelSm"
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Detail</b></CFormLabel>
+                  <CCol>
+                    <CFormInput
+                      ref={ref_detail}
+                      type="text"
+                      id="colFormLabelSm"
+                    />
+                  </CCol>
+                </CRow>
+
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Service Level</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_service_level}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={100}
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
+                  <CCol>
+                    <CFormSelect
+                      ref={ref_type}
+                      type="text"
+                      id="colFormLabelSm"
+                      options={[
+                        { label: 'call', value: 'call' },
+                        { label: 'flow', value: 'flow' },
+                      ]}
+                    />
+                  </CCol>
+                </CRow>
+
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>End Handle</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                  <CFormSelect
+                      ref={ref_end_handle}
+                      type="text"
+                      id="colFormLabelSm"
+                      options={[
+                        { label: 'stop', value: 'stop' },
+                        { label: 'continue', value: 'continue' },
+                      ]}
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Next Campaign ID</b></CFormLabel>
+                  <CCol>
+                    <CFormInput
+                      ref={ref_next_campaign_id}
+                      type="text"
+                      id="colFormLabelSm"
+                    />
+                  </CCol>
+                </CRow>
+
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Outdial ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_outdial_id}
+                      type="text"
+                      id="colFormLabelSm"
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Outplan ID</b></CFormLabel>
+                  <CCol>
+                    <CFormInput
+                      ref={ref_outplan_id}
+                      type="text"
+                      id="colFormLabelSm"
+                    />
+                  </CCol>
+                </CRow>
+
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Queue ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_queue_id}
+                      type="text"
+                      id="colFormLabelSm"
+                    />
+                  </CCol>
+
+                </CRow>
+
+
+
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Actions</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormTextarea
+                      ref={ref_actions}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue="[]"
+                      rows={15}
+                    />
+                  </CCol>
+
+                </CRow>
+
+
+
+          </CCardBody>
+        </CCard>
+      </CCol>
+      </CRow>
+
+      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+      </>
+    )
+  };
+
+  const CreateResource = () => {
+    console.log("Create info");
+
+    const tmpData = {
+      "name": ref_name.current.value,
+      "detail": ref_detail.current.value,
+      "service_level": Number(ref_service_level.current.value),
+      "type": ref_type.current.value,
+      "end_handle": ref_end_handle.current.value,
+      "next_campaign_id": ref_next_campaign_id.current.value,
+      "outdial_id": ref_outdial_id.current.value,
+      "outplan_id": ref_outplan_id.current.value,
+      "queue_id": ref_queue_id.current.value,
+      "actions": JSON.parse(ref_actions.current.value),
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "campaigns";
+    console.log("Create info. target: " + target + ", body: " + body);
+    ProviderPost(target, body).then((response) => {
+      console.log("Created info.", response);
+    });
+  };
+
+  return (
+    <>
+      <Create/>
+    </>
+  )
+}
+
+export default FlowsCreate

@@ -1,18 +1,15 @@
-FROM node:14.19.3-bullseye-slim
+FROM node:current-slim
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
 WORKDIR /app
 
-# COPY . .
+COPY . .
 
-RUN apt update && apt install -y git
-
-# RUN echo n | npm install -g --silent @angular/cli
+RUN export NODE_OPTIONS=--max_old_space_size=2048
 
 
-# RUN yarn
-# RUN yarn install
-# RUN npm install -g serve
-# RUN npm run build
+RUN npm update -g
+RUN npm install
 
+RUN apt update && apt install -y curl
