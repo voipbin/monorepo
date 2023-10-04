@@ -11,8 +11,8 @@ require (
 require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.16.0
-	github.com/rabbitmq/amqp091-go v1.8.1
+	github.com/prometheus/client_golang v1.17.0
+	github.com/rabbitmq/amqp091-go v1.9.0
 	gitlab.com/voipbin/bin-manager/agent-manager.git v0.0.0-20230724184313-374908ea29b0
 	gitlab.com/voipbin/bin-manager/billing-manager.git v0.0.0-20230909145437-b3154bc05285
 	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230720155218-f0503e68a026
@@ -28,7 +28,7 @@ require (
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230728171820-cdbeafa2cf1c
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230903182459-1d2f626b38fd
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230919170210-c35445acd303
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230927051027-c9482f79f518
 	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
 	gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20230727164950-43d37418e642
@@ -44,8 +44,8 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
-	github.com/prometheus/client_model v0.4.0 // indirect
+	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
-	github.com/prometheus/procfs v0.11.1 // indirect
+	github.com/prometheus/procfs v0.12.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )
