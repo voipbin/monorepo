@@ -11,6 +11,9 @@ import {
   CFormTextarea,
   CButton,
   CFormSelect,
+  CListGroup,
+  CListGroupItem,
+  CFormCheck,
   } from '@coreui/react'
 import store from '../../store'
 import {
@@ -28,6 +31,8 @@ const TrunkCreate = () => {
   const ref_detail = useRef(null);
   const ref_domain_name = useRef(null);
   const ref_auth_types = useRef(null);
+  const ref_auth_types_basic = useRef(null);
+  const ref_auth_types_ip = useRef(null);
   const ref_username = useRef(null);
   const ref_password = useRef(null);
   const ref_allowed_ips = useRef(null);
@@ -85,15 +90,18 @@ const TrunkCreate = () => {
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Auth Types</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_auth_types}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.auth_types, null, 2)}
-                      rows={5}
-                    />
+                    <CListGroup ref={ref_auth_types}>
+                      <CListGroupItem>
+                        <CFormCheck ref={ref_auth_types_basic} hitArea="full" label="basic" id="ref_auth_types_basic" value="" defaultChecked/>
+                      </CListGroupItem>
+                      <CListGroupItem>
+                        <CFormCheck ref={ref_auth_types_ip} hitArea="full" label="ip" id="ref_auth_types_ip" value=""/>
+                      </CListGroupItem>
+                    </CListGroup>
                   </CCol>
                 </CRow>
+
+
 
 
                 <CRow>
@@ -103,7 +111,7 @@ const TrunkCreate = () => {
                       ref={ref_username}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.username}
+                      defaultValue=""
                     />
                   </CCol>
 
@@ -114,7 +122,7 @@ const TrunkCreate = () => {
                       ref={ref_password}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.password}
+                      defaultValue=""
                     />
                   </CCol>
 
@@ -129,7 +137,7 @@ const TrunkCreate = () => {
                       ref={ref_allowed_ips}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.allowed_ips, null, 2)}
+                      defaultValue="[]"
                       rows={5}
                     />
                   </CCol>
@@ -151,11 +159,21 @@ const TrunkCreate = () => {
   const CreateResource = () => {
     console.log("Create info");
 
+    let tmpAuth = []
+    {
+      if (ref_auth_types_basic.current.checked == true) {
+        tmpAuth.push("basic");
+      }
+      if (ref_auth_types_ip.current.checked == true) {
+        tmpAuth.push("ip");
+      }
+    }
+
     const tmpData = {
       "domain_name": ref_domain_name.current.value,
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
-      "auth_types": JSON.parse(ref_auth_types.current.value),
+      "auth_types": JSON.parse(JSON.stringify(tmpAuth)),
       "username": ref_username.current.value,
       "password": ref_password.current.value,
       "allowed_ips": JSON.parse(ref_allowed_ips.current.value),
