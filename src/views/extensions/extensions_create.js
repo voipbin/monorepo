@@ -21,10 +21,10 @@ import {
   ParseData,
 } from '../../provider';
 
-const CustomersCreate = () => {
+const ExtensionsCreate = () => {
   console.log("CustomersCreate");
 
-  const ref_username = useRef(null);
+  const ref_extension = useRef(null);
   const ref_password = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
@@ -50,13 +50,13 @@ const CustomersCreate = () => {
 
               <CCardBody>
 
-                <CRow>
-                  <CFormLabel className="col-sm-2 col-form-label"><b>*Username</b></CFormLabel>
+              <CRow>
+                  <CFormLabel className="col-sm-2 col-form-label"><b>*Extension</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
-                      ref={ref_username}
+                      ref={ref_extension}
                       type="text"
-                      id="id"
+                      id="colFormLabelSm"
                     />
                   </CCol>
 
@@ -92,89 +92,12 @@ const CustomersCreate = () => {
                 </CRow>
 
 
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Email</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_email}
-                      type="text"
-                      id="colFormLabelSm"
-                    />
-                  </CCol>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Phone Number</b></CFormLabel>
-                  <CCol>
-                    <CFormInput
-                      ref={ref_phone_number}
-                      type="text"
-                      id="colFormLabelSm"
-                    />
-                  </CCol>
-                </CRow>
-
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Address</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_address}
-                      type="text"
-                      id="colFormLabelSm"
-                    />
-                  </CCol>
-                </CRow>
-
-
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Webhook URI</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_webhook_uri}
-                      type="text"
-                      id="colFormLabelSm"
-                    />
-                  </CCol>
-
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Webhook Method</b></CFormLabel>
-                  <CCol>
-                    <CFormSelect
-                      ref={ref_webhook_method}
-                      type="text"
-                      id="colFormLabelSm"
-                      options={[
-                        { label: 'GET', value: 'GET' },
-                        { label: 'POST', value: 'POST' },
-                        { label: 'PUT', value: 'PUT' },
-                        { label: 'DELETE', value: 'DELETE' },
-                      ]}
-                    />
-                  </CCol>
-                </CRow>
-
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Permission IDs</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_permission_ids}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue="[]"
-                      rows={5}
-                    />
-                  </CCol>
-                </CRow>
-
-
-
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
-      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+        <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
       </>
     )
   };
@@ -183,20 +106,14 @@ const CustomersCreate = () => {
     console.log("Create info");
 
     const tmpData = {
-      "username": ref_username.current.value,
-      "password": ref_password.current.value,
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
-      "email": ref_email.current.value,
-      "phone_number": ref_phone_number.current.value,
-      "address": ref_address.current.value,
-      "webhook_method": ref_webhook_method.current.value,
-      "webhook_uri": ref_webhook_uri.current.value,
-      "permission_ids": JSON.parse(ref_permission_ids.current.value),
+      "extension": ref_extension.current.value,
+      "password": ref_password.current.value,
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "customers";
+    const target = "extensions";
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", response);
@@ -210,4 +127,4 @@ const CustomersCreate = () => {
   )
 }
 
-export default CustomersCreate
+export default ExtensionsCreate
