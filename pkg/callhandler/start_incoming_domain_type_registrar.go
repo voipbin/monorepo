@@ -10,54 +10,45 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
-	rmdomain "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/domain"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/ari"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 )
 
-// startIncomingDomainTypeSIP handles sip incoming doamin type.
-func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channel.Channel) error {
+// startIncomingDomainTypeRegistrar handles registrar incoming doamin type.
+func (h *callHandler) startIncomingDomainTypeRegistrar(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "startIncomingDomainTypeSIP",
+		"func":       "startIncomingDomainTypeRegistrar",
 		"channel_id": cn.ID,
 	})
 
-	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeEndpoint)
+	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeExtension)
 	destination := h.channelHandler.AddressGetDestinationWithoutSpecificType(cn)
 
+	// get customer
+	tmpCustomerID := strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainRegistrarSuffix)
+	customerID := uuid.FromStringOrNil(tmpCustomerID)
+
 	log = log.WithFields(logrus.Fields{
+		"customer_id": customerID,
 		"source":      source,
 		"destination": destination,
 	})
 	log.Debugf("Starting the flow incoming call handler. source_target: %s, destinaiton_target: %s", source.Target, destination.Target)
 
-	// get domain info
-	domainName := strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainSIPSuffix)
-	d, err := h.reqHandler.RegistrarV1DomainGetByDomainName(ctx, domainName)
-	if err != nil {
-		log.Errorf("Could not get domain info. err: %v", err)
-		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
-		return nil
-	}
-	log.WithField("domain", d).Debugf("Found domain info. domain_id: %s", d.ID)
-
 	switch destination.Type {
 	case commonaddress.TypeAgent:
-		return h.startIncomingDomainTypeSIPDestinationTypeAgent(ctx, cn, d, source, destination)
+		return h.startIncomingDomainTypeRegistrarDestinationTypeAgent(ctx, cn, customerID, source, destination)
 
 	case commonaddress.TypeConference:
-		return h.startIncomingDomainTypeSIPDestinationTypeConference(ctx, cn, d, source, destination)
-
-	case commonaddress.TypeEndpoint:
-		return h.startIncomingDomainTypeSIPDestinationTypeEndpoint(ctx, cn, d, source, destination)
-
-	case commonaddress.TypeLine:
-		log.Debugf("The destination type is %s. Will execute the TypeSIPDestinationTypeLine", destination.Type)
+		return h.startIncomingDomainTypeRegistrarDestinationTypeConference(ctx, cn, customerID, source, destination)
 
 	case commonaddress.TypeTel:
-		return h.startIncomingDomainTypeSIPDestinationTypeTel(ctx, cn, d, source, destination)
+		return h.startIncomingDomainTypeRegistrarDestinationTypeTel(ctx, cn, customerID, source, destination)
+
+	case commonaddress.TypeExtension:
+		return h.startIncomingDomainTypeRegistrarDestinationTypeExtension(ctx, cn, customerID, source, destination)
 
 	default:
 		log.Errorf("Unsupported destination type. destination_type: %s", destination.Type)
@@ -68,19 +59,19 @@ func (h *callHandler) startIncomingDomainTypeSIP(ctx context.Context, cn *channe
 	return nil
 }
 
-// startIncomingDomainTypeSIPDestinationTypeAgent handles incoming call.
+// startIncomingDomainTypeRegistrarDestinationTypeAgent handles incoming call.
 // SIP doamin type and destination type is agent.
-func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
+func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeAgent(
 	ctx context.Context,
 	cn *channel.Channel,
-	d *rmdomain.Domain,
+	customerID uuid.UUID,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "startIncomingDomainTypeSIPDestinationTypeAgent",
+		"func":        "startIncomingDomainTypeRegistrarDestinationTypeAgent",
 		"channel_id":  cn.ID,
-		"domain_id":   d.ID,
+		"customer_id": customerID,
 		"source":      source,
 		"destination": destination,
 	})
@@ -96,8 +87,8 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 	log.WithField("agent", a).Debugf("Found agent info. agent_id: %s", a.ID)
 
 	// validate the ownership
-	if a.CustomerID != d.CustomerID {
-		log.Errorf("The agent does not belong to the same customer. domain_customer_id: %s, agent_customer_id: %s", d.CustomerID, a.CustomerID)
+	if a.CustomerID != customerID {
+		log.Errorf("The agent does not belong to the same customer. customer_id: %s, agent_customer_id: %s", customerID, a.CustomerID)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
 		return nil
 	}
@@ -127,7 +118,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 	// create flow
 	f, err := h.reqHandler.FlowV1FlowCreate(
 		ctx,
-		d.CustomerID,
+		customerID,
 		fmflow.TypeFlow,
 		"tmp",
 		"tmp flow for agent dialing",
@@ -141,24 +132,24 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeAgent(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
 
 	return nil
 }
 
-// startIncomingDomainTypeSIPDestinationTypeConference handles incoming call.
-// SIP doamin type and destination type is conference.
-func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeConference(
+// startIncomingDomainTypeRegistrarDestinationTypeConference handles incoming call.
+// Registrar doamin type and destination type is conference.
+func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeConference(
 	ctx context.Context,
 	cn *channel.Channel,
-	d *rmdomain.Domain,
+	customerID uuid.UUID,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "startIncomingDomainTypeSIPDestinationTypeConference",
+		"func":        "startIncomingDomainTypeRegistrarDestinationTypeConference",
 		"channel_id":  cn.ID,
-		"domain_id":   d.ID,
+		"customer_id": customerID,
 		"source":      source,
 		"destination": destination,
 	})
@@ -174,8 +165,8 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeConference(
 	log.WithField("conference", cf).Debugf("Found conference info. conference_id: %s", cf.ID)
 
 	// validate the ownership
-	if cf.CustomerID != d.CustomerID {
-		log.Errorf("The conference does not belong to the same customer. domain_customer_id: %s, conference_customer_id: %s", d.CustomerID, cf.CustomerID)
+	if cf.CustomerID != customerID {
+		log.Errorf("The conference does not belong to the same customer. customer_id: %s, conference_customer_id: %s", customerID, cf.CustomerID)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
 		return nil
 	}
@@ -200,7 +191,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeConference(
 	// create tmp flow
 	f, err := h.reqHandler.FlowV1FlowCreate(
 		ctx,
-		d.CustomerID,
+		customerID,
 		fmflow.TypeFlow,
 		"tmp",
 		"tmp flow for conference join",
@@ -219,19 +210,19 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeConference(
 	return nil
 }
 
-// startIncomingDomainTypeSIPDestinationTypeTel handles incoming call.
+// startIncomingDomainTypeRegistrarDestinationTypeTel handles incoming call.
 // SIP doamin type and destination type is tel.
-func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeTel(
+func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeTel(
 	ctx context.Context,
 	cn *channel.Channel,
-	d *rmdomain.Domain,
+	customerID uuid.UUID,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "startIncomingDomainTypeSIPDestinationTypeTel",
+		"func":        "startIncomingDomainTypeRegistrarDestinationTypeTel",
 		"channel_id":  cn.ID,
-		"domain_id":   d.ID,
+		"customer_id": customerID,
 		"source":      source,
 		"destination": destination,
 	})
@@ -261,7 +252,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeTel(
 	// create tmp flow
 	f, err := h.reqHandler.FlowV1FlowCreate(
 		ctx,
-		d.CustomerID,
+		customerID,
 		fmflow.TypeFlow,
 		"tmp",
 		"tmp flow for outgoing call dialing",
@@ -275,24 +266,24 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeTel(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
 
 	return nil
 }
 
-// startIncomingDomainTypeSIPDestinationTypeEndpoint handles incoming call.
+// startIncomingDomainTypeRegistrarDestinationTypeExtension handles incoming call.
 // SIP doamin type and destination type is endpoint.
-func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeEndpoint(
+func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 	ctx context.Context,
 	cn *channel.Channel,
-	d *rmdomain.Domain,
+	customerID uuid.UUID,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "startIncomingDomainTypeSIPDestinationTypeEndpoint",
+		"func":        "startIncomingDomainTypeRegistrarDestinationTypeExtension",
 		"channel_id":  cn.ID,
-		"domain_id":   d.ID,
+		"customer_id": customerID,
 		"source":      source,
 		"destination": destination,
 	})
@@ -322,7 +313,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeEndpoint(
 	// create tmp flow
 	f, err := h.reqHandler.FlowV1FlowCreate(
 		ctx,
-		d.CustomerID,
+		customerID,
 		fmflow.TypeFlow,
 		"tmp",
 		"tmp flow for outgoing call dialing",
@@ -336,7 +327,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDestinationTypeEndpoint(
 	}
 
 	// start the call type flow
-	h.startCallTypeFlow(ctx, cn, d.CustomerID, f.ID, source, destination)
+	h.startCallTypeFlow(ctx, cn, customerID, f.ID, source, destination)
 
 	return nil
 }

@@ -58,9 +58,9 @@ func (h *groupcallHandler) dialNextDestinationGroupcall(ctx context.Context, gc 
 			return nil, errors.Wrap(err, "could not get dial destination")
 		}
 
-	case commonaddress.TypeEndpoint:
+	case commonaddress.TypeExtension:
 		ringMethod = groupcall.RingMethodRingAll
-		dialDestinations, err = h.getDialDestinationsAddressTypeEndpoint(ctx, gc.CustomerID, destination)
+		dialDestinations, err = h.getDialDestinationsAddressTypeExtension(ctx, gc.CustomerID, destination)
 		if err != nil {
 			log.Errorf("Could not get dial destinations. err: %v", err)
 			return nil, errors.Wrap(err, "could not get dial destination")
@@ -128,33 +128,19 @@ func (h *groupcallHandler) dialNextDestinationCall(ctx context.Context, gc *grou
 	return res, nil
 }
 
-// getDialDestinationsAddressTypeEndpoint returns destinations for address type endpoint.
-func (h *groupcallHandler) getDialDestinationsAddressTypeEndpoint(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]commonaddress.Address, error) {
+// getDialDestinationsAddressTypeExtension returns destinations for address type extension.
+func (h *groupcallHandler) getDialDestinationsAddressTypeExtension(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]commonaddress.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "getDialDestinationsAddressTypeEndpoint",
+		"func":        "getDialDestinationsAddressTypeExtension",
 		"customer_id": customerID,
 		"destination": destination,
 	})
 
-	e, err := h.reqHandler.RegistrarV1ExtensionGetByEndpoint(ctx, destination.Target)
+	contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, customerID, destination.Target)
 	if err != nil {
 		log.Errorf("Could not get extension info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get extension info.")
 	}
-
-	// check the customer id
-	if customerID != e.CustomerID {
-		log.Debugf("The customer id is different. customer_id: %s, extension_customer_id: %s", customerID, e.CustomerID)
-		return nil, fmt.Errorf("the customer id is different")
-	}
-
-	// get contacts
-	contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, destination.Target)
-	if err != nil {
-		log.Errorf("Could not get contacts info. err: %v", err)
-		return nil, errors.Wrap(err, "Could not get contacts info.")
-	}
-	log.WithField("contacts", contacts).Debugf("Found contacts. len: %d", len(contacts))
 
 	res := []commonaddress.Address{}
 	for _, contact := range contacts {

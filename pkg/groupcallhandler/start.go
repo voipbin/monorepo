@@ -226,7 +226,7 @@ func (h *groupcallHandler) startLinear(
 // IsGroupcallTypeAddress returns true if the given destination is groupcall type address.
 func (h *groupcallHandler) IsGroupcallTypeAddress(destination *commonaddress.Address) bool {
 	switch destination.Type {
-	case commonaddress.TypeAgent, commonaddress.TypeEndpoint, commonaddress.TypeExtension:
+	case commonaddress.TypeAgent, commonaddress.TypeExtension:
 		return true
 
 	default:
@@ -268,9 +268,9 @@ func (h *groupcallHandler) dialChainedGroupcall(
 			return nil, errors.Wrap(err, "could not get destination addresses")
 		}
 
-	case commonaddress.TypeEndpoint:
+	case commonaddress.TypeExtension:
 		// get destinations
-		dialDestinations, err = h.getDialDestinationsAddressTypeEndpoint(ctx, customerID, destination)
+		dialDestinations, err = h.getDialDestinationsAddressTypeExtension(ctx, customerID, destination)
 		ringMethod = groupcall.RingMethodRingAll
 		if err != nil {
 			log.Errorf("Could not get destination address. err: %v", err)

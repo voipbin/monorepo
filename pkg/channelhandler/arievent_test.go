@@ -53,7 +53,7 @@ func Test_ARIStasisStart(t *testing.T) {
 				Args: ari.ArgsMap{
 					string(channel.StasisDataTypeContextType): "call",
 					string(channel.StasisDataTypeContext):     "call-in",
-					string(channel.StasisDataTypeDomain):      "test.sip.voipbin.net",
+					string(channel.StasisDataTypeDomain):      "test.trunk.voipbin.net",
 					string(channel.StasisDataTypeSource):      "213.127.79.161",
 					string(channel.StasisDataTypeDirection):   "incoming",
 					string(channel.StasisDataTypeSIPCallID):   "8juJJyujlS",
@@ -76,7 +76,7 @@ func Test_ARIStasisStart(t *testing.T) {
 						Exten:    "1234234324",
 						Priority: 2,
 						AppName:  "Stasis",
-						AppData:  "voipbin,context_type=call,context=call-in,domain=test.sip.voipbin.net,source=213.127.79.161,direction=incoming,sip_call_id=8juJJyujlS,sip_pai=,sip_privacy=",
+						AppData:  "voipbin,context_type=call,context=call-in,domain=test.trunk.voipbin.net,source=213.127.79.161,direction=incoming,sip_call_id=8juJJyujlS,sip_pai=,sip_privacy=",
 					},
 				},
 			},
@@ -86,7 +86,7 @@ func Test_ARIStasisStart(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					channel.StasisDataTypeContextType: "call",
 					channel.StasisDataTypeContext:     "call-in",
-					channel.StasisDataTypeDomain:      "test.sip.voipbin.net",
+					channel.StasisDataTypeDomain:      "test.trunk.voipbin.net",
 					channel.StasisDataTypeSource:      "213.127.79.161",
 					channel.StasisDataTypeDirection:   "incoming",
 					channel.StasisDataTypeSIPCallID:   "8juJJyujlS",
@@ -102,7 +102,7 @@ func Test_ARIStasisStart(t *testing.T) {
 			expectStasisData: map[channel.StasisDataType]string{
 				channel.StasisDataTypeContextType: "call",
 				channel.StasisDataTypeContext:     "call-in",
-				channel.StasisDataTypeDomain:      "test.sip.voipbin.net",
+				channel.StasisDataTypeDomain:      "test.trunk.voipbin.net",
 				channel.StasisDataTypeSource:      "213.127.79.161",
 				channel.StasisDataTypeDirection:   "incoming",
 				channel.StasisDataTypeSIPCallID:   "8juJJyujlS",

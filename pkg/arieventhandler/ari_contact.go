@@ -2,7 +2,7 @@ package arieventhandler
 
 import (
 	"context"
-	"strings"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -19,11 +19,13 @@ func (h *eventHandler) EventHandlerContactStatusChange(ctx context.Context, evt 
 		"event": e,
 	})
 
-	endpoint := strings.TrimSuffix(e.Endpoint.Resource, common.DomainSIPSuffix)
-	log.Debugf("Updating contact info. endpoint: %s", endpoint)
+	customerID, ext, err := common.ParseSIPURI(e.Endpoint.Resource)
+	if err != nil {
+		return fmt.Errorf("could not parse the endpoint")
+	}
 
-	// send update
-	if err := h.reqHandler.RegistrarV1ContactUpdate(ctx, endpoint); err != nil {
+	// send refresh
+	if err := h.reqHandler.RegistrarV1ContactRefresh(ctx, customerID, ext); err != nil {
 		log.Errorf("Could not handle the ContactStatusChange message. err: %v", err)
 		return err
 	}

@@ -395,8 +395,8 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 				Target: "+821100000001",
 			},
 			destination: &commonaddress.Address{
-				Type:   commonaddress.TypeEndpoint,
-				Target: "test-exten@test-domain",
+				Type:   commonaddress.TypeExtension,
+				Target: "test-exten",
 			},
 
 			responseGroupcall: &groupcall.Groupcall{
@@ -658,22 +658,13 @@ func Test_getDialURI_SIP(t *testing.T) {
 	}
 }
 
-func Test_getDialURIError(t *testing.T) {
+func Test_getDialURI_error(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		call *call.Call
 	}{
-		{
-			"supported address type endpoint",
-
-			&call.Call{
-				Destination: commonaddress.Address{
-					Type: commonaddress.TypeEndpoint,
-				},
-			},
-		},
 		{
 			"supported address type agent",
 
@@ -1230,7 +1221,7 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 				},
 				Destination: commonaddress.Address{
 					Type:   commonaddress.TypeSIP,
-					Target: "sip:test@test.sip.voipbin.net",
+					Target: "sip:test@test.trunk.voipbin.net",
 				},
 			},
 

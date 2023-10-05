@@ -8,15 +8,14 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 
 	"gitlab.com/voipbin/bin-manager/call-manager.git/models/channel"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/common"
 )
 
 // AddressGetSource gets the source address from the given channel
 func (h *channelHandler) AddressGetSource(cn *channel.Channel, addressType commonaddress.Type) *commonaddress.Address {
 
 	target := ""
-	if addressType == commonaddress.TypeEndpoint {
-		domainName := strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainSIPSuffix)
+	if addressType == commonaddress.TypeSIP {
+		domainName := cn.StasisData[channel.StasisDataTypeDomain]
 		target = fmt.Sprintf("%s@%s", cn.SourceNumber, domainName)
 	} else {
 		target = cn.SourceNumber
@@ -80,12 +79,8 @@ func (h *channelHandler) AddressGetDestinationWithoutSpecificType(cn *channel.Ch
 		target = strings.TrimPrefix(tmpTarget, string(commonaddress.TypeLine)+":")
 
 	default:
-		addressType = commonaddress.TypeEndpoint
-		if strings.Contains(tmpTarget, "@") {
-			target = tmpTarget
-		} else {
-			target = tmpTarget + "@" + strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainSIPSuffix)
-		}
+		addressType = commonaddress.TypeExtension
+		target = tmpTarget
 	}
 
 	res := &commonaddress.Address{

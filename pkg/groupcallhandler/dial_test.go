@@ -9,15 +9,15 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	amagent "gitlab.com/voipbin/bin-manager/agent-manager.git/models/agent"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
-	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	rmastcontact "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/astcontact"
-	rmextension "gitlab.com/voipbin/bin-manager/registrar-manager.git/models/extension"
+
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/call"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/models/groupcall"
+	"gitlab.com/voipbin/bin-manager/call-manager.git/pkg/dbhandler"
 )
 
 func Test_dialNextDestination_call(t *testing.T) {
@@ -246,7 +246,7 @@ func Test_dialNextDestination_groupcall(t *testing.T) {
 	}
 }
 
-func Test_getDialDestinationsAddressTypeEndpoint(t *testing.T) {
+func Test_getDialDestinationsAddressTypeExtension(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -254,8 +254,7 @@ func Test_getDialDestinationsAddressTypeEndpoint(t *testing.T) {
 		cusotmerID  uuid.UUID
 		destination *commonaddress.Address
 
-		responseExtension *rmextension.Extension
-		responseContacts  []rmastcontact.AstContact
+		responseContacts []rmastcontact.AstContact
 
 		expectRes []commonaddress.Address
 	}{
@@ -264,15 +263,11 @@ func Test_getDialDestinationsAddressTypeEndpoint(t *testing.T) {
 
 			cusotmerID: uuid.FromStringOrNil("20b8c8aa-41cd-438e-8fd3-4bb18b72db67"),
 			destination: &commonaddress.Address{
-				Type:       commonaddress.TypeEndpoint,
+				Type:       commonaddress.TypeExtension,
 				TargetName: "test extension",
-				Target:     "test-exten@test-domain",
+				Target:     "test-exten",
 			},
 
-			responseExtension: &rmextension.Extension{
-				ID:         uuid.FromStringOrNil("e953c00b-83f7-4726-b41a-16929402bba0"),
-				CustomerID: uuid.FromStringOrNil("20b8c8aa-41cd-438e-8fd3-4bb18b72db67"),
-			},
 			responseContacts: []rmastcontact.AstContact{
 				{
 					URI: "sip:test-exten1@211.200.20.28:53941^3Btransport=udp^3Balias=211.200.20.28~53941~1",
@@ -315,9 +310,8 @@ func Test_getDialDestinationsAddressTypeEndpoint(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGetByEndpoint(ctx, tt.destination.Target).Return(tt.responseExtension, nil)
-			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.destination.Target).Return(tt.responseContacts, nil)
-			res, err := h.getDialDestinationsAddressTypeEndpoint(ctx, tt.cusotmerID, tt.destination)
+			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.cusotmerID, tt.destination.Target).Return(tt.responseContacts, nil)
+			res, err := h.getDialDestinationsAddressTypeExtension(ctx, tt.cusotmerID, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -349,7 +343,7 @@ func Test_getDialDestinationsAddressAndRingMethodTypeAgent(t *testing.T) {
 
 			cusotmerID: uuid.FromStringOrNil("1a7c277a-d3e5-448c-be17-78b80bc19844"),
 			destination: &commonaddress.Address{
-				Type:   commonaddress.TypeEndpoint,
+				Type:   commonaddress.TypeAgent,
 				Target: "a47ddec7-bf14-4030-9303-a660481dad8f",
 			},
 
@@ -367,8 +361,8 @@ func Test_getDialDestinationsAddressAndRingMethodTypeAgent(t *testing.T) {
 						Target: "sip:test@test.com",
 					},
 					{
-						Type:   commonaddress.TypeEndpoint,
-						Target: "test-exten@test-domain",
+						Type:   commonaddress.TypeExtension,
+						Target: "test-exten",
 					},
 				},
 			},
@@ -383,8 +377,8 @@ func Test_getDialDestinationsAddressAndRingMethodTypeAgent(t *testing.T) {
 					Target: "sip:test@test.com",
 				},
 				{
-					Type:   commonaddress.TypeEndpoint,
-					Target: "test-exten@test-domain",
+					Type:   commonaddress.TypeExtension,
+					Target: "test-exten",
 				},
 			},
 			expectResRingMethod: groupcall.RingMethodRingAll,

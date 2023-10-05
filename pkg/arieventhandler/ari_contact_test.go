@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
@@ -16,9 +17,11 @@ import (
 func Test_EventHandlerContactStatusChange(t *testing.T) {
 
 	type test struct {
-		name     string
-		event    *ari.ContactStatusChange
-		endpoint string
+		name  string
+		event *ari.ContactStatusChange
+
+		expectCustomerID uuid.UUID
+		expectextension  string
 	}
 
 	tests := []test{
@@ -32,19 +35,20 @@ func Test_EventHandlerContactStatusChange(t *testing.T) {
 					AsteriskID:  "8e:86:e2:2c:a7:51",
 				},
 				Endpoint: ari.Endpoint{
-					Resource:   "test11@test.sip.voipbin.net",
+					Resource:   "test11@1e5dcc80-57d1-11ee-a0bc-8718bdf822a7.registrar.voipbin.net",
 					State:      ari.EndpointStateOnline,
 					Technology: "PJSIP",
 					ChannelIDs: []string{},
 				},
 				ContactInfo: ari.ContactInfo{
-					AOR:           "test11@test.sip.voipbin.net",
+					AOR:           "test11@1e5dcc80-57d1-11ee-a0bc-8718bdf822a7.registrar.voipbin.net",
 					URI:           "sip:jgo101ml@r5e5vuutihlr.invalid;transport=ws",
 					RoundtripUsec: "0",
 					ContactStatus: ari.ContactStatusTypeNonQualified,
 				},
 			},
-			"test11@test",
+			uuid.FromStringOrNil("1e5dcc80-57d1-11ee-a0bc-8718bdf822a7"),
+			"test11",
 		},
 	}
 
@@ -66,7 +70,7 @@ func Test_EventHandlerContactStatusChange(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ContactUpdate(gomock.Any(), tt.endpoint).Return(nil)
+			mockReq.EXPECT().RegistrarV1ContactRefresh(ctx, tt.expectCustomerID, tt.expectextension).Return(nil)
 			if err := h.EventHandlerContactStatusChange(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
