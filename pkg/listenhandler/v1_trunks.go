@@ -31,7 +31,7 @@ func (h *listenHandler) processV1TrunksPost(ctx context.Context, m *rabbitmqhand
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.trunkHandler.Create(ctx, req.CustomerID, req.DomainName, req.Name, req.Detail, req.Authtypes, req.Username, req.Password, req.AllowedIPs)
+	tmp, err := h.trunkHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.DomainName, req.Authtypes, req.Username, req.Password, req.AllowedIPs)
 	if err != nil {
 		log.Errorf("Could not create a new trunk correctly. err: %v", err)
 		return simpleResponse(500), nil

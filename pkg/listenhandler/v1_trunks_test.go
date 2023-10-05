@@ -79,7 +79,7 @@ func Test_processV1TrunksPost(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Create(gomock.Any(), tt.customerID, tt.domainName, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(tt.resTrunk, nil)
+			mockTrunk.EXPECT().Create(gomock.Any(), tt.customerID, tt.trunkName, tt.detail, tt.domainName, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(tt.resTrunk, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
