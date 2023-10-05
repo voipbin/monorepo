@@ -31,15 +31,15 @@ func Test_AddressGetSource(t *testing.T) {
 
 			channel: &channel.Channel{
 				StasisData: map[channel.StasisDataType]string{
-					channel.StasisDataTypeDomain: "test.sip.voipbin.net",
+					channel.StasisDataTypeDomain: "test.trunk.voipbin.net",
 				},
 				SourceNumber: "2000",
 			},
-			addressType: commonaddress.TypeEndpoint,
+			addressType: commonaddress.TypeSIP,
 
 			expectRes: &commonaddress.Address{
-				Type:   commonaddress.TypeEndpoint,
-				Target: "2000@test",
+				Type:   commonaddress.TypeSIP,
+				Target: "2000@test.trunk.voipbin.net",
 			},
 		},
 		{
@@ -196,32 +196,17 @@ func Test_AddressGetDestinationWithoutSpecificType(t *testing.T) {
 			},
 		},
 		{
-			"type endpoint",
+			"type extension",
 
 			&channel.Channel{
 				DestinationNumber: "2000",
 				StasisData: map[channel.StasisDataType]string{
-					channel.StasisDataTypeDomain: "test.sip.voipbin.net",
+					channel.StasisDataTypeDomain: "test.trunk.voipbin.net",
 				},
 			},
 			&commonaddress.Address{
-				Type:   commonaddress.TypeEndpoint,
-				Target: "2000@test",
-			},
-		},
-		{
-			"type endpoint in abolute reference",
-
-			&channel.Channel{
-				// 3000@test_domain
-				DestinationNumber: "3000%40test_domain",
-				StasisData: map[channel.StasisDataType]string{
-					channel.StasisDataTypeDomain: "test.sip.voipbin.net",
-				},
-			},
-			&commonaddress.Address{
-				Type:   commonaddress.TypeEndpoint,
-				Target: "3000@test_domain",
+				Type:   commonaddress.TypeExtension,
+				Target: "2000",
 			},
 		},
 	}

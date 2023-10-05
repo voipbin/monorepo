@@ -15,7 +15,7 @@ func TestParsePeerStatusChange(t *testing.T) {
 	tests := []test{
 		{
 			"test normal",
-			`{"endpoint": { "technology": "PJSIP", "channel_ids": [], "resource": "test11@test.sip.voipbin.net", "state": "online" }, "timestamp": "2021-02-18T06:23:53.016+0000", "application": "voipbin", "peer": { "peer_status": "Reachable" }, "type": "PeerStatusChange", "asterisk_id": "42:6c:60:50:79:b3"}`,
+			`{"endpoint": { "technology": "PJSIP", "channel_ids": [], "resource": "test11@test.trunk.voipbin.net", "state": "online" }, "timestamp": "2021-02-18T06:23:53.016+0000", "application": "voipbin", "peer": { "peer_status": "Reachable" }, "type": "PeerStatusChange", "asterisk_id": "42:6c:60:50:79:b3"}`,
 			&PeerStatusChange{
 				Event: Event{
 					Type:        EventTypePeerStatusChange,
@@ -29,7 +29,7 @@ func TestParsePeerStatusChange(t *testing.T) {
 				Endpoint: Endpoint{
 					Technology: "PJSIP",
 					ChannelIDs: []string{},
-					Resource:   "test11@test.sip.voipbin.net",
+					Resource:   "test11@test.trunk.voipbin.net",
 					State:      EndpointStateOnline,
 				},
 			},

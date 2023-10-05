@@ -25,31 +25,20 @@ const (
 	applicationAMD = "amd"
 )
 
-// domains
-const (
-// domainConference = "conference.voipbin.net"
-// domainPSTN       = "pstn.voipbin.net"
-// doaminSIPSuffix  = ".sip.voipbin.net" // suffix domain name for SIP
-)
-
 // list of domain types
 const (
 	domainTypeNone       = "none"
 	domainTypeConference = "conference"
 	domainTypePSTN       = "pstn"
 	domainTypeSIP        = "sip"
+	domainTypeRegistrar  = "registrar"
+	domainTypeTrunk      = "trunk"
 )
 
 // pjsip endpoints
 const (
 	pjsipEndpointOutgoing = "call-out"
 )
-
-// fixed trunks
-// const (
-// trunkTwilio = "voipbin.pstn.twilio.com" //nolint:varcheck,deadcode // this is ok
-// trunkTelnyx = "sip.telnyx.com"
-// )
 
 // default sip service option variables
 const (
@@ -235,7 +224,7 @@ func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.
 		log.Errorf("Could not send the channel hangup request for callprogress timeout. err: %v", err)
 	}
 
-	// get call type
+	// get domain type
 	domainType := getDomainTypeIncomingCall(cn.StasisData[channel.StasisDataTypeDomain])
 	switch domainType {
 	case domainTypeConference:
@@ -244,8 +233,11 @@ func (h *callHandler) startContextIncomingCall(ctx context.Context, cn *channel.
 	case domainTypePSTN:
 		return h.startIncomingDomainTypePSTN(ctx, cn)
 
-	case domainTypeSIP:
-		return h.startIncomingDomainTypeSIP(ctx, cn)
+	case domainTypeTrunk:
+		return h.startIncomingDomainTypeTrunk(ctx, cn)
+
+	case domainTypeRegistrar:
+		return h.startIncomingDomainTypeRegistrar(ctx, cn)
 
 	default:
 		// no route found
@@ -363,8 +355,12 @@ func getDomainTypeIncomingCall(domain string) string {
 		return domainTypePSTN
 	}
 
-	if strings.HasSuffix(domain, common.DomainSIPSuffix) {
-		return domainTypeSIP
+	if strings.HasSuffix(domain, common.DomainRegistrarSuffix) {
+		return domainTypeRegistrar
+	}
+
+	if strings.HasSuffix(domain, common.DomainTrunkSuffix) {
+		return domainTypeTrunk
 	}
 
 	return domainTypeNone

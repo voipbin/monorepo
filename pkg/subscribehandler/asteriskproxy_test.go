@@ -653,7 +653,7 @@ func Test_processEvent_AsteriskProxy_ContactStatusChange(t *testing.T) {
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
-				Data:      []byte(`{ "application": "voipbin", "contact_info": { "uri": "sip:jgo101ml@r5e5vuutihlr.invalid;transport=ws", "roundtrip_usec": "0", "aor": "test11@test.sip.voipbin.net", "contact_status": "NonQualified" }, "type": "ContactStatusChange", "endpoint": { "channel_ids": [], "resource": "test11@test.sip.voipbin.net", "state": "online", "technology": "PJSIP" }, "timestamp": "2021-02-19T06:32:14.621+0000", "asterisk_id": "8e:86:e2:2c:a7:51"}`),
+				Data:      []byte(`{ "application": "voipbin", "contact_info": { "uri": "sip:jgo101ml@r5e5vuutihlr.invalid;transport=ws", "roundtrip_usec": "0", "aor": "test11@test.trunk.voipbin.net", "contact_status": "NonQualified" }, "type": "ContactStatusChange", "endpoint": { "channel_ids": [], "resource": "test11@test.trunk.voipbin.net", "state": "online", "technology": "PJSIP" }, "timestamp": "2021-02-19T06:32:14.621+0000", "asterisk_id": "8e:86:e2:2c:a7:51"}`),
 			},
 			&ari.ContactStatusChange{
 				Event: ari.Event{
@@ -663,13 +663,13 @@ func Test_processEvent_AsteriskProxy_ContactStatusChange(t *testing.T) {
 					AsteriskID:  "8e:86:e2:2c:a7:51",
 				},
 				Endpoint: ari.Endpoint{
-					Resource:   "test11@test.sip.voipbin.net",
+					Resource:   "test11@test.trunk.voipbin.net",
 					State:      ari.EndpointStateOnline,
 					Technology: "PJSIP",
 					ChannelIDs: []string{},
 				},
 				ContactInfo: ari.ContactInfo{
-					AOR:           "test11@test.sip.voipbin.net",
+					AOR:           "test11@test.trunk.voipbin.net",
 					URI:           "sip:jgo101ml@r5e5vuutihlr.invalid;transport=ws",
 					RoundtripUsec: "0",
 					ContactStatus: ari.ContactStatusTypeNonQualified,
