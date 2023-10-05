@@ -76,11 +76,6 @@ const ExtensionsList = () => {
         size: 100,
       },
       {
-        accessorKey: 'domain_id',
-        header: 'Domain ID',
-        size: 250,
-      },
-      {
         accessorKey: 'tm_update',
         header: 'update time',
         enableEditing: false,
@@ -98,25 +93,25 @@ const ExtensionsList = () => {
     console.log("Deleting row. ", row)
 
     if (
-      !confirm(`Are you sure you want to delete ${row.getValue('username')}`)
+      !confirm(`Are you sure you want to delete ${row.getValue('extension')}`)
     ) {
       return;
     }
 
-    const target = "customers/" + row.getValue('id');
+    const target = "extensions/" + row.getValue('id');
     ProviderDelete(target).then(() => {
-      console.log("Deleted customer.");
+      console.log("Deleted extension.");
     });
   }
 
   const navigate = useNavigate();
   const Detail = (row) => {
-    const target = "/resources/customers/customers_detail/" + row.original.id;
+    const target = "/resources/extensions/extensions_detail/" + row.original.id;
     console.log("navigate target: ", target);
     navigate(target);
   }
   const Create = (row) => {
-    const target = "/resources/customers/customers_create";
+    const target = "/resources/extensions/extensions_create";
     console.log("navigate target: ", target);
     navigate(target);
   }
