@@ -36,9 +36,22 @@ const ChatsList = () => {
   },[]);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("chats"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "chats?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("chats", tmpData);
+    });
+
+
+    // const tmp = JSON.parse(localStorage.getItem("chats"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   // show list
@@ -126,6 +139,9 @@ const ChatsList = () => {
       <MaterialReactTable
         columns={listColumns}
         data={listData ?? []} // data?.data ?? []
+        state={{
+          isLoading: isLoading,
+        }}
         enableRowNumbers
         enableRowActions
         renderRowActions={({ row, table }) => (
@@ -144,10 +160,6 @@ const ChatsList = () => {
             </Tooltip>
           </Box>
         )}
-
-        state={{
-          // isLoading: isLoading,
-        }}
 
         muiTableBodyRowProps={({ row, table }) => ({
           onDoubleClick: (event) => {

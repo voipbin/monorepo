@@ -47,9 +47,21 @@ const ExtensionsList = () => {
   }, []);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("extensions"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "extensions?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("extensions", tmpData);
+    });
+
+    // const tmp = JSON.parse(localStorage.getItem("extensions"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   // show list
@@ -121,6 +133,9 @@ const ExtensionsList = () => {
       <MaterialReactTable
         columns={listColumns}
         data={listData}
+        state={{
+          isLoading: isLoading,
+        }}
         enableRowNumbers
         enableRowActions
         renderRowActions={({ row, table }) => (

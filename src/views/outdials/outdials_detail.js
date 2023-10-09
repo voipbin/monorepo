@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { useParams } from "react-router-dom";
 import {
   CCard,
@@ -20,23 +20,24 @@ import {
   Delete as ProviderDelete,
   ParseData,
 } from '../../provider';
+import { useNavigate } from "react-router-dom";
 
-const MessagesDetail = () => {
-  console.log("MessagesDetail");
+const OutdialsDetail = () => {
+  console.log("OutdialsDetail");
 
   const ref_id = useRef(null);
-  const ref_type = useRef(null);
-  const ref_from = useRef(null);
-  const ref_direction = useRef(null);
-  const ref_targets = useRef(null);
-  const ref_text = useRef(null);
-
+  const ref_name = useRef(null);
+  const ref_detail = useRef(null);
+  const ref_data = useRef(null);
   const routeParams = useParams();
-  const GetDetail = () => {
-    const id = routeParams.id;
 
-    const storeData = store.getState();
-    const detailData = storeData["messages"][id];
+  const id = routeParams.id;
+
+  const GetDetail = () => {
+
+    const tmp = localStorage.getItem("outdials");
+    const datas = JSON.parse(tmp);
+    const detailData = datas[id];
     console.log("detailData", detailData);
 
     return (
@@ -62,79 +63,49 @@ const MessagesDetail = () => {
                   </CCol>
                 </CRow>
 
+
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
-                      ref={ref_type}
+                      ref={ref_name}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.type}
-                      readOnly plainText
+                      defaultValue={detailData.name}
                     />
                   </CCol>
 
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Direction</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Detail</b></CFormLabel>
                   <CCol>
                     <CFormInput
-                      ref={ref_direction}
+                      ref={ref_detail}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.direction}
-                      readOnly plainText
+                      defaultValue={detailData.detail}
                     />
                   </CCol>
                 </CRow>
 
-
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>From</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_from}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={detailData.source.target}
-                      readOnly plainText
-                    />
-                  </CCol>
-                </CRow>
-
-
-
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Targets</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Data</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
-                      ref={ref_targets}
+                      ref={ref_data}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={JSON.stringify(detailData.targets, null, 2)}
-                      rows={15}
-                      readOnly plainText
+                      defaultValue={detailData.data}
+                      rows={5}
                     />
                   </CCol>
                 </CRow>
 
 
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Text</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_text}
-                      type="text"
-                      id="colFormLabelSm"
-                      defaultValue={detailData.text}
-                      rows={2}
-                      readOnly plainText
-                    />
-                  </CCol>
-                </CRow>
-
-
-
+                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
+                <br />
+                <br />
+                <CButton type="submit" onClick={() => ListOutdialtargets()}>Targets</CButton>
+                <br />
+                <br />
 
 
 
@@ -160,13 +131,40 @@ const MessagesDetail = () => {
                   </CCol>
                 </CRow>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
+
+  const UpdateBasicInfo = () => {
+    console.log("Update info");
+
+    const tmpData = {
+      "name": ref_name.current.value,
+      "detail": ref_detail.current.value,
+      "data": ref_data.current.value,
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "outdials/" + ref_id.current.value;
+    console.log("Update info. target: " + target + ", body: " + body);
+    ProviderPut(target, body).then((response) => {
+      console.log("Updated info.", response);
+    });
+  };
+
+  const navigate = useNavigate();
+  const ListOutdialtargets = () => {
+    console.log("ListOutdialtargets");
+
+    const target = "/resources/outdials/" + id + "/outdialtargets_list";
+    console.log("navigate target: ", target);
+    navigate(target);
+  };
+
 
   return (
     <>
@@ -175,4 +173,4 @@ const MessagesDetail = () => {
   )
 }
 
-export default MessagesDetail
+export default OutdialsDetail

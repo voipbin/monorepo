@@ -28,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 const FlowsList = () => {
 
   const [listData, setListData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     getList();
@@ -35,9 +36,21 @@ const FlowsList = () => {
   }, []);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("flows"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "flows?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("flows", tmpData);
+    });
+
+    // const tmp = JSON.parse(localStorage.getItem("flows"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   // show list
@@ -125,6 +138,9 @@ const FlowsList = () => {
       <MaterialReactTable
         columns={listColumns}
         data={listData ?? []} // data?.data ?? []
+        state={{
+          isLoading: isLoading,
+        }}
         enableRowNumbers
         enableRowActions
         renderRowActions={({ row, table }) => (
@@ -145,10 +161,6 @@ const FlowsList = () => {
             </Tooltip>
           </Box>
         )}
-
-        state={{
-          // isLoading: isLoading,
-        }}
 
         muiTableBodyRowProps={({ row, table }) => ({
           onDoubleClick: (event) => {

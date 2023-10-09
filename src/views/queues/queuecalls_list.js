@@ -36,9 +36,21 @@ const QueuecallsList = () => {
   },[]);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("queuecalls"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "queuecalls?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("chatbots", tmpData);
+    });
+
+    // const tmp = JSON.parse(localStorage.getItem("queuecalls"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   // show list
@@ -137,6 +149,9 @@ const QueuecallsList = () => {
       <MaterialReactTable
         columns={listColumns}
         data={listData ?? []} // data?.data ?? []
+        state={{
+          isLoading: isLoading,
+        }}
         enableRowNumbers
         enableRowActions
         renderRowActions={({ row, table }) => (
@@ -156,10 +171,6 @@ const QueuecallsList = () => {
             </Tooltip> */}
           </Box>
         )}
-
-        state={{
-          // isLoading: isLoading,
-        }}
 
         muiTableBodyRowProps={({ row, table }) => ({
           onDoubleClick: (event) => {

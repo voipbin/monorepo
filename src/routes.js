@@ -73,6 +73,16 @@ const CampaignsList = React.lazy(() => import('./views/campaigns/campaigns_list'
 const CampaignsDetail = React.lazy(() => import('./views/campaigns/campaigns_detail'))
 const CampaignsCreate = React.lazy(() => import('./views/campaigns/campaigns_create'))
 
+// outdials
+const OutdialsList = React.lazy(() => import('./views/outdials/outdials_list'))
+const OutdialsDetail = React.lazy(() => import('./views/outdials/outdials_detail'))
+const OutdialsCreate = React.lazy(() => import('./views/outdials/outdials_create'))
+
+// outdialtargets
+const OutdialtargetsList = React.lazy(() => import('./views/outdials/outdialtargets_list'))
+const OutdialtargetsDetail = React.lazy(() => import('./views/outdials/outdialtargets_detail'))
+const OutdialtargetsCreate = React.lazy(() => import('./views/outdials/outdialtargets_create'))
+
 // campaigncalls
 const Campaigncalls = React.lazy(() => import('./views/campaigns/campaigncalls'))
 
@@ -225,6 +235,16 @@ const routes = [
   { path: '/resources/campaigns/campaigns_detail/:id', name: 'CampaignsDetail', element: CampaignsDetail },
 
   { path: '/resources/campaigns/campaigncalls_list', name: 'Campaigncalls', element: Campaigncalls },
+
+  { path: '/resources/outdials/outdials_list', name: 'OutdialsList', element: OutdialsList },
+  { path: '/resources/outdials/outdials_create', name: 'OutdialsCreate', element: OutdialsCreate },
+  { path: '/resources/outdials/outdials_detail/:id', name: 'OutdialsDetail', element: OutdialsDetail },
+
+  { path: '/resources/outdials/:outdial_id/outdialtargets_list', name: 'OutdialtargetsList', element: OutdialtargetsList },
+  { path: '/resources/outdials/:outdial_id/outdialtargets_create', name: 'OutdialtargetsCreate', element: OutdialtargetsCreate },
+  { path: '/resources/outdials/:outdial_id/outdialtargets_detail/:id', name: 'OutdialtargetsDetail', element: OutdialtargetsDetail },
+
+
 
   { path: '/resources/chatbots/chatbots_list', name: 'ChatbotsList', element: ChatbotsList },
   { path: '/resources/chatbots/chatbots_create', name: 'ChatbotsCreate', element: ChatbotsCreate },

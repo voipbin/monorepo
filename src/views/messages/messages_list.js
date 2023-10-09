@@ -37,10 +37,8 @@ const Messages = () => {
       setIsLoading(false);
 
       const tmp = ParseData(data);
-      store.dispatch({
-        type: 'messages',
-        data: tmp,
-      });
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("messages", tmpData);
     });
   });
 

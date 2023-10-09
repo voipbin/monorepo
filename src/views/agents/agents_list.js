@@ -28,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 const AgentsList = () => {
 
   const [listData, setListData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     getList();
@@ -35,9 +36,21 @@ const AgentsList = () => {
   },[]);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("agents"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "agents?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("agents", tmpData);
+    });
+
+    // const tmp = JSON.parse(localStorage.getItem("agents"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   // show list
@@ -153,6 +166,9 @@ const AgentsList = () => {
         columns={listColumns}
         data={listData ?? []} // data?.data ?? []
         enableRowNumbers
+        state={{
+          isLoading: isLoading,
+        }}
         enableRowActions
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>

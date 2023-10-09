@@ -34,8 +34,11 @@ const ChatbotsDetail = () => {
   const GetDetail = () => {
     const id = routeParams.id;
 
-    const storeData = store.getState();
-    const detailData = storeData["chatbots"][id];
+    // const storeData = store.getState();
+    // const detailData = storeData["chatbots"][id];
+    const tmp = localStorage.getItem("chatbots");
+    const datas = JSON.parse(tmp);
+    const detailData = datas[id];
     console.log("detailData", detailData);
 
     return (

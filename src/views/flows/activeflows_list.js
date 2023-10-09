@@ -30,9 +30,21 @@ const Activeflows = () => {
   }, []);
 
   const getActiveflows = (() => {
-    const tmp = JSON.parse(localStorage.getItem("activeflows"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "activeflows?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("activeflows", tmpData);
+    });
+
+    // const tmp = JSON.parse(localStorage.getItem("activeflows"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   const listColumns = useMemo(
@@ -73,6 +85,9 @@ const Activeflows = () => {
       <MaterialReactTable
         columns={listColumns}
         data={listData}
+        state={{
+          isLoading: isLoading,
+        }}
         enableRowNumbers
         muiTableBodyRowProps={({ row }) => ({
           onDoubleClick: (event) => {

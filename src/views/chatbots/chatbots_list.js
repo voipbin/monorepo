@@ -44,11 +44,8 @@ const ChatbotsList = () => {
       setIsLoading(false);
 
       const tmp = ParseData(data);
-      store.dispatch({
-        type: 'chatbots',
-        method: 'update',
-        data: tmp,
-      });
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("chatbots", tmpData);
     });
   });
 

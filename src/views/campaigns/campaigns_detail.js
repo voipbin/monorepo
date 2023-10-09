@@ -41,9 +41,14 @@ const CampaignsDetail = () => {
   const GetDetail = () => {
     const id = routeParams.id;
 
-    const storeData = store.getState();
-    const detailData = storeData["campaigns"][id];
+    const tmp = localStorage.getItem("campaigns");
+    const datas = JSON.parse(tmp);
+    const detailData = datas[id];
     console.log("detailData", detailData);
+
+    // const storeData = store.getState();
+    // const detailData = storeData["campaigns"][id];
+    // console.log("detailData", detailData);
 
     return (
       <>

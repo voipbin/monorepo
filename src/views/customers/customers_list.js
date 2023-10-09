@@ -47,9 +47,24 @@ const CustomersList = () => {
   }, []);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("customers"));
-    const data = Object.values(tmp);
-    setListData(data);
+
+    const target = "customers?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("customers", tmpData);
+    });
+
+
+
+    // const tmp = JSON.parse(localStorage.getItem("customers"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   // show list
@@ -160,6 +175,9 @@ const CustomersList = () => {
         data={listData}
         enableRowNumbers
         enableRowActions
+        state={{
+          isLoading: isLoading,
+        }}
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex' }}>
             <Tooltip arrow placement="left" title="Edit">
