@@ -44,11 +44,8 @@ const CampaignsList = () => {
       setIsLoading(false);
 
       const tmp = ParseData(data);
-      store.dispatch({
-        type: 'campaigns',
-        method: 'update',
-        data: tmp,
-      });
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("campaigns", tmpData);
     });
   });
 

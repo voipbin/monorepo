@@ -21,8 +21,8 @@ import {
   ParseData,
 } from '../../provider';
 
-const ActiveDetail = () => {
-  console.log("QueuesDetail");
+const ActivesDetail = () => {
+  console.log("ActivesDetail");
 
   const ref_id = useRef(null);
   const ref_status = useRef(null);
@@ -223,4 +223,4 @@ const ActiveDetail = () => {
   )
 }
 
-export default ActiveDetail
+export default ActivesDetail

@@ -36,9 +36,21 @@ const ConferencesList = () => {
   },[]);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("conferences"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "conferences?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("conferences", tmpData);
+    });
+
+    // const tmp = JSON.parse(localStorage.getItem("conferences"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   // show list
@@ -111,6 +123,9 @@ const ConferencesList = () => {
       <MaterialReactTable
         columns={listColumns}
         data={listData ?? []} // data?.data ?? []
+        state={{
+          isLoading: isLoading,
+        }}
         enableRowNumbers
         enableRowActions
         renderRowActions={({ row, table }) => (

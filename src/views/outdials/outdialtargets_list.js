@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
+import { useParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -25,7 +26,9 @@ import {
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
 
-const BillingAccountsList = () => {
+const OutdialtargetsList = () => {
+  const routeParams = useParams();
+  const outdialID = routeParams.outdial_id;
 
   const [listData, setListData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,10 +36,11 @@ const BillingAccountsList = () => {
   useEffect(() => {
     getList();
     return;
-  },[]);
+  }, []);
 
   const getList = (() => {
-    const target = "billing_accounts?page_size=100";
+
+    const target = "outdials/" + outdialID + "/targets?page_size=100";
 
     ProviderGet(target).then(result => {
       const data = result.result;
@@ -45,12 +49,8 @@ const BillingAccountsList = () => {
 
       const tmp = ParseData(data);
       const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("billing_accounts", tmpData);
+      localStorage.setItem("outdials/" + outdialID + "/targets", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("billing_accounts"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list
@@ -70,36 +70,13 @@ const BillingAccountsList = () => {
         header: 'Detail',
       },
       {
-        accessorKey: 'type',
-        header: 'Type',
-      },
-      {
-        accessorKey: 'balance',
-        header: 'Balance',
-      },
-      {
-        accessorKey: 'payment_type',
-        header: 'Payment Type',
-      },
-      {
-        accessorKey: 'payment_method',
-        header: 'Payment Method',
-      },
-      {
-        accessorKey: 'tm_create',
-        header: 'Create Time',
-        enableEditing: false,
+        accessorKey: 'status',
+        header: 'Status',
         size: 250,
       },
       {
         accessorKey: 'tm_update',
         header: 'Update Time',
-        enableEditing: false,
-        size: 250,
-      },
-      {
-        accessorKey: 'tm_delete',
-        header: 'Delete Time',
         enableEditing: false,
         size: 250,
       },
@@ -109,8 +86,6 @@ const BillingAccountsList = () => {
 
   const columnVisibility = {
     id: false,
-    tm_create: false,
-    tm_delete: false,
   };
 
   const handleDeleteRow = (row) => {
@@ -122,20 +97,21 @@ const BillingAccountsList = () => {
       return;
     }
 
-    const target = "billing_accounts/" + row.getValue('id');
-    ProviderDelete(target).then(() => {
-      console.log("Deleted queue.");
+    const target = "outdials/" + outdialID + "/targets/" + row.getValue('id');
+    console.log("Deleting target. target: " + target)
+    ProviderDelete(target).then((response) => {
+      console.log("Deleted resource. ", response);
     });
   }
 
   const navigate = useNavigate();
   const Detail = (row) => {
-    const target = "/resources/billing_accounts/billing_accounts_detail/" + row.original.id;
+    const target = "/resources/outdials/" + outdialID + "/outdialtargets_detail/" + row.original.id;
     console.log("navigate target: ", target);
     navigate(target);
   }
   const Create = () => {
-    const target = "/resources/billing_accounts/billing_accounts_create";
+    const target = "/resources/outdials/" + outdialID + "/outdialtargets_create";
     console.log("navigate target: ", target);
     navigate(target);
   }
@@ -199,4 +175,4 @@ const BillingAccountsList = () => {
   )
 }
 
-export default BillingAccountsList
+export default OutdialtargetsList

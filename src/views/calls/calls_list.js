@@ -34,6 +34,7 @@ import { useNavigate } from "react-router-dom";
 const Calls = () => {
 
   const [listData, setListData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     getList();
@@ -41,9 +42,21 @@ const Calls = () => {
   }, []);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("calls"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "calls?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("calls", tmpData);
+    });
+
+    // const tmp = JSON.parse(localStorage.getItem("calls"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
   const listColumns = useMemo(
@@ -106,7 +119,7 @@ const Calls = () => {
         data={listData}
         enableRowNumbers
         state={{
-          // isLoading: isLoading,
+          isLoading: isLoading,
         }}
         muiTableBodyRowProps={({ row }) => ({
           onDoubleClick: (event) => {

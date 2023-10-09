@@ -36,9 +36,21 @@ const QueuesList = () => {
   },[]);
 
   const getList = (() => {
-    const tmp = JSON.parse(localStorage.getItem("queues"));
-    const data = Object.values(tmp);
-    setListData(data);
+    const target = "queues?page_size=100";
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+
+      const tmp = ParseData(data);
+      const tmpData = JSON.stringify(tmp);
+      localStorage.setItem("queues", tmpData);
+    });
+
+    // const tmp = JSON.parse(localStorage.getItem("queues"));
+    // const data = Object.values(tmp);
+    // setListData(data);
   });
 
 
@@ -173,7 +185,7 @@ const QueuesList = () => {
         )}
 
         state={{
-          // isLoading: isLoading,
+          isLoading: isLoading,
         }}
 
         muiTableBodyRowProps={({ row, table }) => ({
