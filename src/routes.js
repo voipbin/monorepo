@@ -83,6 +83,12 @@ const OutdialtargetsList = React.lazy(() => import('./views/outdials/outdialtarg
 const OutdialtargetsDetail = React.lazy(() => import('./views/outdials/outdialtargets_detail'))
 const OutdialtargetsCreate = React.lazy(() => import('./views/outdials/outdialtargets_create'))
 
+// outplans
+const OutplansList = React.lazy(() => import('./views/outplans/outplans_list'))
+const OutplansDetail = React.lazy(() => import('./views/outplans/outplans_detail'))
+const OutplansCreate = React.lazy(() => import('./views/outplans/outplans_create'))
+
+
 // campaigncalls
 const Campaigncalls = React.lazy(() => import('./views/campaigns/campaigncalls'))
 
@@ -243,6 +249,10 @@ const routes = [
   { path: '/resources/outdials/:outdial_id/outdialtargets_list', name: 'OutdialtargetsList', element: OutdialtargetsList },
   { path: '/resources/outdials/:outdial_id/outdialtargets_create', name: 'OutdialtargetsCreate', element: OutdialtargetsCreate },
   { path: '/resources/outdials/:outdial_id/outdialtargets_detail/:id', name: 'OutdialtargetsDetail', element: OutdialtargetsDetail },
+
+  { path: '/resources/outplans/outplans_list', name: 'OutplansList', element: OutplansList },
+  { path: '/resources/outplans/outplans_create', name: 'OutplansCreate', element: OutplansCreate },
+  { path: '/resources/outplans/outplans_detail/:id', name: 'OutplansDetail', element: OutplansDetail },
 
 
 

@@ -181,35 +181,6 @@ const _nav = [
   },
   {
     component: CNavGroup,
-    name: 'Campaigns',
-    to: '/resources/campaigns/campaigns_list',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Campaigns',
-        to: '/resources/campaigns/campaigns_list',
-      },
-      // {
-      //   component: CNavItem,
-      //   name: 'Campaigncalls',
-      // },
-    ]
-  },
-  {
-    component: CNavGroup,
-    name: 'Outdials',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Outdials',
-        to: '/resources/outdials/outdials_list',
-      },
-    ]
-  },
-  {
-    component: CNavGroup,
     name: 'Chatbots',
     to: '/resources/chatbots/chatbots',
     icon: <CIcon icon={cilVideogame} customClassName="nav-icon" />,
@@ -261,6 +232,51 @@ const _nav = [
   },
 
 
+  {
+    component: CNavTitle,
+    name: 'Outbound Campaign',
+  },
+  {
+    component: CNavGroup,
+    name: 'Campaigns',
+    to: '/resources/campaigns/campaigns_list',
+    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Campaigns',
+        to: '/resources/campaigns/campaigns_list',
+      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Campaigncalls',
+      // },
+    ]
+  },
+  {
+    component: CNavGroup,
+    name: 'Outdials',
+    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Outdials',
+        to: '/resources/outdials/outdials_list',
+      },
+    ]
+  },
+  {
+    component: CNavGroup,
+    name: 'Outplans',
+    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Outplans',
+        to: '/resources/outplans/outplans_list',
+      },
+    ]
+  },
 
 
   // {
