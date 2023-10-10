@@ -45,7 +45,7 @@ const QueuecallsList = () => {
 
       const tmp = ParseData(data);
       const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("chatbots", tmpData);
+      localStorage.setItem("queuecalls", tmpData);
     });
 
     // const tmp = JSON.parse(localStorage.getItem("queuecalls"));

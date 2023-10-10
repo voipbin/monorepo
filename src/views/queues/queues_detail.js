@@ -43,9 +43,13 @@ const QueuesDetail = () => {
   const GetDetail = () => {
     const id = routeParams.id;
 
-    const storeData = store.getState();
-    const detailData = storeData["queues"][id];
-    console.log("detailData", detailData);
+    const tmp = localStorage.getItem("queues");
+    const datas = JSON.parse(tmp);
+    const detailData = datas[id];
+
+    // const storeData = store.getState();
+    // const detailData = storeData["queues"][id];
+    // console.log("detailData", detailData);
 
     return (
       <>
@@ -109,8 +113,6 @@ const QueuesDetail = () => {
                   </CCol>
                 </CRow>
 
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Timeout(ms)</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -133,10 +135,7 @@ const QueuesDetail = () => {
                       pattern="[0-9]*"
                     />
                   </CCol>
-
-
                 </CRow>
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Queuecall IDs</b></CFormLabel>
@@ -164,7 +163,6 @@ const QueuesDetail = () => {
                   </CCol>
                 </CRow>
 
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Wait Actions</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -177,7 +175,6 @@ const QueuesDetail = () => {
                     />
                   </CCol>
 
-
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Tag IDs</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
@@ -189,7 +186,6 @@ const QueuesDetail = () => {
                     />
                   </CCol>
                 </CRow>
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Create Timestamp</b></CFormLabel>
@@ -216,10 +212,9 @@ const QueuesDetail = () => {
                 <CButton type="submit" onClick={() => Update()}>Update</CButton>
 
               </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };

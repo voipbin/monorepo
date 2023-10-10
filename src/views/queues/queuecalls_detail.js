@@ -30,9 +30,13 @@ const QueuecallsDetail = () => {
   const GetDetail = () => {
     const id = routeParams.id;
 
-    const storeData = store.getState();
-    const detailData = storeData["queuecalls"][id];
-    console.log("detailData", detailData);
+    const tmp = localStorage.getItem("queuecalls");
+    const datas = JSON.parse(tmp);
+    const detailData = datas[id];
+
+    // const storeData = store.getState();
+    // const detailData = storeData["queuecalls"][id];
+    // console.log("detailData", detailData);
 
     return (
       <>

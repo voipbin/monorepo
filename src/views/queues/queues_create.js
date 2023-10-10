@@ -47,7 +47,7 @@ const QueuesCreate = () => {
           <CCol xs={12}>
             <CCard className="mb-4">
               <CCardHeader>
-                <strong>Detail</strong> <small>Detail of the call</small>
+                <strong>Detail</strong> <small>Detail of the resource</small>
               </CCardHeader>
 
               <CCardBody>
@@ -138,16 +138,14 @@ const QueuesCreate = () => {
                       rows={5}
                     />
                   </CCol>
-
-
                 </CRow>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
-      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+        <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
       </>
     )
   };
