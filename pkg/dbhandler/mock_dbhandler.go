@@ -152,6 +152,21 @@ func (mr *MockDBHandlerMockRecorder) RouteGet(ctx, id interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGet", reflect.TypeOf((*MockDBHandler)(nil).RouteGet), ctx, id)
 }
 
+// RouteGets mocks base method.
+func (m *MockDBHandler) RouteGets(ctx context.Context, token string, limit uint64) ([]*route.Route, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteGets", ctx, token, limit)
+	ret0, _ := ret[0].([]*route.Route)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteGets indicates an expected call of RouteGets.
+func (mr *MockDBHandlerMockRecorder) RouteGets(ctx, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGets", reflect.TypeOf((*MockDBHandler)(nil).RouteGets), ctx, token, limit)
+}
+
 // RouteGetsByCustomerID mocks base method.
 func (m *MockDBHandler) RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error) {
 	m.ctrl.T.Helper()
