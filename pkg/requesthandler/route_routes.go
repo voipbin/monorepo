@@ -147,11 +147,36 @@ func (r *requestHandler) RouteV1RouteUpdate(
 	return &res, nil
 }
 
+// RouteV1RouteGetsByCustomerID sends a request to route-manager
+// to getting a list of route info.
+// it returns detail list of route info if it succeed.
+func (r *requestHandler) RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error) {
+	uri := fmt.Sprintf("/v1/routes?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+
+	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	switch {
+	case err != nil:
+		return nil, err
+	case res == nil:
+		// not found
+		return nil, fmt.Errorf("response code: %d", 404)
+	case res.StatusCode > 299:
+		return nil, fmt.Errorf("response code: %d", res.StatusCode)
+	}
+
+	var f []rmroute.Route
+	if err := json.Unmarshal([]byte(res.Data), &f); err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
 // RouteV1RouteGets sends a request to route-manager
 // to getting a list of route info.
 // it returns detail list of route info if it succeed.
-func (r *requestHandler) RouteV1RouteGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error) {
-	uri := fmt.Sprintf("/v1/routes?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error) {
+	uri := fmt.Sprintf("/v1/routes?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	res, err := r.sendRequestRoute(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceRouteRoutes, requestTimeoutDefault, 0, ContentTypeJSON, nil)
 	switch {

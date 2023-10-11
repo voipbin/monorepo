@@ -919,7 +919,8 @@ type RequestHandler interface {
 	RouteV1RouteGet(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error)
 	RouteV1RouteDelete(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error)
 	RouteV1RouteUpdate(ctx context.Context, routeID uuid.UUID, providerID uuid.UUID, priority int, target string) (*rmroute.Route, error)
-	RouteV1RouteGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
+	RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error)
+	RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 
 	// storage-manager: recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)

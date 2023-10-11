@@ -4623,18 +4623,33 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteGet(ctx, routeID interface
 }
 
 // RouteV1RouteGets mocks base method.
-func (m *MockRequestHandler) RouteV1RouteGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]route.Route, error) {
+func (m *MockRequestHandler) RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1RouteGets", ctx, customerID, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "RouteV1RouteGets", ctx, pageToken, pageSize)
 	ret0, _ := ret[0].([]route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteV1RouteGets indicates an expected call of RouteV1RouteGets.
-func (mr *MockRequestHandlerMockRecorder) RouteV1RouteGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RouteV1RouteGets(ctx, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteGets", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteGets), ctx, customerID, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteGets", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteGets), ctx, pageToken, pageSize)
+}
+
+// RouteV1RouteGetsByCustomerID mocks base method.
+func (m *MockRequestHandler) RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]route.Route, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteV1RouteGetsByCustomerID", ctx, customerID, pageToken, pageSize)
+	ret0, _ := ret[0].([]route.Route)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteV1RouteGetsByCustomerID indicates an expected call of RouteV1RouteGetsByCustomerID.
+func (mr *MockRequestHandlerMockRecorder) RouteV1RouteGetsByCustomerID(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteGetsByCustomerID", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteGetsByCustomerID), ctx, customerID, pageToken, pageSize)
 }
 
 // RouteV1RouteUpdate mocks base method.
