@@ -9,8 +9,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 	rmroute "gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
+
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
 )
 
 func Test_RouteV1RouteCreate(t *testing.T) {
@@ -270,7 +271,7 @@ func Test_RouteV1RouteUpdate(t *testing.T) {
 	}
 }
 
-func Test_RouteV1RouteGets(t *testing.T) {
+func Test_RouteV1RouteGetsByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -325,7 +326,72 @@ func Test_RouteV1RouteGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RouteV1RouteGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RouteV1RouteGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_RouteV1RouteGets(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		pageToken string
+		pageSize  uint64
+
+		response *rabbitmqhandler.Response
+
+		expectTarget  string
+		expectRequest *rabbitmqhandler.Request
+		expectRes     []rmroute.Route
+	}{
+		{
+			"normal",
+
+			"2020-09-20 03:23:20.995000",
+			10,
+
+			&rabbitmqhandler.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"c5c30b12-682e-11ee-9727-578ef127932b"}]`),
+			},
+
+			"bin-manager.route-manager.request",
+			&rabbitmqhandler.Request{
+				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				Method:   rabbitmqhandler.RequestMethodGet,
+				DataType: ContentTypeJSON,
+			},
+			[]rmroute.Route{
+				{
+					ID: uuid.FromStringOrNil("c5c30b12-682e-11ee-9727-578ef127932b"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := rabbitmqhandler.NewMockRabbit(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
