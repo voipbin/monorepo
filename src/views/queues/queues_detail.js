@@ -106,7 +106,6 @@ const QueuesDetail = () => {
                       id="colFormLabelSm"
                       defaultValue={detailData.routing_method}
                       options={[
-                        detailData.routing_method,
                         { label: 'random', value: 'random' },
                       ]}
                     />

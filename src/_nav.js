@@ -23,6 +23,12 @@ import {
   cilDollar,
   cilBook,
   cilVideogame,
+  cilSpreadsheet,
+  cilListRich,
+  cilHandPointRight,
+  cilRouter,
+  cilMap,
+  cilChatBubble,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -195,7 +201,7 @@ const _nav = [
   {
     component: CNavGroup,
     name: 'Chats',
-    icon: <CIcon icon={cilVideogame} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilChatBubble} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -208,7 +214,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Trunks',
     to: '/resources/trunks/trunks_list',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilRouter} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -221,7 +227,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Extensions',
     to: '/resources/extensions/extensions_list',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilMap} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -231,7 +237,7 @@ const _nav = [
     ]
   },
 
-
+  // -----------------------------------------------------------------------
   {
     component: CNavTitle,
     name: 'Outbound Campaign',
@@ -240,11 +246,16 @@ const _nav = [
     component: CNavGroup,
     name: 'Campaigns',
     to: '/resources/campaigns/campaigns_list',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilHandPointRight} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
         name: 'Campaigns',
+        to: '/resources/campaigns/campaigns_list',
+      },
+      {
+        component: CNavItem,
+        name: 'Campaigncalls',
         to: '/resources/campaigns/campaigns_list',
       },
       // {
@@ -256,7 +267,7 @@ const _nav = [
   {
     component: CNavGroup,
     name: 'Outdials',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilSpreadsheet} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -268,7 +279,7 @@ const _nav = [
   {
     component: CNavGroup,
     name: 'Outplans',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,

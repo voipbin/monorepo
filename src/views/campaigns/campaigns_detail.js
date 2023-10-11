@@ -71,19 +71,6 @@ const CampaignsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
-
-                  <CFormLabel className="col-sm-2 col-form-label"><b>Status</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_status}
-                      type="text"
-                      id="id"
-                      defaultValue={detailData.status}
-                      readOnly plainText
-                    />
-                  </CCol>
-
                 </CRow>
 
 
@@ -131,7 +118,6 @@ const CampaignsDetail = () => {
                       id="colFormLabelSm"
                       defaultValue={detailData.type}
                       options={[
-                        detailData.type,
                         { label: 'call', value: 'call' },
                         { label: 'flow', value: 'flow' },
                       ]}
@@ -149,7 +135,6 @@ const CampaignsDetail = () => {
                       type="text"
                       id="colFormLabelSm"
                       options={[
-                        detailData.end_handle,
                         { label: 'stop', value: 'stop' },
                         { label: 'continue', value: 'continue' },
                       ]}
@@ -223,6 +208,31 @@ const CampaignsDetail = () => {
 
                 </CRow>
 
+                <CButton type="submit" onClick={() => Update()}>Update</CButton>
+                <br />
+                <br />
+
+
+                <CRow>
+                  <CFormLabel className="col-sm-2 col-form-label"><b>Status</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                  <CFormSelect
+                      ref={ref_status}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.status}
+                      options={[
+                        { label: 'run', value: 'run' },
+                        { label: 'stop', value: 'stop' },
+                      ]}
+                    />
+                  </CCol>
+
+                  <CCol>
+                    <CButton type="submit" onClick={() => UpdateStatus()}>Update Status</CButton>
+                  </CCol>
+
+                </CRow>
 
 
                 <CRow>
@@ -247,12 +257,10 @@ const CampaignsDetail = () => {
                   </CCol>
                 </CRow>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
-      <CButton type="submit" onClick={() => Update()}>Update</CButton>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
@@ -277,7 +285,23 @@ const CampaignsDetail = () => {
     const target = "campaigns/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then(() => {
-      console.log("Updated info.");
+      console.log("Updated info.",);
+
+    });
+  };
+
+  const UpdateStatus = () => {
+    console.log("UpdateStatus");
+
+    const tmpData = {
+      "status": ref_status.current.value,
+    };
+
+    const body = JSON.stringify(tmpData);
+    const target = "campaigns/" + ref_id.current.value + "/status";
+    console.log("Update info. target: " + target + ", body: " + body);
+    ProviderPut(target, body).then(response => {
+      console.log("Updated info. response: " + JSON.stringify(response));
     });
   };
 

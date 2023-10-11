@@ -122,7 +122,6 @@ const AgentsDetail = () => {
                       id="colFormLabelSm"
                       defaultValue={detailData.ring_method}
                       options={[
-                        detailData.ring_method,
                         { label: 'ringall', value: 'ringall' },
                       ]}
                     />
