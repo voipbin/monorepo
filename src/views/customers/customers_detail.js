@@ -190,7 +190,7 @@ const CustomersDetail = () => {
                     />
                   </CCol>
                   <CCol className="mb-3 align-items-auto">
-                    <CButton type="submit" onClick={() => UpdateBillingAccountID()}>Update</CButton>
+                    <CButton type="submit" onClick={() => UpdateBillingAccountID()}>Update Billing Account ID</CButton>
                   </CCol>
                 </CRow>
 
@@ -207,7 +207,7 @@ const CustomersDetail = () => {
                     />
                   </CCol>
                   <CCol className="mb-3 align-items-auto">
-                    <CButton type="submit" onClick={() => UpdatePermissionIDs()}>Update</CButton>
+                    <CButton type="submit" onClick={() => UpdatePermissionIDs()}>Update Permission IDs</CButton>
                   </CCol>
                 </CRow>
 
