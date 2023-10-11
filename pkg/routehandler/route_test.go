@@ -171,6 +171,57 @@ func Test_GetsByCustomerID(t *testing.T) {
 	}
 }
 
+func Test_GetsByCustomerID_customer_id_is_nil(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		token string
+		limit uint64
+
+		responseRoutes []*route.Route
+	}{
+		{
+			"normal",
+
+			"2020-04-18 03:22:17.995000",
+			10,
+
+			[]*route.Route{
+				{
+					ID: uuid.FromStringOrNil("e1c2857c-680b-11ee-a7bb-d7acc274bf0f"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &routeHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit).Return(tt.responseRoutes, nil)
+
+			res, err := h.GetsByCustomerID(ctx, uuid.Nil, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.responseRoutes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseRoutes, res)
+			}
+		})
+	}
+}
+
 func Test_GetsByTarget(t *testing.T) {
 
 	tests := []struct {

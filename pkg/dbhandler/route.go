@@ -79,6 +79,7 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 	}
 	defer stmt.Close()
 
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err = stmt.ExecContext(ctx,
 		r.ID.Bytes(),
 		r.CustomerID.Bytes(),
@@ -88,9 +89,9 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 
 		r.Target,
 
-		r.TMCreate,
-		r.TMUpdate,
-		r.TMDelete,
+		ts,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. ProviderCreate. err: %v", err)
@@ -186,6 +187,39 @@ func (h *handler) RouteGet(ctx context.Context, id uuid.UUID) (*route.Route, err
 	return res, nil
 }
 
+// RouteGets returns list of routes.
+func (h *handler) RouteGets(ctx context.Context, token string, limit uint64) ([]*route.Route, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			tm_delete >= ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, routeSelect)
+
+	rows, err := h.db.Query(q, DefaultTimeStamp, token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. RouteGets. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*route.Route
+	for rows.Next() {
+		u, err := h.routeGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. RouteGets. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // RouteGetsByCustomerID returns list of routes.
 func (h *handler) RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error) {
 
@@ -263,8 +297,8 @@ func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	curTime := GetCurTime()
-	if _, err := h.db.Exec(q, curTime, curTime, id.Bytes()); err != nil {
+	ts := h.utilHandler.TimeGetCurTime()
+	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. RouteDelete. err: %v", err)
 	}
 
@@ -286,7 +320,8 @@ func (h *handler) RouteUpdate(ctx context.Context, r *route.Route) error {
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, r.ProviderID.Bytes(), r.Priority, r.Target, GetCurTime(), r.ID.Bytes()); err != nil {
+	ts := h.utilHandler.TimeGetCurTime()
+	if _, err := h.db.Exec(q, r.ProviderID.Bytes(), r.Priority, r.Target, ts, r.ID.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. RouteUpdate. err: %v", err)
 	}
 

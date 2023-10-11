@@ -104,6 +104,7 @@ func (h *handler) ProviderCreate(ctx context.Context, p *provider.Provider) erro
 		return fmt.Errorf("could not marshal actions. ProviderCreate. err: %v", err)
 	}
 
+	ts := h.utilHandler.TimeGetCurTime()
 	_, err = stmt.ExecContext(ctx,
 		p.ID.Bytes(),
 
@@ -117,9 +118,9 @@ func (h *handler) ProviderCreate(ctx context.Context, p *provider.Provider) erro
 		p.Name,
 		p.Detail,
 
-		p.TMCreate,
-		p.TMUpdate,
-		p.TMDelete,
+		ts,
+		DefaultTimeStamp,
+		DefaultTimeStamp,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute query. ProviderCreate. err: %v", err)
@@ -258,8 +259,8 @@ func (h *handler) ProviderDelete(ctx context.Context, id uuid.UUID) error {
 		id = ?
 	`
 
-	curTime := GetCurTime()
-	if _, err := h.db.Exec(q, curTime, curTime, id.Bytes()); err != nil {
+	ts := h.utilHandler.TimeGetCurTime()
+	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ProviderDelete. err: %v", err)
 	}
 
@@ -292,7 +293,8 @@ func (h *handler) ProviderUpdate(ctx context.Context, p *provider.Provider) erro
 		return err
 	}
 
-	if _, err := h.db.Exec(q, p.Type, p.Hostname, p.TechPrefix, p.TechPostfix, techHeaders, p.Name, p.Detail, GetCurTime(), p.ID.Bytes()); err != nil {
+	ts := h.utilHandler.TimeGetCurTime()
+	if _, err := h.db.Exec(q, p.Type, p.Hostname, p.TechPrefix, p.TechPostfix, techHeaders, p.Name, p.Detail, ts, p.ID.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. ProviderUpdate. err: %v", err)
 	}
 

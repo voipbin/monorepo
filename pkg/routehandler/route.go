@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/dbhandler"
 )
 
 // Get returns route
@@ -46,10 +45,6 @@ func (h *routeHandler) Create(
 		Priority:   priority,
 
 		Target: target,
-
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
 	}
 	log.WithField("route", r).Debug("Creating a new route.")
 
@@ -79,7 +74,15 @@ func (h *routeHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUI
 		})
 	log.Debug("Getting routes.")
 
-	res, err := h.db.RouteGetsByCustomerID(ctx, customerID, token, limit)
+	var res []*route.Route
+	var err error
+
+	if customerID == uuid.Nil {
+		res, err = h.db.RouteGets(ctx, token, limit)
+	} else {
+		res, err = h.db.RouteGetsByCustomerID(ctx, customerID, token, limit)
+	}
+
 	if err != nil {
 		log.Errorf("Could not get routes. err: %v", err)
 		return nil, err

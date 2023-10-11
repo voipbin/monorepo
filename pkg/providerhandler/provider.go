@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
-	"gitlab.com/voipbin/bin-manager/route-manager.git/pkg/dbhandler"
 )
 
 // Get returns provider
@@ -50,9 +49,6 @@ func (h *providerHandler) Create(
 		TechHeaders: techHeaders,
 		Name:        name,
 		Detail:      detail,
-		TMCreate:    dbhandler.GetCurTime(),
-		TMUpdate:    dbhandler.DefaultTimeStamp,
-		TMDelete:    dbhandler.DefaultTimeStamp,
 	}
 	log.WithField("provider", p).Debugf("Creating a new provider. id: %s", id)
 

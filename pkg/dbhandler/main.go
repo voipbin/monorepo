@@ -6,10 +6,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/route-manager.git/models/provider"
 	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
@@ -28,6 +27,7 @@ type DBHandler interface {
 	// route
 	RouteCreate(ctx context.Context, r *route.Route) error
 	RouteGet(ctx context.Context, id uuid.UUID) (*route.Route, error)
+	RouteGets(ctx context.Context, token string, limit uint64) ([]*route.Route, error)
 	RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error)
 	RouteGetsByCustomerIDWithTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error)
 	RouteDelete(ctx context.Context, id uuid.UUID) error
@@ -36,8 +36,9 @@ type DBHandler interface {
 
 // handler database handler
 type handler struct {
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
 }
 
 // handler errors
@@ -53,20 +54,9 @@ const (
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		db:    db,
-		cache: cache,
+		utilHandler: utilhandler.NewUtilHandler(),
+		db:          db,
+		cache:       cache,
 	}
 	return h
-}
-
-func (h *handler) GetCurTime() string {
-	return GetCurTime()
-}
-
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
 }
