@@ -25,7 +25,8 @@ import {
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
 
-const TrunksList = () => {
+const ProvidersList = () => {
+  console.log("ProvidersList");
 
   const [listData, setListData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +37,7 @@ const TrunksList = () => {
   },[]);
 
   const getList = (() => {
-    const target = "trunks?page_size=100";
+    const target = "providers?page_size=100";
 
     ProviderGet(target).then(result => {
       const data = result.result;
@@ -45,12 +46,8 @@ const TrunksList = () => {
 
       const tmp = ParseData(data);
       const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("trunks", tmpData);
+      localStorage.setItem("providers", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("trunks"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list
@@ -62,8 +59,8 @@ const TrunksList = () => {
         enableEditing: false,
       },
       {
-        accessorKey: 'domain_name',
-        header: 'Domain Name',
+        accessorKey: 'type',
+        header: 'Type',
       },
       {
         accessorKey: 'name',
@@ -72,10 +69,11 @@ const TrunksList = () => {
       {
         accessorKey: 'detail',
         header: 'Detail',
+        size: 350,
       },
       {
-        accessorKey: 'auth_types',
-        header: 'Auth Types',
+        accessorKey: 'hostname',
+        header: 'Hostname',
       },
       {
         accessorKey: 'tm_update',
@@ -100,7 +98,7 @@ const TrunksList = () => {
       return;
     }
 
-    const target = "trunks/" + row.getValue('id');
+    const target = "providers/" + row.getValue('id');
     ProviderDelete(target).then((response) => {
       console.log("Deleted resource. ", JSON.stringify(response));
     });
@@ -108,12 +106,12 @@ const TrunksList = () => {
 
   const navigate = useNavigate();
   const Detail = (row) => {
-    const target = "/resources/trunks/trunks_detail/" + row.original.id;
+    const target = "/resources/providers/providers_detail/" + row.original.id;
     console.log("navigate target: ", target);
     navigate(target);
   }
   const Create = () => {
-    const target = "/resources/trunks/trunks_create";
+    const target = "/resources/providers/providers_create";
     console.log("navigate target: ", target);
     navigate(target);
   }
@@ -177,4 +175,4 @@ const TrunksList = () => {
   )
 }
 
-export default TrunksList
+export default ProvidersList

@@ -24,22 +24,19 @@ import {
   ParseData,
 } from '../../provider';
 
-const TrunkCreate = () => {
-  console.log("TrunkCreate");
+const ProviersCreate = () => {
+  console.log("ProviersCreate");
 
+  const ref_id = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
-  const ref_domain_name = useRef(null);
-  const ref_auth_types = useRef(null);
-  const ref_auth_types_basic = useRef(null);
-  const ref_auth_types_ip = useRef(null);
-  const ref_username = useRef(null);
-  const ref_password = useRef(null);
-  const ref_allowed_ips = useRef(null);
+  const ref_type = useRef(null);
+  const ref_hostname = useRef(null);
+  const ref_tech_prefix = useRef(null);
+  const ref_tech_postfix = useRef(null);
+  const ref_tech_headers = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
-    const id = routeParams.id;
 
     return (
       <>
@@ -52,19 +49,6 @@ const TrunkCreate = () => {
 
               <CCardBody>
 
-              <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Domain Name</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_domain_name}
-                      type="text"
-                      id="colFormLabelSm"
-                    />
-                  </CCol>
-
-                </CRow>
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -72,6 +56,7 @@ const TrunkCreate = () => {
                       ref={ref_name}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue=""
                     />
                   </CCol>
 
@@ -81,77 +66,77 @@ const TrunkCreate = () => {
                       ref={ref_detail}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue=""
+                    />
+                  </CCol>
+                </CRow>
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormSelect
+                      ref={ref_type}
+                      type="text"
+                      id="colFormLabelSm"
+                      options={[
+                        { label: 'sip', value: 'sip' },
+                      ]}
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Hostname</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_hostname}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue=""
                     />
                   </CCol>
                 </CRow>
 
 
-
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Auth Types</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CListGroup ref={ref_auth_types}>
-                      <CListGroupItem>
-                        <CFormCheck ref={ref_auth_types_basic} hitArea="full" label="basic" id="ref_auth_types_basic" value="" defaultChecked/>
-                      </CListGroupItem>
-                      <CListGroupItem>
-                        <CFormCheck ref={ref_auth_types_ip} hitArea="full" label="ip" id="ref_auth_types_ip" value=""/>
-                      </CListGroupItem>
-                    </CListGroup>
-                  </CCol>
-                </CRow>
-
-
-
-
-                <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Username</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Tech Prefix</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
-                      ref={ref_username}
+                      ref={ref_tech_prefix}
                       type="text"
                       id="colFormLabelSm"
                       defaultValue=""
                     />
                   </CCol>
 
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Password</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Tech Postfix</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
-                      ref={ref_password}
+                      ref={ref_tech_postfix}
                       type="text"
                       id="colFormLabelSm"
                       defaultValue=""
                     />
                   </CCol>
-
                 </CRow>
 
-
-
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Allowed IPs</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Tech Headers</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormTextarea
-                      ref={ref_allowed_ips}
+                      ref={ref_tech_headers}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue="[]"
+                      defaultValue={JSON.stringify(JSON.parse("{}", null, 2))}
                       rows={5}
                     />
                   </CCol>
                 </CRow>
 
-
-
                 <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
 
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
@@ -159,28 +144,18 @@ const TrunkCreate = () => {
   const CreateResource = () => {
     console.log("Create info");
 
-    let tmpAuth = []
-    {
-      if (ref_auth_types_basic.current.checked == true) {
-        tmpAuth.push("basic");
-      }
-      if (ref_auth_types_ip.current.checked == true) {
-        tmpAuth.push("ip");
-      }
-    }
-
     const tmpData = {
-      "domain_name": ref_domain_name.current.value,
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
-      "auth_types": JSON.parse(JSON.stringify(tmpAuth)),
-      "username": ref_username.current.value,
-      "password": ref_password.current.value,
-      "allowed_ips": JSON.parse(ref_allowed_ips.current.value),
+      "type": ref_type.current.value,
+      "hostname": ref_hostname.current.value,
+      "tech_prefix": ref_tech_prefix.current.value,
+      "tech_postfix": ref_tech_postfix.current.value,
+      "tech_headers": JSON.parse(ref_tech_headers.current.value),
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "trunks";
+    const target = "providers";
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
       console.log("Created info.", JSON.stringify(response));
@@ -194,4 +169,4 @@ const TrunkCreate = () => {
   )
 }
 
-export default TrunkCreate
+export default ProviersCreate

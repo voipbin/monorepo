@@ -11,6 +11,9 @@ import {
   CFormTextarea,
   CButton,
   CFormSelect,
+  CListGroup,
+  CListGroupItem,
+  CFormCheck,
   } from '@coreui/react'
 import store from '../../store'
 import {
@@ -21,18 +24,16 @@ import {
   ParseData,
 } from '../../provider';
 
-const ChatsCreate = () => {
-  console.log("ChatsCreate");
+const RoutesCreate = () => {
+  console.log("RoutesCreate");
 
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
-  const ref_type = useRef(null);
-  const ref_owner_id = useRef(null);
-  const ref_participant_ids = useRef(null);
+  const ref_provider_id = useRef(null);
+  const ref_priority = useRef(null);
+  const ref_target = useRef(null);
 
-  const routeParams = useParams();
   const Create = () => {
-    const id = routeParams.id;
 
     return (
       <>
@@ -45,9 +46,6 @@ const ChatsCreate = () => {
 
               <CCardBody>
 
-
-
-
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
@@ -55,6 +53,7 @@ const ChatsCreate = () => {
                       ref={ref_name}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue=""
                     />
                   </CCol>
 
@@ -64,65 +63,52 @@ const ChatsCreate = () => {
                       ref={ref_detail}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue=""
                     />
                   </CCol>
                 </CRow>
 
-
-
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Type</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Provider ID</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormSelect
-                      ref={ref_name}
-                      type="text"
-                      id="colFormLabelSm"
-                      options={[
-                        { label: 'normal', value: 'normal' },
-                        { label: 'group', value: 'group' },
-                      ]}
-                    />
-                  </CCol>
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Owner ID</b></CFormLabel>
-                  <CCol>
                     <CFormInput
-                      ref={ref_owner_id}
+                      ref={ref_provider_id}
                       type="text"
                       id="colFormLabelSm"
+                      defaultValue=""
+                    />
+                  </CCol>
+
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Priority</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_priority}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue="0"
                     />
                   </CCol>
                 </CRow>
-
-
 
 
                 <CRow>
-
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Participant IDs</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Target</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
-                    <CFormTextarea
-                      ref={ref_participant_ids}
+                    <CFormInput
+                      ref={ref_target}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue="[]"
-                      rows={15}
+                      defaultValue="all"
                     />
                   </CCol>
-
-
                 </CRow>
 
+                <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
 
-
-
-
-          </CCardBody>
-        </CCard>
-      </CCol>
-      </CRow>
-
-      <CButton type="submit" onClick={() => CreateResource()}>Create</CButton>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </>
     )
   };
@@ -133,17 +119,17 @@ const ChatsCreate = () => {
     const tmpData = {
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
-      "type": ref_type.current.value,
-      "owner_id": ref_owner_id.current.value,
-      "participant_ids": JSON.parse(ref_participant_ids.current.value),
+      "provider_id": ref_provider_id.current.value,
+      "priority": Number(ref_priority.current.value),
+      "target": ref_target.current.value,
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "chats";
+    const target = "routes";
     console.log("Create info. target: " + target + ", body: " + body);
-    ProviderPost(target, body).then((response) => {
-      console.log("Created info.", JSON.stringify(response));
-    });
+    // ProviderPost(target, body).then((response) => {
+    //   console.log("Created info.", JSON.stringify(response));
+    // });
   };
 
   return (
@@ -153,4 +139,4 @@ const ChatsCreate = () => {
   )
 }
 
-export default ChatsCreate
+export default RoutesCreate

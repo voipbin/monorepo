@@ -21,24 +21,25 @@ import {
   ParseData,
 } from '../../provider';
 
-const BillingAccountsDetail = () => {
-  console.log("BillingAccountsDetail");
+const RoutesDetail = () => {
+  console.log("RoutesDetail");
 
   const ref_id = useRef(null);
-  const ref_balance = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
-  const ref_payment_method = useRef(null);
-  const ref_payment_type = useRef(null);
+  const ref_provider_id = useRef(null);
+  const ref_priority = useRef(null);
+  const ref_target = useRef(null);
 
   const routeParams = useParams();
   const GetDetail = () => {
     const id = routeParams.id;
 
-
-    const tmp = localStorage.getItem("billing_accounts");
+    const tmp = localStorage.getItem("routes");
     const datas = JSON.parse(tmp);
     const detailData = datas[id];
+    console.log("detailData", detailData);
+
     return (
       <>
         <CRow>
@@ -60,22 +61,7 @@ const BillingAccountsDetail = () => {
                       readOnly plainText
                     />
                   </CCol>
-
-
-                  <CFormLabel className="col-sm-2 col-form-label"><b>Balance(USD)</b></CFormLabel>
-                  <CCol className="mb-3 align-items-auto">
-                    <CFormInput
-                      ref={ref_balance}
-                      type="text"
-                      id="id"
-                      defaultValue={detailData.balance}
-                      readOnly plainText
-                    />
-                  </CCol>
-
                 </CRow>
-
-
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Name</b></CFormLabel>
@@ -99,34 +85,46 @@ const BillingAccountsDetail = () => {
                   </CCol>
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
-                <br />
-                <br />
+
+
 
                 <CRow>
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Payment Method</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Provider ID</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
-                      ref={ref_payment_method}
+                      ref={ref_provider_id}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.payment_method}
+                      defaultValue={detailData.provider_id}
                     />
                   </CCol>
 
-                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Payment Type</b></CFormLabel>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Priority</b></CFormLabel>
                   <CCol className="mb-3 align-items-auto">
                     <CFormInput
-                      ref={ref_payment_type}
+                      ref={ref_priority}
                       type="text"
                       id="colFormLabelSm"
-                      defaultValue={detailData.payment_type}
+                      defaultValue={detailData.priority}
                     />
                   </CCol>
-
                 </CRow>
 
-                <CButton type="submit" onClick={() => UpdatePaymentInfo()}>Update Payment</CButton>
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Target</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_target}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.target}
+                    />
+                  </CCol>
+                </CRow>
+
+
+                <CButton type="submit" onClick={() => UpdateBasicInfo()}>Update</CButton>
                 <br />
                 <br />
 
@@ -167,28 +165,13 @@ const BillingAccountsDetail = () => {
     const tmpData = {
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
-      "payment_method": ref_payment_method.current.value,
-      "payment_type": Number(ref_payment_type.current.value),
+      "provider_id": ref_provider_id.current.value,
+      "priority": Number(ref_priority.current.value),
+      "target": ref_target.current.value,
     };
 
     const body = JSON.stringify(tmpData);
-    const target = "billing_accounts/" + ref_id.current.value;
-    console.log("Update info. target: " + target + ", body: " + body);
-    ProviderPut(target, body).then((response) => {
-      console.log("Updated info.", JSON.stringify(response));
-    });
-  };
-
-  const UpdatePaymentInfo = () => {
-    console.log("Update info");
-
-    const tmpData = {
-      "payment_method": ref_payment_method.current.value,
-      "payment_type": Number(ref_payment_type.current.value),
-    };
-
-    const body = JSON.stringify(tmpData);
-    const target = "billing_accounts/" + ref_id.current.value + "/payment_info";
+    const target = "routes/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
       console.log("Updated info.", JSON.stringify(response));
@@ -202,4 +185,4 @@ const BillingAccountsDetail = () => {
   )
 }
 
-export default BillingAccountsDetail
+export default RoutesDetail

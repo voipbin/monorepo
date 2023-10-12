@@ -100,7 +100,7 @@ const OutdialtargetsList = () => {
     const target = "outdials/" + outdialID + "/targets/" + row.getValue('id');
     console.log("Deleting target. target: " + target)
     ProviderDelete(target).then((response) => {
-      console.log("Deleted resource. ", response);
+      console.log("Deleted resource. ", JSON.stringify(response));
     });
   }
 

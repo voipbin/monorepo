@@ -331,7 +331,7 @@ const OutdialsDetail = () => {
     const target = "outdials/" + ref_outdial_id.current.value + "/targets/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderPut(target, body).then((response) => {
-      console.log("Updated info.", response);
+      console.log("Updated info.", JSON.stringify(response));
     });
   };
 
