@@ -25,7 +25,8 @@ import {
 } from '../../provider';
 import { useNavigate } from "react-router-dom";
 
-const TrunksList = () => {
+const RoutesList = () => {
+  console.log("RoutesList");
 
   const [listData, setListData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +37,7 @@ const TrunksList = () => {
   },[]);
 
   const getList = (() => {
-    const target = "trunks?page_size=100";
+    const target = "routes?page_size=100";
 
     ProviderGet(target).then(result => {
       const data = result.result;
@@ -45,12 +46,8 @@ const TrunksList = () => {
 
       const tmp = ParseData(data);
       const tmpData = JSON.stringify(tmp);
-      localStorage.setItem("trunks", tmpData);
+      localStorage.setItem("routes", tmpData);
     });
-
-    // const tmp = JSON.parse(localStorage.getItem("trunks"));
-    // const data = Object.values(tmp);
-    // setListData(data);
   });
 
   // show list
@@ -62,20 +59,17 @@ const TrunksList = () => {
         enableEditing: false,
       },
       {
-        accessorKey: 'domain_name',
-        header: 'Domain Name',
+        accessorKey: 'priority',
+        header: 'Priority',
       },
       {
-        accessorKey: 'name',
-        header: 'Name',
+        accessorKey: 'target',
+        header: 'Target',
       },
       {
-        accessorKey: 'detail',
-        header: 'Detail',
-      },
-      {
-        accessorKey: 'auth_types',
-        header: 'Auth Types',
+        accessorKey: 'provider_id',
+        header: 'Provider ID',
+        size: 350,
       },
       {
         accessorKey: 'tm_update',
@@ -100,7 +94,7 @@ const TrunksList = () => {
       return;
     }
 
-    const target = "trunks/" + row.getValue('id');
+    const target = "routes/" + row.getValue('id');
     ProviderDelete(target).then((response) => {
       console.log("Deleted resource. ", JSON.stringify(response));
     });
@@ -108,12 +102,12 @@ const TrunksList = () => {
 
   const navigate = useNavigate();
   const Detail = (row) => {
-    const target = "/resources/trunks/trunks_detail/" + row.original.id;
+    const target = "/resources/routes/routes_detail/" + row.original.id;
     console.log("navigate target: ", target);
     navigate(target);
   }
   const Create = () => {
-    const target = "/resources/trunks/trunks_create";
+    const target = "/resources/routes/routes_create";
     console.log("navigate target: ", target);
     navigate(target);
   }
@@ -177,4 +171,4 @@ const TrunksList = () => {
   )
 }
 
-export default TrunksList
+export default RoutesList

@@ -159,7 +159,7 @@ const ConferencecallsDetail = () => {
     const target = "conferencecalls/" + ref_id.current.value;
     console.log("Update info. target: " + target + ", body: " + body);
     ProviderDelete(target, body).then((response) => {
-      console.log("Kick info.", response);
+      console.log("Kick info.", JSON.stringify(response));
     });
   };
 

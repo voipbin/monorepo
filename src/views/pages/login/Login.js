@@ -55,11 +55,11 @@ const Login = () => {
       .then(response => {
         if (response.status < 200 || response.status >= 300) {
           setLoginDisabled(false);
-          console.log("Could not login. response: ", response)
+          console.log("Could not login. response: ", JSON.stringify(response));
           return ""
         }
 
-        console.log("Received response: ", response)
+        console.log("Received response: ", JSON.stringify(response));
         return response.json();
       })
       .then(response => {

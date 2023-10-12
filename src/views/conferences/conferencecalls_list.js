@@ -104,7 +104,7 @@ const ConferencecallsList = () => {
 
     const target = "conferencecalls/" + row.getValue('id');
     ProviderDelete(target).then((response) => {
-      console.log("Deleted resource. ", response);
+      console.log("Deleted resource. ", JSON.stringify(response));
     });
   }
 

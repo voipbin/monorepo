@@ -133,7 +133,7 @@ const BuyCreate = () => {
     const target = "customers";
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
-      console.log("Created info.", response);
+      console.log("Created info.", JSON.stringify(response));
     });
   };
 

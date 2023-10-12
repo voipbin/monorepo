@@ -193,7 +193,7 @@ const OutdialtargetsCreate = () => {
     const target = "outdials/" + ref_outdial_id.current.value + "/targets";
     console.log("Create info. target: " + target + ", body: " + body);
     ProviderPost(target, body).then((response) => {
-      console.log("Created info.", response);
+      console.log("Created info.", JSON.stringify(response));
     });
   };
 
