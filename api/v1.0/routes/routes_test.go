@@ -24,7 +24,7 @@ func setupServer(app *gin.Engine) {
 	ApplyRoutes(v1)
 }
 
-func Test_routesGet(t *testing.T) {
+func Test_routesGet_customer_id(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -104,7 +104,98 @@ func Test_routesGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteGets(req.Context(), &tt.customer, tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resRoutes, nil)
+			mockSvc.EXPECT().RouteGetsByCustomerID(req.Context(), &tt.customer, tt.customerID, tt.pageSize, tt.pageToken).Return(tt.resRoutes, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_routesGet_without_customer_id(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customer  cscustomer.Customer
+		reqQuery  string
+		pageSize  uint64
+		pageToken string
+
+		resRoutes []*rmroute.WebhookMessage
+		expectRes string
+	}{
+		{
+			"1 item",
+
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			"/v1.0/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			10,
+			"2020-09-20 03:23:20.995000",
+
+			[]*rmroute.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("93b9143a-68a2-11ee-b676-8718718cd43e"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+			},
+			`{"result":[{"id":"93b9143a-68a2-11ee-b676-8718718cd43e","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+		},
+		{
+			"more than 2 items",
+			cscustomer.Customer{
+				ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			},
+			"/v1.0/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			10,
+			"2020-09-20 03:23:20.995000",
+
+			[]*rmroute.WebhookMessage{
+				{
+					ID:       uuid.FromStringOrNil("941551f0-68a2-11ee-889c-ff0e92d76ad5"),
+					TMCreate: "2020-09-20T03:23:21.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("94455364-68a2-11ee-9d8f-d376b317364d"),
+					TMCreate: "2020-09-20T03:23:22.995000",
+				},
+				{
+					ID:       uuid.FromStringOrNil("947bb1de-68a2-11ee-a56d-4f6139e966bd"),
+					TMCreate: "2020-09-20T03:23:23.995000",
+				},
+			},
+			`{"result":[{"id":"941551f0-68a2-11ee-889c-ff0e92d76ad5","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"94455364-68a2-11ee-9d8f-d376b317364d","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"947bb1de-68a2-11ee-a56d-4f6139e966bd","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+				c.Set("customer", tt.customer)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+
+			mockSvc.EXPECT().RouteGets(req.Context(), &tt.customer, tt.pageSize, tt.pageToken).Return(tt.resRoutes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

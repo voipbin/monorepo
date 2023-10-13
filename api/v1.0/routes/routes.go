@@ -5,6 +5,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	cscustomer "gitlab.com/voipbin/bin-manager/customer-manager.git/models/customer"
+	"gitlab.com/voipbin/bin-manager/route-manager.git/models/route"
 
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/common"
 	"gitlab.com/voipbin/bin-manager/api-manager.git/api/models/request"
@@ -45,7 +46,7 @@ func routesGET(c *gin.Context) {
 		c.AbortWithStatus(400)
 		return
 	}
-	log.Debugf("Received request detail. page_size: %d, page_token: %s", req.PageSize, req.PageToken)
+	log.Debugf("Received request detail. customer_id: %s, page_size: %d, page_token: %s", req.CustomerID, req.PageSize, req.PageToken)
 
 	// get service
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
@@ -60,11 +61,16 @@ func routesGET(c *gin.Context) {
 		log.Debugf("Invalid requested page size. Set to max. page_size: %d", pageSize)
 	}
 
-	// get customerID
-	customerID := uuid.FromStringOrNil(req.CustomerID)
+	var tmps []*route.WebhookMessage
+	var err error
 
-	// get tmps
-	tmps, err := serviceHandler.RouteGets(c.Request.Context(), &u, customerID, pageSize, req.PageToken)
+	if req.CustomerID != "" {
+		// get customerID
+		customerID := uuid.FromStringOrNil(req.CustomerID)
+		tmps, err = serviceHandler.RouteGetsByCustomerID(c.Request.Context(), &u, customerID, pageSize, req.PageToken)
+	} else {
+		tmps, err = serviceHandler.RouteGets(c.Request.Context(), &u, pageSize, req.PageToken)
+	}
 	if err != nil {
 		logrus.Errorf("Could not get routes info. err: %v", err)
 		c.AbortWithStatus(400)
