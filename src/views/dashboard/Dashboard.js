@@ -81,6 +81,14 @@ const Dashboard = () => {
 
   const random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
 
+  const traffics = [
+    { title: 'Call', value: '29.703 Calls per min', percent: 40, color: 'success' },
+    { title: 'SMS', value: '24.093 Messages per min', percent: 20, color: 'info' },
+    { title: 'Queuecall', value: '78.706 Calls per min', percent: 60, color: 'warning' },
+    { title: 'Agent', value: '22.123 Available', percent: 80, color: 'danger' },
+    { title: 'Campaigncall', value: '123.45 Calls per min', percent: 40.15, color: 'primary' },
+  ]
+
   const progressExample = [
     { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
     { title: 'Unique', value: '24.093 Users', percent: 20, color: 'info' },
@@ -204,21 +212,24 @@ const Dashboard = () => {
 
   return (
     <>
+
+
+
       <WidgetsDropdown />
       <CCard className="mb-4">
         <CCardBody>
           <CRow>
             <CCol sm={5}>
               <h4 id="traffic" className="card-title mb-0">
-                Traffic
+                Traffics
               </h4>
-              <div className="small text-medium-emphasis">January - July 2021</div>
+              {/* <div className="small text-medium-emphasis">Calls</div> */}
             </CCol>
             <CCol sm={7} className="d-none d-md-block">
-              <CButton color="primary" className="float-end">
+              {/* <CButton color="primary" className="float-end">
                 <CIcon icon={cilCloudDownload} />
-              </CButton>
-              <CButtonGroup className="float-end me-3">
+              </CButton> */}
+              {/* <CButtonGroup className="float-end me-3">
                 {['Day', 'Month', 'Year'].map((value) => (
                   <CButton
                     color="outline-secondary"
@@ -229,7 +240,7 @@ const Dashboard = () => {
                     {value}
                   </CButton>
                 ))}
-              </CButtonGroup>
+              </CButtonGroup> */}
             </CCol>
           </CRow>
           <CChartLine
@@ -238,7 +249,7 @@ const Dashboard = () => {
               labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
               datasets: [
                 {
-                  label: 'My First dataset',
+                  label: 'Call',
                   backgroundColor: hexToRgba(getStyle('--cui-info'), 10),
                   borderColor: getStyle('--cui-info'),
                   pointHoverBackgroundColor: getStyle('--cui-info'),
@@ -255,10 +266,58 @@ const Dashboard = () => {
                   fill: true,
                 },
                 {
-                  label: 'My Second dataset',
+                  label: 'SMS',
                   backgroundColor: 'transparent',
                   borderColor: getStyle('--cui-success'),
                   pointHoverBackgroundColor: getStyle('--cui-success'),
+                  borderWidth: 2,
+                  data: [
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                  ],
+                },
+                {
+                  label: 'Queuecall',
+                  backgroundColor: 'transparent',
+                  borderColor: getStyle('--cui-primary'),
+                  pointHoverBackgroundColor: getStyle('--cui-primary'),
+                  borderWidth: 2,
+                  data: [
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                  ],
+                },
+                {
+                  label: 'Agent',
+                  backgroundColor: 'transparent',
+                  borderColor: getStyle('--cui-dark'),
+                  pointHoverBackgroundColor: getStyle('--cui-dark'),
+                  borderWidth: 2,
+                  data: [
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                    random(50, 200),
+                  ],
+                },
+                {
+                  label: 'Campaigncall',
+                  backgroundColor: 'transparent',
+                  borderColor: getStyle('--cui-secondary'),
+                  pointHoverBackgroundColor: getStyle('--cui-secondary'),
                   borderWidth: 2,
                   data: [
                     random(50, 200),
@@ -319,7 +378,7 @@ const Dashboard = () => {
         </CCardBody>
         <CCardFooter>
           <CRow xs={{ cols: 1 }} md={{ cols: 5 }} className="text-center">
-            {progressExample.map((item, index) => (
+            {traffics.map((item, index) => (
               <CCol className="mb-sm-2 mb-0" key={index}>
                 <div className="text-medium-emphasis">{item.title}</div>
                 <strong>
