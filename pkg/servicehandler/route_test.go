@@ -84,6 +84,73 @@ func Test_RouteGets(t *testing.T) {
 
 		customer *cscustomer.Customer
 
+		pageToken string
+		pageSize  uint64
+
+		responseRoutes []rmroute.Route
+		expectRes      []*rmroute.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			"normal",
+
+			&cscustomer.Customer{
+				ID:            uuid.FromStringOrNil("1e7f44c4-7fff-11ec-98ef-c70700134988"),
+				PermissionIDs: []uuid.UUID{cspermission.PermissionAdmin.ID},
+			},
+
+			"2021-03-01 01:00:00.995000",
+			10,
+
+			[]rmroute.Route{
+				{
+					ID: uuid.FromStringOrNil("f65b0310-68a1-11ee-8c62-73e88f334b47"),
+				},
+			},
+			[]*rmroute.WebhookMessage{
+				{
+					ID: uuid.FromStringOrNil("f65b0310-68a1-11ee-8c62-73e88f334b47"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+
+			res, err := h.RouteGets(ctx, tt.customer, tt.pageSize, tt.pageToken)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_RouteGetsByCustomerID(t *testing.T) {
+
+	type test struct {
+		name string
+
+		customer *cscustomer.Customer
+
 		customerID uuid.UUID
 		pageToken  string
 		pageSize   uint64
@@ -132,9 +199,9 @@ func Test_RouteGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1RouteGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
 
-			res, err := h.RouteGets(ctx, tt.customer, tt.customerID, tt.pageSize, tt.pageToken)
+			res, err := h.RouteGetsByCustomerID(ctx, tt.customer, tt.customerID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

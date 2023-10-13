@@ -61,9 +61,44 @@ func (h *serviceHandler) RouteGet(ctx context.Context, u *cscustomer.Customer, r
 // RouteGets sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "RouteGets",
+		"func":     "RouteGets",
+		"username": u.Username,
+		"size":     size,
+		"token":    token,
+	})
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	if !u.HasPermission(cspermission.PermissionAdmin.ID) {
+		log.Info("The user has no permission for this route.")
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, token, size)
+	if err != nil {
+		log.Errorf("Could not get routes from the route-manager. err: %v", err)
+		return nil, err
+	}
+
+	res := []*rmroute.WebhookMessage{}
+	for _, tmp := range tmps {
+		e := tmp.ConvertWebhookMessage()
+		res = append(res, e)
+	}
+
+	return res, nil
+}
+
+// RouteGetsByCustomerID sends a request to route-manager
+// to getting a list of routes.
+// it returns route info if it succeed.
+func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, u *cscustomer.Customer, customerID uuid.UUID, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "RouteGetsByCustomerID",
 		"customer_id": customerID,
 		"username":    u.Username,
 		"size":        size,
@@ -79,7 +114,7 @@ func (h *serviceHandler) RouteGets(ctx context.Context, u *cscustomer.Customer, 
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, customerID, token, size)
+	tmps, err := h.reqHandler.RouteV1RouteGetsByCustomerID(ctx, customerID, token, size)
 	if err != nil {
 		log.Errorf("Could not get routes from the route-manager. err: %v", err)
 		return nil, err
