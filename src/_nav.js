@@ -29,6 +29,8 @@ import {
   cilRouter,
   cilMap,
   cilChatBubble,
+  cilLocomotive,
+  cilLoopCircular,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -222,7 +224,7 @@ const _nav = [
   {
     component: CNavGroup,
     name: 'Providers',
-    icon: <CIcon icon={cilMap} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilLocomotive} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -234,7 +236,7 @@ const _nav = [
   {
     component: CNavGroup,
     name: 'Routes',
-    icon: <CIcon icon={cilMap} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilLoopCircular} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
