@@ -2756,18 +2756,33 @@ func (mr *MockServiceHandlerMockRecorder) RouteGet(ctx, u, routeID interface{}) 
 }
 
 // RouteGets mocks base method.
-func (m *MockServiceHandler) RouteGets(ctx context.Context, u *customer.Customer, customerID uuid.UUID, size uint64, token string) ([]*route.WebhookMessage, error) {
+func (m *MockServiceHandler) RouteGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*route.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteGets", ctx, u, customerID, size, token)
+	ret := m.ctrl.Call(m, "RouteGets", ctx, u, size, token)
 	ret0, _ := ret[0].([]*route.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteGets indicates an expected call of RouteGets.
-func (mr *MockServiceHandlerMockRecorder) RouteGets(ctx, u, customerID, size, token interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) RouteGets(ctx, u, size, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGets", reflect.TypeOf((*MockServiceHandler)(nil).RouteGets), ctx, u, customerID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGets", reflect.TypeOf((*MockServiceHandler)(nil).RouteGets), ctx, u, size, token)
+}
+
+// RouteGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) RouteGetsByCustomerID(ctx context.Context, u *customer.Customer, customerID uuid.UUID, size uint64, token string) ([]*route.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteGetsByCustomerID", ctx, u, customerID, size, token)
+	ret0, _ := ret[0].([]*route.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteGetsByCustomerID indicates an expected call of RouteGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) RouteGetsByCustomerID(ctx, u, customerID, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).RouteGetsByCustomerID), ctx, u, customerID, size, token)
 }
 
 // RouteUpdate mocks base method.

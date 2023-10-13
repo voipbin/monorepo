@@ -20,18 +20,18 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.2
-	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20230720155218-f0503e68a026
-	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231004181217-516f0709c97e
+	gitlab.com/voipbin/bin-manager/call-manager.git v0.0.0-20231005165752-434d8bc6c4b3
+	gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231011121240-dab7bc49df2f
 	gitlab.com/voipbin/bin-manager/flow-manager.git v0.0.0-20230728174519-d347587ee005
 	gitlab.com/voipbin/bin-manager/number-manager.git v0.0.0-20230728171820-cdbeafa2cf1c
-	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20230927051027-c9482f79f518
+	gitlab.com/voipbin/bin-manager/registrar-manager.git v0.0.0-20231005165516-1c0255c49028
 	gitlab.com/voipbin/bin-manager/storage-manager.git v0.0.0-20230108123249-9f26b43b8ea9
 	gitlab.com/voipbin/bin-manager/transcribe-manager.git v0.0.0-20230318110619-25a2d88d1450
-	golang.org/x/crypto v0.13.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
-	golang.org/x/tools v0.13.0 // indirect
+	golang.org/x/tools v0.14.0 // indirect
 )
 
 require (
@@ -49,17 +49,17 @@ require (
 	gitlab.com/voipbin/bin-manager/message-manager.git v0.0.0-20230705154830-1dd19ba6e804
 	gitlab.com/voipbin/bin-manager/outdial-manager.git v0.0.0-20230911175755-9140b8487519
 	gitlab.com/voipbin/bin-manager/queue-manager.git v0.0.0-20230903182459-1d2f626b38fd
-	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20221029145057-ef1ebd21d097
+	gitlab.com/voipbin/bin-manager/route-manager.git v0.0.0-20231011084545-910083006050
 	gitlab.com/voipbin/bin-manager/tag-manager.git v0.0.0-20230727164950-43d37418e642
 	gitlab.com/voipbin/bin-manager/transfer-manager.git v0.0.0-20230419025515-44dea928ef34
 	gitlab.com/voipbin/bin-manager/webhook-manager.git v0.0.0-20220723135740-c87a1ef4af61
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 )
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bytedance/sonic v1.10.1 // indirect
+	github.com/bytedance/sonic v1.10.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.0 // indirect
@@ -92,7 +92,7 @@ require (
 	gitlab.com/voipbin/bin-manager/tts-manager.git v0.0.0-20230716174942-b6a22e86ff12 // indirect
 	gitlab.com/voipbin/bin-manager/user-manager.git v0.0.0-20211201060242-1cc38a3221d0 // indirect
 	golang.org/x/arch v0.5.0 // indirect
-	google.golang.org/genproto v0.0.0-20231002182017-d307bd883b97 // indirect
+	google.golang.org/genproto v0.0.0-20231009173412-8bfb1ae86b6c // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
