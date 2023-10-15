@@ -4578,18 +4578,18 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderUpdate(ctx, providerID,
 }
 
 // RouteV1RouteCreate mocks base method.
-func (m *MockRequestHandler) RouteV1RouteCreate(ctx context.Context, customerID, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockRequestHandler) RouteV1RouteCreate(ctx context.Context, customerID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1RouteCreate", ctx, customerID, providerID, priority, target)
+	ret := m.ctrl.Call(m, "RouteV1RouteCreate", ctx, customerID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteV1RouteCreate indicates an expected call of RouteV1RouteCreate.
-func (mr *MockRequestHandlerMockRecorder) RouteV1RouteCreate(ctx, customerID, providerID, priority, target interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RouteV1RouteCreate(ctx, customerID, name, detail, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteCreate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteCreate), ctx, customerID, providerID, priority, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteCreate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteCreate), ctx, customerID, name, detail, providerID, priority, target)
 }
 
 // RouteV1RouteDelete mocks base method.
@@ -4653,18 +4653,18 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteGetsByCustomerID(ctx, cust
 }
 
 // RouteV1RouteUpdate mocks base method.
-func (m *MockRequestHandler) RouteV1RouteUpdate(ctx context.Context, routeID, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockRequestHandler) RouteV1RouteUpdate(ctx context.Context, routeID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1RouteUpdate", ctx, routeID, providerID, priority, target)
+	ret := m.ctrl.Call(m, "RouteV1RouteUpdate", ctx, routeID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteV1RouteUpdate indicates an expected call of RouteV1RouteUpdate.
-func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, providerID, priority, target interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, name, detail, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteUpdate), ctx, routeID, providerID, priority, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteUpdate), ctx, routeID, name, detail, providerID, priority, target)
 }
 
 // SendRequest mocks base method.
