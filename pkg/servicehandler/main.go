@@ -516,12 +516,23 @@ type ServiceHandler interface {
 		ctx context.Context,
 		u *cscustomer.Customer,
 		customerID uuid.UUID,
+		name string,
+		detail string,
 		providerID uuid.UUID,
 		priority int,
 		target string,
 	) (*rmroute.WebhookMessage, error)
 	RouteDelete(ctx context.Context, u *cscustomer.Customer, routeID uuid.UUID) (*rmroute.WebhookMessage, error)
-	RouteUpdate(ctx context.Context, u *cscustomer.Customer, routeID, providerID uuid.UUID, priority int, target string) (*rmroute.WebhookMessage, error)
+	RouteUpdate(
+		ctx context.Context,
+		u *cscustomer.Customer,
+		routeID uuid.UUID,
+		name string,
+		detail string,
+		providerID uuid.UUID,
+		priority int,
+		target string,
+	) (*rmroute.WebhookMessage, error)
 
 	// tag handlers
 	TagCreate(ctx context.Context, u *cscustomer.Customer, name string, detail string) (*tmtag.WebhookMessage, error)
