@@ -7,6 +7,9 @@ type Route struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
 	ProviderID uuid.UUID `json:"provider_id"`
 	Priority   int       `json:"priority"`
 

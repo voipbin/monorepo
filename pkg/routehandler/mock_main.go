@@ -37,18 +37,18 @@ func (m *MockRouteHandler) EXPECT() *MockRouteHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockRouteHandler) Create(ctx context.Context, customerID, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockRouteHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, providerID, priority, target)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockRouteHandlerMockRecorder) Create(ctx, customerID, providerID, priority, target interface{}) *gomock.Call {
+func (mr *MockRouteHandlerMockRecorder) Create(ctx, customerID, name, detail, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRouteHandler)(nil).Create), ctx, customerID, providerID, priority, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRouteHandler)(nil).Create), ctx, customerID, name, detail, providerID, priority, target)
 }
 
 // Delete mocks base method.
@@ -127,16 +127,16 @@ func (mr *MockRouteHandlerMockRecorder) GetsByTarget(ctx, customerID, target int
 }
 
 // Update mocks base method.
-func (m *MockRouteHandler) Update(ctx context.Context, id, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockRouteHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, providerID, priority, target)
+	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockRouteHandlerMockRecorder) Update(ctx, id, providerID, priority, target interface{}) *gomock.Call {
+func (mr *MockRouteHandlerMockRecorder) Update(ctx, id, name, detail, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRouteHandler)(nil).Update), ctx, id, providerID, priority, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRouteHandler)(nil).Update), ctx, id, name, detail, providerID, priority, target)
 }

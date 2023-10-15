@@ -11,6 +11,9 @@ type WebhookMessage struct {
 	ID         uuid.UUID `json:"id"`
 	CustomerID uuid.UUID `json:"customer_id"`
 
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+
 	ProviderID uuid.UUID `json:"provider_id"`
 	Priority   int       `json:"priority"`
 
@@ -27,6 +30,9 @@ func (h *Route) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:         h.ID,
 		CustomerID: h.CustomerID,
+
+		Name:   h.Name,
+		Detail: h.Detail,
 
 		ProviderID: h.ProviderID,
 		Priority:   h.Priority,

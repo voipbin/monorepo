@@ -198,15 +198,15 @@ func (mr *MockDBHandlerMockRecorder) RouteGetsByCustomerIDWithTarget(ctx, custom
 }
 
 // RouteUpdate mocks base method.
-func (m *MockDBHandler) RouteUpdate(ctx context.Context, r *route.Route) error {
+func (m *MockDBHandler) RouteUpdate(ctx context.Context, id uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteUpdate", ctx, r)
+	ret := m.ctrl.Call(m, "RouteUpdate", ctx, id, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RouteUpdate indicates an expected call of RouteUpdate.
-func (mr *MockDBHandlerMockRecorder) RouteUpdate(ctx, r interface{}) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) RouteUpdate(ctx, id, name, detail, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteUpdate", reflect.TypeOf((*MockDBHandler)(nil).RouteUpdate), ctx, r)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteUpdate", reflect.TypeOf((*MockDBHandler)(nil).RouteUpdate), ctx, id, name, detail, providerID, priority, target)
 }

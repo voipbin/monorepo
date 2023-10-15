@@ -629,6 +629,8 @@ gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c
 gitlab.com/voipbin/bin-manager/chatbot-manager.git v0.0.0-20230722152405-d36870c690da/go.mod h1:BdhX2Fa1ZRjUd7vY+ZUhnh2h9VojZncsTXQ0mVJTTqs=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231004181217-516f0709c97e h1:IjQydh9sQl+7QiNOnUxASkdwzeWaaQCdbC1d7keYLk0=
 gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231004181217-516f0709c97e/go.mod h1:mGNoYYqSlr0nviY9oPio38i0znz1bRDWti2HKqnqMaE=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231011121240-dab7bc49df2f h1:0+BG1d5EE72JKMuxNFiZZL0FK7+fCEYaOioKV24hpkM=
+gitlab.com/voipbin/bin-manager/common-handler.git v0.0.0-20231011121240-dab7bc49df2f/go.mod h1:qTIvyEM+pPeGEBhOUIEZAWieEhZaYJmzJlhLm3cvKqw=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578 h1:PzDD+gHw68YoW21NhfxyA9DHaqqcAJ2UkCCq3TkEcCo=
 gitlab.com/voipbin/bin-manager/conference-manager.git v0.0.0-20230911172339-3bc1d3fa3578/go.mod h1:K9Uk44FGgS/UgDvTLAsVFqINLfhGMCrBuRMNhGZyaLE=
 gitlab.com/voipbin/bin-manager/conversation-manager.git v0.0.0-20230603201624-9c3de6f3fa02 h1:w1vRshMX9V0FfH1nyJ16yOyXNDnNui4iVPsUFOoUgOo=
@@ -1155,6 +1157,8 @@ google.golang.org/genproto v0.0.0-20230209215440-0dfe4f8abfcc/go.mod h1:RGgjbofJ
 google.golang.org/genproto v0.0.0-20230216225411-c8e22ba71e44/go.mod h1:8B0gmkoRebU8ukX6HP+4wrVQUY1+6PkQ44BSyIlflHA=
 google.golang.org/genproto v0.0.0-20231009173412-8bfb1ae86b6c h1:ml3TAUoIIzQUtX88s/icpXCFW9lV5VwsuIuS1htNjKY=
 google.golang.org/genproto v0.0.0-20231009173412-8bfb1ae86b6c/go.mod h1:MugzuwC+GYOxyF0XUGQvsT97bOgWCV7MM1XMc5FZv8E=
+google.golang.org/genproto v0.0.0-20231012201019-e917dd12ba7a h1:fwgW9j3vHirt4ObdHoYNwuO24BEZjSzbh+zPaNWoiY8=
+google.golang.org/genproto v0.0.0-20231012201019-e917dd12ba7a/go.mod h1:EMfReVxb80Dq1hhioy0sOsY9jCE46YDgHlJ7fWVUWRE=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=

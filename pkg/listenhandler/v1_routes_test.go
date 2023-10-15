@@ -20,6 +20,8 @@ func Test_v1RoutesPost(t *testing.T) {
 		request *rabbitmqhandler.Request
 
 		customerID uuid.UUID
+		routeName  string
+		detail     string
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -33,10 +35,12 @@ func Test_v1RoutesPost(t *testing.T) {
 				URI:      "/v1/routes",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5ec129cc-4867-11ed-ac2b-fb6ace3e2e29","provider_id": "5eea5d92-4867-11ed-a013-bbe5c1f759ec", "priority": 1, "target": "+82"}`),
+				Data:     []byte(`{"customer_id":"5ec129cc-4867-11ed-ac2b-fb6ace3e2e29","name":"test name","detail":"test detail","provider_id": "5eea5d92-4867-11ed-a013-bbe5c1f759ec", "priority": 1, "target": "+82"}`),
 			},
 
 			uuid.FromStringOrNil("5ec129cc-4867-11ed-ac2b-fb6ace3e2e29"),
+			"test name",
+			"test detail",
 			uuid.FromStringOrNil("5eea5d92-4867-11ed-a013-bbe5c1f759ec"),
 			1,
 			"+82",
@@ -47,7 +51,7 @@ func Test_v1RoutesPost(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"ccb0ceec-4867-11ed-8efb-fb670e6abe45","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"ccb0ceec-4867-11ed-8efb-fb670e6abe45","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -67,7 +71,7 @@ func Test_v1RoutesPost(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().Create(gomock.Any(), tt.customerID, tt.providerID, tt.priority, tt.target).Return(tt.responseRoute, nil)
+			mockRoute.EXPECT().Create(gomock.Any(), tt.customerID, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target).Return(tt.responseRoute, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -115,7 +119,7 @@ func Test_v1RoutesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"6af1adee-486b-11ed-abce-07169e2f9488","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"6af1adee-486b-11ed-abce-07169e2f9488","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -142,7 +146,7 @@ func Test_v1RoutesGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"4d88b648-486c-11ed-be0b-1b6f5fbb7ada","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"4db63b68-486c-11ed-914b-e7864023bf96","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"4d88b648-486c-11ed-be0b-1b6f5fbb7ada","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"4db63b68-486c-11ed-914b-e7864023bf96","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 			},
 		},
 		{
@@ -223,7 +227,7 @@ func Test_v1RoutesIDGet(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"15f39396-486d-11ed-b993-9fc71f6dfd8f","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"15f39396-486d-11ed-b993-9fc71f6dfd8f","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -263,6 +267,8 @@ func Test_v1RoutesIDPut(t *testing.T) {
 		request *rabbitmqhandler.Request
 		id      uuid.UUID
 
+		routeName  string
+		detail     string
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -276,10 +282,12 @@ func Test_v1RoutesIDPut(t *testing.T) {
 				URI:      "/v1/routes/a1f4bee0-486f-11ed-ae92-336bd3b7e9e0",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"provider_id":"0bf6c090-4870-11ed-bba4-6f6a8a7d8553", "priority": 1, "target": "+82"}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","provider_id":"0bf6c090-4870-11ed-bba4-6f6a8a7d8553", "priority": 1, "target": "+82"}`),
 			},
 			uuid.FromStringOrNil("a1f4bee0-486f-11ed-ae92-336bd3b7e9e0"),
 
+			"update name",
+			"update detail",
 			uuid.FromStringOrNil("0bf6c090-4870-11ed-bba4-6f6a8a7d8553"),
 			1,
 			"+82",
@@ -290,7 +298,7 @@ func Test_v1RoutesIDPut(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a1f4bee0-486f-11ed-ae92-336bd3b7e9e0","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a1f4bee0-486f-11ed-ae92-336bd3b7e9e0","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
@@ -310,7 +318,7 @@ func Test_v1RoutesIDPut(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().Update(gomock.Any(), tt.id, tt.providerID, tt.priority, tt.target).Return(tt.responseRoute, nil)
+			mockRoute.EXPECT().Update(gomock.Any(), tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target).Return(tt.responseRoute, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -350,7 +358,7 @@ func Test_v1RoutesIDDelete(t *testing.T) {
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"39e88472-486e-11ed-baee-8b0aad96ce8f","customer_id":"00000000-0000-0000-0000-000000000000","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"39e88472-486e-11ed-baee-8b0aad96ce8f","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}`),
 			},
 		},
 	}
