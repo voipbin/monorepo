@@ -915,10 +915,26 @@ type RequestHandler interface {
 	RouteV1ProviderGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
 
 	// route-manager routes
-	RouteV1RouteCreate(ctx context.Context, customerID uuid.UUID, providerID uuid.UUID, priority int, target string) (*rmroute.Route, error)
+	RouteV1RouteCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		providerID uuid.UUID,
+		priority int,
+		target string,
+	) (*rmroute.Route, error)
 	RouteV1RouteGet(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error)
 	RouteV1RouteDelete(ctx context.Context, routeID uuid.UUID) (*rmroute.Route, error)
-	RouteV1RouteUpdate(ctx context.Context, routeID uuid.UUID, providerID uuid.UUID, priority int, target string) (*rmroute.Route, error)
+	RouteV1RouteUpdate(
+		ctx context.Context,
+		routeID uuid.UUID,
+		name string,
+		detail string,
+		providerID uuid.UUID,
+		priority int,
+		target string,
+	) (*rmroute.Route, error)
 	RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 	RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
 

@@ -20,6 +20,8 @@ func Test_RouteV1RouteCreate(t *testing.T) {
 		name string
 
 		customerID uuid.UUID
+		routeName  string
+		detail     string
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -34,6 +36,8 @@ func Test_RouteV1RouteCreate(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("24d9f42d-0eb5-4276-aaf8-8df5a8342a3c"),
+			"test name",
+			"test detail",
 			uuid.FromStringOrNil("3963772a-84ad-4a1b-a250-2b5d100f76ee"),
 			1,
 			"+82",
@@ -43,7 +47,7 @@ func Test_RouteV1RouteCreate(t *testing.T) {
 				URI:      "/v1/routes",
 				Method:   rabbitmqhandler.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"24d9f42d-0eb5-4276-aaf8-8df5a8342a3c","provider_id":"3963772a-84ad-4a1b-a250-2b5d100f76ee","priority":1,"target":"+82"}`),
+				Data:     []byte(`{"customer_id":"24d9f42d-0eb5-4276-aaf8-8df5a8342a3c","name":"test name","detail":"test detail","provider_id":"3963772a-84ad-4a1b-a250-2b5d100f76ee","priority":1,"target":"+82"}`),
 			},
 			&rabbitmqhandler.Response{
 				StatusCode: 200,
@@ -69,7 +73,7 @@ func Test_RouteV1RouteCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RouteV1RouteCreate(ctx, tt.customerID, tt.providerID, tt.priority, tt.target)
+			res, err := reqHandler.RouteV1RouteCreate(ctx, tt.customerID, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -209,6 +213,8 @@ func Test_RouteV1RouteUpdate(t *testing.T) {
 		name string
 
 		routeID    uuid.UUID
+		routeName  string
+		detail     string
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -223,6 +229,8 @@ func Test_RouteV1RouteUpdate(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("f417d043-981b-4b74-bb26-5e37771b3104"),
+			"update name",
+			"update detail",
 			uuid.FromStringOrNil("1834094f-bebf-42b1-83d3-88b86f8d417c"),
 			1,
 			"+82",
@@ -238,7 +246,7 @@ func Test_RouteV1RouteUpdate(t *testing.T) {
 				URI:      "/v1/routes/f417d043-981b-4b74-bb26-5e37771b3104",
 				Method:   rabbitmqhandler.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"provider_id":"1834094f-bebf-42b1-83d3-88b86f8d417c","priority":1,"target":"+82"}`),
+				Data:     []byte(`{"name":"update name","detail":"update detail","provider_id":"1834094f-bebf-42b1-83d3-88b86f8d417c","priority":1,"target":"+82"}`),
 			},
 			&rmroute.Route{
 				ID: uuid.FromStringOrNil("f417d043-981b-4b74-bb26-5e37771b3104"),
@@ -259,7 +267,7 @@ func Test_RouteV1RouteUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
 
-			res, err := reqHandler.RouteV1RouteUpdate(ctx, tt.routeID, tt.providerID, tt.priority, tt.target)
+			res, err := reqHandler.RouteV1RouteUpdate(ctx, tt.routeID, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
