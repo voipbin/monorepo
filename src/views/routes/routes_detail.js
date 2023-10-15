@@ -27,6 +27,7 @@ const RoutesDetail = () => {
   const ref_id = useRef(null);
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
+  const ref_customer_id = useRef(null);
   const ref_provider_id = useRef(null);
   const ref_priority = useRef(null);
   const ref_target = useRef(null);
@@ -86,6 +87,17 @@ const RoutesDetail = () => {
                 </CRow>
 
 
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Customer ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_customer_id}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue={detailData.customer_id}
+                    />
+                  </CCol>
+                </CRow>
 
 
                 <CRow>

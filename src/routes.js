@@ -201,7 +201,7 @@ const routes = [
   { path: '/resources/providers/providers_detail/:id', name: 'ProvidersDetail', element: ProvidersDetail },
 
   { path: '/resources/routes/routes_list', name: 'RoutesList', element: RoutesList },
-  { path: '/resources/routes/routes_create', name: 'RoutesCreate', element: RoutesCreate },
+  { path: '/resources/routes/routes_create/:id', name: 'RoutesCreate', element: RoutesCreate },
   { path: '/resources/routes/routes_detail/:id', name: 'RoutesDetail', element: RoutesDetail },
 
 

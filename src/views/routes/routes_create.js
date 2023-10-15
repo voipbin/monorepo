@@ -27,11 +27,15 @@ import {
 const RoutesCreate = () => {
   console.log("RoutesCreate");
 
+  const routeParams = useParams();
+
   const ref_name = useRef(null);
   const ref_detail = useRef(null);
+  const ref_customer_id = useRef(routeParams.id);
   const ref_provider_id = useRef(null);
   const ref_priority = useRef(null);
   const ref_target = useRef(null);
+
 
   const Create = () => {
 
@@ -67,6 +71,19 @@ const RoutesCreate = () => {
                     />
                   </CCol>
                 </CRow>
+
+                <CRow>
+                  <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Customer ID</b></CFormLabel>
+                  <CCol className="mb-3 align-items-auto">
+                    <CFormInput
+                      ref={ref_customer_id}
+                      type="text"
+                      id="colFormLabelSm"
+                      defaultValue="00000000-0000-0000-0000-000000000001"
+                    />
+                  </CCol>
+                </CRow>
+
 
                 <CRow>
                   <CFormLabel htmlFor="colFormLabelSm" className="col-sm-2 col-form-label"><b>Provider ID</b></CFormLabel>
@@ -119,6 +136,7 @@ const RoutesCreate = () => {
     const tmpData = {
       "name": ref_name.current.value,
       "detail": ref_detail.current.value,
+      "customer_id": ref.customer_id.current.value,
       "provider_id": ref_provider_id.current.value,
       "priority": Number(ref_priority.current.value),
       "target": ref_target.current.value,
@@ -127,9 +145,9 @@ const RoutesCreate = () => {
     const body = JSON.stringify(tmpData);
     const target = "routes";
     console.log("Create info. target: " + target + ", body: " + body);
-    // ProviderPost(target, body).then((response) => {
-    //   console.log("Created info.", JSON.stringify(response));
-    // });
+    ProviderPost(target, body).then((response) => {
+      console.log("Created info.", JSON.stringify(response));
+    });
   };
 
   return (
