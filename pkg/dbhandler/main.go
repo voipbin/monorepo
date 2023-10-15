@@ -31,7 +31,15 @@ type DBHandler interface {
 	RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error)
 	RouteGetsByCustomerIDWithTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error)
 	RouteDelete(ctx context.Context, id uuid.UUID) error
-	RouteUpdate(ctx context.Context, r *route.Route) error
+	RouteUpdate(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		detail string,
+		providerID uuid.UUID,
+		priority int,
+		target string,
+	) error
 }
 
 // handler database handler

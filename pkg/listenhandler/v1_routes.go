@@ -35,6 +35,8 @@ func (h *listenHandler) v1RoutesPost(ctx context.Context, m *rabbitmqhandler.Req
 	tmp, err := h.routeHandler.Create(
 		ctx,
 		req.CustomerID,
+		req.Name,
+		req.Detail,
 		req.ProviderID,
 		req.Priority,
 		req.Target,
@@ -168,6 +170,8 @@ func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *rabbitmqhandler.Re
 	tmp, err := h.routeHandler.Update(
 		ctx,
 		id,
+		req.Name,
+		req.Detail,
 		req.ProviderID,
 		req.Priority,
 		req.Target,

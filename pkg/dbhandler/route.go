@@ -22,6 +22,9 @@ const (
 
 		target,
 
+		name,
+		detail,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -41,6 +44,9 @@ func (h *handler) routeGetFromRow(row *sql.Rows) (*route.Route, error) {
 		&res.Priority,
 
 		&res.Target,
+
+		&res.Name,
+		&res.Detail,
 
 		&res.TMCreate,
 		&res.TMUpdate,
@@ -64,6 +70,9 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 
 		target,
 
+		name,
+		detail,
+
 		tm_create,
 		tm_update,
 		tm_delete
@@ -71,6 +80,7 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 		?, ?,
 		?, ?,
 		?,
+		?, ?,
 		?, ?, ?
 		)`
 	stmt, err := h.db.PrepareContext(ctx, q)
@@ -88,6 +98,9 @@ func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
 		r.Priority,
 
 		r.Target,
+
+		r.Name,
+		r.Detail,
 
 		ts,
 		DefaultTimeStamp,
@@ -308,9 +321,19 @@ func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // RouteUpdate updates the route information.
-func (h *handler) RouteUpdate(ctx context.Context, r *route.Route) error {
+func (h *handler) RouteUpdate(
+	ctx context.Context,
+	id uuid.UUID,
+	name string,
+	detail string,
+	providerID uuid.UUID,
+	priority int,
+	target string,
+) error {
 	q := `
 	update routes set
+		name = ?,
+		detail = ?,
 		provider_id = ?,
 		priority = ?,
 		target = ?,
@@ -321,11 +344,11 @@ func (h *handler) RouteUpdate(ctx context.Context, r *route.Route) error {
 	`
 
 	ts := h.utilHandler.TimeGetCurTime()
-	if _, err := h.db.Exec(q, r.ProviderID.Bytes(), r.Priority, r.Target, ts, r.ID.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, name, detail, providerID.Bytes(), priority, target, ts, id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. RouteUpdate. err: %v", err)
 	}
 
-	_ = h.routeUpdateToCache(ctx, r.ID)
+	_ = h.routeUpdateToCache(ctx, id)
 
 	return nil
 }

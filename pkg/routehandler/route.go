@@ -30,6 +30,8 @@ func (h *routeHandler) Get(ctx context.Context, id uuid.UUID) (*route.Route, err
 func (h *routeHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
+	name string,
+	detail string,
 	providerID uuid.UUID,
 	priority int,
 	target string,
@@ -40,6 +42,9 @@ func (h *routeHandler) Create(
 	r := &route.Route{
 		ID:         id,
 		CustomerID: customerID,
+
+		Name:   name,
+		Detail: detail,
 
 		ProviderID: providerID,
 		Priority:   priority,
@@ -157,29 +162,21 @@ func (h *routeHandler) Delete(ctx context.Context, id uuid.UUID) (*route.Route, 
 }
 
 // Update updates the route and return the updated route
-func (h *routeHandler) Update(ctx context.Context, id uuid.UUID, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "Update",
-			"id":   id,
-		})
-	log.WithFields(
-		logrus.Fields{
-			"provider_id": providerID,
-			"priority":    priority,
-			"target":      target,
-		},
-	).Debug("Updating the route.")
+func (h *routeHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "Update",
+		"route_id": id,
+	})
 
-	tmp := &route.Route{
-		ID:         id,
-		ProviderID: providerID,
-		Priority:   priority,
-		Target:     target,
-	}
-	log.WithField("update_route", tmp).Debugf("Created update route info.")
+	log.WithFields(logrus.Fields{
+		"name":        name,
+		"detail":      detail,
+		"provider_id": providerID,
+		"priority":    priority,
+		"target":      target,
+	}).Debug("Updating the route.")
 
-	if errUpdate := h.db.RouteUpdate(ctx, tmp); errUpdate != nil {
+	if errUpdate := h.db.RouteUpdate(ctx, id, name, detail, providerID, priority, target); errUpdate != nil {
 		log.Errorf("Could not update the route info. err: %v", errUpdate)
 		return nil, errors.Wrap(errUpdate, "could not update the route info")
 	}

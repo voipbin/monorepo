@@ -401,15 +401,21 @@ func Test_RouteUpdate(t *testing.T) {
 
 		data *route.Route
 
+		id         uuid.UUID
+		routeName  string
+		detail     string
+		providerID uuid.UUID
+		priority   int
+		target     string
+
 		responseCurTime string
 
-		update    *route.Route
 		expectRes *route.Route
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			&route.Route{
+			data: &route.Route{
 				ID:         uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
 				CustomerID: uuid.FromStringOrNil("af531e46-4339-11ed-940d-1f29614aec4f"),
 				ProviderID: uuid.FromStringOrNil("af23f6a2-4339-11ed-ba82-83f201c80803"),
@@ -417,20 +423,21 @@ func Test_RouteUpdate(t *testing.T) {
 				Target:     "all",
 			},
 
-			"2020-05-18 03:22:17.995000",
+			id:         uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
+			routeName:  "update name",
+			detail:     "update detail",
+			providerID: uuid.FromStringOrNil("f7855bcc-6b54-11ee-a216-bbb1db932bc9"),
+			priority:   2,
+			target:     "+82",
 
-			&route.Route{
+			responseCurTime: "2020-05-18 03:22:17.995000",
+
+			expectRes: &route.Route{
 				ID:         uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
 				CustomerID: uuid.FromStringOrNil("af531e46-4339-11ed-940d-1f29614aec4f"),
-				ProviderID: uuid.FromStringOrNil("c927ca10-4339-11ed-8eaf-5bcecf699be4"),
-				Priority:   2,
-				Target:     "+82",
-			},
-
-			&route.Route{
-				ID:         uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
-				CustomerID: uuid.FromStringOrNil("af531e46-4339-11ed-940d-1f29614aec4f"),
-				ProviderID: uuid.FromStringOrNil("c927ca10-4339-11ed-8eaf-5bcecf699be4"),
+				Name:       "update name",
+				Detail:     "update detail",
+				ProviderID: uuid.FromStringOrNil("f7855bcc-6b54-11ee-a216-bbb1db932bc9"),
 				Priority:   2,
 				Target:     "+82",
 				TMCreate:   "2020-05-18 03:22:17.995000",
@@ -461,7 +468,7 @@ func Test_RouteUpdate(t *testing.T) {
 			}
 
 			mockCache.EXPECT().RouteSet(ctx, gomock.Any())
-			if err := h.RouteUpdate(ctx, tt.update); err != nil {
+			if err := h.RouteUpdate(ctx, tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

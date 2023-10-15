@@ -3,6 +3,9 @@ create table routes(
   id          binary(16),
   customer_id binary(16),
 
+  name      varchar(255),
+  detail    text,
+
   provider_id binary(16),
   priority    int,
 

@@ -67,6 +67,8 @@ func Test_Create(t *testing.T) {
 		name string
 
 		customerID uuid.UUID
+		routeName  string
+		detail     string
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -77,6 +79,8 @@ func Test_Create(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("502369f4-4662-11ed-8f0a-aff10c31ed97"),
+			"test name",
+			"test detail",
 			uuid.FromStringOrNil("505e0a96-4662-11ed-90ea-6b19829a782d"),
 			1,
 			"+82",
@@ -105,7 +109,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().RouteGet(ctx, gomock.Any()).Return(tt.responseProvider, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, route.EventTypeRouteCreated, tt.responseProvider)
 
-			res, err := h.Create(ctx, tt.customerID, tt.providerID, tt.priority, tt.target)
+			res, err := h.Create(ctx, tt.customerID, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -352,6 +356,8 @@ func Test_Update(t *testing.T) {
 		name string
 
 		id         uuid.UUID
+		routeName  string
+		detail     string
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -362,6 +368,8 @@ func Test_Update(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("76eec186-4663-11ed-b7b4-57471964d4f5"),
+			"update name",
+			"update detail",
 			uuid.FromStringOrNil("771ba87c-4663-11ed-bc0e-2ba6cb69d485"),
 			1,
 			"+82",
@@ -386,16 +394,18 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RouteUpdate(ctx, &route.Route{
-				ID:         tt.id,
-				ProviderID: tt.providerID,
-				Priority:   tt.priority,
-				Target:     tt.target,
-			}).Return(nil)
+			mockDB.EXPECT().RouteUpdate(ctx,
+				tt.id,
+				tt.routeName,
+				tt.detail,
+				tt.providerID,
+				tt.priority,
+				tt.target,
+			).Return(nil)
 			mockDB.EXPECT().RouteGet(ctx, tt.id).Return(tt.responseRoute, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, route.EventTypeRouteUpdated, tt.responseRoute)
 
-			res, err := h.Update(ctx, tt.id, tt.providerID, tt.priority, tt.target)
+			res, err := h.Update(ctx, tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
