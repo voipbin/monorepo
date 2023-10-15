@@ -19,6 +19,8 @@ import (
 func (r *requestHandler) RouteV1RouteCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
+	name string,
+	detail string,
 	providerID uuid.UUID,
 	priority int,
 	target string,
@@ -27,6 +29,8 @@ func (r *requestHandler) RouteV1RouteCreate(
 
 	data := &rmrequest.V1DataRoutesPost{
 		CustomerID: customerID,
+		Name:       name,
+		Detail:     detail,
 		ProviderID: providerID,
 		Priority:   priority,
 		Target:     target,
@@ -111,6 +115,8 @@ func (r *requestHandler) RouteV1RouteDelete(ctx context.Context, routeID uuid.UU
 func (r *requestHandler) RouteV1RouteUpdate(
 	ctx context.Context,
 	routeID uuid.UUID,
+	name string,
+	detail string,
 	providerID uuid.UUID,
 	priority int,
 	target string,
@@ -118,6 +124,8 @@ func (r *requestHandler) RouteV1RouteUpdate(
 	uri := fmt.Sprintf("/v1/routes/%s", routeID)
 
 	data := &rmrequest.V1DataRoutesIDPut{
+		Name:       name,
+		Detail:     detail,
 		ProviderID: providerID,
 		Priority:   priority,
 		Target:     target,
