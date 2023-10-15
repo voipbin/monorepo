@@ -136,6 +136,8 @@ func (h *serviceHandler) RouteCreate(
 	ctx context.Context,
 	u *cscustomer.Customer,
 	customerID uuid.UUID,
+	name string,
+	detail string,
 	providerID uuid.UUID,
 	priority int,
 	target string,
@@ -155,6 +157,8 @@ func (h *serviceHandler) RouteCreate(
 	tmp, err := h.reqHandler.RouteV1RouteCreate(
 		ctx,
 		customerID,
+		name,
+		detail,
 		providerID,
 		priority,
 		target,
@@ -200,7 +204,16 @@ func (h *serviceHandler) RouteDelete(ctx context.Context, u *cscustomer.Customer
 // RouteUpdate sends a request to route-manager
 // to updating the route.
 // it returns error if it failed.
-func (h *serviceHandler) RouteUpdate(ctx context.Context, u *cscustomer.Customer, routeID, providerID uuid.UUID, priority int, target string) (*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteUpdate(
+	ctx context.Context,
+	u *cscustomer.Customer,
+	routeID uuid.UUID,
+	name string,
+	detail string,
+	providerID uuid.UUID,
+	priority int,
+	target string,
+) (*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteUpdate",
 		"customer_id": u.ID,
@@ -213,7 +226,7 @@ func (h *serviceHandler) RouteUpdate(ctx context.Context, u *cscustomer.Customer
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.RouteV1RouteUpdate(ctx, routeID, providerID, priority, target)
+	tmp, err := h.reqHandler.RouteV1RouteUpdate(ctx, routeID, name, detail, providerID, priority, target)
 	if err != nil {
 		log.Errorf("Could not update the route. err: %v", err)
 		return nil, err
