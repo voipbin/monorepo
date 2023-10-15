@@ -2711,18 +2711,18 @@ func (mr *MockServiceHandlerMockRecorder) RecordingfileGet(ctx, u, id interface{
 }
 
 // RouteCreate mocks base method.
-func (m *MockServiceHandler) RouteCreate(ctx context.Context, u *customer.Customer, customerID, providerID uuid.UUID, priority int, target string) (*route.WebhookMessage, error) {
+func (m *MockServiceHandler) RouteCreate(ctx context.Context, u *customer.Customer, customerID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteCreate", ctx, u, customerID, providerID, priority, target)
+	ret := m.ctrl.Call(m, "RouteCreate", ctx, u, customerID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteCreate indicates an expected call of RouteCreate.
-func (mr *MockServiceHandlerMockRecorder) RouteCreate(ctx, u, customerID, providerID, priority, target interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) RouteCreate(ctx, u, customerID, name, detail, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteCreate", reflect.TypeOf((*MockServiceHandler)(nil).RouteCreate), ctx, u, customerID, providerID, priority, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteCreate", reflect.TypeOf((*MockServiceHandler)(nil).RouteCreate), ctx, u, customerID, name, detail, providerID, priority, target)
 }
 
 // RouteDelete mocks base method.
@@ -2786,18 +2786,18 @@ func (mr *MockServiceHandlerMockRecorder) RouteGetsByCustomerID(ctx, u, customer
 }
 
 // RouteUpdate mocks base method.
-func (m *MockServiceHandler) RouteUpdate(ctx context.Context, u *customer.Customer, routeID, providerID uuid.UUID, priority int, target string) (*route.WebhookMessage, error) {
+func (m *MockServiceHandler) RouteUpdate(ctx context.Context, u *customer.Customer, routeID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteUpdate", ctx, u, routeID, providerID, priority, target)
+	ret := m.ctrl.Call(m, "RouteUpdate", ctx, u, routeID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteUpdate indicates an expected call of RouteUpdate.
-func (mr *MockServiceHandlerMockRecorder) RouteUpdate(ctx, u, routeID, providerID, priority, target interface{}) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) RouteUpdate(ctx, u, routeID, name, detail, providerID, priority, target interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteUpdate", reflect.TypeOf((*MockServiceHandler)(nil).RouteUpdate), ctx, u, routeID, providerID, priority, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteUpdate", reflect.TypeOf((*MockServiceHandler)(nil).RouteUpdate), ctx, u, routeID, name, detail, providerID, priority, target)
 }
 
 // TagCreate mocks base method.

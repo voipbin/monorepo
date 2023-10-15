@@ -221,6 +221,8 @@ func Test_RouteCreate(t *testing.T) {
 		customer *cscustomer.Customer
 
 		customerID uuid.UUID
+		routeName  string
+		detail     string
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -239,6 +241,8 @@ func Test_RouteCreate(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("cf7339a3-fb3b-44ff-aedd-2b999f89fd7b"),
+			"test name",
+			"test detail",
 			uuid.FromStringOrNil("bfe600b7-e496-4c00-84e4-e9ae05e7b829"),
 			1,
 			"+82",
@@ -270,6 +274,8 @@ func Test_RouteCreate(t *testing.T) {
 			mockReq.EXPECT().RouteV1RouteCreate(
 				ctx,
 				tt.customerID,
+				tt.routeName,
+				tt.detail,
 				tt.providerID,
 				tt.priority,
 				tt.target,
@@ -279,6 +285,8 @@ func Test_RouteCreate(t *testing.T) {
 				ctx,
 				tt.customer,
 				tt.customerID,
+				tt.routeName,
+				tt.detail,
 				tt.providerID,
 				tt.priority,
 				tt.target,
@@ -365,6 +373,8 @@ func Test_RouteUpdate(t *testing.T) {
 		customer *cscustomer.Customer
 
 		routeID    uuid.UUID
+		routeName  string
+		detail     string
 		providerID uuid.UUID
 		priority   int
 		target     string
@@ -383,6 +393,8 @@ func Test_RouteUpdate(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("88c8938c-8dd3-4fcf-887f-c0e026912a6b"),
+			"update name",
+			"update detail",
 			uuid.FromStringOrNil("902f912c-57bb-45eb-ac68-10c16057aebb"),
 			1,
 			"+82",
@@ -417,6 +429,8 @@ func Test_RouteUpdate(t *testing.T) {
 			mockReq.EXPECT().RouteV1RouteUpdate(
 				ctx,
 				tt.routeID,
+				tt.routeName,
+				tt.detail,
 				tt.providerID,
 				tt.priority,
 				tt.target,
@@ -426,6 +440,8 @@ func Test_RouteUpdate(t *testing.T) {
 				ctx,
 				tt.customer,
 				tt.routeID,
+				tt.routeName,
+				tt.detail,
 				tt.providerID,
 				tt.priority,
 				tt.target,
