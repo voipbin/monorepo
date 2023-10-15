@@ -75,3 +75,8 @@ Path: /home/pchero/gitlab/voipbin/bin-manager/dbscheme-bin-manager/bin-manager/m
 ...
 ```
 
+# databases
+## asterisk_config
+Asterisk database.
+Fixed alembic table name.
+alembic_version_config -> alembic_version
