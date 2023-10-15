@@ -17,6 +17,11 @@ import {
   MaterialReactTable,
 } from 'material-react-table';
 import {
+  CFormInput,
+  CRow,
+  CCol,
+} from '@coreui/react';
+import {
   Get as ProviderGet,
   Post as ProviderPost,
   Put as ProviderPut,
@@ -30,14 +35,27 @@ const RoutesList = () => {
 
   const [listData, setListData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchCustomerID, setSearchCustomerID] = useState("00000000-0000-0000-0000-000000000001");
 
   useEffect(() => {
     getList();
     return;
-  },[]);
+  }, []);
+
+  const searchRoutes = ((tmpCustomerID) => {
+    const target = "routes?customer_id=" + tmpCustomerID;
+    console.log("searchRoutes. target: ", target);
+
+    ProviderGet(target).then(result => {
+      const data = result.result;
+      setListData(data);
+      setIsLoading(false);
+    });
+  });
 
   const getList = (() => {
     const target = "routes?page_size=100";
+    console.log("getList. target: ", target);
 
     ProviderGet(target).then(result => {
       const data = result.result;
@@ -59,17 +77,17 @@ const RoutesList = () => {
         enableEditing: false,
       },
       {
+        accessorKey: 'customer_id',
+        header: 'Customer ID',
+        size: 350,
+      },
+      {
         accessorKey: 'priority',
         header: 'Priority',
       },
       {
         accessorKey: 'target',
         header: 'Target',
-      },
-      {
-        accessorKey: 'provider_id',
-        header: 'Provider ID',
-        size: 350,
       },
       {
         accessorKey: 'tm_update',
@@ -107,7 +125,7 @@ const RoutesList = () => {
     navigate(target);
   }
   const Create = () => {
-    const target = "/resources/routes/routes_create";
+    const target = "/resources/routes/routes_create/" + searchCustomerID;
     console.log("navigate target: ", target);
     navigate(target);
   }
@@ -156,15 +174,44 @@ const RoutesList = () => {
           }
         }}
         renderTopToolbarCustomActions={() => (
-          <Button
-            color="secondary"
-            onClick={() => {
-              Create(true);
-            }}
-            variant="contained"
-          >
-            Create
-          </Button>
+          <CRow>
+            <CCol xs={8}>
+              <CFormInput
+                type="text"
+                placeholder="00000000-0000-0000-0000-000000000001"
+                aria-label="default input example"
+                size="sm"
+                onChange={(evt) => {
+                  const value = evt.nativeEvent.target.value;
+                  setSearchCustomerID(value);
+                }}
+              />
+            </CCol>
+            <CCol xs>
+              <Button
+                color="primary"
+                size="sm"
+                onClick={() => {
+                  setIsLoading(true);
+                  searchRoutes(searchCustomerID.toLowerCase());
+                }}
+                variant="contained"
+              >
+                Search
+              </Button>
+            </CCol>
+            <CCol xs>
+              <Button
+                color="secondary"
+                onClick={() => {
+                  Create(true);
+                }}
+                variant="contained"
+              >
+                Create
+              </Button>
+            </CCol>
+          </CRow>
         )}
       />
     </>
