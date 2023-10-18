@@ -12,11 +12,15 @@ import (
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	fmaction "gitlab.com/voipbin/bin-manager/flow-manager.git/models/action"
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
+	omoutdial "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdial"
+	qmqueue "gitlab.com/voipbin/bin-manager/queue-manager.git/models/queue"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/campaigncallhandler"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/outplanhandler"
 )
 
 func Test_Create(t *testing.T) {
@@ -39,31 +43,52 @@ func Test_Create(t *testing.T) {
 		queueID        uuid.UUID
 		nextCampaignID uuid.UUID
 
+		responseOutplan      *outplan.Outplan
+		responseOutdial      *omoutdial.Outdial
+		responseQueue        *qmqueue.Queue
+		responseNextCampaign *campaign.Campaign
+
 		responseCampaign *campaign.Campaign
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("dc55d2f4-c453-11ec-a621-8be3afeb72f9"),
-			uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
-			campaign.TypeCall,
-			"test name",
-			"test detail",
+			id:           uuid.FromStringOrNil("dc55d2f4-c453-11ec-a621-8be3afeb72f9"),
+			customerID:   uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+			campaignType: campaign.TypeCall,
+			campaignName: "test name",
+			detail:       "test detail",
 
-			[]fmaction.Action{
+			actions: []fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			100,
-			campaign.EndHandleStop,
+			serviceLevel: 100,
+			endHandle:    campaign.EndHandleStop,
 
-			uuid.FromStringOrNil("7d568cbe-2928-4dbe-b41f-3b2afad1b6e3"),
-			uuid.FromStringOrNil("fb4d2a07-187d-4274-85bf-70186d902873"),
-			uuid.FromStringOrNil("b5e1c926-6753-42ca-be72-e4a521d40bed"),
-			uuid.FromStringOrNil("c6da6162-dfc5-495d-a5af-e99efc9a97f7"),
+			outplanID:      uuid.FromStringOrNil("7d568cbe-2928-4dbe-b41f-3b2afad1b6e3"),
+			outdialID:      uuid.FromStringOrNil("fb4d2a07-187d-4274-85bf-70186d902873"),
+			queueID:        uuid.FromStringOrNil("b5e1c926-6753-42ca-be72-e4a521d40bed"),
+			nextCampaignID: uuid.FromStringOrNil("c6da6162-dfc5-495d-a5af-e99efc9a97f7"),
 
-			&campaign.Campaign{
+			responseOutplan: &outplan.Outplan{
+				ID:       uuid.FromStringOrNil("7d568cbe-2928-4dbe-b41f-3b2afad1b6e3"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseOutdial: &omoutdial.Outdial{
+				ID:       uuid.FromStringOrNil("fb4d2a07-187d-4274-85bf-70186d902873"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseQueue: &qmqueue.Queue{
+				ID:       uuid.FromStringOrNil("b5e1c926-6753-42ca-be72-e4a521d40bed"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseNextCampaign: &campaign.Campaign{
+				ID:       uuid.FromStringOrNil("c6da6162-dfc5-495d-a5af-e99efc9a97f7"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseCampaign: &campaign.Campaign{
 				ID:         uuid.FromStringOrNil("dc55d2f4-c453-11ec-a621-8be3afeb72f9"),
 				CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
 			},
@@ -78,13 +103,28 @@ func Test_Create(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 			h := &campaignHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				reqHandler:    mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				reqHandler:     mockReq,
+				outplanHandler: mockOutplan,
 			}
-
 			ctx := context.Background()
+
+			// validate
+			if tt.outplanID != uuid.Nil {
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
+			}
+			if tt.outdialID != uuid.Nil {
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
+			}
+			if tt.queueID != uuid.Nil {
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+			}
+			if tt.nextCampaignID != uuid.Nil {
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseNextCampaign, nil)
+			}
 
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeCampaign, "", "", gomock.Any(), true).Return(&fmflow.Flow{}, nil)
 			mockDB.EXPECT().CampaignCreate(ctx, gomock.Any()).Return(nil)
@@ -310,13 +350,26 @@ func Test_UpdateResourceInfo(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 			h := &campaignHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				reqHandler:    mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				reqHandler:     mockReq,
+				outplanHandler: mockOutplan,
 			}
 
 			ctx := context.Background()
+
+			// validate
+			if tt.outplanID != uuid.Nil {
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(&outplan.Outplan{TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			}
+			if tt.outdialID != uuid.Nil {
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(&omoutdial.Outdial{TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			}
+			if tt.queueID != uuid.Nil {
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(&qmqueue.Queue{TMDelete: dbhandler.DefaultTimeStamp}, nil)
+			}
 
 			mockDB.EXPECT().CampaignUpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID).Return(nil)
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
@@ -681,7 +734,7 @@ func Test_updateExecuteStopAndCampaignIsStoppable(t *testing.T) {
 
 			// isstoppable
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-			mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
 
 			// updateStatusStop
@@ -751,6 +804,381 @@ func Test_updateExecuteStopAndCampaignIsNotStoppable(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+		})
+	}
+}
+
+func Test_isValidOutdialID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id        uuid.UUID
+		outdialID uuid.UUID
+
+		responseOutdial *omoutdial.Outdial
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("fbf0b198-6cfd-11ee-b521-37013565562b"),
+			uuid.FromStringOrNil("caeec970-6cfa-11ee-8922-db4df7f7be10"),
+
+			&omoutdial.Outdial{
+				ID:         uuid.FromStringOrNil("caeec970-6cfa-11ee-8922-db4df7f7be10"),
+				CampaignID: uuid.FromStringOrNil("fbf0b198-6cfd-11ee-b521-37013565562b"),
+				TMDelete:   dbhandler.DefaultTimeStamp,
+			},
+		},
+		{
+			"campaign id is nil",
+
+			uuid.Nil,
+			uuid.FromStringOrNil("0c29e430-6cfe-11ee-a345-a3447618246d"),
+
+			&omoutdial.Outdial{
+				ID:       uuid.FromStringOrNil("0c29e430-6cfe-11ee-a345-a3447618246d"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
+
+			if res := h.isValidOutdialID(ctx, tt.id, tt.outdialID); res != true {
+				t.Errorf("Wrong match. expect: ok, got: %v", res)
+			}
+
+		})
+	}
+}
+
+func Test_isValidOutplanID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		outplanID uuid.UUID
+
+		responseOutplan *outplan.Outplan
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("5feb6e54-6cfe-11ee-bc10-03bb387f94b5"),
+
+			&outplan.Outplan{
+				ID:       uuid.FromStringOrNil("5feb6e54-6cfe-11ee-bc10-03bb387f94b5"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+		},
+		{
+			"outplan id is nil",
+
+			uuid.Nil,
+
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+				outplanHandler:      mockOutplan,
+			}
+			ctx := context.Background()
+
+			if tt.outplanID != uuid.Nil {
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
+			}
+
+			if res := h.isValidOutplanID(ctx, tt.outplanID); res != true {
+				t.Errorf("Wrong match. expect: ok, got: %v", res)
+			}
+		})
+	}
+}
+
+func Test_isValidQueueID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queueID uuid.UUID
+
+		responseQueue *qmqueue.Queue
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("97519ade-6cff-11ee-8f11-ab52f82847cb"),
+
+			&qmqueue.Queue{
+				ID:       uuid.FromStringOrNil("97519ade-6cff-11ee-8f11-ab52f82847cb"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+		},
+		{
+			"queue id is nil",
+
+			uuid.Nil,
+
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+			}
+			ctx := context.Background()
+
+			if tt.queueID != uuid.Nil {
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+			}
+
+			if res := h.isValidQueueID(ctx, tt.queueID); res != true {
+				t.Errorf("Wrong match. expect: ok, got: %v", res)
+			}
+		})
+	}
+}
+
+func Test_isValidNextCampaignID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		nextCampaignID uuid.UUID
+
+		responseCampaign *campaign.Campaign
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("b395c760-6cff-11ee-9dc5-c7265f1e5d16"),
+
+			&campaign.Campaign{
+				ID:       uuid.FromStringOrNil("b395c760-6cff-11ee-9dc5-c7265f1e5d16"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+		},
+		{
+			"next campaign id is nil",
+
+			uuid.Nil,
+
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+			}
+			ctx := context.Background()
+
+			if tt.nextCampaignID != uuid.Nil {
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseCampaign, nil)
+			}
+
+			if res := h.isValidNextCampaignID(ctx, tt.nextCampaignID); res != true {
+				t.Errorf("Wrong match. expect: ok, got: %v", res)
+			}
+		})
+	}
+}
+
+func Test_updateResources(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id             uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
+
+		responseOutdial *omoutdial.Outdial
+	}{
+		{
+			name: "normal",
+
+			id:             uuid.FromStringOrNil("55c70eb8-6d00-11ee-af57-2f785264f30a"),
+			outplanID:      uuid.FromStringOrNil("55f43ff0-6d00-11ee-bbf1-97a90f12ce6b"),
+			outdialID:      uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
+			queueID:        uuid.FromStringOrNil("56545c96-6d00-11ee-955f-af50e79460c9"),
+			nextCampaignID: uuid.FromStringOrNil("60613bc8-6d00-11ee-ac28-6377edcc4a2f"),
+
+			responseOutdial: &omoutdial.Outdial{
+				ID:       uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+			}
+			ctx := context.Background()
+
+			if tt.outdialID != uuid.Nil {
+				mockReq.EXPECT().OutdialV1OutdialUpdateCampaignID(ctx, tt.outdialID, tt.id).Return(tt.responseOutdial, nil)
+			}
+
+			if res := h.updateResources(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID); res != true {
+				t.Errorf("Wrong match. expect: ok, got: %v", res)
+			}
+		})
+	}
+}
+
+func Test_validateResources(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id             uuid.UUID
+		outplanID      uuid.UUID
+		outdialID      uuid.UUID
+		queueID        uuid.UUID
+		nextCampaignID uuid.UUID
+
+		responseOutplan      *outplan.Outplan
+		responseOutdial      *omoutdial.Outdial
+		responseQueue        *qmqueue.Queue
+		responseNextCampaign *campaign.Campaign
+	}{
+		{
+			name: "normal",
+
+			id:             uuid.FromStringOrNil("aef448ca-6d00-11ee-a31d-4f74d98353e1"),
+			outplanID:      uuid.FromStringOrNil("af229982-6d00-11ee-b767-5b0d2ca26cb4"),
+			outdialID:      uuid.FromStringOrNil("af4a61c4-6d00-11ee-a129-1f00c9df4919"),
+			queueID:        uuid.FromStringOrNil("af755fdc-6d00-11ee-98b2-275890b0ec69"),
+			nextCampaignID: uuid.FromStringOrNil("afa1590c-6d00-11ee-9168-635f279cf425"),
+
+			responseOutplan: &outplan.Outplan{
+				ID:       uuid.FromStringOrNil("af229982-6d00-11ee-b767-5b0d2ca26cb4"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseOutdial: &omoutdial.Outdial{
+				ID:       uuid.FromStringOrNil("5623f40c-6d00-11ee-8d48-c715083940ba"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseQueue: &qmqueue.Queue{
+				ID:       uuid.FromStringOrNil("af755fdc-6d00-11ee-98b2-275890b0ec69"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+			responseNextCampaign: &campaign.Campaign{
+				ID:       uuid.FromStringOrNil("afa1590c-6d00-11ee-9168-635f279cf425"),
+				TMDelete: dbhandler.DefaultTimeStamp,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
+			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
+			h := &campaignHandler{
+				db:                  mockDB,
+				notifyHandler:       mockNotify,
+				reqHandler:          mockReq,
+				campaigncallHandler: mockCampaigncall,
+				outplanHandler:      mockOutplan,
+			}
+			ctx := context.Background()
+
+			if tt.outplanID != uuid.Nil {
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
+			}
+
+			if tt.outdialID != uuid.Nil {
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
+			}
+
+			if tt.queueID != uuid.Nil {
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+			}
+
+			if tt.nextCampaignID != uuid.Nil {
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseNextCampaign, nil)
+			}
+
+			if res := h.validateResources(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID); res != true {
+				t.Errorf("Wrong match. expect: ok, got: %v", res)
+			}
 		})
 	}
 }

@@ -32,7 +32,7 @@ func (h *outplanHandler) Create(
 		"customer_id": customerID,
 	})
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.util.UUIDCreate()
 	t := &outplan.Outplan{
 		ID:         id,
 		CustomerID: customerID,
@@ -73,7 +73,7 @@ func (h *outplanHandler) Get(ctx context.Context, id uuid.UUID) (*outplan.Outpla
 		"func":       "Get",
 		"outplan_id": id,
 	})
-	
+
 	res, err := h.db.OutplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan. err: %v", err)

@@ -3,6 +3,7 @@ package campaignhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -10,6 +11,7 @@ import (
 	fmflow "gitlab.com/voipbin/bin-manager/flow-manager.git/models/flow"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaign"
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
 )
 
 // Create creates a new campaign
@@ -35,6 +37,16 @@ func (h *campaignHandler) Create(
 		"customer_id": customerID,
 	})
 
+	if id == uuid.Nil {
+		id = h.util.UUIDCreate()
+	}
+
+	// validate
+	if !h.validateResources(ctx, id, outplanID, outdialID, queueID, nextCampaignID) {
+		log.Errorf("Could not pass the resource validation. outplan_id: %s, outdial: %s, queue_id: %s, next_campaign_id: %s", outplanID, outdialID, queueID, nextCampaignID)
+		return nil, fmt.Errorf("could not pass the resource validation")
+	}
+
 	// create a flow actions
 	flowActions, err := h.createFlowActions(ctx, actions, queueID)
 	if err != nil {
@@ -50,9 +62,6 @@ func (h *campaignHandler) Create(
 	}
 	log.WithField("flow", f).Debugf("Created a flow for campaign. flow_id: %s", f.ID)
 
-	if id == uuid.Nil {
-		id = uuid.Must(uuid.NewV4())
-	}
 	t := &campaign.Campaign{
 		ID:             id,
 		CustomerID:     customerID,
@@ -85,6 +94,12 @@ func (h *campaignHandler) Create(
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignCreated, res)
 
 	log.WithField("campaign", res).Debugf("Created a new campaign. campaign_id: %s", res.ID)
+
+	// update resource
+	if !h.updateResources(ctx, res.ID, res.OutplanID, res.OutdialID, res.QueueID, res.NextCampaignID) {
+		log.Errorf("Could not update the resources info.")
+		return nil, fmt.Errorf("could not update the resources info")
+	}
 
 	return res, nil
 }
@@ -207,6 +222,12 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 	})
 	log.Debug("Updating campaign basic info.")
 
+	if !h.validateResources(ctx, id, outplanID, outdialID, queueID, uuid.Nil) {
+		log.Errorf("Could not pass the resource validation. outplan_id: %s, outdial_id: %s, queue_id: %s, nex_campaign_id: %s",
+			outplanID, outdialID, queueID, uuid.Nil)
+		return nil, fmt.Errorf("could not pass the resource validation")
+	}
+
 	if err := h.db.CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID); err != nil {
 		log.Errorf("Could not update campaign. err: %v", err)
 		return nil, err
@@ -239,6 +260,12 @@ func (h *campaignHandler) UpdateResourceInfo(ctx context.Context, id, outplanID,
 		return nil, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, campaign.EventTypeCampaignUpdated, res)
+
+	// update resources
+	if !h.updateResources(ctx, res.ID, res.OutplanID, res.OutdialID, res.QueueID, res.NextCampaignID) {
+		log.Errorf("Could not update the resources")
+		return nil, fmt.Errorf("could not update the resources")
+	}
 
 	return res, nil
 }
@@ -391,4 +418,188 @@ func (h *campaignHandler) updateExecuteStop(ctx context.Context, id uuid.UUID) e
 	log.WithField("campaign", c).Debugf("Stopping the campaign. campaign_id: %s", id)
 
 	return nil
+}
+
+func (h *campaignHandler) validateResources(
+	ctx context.Context,
+	id uuid.UUID,
+	outplanID uuid.UUID,
+	outdialID uuid.UUID,
+	queueID uuid.UUID,
+	nextCampaignID uuid.UUID,
+) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":             "validateResources",
+		"outplan_id":       outplanID,
+		"outdial_id":       outdialID,
+		"queue_id":         queueID,
+		"next_campaign_id": nextCampaignID,
+	})
+
+	// outplan id
+	if !h.isValidOutplanID(ctx, outplanID) {
+		log.Debugf("The outplan id is not valid. outplan_id: %s", outplanID)
+		return false
+	}
+
+	// outdial id
+	if !h.isValidOutdialID(ctx, id, outdialID) {
+		log.Debugf("The outdial id is not valid. outplan_id: %s", outplanID)
+		return false
+	}
+
+	// queue id
+	if !h.isValidQueueID(ctx, queueID) {
+		log.Debugf("The queue id is not valid. queue_id: %s", queueID)
+		return false
+	}
+
+	// next campaign id
+	if !h.isValidNextCampaignID(ctx, nextCampaignID) {
+		log.Debugf("The next campaign id is not valid. next_campaign_id: %s", nextCampaignID)
+		return false
+	}
+
+	return true
+}
+
+// isValidOutdialID returns true if the given outdial id is valid
+func (h *campaignHandler) isValidOutdialID(ctx context.Context, id uuid.UUID, outdialID uuid.UUID) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "isValidOutdialID",
+		"campaign_id": id,
+		"outdial_id":  outdialID,
+	})
+
+	if outdialID == uuid.Nil {
+		return true
+	}
+
+	// get outdial
+	od, err := h.reqHandler.OutdialV1OutdialGet(ctx, outdialID)
+	if err != nil {
+		log.Errorf("Could not get outdial info. err: %v", err)
+		return false
+	}
+	log.WithField("outdial", od).Debugf("Checking outdial info. outdial_id: %s", od.ID)
+
+	if od.CampaignID != uuid.Nil && od.CampaignID != id {
+		log.Debugf("The outdial is used by other campaign already. campaign_id: %s", od.CampaignID)
+		return false
+	}
+
+	if od.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Debugf("The outdial is already deleted.")
+		return false
+	}
+
+	return true
+}
+
+// isValidOutplanID returns true if the outplan id is valid.
+func (h *campaignHandler) isValidOutplanID(ctx context.Context, outplanID uuid.UUID) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "isValidOutplanID",
+		"outplan_id": outplanID,
+	})
+
+	if outplanID == uuid.Nil {
+		return true
+	}
+
+	// get outplan
+	op, err := h.outplanHandler.Get(ctx, outplanID)
+	if err != nil {
+		log.Errorf("Could not get outdial info. err: %v", err)
+		return false
+	}
+	log.WithField("outplan", op).Debugf("Checking outdial info. outplan_id: %s", op.ID)
+
+	if op.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Debugf("The outdial is already deleted.")
+		return false
+	}
+
+	return true
+}
+
+// isValidQueueID returns true if the queue id is valid for queue id.
+func (h *campaignHandler) isValidQueueID(ctx context.Context, queueID uuid.UUID) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "isValidQueueID",
+		"queue_id": queueID,
+	})
+
+	if queueID == uuid.Nil {
+		return true
+	}
+
+	// get queue
+	q, err := h.reqHandler.QueueV1QueueGet(ctx, queueID)
+	if err != nil {
+		log.Errorf("Could not get outdial info. err: %v", err)
+		return false
+	}
+	log.WithField("queue", q).Debugf("Checking outdial info. queue_id: %s", q.ID)
+
+	if q.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Debugf("The queue is already deleted.")
+		return false
+	}
+
+	return true
+}
+
+// isValidNextCampaignID returns true if the given campaign id is valid for next campaign id
+func (h *campaignHandler) isValidNextCampaignID(ctx context.Context, nextCampaignID uuid.UUID) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":             "isValidNextCampaignID",
+		"next_campaign_id": nextCampaignID,
+	})
+
+	if nextCampaignID == uuid.Nil {
+		return true
+	}
+
+	c, err := h.Get(ctx, nextCampaignID)
+	if err != nil {
+		log.Errorf("Could not get campaign info. err: %v", err)
+		return false
+	}
+	log.WithField("campaign", c).Debugf("Checking campaign info. campaign_id: %s", c.ID)
+
+	if c.TMDelete != dbhandler.DefaultTimeStamp {
+		log.Debugf("The campaign is already deleted.")
+		return false
+	}
+
+	return true
+}
+
+func (h *campaignHandler) updateResources(
+	ctx context.Context,
+	id uuid.UUID,
+	outplanID uuid.UUID,
+	outdialID uuid.UUID,
+	queueID uuid.UUID,
+	nextCampaignID uuid.UUID,
+) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":             "validateResources",
+		"outplan_id":       outplanID,
+		"outdial_id":       outdialID,
+		"queue_id":         queueID,
+		"next_campaign_id": nextCampaignID,
+	})
+
+	// outdial id
+	if outdialID != uuid.Nil {
+		_, errUpdate := h.reqHandler.OutdialV1OutdialUpdateCampaignID(ctx, outdialID, id)
+		if errUpdate != nil {
+			log.Errorf("Could not update the campaign id to the outdial. err: %v", errUpdate)
+			return false
+		}
+	}
+
+	return true
 }
