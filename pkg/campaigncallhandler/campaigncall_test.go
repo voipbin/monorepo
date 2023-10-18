@@ -10,6 +10,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
@@ -37,32 +38,35 @@ func Test_Create(t *testing.T) {
 		destination      *commonaddress.Address
 		destinationIndex int
 		tryCount         int
+
+		responseUUID uuid.UUID
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("39a8de10-bd23-44e8-8ac3-2e47bee450cb"),
-			uuid.FromStringOrNil("aea5d8af-c2dc-4ffe-b9f0-c73c073a6b10"),
-			uuid.FromStringOrNil("0c6b8021-0be9-4127-96a6-44d4b8ead96b"),
-			uuid.FromStringOrNil("9b426642-ba6f-464d-943e-1990380f88fd"),
-			uuid.FromStringOrNil("8895f112-69e6-4a86-ad11-20c8ceef7c0c"),
-			uuid.FromStringOrNil("57610fb2-d817-4692-99e2-2069315d1ee1"),
+			customerID:      uuid.FromStringOrNil("39a8de10-bd23-44e8-8ac3-2e47bee450cb"),
+			campaignID:      uuid.FromStringOrNil("aea5d8af-c2dc-4ffe-b9f0-c73c073a6b10"),
+			outplanID:       uuid.FromStringOrNil("0c6b8021-0be9-4127-96a6-44d4b8ead96b"),
+			outdialID:       uuid.FromStringOrNil("9b426642-ba6f-464d-943e-1990380f88fd"),
+			outdialTargetID: uuid.FromStringOrNil("8895f112-69e6-4a86-ad11-20c8ceef7c0c"),
+			queueID:         uuid.FromStringOrNil("57610fb2-d817-4692-99e2-2069315d1ee1"),
 
-			uuid.FromStringOrNil("2dee1247-4100-4e8f-847a-6b8e24fb8c7a"),
-			uuid.FromStringOrNil("ae34298a-7d5e-468b-8ea3-52a98e5bbcc6"),
+			activeflowID: uuid.FromStringOrNil("2dee1247-4100-4e8f-847a-6b8e24fb8c7a"),
+			flowID:       uuid.FromStringOrNil("ae34298a-7d5e-468b-8ea3-52a98e5bbcc6"),
 
-			campaigncall.ReferenceTypeCall,
-			uuid.FromStringOrNil("448ffc1f-b599-4c77-8f18-058a39189b97"),
-			&commonaddress.Address{
+			referenceType: campaigncall.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("448ffc1f-b599-4c77-8f18-058a39189b97"),
+			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			&commonaddress.Address{
+			destination: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
-			1,
-			1,
+			destinationIndex: 1,
+			tryCount:         1,
+			responseUUID:     uuid.FromStringOrNil("b843739e-6d08-11ee-b95d-d796bff6f089"),
 		},
 	}
 
@@ -71,10 +75,12 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := &campaigncallHandler{
+				util:          mockUtil,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 				reqHandler:    mockReq,
@@ -82,6 +88,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().CampaigncallCreate(gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().CampaigncallGet(gomock.Any(), gomock.Any()).Return(&campaigncall.Campaigncall{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), campaigncall.EventTypeCampaigncallCreated, gomock.Any())

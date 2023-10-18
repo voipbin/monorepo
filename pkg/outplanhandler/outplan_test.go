@@ -9,6 +9,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
@@ -30,6 +31,8 @@ func Test_Create(t *testing.T) {
 		maxTryCount2 int
 		maxTryCount3 int
 		maxTryCount4 int
+
+		responseUUID uuid.UUID
 	}{
 		{
 			"normal",
@@ -49,6 +52,8 @@ func Test_Create(t *testing.T) {
 			3,
 			3,
 			3,
+
+			uuid.FromStringOrNil("2c3a6208-6d04-11ee-ae68-27b62bc40354"),
 		},
 	}
 
@@ -58,10 +63,12 @@ func Test_Create(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			h := outplanHandler{
+				util:          mockUtil,
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
@@ -69,6 +76,7 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().OutplanCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().OutplanGet(ctx, gomock.Any()).Return(&outplan.Outplan{}, nil)
 

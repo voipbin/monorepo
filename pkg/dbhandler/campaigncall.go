@@ -170,7 +170,7 @@ func (h *handler) CampaigncallCreate(ctx context.Context, t *campaigncall.Campai
 		t.DestinationIndex,
 		t.TryCount,
 
-		h.util.GetCurTime(),
+		h.util.TimeGetCurTime(),
 		DefaultTimeStamp,
 	)
 	if err != nil {
@@ -440,7 +440,7 @@ func (h *handler) CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, st
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, status, h.util.GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, status, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaigncallUpdateStatus. err: %v", err)
 	}
 
@@ -461,7 +461,7 @@ func (h *handler) CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, result, status, h.util.GetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, result, status, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. CampaigncallUpdateStatusAndResult. err: %v", err)
 	}
 

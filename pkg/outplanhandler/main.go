@@ -9,6 +9,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/outplan"
 	"gitlab.com/voipbin/bin-manager/campaign-manager.git/pkg/dbhandler"
@@ -16,6 +17,7 @@ import (
 
 // outplanHandler defines
 type outplanHandler struct {
+	util          utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler

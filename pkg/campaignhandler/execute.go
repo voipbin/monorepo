@@ -213,8 +213,8 @@ func (h *campaignHandler) executeCall(
 	log.Debug("Execute executeCall.")
 
 	// create call_id
-	callID := uuid.Must(uuid.NewV4())
-	activeflowID := uuid.Must(uuid.NewV4())
+	callID := h.util.UUIDCreate()
+	activeflowID := h.util.UUIDCreate()
 
 	// create campaigncall
 	cc, err := h.campaigncallHandler.Create(
@@ -290,7 +290,7 @@ func (h *campaignHandler) executeFlow(
 	log.Debug("Execute executeFlow.")
 
 	// create activeflow_id
-	activeflowID := uuid.Must(uuid.NewV4())
+	activeflowID := h.util.UUIDCreate()
 
 	// create a campaigncall
 	tmpCC, err := h.campaigncallHandler.Create(

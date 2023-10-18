@@ -11,6 +11,7 @@ import (
 	commonaddress "gitlab.com/voipbin/bin-manager/common-handler.git/models/address"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/notifyhandler"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/requesthandler"
+	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/utilhandler"
 	"gitlab.com/voipbin/bin-manager/flow-manager.git/models/activeflow"
 	omoutdialtarget "gitlab.com/voipbin/bin-manager/outdial-manager.git/models/outdialtarget"
 
@@ -29,9 +30,10 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 
 		id uuid.UUID
 
-		response                *campaign.Campaign
+		responseCampaign        *campaign.Campaign
 		responseOutplan         *outplan.Outplan
 		responseOmoutdialtarget []omoutdialtarget.OutdialTarget
+		responseUUID            uuid.UUID
 		responseCampaigncall    *campaigncall.Campaigncall
 		responseActiveflow      *activeflow.Activeflow
 
@@ -40,11 +42,11 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 		expectTryCount         int
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
+			id: uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
 
-			&campaign.Campaign{
+			responseCampaign: &campaign.Campaign{
 				ID:        uuid.FromStringOrNil("0859cc3a-c3fe-11ec-b496-67a067678522"),
 				OutdialID: uuid.FromStringOrNil("bcad478e-c3fe-11ec-be28-a73254d6e0fc"),
 				OutplanID: uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
@@ -53,11 +55,11 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				Status:    campaign.StatusRun,
 				Type:      campaign.TypeFlow,
 			},
-			&outplan.Outplan{
+			responseOutplan: &outplan.Outplan{
 				ID:           uuid.FromStringOrNil("5d6e3422-c3fe-11ec-a89c-736f5faee9c0"),
 				MaxTryCount0: 4,
 			},
-			[]omoutdialtarget.OutdialTarget{
+			responseOmoutdialtarget: []omoutdialtarget.OutdialTarget{
 				{
 					ID: uuid.FromStringOrNil("1771246a-c3ff-11ec-8cf4-9fb7fc5301a8"),
 					Destination0: &commonaddress.Address{
@@ -67,20 +69,21 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 					TryCount0: 0,
 				},
 			},
-			&campaigncall.Campaigncall{
+			responseUUID: uuid.FromStringOrNil("400524dc-c402-11ec-9e8f-2fefadc4fc39"),
+			responseCampaigncall: &campaigncall.Campaigncall{
 				ID:           uuid.FromStringOrNil("400524dc-c402-11ec-9e8f-2fefadc4fc39"),
 				ActiveflowID: uuid.FromStringOrNil("6bab615a-c402-11ec-931f-df3080b6bcef"),
 			},
-			&activeflow.Activeflow{
+			responseActiveflow: &activeflow.Activeflow{
 				ID: uuid.FromStringOrNil("6bab615a-c402-11ec-931f-df3080b6bcef"),
 			},
 
-			&commonaddress.Address{
+			expectDestination: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			0,
-			1,
+			expectDestinationIndex: 0,
+			expectTryCount:         1,
 		},
 	}
 
@@ -89,28 +92,29 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockOutplan := outplanhandler.NewMockOutplanHandler(mc)
 			mockCampaigncall := campaigncallhandler.NewMockCampaigncallHandler(mc)
 			h := &campaignHandler{
+				util:                mockUtil,
 				db:                  mockDB,
 				notifyHandler:       mockNotify,
 				reqHandler:          mockReq,
 				campaigncallHandler: mockCampaigncall,
 				outplanHandler:      mockOutplan,
 			}
-
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-			mockOutplan.EXPECT().Get(ctx, tt.response.OutplanID).Return(tt.responseOutplan, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
+			mockOutplan.EXPECT().Get(ctx, tt.responseCampaign.OutplanID).Return(tt.responseOutplan, nil)
 
 			// get destination
 			mockReq.EXPECT().OutdialV1OutdialtargetGetsAvailable(
 				ctx,
-				tt.response.OutdialID,
+				tt.responseCampaign.OutdialID,
 				tt.responseOutplan.MaxTryCount0,
 				tt.responseOutplan.MaxTryCount1,
 				tt.responseOutplan.MaxTryCount2,
@@ -120,17 +124,18 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 			).Return(tt.responseOmoutdialtarget, nil)
 
 			// executeFlow
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockCampaigncall.EXPECT().Create(
 				ctx,
-				tt.response.CustomerID,
-				tt.response.ID,
-				tt.response.OutplanID,
-				tt.response.OutdialID,
+				tt.responseCampaign.CustomerID,
+				tt.responseCampaign.ID,
+				tt.responseCampaign.OutplanID,
+				tt.responseCampaign.OutdialID,
 				tt.responseOmoutdialtarget[0].ID,
-				tt.response.QueueID,
+				tt.responseCampaign.QueueID,
 
 				gomock.Any(),
-				tt.response.FlowID,
+				tt.responseCampaign.FlowID,
 
 				campaigncall.ReferenceTypeFlow,
 				uuid.Nil,

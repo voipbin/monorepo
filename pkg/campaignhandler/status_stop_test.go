@@ -230,7 +230,7 @@ func Test_isStoppable(t *testing.T) {
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 
 			if tt.response.Execute == campaign.ExecuteStop {
-				mockUtil.EXPECT().GetCurTime().Return(utilhandler.GetCurTime())
+				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 				mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return(tt.responseCampaigncall, nil)
 			}
 

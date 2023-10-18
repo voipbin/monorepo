@@ -36,7 +36,7 @@ func (h *campaigncallHandler) Create(
 		"customer_id": customerID,
 	})
 
-	id := uuid.Must(uuid.NewV4())
+	id := h.util.UUIDCreate()
 	t := &campaigncall.Campaigncall{
 		ID:         id,
 		CustomerID: customerID,
