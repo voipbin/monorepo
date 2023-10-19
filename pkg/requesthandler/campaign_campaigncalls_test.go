@@ -19,8 +19,9 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		pageToken string
-		pageSize  uint64
+		customerID uuid.UUID
+		pageToken  string
+		pageSize   uint64
 
 		response *rabbitmqhandler.Response
 
@@ -31,6 +32,7 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 		{
 			"normal",
 
+			uuid.FromStringOrNil("61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0"),
 			"2020-09-20 03:23:20.995000",
 			10,
 
@@ -42,9 +44,9 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 
 			"bin-manager.campaign-manager.request",
 			&rabbitmqhandler.Request{
-				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10&customer_id=61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   rabbitmqhandler.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: ContentTypeNone,
 			},
 			[]cacampaigncall.Campaigncall{
 				{
@@ -67,7 +69,7 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().PublishRPC(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CampaignV1CampaigncallGets(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.CampaignV1CampaigncallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

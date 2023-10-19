@@ -15,10 +15,10 @@ import (
 // CampaignV1CampaigncallGets sends a request to campaign-manager
 // to getting a list of campaigncalls.
 // it returns detail list of campaigncalls if it succeed.
-func (r *requestHandler) CampaignV1CampaigncallGets(ctx context.Context, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error) {
-	uri := fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+func (r *requestHandler) CampaignV1CampaigncallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error) {
+	uri := fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCampaignCampaigncalls, requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(ctx, uri, rabbitmqhandler.RequestMethodGet, resourceCampaignCampaigncalls, requestTimeoutDefault, 0, ContentTypeNone, nil)
 	switch {
 	case err != nil:
 		return nil, err
