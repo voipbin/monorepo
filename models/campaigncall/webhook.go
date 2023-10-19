@@ -39,6 +39,7 @@ type WebhookMessage struct {
 func (h *Campaigncall) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:         h.ID,
+		CustomerID: h.CampaignID,
 		CampaignID: h.CampaignID,
 
 		OutplanID:       h.OutplanID,
