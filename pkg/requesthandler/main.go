@@ -534,6 +534,7 @@ type RequestHandler interface {
 	CampaignV1CampaignUpdateNextCampaignID(ctx context.Context, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.Campaign, error)
 
 	// campaign-manager campaigncalls
+	CampaignV1CampaigncallGets(ctx context.Context, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error)
 	CampaignV1CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error)
 	CampaignV1CampaigncallGet(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error)
 	CampaignV1CampaigncallDelete(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error)
