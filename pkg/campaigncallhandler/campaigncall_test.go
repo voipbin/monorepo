@@ -231,6 +231,47 @@ func Test_GetByActiveflowID(t *testing.T) {
 	}
 }
 
+func Test_GetsByCustomerID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		token      string
+		limit      uint64
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("ebe2c7c6-6e30-11ee-9db0-c37efb343d1d"),
+			token:      "2020-10-10T03:30:17.000000",
+			limit:      10,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &campaigncallHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+			mockDB.EXPECT().CampaigncallGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
+
+			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func Test_GetsByCampaignID(t *testing.T) {
 
 	tests := []struct {

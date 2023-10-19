@@ -123,6 +123,25 @@ func (h *campaigncallHandler) GetByActiveflowID(ctx context.Context, activeflowI
 	return res, nil
 }
 
+// GetsByCustomerID returns list of campaigncall
+func (h *campaigncallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "GetsByCustomerID",
+		"campaign_id": customerID,
+		"token":       token,
+		"limit":       limit,
+	})
+	log.Debug("Getting campaigncalls.")
+
+	res, err := h.db.CampaigncallGetsByCustomerID(ctx, customerID, token, limit)
+	if err != nil {
+		log.Errorf("Could not get campaigncalls. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // GetsByCampaignID returns list of campaigncall
 func (h *campaigncallHandler) GetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{

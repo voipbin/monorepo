@@ -308,6 +308,78 @@ func Test_CampaigncallGetByActiveflowID(t *testing.T) {
 	}
 }
 
+func Test_CampaigncallGetsByCustomerID(t *testing.T) {
+	tests := []struct {
+		name string
+		data []*campaigncall.Campaigncall
+
+		customerID uuid.UUID
+		token      string
+		limit      uint64
+
+		responseCurTime string
+		expectRes       []*campaigncall.Campaigncall
+	}{
+		{
+			name: "1 item",
+			data: []*campaigncall.Campaigncall{
+				{
+					ID:         uuid.FromStringOrNil("3cf4996a-6e30-11ee-b4df-e3435f75c8d9"),
+					CustomerID: uuid.FromStringOrNil("3d286678-6e30-11ee-82b1-d7f075ddecab"),
+				},
+			},
+
+			customerID: uuid.FromStringOrNil("3d286678-6e30-11ee-82b1-d7f075ddecab"),
+			token:      "2022-04-18 03:22:17.995000",
+			limit:      100,
+
+			responseCurTime: "2020-04-18 03:22:17.995000",
+			expectRes: []*campaigncall.Campaigncall{
+				{
+					ID:         uuid.FromStringOrNil("3cf4996a-6e30-11ee-b4df-e3435f75c8d9"),
+					CustomerID: uuid.FromStringOrNil("3d286678-6e30-11ee-82b1-d7f075ddecab"),
+					TMCreate:   "2020-04-18 03:22:17.995000",
+					TMUpdate:   DefaultTimeStamp,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := handler{
+				util:  mockUtil,
+				db:    dbTest,
+				cache: mockCache,
+			}
+
+			ctx := context.Background()
+
+			for _, p := range tt.data {
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockCache.EXPECT().CampaigncallSet(ctx, gomock.Any()).Return(nil)
+				if err := h.CampaigncallCreate(context.Background(), p); err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+
+			res, err := h.CampaigncallGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes[0], res[0])
+			}
+		})
+	}
+}
+
 func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 	tests := []struct {
 		name          string

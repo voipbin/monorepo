@@ -173,6 +173,21 @@ func (mr *MockCampaigncallHandlerMockRecorder) GetsByCampaignIDAndStatus(ctx, ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCampaignIDAndStatus", reflect.TypeOf((*MockCampaigncallHandler)(nil).GetsByCampaignIDAndStatus), ctx, campaignID, status, token, limit)
 }
 
+// GetsByCustomerID mocks base method.
+func (m *MockCampaigncallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
+	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetsByCustomerID indicates an expected call of GetsByCustomerID.
+func (mr *MockCampaigncallHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockCampaigncallHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
+}
+
 // GetsOngoingByCampaignID mocks base method.
 func (m *MockCampaigncallHandler) GetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
