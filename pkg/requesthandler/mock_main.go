@@ -2040,18 +2040,18 @@ func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaigncallGet(ctx, id inte
 }
 
 // CampaignV1CampaigncallGets mocks base method.
-func (m *MockRequestHandler) CampaignV1CampaigncallGets(ctx context.Context, pageToken string, pageSize uint64) ([]campaigncall.Campaigncall, error) {
+func (m *MockRequestHandler) CampaignV1CampaigncallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignV1CampaigncallGets", ctx, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "CampaignV1CampaigncallGets", ctx, customerID, pageToken, pageSize)
 	ret0, _ := ret[0].([]campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CampaignV1CampaigncallGets indicates an expected call of CampaignV1CampaigncallGets.
-func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaigncallGets(ctx, pageToken, pageSize interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaigncallGets(ctx, customerID, pageToken, pageSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1CampaigncallGets", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1CampaigncallGets), ctx, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1CampaigncallGets", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1CampaigncallGets), ctx, customerID, pageToken, pageSize)
 }
 
 // CampaignV1CampaigncallGetsByCampaignID mocks base method.
