@@ -329,6 +329,39 @@ func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowI
 	return res, nil
 }
 
+// CampaigncallGetsByCustomerID returns list of campaigncall.
+func (h *handler) CampaigncallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+
+	// prepare
+	q := fmt.Sprintf(`
+		%s
+		where
+			customer_id = ?
+			and tm_create < ?
+		order by
+			tm_create desc, id desc
+		limit ?
+	`, campaigncallSelect)
+
+	rows, err := h.db.Query(q, customerID.Bytes(), token, limit)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CampaigncallGetsByCustomerID. err: %v", err)
+	}
+	defer rows.Close()
+
+	var res []*campaigncall.Campaigncall
+	for rows.Next() {
+		u, err := h.campaigncallGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. CampaigncallGetsByCustomerID. err: %v", err)
+		}
+
+		res = append(res, u)
+	}
+
+	return res, nil
+}
+
 // CampaigncallGetsByCampaignID returns list of campaigncall.
 func (h *handler) CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 

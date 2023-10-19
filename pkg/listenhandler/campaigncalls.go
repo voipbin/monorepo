@@ -10,6 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/voipbin/bin-manager/common-handler.git/pkg/rabbitmqhandler"
+
+	"gitlab.com/voipbin/bin-manager/campaign-manager.git/models/campaigncall"
 )
 
 // v1CampaigncallsGet handles /v1/campaigncalls GET request
@@ -29,12 +31,16 @@ func (h *listenHandler) v1CampaigncallsGet(ctx context.Context, m *rabbitmqhandl
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get campaign_id
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 	campaignID := uuid.FromStringOrNil(u.Query().Get("campaign_id"))
+	log.WithField("request", m).Debugf("Received request. customer_id: %s, campaign_id: %s", customerID, campaignID)
 
-	log.WithField("request", m).Debug("Received request.")
-
-	tmp, err := h.campaigncallHandler.GetsByCampaignID(ctx, campaignID, pageToken, pageSize)
+	var tmp []*campaigncall.Campaigncall
+	if customerID != uuid.Nil {
+		tmp, err = h.campaigncallHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	} else {
+		tmp, err = h.campaigncallHandler.GetsByCampaignID(ctx, campaignID, pageToken, pageSize)
+	}
 	if err != nil {
 		log.Errorf("Could not get campaigns. err: %v", err)
 		return nil, err
