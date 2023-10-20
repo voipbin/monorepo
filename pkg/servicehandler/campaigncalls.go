@@ -39,6 +39,39 @@ func (h *serviceHandler) campaigncallGet(ctx context.Context, u *cscustomer.Cust
 	return res, nil
 }
 
+// CampaigncallGets gets the list of campaigncalls.
+// It returns list of campaigncalls if it succeed.
+func (h *serviceHandler) CampaigncallGets(ctx context.Context, u *cscustomer.Customer, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CampaigncallGets",
+		"customer_id": u.ID,
+		"username":    u.Username,
+		"size":        size,
+		"token":       token,
+	})
+	log.Debug("Getting campaigncalls.")
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// get campaigncalls
+	tmps, err := h.reqHandler.CampaignV1CampaigncallGets(ctx, u.ID, token, size)
+	if err != nil {
+		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
+		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
+	}
+
+	// create result
+	res := []*cacampaigncall.WebhookMessage{}
+	for _, f := range tmps {
+		tmp := f.ConvertWebhookMessage()
+		res = append(res, tmp)
+	}
+
+	return res, nil
+}
+
 // CampaigncallGetsByCampaignID gets the list of campaigncalls of the given campaign id.
 // It returns list of campaigncalls if it succeed.
 func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *cscustomer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
@@ -62,7 +95,7 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *cs
 		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
 	}
 
-	// get campaigns
+	// get campaigncalls
 	campaigns, err := h.reqHandler.CampaignV1CampaigncallGetsByCampaignID(ctx, campaignID, token, size)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)

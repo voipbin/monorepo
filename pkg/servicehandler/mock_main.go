@@ -805,6 +805,21 @@ func (mr *MockServiceHandlerMockRecorder) CampaigncallGet(ctx, u, campaigncallID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGet", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallGet), ctx, u, campaigncallID)
 }
 
+// CampaigncallGets mocks base method.
+func (m *MockServiceHandler) CampaigncallGets(ctx context.Context, u *customer.Customer, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallGets", ctx, u, size, token)
+	ret0, _ := ret[0].([]*campaigncall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaigncallGets indicates an expected call of CampaigncallGets.
+func (mr *MockServiceHandlerMockRecorder) CampaigncallGets(ctx, u, size, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGets", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallGets), ctx, u, size, token)
+}
+
 // CampaigncallGetsByCampaignID mocks base method.
 func (m *MockServiceHandler) CampaigncallGetsByCampaignID(ctx context.Context, u *customer.Customer, campaignID uuid.UUID, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
