@@ -6,6 +6,7 @@ import "github.com/gin-gonic/gin"
 func ApplyRoutes(r *gin.RouterGroup) {
 	campaigncalls := r.Group("/campaigncalls")
 
+	campaigncalls.GET("", campaigncallsGET)
 	campaigncalls.DELETE("/:id", campaigncallsIDDELETE)
 	campaigncalls.GET("/:id", campaigncallsIDGET)
 }
