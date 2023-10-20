@@ -217,7 +217,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 		{
 			"test normal",
 			uuid.FromStringOrNil("938cdf96-7f4c-11ec-94d3-8ba7d397d7fb"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10 03:30:17.000000",
 			10,
 		},
 	}

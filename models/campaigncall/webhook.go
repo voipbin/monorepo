@@ -19,6 +19,7 @@ type WebhookMessage struct {
 	QueueID         uuid.UUID `json:"queue_id"`
 
 	ActiveflowID uuid.UUID `json:"activeflow_id"` // this is required
+	FlowID       uuid.UUID `json:"flow_id"`
 
 	ReferenceType ReferenceType `json:"reference_type"` // none or call
 	ReferenceID   uuid.UUID     `json:"reference_id"`   // reference id
@@ -39,7 +40,8 @@ type WebhookMessage struct {
 func (h *Campaigncall) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		ID:         h.ID,
-		CustomerID: h.CampaignID,
+		CustomerID: h.CustomerID,
+
 		CampaignID: h.CampaignID,
 
 		OutplanID:       h.OutplanID,
@@ -48,6 +50,7 @@ func (h *Campaigncall) ConvertWebhookMessage() *WebhookMessage {
 		QueueID:         h.QueueID,
 
 		ActiveflowID: h.ActiveflowID,
+		FlowID:       h.FlowID,
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
